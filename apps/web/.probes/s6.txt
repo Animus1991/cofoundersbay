@@ -1,0 +1,6 @@
+/t/aegean-lab
+/org/aegean-lab
+/groups/grp-athens-founders
+/programs/prog-seed-autumn-2026
+/share/data-room-seed
+/pitch/demo

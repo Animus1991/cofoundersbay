@@ -1,0 +1,6 @@
+/dashboard/mentor
+/mentor/earnings
+/mentor/reviews
+/mentor/sessions
+/mentor/requests
+/mentor/mentees

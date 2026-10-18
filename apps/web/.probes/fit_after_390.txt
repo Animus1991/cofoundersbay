@@ -1,0 +1,16 @@
+/ai | escape 0 | clip 1 | chrome-clip 0
+/builder/applications | escape 0 | clip 12 | chrome-clip 1
+/investor/pipeline | escape 0 | clip 1 | chrome-clip 1
+/messages | escape 0 | clip 2 | chrome-clip 0
+/projects | escape 0 | clip 6 | chrome-clip 1
+/reputation | escape 0 | clip 1 | chrome-clip 0
+/research | escape 0 | clip 1 | chrome-clip 1
+/research/canvas | escape 0 | clip 1 | chrome-clip 1
+/settings | escape 0 | clip 3 | chrome-clip 1
+/tenant/domains | escape 0 | clip 2 | chrome-clip 0
+/test-onboarding | escape 0 | clip 1 | chrome-clip 0
+/themes/alliance | escape 0 | clip 1 | chrome-clip 0
+/research/board-gtm | escape 4 | clip 0 | chrome-clip 0
+/org/aegean-lab/admin | escape 0 | clip 1 | chrome-clip 0
+
+TOTAL routes 160 · escapes 4 · clipped 33 · chrome-clipped (by design) 76

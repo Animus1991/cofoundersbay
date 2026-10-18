@@ -1,0 +1,28 @@
+[
+ {
+  "route": "/analytics",
+  "escapes": [],
+  "clips": [],
+  "chrome": 0
+ },
+ {
+  "route": "/org/cohorts/cohort-autumn-2026",
+  "escapes": [],
+  "clips": [],
+  "chrome": 0
+ },
+ {
+  "route": "/admin/users",
+  "escapes": [],
+  "clips": [],
+  "chrome": 0
+ },
+ {
+  "route": "/research/board-gtm",
+  "escapes": [
+   "Find and replace·Εύρεση και αντικατάσταση  [+5px]"
+  ],
+  "clips": [],
+  "chrome": 0
+ }
+]

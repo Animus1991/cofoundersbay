@@ -1,0 +1,92 @@
+✓ /admin/automations | New Rule | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/billing | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/communities | Create Community | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/communities | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/feature-flags | New Flag | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/programs | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/reports | Page tools, 1 active. Εργαλεία σελίδας,  | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/sso | Aegean Venture Lab aegean-lab SSO Option | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/taxonomy | Add Skill | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/tenants | Create Tenant | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✗ /admin/tenants | Settings for Aegean Venture Lab | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:79
+    wide: DIV.flex gap-2 | BUTTON.inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium tra
+✓ /admin/tenants | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/user-management | Quick view Alex Demo | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/user-management | Quick view Anna Lambrou | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/user-management | Quick view Dimitris Kostas | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/user-management | Quick view Dr. Sarah Kim | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/user-management | Quick view Elena Papadopoulos | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/user-management | Quick view Giorgos Vlachos | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/user-management | Quick view Katerina Nikolaou | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/user-management | Quick view Marcus Chen | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /admin/user-management | Quick view Maria Georgiou | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /data-room/dr-harbor-seed | Share Access | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /data-room/dr-harbor-seed | Upload | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /data-room/dr-harbor-seed | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /discover | Filters | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✗ /discover | Save search | name:y fits:y close:ok esc:y focus:NO unnamed:0 xOverflow:0
+✓ /discover | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /fundraising | Add contact | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /fundraising | Add investor | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /fundraising | Message. Μήνυμα | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /groups | Create Community | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /jobs | Post a role | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /jobs | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /matches | Page tools, 1 active. Εργαλεία σελίδας,  | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /mentoring | Book a session with Dr. Sarah Kim · Κράτ | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /mentoring | Book a session with Thanos Rigas · Κράτη | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /mentoring | Book a session with Ioanna Pappa · Κράτη | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /mentoring | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /messages | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✗ /milestones | New milestone | name:y fits:y close:ok esc:y focus:NO unnamed:0 xOverflow:0
+✓ /milestones | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /opportunities | Post opportunity | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /opportunities | Draft an approach | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/aegean-lab/admin | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Taverna OS | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Petra Health | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Fleetwise | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Loom & Leaf | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Portside | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Agora B2B | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Ledgerly | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Thalia | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Sokaki | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Kolo Labs | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Pixelcraft | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Meltemi | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | GreenCrate | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Kyma Energy | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Anemos Storage | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Aegis Health | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Orion Grid | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /org/applications | Harbor | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /pitch/demo | Share. Κοινοποίηση | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /pitch/demo | Contact | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /programs | Apply Now | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /programs | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /provider/services | Add Service | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /recommendations | Score Breakdown | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /recommendations | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /research | Use template | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /research | New board | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /research | See all templates | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /research | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /research/board-gtm | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /research/board-gtm | Open navigation | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✗ /saved-searches | New Search | name:y fits:y close:ok esc:y focus:NO unnamed:0 xOverflow:0
+✓ /tenant/members | Invite Member | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /tenant/programs | Create Program | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /tenant/programs | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /feed | Preferences. Προτιμήσεις | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /builder | New Document | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /builder | Page tools, 3 active. Εργαλεία σελίδας,  | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /profile/edit | Crop and upload your profile photo | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /profile/edit | Crop & Upload | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /calendar | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✗ /connections | Accept intro | name:y fits:y close:ok esc:y focus:NO unnamed:0 xOverflow:0
+✓ /connections | Page tools. Εργαλεία σελίδας | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+✓ /settings | Enable | name:y fits:y close:ok esc:y focus:y unnamed:0 xOverflow:0
+
+SUMMARY @390px · dialogs opened 88 on 37 routes
+  no name 0 · off-screen 0 · close<min 0 · no Escape 0 · focus lost 4 · unnamed controls 0 · x-overflow 1

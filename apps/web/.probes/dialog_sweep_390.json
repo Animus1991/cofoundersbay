@@ -1,0 +1,28 @@
+[
+ {
+  "route": "/commitments",
+  "trigger": "Page tools, 2 active. Εργαλεία σελίδας, ",
+  "name": "Page tools·Εργαλεία σελίδας",
+  "fits": true,
+  "close": "ok",
+  "overflow": 0,
+  "unnamed": 0,
+  "closeHtml": "<button type=\"button\" class=\"absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground opacity-80 transition-col",
+  "wide": [],
+  "escape": true,
+  "focus": true
+ },
+ {
+  "route": "/commitments/need-harbor",
+  "trigger": "Page tools, 2 active. Εργαλεία σελίδας, ",
+  "name": "Page tools·Εργαλεία σελίδας",
+  "fits": true,
+  "close": "ok",
+  "overflow": 0,
+  "unnamed": 0,
+  "closeHtml": "<button type=\"button\" class=\"absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground opacity-80 transition-col",
+  "wide": [],
+  "escape": true,
+  "focus": true
+ }
+]

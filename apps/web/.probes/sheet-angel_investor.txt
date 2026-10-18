@@ -1,0 +1,6 @@
+/dashboard/investor
+/investor/analytics
+/investor/scouting
+/investor/pipeline
+/investor/watchlist
+/investor/portfolio

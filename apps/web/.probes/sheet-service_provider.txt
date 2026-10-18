@@ -1,0 +1,6 @@
+/dashboard/provider
+/provider/analytics
+/provider/services
+/provider/inquiries
+/provider/projects
+/provider/reviews

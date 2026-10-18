@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-10-07T20:55:54.835Z",
+  "routes": 160,
+  "type": [
+    {
+      "route": "/api-status",
+      "selector": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < h1.text-3xl.font-semibold < div.mb-8 < div.container.mx-auto",
+      "text": "API Status Check",
+      "px": 26
+    },
+    {
+      "route": "/pricing",
+      "selector": "span.text-3xl.font-bold < div.flex.items-baseline < div.mb-6 < div.card-comfortable.flex < div.rounded-2xl.bg-card",
+      "text": "$0",
+      "px": 26
+    },
+    {
+      "route": "/pricing",
+      "selector": "span.text-3xl.font-bold < div.flex.items-baseline < div.mb-6 < div.card-comfortable.flex < div.rounded-2xl.bg-card",
+      "text": "$159",
+      "px": 26
+    },
+    {
+      "route": "/pricing",
+      "selector": "span.text-3xl.font-bold < div.flex.items-baseline < div.mb-6 < div.card-comfortable.flex < div.rounded-2xl.bg-card",
+      "text": "$899",
+      "px": 26
+    },
+    {
+      "route": "/pricing",
+      "selector": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < div.text-3xl.font-bold < div.mb-6 < div.card-comfortable.flex",
+      "text": "Custom",
+      "px": 26
+    },
+    {
+      "route": "/pricing",
+      "selector": "span < span.min-w-0 < h2.font-display.text-3xl < div.mx-auto.max-w-4xl < div.border-t.border-border",
+      "text": "Ready to accelerate your startup journey?",
+      "px": 26
+    },
+    {
+      "route": "/register",
+      "selector": "span.break-words.leading-tight < span.flex.min-w-0 < h2.font-display.text-3xl < div.relative.z-10 < div.hidden.bg-hero-gradient",
+      "text": "Join Aegean Venture Lab",
+      "px": 26
+    },
+    {
+      "route": "/register",
+      "selector": "span < span.min-w-0 < h1.font-display.text-3xl < div.mx-auto.w-full < div.flex.w-full",
+      "text": "Create your account",
+      "px": 26
+    },
+    {
+      "route": "/reset-password",
+      "selector": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < h1.text-2xl.sm:text-3xl < div.space-y-2 < div.w-full.max-w-md",
+      "text": "Set a new password",
+      "px": 26
+    },
+    {
+      "route": "/test-onboarding",
+      "selector": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < h1.text-3xl.font-semibold < div.text-center.mb-8 < div.max-w-4xl.mx-auto",
+      "text": "Production Readiness Tests",
+      "px": 26
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "span.break-words < span.inline-flex.min-w-0 < h1.text-4xl.font-semibold < div.text-center < div.relative.max-w-7xl",
+      "text": "Connect. Collaborate. Succeed.",
+      "px": 36
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "span.bilingual-separator.shrink-0 < span.break-words < span.inline-flex.min-w-0 < h1.text-4xl.font-semibold < div.text-center",
+      "text": "·",
+      "px": 30.6
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < h1.text-4xl.font-semibold < div.text-center < div.relative.max-w-7xl",
+      "text": "Συνδεθείτε. Συνεργαστείτε. Πετύχετε.",
+      "px": 30.6
+    }
+  ],
+  "shadows": [
+    {
+      "route": "/pitch/demo",
+      "selector": "div.rounded-2xl.border",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(33, 36,",
+      "position": "relative"
+    }
+  ],
+  "haze": [],
+  "buttonShadow": [],
+  "errors": [
+    {
+      "route": "/investor/dashboard",
+      "eval": "page.evaluate: Execution context was destroyed, most likely because of a navigation"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+[
+ {
+  "route": "/analytics",
+  "escapes": [],
+  "clips": [],
+  "chrome": 0
+ },
+ {
+  "route": "/org/cohorts/cohort-autumn-2026",
+  "escapes": [],
+  "clips": [],
+  "chrome": 0
+ },
+ {
+  "route": "/admin/users",
+  "escapes": [],
+  "clips": [],
+  "chrome": 0
+ },
+ {
+  "route": "/research/board-gtm",
+  "escapes": [
+   "Note·Σημείωση  [+89px]",
+   "Note·Σημείωση  [+409px]",
+   "Note·Σημείωση  [+89px]",
+   "Note·Σημείωση  [+409px]"
+  ],
+  "clips": [],
+  "chrome": 0
+ }
+]

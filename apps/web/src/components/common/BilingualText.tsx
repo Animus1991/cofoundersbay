@@ -1,10 +1,18 @@
 'use client';
 
+import { createContext, useContext, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import {
   resolveBilingualPair,
   useLanguagePreference,
 } from '@/lib/i18n/LanguagePreferenceContext';
+
+/** Public marketing copy: one language at a time. The switcher still changes which. */
+const PrimaryOnlyCopyContext = createContext(false);
+
+export function PrimaryOnlyCopy({ children }: { children: ReactNode }) {
+  return <PrimaryOnlyCopyContext.Provider value={true}>{children}</PrimaryOnlyCopyContext.Provider>;
+}
 
 type BilingualTextProps = {
   en: string;
@@ -79,7 +87,8 @@ export function BilingualText({
   secondaryClassName,
 }: BilingualTextProps) {
   const { primary, showSecondary } = useLanguagePreference();
-  const resolved = resolveBilingualPair(en, el, primary, showSecondary);
+  const primaryOnly = useContext(PrimaryOnlyCopyContext);
+  const resolved = resolveBilingualPair(en, el, primary, primaryOnly ? false : showSecondary);
   // Marks a span whose Greek this component supplies itself. Under the Greek
   // locale the DOM pass (DomI18n) must leave it alone: before the page subtree
   // hydrates, the span still holds the server's English, and translating it

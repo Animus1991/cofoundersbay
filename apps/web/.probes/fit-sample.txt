@@ -1,0 +1,9 @@
+/privacy
+/builder
+/p/preview-demo-user
+/share/data-room-seed
+/investor/pipeline
+/marketplace
+/admin/users
+/help
+/learning

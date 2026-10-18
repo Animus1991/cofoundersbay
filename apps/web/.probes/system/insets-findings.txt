@@ -1,0 +1,562 @@
+
+=== / (10)
+  ×1 x=261 titleX=248 | p.page-stat.text-xl < a.rounded-lg.border < div.grid.grid-cols-2 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.min-w-0.space-y-6 | "2"
+  ×1 x=261 titleX=248 | p.mt-0.5.text-xs < a.rounded-lg.border < div.grid.grid-cols-2 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.min-w-0.space-y-6 | "Messages"
+  ×1 x=1068 titleX=1058 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.space-y-4 < div.card-comfortable.space-y-2 < div.rounded-2xl.border | "Healthy"
+  ×7 x=1034 titleX=1058 | div.card-comfortable.px-0 < div.rounded-2xl.border < div.min-w-0.space-y-6 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Moderation console·Κονσόλα ελέγχου"
+
+=== /achievements (10)
+  ×3 x=340 titleX=316 | span.inline-flex.min-w-0 < span.text-muted-foreground < div.flex.flex-wrap < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-5 | "have this"
+  ×4 x=348 titleX=316 | span.inline-flex.min-w-0 < span.text-muted-foreground < div.flex.flex-wrap < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-5 | "have this"
+  ×1 x=346 titleX=316 | span.inline-flex.min-w-0 < span.text-muted-foreground < div.flex.flex-wrap < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-5 | "have this"
+  ×1 x=345 titleX=316 | span.inline-flex.min-w-0 < span.text-muted-foreground < div.flex.flex-wrap < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-5 | "have this"
+  ×1 x=349 titleX=316 | span.inline-flex.min-w-0 < span.text-muted-foreground < div.flex.flex-wrap < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-5 | "have this"
+
+=== /admin/audit-log (31)
+  ×1 x=1172 titleX=248 | div.gap-1.5.card-comfortable < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "5 total entries"
+  ×8 x=240 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "alex@harbor.example"
+  ×4 x=390 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "user.suspend"
+  ×1 x=509 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "User"
+  ×1 x=554 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "#user-spyros"
+  ×1 x=1358 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "1d ago"
+  ×1 x=520 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Event"
+  ×1 x=571 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "#ev-demo-day"
+  ×2 x=1355 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "3d ago"
+  ×2 x=286 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "alex@harbor.example"
+  ×1 x=436 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "report.resolve"
+  ×1 x=558 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Report"
+  ×1 x=615 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "#rep-3"
+  ×1 x=492 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Skill"
+  ×1 x=534 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "#skill-energy-markets"
+  ×1 x=1352 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "4w ago"
+  ×1 x=531 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "User"
+  ×1 x=576 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "#user-anna"
+  ×1 x=1343 titleX=248 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "4mo ago"
+
+=== /admin/dashboard (10)
+  ×1 x=261 titleX=248 | p.page-stat.text-xl < a.rounded-lg.border < div.grid.grid-cols-2 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.min-w-0.space-y-6 | "2"
+  ×1 x=261 titleX=248 | p.mt-0.5.text-xs < a.rounded-lg.border < div.grid.grid-cols-2 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.min-w-0.space-y-6 | "Messages"
+  ×1 x=1068 titleX=1058 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.space-y-4 < div.card-comfortable.space-y-2 < div.rounded-2xl.border | "Healthy"
+  ×7 x=1034 titleX=1058 | div.card-comfortable.px-0 < div.rounded-2xl.border < div.min-w-0.space-y-6 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Moderation console·Κονσόλα ελέγχου"
+
+=== /admin/domains (3)
+  ×1 x=224 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Aegean Venture Labaegean-lab"
+  ×2 x=284 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Aegean Venture Lab"
+
+=== /admin/feature-flags (16)
+  ×8 x=240 titleX=302 | div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_12_-content-all < div < div.space-y-6 < div.space-y-5 | ""
+  ×8 x=1361 titleX=302 | div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_12_-content-all < div < div.space-y-6 < div.space-y-5 | ""
+
+=== /admin/programs (3)
+  ×2 x=250 titleX=240 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 | "Accelerator"
+  ×1 x=250 titleX=240 | span.truncate < span.inline-flex.items-center < div.flex.flex-wrap < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 | "Bootcamp"
+
+=== /admin/sso (3)
+  ×2 x=265 titleX=248 | div.flex.items-center < div.flex.items-center < div.space-y-2 < div.card-comfortable < div.rounded-2xl.border < div.space-y-5 | "Aegean Venture Lab"
+  ×1 x=1249 titleX=248 | div.gap-1.5.card-comfortable < div.rounded-2xl.border < div.space-y-5 | "Refresh·Ανανέωση"
+
+=== /admin/system-settings (4)
+  ×4 x=261 titleX=248 | div < div.flex.items-center < div.card-comfortable.space-y-4 < div.rounded-2xl.border < div#radix-_r_l_-content-general < div | "Maintenance mode"
+
+=== /admin/taxonomy (61)
+  ×1 x=1088 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "All categories · Όλες οι κατηγορίεςTechnicalBusine"
+  ×6 x=224 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Technical (3)"
+  ×11 x=272 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "AI"
+  ×1 x=1210 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "ai"
+  ×3 x=1243 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Technical"
+  ×8 x=1323 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "1"
+  ×10 x=1361 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | ""
+  ×1 x=1176 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "next-js"
+  ×1 x=1155 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "typescript"
+  ×1 x=1121 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "energy-markets"
+  ×3 x=1246 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Business"
+  ×1 x=1135 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "go-to-market"
+  ×1 x=1244 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Business"
+  ×3 x=1321 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "2"
+  ×1 x=1156 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "leadership"
+  ×1 x=1180 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "pricing"
+  ×1 x=1096 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "growth"
+  ×1 x=1164 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Marketing"
+  ×1 x=1083 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "fundraising"
+  ×1 x=1178 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Finance"
+  ×1 x=1099 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "hiring"
+  ×1 x=1158 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Operations"
+  ×1 x=1130 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "product"
+  ×1 x=1203 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Product"
+
+=== /admin/tenants (5)
+  ×1 x=1110 titleX=248 | div.flex.flex-col < div.rounded-2xl.border < div.space-y-5 | ""
+  ×1 x=264 titleX=248 | input.h-4.w-4 < label.flex.items-center < div.space-y-2 < div.card-comfortable < div.rounded-2xl.border < div.space-y-5 | ""
+  ×1 x=265 titleX=248 | div.flex.min-w-0 < div.flex.items-center < div.space-y-2 < div.card-comfortable < div.rounded-2xl.border < div.space-y-5 | ""
+  ×2 x=294 titleX=248 | div.flex.min-w-0 < div.flex.items-center < div.space-y-2 < div.card-comfortable < div.rounded-2xl.border < div.space-y-5 | "Aegean Venture Lab"
+
+=== /analytics (1)
+  ×1 x=282 titleX=248 | span.font-normal.text-muted-foreground < p.page-stat-label.pt-1 < div.card-comfortable.space-y-3.5 < div.rounded-2xl.border < div#radix-_r_2e_-content-overview < div | "of views became connections"
+
+=== /auth/verify-email (1)
+  ×1 x=601 titleX=561 | a.text-sm.text-primary-accessible < div.text-center.pt-2 < div.card-comfortable.pt-4 < div.rounded-2xl.border < div.w-full.max-w-md < div.min-h-screen.flex | "Back to Login·Επιστροφή στη σύνδεση"
+
+=== /builder (12)
+  ×1 x=1281 titleX=248 | div.card-comfortable.card-header < div.rounded-2xl.border < div.min-w-0.space-y-6 < div#radix-_r_2l_-content-overview < div < div.builder-type.builder-copy | "Ask AI"
+  ×3 x=260 titleX=248 | span.flex.min-w-0 < button.inline-flex.items-center < div.card-comfortable.grid < div.rounded-2xl.border < div.min-w-0.space-y-6 < div#radix-_r_2l_-content-overview | "Edit Idea Core"
+  ×3 x=800 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div.min-w-0.space-y-6 < div#radix-_r_2l_-content-overview < div < div.builder-type.builder-copy | "Edit Business Model·Επεξεργασία Επιχειρηματικού μο"
+  ×3 x=812 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div.min-w-0.space-y-6 < div#radix-_r_2l_-content-overview < div < div.builder-type.builder-copy | "Edit Business Model"
+  ×2 x=1285 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div.min-w-0.space-y-6 < div#radix-_r_2l_-content-overview < div < div.builder-type.builder-copy | "11%"
+
+=== /builder/applications (2)
+  ×1 x=356 titleX=248 | span.inline-flex.min-w-0 < h3.page-section.font-semibold < div < div.flex.items-center < div.flex.flex-wrap < div.flex.flex-col | "Application"
+  ×1 x=266 titleX=248 | span.inline-flex.min-w-0 < p.text-sm.text-muted-foreground < div < div.flex.items-center < div.flex.flex-wrap < div.flex.flex-col | "questions"
+
+=== /builder/pitch-deck (37)
+  ×1 x=1057 titleX=248 | div.card-comfortable.card-header < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Add remaining slides·Προσθήκη υπόλοιπων"
+  ×2 x=258 titleX=248 | span.inline-flex.min-w-0 < button.tap-target-phone.inline-flex < div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 | "Solution"
+  ×1 x=361 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Market Opportunity·Ευκαιρία αγοράς"
+  ×1 x=371 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Market Opportunity"
+  ×1 x=612 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Product·Προϊόν"
+  ×1 x=622 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Product"
+  ×1 x=734 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Traction"
+  ×1 x=744 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Traction"
+  ×1 x=810 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Business Model·Επιχειρηματικό μοντέλο"
+  ×1 x=820 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Business Model"
+  ×1 x=1079 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Competition·Ανταγωνισμός"
+  ×1 x=1089 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Competition"
+  ×1 x=355 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Financials·Οικονομικά"
+  ×1 x=365 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Financials"
+  ×1 x=514 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "The Ask·Το αίτημα"
+  ×1 x=524 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "The Ask"
+  ×1 x=654 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Closing·Κλείσιμο"
+  ×1 x=664 titleX=248 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy < div.space-y-5.builder-copy | "Closing"
+  ×2 x=232 titleX=248 | div.card-comfortable.space-y-1 < div.rounded-2xl.border < div.order-2.min-w-0 < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy | "1Cover·Εξώφυλλο"
+  ×2 x=240 titleX=248 | div.card-comfortable.space-y-1 < div.rounded-2xl.border < div.order-2.min-w-0 < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy | "1"
+  ×2 x=263 titleX=248 | div.card-comfortable.space-y-1 < div.rounded-2xl.border < div.order-2.min-w-0 < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy | "Cover"
+  ×1 x=232 titleX=248 | div.border-t.border-border < div.rounded-2xl.border < div.order-2.min-w-0 < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy | "Add Slide·Προσθήκη διαφάνειας"
+  ×1 x=244 titleX=248 | div.border-t.border-border < div.rounded-2xl.border < div.order-2.min-w-0 < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy | "Add Slide"
+  ×2 x=541 titleX=584 | div.card-comfortable.card-header < div.rounded-2xl.border < div.order-1.min-w-0 < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy | ""
+  ×1 x=1310 titleX=584 | div.card-comfortable.card-header < div.rounded-2xl.border < div.order-1.min-w-0 < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy | ""
+  ×1 x=994 titleX=584 | div.card-comfortable.card-header < div.rounded-2xl.border < div.order-1.min-w-0 < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy | "Preview·Προεπισκόπηση"
+  ×4 x=541 titleX=584 | div.card-comfortable.space-y-4 < div.rounded-2xl.border < div.order-1.min-w-0 < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy | "Slide Content"
+  ×1 x=1256 titleX=584 | div.card-comfortable.space-y-4 < div.rounded-2xl.border < div.order-1.min-w-0 < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy | "7"
+  ×1 x=1267 titleX=584 | div.card-comfortable.space-y-4 < div.rounded-2xl.border < div.order-1.min-w-0 < div.grid.grid-cols-1 < div.min-w-0.space-y-6 < div.builder-type.builder-copy | "words"
+
+=== /coaching (8)
+  ×6 x=302 titleX=255 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-3 < div < div#radix-_R_aeatqd5raiqqlb_-content-sessions < div | "Dr. Sarah Kim"
+  ×1 x=412 titleX=255 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-3 < div < div#radix-_R_aeatqd5raiqqlb_-content-sessions < div | "(mentor)"
+  ×1 x=352 titleX=255 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-3 < div < div#radix-_R_aeatqd5raiqqlb_-content-sessions < div | "19:00"
+
+=== /dashboard (10)
+  ×1 x=261 titleX=248 | p.page-stat.text-xl < a.rounded-lg.border < div.grid.grid-cols-2 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.min-w-0.space-y-6 | "2"
+  ×1 x=261 titleX=248 | p.mt-0.5.text-xs < a.rounded-lg.border < div.grid.grid-cols-2 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.min-w-0.space-y-6 | "Messages"
+  ×1 x=1068 titleX=1058 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.space-y-4 < div.card-comfortable.space-y-2 < div.rounded-2xl.border | "Healthy"
+  ×7 x=1034 titleX=1058 | div.card-comfortable.px-0 < div.rounded-2xl.border < div.min-w-0.space-y-6 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Moderation console·Κονσόλα ελέγχου"
+
+=== /dashboard/founder (1)
+  ×1 x=256 titleX=248 | span.inline-flex.min-w-0 < span.inline-flex.items-center < li.flex.items-center < ul.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border | "In discussion"
+
+=== /dashboard/incubator (22)
+  ×4 x=261 titleX=248 | div.flex.flex-wrap < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Seed Accelerator · Autumn 2026"
+  ×1 x=483 titleX=248 | div.flex.flex-wrap < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Running"
+  ×4 x=261 titleX=248 | p.mt-0.5.text-xs < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "19 Sept – 12 Dec · 7 applications"
+  ×3 x=950 titleX=248 | div.mt-2.flex < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "5/8"
+  ×1 x=459 titleX=248 | div.flex.flex-wrap < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Running"
+  ×1 x=491 titleX=248 | div.flex.flex-wrap < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Upcoming"
+  ×1 x=941 titleX=248 | div.mt-2.flex < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "0/10"
+  ×1 x=474 titleX=248 | div.flex.flex-wrap < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Completed"
+  ×6 x=1034 titleX=1058 | div.card-comfortable.px-0 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Create program·Νέο πρόγραμμα"
+
+=== /dashboard/investor (5)
+  ×5 x=1034 titleX=1058 | div.card-comfortable.px-0 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Scout startups·Ανίχνευση startups"
+
+=== /dashboard/mentor (16)
+  ×10 x=261 titleX=248 | div.min-w-0.flex-1 < div.flex.items-center < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Sofia Alexiou"
+  ×6 x=1034 titleX=1058 | div.card-comfortable.px-0 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Set availability·Διαθεσιμότητα"
+
+=== /dashboard/provider (26)
+  ×2 x=261 titleX=248 | div.flex.items-start < a.rounded-lg.border < div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Seed-round financial model"
+  ×2 x=559 titleX=248 | div.flex.items-start < a.rounded-lg.border < div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Live"
+  ×2 x=261 titleX=248 | p.mt-1.text-xs < a.rounded-lg.border < div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "€1,800 fixed"
+  ×2 x=619 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Incorporation & shareholder agreementLive€1,200 fi"
+  ×4 x=632 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Incorporation & shareholder agreement"
+  ×1 x=930 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Live"
+  ×1 x=911 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Hidden"
+  ×6 x=1034 titleX=1058 | div.card-comfortable.px-0 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Services·Υπηρεσίες"
+  ×3 x=1070 titleX=1058 | figcaption.mb-1.flex < figure.rounded-lg.bg-muted/40 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | "Yannis Petrou"
+  ×3 x=1070 titleX=1058 | blockquote.text-sm.text-muted-foreground < figure.rounded-lg.bg-muted/40 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | "The model answered every question our lead asked b"
+
+=== /demo (1)
+  ×1 x=256 titleX=248 | span.inline-flex.min-w-0 < span.inline-flex.items-center < li.flex.items-center < ul.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border | "In discussion"
+
+=== /events (19)
+  ×2 x=317 titleX=265 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "Product Discovery Workshop"
+  ×1 x=462 titleX=265 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "Hybrid"
+  ×1 x=343 titleX=265 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "by Dr. Sarah Kim"
+  ×1 x=494 titleX=265 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "32 attending"
+  ×2 x=705 titleX=651 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "Founder Coffee — Thessaloniki"
+  ×1 x=715 titleX=651 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "In person"
+  ×1 x=731 titleX=651 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "by Nikos Andreou"
+  ×1 x=885 titleX=651 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "18 attending"
+  ×1 x=1093 titleX=1039 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "Shipping AI Features Without a Data Team"
+  ×1 x=1219 titleX=1039 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "Online"
+  ×1 x=1119 titleX=1039 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "by Marcus Chen"
+  ×1 x=1265 titleX=1039 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "156 attending"
+  ×2 x=317 titleX=269 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "SaaS Metrics Meetup #14"
+  ×1 x=327 titleX=269 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "In person"
+  ×1 x=343 titleX=269 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "by Elena Papadopoulos"
+  ×1 x=494 titleX=269 | div.card-comfortable.pt-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div#radix-_r_14_-content-upcoming < div < div.space-y-6.pb-10 | "63 attending"
+
+=== /events/create (6)
+  ×3 x=261 titleX=248 | span.inline-flex.min-w-0 < button.min-h-9.rounded-full < div.flex.flex-wrap < div.space-y-1.5 < div.card-comfortable.space-y-4 < div.rounded-2xl.border | "Networking"
+  ×1 x=251 titleX=248 | button.inline-flex.min-h-9 < div.inline-flex.rounded-xl < div.card-comfortable.space-y-4 < div.rounded-2xl.border < form.min-w-0.space-y-6 < div.grid.grid-cols-1 | "In person·Δια ζώσης"
+  ×1 x=263 titleX=248 | button.inline-flex.min-h-9 < div.inline-flex.rounded-xl < div.card-comfortable.space-y-4 < div.rounded-2xl.border < form.min-w-0.space-y-6 < div.grid.grid-cols-1 | "In person"
+  ×1 x=857 titleX=849 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.card-comfortable.space-y-3 < div.rounded-2xl.border < aside.min-w-0.space-y-4 < div.grid.grid-cols-1 | "Networking"
+
+=== /fundraising (4)
+  ×1 x=286 titleX=240 | span.inline-flex.min-w-0 < p.mt-0.5.text-sm < div.min-w-0 < div.mb-4.flex < div.card-comfortable.p-4 < div.border.border-border | "Valuation TBD"
+  ×1 x=287 titleX=240 | span.inline-flex.min-w-0 < span < div.flex.justify-between < div.mb-4.space-y-1.5 < div.card-comfortable.p-4 < div.border.border-border | "raised"
+  ×1 x=252 titleX=240 | div.mb-1.flex < div.rounded-xl.bg-background/60 < div.grid.grid-cols-2 < div.card-comfortable.p-4 < div.border.border-border < div.space-y-6 | "Investors"
+  ×1 x=252 titleX=240 | p.truncate.text-sm < div.rounded-xl.bg-background/60 < div.grid.grid-cols-2 < div.card-comfortable.p-4 < div.border.border-border < div.space-y-6 | "1"
+
+=== /investor/dashboard (5)
+  ×5 x=1034 titleX=1058 | div.card-comfortable.px-0 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Scout startups·Ανίχνευση startups"
+
+=== /investor/scouting (2)
+  ×2 x=882 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "PayStream"
+
+=== /invite (17)
+  ×10 x=240 titleX=248 | div.card-comfortable.px-4 < div.rounded-2xl.border < div.w-full.space-y-6 < div.space-y-5 | "ioanna@aegeanlab.example"
+  ×2 x=1251 titleX=248 | div.card-comfortable.px-4 < div.rounded-2xl.border < div.w-full.space-y-6 < div.space-y-5 | "Accepted"
+  ×2 x=1189 titleX=248 | div.card-comfortable.px-4 < div.rounded-2xl.border < div.w-full.space-y-6 < div.space-y-5 | "Pending"
+  ×2 x=1361 titleX=248 | div.card-comfortable.px-4 < div.rounded-2xl.border < div.w-full.space-y-6 < div.space-y-5 | ""
+  ×1 x=1296 titleX=248 | div.card-comfortable.px-4 < div.rounded-2xl.border < div.w-full.space-y-6 < div.space-y-5 | "Expired"
+
+=== /jobs (6)
+  ×6 x=1235 titleX=296 | div.card-comfortable.p-5 < div.rounded-2xl.border < section.space-y-3 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 | "View·Προβολή"
+
+=== /learning (6)
+  ×2 x=249 titleX=244 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-5 | "Guides"
+  ×1 x=831 titleX=826 | span.truncate < span.inline-flex.items-center < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-5 | "Courses"
+  ×2 x=831 titleX=826 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-5 | "Videos"
+  ×1 x=249 titleX=244 | span.truncate < span.inline-flex.items-center < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-5 | "Courses"
+
+=== /marketplace (1)
+  ×1 x=1083 titleX=240 | div.card-comfortable.flex < div.rounded-2xl.border < div.space-y-6.pb-10 < div.space-y-5 | "List Your Service·Καταχώριση υπηρεσίας"
+
+=== /members (12)
+  ×1 x=335 titleX=384 | div.card-comfortable.p-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-4.pb-10 < div.space-y-5 | "Elena Papadopoulos"
+  ×2 x=244 titleX=384 | div.card-comfortable.p-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-4.pb-10 < div.space-y-5 | "Connect·Σύνδεση"
+  ×2 x=532 titleX=384 | div.card-comfortable.p-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-4.pb-10 < div.space-y-5 | ""
+  ×1 x=749 titleX=772 | div.card-comfortable.p-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-4.pb-10 < div.space-y-5 | "Marcus Chen"
+  ×1 x=632 titleX=772 | div.card-comfortable.p-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-4.pb-10 < div.space-y-5 | "Connect·Σύνδεση"
+  ×1 x=920 titleX=772 | div.card-comfortable.p-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-4.pb-10 < div.space-y-5 | ""
+  ×1 x=1135 titleX=1160 | div.card-comfortable.p-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-4.pb-10 < div.space-y-5 | "Dr. Sarah Kim"
+  ×1 x=1020 titleX=1160 | div.card-comfortable.p-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-4.pb-10 < div.space-y-5 | "Connect·Σύνδεση"
+  ×1 x=1308 titleX=1160 | div.card-comfortable.p-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-4.pb-10 < div.space-y-5 | ""
+  ×1 x=355 titleX=384 | div.card-comfortable.p-5 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-4.pb-10 < div.space-y-5 | "Nikos Andreou"
+
+=== /mentor/availability (4)
+  ×1 x=261 titleX=248 | span < button.flex.min-h-10 < div.card-comfortable < div.rounded-2xl.border < div#radix-_r_31_-content-schedule < div | "Europe/Athens"
+  ×3 x=253 titleX=240 | span < button.flex.min-h-10 < div.flex.items-center < div.space-y-2 < div.card-comfortable.p-4 < div.rounded-2xl.border | "10:00 AM"
+
+=== /mentor/dashboard (16)
+  ×10 x=261 titleX=248 | div.min-w-0.flex-1 < div.flex.items-center < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Sofia Alexiou"
+  ×6 x=1034 titleX=1058 | div.card-comfortable.px-0 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Set availability·Διαθεσιμότητα"
+
+=== /mentor/earnings (16)
+  ×8 x=290 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div#radix-_r_24_-content-transactions < div < div.space-y-6 < div.space-y-5 | "Sofia Alexiou"
+  ×2 x=1194 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div#radix-_r_24_-content-transactions < div < div.space-y-6 < div.space-y-5 | "$120.00"
+  ×3 x=1139 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div#radix-_r_24_-content-transactions < div < div.space-y-6 < div.space-y-5 | "Paid"
+  ×2 x=1203 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div#radix-_r_24_-content-transactions < div < div.space-y-6 < div.space-y-5 | "$90.00"
+  ×1 x=1181 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div#radix-_r_24_-content-transactions < div < div.space-y-6 < div.space-y-5 | "Pending"
+
+=== /mentor/profile (3)
+  ×1 x=261 titleX=248 | span < button#yearsExp < div.space-y-2 < div.grid.grid-cols-1 < div.card-comfortable.space-y-4 < div.rounded-2xl.border | "5 years"
+  ×2 x=261 titleX=248 | div < div.flex.items-center < div.card-comfortable.space-y-4 < div.rounded-2xl.border < div#radix-_r_1s_-content-basics < div | "Accepting New Mentees"
+
+=== /mentor/sessions (21)
+  ×2 x=302 titleX=257 | div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_22_-content-upcoming < div < div.space-y-6 < div.space-y-5 | "Pricing with Sofia"
+  ×8 x=302 titleX=253 | div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_22_-content-upcoming < div < div.space-y-6 < div.space-y-5 | "Sofia Alexiou"
+  ×1 x=408 titleX=253 | div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_22_-content-upcoming < div < div.space-y-6 < div.space-y-5 | "(mentee)"
+  ×1 x=352 titleX=253 | div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_22_-content-upcoming < div < div.space-y-6 < div.space-y-5 | "15:00"
+  ×7 x=302 titleX=254 | div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_22_-content-upcoming < div < div.space-y-6 < div.space-y-5 | "Giorgos Vlachos"
+  ×1 x=434 titleX=254 | div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_22_-content-upcoming < div < div.space-y-6 < div.space-y-5 | "(mentee)"
+  ×1 x=352 titleX=254 | div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_22_-content-upcoming < div < div.space-y-6 < div.space-y-5 | "14:00"
+
+=== /mentoring (3)
+  ×2 x=254 titleX=245 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.items-center < div.flex.items-center < div.card-comfortable.p-5 < div.rounded-2xl.border | "Free"
+  ×1 x=836 titleX=827 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.items-center < div.flex.items-center < div.card-comfortable.p-5 < div.rounded-2xl.border | "Free"
+
+=== /messages (14)
+  ×2 x=243 titleX=230 | span.min-w-0 < button.flex.min-w-0 < div.min-w-0.shrink-0 < div.grid.h-full < div.flex.min-h-0 < div.flex.h-full | "Ask AI"
+  ×1 x=410 titleX=230 | div.grid.h-full < div.flex.min-h-0 < div.flex.h-full | "Intros"
+  ×1 x=226 titleX=230 | div.grid.h-full < div.flex.min-h-0 < div.flex.h-full | ""
+  ×2 x=234 titleX=230 | div.grid.h-full < div.flex.min-h-0 < div.flex.h-full | "Pinned"
+  ×2 x=222 titleX=230 | div.grid.h-full < div.flex.min-h-0 < div.flex.h-full | ""
+  ×1 x=302 titleX=230 | div.grid.h-full < div.flex.min-h-0 < div.flex.h-full | "Elena Papadopoulos"
+  ×1 x=571 titleX=230 | div.grid.h-full < div.flex.min-h-0 < div.flex.h-full | "Fri"
+  ×3 x=285 titleX=230 | div.grid.h-full < div.flex.min-h-0 < div.flex.h-full | "Want to compare notes on the research canvas this "
+  ×1 x=563 titleX=230 | div.grid.h-full < div.flex.min-h-0 < div.flex.h-full | "Thu"
+
+=== /milestones/new (5)
+  ×5 x=261 titleX=248 | span.inline-flex.min-w-0 < button.rounded-full.border < div.flex.flex-wrap < div.space-y-1.5 < div.grid.grid-cols-2 < form.space-y-5 | "Product"
+
+=== /onboarding (6)
+  ×1 x=265 titleX=248 | div.mb-2.flex < div.rounded-xl.border < div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | "Looking for"
+  ×1 x=269 titleX=248 | p.flex.flex-wrap < div.rounded-xl.border < div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | "Cofounder"
+  ×1 x=424 titleX=248 | p.flex.flex-wrap < div.rounded-xl.border < div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | "Mentor"
+  ×1 x=261 titleX=248 | div.flex.items-center < div.space-y-1.5.bg-secondary/20 < div.grid.grid-cols-1 < div.card-comfortable.pt-5 < div.rounded-2xl.border < div.space-y-6 | "Product"
+  ×1 x=698 titleX=248 | div.flex.items-center < div.space-y-1.5.bg-secondary/20 < div.grid.grid-cols-1 < div.card-comfortable.pt-5 < div.rounded-2xl.border < div.space-y-6 | "advanced"
+  ×1 x=651 titleX=248 | a.inline-flex.items-center < div.flex.flex-col < div.card-comfortable.pt-5 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | " Add First Item·Προσθήκη πρώτου στοιχείου"
+
+=== /opportunities (56)
+  ×2 x=248 titleX=240 | span.inline-flex.min-w-0 < span.rounded-full.bg-muted < div.flex.flex-wrap < header.space-y-2 < article.space-y-4 < div.card-comfortable.p-4 | "Co-founder seat"
+  ×2 x=253 titleX=240 | p.text-xs.font-medium < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable.p-4 < div.rounded-2xl.border < div.grid.grid-cols-1 | "What is offered"
+  ×2 x=253 titleX=240 | p.text-sm.font-semibold < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable.p-4 < div.rounded-2xl.border < div.grid.grid-cols-1 | "Co-founder, commercial"
+  ×2 x=253 titleX=240 | p.text-sm.tabular-nums < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable.p-4 < div.rounded-2xl.border < div.grid.grid-cols-1 | "8–12% · 40 h/week"
+  ×1 x=830 titleX=822 | span.inline-flex.min-w-0 < span.rounded-full.bg-muted < div.flex.flex-wrap < header.space-y-2 < article.space-y-4 < div.card-comfortable.p-4 | "Investor introduction"
+  ×1 x=835 titleX=822 | p.text-xs.font-medium < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable.p-4 < div.rounded-2xl.border < div.grid.grid-cols-1 | "What is offered"
+  ×1 x=835 titleX=822 | p.text-sm.font-semibold < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable.p-4 < div.rounded-2xl.border < div.grid.grid-cols-1 | "Lead angel or advisor"
+  ×1 x=835 titleX=822 | p.text-sm.tabular-nums < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable.p-4 < div.rounded-2xl.border < div.grid.grid-cols-1 | "Pre-seed via SAFE · 2 h/week"
+  ×1 x=831 titleX=822 | span.inline-flex.min-w-0 < li.rounded-full.border < ul.flex.flex-wrap < article.space-y-4 < div.card-comfortable.p-4 < div.rounded-2xl.border | "Advisory"
+  ×1 x=249 titleX=240 | span.inline-flex.min-w-0 < li.rounded-full.border < ul.flex.flex-wrap < article.space-y-4 < div.card-comfortable.p-4 < div.rounded-2xl.border | "Part time"
+  ×24 x=244 titleX=289 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 | "Design partner signed, 14 interviews done, no engi"
+  ×1 x=323 titleX=289 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 | "logistics"
+  ×1 x=390 titleX=289 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 | "saas"
+  ×8 x=523 titleX=289 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 | "Save·Αποθήκευση"
+  ×1 x=332 titleX=289 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 | "leadership"
+  ×2 x=328 titleX=289 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 | "pre-seed"
+  ×1 x=329 titleX=289 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 | "b2b"
+  ×1 x=294 titleX=289 | span.truncate < span.inline-flex.items-center < div.mt-1.flex < div < div.flex.items-start < div.flex.flex-col | "Mentorship"
+  ×1 x=274 titleX=289 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 | "mentorship"
+  ×1 x=313 titleX=289 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 | "pre-seed"
+  ×1 x=287 titleX=289 | div.card-comfortable.p-4 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 | "advisory"
+
+=== /org/analytics (5)
+  ×2 x=867 titleX=855 | dt.text-xs.text-muted-foreground < div.rounded-lg.bg-muted/40 < dl.grid.grid-cols-2 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.grid.grid-cols-1 | "Active mentors"
+  ×2 x=867 titleX=855 | dd.mt-1.text-lg < div.rounded-lg.bg-muted/40 < dl.grid.grid-cols-2 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.grid.grid-cols-1 | "3 of 4"
+  ×1 x=867 titleX=855 | dd.text-xs.text-muted-foreground < div.rounded-lg.bg-muted/40 < dl.grid.grid-cols-2 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.grid.grid-cols-1 | "29 rated sessions"
+
+=== /org/dashboard (22)
+  ×4 x=261 titleX=248 | div.flex.flex-wrap < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Seed Accelerator · Autumn 2026"
+  ×1 x=483 titleX=248 | div.flex.flex-wrap < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Running"
+  ×4 x=261 titleX=248 | p.mt-0.5.text-xs < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "19 Sept – 12 Dec · 7 applications"
+  ×3 x=950 titleX=248 | div.mt-2.flex < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "5/8"
+  ×1 x=459 titleX=248 | div.flex.flex-wrap < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Running"
+  ×1 x=491 titleX=248 | div.flex.flex-wrap < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Upcoming"
+  ×1 x=941 titleX=248 | div.mt-2.flex < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "0/10"
+  ×1 x=474 titleX=248 | div.flex.flex-wrap < a.block.rounded-lg < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Completed"
+  ×6 x=1034 titleX=1058 | div.card-comfortable.px-0 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Create program·Νέο πρόγραμμα"
+
+=== /org/events (4)
+  ×3 x=250 titleX=240 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 | "Workshop"
+  ×1 x=250 titleX=240 | span.truncate < span.inline-flex.items-center < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 | "Demo Day"
+
+=== /org/settings (1)
+  ×1 x=261 titleX=248 | span < button#country < div.space-y-2 < div.grid.grid-cols-1 < div.card-comfortable.space-y-4 < div.rounded-2xl.border | "Greece"
+
+=== /profile (6)
+  ×1 x=265 titleX=248 | div.mb-2.flex < div.rounded-xl.border < div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | "Looking for"
+  ×1 x=269 titleX=248 | p.flex.flex-wrap < div.rounded-xl.border < div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | "Cofounder"
+  ×1 x=424 titleX=248 | p.flex.flex-wrap < div.rounded-xl.border < div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | "Mentor"
+  ×1 x=261 titleX=248 | div.flex.items-center < div.space-y-1.5.bg-secondary/20 < div.grid.grid-cols-1 < div.card-comfortable.pt-5 < div.rounded-2xl.border < div.space-y-6 | "Product"
+  ×1 x=698 titleX=248 | div.flex.items-center < div.space-y-1.5.bg-secondary/20 < div.grid.grid-cols-1 < div.card-comfortable.pt-5 < div.rounded-2xl.border < div.space-y-6 | "advanced"
+  ×1 x=651 titleX=248 | a.inline-flex.items-center < div.flex.flex-col < div.card-comfortable.pt-5 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | " Add First Item·Προσθήκη πρώτου στοιχείου"
+
+=== /profile/edit (2)
+  ×2 x=656 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div#radix-_r_26_-content-basic < div.w-full < div.space-y-6 < div.grid.grid-cols-1 | "Timezone"
+
+=== /projects (6)
+  ×1 x=257 titleX=247 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.min-w-0.flex-1 < div.flex.items-start < div.flex.flex-col | "Building"
+  ×1 x=255 titleX=247 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.min-w-0.flex-1 < div.flex.items-start < div.flex.flex-col | "In discussion"
+  ×1 x=257 titleX=247 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.space-y-1.5 < div.border-t.border-border < div.card-comfortable.flex | "Complementary cofounder — technical + commercial p"
+  ×1 x=645 titleX=635 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.min-w-0.flex-1 < div.flex.items-start < div.flex.flex-col | "Validating"
+  ×1 x=1033 titleX=1023 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.min-w-0.flex-1 < div.flex.items-start < div.flex.flex-col | "Idea stage"
+  ×1 x=1031 titleX=1023 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.min-w-0.flex-1 < div.flex.items-start < div.flex.flex-col | "In discussion"
+
+=== /projects/create (1)
+  ×1 x=857 titleX=849 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.border.border-border < aside.hidden.min-w-0 | "Idea stage"
+
+=== /provider/analytics (1)
+  ×1 x=282 titleX=248 | span.text-xs.text-muted-foreground < div.flex.flex-1 < div.flex.h-44 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1 | "Mon"
+
+=== /provider/dashboard (26)
+  ×2 x=261 titleX=248 | div.flex.items-start < a.rounded-lg.border < div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Seed-round financial model"
+  ×2 x=559 titleX=248 | div.flex.items-start < a.rounded-lg.border < div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "Live"
+  ×2 x=261 titleX=248 | p.mt-1.text-xs < a.rounded-lg.border < div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "€1,800 fixed"
+  ×2 x=619 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Incorporation & shareholder agreementLive€1,200 fi"
+  ×4 x=632 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Incorporation & shareholder agreement"
+  ×1 x=930 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Live"
+  ×1 x=911 titleX=248 | div.card-comfortable.grid < div.rounded-2xl.border < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Hidden"
+  ×6 x=1034 titleX=1058 | div.card-comfortable.px-0 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 < div.space-y-6 < div.space-y-5 | "Services·Υπηρεσίες"
+  ×3 x=1070 titleX=1058 | figcaption.mb-1.flex < figure.rounded-lg.bg-muted/40 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | "Yannis Petrou"
+  ×3 x=1070 titleX=1058 | blockquote.text-sm.text-muted-foreground < figure.rounded-lg.bg-muted/40 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | "The model answered every question our lead asked b"
+
+=== /provider/profile (4)
+  ×1 x=261 titleX=248 | span < button#serviceType < div.space-y-2 < div.card-comfortable.space-y-4 < div.rounded-2xl.border < div#radix-_r_15_-content-basics | "Business Consulting"
+  ×1 x=261 titleX=248 | span < button#yearsInBusiness < div.space-y-2 < div.grid.grid-cols-1 < div.card-comfortable.space-y-4 < div.rounded-2xl.border | "3 years"
+  ×2 x=261 titleX=248 | div < div.flex.items-center < div.card-comfortable.space-y-4 < div.rounded-2xl.border < div#radix-_r_15_-content-basics < div | "Accepting New Clients"
+
+=== /provider/projects (1)
+  ×1 x=354 titleX=295 | time < span.flex.items-center < div.flex.flex-wrap < div.flex-1.min-w-0 < div.flex.gap-4 < div.card-comfortable.p-4 | "2w ago"
+
+=== /provider/services (4)
+  ×4 x=250 titleX=240 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 | "Finance"
+
+=== /readiness (62)
+  ×2 x=368 titleX=346 | div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5 | ""
+  ×2 x=450 titleX=346 | div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5 | ""
+  ×2 x=287 titleX=346 | div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5 | ""
+  ×4 x=530 titleX=346 | div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5 | "Next to tick·Επόμενο προς ολοκλήρωσηPricing strate"
+  ×1 x=268 titleX=244 | span.inline-flex.min-w-0 < p.mt-1.5.text-xs < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1 | "criteria completed"
+  ×4 x=254 titleX=244 | span.min-w-0.flex-1 < button.flex.min-h-11 < div.mt-4.mb-4 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team | "Co-founder identified"
+  ×1 x=256 titleX=244 | p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1 | "Recommendation"
+  ×3 x=256 titleX=244 | p.text-xs.font-medium < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1 | ":"
+  ×1 x=537 titleX=244 | p.text-xs.font-medium < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1 | "· 15%"
+  ×1 x=256 titleX=244 | p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1 | "Add an advisor with proven domain expertise to str"
+  ×1 x=256 titleX=244 | button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1 | "Ask AI"
+  ×1 x=852 titleX=828 | span.inline-flex.min-w-0 < p.mt-1.5.text-xs < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1 | "criteria completed"
+  ×4 x=838 titleX=828 | span.min-w-0.flex-1 < button.flex.min-h-11 < div.mt-4.mb-4 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market | "Target market defined"
+  ×1 x=840 titleX=828 | p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1 | "Recommendation"
+  ×3 x=840 titleX=828 | p.text-xs.font-medium < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1 | ":"
+  ×1 x=1157 titleX=828 | p.text-xs.font-medium < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1 | "· 20%"
+  ×1 x=840 titleX=828 | p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1 | "Complete a competitive landscape analysis and cond"
+  ×1 x=840 titleX=828 | button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1 | "Ask AI"
+  ×1 x=268 titleX=244 | span.inline-flex.min-w-0 < p.mt-1.5.text-xs < div.flex.h-full < div.card-comfortable.h-full < div#dim-product < div.grid.grid-cols-1 | "criteria completed"
+  ×4 x=254 titleX=244 | span.min-w-0.flex-1 < button.flex.min-h-11 < div.mt-4.mb-4 < div.flex.h-full < div.card-comfortable.h-full < div#dim-product | "Problem validated with users"
+  ×1 x=279 titleX=244 | p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-product < div.grid.grid-cols-1 | "What is left"
+  ×1 x=256 titleX=244 | p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-product < div.grid.grid-cols-1 | "Product roadmap documented"
+  ×1 x=256 titleX=244 | button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-product < div.grid.grid-cols-1 | "Ask AI"
+  ×1 x=838 titleX=828 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-business | "Needs work"
+  ×1 x=852 titleX=828 | span.inline-flex.min-w-0 < p.mt-1.5.text-xs < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1 | "criteria completed"
+  ×4 x=838 titleX=828 | span.min-w-0.flex-1 < button.flex.min-h-11 < div.mt-4.mb-4 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business | "Revenue model defined"
+  ×1 x=840 titleX=828 | p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1 | "Recommendation"
+  ×2 x=840 titleX=828 | p.text-xs.font-medium < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1 | ":"
+  ×1 x=1092 titleX=828 | p.text-xs.font-medium < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1 | "Pricing strategy validated"
+  ×1 x=998 titleX=828 | p.text-xs.font-medium < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1 | "· 25%"
+  ×1 x=840 titleX=828 | p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1 | "Validate your pricing with at least 5 potential cu"
+  ×1 x=840 titleX=828 | button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1 | "Ask AI"
+  ×1 x=254 titleX=244 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding | "Needs work"
+  ×1 x=268 titleX=244 | span.inline-flex.min-w-0 < p.mt-1.5.text-xs < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding < div.grid.grid-cols-1 | "criteria completed"
+  ×4 x=254 titleX=244 | span.min-w-0.flex-1 < button.flex.min-h-11 < div.mt-4.mb-4 < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding | "Pitch deck ready (10-12 slides)"
+  ×1 x=852 titleX=828 | span.inline-flex.min-w-0 < p.mt-1.5.text-xs < div.flex.h-full < div.card-comfortable.h-full < div#dim-execution < div.grid.grid-cols-1 | "criteria completed"
+
+=== /reputation (3)
+  ×1 x=990 titleX=977 | dt.text-xs.text-muted-foreground < div.rounded-xl.border < dl.grid.grid-cols-2 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1 | "Current"
+  ×1 x=990 titleX=977 | dd.page-stat.mt-1 < div.rounded-xl.border < dl.grid.grid-cols-2 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1 | "4"
+  ×1 x=1006 titleX=977 | dd.page-stat.mt-1 < div.rounded-xl.border < dl.grid.grid-cols-2 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1 | "days"
+
+=== /research (2)
+  ×1 x=249 titleX=244 | span.inline-flex.min-w-0 < span.rounded-md.bg-muted/70 < div.flex.flex-wrap < div.card-comfortable.flex < div.rounded-2xl.border < div.grid.gap-5 | "gtm"
+  ×1 x=256 titleX=244 | span.inline-flex.min-w-0 < span < div.mt-auto.flex < div.card-comfortable.flex < div.rounded-2xl.border < div.grid.gap-5 | "items"
+
+=== /research/canvas (2)
+  ×1 x=249 titleX=244 | span.inline-flex.min-w-0 < span.rounded-md.bg-muted/70 < div.flex.flex-wrap < div.card-comfortable.flex < div.rounded-2xl.border < div.grid.gap-5 | "gtm"
+  ×1 x=256 titleX=244 | span.inline-flex.min-w-0 < span < div.mt-auto.flex < div.card-comfortable.flex < div.rounded-2xl.border < div.grid.gap-5 | "items"
+
+=== /settings (33)
+  ×1 x=261 titleX=248 | span.inline-flex.min-w-0 < button.inline-flex.min-h-10 < div.flex.flex-wrap < fieldset.mt-5.space-y-2 < div.card-comfortable.pt-4 < div#language | "Both languages"
+  ×1 x=265 titleX=248 | p.font-medium.text-foreground < div.rounded-xl.border < div.card-comfortable.space-y-4 < div.rounded-2xl.border < div.min-w-0.space-y-6 < div.grid.grid-cols-1 | "Upgrade to Premium to unlock advanced features."
+  ×1 x=265 titleX=248 | p.mt-1.text-muted-foreground < div.rounded-xl.border < div.card-comfortable.space-y-4 < div.rounded-2xl.border < div.min-w-0.space-y-6 < div.grid.grid-cols-1 | "Mentor booking payments, file attachments, and adv"
+  ×4 x=299 titleX=248 | div.flex.items-center < div.flex.items-center < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.min-w-0.space-y-6 < div.grid.grid-cols-1 | "Google"
+  ×18 x=867 titleX=855 | div.flex.min-w-0 < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border < div.min-w-0.space-y-6 < div.grid.grid-cols-1 | "Messages"
+  ×2 x=872 titleX=855 | div.flex.min-w-0 < div.flex.flex-col < div.card-comfortable.space-y-4 < div.rounded-2xl.border < div.min-w-0.space-y-6 < div.grid.grid-cols-1 | "Two-factor authentication is disabled"
+  ×2 x=906 titleX=855 | div.flex.min-w-0 < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border < div.min-w-0.space-y-6 < div.grid.grid-cols-1 | "Appear in search"
+  ×4 x=265 titleX=248 | div < div.rounded-xl.border < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-6.pb-10 < div.space-y-5 | "Export your data"
+
+=== /settings/ai (9)
+  ×1 x=285 titleX=248 | span < button#preferredModel < div.space-y-2 < div.grid.grid-cols-1 < div.card-comfortable.space-y-6 < div.rounded-2xl.border | "Built-in copilot · no model service"
+  ×1 x=261 titleX=248 | span < button#prefs < div.space-y-2 < div.card-comfortable.space-y-6 < div.rounded-2xl.border < div.grid.grid-cols-1 | "0.7 - Creative (Default)"
+  ×1 x=261 titleX=248 | span < button#prefs-2 < div.space-y-2 < div.card-comfortable.space-y-6 < div.rounded-2xl.border < div.grid.grid-cols-1 | "Long (2048 tokens)"
+  ×2 x=265 titleX=248 | span.font-medium < button.flex.flex-col < div.grid.grid-cols-1 < div.card-comfortable.space-y-6 < div.rounded-2xl.border < div.grid.grid-cols-1 | "Concise"
+  ×2 x=265 titleX=248 | span.text-sm.text-muted-foreground < button.flex.flex-col < div.grid.grid-cols-1 < div.card-comfortable.space-y-6 < div.rounded-2xl.border < div.grid.grid-cols-1 | "Short, to-the-point answers"
+  ×2 x=261 titleX=248 | div.min-w-0 < div.flex.items-start < div.grid.grid-cols-1 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1 | "CoFounderBay Assistant"
+
+=== /settings/billing (1)
+  ×1 x=266 titleX=248 | span.inline-flex.min-w-0 < p.text-sm.text-muted-foreground < div < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.grid.grid-cols-1 | "/mo"
+
+=== /settings/data-export (18)
+  ×6 x=260 titleX=248 | input.sr-only < label.flex.cursor-pointer < div.mb-6.space-y-3 < div.card-comfortable < div.rounded-2xl.border < div.w-full.space-y-6 | ""
+  ×12 x=261 titleX=248 | div.min-w-0.flex-1 < label.flex.cursor-pointer < div.mb-6.space-y-3 < div.card-comfortable < div.rounded-2xl.border < div.w-full.space-y-6 | "Profile information"
+
+=== /settings/notifications (32)
+  ×1 x=1244 titleX=248 | div.card-comfortable.divide-y < div.rounded-2xl.border < div.space-y-6.pb-10 < div.space-y-5 | "Weekly·Εβδομαδιαία"
+  ×1 x=1257 titleX=248 | div.card-comfortable.divide-y < div.rounded-2xl.border < div.space-y-6.pb-10 < div.space-y-5 | "Weekly"
+  ×30 x=283 titleX=248 | div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6.pb-10 < div.space-y-5 | "New messages"
+
+=== /tenant/analytics (6)
+  ×2 x=260 titleX=248 | dt.text-xs.text-muted-foreground < div.rounded-lg.bg-muted/40 < dl.grid.grid-cols-2 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.grid.grid-cols-1 | "Sessions held"
+  ×2 x=260 titleX=248 | dd.mt-1.text-lg < div.rounded-lg.bg-muted/40 < dl.grid.grid-cols-2 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.grid.grid-cols-1 | "17"
+  ×2 x=260 titleX=248 | dd.text-xs.text-muted-foreground < div.rounded-lg.bg-muted/40 < dl.grid.grid-cols-2 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.grid.grid-cols-1 | "last 30 days"
+
+=== /tenant/branding (4)
+  ×1 x=269 titleX=248 | p.text-sm.font-medium < div.rounded-lg.border < div.card-comfortable.space-y-6 < div.rounded-2xl.border < div#radix-_r_2r_-content-colors < div.space-y-6 | "Live Preview"
+  ×1 x=269 titleX=248 | div.flex.flex-wrap < div.rounded-lg.border < div.card-comfortable.space-y-6 < div.rounded-2xl.border < div#radix-_r_2r_-content-colors < div.space-y-6 | "Primary·Κύριο"
+  ×1 x=399 titleX=248 | div.flex.flex-wrap < div.rounded-lg.border < div.card-comfortable.space-y-6 < div.rounded-2xl.border < div#radix-_r_2r_-content-colors < div.space-y-6 | "Secondary·Δευτερεύον"
+  ×1 x=588 titleX=248 | div.flex.flex-wrap < div.rounded-lg.border < div.card-comfortable.space-y-6 < div.rounded-2xl.border < div#radix-_r_2r_-content-colors < div.space-y-6 | "Accent·Έμφαση"
+
+=== /tenant/dashboard (11)
+  ×3 x=261 titleX=248 | div.mb-2.flex < a.block.rounded-lg < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-6 | "Seed Accelerator · Autumn 2026"
+  ×1 x=525 titleX=248 | div.mb-2.flex < a.block.rounded-lg < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-6 | "Running"
+  ×2 x=812 titleX=248 | div.mb-2.flex < a.block.rounded-lg < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-6 | "5/8 places · 7 applications"
+  ×1 x=497 titleX=248 | div.mb-2.flex < a.block.rounded-lg < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-6 | "Running"
+  ×1 x=534 titleX=248 | div.mb-2.flex < a.block.rounded-lg < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-6 | "Upcoming"
+  ×1 x=804 titleX=248 | div.mb-2.flex < a.block.rounded-lg < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-6 | "0/10 places · 5 applications"
+  ×1 x=261 titleX=248 | p.flex.items-center < div.rounded-lg.border < div.grid.grid-cols-1 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6 | "9 Oct 2026 · Event"
+  ×1 x=261 titleX=248 | p.mt-1.text-sm < div.rounded-lg.border < div.grid.grid-cols-1 < div.card-comfortable.space-y-2 < div.rounded-2xl.border < div.space-y-6 | "Athens Founders Pitch Night"
+
+=== /tenant/domains (7)
+  ×1 x=385 titleX=248 | code.bg-muted.px-1 < p.page-lead.text-muted-foreground < div.flex.flex-col < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "cofounderbay.com"
+  ×1 x=407 titleX=248 | code.bg-muted.px-1 < p.page-lead.text-muted-foreground < div.flex.flex-col < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "founders.youruni.edu"
+  ×1 x=261 titleX=248 | p.font-medium.text-foreground < div.rounded-lg.bg-muted/40 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "How it works:"
+  ×4 x=278 titleX=248 | ol.list-decimal.list-inside < div.rounded-lg.bg-muted/40 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Add your domain below — we generate DNS records fo"
+
+=== /tenant/members (16)
+  ×16 x=303 titleX=295 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 | "Owner"
+
+=== /tenant/programs (4)
+  ×3 x=250 titleX=240 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.flex.flex-wrap < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 | "Accelerator"
+  ×1 x=250 titleX=240 | span.truncate < span.inline-flex.items-center < div.flex.flex-wrap < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 | "Bootcamp"
+
+=== /tenant/settings (3)
+  ×1 x=261 titleX=248 | span < button#timezone < div.space-y-2 < div.card-comfortable.space-y-4 < div.rounded-2xl.border < div#radix-_r_11_-content-general | "UTC"
+  ×1 x=261 titleX=248 | span < button#language < div.space-y-2 < div.card-comfortable.space-y-4 < div.rounded-2xl.border < div#radix-_r_11_-content-general | "English"
+  ×1 x=261 titleX=248 | span < button#currency < div.space-y-2 < div.card-comfortable.space-y-4 < div.rounded-2xl.border < div#radix-_r_11_-content-general | "EUR (€)"
+
+=== /test-onboarding (5)
+  ×5 x=952 titleX=414 | div.card-comfortable.p-6 < div.rounded-2xl.border < div.space-y-4.mb-8 < div.max-w-4xl.mx-auto < div.min-h-screen.bg-gradient-to-br | "Test·Έλεγχος"
+
+=== /themes/alliance (16)
+  ×4 x=716 titleX=312 | div.card-comfortable.p-6 < div.rounded-2xl.border < div.lg:col-span-2.space-y-6 < div.grid.grid-cols-1 < div.max-w-7xl.mx-auto < div.min-h-screen.bg-gradient-to-br | "Connect·Σύνδεση"
+  ×4 x=246 titleX=312 | div.card-comfortable.p-6 < div.rounded-2xl.border < div.lg:col-span-2.space-y-6 < div.grid.grid-cols-1 < div.max-w-7xl.mx-auto < div.min-h-screen.bg-gradient-to-br | "Like·Μου αρέσει"
+  ×4 x=451 titleX=312 | div.card-comfortable.p-6 < div.rounded-2xl.border < div.lg:col-span-2.space-y-6 < div.grid.grid-cols-1 < div.max-w-7xl.mx-auto < div.min-h-screen.bg-gradient-to-br | "Message·Μήνυμα"
+  ×4 x=655 titleX=312 | div.card-comfortable.p-6 < div.rounded-2xl.border < div.lg:col-span-2.space-y-6 < div.grid.grid-cols-1 < div.max-w-7xl.mx-auto < div.min-h-screen.bg-gradient-to-br | "Share·Κοινοποίηση"
+
+=== /projects/1 (10)
+  ×1 x=256 titleX=248 | span.inline-flex.min-w-0 < span.rounded-full.bg-muted < div.flex.flex-wrap < header.space-y-2 < article.space-y-4 < div.card-comfortable | "Co-founder seat"
+  ×1 x=261 titleX=248 | p.text-xs.font-medium < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div#radix-_R_fclritqd5raiqqlb_-content-overview | "What is offered"
+  ×1 x=261 titleX=248 | p.text-sm.font-semibold < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div#radix-_R_fclritqd5raiqqlb_-content-overview | "Co-founder, commercial"
+  ×1 x=261 titleX=248 | p.text-sm.tabular-nums < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div#radix-_R_fclritqd5raiqqlb_-content-overview | "8–12% · 40 h/week"
+  ×1 x=853 titleX=248 | div.gap-1.5.card-comfortable < div.border.border-border < div#radix-_R_fclritqd5raiqqlb_-content-overview < div.space-y-4 < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "1"
+  ×1 x=873 titleX=248 | div.gap-1.5.card-comfortable < div.border.border-border < div#radix-_R_fclritqd5raiqqlb_-content-overview < div.space-y-4 < div.space-y-6.lg:col-span-2 < div.grid.grid-cols-1 | "positions"
+  ×2 x=260 titleX=248 | div.mb-2.flex < div.rounded-xl.bg-secondary/30 < div.card-comfortable.space-y-4 < div.border.border-border < div#radix-_R_fclritqd5raiqqlb_-content-overview < div.space-y-4 | "Complementary cofounder — technical + commercial p"
+  ×1 x=888 titleX=248 | div.mb-2.flex < div.rounded-xl.bg-secondary/30 < div.card-comfortable.space-y-4 < div.border.border-border < div#radix-_R_fclritqd5raiqqlb_-content-overview < div.space-y-4 | "Apply·Αίτηση"
+  ×1 x=260 titleX=248 | div.flex.items-center < div.rounded-xl.bg-secondary/30 < div.card-comfortable.space-y-4 < div.border.border-border < div#radix-_R_fclritqd5raiqqlb_-content-overview < div.space-y-4 | "Full-time"
+
+=== /matches/user-elena (5)
+  ×1 x=1075 titleX=369 | div.flex.items-center < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "EP"
+  ×1 x=1033 titleX=369 | div.flex.items-center < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "Elena Papadopoulos"
+  ×1 x=643 titleX=369 | div.mt-5.flex < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 | "96% confidence"
+  ×2 x=1024 titleX=1011 | div.min-w-0 < div.flex.gap-3 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-6 < div.grid.grid-cols-1 | "Different time zones"
+
+=== /profiles/user-elena (5)
+  ×3 x=99 titleX=149 | div.card-comfortable.flex < div.rounded-2xl.border < div.space-y-4 < div.grid.grid-cols-1 < div.space-y-5 | "Connect·Σύνδεση"
+  ×1 x=185 titleX=107 | div.card-comfortable.flex < div.rounded-2xl.border < div.space-y-4 < div.grid.grid-cols-1 < div.space-y-5 | "Growth"
+  ×1 x=261 titleX=107 | div.card-comfortable.flex < div.rounded-2xl.border < div.space-y-4 < div.grid.grid-cols-1 < div.space-y-5 | "Fundraising"
+
+=== /events/ev-office-hours (1)
+  ×1 x=1125 titleX=1115 | span.inline-flex.min-w-0 < span.inline-flex.items-center < div.card-comfortable.space-y-3 < div.rounded-2xl.border < aside.space-y-4 < div.grid.grid-cols-1 | "This event has ended"
+
+=== /startups/deal-harbor (2)
+  ×1 x=120 titleX=107 | span.inline-flex.min-w-0 < button.rounded-full.border < li < ol.flex.flex-wrap < div.card-comfortable < div.rounded-2xl.border | "Discovered"
+  ×1 x=119 titleX=107 | span.inline-flex.min-w-0 < button.rounded-full.bg-primary < li < ol.flex.flex-wrap < div.card-comfortable < div.rounded-2xl.border | "Negotiating"
+
+=== /admin/user-detail/preview-demo-user (4)
+  ×4 x=107 titleX=152 | div.card-comfortable.flex < div.rounded-2xl.border < div.grid.grid-cols-1 < div.space-y-5 | "Admin"

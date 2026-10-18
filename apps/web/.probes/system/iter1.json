@@ -1,0 +1,2419 @@
+{
+  "generatedAt": "2026-10-08T01:10:09.512Z",
+  "routes": 5,
+  "totals": {
+    "cardInset": 133,
+    "maxColors": 25,
+    "avgColors": 19,
+    "radiusTypes": 4,
+    "typeSmall": 0,
+    "typeBig": 0,
+    "typeCards": 0,
+    "iconOnlyUnnamed": 0,
+    "iconOnlyTotal": 43,
+    "emptiesNoMove": 0,
+    "emptiesTotal": 0
+  },
+  "perRoute": [
+    {
+      "route": "/readiness",
+      "colorExempt": false,
+      "colorCount": 25,
+      "cardInset": [
+        {
+          "card": "rounded-2xl border-border text-card-foreground",
+          "path": "div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5",
+          "leaf": "a.absolute.h-3 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0",
+          "x": 372,
+          "introX": 223,
+          "titleX": 350,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border-border text-card-foreground",
+          "path": "div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5",
+          "leaf": "a.absolute.h-3 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0",
+          "x": 454,
+          "introX": 223,
+          "titleX": 350,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border-border text-card-foreground",
+          "path": "div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5",
+          "leaf": "a.absolute.h-3 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0",
+          "x": 454,
+          "introX": 223,
+          "titleX": 350,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border-border text-card-foreground",
+          "path": "div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5",
+          "leaf": "a.absolute.h-3 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0",
+          "x": 372,
+          "introX": 223,
+          "titleX": 350,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border-border text-card-foreground",
+          "path": "div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5",
+          "leaf": "a.absolute.h-3 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0",
+          "x": 291,
+          "introX": 223,
+          "titleX": 350,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border-border text-card-foreground",
+          "path": "div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5",
+          "leaf": "a.absolute.h-3 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0",
+          "x": 291,
+          "introX": 223,
+          "titleX": 350,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border-border text-card-foreground",
+          "path": "div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5",
+          "leaf": "a.w-full.rounded-xl < div.flex.min-w-0 < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap",
+          "x": 534,
+          "introX": 223,
+          "titleX": 350,
+          "text": "Next to tick·Επόμενο προς ολοκλήρωσηPricing strate"
+        },
+        {
+          "card": "rounded-2xl border-border text-card-foreground",
+          "path": "div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5",
+          "leaf": "a < div.flex.flex-wrap < div.flex.min-w-0 < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0",
+          "x": 534,
+          "introX": 223,
+          "titleX": 350,
+          "text": "Market·Αγορά"
+        },
+        {
+          "card": "rounded-2xl border-border text-card-foreground",
+          "path": "div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5",
+          "leaf": "a < div.flex.flex-wrap < div.flex.min-w-0 < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0",
+          "x": 534,
+          "introX": 223,
+          "titleX": 350,
+          "text": "Business Model·Επιχειρηματικό μοντέλο"
+        },
+        {
+          "card": "rounded-2xl border-border text-card-foreground",
+          "path": "div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5",
+          "leaf": "a < div.flex.flex-wrap < div.flex.min-w-0 < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0",
+          "x": 534,
+          "introX": 223,
+          "titleX": 350,
+          "text": "Funding Readiness·Ετοιμότητα χρηματοδότησης"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": "Recommendation"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1",
+          "leaf": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": ":"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < span.font-semibold < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": "Next to tick"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": "Previous startup experience"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1",
+          "leaf": "span.ml-1.font-normal < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team",
+          "x": 540,
+          "introX": 260,
+          "titleX": 248,
+          "text": "· 15%"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": "Add an advisor with proven domain expertise to str"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1",
+          "leaf": "button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": "Ask AI"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Recommendation"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1",
+          "leaf": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": ":"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < span.font-semibold < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Next to tick"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Competitive analysis completed"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1",
+          "leaf": "span.ml-1.font-normal < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market",
+          "x": 1160,
+          "introX": 844,
+          "titleX": 832,
+          "text": "· 20%"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Complete a competitive landscape analysis and cond"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1",
+          "leaf": "button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Ask AI"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-product < div.grid.grid-cols-1",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 283,
+          "introX": 260,
+          "titleX": 248,
+          "text": "What is left"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-product < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": "Product roadmap documented"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-product < div.grid.grid-cols-1",
+          "leaf": "button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-product < div.grid.grid-cols-1",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": "Ask AI"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Recommendation"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1",
+          "leaf": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": ":"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < span.font-semibold < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Next to tick"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 1097,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Pricing strategy validated"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1",
+          "leaf": "span.ml-1.font-normal < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business",
+          "x": 1002,
+          "introX": 844,
+          "titleX": 832,
+          "text": "· 25%"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Validate your pricing with at least 5 potential cu"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1",
+          "leaf": "button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-business < div.grid.grid-cols-1",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Ask AI"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding < div.grid.grid-cols-1",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": "Recommendation"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding < div.grid.grid-cols-1",
+          "leaf": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding < div.grid.grid-cols-1",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": ":"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < span.font-semibold < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": "Next to tick"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": "Financial projections (3 years)"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding < div.grid.grid-cols-1",
+          "leaf": "span.ml-1.font-normal < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding",
+          "x": 502,
+          "introX": 260,
+          "titleX": 248,
+          "text": "· 25%"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": "Build a 3-year financial model and prepare your da"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding < div.grid.grid-cols-1",
+          "leaf": "button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding < div.grid.grid-cols-1",
+          "x": 260,
+          "introX": 260,
+          "titleX": 248,
+          "text": "Ask AI"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-execution < div.grid.grid-cols-1",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < p.mb-1.5.flex < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Recommendation"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-execution < div.grid.grid-cols-1",
+          "leaf": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-execution < div.grid.grid-cols-1",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": ":"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-execution < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < span.font-semibold < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Next to tick"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-execution < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 1097,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Regular retrospectives held"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-execution < div.grid.grid-cols-1",
+          "leaf": "span.ml-1.font-normal < p.text-xs.leading-snug < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-execution",
+          "x": 1050,
+          "introX": 844,
+          "titleX": 832,
+          "text": "· 15%"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-execution < div.grid.grid-cols-1",
+          "leaf": "span < span.min-w-0 < p.text-sm.leading-relaxed < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Implement bi-weekly retrospectives and document yo"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-execution < div.grid.grid-cols-1",
+          "leaf": "button.inline-flex.items-center < div.mt-auto.space-y-2.5 < div.flex.h-full < div.card-comfortable.h-full < div#dim-execution < div.grid.grid-cols-1",
+          "x": 844,
+          "introX": 844,
+          "titleX": 832,
+          "text": "Ask AI"
+        }
+      ],
+      "colors": [
+        {
+          "rgb": "48,52,60",
+          "count": 319,
+          "samples": [
+            "div.space-y-5 @color",
+            "header.space-y-3 < div.space-y-5 @color",
+            "section.flex.flex-col < header.space-y-3 < div.space-y-5 @color"
+          ]
+        },
+        {
+          "rgb": "100,104,116",
+          "count": 246,
+          "samples": [
+            "span.bilingual-secondary.text-muted-foreground < span.min-w-0 < h1.page-title.text-balance < div.min-w-0.flex-1 < section.flex.flex-col < header.space-y-3 @color",
+            "p.page-lead.mt-0.5 < div.min-w-0.flex-1 < section.flex.flex-col < header.space-y-3 < div.space-y-5 @color",
+            "span.flex.min-w-0 < p.page-lead.mt-0.5 < div.min-w-0.flex-1 < section.flex.flex-col < header.space-y-3 < div.space-y-5 @color"
+          ]
+        },
+        {
+          "rgb": "188,188,192",
+          "count": 56,
+          "samples": [
+            "span.bilingual-separator.mx-1.5 < span.min-w-0 < h1.page-title.text-balance < div.min-w-0.flex-1 < section.flex.flex-col < header.space-y-3 @color",
+            "span.bilingual-separator.mx-1.5 < span.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5 @color",
+            "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < span.page-stat-label.rounded-full < div.absolute.inset-0 < div.absolute.inset-0 @color"
+          ]
+        },
+        {
+          "rgb": "92,76,180",
+          "count": 42,
+          "samples": [
+            "button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @color",
+            "span.sr-only < button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 @color",
+            "span.inline-flex.min-w-0 < span.sr-only < button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col @color"
+          ]
+        },
+        {
+          "rgb": "172,176,180",
+          "count": 18,
+          "samples": [
+            "button.-m-1.inline-flex < div.flex.min-w-0 < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-team @color",
+            "svg < button.-m-1.inline-flex < div.flex.min-w-0 < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full @color",
+            "circle < svg < button.-m-1.inline-flex < div.flex.min-w-0 < div.flex.flex-wrap < div.flex.h-full @color"
+          ]
+        },
+        {
+          "rgb": "240,240,240",
+          "count": 16,
+          "samples": [
+            "form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @border",
+            "button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @border",
+            "button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @border"
+          ]
+        },
+        {
+          "rgb": "244,244,244",
+          "count": 15,
+          "samples": [
+            "div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5 @bg",
+            "div.pointer-events-none.absolute < div.absolute.inset-0 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border @border",
+            "span.page-stat-label.rounded-full < div.absolute.inset-0 < div.absolute.inset-0 < div.relative < div.flex.flex-col < div.card-comfortable.flex @bg"
+          ]
+        },
+        {
+          "rgb": "84,108,136",
+          "count": 12,
+          "samples": [
+            "div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5 @color",
+            "span.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5 @color",
+            "span < span.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5 @color"
+          ]
+        },
+        {
+          "rgb": "108,108,116",
+          "count": 10,
+          "samples": [
+            "button.inline-flex.items-center < div.flex.flex-wrap < div.min-w-0 < div.min-w-0.space-y-6 < div.space-y-5 @color",
+            "span.inline-flex.min-w-0 < button.inline-flex.items-center < div.flex.flex-wrap < div.min-w-0 < div.min-w-0.space-y-6 < div.space-y-5 @color",
+            "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < button.inline-flex.items-center < div.flex.flex-wrap < div.min-w-0 < div.min-w-0.space-y-6 @color"
+          ]
+        },
+        {
+          "rgb": "124,104,72",
+          "count": 9,
+          "samples": [
+            "span.badge.inline-flex < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1 @color",
+            "span.inline-flex.min-w-0 < span.badge.inline-flex < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-market @color",
+            "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < span.badge.inline-flex < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full @color"
+          ]
+        },
+        {
+          "rgb": "252,252,256",
+          "count": 8,
+          "samples": [
+            "form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @bg",
+            "div.rounded-2xl.border < div.min-w-0 < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5 @bg",
+            "div#dim-team < div.grid.grid-cols-1 < div#radix-_r_1a_-content-dimensions < div.min-w-0 < div.min-w-0.space-y-6 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "236,236,236",
+          "count": 6,
+          "samples": [
+            "div.relative.w-full < div.mt-3.5.flex < div.flex.h-full < div.card-comfortable.h-full < div#dim-team < div.grid.grid-cols-1 @bg",
+            "div.relative.w-full < div.mt-3.5.flex < div.flex.h-full < div.card-comfortable.h-full < div#dim-market < div.grid.grid-cols-1 @bg",
+            "div.relative.w-full < div.mt-3.5.flex < div.flex.h-full < div.card-comfortable.h-full < div#dim-product < div.grid.grid-cols-1 @bg"
+          ]
+        },
+        {
+          "rgb": "204,204,204",
+          "count": 6,
+          "samples": [
+            "div.h-full.w-full < div.relative.w-full < div.mt-3.5.flex < div.flex.h-full < div.card-comfortable.h-full < div#dim-team @bg",
+            "div.h-full.w-full < div.relative.w-full < div.mt-3.5.flex < div.flex.h-full < div.card-comfortable.h-full < div#dim-market @bg",
+            "div.h-full.w-full < div.relative.w-full < div.mt-3.5.flex < div.flex.h-full < div.card-comfortable.h-full < div#dim-product @bg"
+          ]
+        },
+        {
+          "rgb": "60,116,96",
+          "count": 6,
+          "samples": [
+            "span.badge.inline-flex < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-product < div.grid.grid-cols-1 @color",
+            "span.inline-flex.min-w-0 < span.badge.inline-flex < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-product @color",
+            "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < span.badge.inline-flex < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full @color"
+          ]
+        },
+        {
+          "rgb": "240,240,244",
+          "count": 3,
+          "samples": [
+            "button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @bg",
+            "div.pointer-events-none.absolute < div.absolute.inset-0 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border @bg",
+            "div.h-px.w-6 < div.flex.h-full < div.flex.h-full < aside.fixed.bottom-0 @bg"
+          ]
+        },
+        {
+          "rgb": "208,172,124",
+          "count": 3,
+          "samples": [
+            "a.absolute.h-3 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 @bg",
+            "a.absolute.h-3 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 @bg",
+            "a.absolute.h-3 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 @bg"
+          ]
+        },
+        {
+          "rgb": "188,180,244",
+          "count": 2,
+          "samples": [
+            "svg < button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 @color",
+            "path < svg < button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col @color"
+          ]
+        },
+        {
+          "rgb": "232,232,232",
+          "count": 2,
+          "samples": [
+            "div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5 @border",
+            "button#radix-_r_1a_-trigger-dimensions < div.tab-strip.min-h-11 < div.flex.flex-wrap < div.min-w-0 < div.min-w-0.space-y-6 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "148,180,216",
+          "count": 2,
+          "samples": [
+            "a.absolute.h-3 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 @bg",
+            "a.absolute.h-3 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 @bg"
+          ]
+        },
+        {
+          "rgb": "252,252,252",
+          "count": 2,
+          "samples": [
+            "a.w-full.rounded-xl < div.flex.min-w-0 < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap @bg",
+            "div.flex.h-full < div.flex.h-full < aside.fixed.bottom-0 @bg"
+          ]
+        },
+        {
+          "rgb": "224,224,240",
+          "count": 1,
+          "samples": [
+            "button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @border"
+          ]
+        },
+        {
+          "rgb": "244,240,244",
+          "count": 1,
+          "samples": [
+            "div.rounded-2xl.border-border < div.grid.min-w-0 < div.flex.flex-wrap < div.min-w-0.space-y-6 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "96,196,160",
+          "count": 1,
+          "samples": [
+            "a.absolute.h-3 < div.relative < div.flex.flex-col < div.card-comfortable.flex < div.rounded-2xl.border-border < div.grid.min-w-0 @bg"
+          ]
+        },
+        {
+          "rgb": "212,204,244",
+          "count": 1,
+          "samples": [
+            "span.inline-block.h-2 < span.flex.items-center < div.mt-2.flex < div.card-comfortable.flex < div.rounded-2xl.border < div.min-w-0 @bg"
+          ]
+        }
+      ],
+      "radius": [
+        {
+          "type": "button",
+          "values": [
+            "10:40",
+            "full:1"
+          ],
+          "samples": [
+            "button.tap-target-phone.-mr-1.5 < form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5",
+            "button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5"
+          ]
+        }
+      ],
+      "type": {
+        "small": [],
+        "big": [],
+        "cards": []
+      },
+      "iconOnly": [
+        {
+          "path": "button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5",
+          "name": "How the readiness score works. Πώς υπολογίζεται η ετοιμότητα",
+          "title": null,
+          "glyph": null
+        },
+        {
+          "path": "button.tap-target-phone.-mr-1.5 < form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5",
+          "name": "Ask AI. Ρωτήστε το AI",
+          "title": null,
+          "glyph": "arrow-right"
+        },
+        {
+          "path": "button.-m-1.inline-flex < div.flex.min-w-0 < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-team",
+          "name": "Founder & team strength, commitment, and complementarity. Δύναμη ιδρυτή & ομάδας, δέσμευση και συμπληρωματικότητα",
+          "title": null,
+          "glyph": "info"
+        },
+        {
+          "path": "button.-m-1.inline-flex < div.flex.min-w-0 < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-market",
+          "name": "Market size, validation, and competitive positioning. Μέγεθος αγοράς, επικύρωση και ανταγωνιστική θέση",
+          "title": null,
+          "glyph": "info"
+        },
+        {
+          "path": "button.-m-1.inline-flex < div.flex.min-w-0 < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-product",
+          "name": "Solution clarity, MVP progress, and product-market fit signals. Σαφήνεια λύσης, πρόοδος MVP και σήματα ταιριάσματος προϊόντος-αγοράς",
+          "title": null,
+          "glyph": "info"
+        },
+        {
+          "path": "button.-m-1.inline-flex < div.flex.min-w-0 < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-business",
+          "name": "Revenue model, pricing, unit economics, and go-to-market clarity. Μοντέλο εσόδων, τιμολόγηση, μοναδιαία οικονομικά και στρατηγική εισόδου στην αγορά",
+          "title": null,
+          "glyph": "info"
+        },
+        {
+          "path": "button.-m-1.inline-flex < div.flex.min-w-0 < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-funding",
+          "name": "Pitch deck, financials, data room, and investor targeting readiness. Pitch deck, οικονομικά στοιχεία, data room και ετοιμότητα στόχευσης επενδυτών",
+          "title": null,
+          "glyph": "info"
+        },
+        {
+          "path": "button.-m-1.inline-flex < div.flex.min-w-0 < div.flex.flex-wrap < div.flex.h-full < div.card-comfortable.h-full < div#dim-execution",
+          "name": "Goal-setting, milestone tracking, metrics, and execution discipline. Θέσπιση στόχων, παρακολούθηση ορόσημων, μετρικές και πειθαρχία εκτέλεσης",
+          "title": null,
+          "glyph": "info"
+        },
+        {
+          "path": "button.mb-1.flex < div.flex.h-full < div.flex.h-full < aside.fixed.bottom-0",
+          "name": "Keep page tools open. Διατήρηση εργαλείων ανοιχτών",
+          "title": null,
+          "glyph": "panel-right"
+        },
+        {
+          "path": "button.relative.flex < div.flex.h-full < div.flex.h-full < aside.fixed.bottom-0",
+          "name": "Readiness by audience. Ετοιμότητα ανά κοινό",
+          "title": null,
+          "glyph": null
+        },
+        {
+          "path": "button.relative.flex < div.flex.h-full < div.flex.h-full < aside.fixed.bottom-0",
+          "name": "AI plan. Πλάνο AI",
+          "title": null,
+          "glyph": null
+        },
+        {
+          "path": "button.relative.flex < div.flex.h-full < div.flex.h-full < aside.fixed.bottom-0",
+          "name": "Score history. Ιστορικό βαθμολογίας",
+          "title": null,
+          "glyph": null
+        },
+        {
+          "path": "button.relative.flex < div.flex.h-full < div.flex.h-full < aside.fixed.bottom-0",
+          "name": "Next steps. Επόμενα βήματα",
+          "title": null,
+          "glyph": null
+        }
+      ],
+      "empties": []
+    },
+    {
+      "route": "/admin/taxonomy",
+      "colorExempt": false,
+      "colorCount": 12,
+      "cardInset": [
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.flex-1.font-medium < div.flex.items-center < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0",
+          "x": 280,
+          "introX": 224,
+          "titleX": 248,
+          "text": "AI"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.flex-1.font-medium < div.flex.items-center < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0",
+          "x": 280,
+          "introX": 224,
+          "titleX": 248,
+          "text": "Next.js"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.flex-1.font-medium < div.flex.items-center < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0",
+          "x": 280,
+          "introX": 224,
+          "titleX": 248,
+          "text": "TypeScript"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.flex-1.font-medium < div.flex.items-center < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0",
+          "x": 280,
+          "introX": 224,
+          "titleX": 248,
+          "text": "Energy markets"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.flex-1.font-medium < div.flex.items-center < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0",
+          "x": 280,
+          "introX": 224,
+          "titleX": 248,
+          "text": "Go-to-market"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.flex-1.font-medium < div.flex.items-center < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0",
+          "x": 280,
+          "introX": 224,
+          "titleX": 248,
+          "text": "Leadership"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.flex-1.font-medium < div.flex.items-center < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0",
+          "x": 280,
+          "introX": 224,
+          "titleX": 248,
+          "text": "Pricing"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.flex-1.font-medium < div.flex.items-center < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0",
+          "x": 280,
+          "introX": 224,
+          "titleX": 248,
+          "text": "Growth"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.flex-1.font-medium < div.flex.items-center < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0",
+          "x": 280,
+          "introX": 224,
+          "titleX": 248,
+          "text": "Fundraising"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.flex-1.font-medium < div.flex.items-center < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0",
+          "x": 280,
+          "introX": 224,
+          "titleX": 248,
+          "text": "Hiring"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.flex-1.font-medium < div.flex.items-center < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0",
+          "x": 280,
+          "introX": 224,
+          "titleX": 248,
+          "text": "Product"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.flex-1.font-medium < div.flex.items-center < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0",
+          "x": 280,
+          "introX": 224,
+          "titleX": 248,
+          "text": "Mentoring"
+        }
+      ],
+      "colors": [
+        {
+          "rgb": "48,52,60",
+          "count": 126,
+          "samples": [
+            "div.-mx-3.-mt-3 @color",
+            "div.border-b.border-border < div.-mx-3.-mt-3 @color",
+            "nav.flex.gap-1 < div.border-b.border-border < div.-mx-3.-mt-3 @color"
+          ]
+        },
+        {
+          "rgb": "100,104,116",
+          "count": 117,
+          "samples": [
+            "a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border < div.-mx-3.-mt-3 @color",
+            "svg < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border < div.-mx-3.-mt-3 @color",
+            "rect < svg < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border < div.-mx-3.-mt-3 @color"
+          ]
+        },
+        {
+          "rgb": "108,108,116",
+          "count": 60,
+          "samples": [
+            "button#radix-_r_1j_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t @color",
+            "svg < button#radix-_r_1j_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto @color",
+            "circle < svg < button#radix-_r_1j_ < div.ml-auto.flex < div.flex.items-center < div @color"
+          ]
+        },
+        {
+          "rgb": "188,188,192",
+          "count": 17,
+          "samples": [
+            "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border @color",
+            "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border @color",
+            "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border @color"
+          ]
+        },
+        {
+          "rgb": "20,16,32",
+          "count": 10,
+          "samples": [
+            "button.inline-flex.items-center < div.flex.items-center < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @color",
+            "span.inline-flex.min-w-0 < button.inline-flex.items-center < div.flex.items-center < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @color",
+            "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < button.inline-flex.items-center < div.flex.items-center < div.flex.flex-wrap < header.space-y-3 @color"
+          ]
+        },
+        {
+          "rgb": "240,240,240",
+          "count": 8,
+          "samples": [
+            "form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @border",
+            "button.inline-flex.items-center < div.flex.items-center < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @border",
+            "div.rounded-2xl.border < div.grid.grid-cols-2 < div.space-y-6 < div.space-y-5 @border"
+          ]
+        },
+        {
+          "rgb": "244,244,244",
+          "count": 7,
+          "samples": [
+            "div.px-4.sm:px-6 < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0 < div.rounded-2xl.border @bg",
+            "div.px-4.sm:px-6 < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0 < div.rounded-2xl.border @bg",
+            "div.px-4.sm:px-6 < div < div.overflow-y-auto < div.border-t < div.card-comfortable.p-0 < div.rounded-2xl.border @bg"
+          ]
+        },
+        {
+          "rgb": "252,252,256",
+          "count": 6,
+          "samples": [
+            "form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @bg",
+            "div.rounded-2xl.border < div.grid.grid-cols-2 < div.space-y-6 < div.space-y-5 @bg",
+            "div.rounded-2xl.border < div.grid.grid-cols-2 < div.space-y-6 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "188,180,244",
+          "count": 2,
+          "samples": [
+            "button.inline-flex.items-center < div.flex.items-center < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @bg",
+            "button.inline-flex.items-center < div.flex.items-center < div.flex.flex-col < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "248,248,248",
+          "count": 2,
+          "samples": [
+            "input.flex.min-h-11 < div.relative.flex-1 < div.px-4.sm:px-6 < div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 @bg",
+            "select.ml-auto.h-9 < div.px-4.sm:px-6 < div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "236,236,236",
+          "count": 2,
+          "samples": [
+            "input.flex.min-h-11 < div.relative.flex-1 < div.px-4.sm:px-6 < div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 @border",
+            "select.ml-auto.h-9 < div.px-4.sm:px-6 < div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5 @border"
+          ]
+        },
+        {
+          "rgb": "252,252,252",
+          "count": 1,
+          "samples": [
+            "div.border-b.border-border < div.-mx-3.-mt-3 @bg"
+          ]
+        }
+      ],
+      "radius": [
+        {
+          "type": "field",
+          "values": [
+            "10:1",
+            "12:1"
+          ],
+          "samples": [
+            "input.flex.min-h-11 < div.relative.flex-1 < div.px-4.sm:px-6 < div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6",
+            "select.ml-auto.h-9 < div.px-4.sm:px-6 < div.card-comfortable.p-0 < div.rounded-2xl.border < div.space-y-6 < div.space-y-5"
+          ]
+        }
+      ],
+      "type": {
+        "small": [],
+        "big": [],
+        "cards": []
+      },
+      "iconOnly": [
+        {
+          "path": "button.tap-target-phone.-mr-1.5 < form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5",
+          "name": "Ask AI. Ρωτήστε το AI",
+          "title": null,
+          "glyph": "arrow-right"
+        },
+        {
+          "path": "button#radix-_r_1j_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_1l_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_1n_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_1p_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_1r_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_1t_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_1v_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_21_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_23_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_25_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_27_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_29_ < div.ml-auto.flex < div.flex.items-center < div < div.overflow-y-auto < div.border-t",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        }
+      ],
+      "empties": []
+    },
+    {
+      "route": "/opportunities",
+      "colorExempt": false,
+      "colorCount": 25,
+      "cardInset": [
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "span.inline-flex.min-w-0 < span.rounded-full.bg-muted < div.flex.flex-wrap < header.space-y-2 < article.space-y-4 < div.card-comfortable",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < span.rounded-full.bg-muted < div.flex.flex-wrap < header.space-y-2 < article.space-y-4",
+          "x": 256,
+          "introX": 256,
+          "titleX": 248,
+          "text": "Co-founder seat"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.font-medium < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < p.text-xs.font-medium < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable",
+          "x": 261,
+          "introX": 261,
+          "titleX": 248,
+          "text": "What is offered"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-sm.font-semibold < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "leaf": "p.text-sm.font-semibold < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "x": 261,
+          "introX": 261,
+          "titleX": 248,
+          "text": "Co-founder, commercial"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-sm.tabular-nums < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "leaf": "p.text-sm.tabular-nums < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "x": 261,
+          "introX": 261,
+          "titleX": 248,
+          "text": "8–12% · 40 h/week"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "span.inline-flex.min-w-0 < li.rounded-full.border < ul.flex.flex-wrap < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < li.rounded-full.border < ul.flex.flex-wrap < article.space-y-4 < div.card-comfortable",
+          "x": 257,
+          "introX": 257,
+          "titleX": 248,
+          "text": "Full time"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "span.inline-flex.min-w-0 < span.rounded-full.bg-muted < div.flex.flex-wrap < header.space-y-2 < article.space-y-4 < div.card-comfortable",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < span.rounded-full.bg-muted < div.flex.flex-wrap < header.space-y-2 < article.space-y-4",
+          "x": 838,
+          "introX": 838,
+          "titleX": 830,
+          "text": "Investor introduction"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.font-medium < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < p.text-xs.font-medium < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable",
+          "x": 843,
+          "introX": 843,
+          "titleX": 830,
+          "text": "What is offered"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-sm.font-semibold < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "leaf": "p.text-sm.font-semibold < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "x": 843,
+          "introX": 843,
+          "titleX": 830,
+          "text": "Lead angel or advisor"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-sm.tabular-nums < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "leaf": "p.text-sm.tabular-nums < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "x": 843,
+          "introX": 843,
+          "titleX": 830,
+          "text": "Pre-seed via SAFE · 2 h/week"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "span.inline-flex.min-w-0 < li.rounded-full.border < ul.flex.flex-wrap < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < li.rounded-full.border < ul.flex.flex-wrap < article.space-y-4 < div.card-comfortable",
+          "x": 839,
+          "introX": 839,
+          "titleX": 830,
+          "text": "Advisory"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "span.inline-flex.min-w-0 < span.rounded-full.bg-muted < div.flex.flex-wrap < header.space-y-2 < article.space-y-4 < div.card-comfortable",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < span.rounded-full.bg-muted < div.flex.flex-wrap < header.space-y-2 < article.space-y-4",
+          "x": 256,
+          "introX": 256,
+          "titleX": 248,
+          "text": "Role with equity"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-xs.font-medium < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < p.text-xs.font-medium < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable",
+          "x": 261,
+          "introX": 261,
+          "titleX": 248,
+          "text": "What is offered"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-sm.font-semibold < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "leaf": "p.text-sm.font-semibold < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "x": 261,
+          "introX": 261,
+          "titleX": 248,
+          "text": "Head of growth"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "p.text-sm.tabular-nums < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "leaf": "p.text-sm.tabular-nums < section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1",
+          "x": 261,
+          "introX": 261,
+          "titleX": 248,
+          "text": "1–2% · 30 h/week"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "span.inline-flex.min-w-0 < li.rounded-full.border < ul.flex.flex-wrap < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < li.rounded-full.border < ul.flex.flex-wrap < article.space-y-4 < div.card-comfortable",
+          "x": 257,
+          "introX": 257,
+          "titleX": 248,
+          "text": "Part time"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "p.text-sm.text-muted-foreground < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Design partner signed, 14 interviews done, no engi"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "cofounder"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 327,
+          "introX": 224,
+          "titleX": 293,
+          "text": "logistics"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 394,
+          "introX": 224,
+          "titleX": 293,
+          "text": "saas"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Draft an approach·Σύνταξη προσέγγισης"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 527,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Save·Αποθήκευση"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "p.text-sm.text-muted-foreground < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Six-month engagement to take an existing prototype"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "engineering"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 336,
+          "introX": 224,
+          "titleX": 293,
+          "text": "leadership"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Draft an approach·Σύνταξη προσέγγισης"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 527,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Save·Αποθήκευση"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "p.text-sm.text-muted-foreground < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Open allocation alongside a lead. Greek and Cyprio"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "fundraising"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 332,
+          "introX": 224,
+          "titleX": 293,
+          "text": "pre-seed"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Draft an approach·Σύνταξη προσέγγισης"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 527,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Save·Αποθήκευση"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "p.text-sm.text-muted-foreground < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Free for six months in exchange for weekly feedbac"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "partnership"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 333,
+          "introX": 224,
+          "titleX": 293,
+          "text": "b2b"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Draft an approach·Σύνταξη προσέγγισης"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 527,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Save·Αποθήκευση"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "p.text-sm.text-muted-foreground < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Four sessions with a practitioner, for teams putti"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "ai"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 278,
+          "introX": 224,
+          "titleX": 293,
+          "text": "mentorship"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Draft an approach·Σύνταξη προσέγγισης"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 527,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Save·Αποθήκευση"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "p.text-sm.text-muted-foreground < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Six weeks from idea to first paying customer, in A"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "program"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 317,
+          "introX": 224,
+          "titleX": 293,
+          "text": "pre-seed"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Draft an approach·Σύνταξη προσέγγισης"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 527,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Save·Αποθήκευση"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "p.text-sm.text-muted-foreground < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Two hours a month with the Autumn 2026 cohort. Led"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "mentorship"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 332,
+          "introX": 224,
+          "titleX": 293,
+          "text": "fintech"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Draft an approach·Σύνταξη προσέγγισης"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 527,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Save·Αποθήκευση"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "p.text-sm.text-muted-foreground < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Advisory shares for someone who has sold B2B softw"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "gtm"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 291,
+          "introX": 224,
+          "titleX": 293,
+          "text": "advisory"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 248,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Draft an approach·Σύνταξη προσέγγισης"
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5",
+          "leaf": "button.inline-flex.items-center < div.flex.gap-2 < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6",
+          "x": 527,
+          "introX": 224,
+          "titleX": 293,
+          "text": "Save·Αποθήκευση"
+        }
+      ],
+      "colors": [
+        {
+          "rgb": "48,52,60",
+          "count": 291,
+          "samples": [
+            "div.space-y-5 @color",
+            "header.space-y-3 < div.space-y-5 @color",
+            "section.flex.flex-col < header.space-y-3 < div.space-y-5 @color"
+          ]
+        },
+        {
+          "rgb": "100,104,116",
+          "count": 164,
+          "samples": [
+            "span.bilingual-secondary.text-muted-foreground < span.min-w-0 < h1.page-title.text-balance < div.min-w-0.flex-1 < section.flex.flex-col < header.space-y-3 @color",
+            "p.page-lead.mt-0.5 < div.min-w-0.flex-1 < section.flex.flex-col < header.space-y-3 < div.space-y-5 @color",
+            "span.flex.min-w-0 < p.page-lead.mt-0.5 < div.min-w-0.flex-1 < section.flex.flex-col < header.space-y-3 < div.space-y-5 @color"
+          ]
+        },
+        {
+          "rgb": "244,244,244",
+          "count": 48,
+          "samples": [
+            "div.flex.flex-wrap < div.space-y-6.pb-10 < div.space-y-5 @bg",
+            "span.inline-flex.shrink-0 < div.flex.min-w-0 < header.space-y-2 < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border @bg",
+            "section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1 < section.space-y-3 @border"
+          ]
+        },
+        {
+          "rgb": "188,188,192",
+          "count": 43,
+          "samples": [
+            "span.bilingual-separator.mx-1.5 < span.min-w-0 < h1.page-title.text-balance < div.min-w-0.flex-1 < section.flex.flex-col < header.space-y-3 @color",
+            "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < h2#need-cards-heading < div.min-w-0 < div.flex.flex-wrap @color",
+            "span.bilingual-separator.mx-1.5 < span.min-w-0 < p.text-xs.text-muted-foreground < div.min-w-0 < div.flex.flex-wrap < section.space-y-3 @color"
+          ]
+        },
+        {
+          "rgb": "60,116,96",
+          "count": 42,
+          "samples": [
+            "span.inline-flex.shrink-0 < div.flex.min-w-0 < header.space-y-2 < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border @color",
+            "svg < span.inline-flex.shrink-0 < div.flex.min-w-0 < header.space-y-2 < article.space-y-4 < div.card-comfortable @color",
+            "path < svg < span.inline-flex.shrink-0 < div.flex.min-w-0 < header.space-y-2 < article.space-y-4 @color"
+          ]
+        },
+        {
+          "rgb": "240,240,240",
+          "count": 40,
+          "samples": [
+            "form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @border",
+            "a.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < section.space-y-3 < div.space-y-6 < div.space-y-6.pb-10 @border",
+            "div.rounded-2xl.border < div.grid.grid-cols-1 < section.space-y-3 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 @border"
+          ]
+        },
+        {
+          "rgb": "20,16,32",
+          "count": 20,
+          "samples": [
+            "button.inline-flex.items-center < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @color",
+            "span.inline-flex.min-w-0 < button.inline-flex.items-center < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @color",
+            "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < button.inline-flex.items-center < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @color"
+          ]
+        },
+        {
+          "rgb": "56,60,68",
+          "count": 17,
+          "samples": [
+            "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 @color",
+            "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 @color",
+            "span.rounded-md.bg-secondary/60 < div.flex.flex-wrap < div.card-comfortable.space-y-3 < div.rounded-2xl.border < div.space-y-4 < div.space-y-6 @color"
+          ]
+        },
+        {
+          "rgb": "92,76,180",
+          "count": 13,
+          "samples": [
+            "button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @color",
+            "span.sr-only < button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 @color",
+            "span.inline-flex.min-w-0 < span.sr-only < button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col @color"
+          ]
+        },
+        {
+          "rgb": "252,252,256",
+          "count": 13,
+          "samples": [
+            "form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @bg",
+            "button.flex.items-center < div.flex.flex-wrap < div.space-y-6.pb-10 < div.space-y-5 @bg",
+            "div.rounded-2xl.border < div.grid.grid-cols-1 < section.space-y-3 < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "228,224,240",
+          "count": 11,
+          "samples": [
+            "span.flex.h-full < span.relative.flex < div.flex.min-w-0 < header.space-y-2 < article.space-y-4 < div.card-comfortable @bg",
+            "span.flex.h-full < span.relative.flex < div.flex.min-w-0 < header.space-y-2 < article.space-y-4 < div.card-comfortable @bg",
+            "span.flex.h-full < span.relative.flex < div.flex.min-w-0 < header.space-y-2 < article.space-y-4 < div.card-comfortable @bg"
+          ]
+        },
+        {
+          "rgb": "240,240,244",
+          "count": 7,
+          "samples": [
+            "button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @bg",
+            "span.rounded-full.bg-muted < div.flex.flex-wrap < header.space-y-2 < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border @bg",
+            "span.rounded-full.bg-muted < div.flex.flex-wrap < header.space-y-2 < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border @bg"
+          ]
+        },
+        {
+          "rgb": "188,180,244",
+          "count": 6,
+          "samples": [
+            "svg < button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 @color",
+            "path < svg < button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col @color",
+            "button.inline-flex.items-center < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "84,108,136",
+          "count": 6,
+          "samples": [
+            "span.badge.inline-flex < div.flex.flex-wrap < header.space-y-2 < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border @color",
+            "span.inline-flex.min-w-0 < span.badge.inline-flex < div.flex.flex-wrap < header.space-y-2 < article.space-y-4 < div.card-comfortable @color",
+            "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < span.badge.inline-flex < div.flex.flex-wrap < header.space-y-2 < article.space-y-4 @color"
+          ]
+        },
+        {
+          "rgb": "108,96,152",
+          "count": 6,
+          "samples": [
+            "span.badge.inline-flex < div.mt-1.flex < div < div.flex.items-start < div.flex.flex-col < div.card-comfortable.space-y-3 @color",
+            "span.inline-flex.min-w-0 < span.badge.inline-flex < div.mt-1.flex < div < div.flex.items-start < div.flex.flex-col @color",
+            "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < span.badge.inline-flex < div.mt-1.flex < div < div.flex.items-start @color"
+          ]
+        },
+        {
+          "rgb": "108,108,116",
+          "count": 5,
+          "samples": [
+            "button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < section.space-y-3 < div.space-y-6 < div.space-y-6.pb-10 @color",
+            "span.inline-flex.min-w-0 < button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < section.space-y-3 < div.space-y-6 @color",
+            "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < section.space-y-3 @color"
+          ]
+        },
+        {
+          "rgb": "124,104,72",
+          "count": 4,
+          "samples": [
+            "span.badge.inline-flex < div.mt-1.flex < div < div.flex.items-start < div.flex.flex-col < div.card-comfortable.space-y-3 @color",
+            "span.truncate < span.badge.inline-flex < div.mt-1.flex < div < div.flex.items-start < div.flex.flex-col @color",
+            "span.badge.inline-flex < div.mt-1.flex < div < div.flex.items-start < div.flex.flex-col < div.card-comfortable.space-y-3 @color"
+          ]
+        },
+        {
+          "rgb": "232,232,232",
+          "count": 3,
+          "samples": [
+            "span.inline-flex.shrink-0 < div.flex.min-w-0 < header.space-y-2 < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border @border",
+            "span.inline-flex.shrink-0 < div.flex.min-w-0 < header.space-y-2 < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border @border",
+            "span.inline-flex.shrink-0 < div.flex.min-w-0 < header.space-y-2 < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border @border"
+          ]
+        },
+        {
+          "rgb": "244,240,244",
+          "count": 3,
+          "samples": [
+            "section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1 < section.space-y-3 @bg",
+            "section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1 < section.space-y-3 @bg",
+            "section.space-y-1.rounded-xl < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border < div.grid.grid-cols-1 < section.space-y-3 @bg"
+          ]
+        },
+        {
+          "rgb": "232,232,244",
+          "count": 2,
+          "samples": [
+            "span.badge.inline-flex < div.flex.flex-wrap < header.space-y-2 < article.space-y-4 < div.card-comfortable < div.rounded-2xl.border @bg",
+            "span.badge.inline-flex < div.mt-1.flex < div < div.flex.items-start < div.flex.flex-col < div.card-comfortable.space-y-3 @bg"
+          ]
+        },
+        {
+          "rgb": "224,224,240",
+          "count": 1,
+          "samples": [
+            "button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @border"
+          ]
+        },
+        {
+          "rgb": "220,216,236",
+          "count": 1,
+          "samples": [
+            "span.flex.h-5 < button.flex.items-center < div.flex.flex-wrap < div.space-y-6.pb-10 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "248,248,248",
+          "count": 1,
+          "samples": [
+            "input.flex.h-11 < div.relative < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "236,236,236",
+          "count": 1,
+          "samples": [
+            "input.flex.h-11 < div.relative < div.space-y-6 < div.space-y-6.pb-10 < div.space-y-5 @border"
+          ]
+        }
+      ],
+      "radius": [
+        {
+          "type": "button",
+          "values": [
+            "10:31",
+            "full:1"
+          ],
+          "samples": [
+            "button.tap-target-phone.-mr-1.5 < form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5",
+            "button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5"
+          ]
+        }
+      ],
+      "type": {
+        "small": [],
+        "big": [],
+        "cards": []
+      },
+      "iconOnly": [
+        {
+          "path": "button.inline-flex.items-center < div.relative < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5",
+          "name": "How opportunities work. Πώς δουλεύουν οι ευκαιρίες",
+          "title": null,
+          "glyph": null
+        },
+        {
+          "path": "button.tap-target-phone.-mr-1.5 < form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5",
+          "name": "Ask AI. Ρωτήστε το AI",
+          "title": null,
+          "glyph": "arrow-right"
+        },
+        {
+          "path": "button.mb-1.flex < div.flex.h-full < div.flex.h-full < aside.fixed.bottom-0",
+          "name": "Keep page tools open. Διατήρηση εργαλείων ανοιχτών",
+          "title": null,
+          "glyph": "panel-right"
+        },
+        {
+          "path": "button.relative.flex < div.flex.h-full < div.flex.h-full < aside.fixed.bottom-0",
+          "name": "At a glance. Με μια ματιά",
+          "title": null,
+          "glyph": null
+        },
+        {
+          "path": "button.relative.flex < div.flex.h-full < div.flex.h-full < aside.fixed.bottom-0",
+          "name": "Filters. Φίλτρα",
+          "title": null,
+          "glyph": null
+        },
+        {
+          "path": "button.relative.flex < div.flex.h-full < div.flex.h-full < aside.fixed.bottom-0",
+          "name": "Linked pages. Συνδεδεμένες σελίδες",
+          "title": null,
+          "glyph": null
+        }
+      ],
+      "empties": []
+    },
+    {
+      "route": "/admin/audit-log",
+      "colorExempt": false,
+      "colorCount": 14,
+      "cardInset": [
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.gap-1.5.card-comfortable < div.rounded-2xl.border < div.space-y-6 < div.space-y-5",
+          "leaf": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < span.text-xs.text-muted-foreground < div.gap-1.5.card-comfortable < div.rounded-2xl.border < div.space-y-6",
+          "x": 1172,
+          "introX": 224,
+          "titleX": 248,
+          "text": "5 total entries"
+        }
+      ],
+      "colors": [
+        {
+          "rgb": "100,104,116",
+          "count": 90,
+          "samples": [
+            "a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border < div.-mx-3.-mt-3 @color",
+            "svg < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border < div.-mx-3.-mt-3 @color",
+            "rect < svg < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border < div.-mx-3.-mt-3 @color"
+          ]
+        },
+        {
+          "rgb": "48,52,60",
+          "count": 72,
+          "samples": [
+            "div.-mx-3.-mt-3 @color",
+            "div.border-b.border-border < div.-mx-3.-mt-3 @color",
+            "nav.flex.gap-1 < div.border-b.border-border < div.-mx-3.-mt-3 @color"
+          ]
+        },
+        {
+          "rgb": "188,188,192",
+          "count": 8,
+          "samples": [
+            "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border @color",
+            "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border @color",
+            "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border @color"
+          ]
+        },
+        {
+          "rgb": "244,244,244",
+          "count": 7,
+          "samples": [
+            "span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div < div.card-comfortable @bg",
+            "span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div < div.card-comfortable @bg",
+            "div.rounded-lg.p-2 < div.flex.items-start < div < div.card-comfortable < div.rounded-2xl.border < div.space-y-6 @bg"
+          ]
+        },
+        {
+          "rgb": "60,116,96",
+          "count": 6,
+          "samples": [
+            "div.rounded-lg.p-2 < div.flex.items-start < div < div.card-comfortable < div.rounded-2xl.border < div.space-y-6 @color",
+            "svg < div.rounded-lg.p-2 < div.flex.items-start < div < div.card-comfortable < div.rounded-2xl.border @color",
+            "circle < svg < div.rounded-lg.p-2 < div.flex.items-start < div < div.card-comfortable @color"
+          ]
+        },
+        {
+          "rgb": "240,240,244",
+          "count": 5,
+          "samples": [
+            "code.text-xs.font-mono < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div < div.card-comfortable @bg",
+            "code.text-xs.font-mono < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div < div.card-comfortable @bg",
+            "code.text-xs.font-mono < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div < div.card-comfortable @bg"
+          ]
+        },
+        {
+          "rgb": "240,240,240",
+          "count": 4,
+          "samples": [
+            "form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @border",
+            "button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @border",
+            "button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @border"
+          ]
+        },
+        {
+          "rgb": "248,248,248",
+          "count": 3,
+          "samples": [
+            "input.flex.h-11 < div.relative.flex-1 < div.flex.flex-col < div.space-y-6 < div.space-y-5 @bg",
+            "button.flex.min-h-10 < div.flex.flex-col < div.space-y-6 < div.space-y-5 @bg",
+            "button.flex.min-h-10 < div.flex.flex-col < div.space-y-6 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "236,236,236",
+          "count": 3,
+          "samples": [
+            "input.flex.h-11 < div.relative.flex-1 < div.flex.flex-col < div.space-y-6 < div.space-y-5 @border",
+            "button.flex.min-h-10 < div.flex.flex-col < div.space-y-6 < div.space-y-5 @border",
+            "button.flex.min-h-10 < div.flex.flex-col < div.space-y-6 < div.space-y-5 @border"
+          ]
+        },
+        {
+          "rgb": "252,252,256",
+          "count": 2,
+          "samples": [
+            "form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @bg",
+            "div.rounded-2xl.border < div.space-y-6 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "252,252,252",
+          "count": 1,
+          "samples": [
+            "div.border-b.border-border < div.-mx-3.-mt-3 @bg"
+          ]
+        },
+        {
+          "rgb": "124,104,72",
+          "count": 1,
+          "samples": [
+            "span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div < div.card-comfortable @color"
+          ]
+        },
+        {
+          "rgb": "84,108,136",
+          "count": 1,
+          "samples": [
+            "span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div < div.card-comfortable @color"
+          ]
+        },
+        {
+          "rgb": "108,96,152",
+          "count": 1,
+          "samples": [
+            "span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div < div.card-comfortable @color"
+          ]
+        }
+      ],
+      "radius": [],
+      "type": {
+        "small": [],
+        "big": [],
+        "cards": []
+      },
+      "iconOnly": [
+        {
+          "path": "button.tap-target-phone.-mr-1.5 < form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5",
+          "name": "Ask AI. Ρωτήστε το AI",
+          "title": null,
+          "glyph": "arrow-right"
+        }
+      ],
+      "empties": []
+    },
+    {
+      "route": "/admin/feature-flags",
+      "colorExempt": false,
+      "colorCount": 20,
+      "cardInset": [
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 240,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button#radix-_r_u_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 1361,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 240,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button#radix-_r_10_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 1361,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 240,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button#radix-_r_12_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 1361,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 240,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button#radix-_r_14_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 1361,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 240,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button#radix-_r_16_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 1361,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 240,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button#radix-_r_18_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 1361,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 240,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button#radix-_r_1a_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 1361,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 240,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        },
+        {
+          "card": "rounded-2xl border border-border",
+          "path": "div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div < div.space-y-6 < div.space-y-5",
+          "leaf": "button#radix-_r_1c_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "x": 1361,
+          "introX": 224,
+          "titleX": 302,
+          "text": ""
+        }
+      ],
+      "colors": [
+        {
+          "rgb": "100,104,116",
+          "count": 192,
+          "samples": [
+            "a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border < div.-mx-3.-mt-3 @color",
+            "svg < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border < div.-mx-3.-mt-3 @color",
+            "rect < svg < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border < div.-mx-3.-mt-3 @color"
+          ]
+        },
+        {
+          "rgb": "48,52,60",
+          "count": 116,
+          "samples": [
+            "div.-mx-3.-mt-3 @color",
+            "div.border-b.border-border < div.-mx-3.-mt-3 @color",
+            "nav.flex.gap-1 < div.border-b.border-border < div.-mx-3.-mt-3 @color"
+          ]
+        },
+        {
+          "rgb": "108,108,116",
+          "count": 40,
+          "samples": [
+            "button#radix-_r_u_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div @color",
+            "svg < button#radix-_r_u_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all @color",
+            "circle < svg < button#radix-_r_u_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @color"
+          ]
+        },
+        {
+          "rgb": "188,188,192",
+          "count": 33,
+          "samples": [
+            "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border @color",
+            "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border @color",
+            "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < a.flex.items-center < nav.flex.gap-1 < div.border-b.border-border @color"
+          ]
+        },
+        {
+          "rgb": "60,116,96",
+          "count": 18,
+          "samples": [
+            "svg < div.rounded-lg.p-2 < div.card-comfortable.p-3 < div.rounded-2xl.border < div.grid.grid-cols-2 < div.space-y-6 @color",
+            "circle < svg < div.rounded-lg.p-2 < div.card-comfortable.p-3 < div.rounded-2xl.border < div.grid.grid-cols-2 @color",
+            "path < svg < div.rounded-lg.p-2 < div.card-comfortable.p-3 < div.rounded-2xl.border < div.grid.grid-cols-2 @color"
+          ]
+        },
+        {
+          "rgb": "244,244,244",
+          "count": 17,
+          "samples": [
+            "div.rounded-lg.p-2 < div.card-comfortable.p-3 < div.rounded-2xl.border < div.grid.grid-cols-2 < div.space-y-6 < div.space-y-5 @bg",
+            "span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @bg",
+            "span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @bg"
+          ]
+        },
+        {
+          "rgb": "248,248,248",
+          "count": 17,
+          "samples": [
+            "input.flex.h-11 < div.relative.max-w-md < div.space-y-6 < div.space-y-5 @bg",
+            "button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div @border",
+            "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all @bg"
+          ]
+        },
+        {
+          "rgb": "84,108,136",
+          "count": 15,
+          "samples": [
+            "span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @color",
+            "span.inline-flex.min-w-0 < span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 @color",
+            "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start @color"
+          ]
+        },
+        {
+          "rgb": "240,240,240",
+          "count": 14,
+          "samples": [
+            "form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @border",
+            "button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @border",
+            "div.rounded-2xl.border < div.grid.grid-cols-2 < div.space-y-6 < div.space-y-5 @border"
+          ]
+        },
+        {
+          "rgb": "252,252,256",
+          "count": 12,
+          "samples": [
+            "form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5 @bg",
+            "div.rounded-2xl.border < div.grid.grid-cols-2 < div.space-y-6 < div.space-y-5 @bg",
+            "div.rounded-2xl.border < div.grid.grid-cols-2 < div.space-y-6 < div.space-y-5 @bg"
+          ]
+        },
+        {
+          "rgb": "240,240,244",
+          "count": 9,
+          "samples": [
+            "code.text-xs.font-mono < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @bg",
+            "code.text-xs.font-mono < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @bg",
+            "code.text-xs.font-mono < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @bg"
+          ]
+        },
+        {
+          "rgb": "108,96,152",
+          "count": 9,
+          "samples": [
+            "span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @color",
+            "span.inline-flex.min-w-0 < span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 @color",
+            "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start @color"
+          ]
+        },
+        {
+          "rgb": "188,180,244",
+          "count": 8,
+          "samples": [
+            "button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @bg",
+            "button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div @bg",
+            "button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div @bg"
+          ]
+        },
+        {
+          "rgb": "124,104,72",
+          "count": 6,
+          "samples": [
+            "span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @color",
+            "span.truncate < span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 @color",
+            "span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @color"
+          ]
+        },
+        {
+          "rgb": "20,16,32",
+          "count": 5,
+          "samples": [
+            "button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @color",
+            "span.inline-flex.min-w-0 < button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < header.space-y-3 < div.space-y-5 @color",
+            "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < header.space-y-3 @color"
+          ]
+        },
+        {
+          "rgb": "236,236,236",
+          "count": 4,
+          "samples": [
+            "input.flex.h-11 < div.relative.max-w-md < div.space-y-6 < div.space-y-5 @border",
+            "div.relative.w-full < div.mt-3.space-y-1 < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @bg",
+            "div.relative.w-full < div.mt-3.space-y-1 < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @bg"
+          ]
+        },
+        {
+          "rgb": "140,92,88",
+          "count": 3,
+          "samples": [
+            "span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border @color",
+            "span.inline-flex.min-w-0 < span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 @color",
+            "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < span.badge.inline-flex < div.flex.items-center < div.flex-1.min-w-0 < div.flex.items-start @color"
+          ]
+        },
+        {
+          "rgb": "204,204,204",
+          "count": 2,
+          "samples": [
+            "div.h-full.w-full < div.relative.w-full < div.mt-3.space-y-1 < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 @bg",
+            "div.h-full.w-full < div.relative.w-full < div.mt-3.space-y-1 < div.flex-1.min-w-0 < div.flex.items-start < div.card-comfortable.p-4 @bg"
+          ]
+        },
+        {
+          "rgb": "252,252,252",
+          "count": 1,
+          "samples": [
+            "div.border-b.border-border < div.-mx-3.-mt-3 @bg"
+          ]
+        },
+        {
+          "rgb": "232,232,232",
+          "count": 1,
+          "samples": [
+            "button#radix-_r_o_-trigger-all < div.tab-strip.inline-flex < div < div.space-y-6 < div.space-y-5 @bg"
+          ]
+        }
+      ],
+      "radius": [
+        {
+          "type": "button",
+          "values": [
+            "10:11",
+            "full:8"
+          ],
+          "samples": [
+            "button.tap-target-phone.-mr-1.5 < form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5",
+            "button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div"
+          ]
+        }
+      ],
+      "type": {
+        "small": [],
+        "big": [],
+        "cards": []
+      },
+      "iconOnly": [
+        {
+          "path": "button.tap-target-phone.-mr-1.5 < form.flex.min-h-10 < div.flex.w-full < section.flex.flex-col < header.space-y-3 < div.space-y-5",
+          "name": "Ask AI. Ρωτήστε το AI",
+          "title": null,
+          "glyph": "arrow-right"
+        },
+        {
+          "path": "button.inline-flex.items-center < div.flex.flex-wrap < div.flex.flex-wrap < header.space-y-3 < div.space-y-5",
+          "name": "About feature flags",
+          "title": null,
+          "glyph": "info"
+        },
+        {
+          "path": "button#radix-_r_u_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_10_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_12_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_14_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_16_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_18_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_1a_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        },
+        {
+          "path": "button#radix-_r_1c_ < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border < div#radix-_r_o_-content-all < div",
+          "name": "More options",
+          "title": null,
+          "glyph": "ellipsis-vertical"
+        }
+      ],
+      "empties": []
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,5 @@
+/messages | escape 0 | clip 1 | chrome-clip 0
+/test-onboarding | escape 0 | clip 1 | chrome-clip 0
+/research/board-gtm | escape 4 | clip 0 | chrome-clip 0
+
+TOTAL routes 160 · escapes 4 · clipped 2 · chrome-clipped (by design) 0

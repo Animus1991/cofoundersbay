@@ -1,0 +1,4 @@
+/analytics
+/org/cohorts/cohort-autumn-2026
+/admin/users
+/research/board-gtm

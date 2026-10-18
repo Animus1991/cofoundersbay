@@ -1,0 +1,35 @@
+/ | escape 0 | clip 1 | chrome-clip 0
+/admin/audit-log | escape 0 | clip 2 | chrome-clip 0
+/admin/security-monitoring | escape 0 | clip 1 | chrome-clip 0
+/admin/taxonomy | escape 0 | clip 1 | chrome-clip 0
+/admin/users | escape 0 | clip 3 | chrome-clip 0
+/auth/verify-email | escape 0 | clip 1 | chrome-clip 0
+/builder | escape 2 | clip 0 | chrome-clip 0
+/dashboard | escape 0 | clip 1 | chrome-clip 0
+/dashboard/founder | escape 0 | clip 1 | chrome-clip 0
+/demo | escape 0 | clip 1 | chrome-clip 0
+/help | escape 0 | clip 3 | chrome-clip 0
+/investor/pipeline | escape 1 | clip 2 | chrome-clip 0
+/investor/scouting | escape 0 | clip 2 | chrome-clip 0
+/learning | escape 0 | clip 4 | chrome-clip 0
+/marketplace | escape 0 | clip 10 | chrome-clip 0
+/mentor/reviews | escape 0 | clip 2 | chrome-clip 0
+/messages | escape 0 | clip 3 | chrome-clip 0
+/org/applications | escape 0 | clip 1 | chrome-clip 0
+/org/cohorts | escape 0 | clip 1 | chrome-clip 0
+/org/members | escape 0 | clip 1 | chrome-clip 0
+/org/startups | escape 0 | clip 2 | chrome-clip 0
+/pricing | escape 0 | clip 6 | chrome-clip 0
+/privacy | escape 8 | clip 0 | chrome-clip 0
+/reputation | escape 0 | clip 1 | chrome-clip 0
+/reset-password | escape 0 | clip 1 | chrome-clip 0
+/settings/ai | escape 0 | clip 1 | chrome-clip 0
+/settings/notifications | escape 0 | clip 2 | chrome-clip 0
+/tenant/members | escape 0 | clip 1 | chrome-clip 0
+/test-onboarding | escape 0 | clip 1 | chrome-clip 0
+/themes/alliance | escape 0 | clip 4 | chrome-clip 0
+/research/board-gtm | escape 1 | clip 2 | chrome-clip 0
+/p/preview-demo-user | escape 1 | clip 1 | chrome-clip 0
+/share/data-room-seed | escape 0 | clip 1 | chrome-clip 0
+
+TOTAL routes 160 · escapes 13 · clipped 64 · chrome-clipped (by design) 3

@@ -1,0 +1,6 @@
+/milestones
+/opportunities
+/fundraising
+/admin/tenants
+/admin/automations
+/admin/sso

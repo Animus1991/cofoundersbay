@@ -1,0 +1,7 @@
+/admin/tenants
+/discover
+/milestones
+/connections
+/opportunities
+/fundraising
+/admin/user-management

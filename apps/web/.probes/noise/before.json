@@ -1,0 +1,892 @@
+{
+  "generatedAt": "2026-10-06T22:32:22.120Z",
+  "routes": 160,
+  "type": [
+    {
+      "route": "/api-status",
+      "selector": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < h1.text-3xl.sm:text-4xl < div.mb-8 < div.container.mx-auto",
+      "text": "API Status Check",
+      "px": 36
+    },
+    {
+      "route": "/api-status",
+      "selector": "span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < h1.text-3xl.sm:text-4xl < div.mb-8 < div.container.mx-auto",
+      "text": "Έλεγχος κατάστασης API",
+      "px": 30.6
+    },
+    {
+      "route": "/api-status",
+      "selector": "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < h1.text-3xl.sm:text-4xl < div.mb-8",
+      "text": "·",
+      "px": 26.01
+    },
+    {
+      "route": "/pricing",
+      "selector": "span < span.min-w-0 < h1.font-display.text-4xl < div.mx-auto.max-w-7xl < div.border-b.border-border",
+      "text": "Choose the plan that fits your journey",
+      "px": 48
+    },
+    {
+      "route": "/pricing",
+      "selector": "span.bilingual-separator.mx-1.5 < span.min-w-0 < h1.font-display.text-4xl < div.mx-auto.max-w-7xl < div.border-b.border-border",
+      "text": "·",
+      "px": 40.8
+    },
+    {
+      "route": "/pricing",
+      "selector": "span.bilingual-secondary.text-muted-foreground < span.min-w-0 < h1.font-display.text-4xl < div.mx-auto.max-w-7xl < div.border-b.border-border",
+      "text": "Επιλέξτε το πλάνο που ταιριάζει στη διαδρομή σας",
+      "px": 40.8
+    },
+    {
+      "route": "/pricing",
+      "selector": "span.text-4xl.font-bold < div.flex.items-baseline < div.mb-6 < div.card-comfortable.flex < div.rounded-2xl.border",
+      "text": "$0",
+      "px": 36
+    },
+    {
+      "route": "/pricing",
+      "selector": "span.text-4xl.font-bold < div.flex.items-baseline < div.mb-6 < div.card-comfortable.flex < div.rounded-2xl.border",
+      "text": "$159",
+      "px": 36
+    },
+    {
+      "route": "/pricing",
+      "selector": "span.text-4xl.font-bold < div.flex.items-baseline < div.mb-6 < div.card-comfortable.flex < div.rounded-2xl.border",
+      "text": "$899",
+      "px": 36
+    },
+    {
+      "route": "/pricing",
+      "selector": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < div.text-3xl.font-bold < div.mb-6 < div.card-comfortable.flex",
+      "text": "Custom",
+      "px": 26
+    },
+    {
+      "route": "/pricing",
+      "selector": "span < span.min-w-0 < h2.font-display.text-3xl < div.mx-auto.max-w-4xl < div.border-t.border-border",
+      "text": "Ready to accelerate your startup journey?",
+      "px": 26
+    },
+    {
+      "route": "/readiness",
+      "selector": "span.score-emblem-figure.font-bold < div.absolute.inset-0 < div.absolute.inset-0 < div.relative < div.flex.flex-col",
+      "text": "61",
+      "px": 32
+    },
+    {
+      "route": "/register",
+      "selector": "span.break-words.leading-tight < span.flex.min-w-0 < h2.font-display.text-3xl < div.relative.z-10 < div.hidden.bg-hero-gradient",
+      "text": "Join Aegean Venture Lab",
+      "px": 26
+    },
+    {
+      "route": "/register",
+      "selector": "span < span.min-w-0 < h1.font-display.text-3xl < div.mx-auto.w-full < div.flex.w-full",
+      "text": "Create your account",
+      "px": 36
+    },
+    {
+      "route": "/register",
+      "selector": "span.bilingual-separator.mx-1.5 < span.min-w-0 < h1.font-display.text-3xl < div.mx-auto.w-full < div.flex.w-full",
+      "text": "·",
+      "px": 30.6
+    },
+    {
+      "route": "/register",
+      "selector": "span.bilingual-secondary.text-muted-foreground < span.min-w-0 < h1.font-display.text-3xl < div.mx-auto.w-full < div.flex.w-full",
+      "text": "Δημιουργήστε λογαριασμό",
+      "px": 30.6
+    },
+    {
+      "route": "/reset-password",
+      "selector": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < h1.text-2xl.sm:text-3xl < div.space-y-2 < div.w-full.max-w-md",
+      "text": "Set a new password",
+      "px": 26
+    },
+    {
+      "route": "/test-onboarding",
+      "selector": "span.min-w-0.max-w-full < span.inline-flex.min-w-0 < h1.text-3xl.sm:text-4xl < div.text-center.mb-8 < div.max-w-4xl.mx-auto",
+      "text": "Production Readiness Tests",
+      "px": 36
+    },
+    {
+      "route": "/test-onboarding",
+      "selector": "span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < h1.text-3xl.sm:text-4xl < div.text-center.mb-8 < div.max-w-4xl.mx-auto",
+      "text": "Έλεγχοι ετοιμότητας παραγωγής",
+      "px": 30.6
+    },
+    {
+      "route": "/test-onboarding",
+      "selector": "span.bilingual-separator.shrink-0 < span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < h1.text-3xl.sm:text-4xl < div.text-center.mb-8",
+      "text": "·",
+      "px": 26.01
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "span.break-words < span.inline-flex.min-w-0 < h1.text-5xl.md:text-6xl < div.text-center < div.relative.max-w-7xl",
+      "text": "Connect. Collaborate. Succeed.",
+      "px": 60
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "span.bilingual-separator.shrink-0 < span.break-words < span.inline-flex.min-w-0 < h1.text-5xl.md:text-6xl < div.text-center",
+      "text": "·",
+      "px": 51
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "span.bilingual-secondary.text-muted-foreground < span.inline-flex.min-w-0 < h1.text-5xl.md:text-6xl < div.text-center < div.relative.max-w-7xl",
+      "text": "Συνδεθείτε. Συνεργαστείτε. Πετύχετε.",
+      "px": 51
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "div.text-3xl.font-bold < div.bg-white/10.backdrop-blur-md < div.mt-16.grid < div.relative.max-w-7xl < div.alliance-hero.relative",
+      "text": "10,000+",
+      "px": 26
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "div.text-3xl.font-bold < div.bg-white/10.backdrop-blur-md < div.mt-16.grid < div.relative.max-w-7xl < div.alliance-hero.relative",
+      "text": "5,000+",
+      "px": 26
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "div.text-3xl.font-bold < div.bg-white/10.backdrop-blur-md < div.mt-16.grid < div.relative.max-w-7xl < div.alliance-hero.relative",
+      "text": "$2B+",
+      "px": 26
+    }
+  ],
+  "shadows": [
+    {
+      "route": "/admin/feature-flags",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/admin/feature-flags",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/admin/feature-flags",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/admin/feature-flags",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/admin/feature-flags",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/admin/feature-flags",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/admin/feature-flags",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/admin/feature-flags",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-start < div.card-comfortable.p-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/admin/system-settings",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/admin/system-settings",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/mentor/availability",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.p-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/mentor/profile",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/onboarding",
+      "selector": "span.relative.flex < div.relative.inline-block < div.flex.flex-col < div.px-6.sm:px-8 < div.relative.rounded-2xl",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(246, 246, 247) 0px 0px 0px 4px, rgba(33,",
+      "position": "relative"
+    },
+    {
+      "route": "/profile",
+      "selector": "span.relative.flex < div.relative.inline-block < div.flex.flex-col < div.px-6.sm:px-8 < div.relative.rounded-2xl",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(246, 246, 247) 0px 0px 0px 4px, rgba(33,",
+      "position": "relative"
+    },
+    {
+      "route": "/provider/profile",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-4 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/provider/services",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.items-center < div.flex.items-start",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/provider/services",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.items-center < div.flex.items-start",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/provider/services",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.items-center < div.flex.items-start",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/provider/services",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.items-center < div.flex.items-start",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/ai",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-6 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/ai",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/ai",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/ai",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/ai",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/ai",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/ai",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/ai",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.space-y-1 < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.space-y-3.px-6 < div.card-comfortable.divide-y",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.shrink-0 < div.flex.flex-col",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.divide-y < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.divide-y < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.divide-y < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.divide-y < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.divide-y < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/settings/notifications",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.card-comfortable.divide-y < div.rounded-2xl.border",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/tenant/sso",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.items-start < div.card-comfortable.p-4",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/tenant/webhooks",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.items-start < div.card-comfortable.p-4",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/tenant/webhooks",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.items-start < div.card-comfortable.p-4",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/tenant/webhooks",
+      "selector": "span.pointer-events-none.block < button.peer.inline-flex < div.flex.items-center < div.flex.items-start < div.card-comfortable.p-4",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(59, 130, 246, 0.5) 0px 0px 0px 0px, rgb",
+      "position": "static"
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "div.rounded-2xl.border-border < div.lg:col-span-2.space-y-6 < div.grid.grid-cols-1 < div.max-w-7xl.mx-auto < div.min-h-screen.bg-gradient-to-br",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(33, 36,",
+      "position": "static"
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "div.rounded-2xl.border-border < div.lg:col-span-2.space-y-6 < div.grid.grid-cols-1 < div.max-w-7xl.mx-auto < div.min-h-screen.bg-gradient-to-br",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(33, 36,",
+      "position": "static"
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "div.rounded-2xl.border-border < div.lg:col-span-2.space-y-6 < div.grid.grid-cols-1 < div.max-w-7xl.mx-auto < div.min-h-screen.bg-gradient-to-br",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(33, 36,",
+      "position": "static"
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "div.rounded-2xl.border-border < div.lg:col-span-2.space-y-6 < div.grid.grid-cols-1 < div.max-w-7xl.mx-auto < div.min-h-screen.bg-gradient-to-br",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(33, 36,",
+      "position": "static"
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "div.rounded-2xl.border-border < div.space-y-6 < div.grid.grid-cols-1 < div.max-w-7xl.mx-auto < div.min-h-screen.bg-gradient-to-br",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(33, 36,",
+      "position": "static"
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "div.rounded-2xl.border-border < div.space-y-6 < div.grid.grid-cols-1 < div.max-w-7xl.mx-auto < div.min-h-screen.bg-gradient-to-br",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(33, 36,",
+      "position": "static"
+    },
+    {
+      "route": "/themes/alliance",
+      "selector": "div.rounded-2xl.border-border < div.space-y-6 < div.grid.grid-cols-1 < div.max-w-7xl.mx-auto < div.min-h-screen.bg-gradient-to-br",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(33, 36,",
+      "position": "static"
+    },
+    {
+      "route": "/pitch/demo",
+      "selector": "div.rounded-2xl.border",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(33, 36,",
+      "position": "relative"
+    }
+  ],
+  "errors": [
+    {
+      "route": "/investor/pipeline",
+      "nav": "page.goto: net::ERR_ABORTED at http://localhost:3000/investor/pipeline\nCall log:\n\u001b[2m  - navigating to \"http://localhost"
+    },
+    {
+      "route": "/org/dashboard",
+      "eval": "page.evaluate: Execution context was destroyed, most likely because of a navigation"
+    },
+    {
+      "route": "/provider/dashboard",
+      "eval": "page.evaluate: Execution context was destroyed, most likely because of a navigation"
+    }
+  ]
+}

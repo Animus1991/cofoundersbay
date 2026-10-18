@@ -1,0 +1,7 @@
+### mentor
+/messages | escape 0 | clip 1 | chrome-clip 0
+TOTAL routes 11 · escapes 0 · clipped 1 · chrome-clipped (by design) 0
+/messages | escape 0 | clip 1 | chrome-clip 0
+TOTAL routes 11 · escapes 0 · clipped 1 · chrome-clipped (by design) 0
+SUMMARY @390px · dialogs opened 6 on 4 routes
+  no name 0 · off-screen 0 · close<min 0 · no Escape 0 · focus lost 0 · unnamed controls 0 · x-overflow 0

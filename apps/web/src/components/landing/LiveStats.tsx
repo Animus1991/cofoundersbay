@@ -37,10 +37,10 @@ export function LiveStatsStrip() {
     { value: number(stats.events), label: { en: 'Events listed', el: 'Εκδηλώσεις' } },
   ];
   return (
-    <div className="mt-8 w-full animate-fade-in sm:mt-16" style={{ animationDelay: '400ms' }}>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-6">
+    <div className="mt-6 w-full">
+      <div className="grid grid-cols-3 gap-2">
         {items.map(({ value, label }) => (
-          <div key={label.en} className="rounded-xl border border-border bg-card/50 px-3 py-3 text-center backdrop-blur-sm sm:p-4">
+          <div key={label.en} className="rounded-lg border border-border bg-card/50 px-2 py-2 text-center sm:px-3 sm:py-2.5">
             <p className="landing-stat font-display font-bold text-foreground">{value}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               <BilingualText en={label.en} el={label.el} compact />
@@ -74,7 +74,7 @@ export function LiveStatsSection({ heading }: { heading: ReactNode }) {
   const stats = usePublicStats();
   if (!stats) return null;
   return (
-    <section className="border-t border-border bg-primary/[0.03] px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+    <section className="border-t border-border bg-primary/[0.03] px-4 py-12 sm:px-8 lg:px-12 xl:px-16">
       <div className="mx-auto w-full">
         {heading}
         <LiveStatsGrid />

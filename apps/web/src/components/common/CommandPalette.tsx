@@ -32,6 +32,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { foldText, searchPages } from '@/lib/page-search';
 import { FileText } from 'lucide-react';
+import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 
 type CommandItem = {
   id: string;
@@ -57,6 +58,7 @@ type CommandPaletteProps = {
 export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandPaletteProps) {
   const router = useRouter();
   const { setTheme } = useTheme();
+  const popup = usePopupChatOptional();
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -144,7 +146,10 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       descriptionEl: 'Νέα συνομιλία με τον βοηθό',
       icon: Sparkles,
       path: '/ai',
-      action: () => router.push('/ai'),
+      action: () => {
+        if (popup) popup.open(undefined, 'ai');
+        else router.push('/ai');
+      },
       category: 'actions',
     },
     {
@@ -247,7 +252,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       action: () => router.push('/help'),
       category: 'help',
     },
-  ], [router, setTheme, onOpenShortcuts]);
+  ], [router, setTheme, onOpenShortcuts, popup]);
 
   // Filter commands in either language, accents ignored; then every page that
   // fits the words, for this reader's role; then hand the words to the assistant.
@@ -278,11 +283,15 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       description: 'It reads your workspace and asks before it changes anything',
       descriptionEl: 'Διαβάζει τον χώρο εργασίας σας και ρωτά πριν αλλάξει κάτι',
       icon: Sparkles,
-      action: () => router.push(`/ai?q=${encodeURIComponent(search.trim())}`),
+      action: () => {
+        const q = search.trim();
+        if (popup) popup.ask(q);
+        else router.push(`/ai?q=${encodeURIComponent(q)}`);
+      },
       category: 'actions',
     };
     return [...own, ...pages, ask];
-  }, [commands, search, reader?.role, router]);
+  }, [commands, search, reader?.role, router, popup]);
 
   // Group commands by category
   const groupedCommands = useMemo(() => {

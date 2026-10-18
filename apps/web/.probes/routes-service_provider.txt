@@ -1,0 +1,10 @@
+/dashboard/provider
+/provider/analytics
+/provider/services
+/provider/inquiries
+/provider/projects
+/provider/reviews
+/provider/profile
+/ai
+/messages
+/calendar

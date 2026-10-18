@@ -45,8 +45,11 @@ html {
        cursor.com), so a card reads as a place rather than as a box. Every
        theme below holds the same three ratios:
          card on page   1.05-1.09
-         --border       1.14-1.19 on its card (cursor.com 1.15-1.18)
-         --input        1.17-1.19 on its card — a field edge as quiet as a card's */
+         --border       ~1.28 on its card — Primer's borderColor-muted band
+                        (#d1d9e0b3 on white = 1.28); cursor.com's 1.15 was
+                        measured invisible on common panels, dark most of all
+         --input        ~1.42 on its card — Primer's borderColor-default band
+                        (#d1d9e0 = 1.43): the edge of a control, one tier up */
     --background:       232 7% 96.6%;
     --foreground:       232 10% 21%;
     --card:             232 12% 99.4%;
@@ -114,12 +117,12 @@ html {
        band, so `/60` and `/40` fade toward nothing, which is what an inner
        divider should do. A control's own boundary is `--input`, kept firmer
        than a card edge because it is the only thing that marks the field. */
-    --border:           232 5% 93.6%;  /* 1.14 on card — a hairline, not a frame */
+    --border:           232 5% 88.9%;  /* 1.28 on card — Primer borderColor-muted band */
     /* Fields share the card's whisper (1.19, was 1.22-3.14 by theme). The
        field is found by its fill, label and placeholder; focus is the strong
        signal: a 2px --ring outline (globals "Shared keyboard indicator") and
        the edge taking --ring while typing. */
-    --input:            232 5% 92%;
+    --input:            232 5% 84.8%;  /* 1.42 on card — Primer borderColor-default band */
     --ring:             250 40.7% 55%; /* the link tone: 4.9:1 on the page */
 
     /* Score/progress rings — the brand-banner gold on its quiet brown
@@ -209,8 +212,8 @@ html {
     --destructive: 4 23.5% 47%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 4 30% 70%;
-    --border: 232 12% 13.6%;           /* ~1.12 on card */
-    --input: 232 12% 15%;              /* ~1.16 on card */
+    --border: 232 12% 18.8%;           /* ~1.28 on card */
+    --input: 232 12% 21.9%;            /* ~1.42 on card */
     --ring: 248 47% 76.6%;
     --ring-gold-track:  30 22% 38%;   /* quiet on the dark card */
     --ring-gold-ink:    36 55% 80%;   /* the banner's pale-gold text */
@@ -239,8 +242,8 @@ html {
     --destructive: 2 23.5% 46.8%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 30% 70%;
-    --border: 215 16% 22.8%;           /* ~1.12 on card */
-    --input: 215 16% 24.4%;            /* ~1.16 on card */
+    --border: 215 16% 25.7%;           /* ~1.28 on card */
+    --input: 215 16% 28.4%;            /* ~1.42 on card */
     --ring: 199 36% 40%;
     --ring-gold-track:  30 22% 38%;
     --ring-gold-ink:    36 55% 80%;
@@ -268,8 +271,8 @@ html {
     --destructive: 2 30.5% 42.6%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 33.5% 38.8%;
-    --border: 210 8% 93.4%;            /* ~1.13 on card */
-    --input: 210 8% 91.8%;             /* ~1.18 on card */
+    --border: 210 8% 88.7%;            /* ~1.28 on card */
+    --input: 210 8% 84.5%;             /* ~1.42 on card */
     --gradient-hero: linear-gradient(hsl(205 20% 13%), hsl(205 20% 13%));
     color-scheme: light;
   }
@@ -296,8 +299,8 @@ html {
     --destructive: 2 23% 48%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 25% 64%;
-    --border: 240 6% 10.8%;            /* ~1.12 on card */
-    --input: 240 6% 12.2%;             /* ~1.15 on card */
+    --border: 240 6% 16.3%;            /* ~1.28 on card */
+    --input: 240 6% 19.5%;             /* ~1.42 on card */
     --ring: 258 28% 54%;
     --ring-gold-track:  30 22% 38%;
     --ring-gold-ink:    36 55% 80%;
@@ -333,8 +336,8 @@ html {
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 6 33.5% 38.8%; /* 6.92 on card */
 
-    --border:            38 30% 87.6%;  /* ~1.15 on card */
-    --input:             38 28% 86.2%;  /* ~1.19 on card — was 3.14, a drawn box */
+    --border:            38 30% 83.3%;  /* ~1.28 on card */
+    --input:             38 28% 78.9%;  /* ~1.42 on card — was 3.14, a drawn box */
 
     color-scheme: light;
   }
@@ -360,8 +363,8 @@ html {
     --destructive: 350 30% 42.6%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 350 33% 38.8%;
-    --border: 30 16% 92.6%;            /* ~1.13 on card */
-    --input: 30 16% 91%;               /* ~1.18 on card */
+    --border: 30 16% 87.4%;            /* ~1.28 on card */
+    --input: 30 16% 83.1%;             /* ~1.42 on card */
     --gradient-hero: linear-gradient(hsl(24 14% 13%), hsl(24 14% 13%));
     color-scheme: light;
   }
@@ -3858,63 +3861,67 @@ textarea[class~="border-input"]:focus,
   }
 }
 
-/* Landing intro. On a phone the headline and the line under it use the
-   phone title and subtitle (13.582 and 12.921). The live counts use the
-   stat step (14.002). From 640px they keep the poster sizes. Pixels,
-   not rem: the desktop root is 82% and would shrink a rem a second time.
-   The wash started at blur-3xl (64px), then 10% less (57.6px), then
-   another 5% (54.72px), so the lilac stays a shape. On a phone the
-   poster column is 2% narrower than the full width; from 640px it is
-   full width again. */
+/* Landing type. Hero display is half the previous poster (30/34/36 → 15/17/18).
+   Section and lead sit on the same step so the page is one product, not a
+   36px title over 16px body. Upright only: italic on the example card made
+   the right column look like a quote, not a working document. Pixels, not
+   rem: the desktop root is 82% and would shrink a rem a second time.
+   The wash is a soft mark, not a 96px empty field. */
 .landing-wash {
-  filter: blur(54.72px);
+  filter: blur(32px);
 }
-@media (max-width: 639.98px) {
-  .landing-intro {
-    width: 98%;
-  }
+#main-content h1.landing-display,
+#main-content h2.landing-section,
+#main-content p.landing-lead {
+  font-style: normal;
+  font-family: var(--font-sans, var(--font-inter)), system-ui, sans-serif;
+  letter-spacing: 0;
 }
 #main-content h1.landing-display {
-  font-size: 13.582px;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+#main-content h2.landing-section {
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 600;
 }
 #main-content p.landing-lead {
-  font-size: 12.921px;
+  font-size: 13px;
   line-height: 1.5;
 }
 #main-content p.landing-stat {
-  font-size: 14.002px;
+  font-size: 16px;
   line-height: 1.2;
-}
-/* The hero headline's second language: a subtitle under the display line,
-   not a second display line (0.85em of 60px read as two headlines). */
-#main-content h1.landing-display .landing-display-secondary {
-  margin-top: 0.4em;
-  font-size: 0.5em;
-  font-weight: 500;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
+  font-style: normal;
 }
 @media (min-width: 640px) {
   #main-content h1.landing-display {
-    font-size: 48px;
-    line-height: 1.08;
+    font-size: 17px;
+  }
+  #main-content h2.landing-section {
+    font-size: 17px;
   }
   #main-content p.landing-lead {
-    font-size: 18px;
+    font-size: 14px;
   }
   #main-content p.landing-stat {
-    font-size: 24px;
+    font-size: 17px;
   }
 }
 @media (min-width: 1024px) {
   #main-content h1.landing-display {
-    font-size: 60px;
-    line-height: 1.05;
+    font-size: 18px;
+  }
+  #main-content h2.landing-section {
+    font-size: 18px;
   }
   #main-content p.landing-lead {
-    font-size: 20px;
+    font-size: 14px;
+  }
+  #main-content p.landing-stat {
+    font-size: 18px;
   }
 }
 

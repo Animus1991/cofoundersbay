@@ -1,0 +1,11 @@
+/ai | escape 0 | clip 1 | chrome-clip 0
+/builder/applications | escape 0 | clip 12 | chrome-clip 1
+/messages | escape 0 | clip 2 | chrome-clip 0
+/privacy | escape 3 | clip 1 | chrome-clip 0
+/research | escape 0 | clip 1 | chrome-clip 1
+/research/canvas | escape 0 | clip 1 | chrome-clip 1
+/settings | escape 0 | clip 3 | chrome-clip 1
+/settings/ai | escape 0 | clip 1 | chrome-clip 0
+/research/board-gtm | escape 1 | clip 0 | chrome-clip 0
+
+TOTAL routes 160 · escapes 4 · clipped 22 · chrome-clipped (by design) 76

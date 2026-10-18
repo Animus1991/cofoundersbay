@@ -1,0 +1,5 @@
+/admin/users | escape 0 | clip 1 | chrome-clip 0
+/messages | escape 0 | clip 1 | chrome-clip 0
+/research/board-gtm | escape 1 | clip 0 | chrome-clip 0
+
+TOTAL routes 160 · escapes 1 · clipped 2 · chrome-clipped (by design) 0

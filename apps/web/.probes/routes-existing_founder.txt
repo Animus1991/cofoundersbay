@@ -1,0 +1,13 @@
+/dashboard/founder
+/readiness
+/analytics
+/builder
+/builder/pitch-deck
+/research
+/milestones
+/projects
+/fundraising
+/builder/applications
+/ai
+/messages
+/calendar

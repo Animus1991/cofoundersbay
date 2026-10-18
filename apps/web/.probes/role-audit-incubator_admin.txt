@@ -1,0 +1,5 @@
+### incubator_admin
+TOTAL routes 11 · escapes 0 · clipped 0 · chrome-clipped (by design) 0
+TOTAL routes 11 · escapes 0 · clipped 0 · chrome-clipped (by design) 0
+SUMMARY @390px · dialogs opened 18 on 1 routes
+  no name 0 · off-screen 0 · close<min 0 · no Escape 0 · focus lost 0 · unnamed controls 0 · x-overflow 0

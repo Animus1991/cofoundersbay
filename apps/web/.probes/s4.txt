@@ -1,0 +1,4 @@
+/p/preview-demo-user
+/privacy
+/share/data-room-seed
+/builder

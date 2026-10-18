@@ -1,0 +1,123 @@
+### /discover
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+    <SegmentViewNode type="page" pagePath="/apps/web/...">
+      <SegmentTrieNode>
+      <ClientPageRoot Component={function DiscoverPage} searchParams={{}} params={{}}>
+        <DiscoverPage params={Promise} searchParams={Promise}>
+          <AppShell title="Explore" titleEl="Εξερεύνηση" description="Discover f..." descriptionEl="Ανακαλύψτε..." ...>
+            <div className="space-y-5 ...">
+              <header className="space-y-3">
+                <section className="flex flex-...">
+                  <div>
+                  <div className="flex w-ful...">
+                    <PageContextualHelp compact={true} defaultOpen={false}>
+                      <HelpCallout id="discover" title="How discov..." titleEl="Πώς λειτου..." defaultOpen={false} ...>
+                        <div className="relative">
+                          <button type="button" onClick={function onClick} aria-expanded={false} ...>
+                            <CfbGlyph>
+                            <span className="sr-only">
+                              <BilingualText en="How discov..." el="Πώς λειτου..." compact={true}>
+                                <span
++                                 className="inline-flex min-w-0 max-w-full flex-wrap items-baseline overflow-hidden m..."
+-                                 className="inline-flex min-w-0 max-w-full items-baseline gap-0.5 truncate"
+                                  <span
++                                   className="min-w-0 max-w-full truncate"
+-                                   className="truncate"
++                                   How discovery works
+                                  <span
++                                   lang="el"
+-                                   lang={null}
++                                   className="bilingual-secondary text-muted-foreground min-w-0 [overflow-wrap:anywhe..."
+-                                   className="bilingual-separator shrink-0 bilingual-separator--inline"
+-                                   aria-hidden="true"
++                                   <span
++                                     className="bilingual-separator shrink-0 bilingual-separator--inline mx-0.5"
++                                     aria-hidden="true"
++                                   >
+-                                   ·
+### /matches
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+    <SegmentViewNode type="page" pagePath="/apps/web/...">
+      <SegmentTrieNode>
+      <ClientPageRoot Component={function MatchesPage} searchParams={{}} params={{}}>
+        <MatchesPage params={Promise} searchParams={Promise}>
+          <AppShell rail={[...]} title="Matches" titleEl="Αντιστοιχί..." description="AI-ranked ..." ...>
+            <div className="space-y-5 ...">
+              <header className="space-y-3">
+                <section className="flex flex-...">
+                  <div>
+                  <div className="flex w-ful...">
+                    <PageContextualHelp compact={true} defaultOpen={false}>
+                      <HelpCallout id="matches" title="How matchi..." titleEl="Πώς γίνετα..." defaultOpen={false} ...>
+                        <div className="relative">
+                          <button type="button" onClick={function onClick} aria-expanded={false} ...>
+                            <CfbGlyph>
+                            <span className="sr-only">
+                              <BilingualText en="How matchi..." el="Πώς γίνετα..." compact={true}>
+                                <span
++                                 className="inline-flex min-w-0 max-w-full flex-wrap items-baseline overflow-hidden m..."
+-                                 className="inline-flex min-w-0 max-w-full items-baseline gap-0.5 truncate"
+                                  <span
++                                   className="min-w-0 max-w-full truncate"
+-                                   className="truncate"
++                                   How matching works
+                                  <span
++                                   lang="el"
+-                                   lang={null}
++                                   className="bilingual-secondary text-muted-foreground min-w-0 [overflow-wrap:anywhe..."
+-                                   className="bilingual-separator shrink-0 bilingual-separator--inline"
+-                                   aria-hidden="true"
++                                   <span
++                                     className="bilingual-separator shrink-0 bilingual-separator--inline mx-0.5"
++                                     aria-hidden="true"
++                                   >
+-                                   ·
+### /discover
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+    <SegmentViewNode type="page" pagePath="/apps/web/...">
+      <SegmentTrieNode>
+      <ClientPageRoot Component={function DiscoverPage} searchParams={{}} params={{}}>
+        <DiscoverPage params={Promise} searchParams={Promise}>
+          <AppShell title="Explore" titleEl="Εξερεύνηση" description="Discover f..." descriptionEl="Ανακαλύψτε..." ...>
+            <div className="space-y-5 ...">
+              <header className="space-y-3">
+                <section className="flex flex-...">
+                  <div>
+                  <div className="flex w-ful...">
+                    <PageContextualHelp compact={true} defaultOpen={false}>
+                      <HelpCallout id="discover" title="How discov..." titleEl="Πώς λειτου..." defaultOpen={false} ...>
+                        <div className="relative">
+                          <button type="button" onClick={function onClick} aria-expanded={false} ...>
+                            <CfbGlyph>
+                            <span className="sr-only">
+                              <BilingualText en="How discov..." el="Πώς λειτου..." compact={true}>
+                                <span
++                                 className="inline-flex min-w-0 max-w-full flex-wrap items-baseline overflow-hidden m..."
+-                                 className="inline-flex min-w-0 max-w-full items-baseline gap-0.5 truncate"
+                                  <span
++                                   className="min-w-0 max-w-full truncate"
+-                                   className="truncate"
++                                   How discovery works
+                                  <span
++                                   lang="el"
+-                                   lang={null}
++                                   className="bilingual-secondary text-muted-foreground min-w-0 [overflow-wrap:anywhe..."
+-                                   className="bilingual-separator shrink-0 bilingual-separator--inline"
+-                                   aria-hidden="true"
++                                   <span
++                                     className="bilingual-separator shrink-0 bilingual-separator--inline mx-0.5"
++                                     aria-hidden="true"
++                                   >
+-                                   ·
