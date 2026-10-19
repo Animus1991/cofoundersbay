@@ -1,14 +1,15 @@
 'use client';
 
 import { StatusText } from '@/components/common/StatusText';
+import { auditMeta } from '@/lib/i18n/audit-meta';
 import { FactLine } from '@/components/common/FactLine';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Shield, Search, Filter, RefreshCw, Download, User,
+  Shield, Search, RefreshCw, Download, User,
   Trash2, PenLine, Plus, Eye, LogOut, Settings,
-  AlertTriangle, CheckCircle2, Loader2, ChevronLeft, ChevronRight,
+  AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { downloadCsv } from '@/lib/csv';
@@ -92,10 +93,7 @@ function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
   const ActionIcon = ACTION_ICONS[verbOf(log.action)] ?? Settings;
   const colorClass = ACTION_COLORS[verbOf(log.action)] ?? 'bg-muted text-muted-foreground border-border';
 
-  const metaStr = Object.entries(log.meta ?? {})
-    .filter(([k]) => !['actorId'].includes(k))
-    .map(([k, v]) => `${k.charAt(0).toUpperCase()}${k.slice(1)}: ${String(v)}`)
-    .join(' · ');
+  const meta = auditMeta(log.meta);
 
   // A row of the log, set like every row in a section card: the action's
   // mark, the actor over the action and the entity, the time at the right
@@ -120,7 +118,7 @@ function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
             ]}
           />
         )}
-        meta={metaStr ? <span className="block truncate">{metaStr}</span> : undefined}
+        meta={meta ? <span className="block truncate"><BilingualText en={meta.en} el={meta.el} compact /></span> : undefined}
         aside={<RelativeTime date={log.createdAt} />}
       />
     </div>

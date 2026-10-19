@@ -1,5 +1,6 @@
 import { APP_LOCALES, type AppLocale } from '@/lib/locale';
 import { CATALOG } from './catalog';
+import { placeElStrict } from './places';
 
 const extraCache: Partial<Record<Exclude<AppLocale, 'en'>, Record<string, string>>> = {};
 
@@ -178,6 +179,9 @@ function translateDynamic(locale: Exclude<AppLocale, 'en'>, text: string, depth 
       }
     }
   }
+  // A place on its own ("Patras, Greece") is in the place table, not the
+  // catalog; Greek only, since the table is Greek.
+  if (result === null && locale === 'el' && depth === 0) result = placeElStrict(text);
   memo.set(text, result);
   return result;
 }

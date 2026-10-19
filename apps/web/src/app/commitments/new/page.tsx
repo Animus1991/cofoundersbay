@@ -37,6 +37,7 @@ import { createCommitmentCard, commitmentRefusal, getCommitmentCard, updateCommi
 import { CMT, kindCopy } from '@/lib/i18n/strings-commitments';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useFormDraft } from '@/lib/form-draft';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
 import { isOwnedProject, readProjectsOverlay, resolveDemoProjects, type DemoProject, type ProjectStatus } from '@/lib/projects-demo';
@@ -129,6 +130,7 @@ function PostingGuide() {
   const projectParam = params?.get('project') ?? '';
   const kindParam = params?.get('kind') ?? '';
 
+  const sayOne = useBilingualString();
   const [form, setForm] = useState<NeedCardInput>(() => ({ ...EMPTY, kind: isCommitmentKind(kindParam) ? kindParam : 'cofounder' }));
   const [original, setOriginal] = useState<NeedCardInput | null>(null);
   const [projects, setProjects] = useState<DemoProject[]>([]);
@@ -308,7 +310,7 @@ function PostingGuide() {
                   </Field>
                 ) : null}
                 <Field id="card-title" label={{ en: 'Title', el: 'Τίτλος' }} count={form.title.length} max={NEED_CARD_LIMITS.title}>
-                  <Input id="card-title" {...text('title')} maxLength={NEED_CARD_LIMITS.title} placeholder="Technical co-founder for Harbor" />
+                  <Input id="card-title" {...text('title')} maxLength={NEED_CARD_LIMITS.title} placeholder={sayOne('Technical co-founder for Harbor', 'Τεχνικός συνιδρυτής για τη Harbor')} />
                 </Field>
               </CardContent>
             </Card>
@@ -331,7 +333,7 @@ function PostingGuide() {
                       {...text(key)}
                       maxLength={NEED_CARD_LIMITS.sentence + 20}
                       className="min-h-16"
-                      placeholder={example.en}
+                      placeholder={sayOne(example.en, example.el)}
                       aria-describedby={`card-${key}-hint`}
                     />
                   </Field>
@@ -345,7 +347,7 @@ function PostingGuide() {
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field id="offer-role" label={CMT.offer_role}>
-                  <Input id="offer-role" {...text('offerRole')} maxLength={NEED_CARD_LIMITS.role} placeholder="CTO and co-founder" />
+                  <Input id="offer-role" {...text('offerRole')} maxLength={NEED_CARD_LIMITS.role} placeholder={sayOne('CTO and co-founder', 'CTO και συνιδρυτής')} />
                 </Field>
                 <Field id="offer-equity" label={equityRequired(form.kind) ? CMT.offer_equity : CMT.offer_equity_terms}>
                   <Input id="offer-equity" {...text('offerEquity')} maxLength={NEED_CARD_LIMITS.equity} placeholder={equityRequired(form.kind) ? '8–12%' : 'Pre-seed via SAFE'} />
@@ -373,7 +375,7 @@ function PostingGuide() {
                 </Field>
                 <div className="sm:col-span-2">
                   <Field id="offer-scope" label={CMT.offer_scope} count={form.offerScope.length} max={NEED_CARD_LIMITS.scope}>
-                    <Textarea id="offer-scope" {...text('offerScope')} maxLength={NEED_CARD_LIMITS.scope + 20} className="min-h-16" placeholder="Own the platform and hire the first two engineers." />
+                    <Textarea id="offer-scope" {...text('offerScope')} maxLength={NEED_CARD_LIMITS.scope + 20} className="min-h-16" placeholder={sayOne('Own the platform and hire the first two engineers.', 'Να αναλάβει την πλατφόρμα και να προσλάβει τους δύο πρώτους μηχανικούς.')} />
                   </Field>
                 </div>
               </CardContent>
@@ -405,7 +407,7 @@ function PostingGuide() {
                   </Select>
                 </Field>
                 <Field id="card-place" label={CMT.place}>
-                  <Input id="card-place" {...text('place')} maxLength={80} placeholder="Athens, Greece" />
+                  <Input id="card-place" {...text('place')} maxLength={80} placeholder={sayOne('Athens, Greece', 'Αθήνα, Ελλάδα')} />
                 </Field>
                 <div className="flex items-center gap-3 self-end pb-2">
                   <Switch id="card-remote" aria-label={bilingualAria(CMT.remote.en, CMT.remote.el)} checked={form.isRemote} onCheckedChange={(v) => set('isRemote')(Boolean(v))} />

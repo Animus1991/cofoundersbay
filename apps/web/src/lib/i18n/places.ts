@@ -40,6 +40,11 @@ const PLACES_EL: Record<string, string> = {
   istanbul: 'Κωνσταντινούπολη',
   'new york': 'Νέα Υόρκη',
   'san francisco': 'Σαν Φρανσίσκο',
+  boston: 'Βοστώνη',
+  toronto: 'Τορόντο',
+  singapore: 'Σιγκαπούρη',
+  'tel aviv': 'Τελ Αβίβ',
+  dubai: 'Ντουμπάι',
   // Countries and codes
   greece: 'Ελλάδα',
   gr: 'Ελλάδα',
@@ -102,4 +107,23 @@ export function placeEl(place: string | null | undefined): string {
 /** Both languages, for `BilingualText`. */
 export function placePair(place: string | null | undefined): { en: string; el: string } {
   return { en: place ?? '', el: placeEl(place) };
+}
+
+/**
+ * The Greek for text that is only a place ("Heraklion, Greece", "Remote"),
+ * or null. The DOM pass uses it for places pages print as they came: every
+ * part must be known, and a lone two-letter code ("IT", "US") is left alone,
+ * since alone it is as likely to be a word or an abbreviation as a country.
+ */
+export function placeElStrict(text: string): string | null {
+  const parts = text.split(',');
+  if (parts.length > 3) return null;
+  if (parts.length === 1 && fold(text).length <= 2) return null;
+  const out: string[] = [];
+  for (const part of parts) {
+    const el = PLACES_EL[fold(part)];
+    if (!el) return null;
+    out.push(el);
+  }
+  return out.join(', ');
 }
