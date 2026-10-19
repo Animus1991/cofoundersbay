@@ -852,7 +852,7 @@ export default function FeedPage() {
           <SampleDataNotice
             className="mb-6"
             surface="Feed"
-            detail="There is no live Feed module yet. These posts are sample network activity so you can review the layout."
+            detail="Your network has not posted yet, so these posts are samples that show how the feed reads."
             askAiPrompt="The feed is showing sample posts. What should I do next on Discover, Matches, or Messages instead?"
           />
         )}

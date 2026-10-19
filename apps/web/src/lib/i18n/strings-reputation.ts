@@ -137,18 +137,23 @@ export const REPUTATION_STRINGS: Record<string, BilingualPair> = {
   retry: { en: 'Try again', el: 'Δοκιμή ξανά' },
 };
 
-/** Greek names for the API's XP ladder, by level number. English comes from the server. */
+/**
+ * Greek names for the API's XP ladder, by level number. English comes from the
+ * server. They name the stage, not the person: "Επικυρωμένος ιδρυτής" or
+ * "Έτοιμος για venture" gave every member a masculine title, and the platform
+ * does not ask anyone's gender (docs §54, the neutral-gender rule).
+ */
 export const LEVEL_LABEL_EL: Record<number, string> = {
-  1: 'Σπόρος ιδρυτή',
-  2: 'Εξερευνητής ιδέας',
-  3: 'Δημιουργός',
-  4: 'Επικυρωμένος ιδρυτής',
-  5: 'Αναζητητής market fit',
-  6: 'Αρχιτέκτονας ανάπτυξης',
-  7: 'Έτοιμος για venture',
-  8: 'Διεκδικητής Series A',
-  9: 'Χειριστής scale-up',
-  10: 'Ηγέτης οικοσυστήματος',
+  1: 'Πρώτος σπόρος',
+  2: 'Εξερεύνηση ιδέας',
+  3: 'Χτίσιμο',
+  4: 'Επικυρωμένη ιδέα',
+  5: 'Αναζήτηση market fit',
+  6: 'Σχέδιο ανάπτυξης',
+  7: 'Ετοιμότητα για venture',
+  8: 'Διεκδίκηση Series A',
+  9: 'Κλιμάκωση',
+  10: 'Ηγεσία οικοσυστήματος',
 };
 
 /** Which overview group an event type belongs to. Unknown types fall to `other`. */

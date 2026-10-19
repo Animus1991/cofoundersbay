@@ -414,6 +414,55 @@ const el: Record<string, string> = {
   Close: 'Κλείσιμο',
   'Close dialog': 'Κλείσιμο παραθύρου',
   '{surface} is showing sample items': '{surface}: εμφανίζονται δείγματα',
+  // The sample-data notes (sampleNoticeGreek.test.ts keeps every one in Greek).
+  'User management': 'Διαχείριση χρηστών',
+  'Data room': 'Data room',
+  'Manage communities': 'Διαχείριση κοινοτήτων',
+  'Community moderation': 'Εποπτεία κοινότητας',
+  'Cohort': 'Κύκλος',
+  'Organization admin': 'Διαχείριση οργανισμού',
+  'Provider analytics': 'Αναλυτικά παρόχου',
+  'API keys': 'Κλειδιά API',
+  'There are no communities yet, so these rows are samples that show the layout. A community you create is saved for real.':
+    'Δεν υπάρχουν ακόμη κοινότητες, οπότε αυτές οι γραμμές είναι δείγματα που δείχνουν τη διάταξη. Μια κοινότητα που δημιουργείτε αποθηκεύεται κανονικά.',
+  'There are no programmes yet, so these rows show the layout. Programmes appear here as organisations create them.':
+    'Δεν υπάρχουν ακόμη προγράμματα, οπότε αυτές οι γραμμές δείχνουν τη διάταξη. Τα προγράμματα εμφανίζονται εδώ καθώς τα δημιουργούν οι οργανισμοί.',
+  'These accounts are illustrative until the directory responds; moderation actions are disabled on them.':
+    'Αυτοί οι λογαριασμοί είναι ενδεικτικοί μέχρι να απαντήσει ο κατάλογος μελών· οι ενέργειες εποπτείας δεν εφαρμόζονται σε αυτούς.',
+  'You have no milestone due dates, upcoming sessions or events you are going to yet. These items are samples so you can learn the layout.':
+    'Δεν έχετε ακόμη προθεσμίες ορόσημων, προγραμματισμένες συνεδρίες ή εκδηλώσεις που θα παρακολουθήσετε. Αυτά είναι δείγματα, για να γνωρίσετε τη διάταξη.',
+  'Documents, investors and the access log are illustrative — the data room has no backend storage yet.':
+    'Τα έγγραφα, οι επενδυτές και το αρχείο πρόσβασης είναι ενδεικτικά — το data room δεν αποθηκεύεται ακόμη στον server.',
+  "These endorsements are samples written by the demo's own people. Approve and Decline change this screen only.":
+    'Αυτές οι συστάσεις είναι δείγματα, γραμμένα από τα πρόσωπα του demo. Η έγκριση και η απόρριψη αλλάζουν μόνο αυτή την οθόνη.',
+  'Your network has not posted yet, so these posts are samples that show how the feed reads.':
+    'Το δίκτυό σας δεν έχει δημοσιεύσει ακόμη, οπότε αυτές οι αναρτήσεις είναι δείγματα που δείχνουν πώς διαβάζεται η ροή.',
+  'You do not run a community yet, so these are samples that show the layout.':
+    'Δεν διαχειρίζεστε ακόμη κοινότητα, οπότε αυτά είναι δείγματα που δείχνουν τη διάταξη.',
+  'These reports are samples - reports filed against people are handled in the platform moderation queue (Admin -> Reports), and group-level reports have no store yet.':
+    'Αυτές οι αναφορές είναι δείγματα. Οι αναφορές για πρόσωπα εξετάζονται στην ουρά εποπτείας της πλατφόρμας (Διαχείριση → Αναφορές)· οι αναφορές για ομάδες δεν αποθηκεύονται ακόμη.',
+  'The directory lists people whose role is investor. The six cards with a firm, check size and track record are samples that show what a complete investor profile looks like.':
+    'Ο κατάλογος δείχνει όσους έχουν ρόλο επενδυτή. Οι έξι κάρτες με εταιρεία, ύψος επένδυσης και ιστορικό είναι δείγματα που δείχνουν πώς μοιάζει ένα πλήρες προφίλ επενδυτή.',
+  'No provider has listed a service yet, so these cards are sample experts that show the layout.':
+    'Κανένας πάροχος δεν έχει καταχωρίσει ακόμη υπηρεσία, οπότε αυτές οι κάρτες είναι δείγματα ειδικών που δείχνουν τη διάταξη.',
+  'Transactions and monthly totals are illustrative - there is no mentor earnings ledger yet.':
+    'Οι συναλλαγές και τα μηνιαία σύνολα είναι ενδεικτικά — δεν υπάρχει ακόμη αρχείο αποδοχών μεντόρων.',
+  'Incoming collaboration proposals are not a live API yet. These two cards show the layout so you can learn Accept and Decline.':
+    'Οι εισερχόμενες προτάσεις συνεργασίας δεν λειτουργούν ακόμη ζωντανά. Αυτές οι δύο κάρτες δείχνουν τη διάταξη, για να γνωρίσετε την αποδοχή και την απόρριψη.',
+  'This organisation and its members are illustrative until the directory responds; member actions are disabled on them.':
+    'Ο οργανισμός και τα μέλη του είναι ενδεικτικά μέχρι να απαντήσει ο κατάλογος· οι ενέργειες για μέλη δεν εφαρμόζονται σε αυτά.',
+  "This is a sample cohort from the demo organisation, shown because sample data is on and your organisation's cohort did not load.":
+    'Αυτός είναι ένας δειγματικός κύκλος από τον οργανισμό του demo. Εμφανίζεται επειδή τα δείγματα είναι ενεργά και ο κύκλος του οργανισμού σας δεν φορτώθηκε.',
+  'The metric cards, traffic sources, funnel and service rows are illustrative - live analytics cover profile views, connections, messages and engagement.':
+    'Οι κάρτες μετρήσεων, οι πηγές επισκεψιμότητας, η χοάνη και οι γραμμές υπηρεσιών είναι ενδεικτικές· τα πραγματικά αναλυτικά καλύπτουν προβολές προφίλ, συνδέσεις, μηνύματα και αλληλεπίδραση.',
+  'You have not invited anyone yet. These invitations are samples so you can see the layout.':
+    'Δεν έχετε προσκαλέσει ακόμη κανέναν. Αυτές οι προσκλήσεις είναι δείγματα, για να δείτε τη διάταξη.',
+  'These keys are illustrative - no key-issuing service exists yet, so none of them authenticate anything.':
+    'Αυτά τα κλειδιά είναι ενδεικτικά — δεν υπάρχει ακόμη υπηρεσία έκδοσης κλειδιών, οπότε κανένα δεν πιστοποιεί τίποτα.',
+  "These programs are illustrative until your organisation's program list loads.":
+    'Αυτά τα προγράμματα είναι ενδεικτικά μέχρι να φορτωθεί η λίστα προγραμμάτων του οργανισμού σας.',
+  'These endpoints are illustrative - webhook delivery has no backend yet, so nothing here sends, retries or logs.':
+    'Αυτά τα endpoints είναι ενδεικτικά — η αποστολή webhooks δεν λειτουργεί ακόμη, οπότε τίποτα εδώ δεν στέλνει, δεν ξαναδοκιμάζει και δεν καταγράφει.',
   'Organisation analytics': 'Αναλυτικά οργανισμού',
   "The counts at the top are your organisation's own. The trend, session, stage, industry and funnel panels below are illustrative until the platform reports them.":
     'Οι αριθμοί στην κορυφή είναι του οργανισμού σας. Τα πάνελ τάσης, συνεδριών, σταδίων, κλάδων και χοάνης παρακάτω είναι ενδεικτικά μέχρι να τα αναφέρει η πλατφόρμα.',

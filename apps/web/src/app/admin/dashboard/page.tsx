@@ -98,7 +98,7 @@ type Attention = {
 
 export default function AdminDashboardPage() {
   const me = useStoredUser();
-  const adminName = me?.displayName?.split(' ')[0] ?? 'Admin';
+  const adminName = me?.displayName ?? 'Admin';
   const [period, setPeriod] = useState<Period>('week');
   const { apiAvailable, pollInterval } = usePollingGuards();
 
@@ -243,7 +243,7 @@ export default function AdminDashboardPage() {
       }
     >
       <div className="space-y-6">
-        <HomeAskHero role="admin" name={adminName} lead={{ en: 'What waits on an admin, and how the platform is doing.', el: 'Τι περιμένει διαχειριστή, και πώς πάει η πλατφόρμα.' }} />
+        <HomeAskHero role="admin" name={adminName} lead={{ en: 'What is waiting on you, and how the platform is doing.', el: 'Τι εκκρεμεί για εσάς και πώς πάει η πλατφόρμα.' }} />
         {attention[0] ? (
           <HomeNextStep
             tone="waiting"

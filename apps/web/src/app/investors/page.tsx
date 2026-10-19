@@ -568,7 +568,7 @@ export default function InvestorsPage() {
         {showDemoData && (
           <SampleDataNotice
             surface="Investors"
-            detail="The directory lists people whose role is investor. The six cards with a firm, check size and track record are sample profiles that show what a complete investor profile looks like; they have no profile page or inbox."
+            detail="The directory lists people whose role is investor. The six cards with a firm, check size and track record are samples that show what a complete investor profile looks like."
             askAiPrompt="Some investors here are samples. Which kind of investor fits my stage and industry, and how should I ask for an intro?"
           />
         )}

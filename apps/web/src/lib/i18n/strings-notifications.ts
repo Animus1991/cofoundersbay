@@ -42,7 +42,7 @@ export const NOTIFICATIONS_STRINGS: Record<string, BilingualPair> = {
 
   // ── Actions ──
   mark_read: { en: 'Mark read', el: 'Σημείωση ως αναγνωσμένη' },
-  mark_all_read: { en: 'Mark all read', el: 'Σημείωση όλων ως αναγνωσμένες' },
+  mark_all_read: { en: 'Mark all read', el: 'Σήμανση όλων ως αναγνωσμένων' },
   delete: { en: 'Delete', el: 'Διαγραφή' },
   view: { en: 'View', el: 'Προβολή' },
   retry: { en: 'Retry', el: 'Επανάληψη' },

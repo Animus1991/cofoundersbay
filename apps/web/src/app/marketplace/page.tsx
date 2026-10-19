@@ -427,7 +427,7 @@ export default function MarketplacePage() {
         {backendProviders.length === 0 && (
           <SampleDataNotice
             surface="Marketplace"
-            detail="Live provider listings are not the source of truth yet. These cards are sample experts so you can browse the layout."
+            detail="No provider has listed a service yet, so these cards are sample experts that show the layout."
             askAiPrompt="The marketplace is showing sample providers. How should I evaluate legal, finance, and coaching help for an early-stage startup?"
           />
         )}

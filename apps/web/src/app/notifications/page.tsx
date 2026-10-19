@@ -1,13 +1,13 @@
 'use client';
 
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
-import { useState, useCallback, memo } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Bell, BellOff, Check, CheckCheck, Trash2, Filter,
+  Bell, BellOff, Check, CheckCheck, Trash2,
   MessageCircle, UserPlus, Calendar, TrendingUp, Award,
   Briefcase, Users, RefreshCw,
-  Settings, Square, SquareCheck,
+  Settings, Square, SquareCheck, X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -22,6 +22,7 @@ import { notificationsEn, notificationsEl } from '@/lib/i18n/strings-notificatio
 import { bilingualAria } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Counter } from '@/components/ui/counter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
@@ -208,7 +209,7 @@ const NotificationRow = memo(function NotificationRow({
               onClick={() => onRead(item.id)}
               className="inline-flex tap-target-y items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
-              <Check className="icon-sm" /> <BilingualText en="Mark read" el="Αναγνωσμένη" compact />
+              <Check className="icon-sm" /> <BilingualText en="Mark read" el="Ως αναγνωσμένη" compact />
             </button>
           )}
           <button
@@ -244,7 +245,7 @@ export default function NotificationsPage() {
     staleTime: 30_000,
   });
 
-  const notifications = data?.notifications ?? [];
+  const notifications = useMemo(() => data?.notifications ?? [], [data]);
   const unreadCount = notifications.filter((n) => !n.readAt).length;
 
   const markRead = useMutation({
@@ -370,6 +371,7 @@ export default function NotificationsPage() {
   }, {});
 
   const grouped = groupByDate(notifications);
+  const activeFilter = FILTER_TABS.find((f) => f.value === activeTab);
 
   const rail: PageRailSection[] = [
     {
@@ -399,24 +401,9 @@ export default function NotificationsPage() {
       glyph: 'sliders',
       labelEn: 'Inbox tools',
       labelEl: 'Εργαλεία εισερχομένων',
-      badge: (showUnreadOnly ? 1 : 0) + (bulkMode ? 1 : 0) || null,
+      badge: bulkMode ? 1 : null,
       content: (
         <div className="space-y-1">
-          <button
-            type="button"
-            aria-pressed={showUnreadOnly}
-            onClick={() => setShowUnreadOnly((v) => !v)}
-            className={cn(
-              'tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors',
-              showUnreadOnly ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
-            )}
-          >
-            <Filter className="icon-sm shrink-0" aria-hidden="true" />
-            <span className="min-w-0 flex-1">
-              <BilingualText en={notificationsEn('unread')} el={notificationsEl('unread')} compact wrap />
-            </span>
-            {unreadCount > 0 ? <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{unreadCount}</span> : null}
-          </button>
           <button
             type="button"
             aria-pressed={bulkMode}
@@ -439,9 +426,6 @@ export default function NotificationsPage() {
               <RailAction icon={Check} en={`Mark selected (${selectedIds.size})`} el={`Επιλεγμένες ως αναγνωσμένες (${selectedIds.size})`} onClick={handleBulkRead} />
               <RailAction icon={Trash2} en={`Remove selected (${selectedIds.size})`} el={`Διαγραφή επιλεγμένων (${selectedIds.size})`} onClick={handleBulkDelete} />
             </>
-          )}
-          {unreadCount > 0 && (
-            <RailAction icon={CheckCheck} en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} onClick={() => markAllRead.mutate()} disabled={markAllRead.isPending} />
           )}
           <RailAction icon={RefreshCw} en={notificationsEn('refresh')} el={notificationsEl('refresh')} onClick={() => void refetch()} />
           <Link
@@ -483,6 +467,54 @@ export default function NotificationsPage() {
       <div className="">
         {/* Notification list */}
         <Card className="overflow-hidden">
+          {/* The inbox's own header, as on GitHub: which notifications are
+              shown (all or unread, and the category if one is chosen) on the
+              left, the action on all of them on the right. */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2.5 sm:px-6">
+            <div role="group" aria-label={bilingualAria('Show', 'Εμφάνιση')} className="inline-flex rounded-lg border border-border p-0.5">
+              {([
+                { value: false, en: notificationsEn('filter_all'), el: notificationsEl('filter_all') },
+                { value: true, en: notificationsEn('unread'), el: notificationsEl('unread') },
+              ]).map((option) => (
+                <button
+                  key={String(option.value)}
+                  type="button"
+                  aria-pressed={showUnreadOnly === option.value}
+                  onClick={() => setShowUnreadOnly(option.value)}
+                  className={cn(
+                    'tap-target-y inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                    showUnreadOnly === option.value ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  <BilingualText en={option.en} el={option.el} compact />
+                  {option.value && unreadCount > 0 ? <Counter value={unreadCount} tone="attention" /> : null}
+                </button>
+              ))}
+            </div>
+            {activeFilter && activeFilter.value !== 'all' ? (
+              <button
+                type="button"
+                onClick={() => { setActiveTab('all'); setSelectedIds(new Set()); }}
+                className="tap-target-y inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-foreground hover:bg-muted/60"
+                aria-label={bilingualAria(`Clear filter: ${activeFilter.labelEn}`, `Καθαρισμός φίλτρου: ${activeFilter.labelEl}`)}
+              >
+                <BilingualText en={activeFilter.labelEn} el={activeFilter.labelEl} compact />
+                <X className="icon-sm text-muted-foreground" aria-hidden="true" />
+              </button>
+            ) : null}
+            {unreadCount > 0 ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto h-8 gap-1.5 px-2.5 text-xs"
+                onClick={() => markAllRead.mutate()}
+                disabled={markAllRead.isPending}
+              >
+                <CheckCheck className="icon-sm" aria-hidden="true" />
+                <BilingualText en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} compact />
+              </Button>
+            ) : null}
+          </div>
           {isError ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <BellOff className="icon-xl text-muted-foreground/50" />

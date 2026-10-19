@@ -178,7 +178,12 @@ export const PROJECT_STRINGS: Record<string, BilingualPair> = {
     el: 'Μπορεί να αφαιρέθηκε, ή ο σύνδεσμος είναι από άλλο χώρο εργασίας.',
   },
   back_projects: { en: 'Back to projects', el: 'Πίσω στα έργα' },
-  link_into: { en: 'Carry this catalogue into', el: 'Μεταφέρετε αυτόν τον κατάλογο στο' },
+  // A label over links to the reader's own tools (Idea Core, milestones…).
+  // It used to read "Carry this catalogue into", which said neither whose
+  // tools they were nor what would happen.
+  link_into: { en: 'Continue in your workspace', el: 'Συνεχίστε στον χώρο σας' },
+  see_team: { en: 'See the whole team', el: 'Όλη η ομάδα' },
+  milestones_of: { en: 'milestones', el: 'ορόσημα' },
   link_idea: { en: 'Idea Core', el: 'Πυρήνας ιδέας' },
   link_milestones: { en: 'Milestones', el: 'Ορόσημα' },
   link_research: { en: 'Research boards', el: 'Πίνακες έρευνας' },

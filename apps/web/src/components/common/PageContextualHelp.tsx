@@ -964,8 +964,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Network updates from people you follow. When the live feed module has nothing, sample posts appear behind a
-          notice — they are for layout, not activity you missed.
+          Network updates from people you follow. While there are no posts, sample posts appear behind a notice —
+          they are for layout, not activity you missed.
         </p>
         <p>
           <em>Ask AI</em> what to do next on Discover, Matches, or Messages instead of waiting on a sample timeline.
@@ -975,12 +975,12 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     el: (
       <>
         <p>
-          Ενημερώσεις δικτύου από όσους ακολουθείτε. Όταν το live module δεν έχει τίποτα, εμφανίζονται δείγματα πίσω
-          από ειδοποίηση — είναι για τη διάταξη, όχι δραστηριότητα που χάσατε.
+          Ενημερώσεις από όσους ακολουθείτε. Όσο δεν υπάρχουν αναρτήσεις, εμφανίζονται δείγματα με σχετική σημείωση —
+          είναι για τη διάταξη, όχι δραστηριότητα που χάσατε.
         </p>
         <p>
-          <em>Ρωτήστε το AI</em> τι να κάνετε μετά στο Discover, τα Matches ή τα Μηνύματα αντί να περιμένετε σε δείγμα
-          χρονολογίου.
+          <em>Ρωτήστε το AI</em> τι να κάνετε μετά στην Εξερεύνηση, στις Αντιστοιχίσεις ή στα Μηνύματα, αντί να
+          περιμένετε σε δείγματα.
         </p>
       </>
     ),
@@ -1100,8 +1100,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     el: (
       <>
         <p>
-          Ιδιωτικά έγγραφα diligence. Η πρόσβαση μοιράζεται ανά επενδυτή· τίποτα εδώ δεν είναι δημόσιο. Η μεταφόρτωση
-          και ο διαμοιρασμός μένουν σε αυτό το room — δεν δημοσιεύονται στο feed ούτε στο Discover.
+          Ιδιωτικά έγγραφα due diligence. Η πρόσβαση δίνεται ανά επενδυτή· τίποτα εδώ δεν είναι δημόσιο. Ό,τι ανεβάζετε
+          και μοιράζεστε μένει σε αυτό το data room — δεν δημοσιεύεται στη Ροή ούτε στην Εξερεύνηση.
         </p>
       </>
     ),

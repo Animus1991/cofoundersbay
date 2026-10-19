@@ -194,7 +194,7 @@ export default function CreateProjectPage() {
         <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         <p className="text-sm text-muted-foreground">
           <BilingualText en={projectEn('link_into')} el={projectEl('link_into')} compact />
-          {' · '}
+          {': '}
           <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
             <BilingualText en={projectEn('link_idea')} el={projectEl('link_idea')} compact />
           </Link>

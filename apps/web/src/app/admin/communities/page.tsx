@@ -477,7 +477,7 @@ export default function AdminCommunitiesPage() {
         {showingSeed && (
           <SampleDataNotice
             surface="Communities"
-            detail="The groups API returned no communities, so these rows are samples that show the layout. Creating a community writes to the real groups service."
+            detail="There are no communities yet, so these rows are samples that show the layout. A community you create is saved for real."
             askAiPrompt="The communities list is showing sample rows. What live group-management actions can you take here?"
           />
         )}

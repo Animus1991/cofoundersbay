@@ -160,7 +160,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/events/create', title: 'Create event', description: 'Publish a workshop, demo day, or meetup for the community to RSVP to.', section: 'Resources', status: 'complete' },
   { path: '/learning', title: 'Learning hub', description: 'Curated courses, founder guides, and templates aligned with your readiness gaps.', helpId: 'learning', helpTitle: 'How the learning hub works', helpTitleEl: 'Πώς δουλεύει το κέντρο μάθησης', section: 'Resources', status: 'complete' },
   { path: '/groups', title: 'Communities', description: 'Industry, stage, and interest-based groups. Join to participate; create your own anytime.', helpId: 'groups', helpTitle: 'How communities work', helpTitleEl: 'Πώς δουλεύουν οι κοινότητες', section: 'Community', status: 'complete' },
-  { path: '/feed', title: 'Feed', description: 'Updates from your network, communities, and people you follow. Sample posts appear only when the live feed is empty.', helpId: 'feed', helpTitle: 'What the feed is', helpTitleEl: 'Τι είναι το feed', section: 'Community', status: 'complete' },
+  { path: '/feed', title: 'Feed', description: 'Updates from your network, communities, and people you follow. Sample posts appear only while there are no posts.', helpId: 'feed', helpTitle: 'What the feed is', helpTitleEl: 'Τι είναι το feed', section: 'Community', status: 'complete' },
   { path: '/mentoring', title: 'Find mentors', description: 'Directory of vetted mentors \u2014 filter by expertise, timezone, and rate.', helpId: 'mentoring', helpTitle: 'How to find and book a mentor', helpTitleEl: 'Πώς βρίσκετε μέντορα και κλείνετε συνεδρία', section: 'Explore', status: 'complete' },
 
   // ── Mentor sub-pages ──

@@ -37,7 +37,7 @@ import { getAIModels, getAIAgents, getAIHealth, getAIPreferences, updateAIPrefer
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { demoAgentPhoto } from '@/lib/demo/photos';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
-import { applyLocale } from '@/lib/locale';
+import { applyLocale, getStoredLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/components/common/I18nProvider';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -160,6 +160,11 @@ export default function AISettingsPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // The response language is the app's language (choosing it here calls
+    // applyLocale), so it shows what the app is in. A stored or default "en"
+    // showed English selected on a Greek page.
+    const withLocale = (p: AIPreferences): AIPreferences => ({ ...p, responseLanguage: getStoredLocale() });
+    setPrefs((p) => withLocale(p));
     (async () => {
       try {
         // Through the cache under queryKeys.aiPreferences, so the
@@ -171,12 +176,12 @@ export default function AISettingsPage() {
         });
         if (cancelled) return;
         if (remote?.preferences) {
-          setPrefs({
+          setPrefs(withLocale({
             ...DEFAULT_PREFS,
             ...Object.fromEntries(
               Object.entries(remote.preferences).filter(([, v]) => v !== null && v !== undefined),
             ),
-          } as AIPreferences);
+          } as AIPreferences));
           return;
         }
       } catch {
@@ -185,7 +190,7 @@ export default function AISettingsPage() {
       try {
         const saved = localStorage.getItem('ai-preferences');
         if (saved && !cancelled) {
-          setPrefs({ ...DEFAULT_PREFS, ...JSON.parse(saved) });
+          setPrefs(withLocale({ ...DEFAULT_PREFS, ...JSON.parse(saved) }));
         }
       } catch {
         /* ignore */
@@ -306,7 +311,13 @@ export default function AISettingsPage() {
                   'font-medium',
                   isAIAvailable ? 'text-status-success' : 'text-status-warning'
                 )}>
-                  {isAIAvailable ? 'AI Assistant is Online' : 'AI Assistant is Offline'}
+                  {/* The assistant answers from platform data without a model
+                      (see below), so "offline" was not true of it. */}
+                  {isAIAvailable ? (
+                    <BilingualText en="The assistant and its language model are online" el="Ο βοηθός και το γλωσσικό του μοντέλο είναι διαθέσιμα" wrap />
+                  ) : (
+                    <BilingualText en="The assistant is online; its language model is not" el="Ο βοηθός λειτουργεί· το γλωσσικό μοντέλο δεν είναι διαθέσιμο" wrap />
+                  )}
                 </p>
                 <p className="card-body text-muted-foreground">
                   {/* Written for the reader, not the operator: "Run: ollama

@@ -485,7 +485,7 @@ export default function AdminProgramsPage() {
         {showingSample && (
           <SampleDataNotice
             surface="Programs"
-            detail="The programs API returned no programmes, so these rows show the layout. Live programmes appear here as organisations create them."
+            detail="There are no programmes yet, so these rows show the layout. Programmes appear here as organisations create them."
             askAiPrompt="Why does the admin programs page show sample programmes?"
           />
         )}

@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { HOME_ASK } from '@/lib/home-ask';
-import { HomeAskHero } from './HomeAskHero';
+import { HomeAskHero, partOfDay } from './HomeAskHero';
 
 const state = vi.hoisted(() => ({
   pathname: '/dashboard',
@@ -105,6 +105,14 @@ describe('HomeAskHero', () => {
     fireEvent.change(box(), { target: { value: 'Which founders replied?' } });
     fireEvent.keyDown(box(), { key: 'Enter' });
     expect(state.push).toHaveBeenCalledWith(`/ai?q=${encodeURIComponent('Which founders replied?')}`);
+  });
+
+  it('says good evening after midnight and good morning from five', () => {
+    expect(partOfDay(0).en).toBe('Good evening');
+    expect(partOfDay(4).en).toBe('Good evening');
+    expect(partOfDay(5).en).toBe('Good morning');
+    expect(partOfDay(12).en).toBe('Good afternoon');
+    expect(partOfDay(17).en).toBe('Good evening');
   });
 
   it('gives every role a box, scopes and at least three starting points', () => {

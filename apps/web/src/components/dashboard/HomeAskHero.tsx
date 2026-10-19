@@ -22,9 +22,10 @@ import { cn } from '@/lib/utils';
 
 type Part = { en: string; el: string };
 
-function partOfDay(hour: number): Part {
-  if (hour < 12) return { en: dashboardEn('good_morning'), el: dashboardEl('good_morning') };
-  if (hour < 17) return { en: dashboardEn('good_afternoon'), el: dashboardEl('good_afternoon') };
+/** Morning from five; before that it is still last night's evening. */
+export function partOfDay(hour: number): Part {
+  if (hour >= 5 && hour < 12) return { en: dashboardEn('good_morning'), el: dashboardEl('good_morning') };
+  if (hour >= 12 && hour < 17) return { en: dashboardEn('good_afternoon'), el: dashboardEl('good_afternoon') };
   return { en: dashboardEn('good_evening'), el: dashboardEl('good_evening') };
 }
 
@@ -130,7 +131,7 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string
                 type="button"
                 variant="ghost"
                 size="sm"
-                data-keep-icon=""
+               
                 className="h-8 gap-1.5 px-2 text-xs text-muted-foreground"
                 aria-label={bilingualAria(`About: ${scope?.en ?? ''}`, `Πλαίσιο: ${scope?.el ?? ''}`)}
               >
@@ -169,7 +170,7 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string
             {action.items?.length ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button type="button" variant="outline" size="sm" data-keep-icon="" className="h-8 gap-1.5 rounded-full px-3 text-xs">
+                  <Button type="button" variant="outline" size="sm" className="h-8 gap-1.5 rounded-full px-3 text-xs">
                     <CfbGlyph name={action.glyph} className="icon-sm" />
                     <BilingualText en={action.en} el={action.el} compact />
                     <ChevronDown className="icon-sm text-muted-foreground" aria-hidden="true" />
@@ -185,14 +186,14 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : action.href && !action.prompt ? (
-              <Button variant="outline" size="sm" data-keep-icon="" className="h-8 gap-1.5 rounded-full px-3 text-xs" asChild>
+              <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full px-3 text-xs" asChild>
                 <Link href={action.href}>
                   <CfbGlyph name={action.glyph} className="icon-sm" />
                   <BilingualText en={action.en} el={action.el} compact />
                 </Link>
               </Button>
             ) : (
-              <Button type="button" variant="outline" size="sm" data-keep-icon="" className="h-8 gap-1.5 rounded-full px-3 text-xs" onClick={() => run(action)}>
+              <Button type="button" variant="outline" size="sm" className="h-8 gap-1.5 rounded-full px-3 text-xs" onClick={() => run(action)}>
                 <CfbGlyph name={action.glyph} className="icon-sm" />
                 <BilingualText en={action.en} el={action.el} compact />
               </Button>

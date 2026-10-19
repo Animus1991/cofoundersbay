@@ -55,6 +55,7 @@ import {
 import { FactLine } from '@/components/common/FactLine';
 import { StatusText } from '@/components/common/StatusText';
 import { RowHead } from '@/components/dashboard/SectionCard';
+import { Counter } from '@/components/ui/counter';
 
 const STATUS_COLOR: Record<ProjectStatus, string> = {
   idea: 'bg-status-accent-bg text-status-accent border-status-accent-border',
@@ -76,6 +77,7 @@ export default function ProjectDetailPage() {
   const [starred, setStarred] = useState(() => getDemoProject(projectId)?.isStarred ?? false);
   const [joinRequested, setJoinRequested] = useState(() => hasJoinRequest(projectId));
   const [appliedRoles, setAppliedRoles] = useState(() => appliedRolesFor(projectId));
+  const [tab, setTab] = useState('overview');
   const owned = project ? isOwnedProject(project) : false;
   const joined = project ? isJoinedProject(project) : false;
 
@@ -116,8 +118,8 @@ export default function ProjectDetailPage() {
   const missingEn = project ? undefined : 'This project was not found.';
   const missingEl = project ? undefined : 'Το έργο δεν βρέθηκε.';
   usePageControls([
-    { id: 'star_project', labelEn: 'Star this project', labelEl: 'Αστέρι σε αυτό το έργο', writes: true, unavailableEn: missingEn ?? (starred ? 'It is already starred.' : undefined), unavailableEl: missingEl ?? (starred ? 'Έχει ήδη αστέρι.' : undefined), undo: () => ({ control: 'unstar_project' }), run: () => { if (project) setStarred(toggleDemoStar(project.id)); } },
-    { id: 'unstar_project', labelEn: 'Unstar this project', labelEl: 'Αφαίρεση αστεριού από το έργο', writes: true, unavailableEn: missingEn ?? (starred ? undefined : 'It is not starred.'), unavailableEl: missingEl ?? (starred ? undefined : 'Δεν έχει αστέρι.'), undo: () => ({ control: 'star_project' }), run: () => { if (project) setStarred(toggleDemoStar(project.id)); } },
+    { id: 'star_project', labelEn: 'Star this project', labelEl: 'Προσθήκη του έργου στα αγαπημένα', writes: true, unavailableEn: missingEn ?? (starred ? 'It is already starred.' : undefined), unavailableEl: missingEl ?? (starred ? 'Είναι ήδη στα αγαπημένα.' : undefined), undo: () => ({ control: 'unstar_project' }), run: () => { if (project) setStarred(toggleDemoStar(project.id)); } },
+    { id: 'unstar_project', labelEn: 'Unstar this project', labelEl: 'Αφαίρεση του έργου από τα αγαπημένα', writes: true, unavailableEn: missingEn ?? (starred ? undefined : 'It is not starred.'), unavailableEl: missingEl ?? (starred ? undefined : 'Δεν είναι στα αγαπημένα.'), undo: () => ({ control: 'star_project' }), run: () => { if (project) setStarred(toggleDemoStar(project.id)); } },
     { id: 'share_project', labelEn: 'Copy a link to this project', labelEl: 'Αντιγραφή συνδέσμου του έργου', writes: false, unavailableEn: missingEn, unavailableEl: missingEl, run: handleShare },
     { id: 'request_join', labelEn: 'Request to join this project', labelEl: 'Αίτημα ένταξης σε αυτό το έργο', writes: true, unavailableEn: missingEn ?? (owned ? 'You own this project.' : joined ? "You're on this team." : joinRequested ? 'Request already sent.' : undefined), unavailableEl: missingEl ?? (owned ? 'Αυτό το έργο είναι δικό σας.' : joined ? 'Είστε στην ομάδα.' : joinRequested ? 'Το αίτημα έχει ήδη σταλεί.' : undefined), run: handleJoin },
     { id: 'apply_role', labelEn: 'Apply to an open role', labelEl: 'Αίτηση σε ανοιχτό ρόλο', writes: true, unavailableEn: missingEn ?? (owned ? 'You own this project.' : !project?.rolesNeeded.length ? 'This project has no open roles.' : project.rolesNeeded.every((role) => appliedRoles.includes(role.title)) ? 'Applications are already noted.' : undefined), unavailableEl: missingEl ?? (owned ? 'Αυτό το έργο είναι δικό σας.' : !project?.rolesNeeded.length ? 'Αυτό το έργο δεν έχει ανοιχτούς ρόλους.' : project.rolesNeeded.every((role) => appliedRoles.includes(role.title)) ? 'Οι αιτήσεις έχουν ήδη καταχωρηθεί.' : undefined), options: rowOptions((project?.rolesNeeded ?? []).filter((role) => !appliedRoles.includes(role.title)), (role) => role.title, (role) => role.title), run: (v) => { if (v) handleApply(v); } },
@@ -169,6 +171,7 @@ export default function ProjectDetailPage() {
             onClick={() => {
               setStarred(toggleDemoStar(project.id));
             }}
+            aria-pressed={starred}
             aria-label={bilingualAria(
               starred ? projectEn('unstar') : projectEn('star'),
               starred ? projectEl('unstar') : projectEl('star'),
@@ -237,38 +240,25 @@ export default function ProjectDetailPage() {
             </p>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          <BilingualText en={projectEn('link_into')} el={projectEl('link_into')} compact />
-          {' · '}
-          <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={projectEn('link_idea')} el={projectEl('link_idea')} compact />
-          </Link>
-          {' · '}
-          <Link href="/milestones" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={projectEn('link_milestones')} el={projectEl('link_milestones')} compact />
-          </Link>
-          {' · '}
-          <Link href="/research" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={projectEn('link_research')} el={projectEl('link_research')} compact />
-          </Link>
-          {' · '}
-          <Link href="/fundraising" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={projectEn('link_fundraising')} el={projectEl('link_fundraising')} compact />
-          </Link>
-          {' · '}
-          <Link href="/matches" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={projectEn('link_matches')} el={projectEl('link_matches')} compact />
-          </Link>
-        </p>
-
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
-            <Tabs defaultValue="overview" className="space-y-4">
+            {/* GitHub's repository tabs carry their counts ("Issues 12"); a
+                count tells the reader whether a tab is worth opening. */}
+            <Tabs value={tab} onValueChange={setTab} className="space-y-4">
               <TabsList className="rounded-xl">
                 <TabsTrigger value="overview" className="rounded-xl"><BilingualText en={projectEn('tab_overview')} el={projectEl('tab_overview')} compact /></TabsTrigger>
-                <TabsTrigger value="team" className="rounded-xl"><BilingualText en={projectEn('tab_team')} el={projectEl('tab_team')} compact /></TabsTrigger>
-                <TabsTrigger value="milestones" className="rounded-xl"><BilingualText en={projectEn('tab_milestones')} el={projectEl('tab_milestones')} compact /></TabsTrigger>
-                <TabsTrigger value="updates" className="rounded-xl"><BilingualText en={projectEn('tab_updates')} el={projectEl('tab_updates')} compact /></TabsTrigger>
+                <TabsTrigger value="team" className="rounded-xl">
+                  <BilingualText en={projectEn('tab_team')} el={projectEl('tab_team')} compact />
+                  {project.members.length > 0 ? <Counter value={project.members.length} /> : null}
+                </TabsTrigger>
+                <TabsTrigger value="milestones" className="rounded-xl">
+                  <BilingualText en={projectEn('tab_milestones')} el={projectEl('tab_milestones')} compact />
+                  {project.milestones.length > 0 ? <Counter value={project.milestones.length} /> : null}
+                </TabsTrigger>
+                <TabsTrigger value="updates" className="rounded-xl">
+                  <BilingualText en={projectEn('tab_updates')} el={projectEl('tab_updates')} compact />
+                  {project.updates.length > 0 ? <Counter value={project.updates.length} /> : null}
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-6">
@@ -498,18 +488,85 @@ export default function ProjectDetailPage() {
                     />
                   </Button>
                 )}
-                <Button variant="ghost" size="sm" className={`w-full gap-2 ${BUILDER_BTN}`} onClick={() => openAskAi(project.founder.id, 'messages')}>
-                  <CfbGlyph name="messages" className="icon-sm" />
-                  <BilingualText en={projectEn('message_team')} el={projectEl('message_team')} compact />
-                </Button>
-                <Button variant="ghost" size="sm" className={`w-full gap-2 ${BUILDER_BTN}`} asChild>
-                  <Link href="/calendar">
-                    <CfbGlyph name="calendar" className="icon-sm" />
-                    <BilingualText en={projectEn('schedule_call')} el={projectEl('schedule_call')} compact />
-                  </Link>
-                </Button>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                  <Button variant="outline" size="sm" className={`h-auto min-h-9 w-full gap-2 whitespace-normal py-1.5 ${BUILDER_BTN}`} onClick={() => openAskAi(project.founder.id, 'messages')}>
+                    <CfbGlyph name="messages" className="icon-sm shrink-0" />
+                    <BilingualText en={projectEn('message_team')} el={projectEl('message_team')} wrap />
+                  </Button>
+                  <Button variant="outline" size="sm" className={`h-auto min-h-9 w-full gap-2 whitespace-normal py-1.5 ${BUILDER_BTN}`} asChild>
+                    <Link href="/calendar">
+                      <CfbGlyph name="calendar" className="icon-sm shrink-0" />
+                      <BilingualText en={projectEn('schedule_call')} el={projectEl('schedule_call')} wrap />
+                    </Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
+
+            {project.members.length > 0 ? (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between gap-2">
+                  <CardTitle className="flex items-center">
+                    <BilingualText en={projectEn('tab_team')} el={projectEl('tab_team')} compact />
+                    <Counter value={project.members.length} />
+                  </CardTitle>
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    {project.teamSize}/{project.maxTeamSize}
+                  </span>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <ul className="flex flex-wrap gap-1.5">
+                    {project.members.map((member) => (
+                      <li key={member.id}>
+                        <Link href={`/profiles/${member.id}`} title={member.name} aria-label={member.name} className="block rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                          <Avatar className="h-9 w-9 ring-2 ring-background">
+                            <AvatarImage src={member.avatar} alt="" />
+                            <AvatarFallback className="bg-primary/10 text-xs text-primary-accessible">{member.name[0]}</AvatarFallback>
+                          </Avatar>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  <button type="button" onClick={() => setTab('team')} className="text-xs font-medium text-primary-accessible underline-offset-4 hover:underline">
+                    <BilingualText en={projectEn('see_team')} el={projectEl('see_team')} compact />
+                  </button>
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {project.milestones.length > 0 ? (() => {
+              const states = (['completed', 'in_progress', 'pending'] as const)
+                .map((state) => ({ state, count: project.milestones.filter((m) => m.status === state).length }))
+                .filter((s) => s.count > 0);
+              const tone: Record<string, string> = { completed: 'bg-status-success', in_progress: 'bg-status-info', pending: 'bg-muted-foreground/40' };
+              return (
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between gap-2">
+                    <CardTitle><BilingualText en={projectEn('progress')} el={projectEl('progress')} compact /></CardTitle>
+                    <span className="text-xs tabular-nums text-muted-foreground">{project.progress ?? 0}%</span>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
+                      {states.map((s) => (
+                        <span key={s.state} className={tone[s.state]} style={{ width: `${(s.count / project.milestones.length) * 100}%` }} />
+                      ))}
+                    </div>
+                    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                      {states.map((s) => (
+                        <li key={s.state} className="flex items-center gap-1.5">
+                          <span className={cn('h-2 w-2 shrink-0 rounded-full', tone[s.state])} aria-hidden="true" />
+                          <StatusText value={s.state} />
+                          <span className="tabular-nums text-foreground">{s.count}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <button type="button" onClick={() => setTab('milestones')} className="text-xs font-medium text-primary-accessible underline-offset-4 hover:underline">
+                      {project.milestones.length} <BilingualText en={projectEn('milestones_of')} el={projectEl('milestones_of')} compact />
+                    </button>
+                  </CardContent>
+                </Card>
+              );
+            })() : null}
 
             <Card>
               <CardHeader>
@@ -574,6 +631,30 @@ export default function ProjectDetailPage() {
                   )}
                   subtitle={<RoleBadge role={project.founder.role} size="sm" />}
                 />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle><BilingualText en={projectEn('link_into')} el={projectEl('link_into')} compact /></CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-1.5 text-sm">
+                  {([
+                    { href: '/builder?tab=idea-core', key: 'link_idea', glyph: 'spark' },
+                    { href: '/milestones', key: 'link_milestones', glyph: 'flag' },
+                    { href: '/research', key: 'link_research', glyph: 'search' },
+                    { href: '/fundraising', key: 'link_fundraising', glyph: 'wallet' },
+                    { href: '/matches', key: 'link_matches', glyph: 'matches' },
+                  ] as const).map((link) => (
+                    <li key={link.key}>
+                      <Link href={link.href} className="flex items-center gap-2 text-foreground underline-offset-4 hover:text-primary-accessible hover:underline">
+                        <CfbGlyph name={link.glyph} className="icon-sm shrink-0 text-muted-foreground" />
+                        <BilingualText en={projectEn(link.key)} el={projectEl(link.key)} compact />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </CardContent>
             </Card>
           </div>
