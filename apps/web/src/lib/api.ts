@@ -2673,6 +2673,11 @@ export async function getConnectionStatus(userId: string): Promise<{
 export type InviteItem = {
   id: string;
   email: string;
+  /** The member the invitation became, once accepted (the demo knows them). */
+  inviteeName?: string | null;
+  inviteeAvatar?: string | null;
+  /** A picture for the address before anyone accepts (the demo's photos). */
+  avatarUrl?: string | null;
   message: string | null;
   status: 'pending' | 'accepted' | 'expired' | 'cancelled';
   createdAt: string;

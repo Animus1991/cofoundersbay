@@ -358,6 +358,8 @@ function inviteToReferral(invite: InviteItem): Referral {
   return {
     id: invite.id,
     email: invite.email,
+    name: invite.inviteeName ?? undefined,
+    avatarUrl: invite.inviteeAvatar ?? invite.avatarUrl ?? undefined,
     status,
     invitedAt: invite.createdAt,
     signedUpAt: invite.acceptedAt ?? undefined,

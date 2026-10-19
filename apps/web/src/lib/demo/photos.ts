@@ -384,7 +384,7 @@ const COVER_KEYS = new Set(['coverImageUrl', 'imageUrl', 'heroImageUrl', 'coverU
 const PREFIXED_PORTRAIT = /^([a-z][a-zA-Z]*)(Avatar|AvatarUrl|Photo|PhotoUrl)$/;
 /** The prefixes of a `…Name` field that names a person, so `…Avatar` can be added beside it. */
 const PERSON_PREFIX =
-  /^(client|coach|mentor|mentee|investor|founder|author|sender|recipient|requester|from|fromUser|toUser|endorser|host|owner|member|provider|reviewer|viewer|introducer|target|speaker|organizer|contact|partner|candidate|applicant|assignee|creator|actor|expert)$/;
+  /^(client|coach|mentor|mentee|investor|founder|author|sender|recipient|requester|from|fromUser|toUser|invitee|endorser|host|owner|member|provider|reviewer|viewer|introducer|target|speaker|organizer|contact|partner|candidate|applicant|assignee|creator|actor|expert)$/;
 const PERSON_TYPES = new Set(['person', 'people', 'user', 'member', 'mentor', 'investor', 'founder', 'profile']);
 
 function textOf(value: unknown): string | null {

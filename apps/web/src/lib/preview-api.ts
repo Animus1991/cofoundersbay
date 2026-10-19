@@ -4928,11 +4928,13 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   }
   if (pathname === '/api/invites') {
     const invites = [
-      { id: 'inv-ioanna', email: 'ioanna@aegeanlab.example', message: null, status: 'accepted', createdAt: previewIsoInDays(-220), acceptedAt: previewIsoInDays(-219), expiresAt: null },
-      { id: 'inv-thanos', email: 'thanos@rigas.energy', message: null, status: 'accepted', createdAt: previewIsoInDays(-160), acceptedAt: previewIsoInDays(-150), expiresAt: null },
-      { id: 'inv-eleni', email: 'eleni@anemosstorage.example', message: 'Join the climate track cohort channel here.', status: 'pending', createdAt: previewIsoInDays(-6), acceptedAt: null, expiresAt: previewIsoInDays(24) },
-      { id: 'inv-petros', email: 'petros@kymaenergy.example', message: null, status: 'pending', createdAt: previewIsoInDays(-2), acceptedAt: null, expiresAt: previewIsoInDays(28) },
-      { id: 'inv-old', email: 'hello@old-venture.example', message: null, status: 'expired', createdAt: previewIsoInDays(-120), acceptedAt: null, expiresAt: previewIsoInDays(-90) },
+      // Accepted invitations name the member they became; every row has an
+      // empty picture field, filled from the name or the mailbox.
+      { id: 'inv-ioanna', email: 'ioanna@aegeanlab.example', inviteeName: 'Ioanna Pappa', avatarUrl: null, message: null, status: 'accepted', createdAt: previewIsoInDays(-220), acceptedAt: previewIsoInDays(-219), expiresAt: null },
+      { id: 'inv-thanos', email: 'thanos@rigas.energy', inviteeName: 'Thanos Rigas', avatarUrl: null, message: null, status: 'accepted', createdAt: previewIsoInDays(-160), acceptedAt: previewIsoInDays(-150), expiresAt: null },
+      { id: 'inv-eleni', email: 'eleni@anemosstorage.example', avatarUrl: null, message: 'Join the climate track cohort channel here.', status: 'pending', createdAt: previewIsoInDays(-6), acceptedAt: null, expiresAt: previewIsoInDays(24) },
+      { id: 'inv-petros', email: 'petros@kymaenergy.example', avatarUrl: null, message: null, status: 'pending', createdAt: previewIsoInDays(-2), acceptedAt: null, expiresAt: previewIsoInDays(28) },
+      { id: 'inv-old', email: 'hello@old-venture.example', avatarUrl: null, message: null, status: 'expired', createdAt: previewIsoInDays(-120), acceptedAt: null, expiresAt: previewIsoInDays(-90) },
     ];
     return { invites, total: invites.length };
   }

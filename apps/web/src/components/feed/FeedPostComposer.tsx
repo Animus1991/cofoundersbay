@@ -5,12 +5,13 @@ import { Award, Image as ImageIcon, Link2, MessageCircle, Send, Sparkles, Target
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { useStoredUser } from '@/hooks/useStoredUser';
 
 export type FeedPostType = 'update' | 'milestone' | 'question' | 'announcement' | 'achievement';
 
@@ -28,6 +29,8 @@ type Props = {
 };
 
 export function FeedPostComposer({ onPost }: Props) {
+  // The writer's own picture beside the field (the demo's is Alex's).
+  const me = useStoredUser();
   const sayOne = useBilingualString();
   const [content, setContent] = useState('');
   const [postType, setPostType] = useState<FeedPostType>('update');
@@ -59,7 +62,8 @@ export function FeedPostComposer({ onPost }: Props) {
       <CardContent className="space-y-3">
         <div className="flex gap-3">
           <Avatar className="h-10 w-10 shrink-0">
-            <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">ME</AvatarFallback>
+            <AvatarImage src={me?.avatarUrl ?? undefined} alt="" />
+            <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{me?.displayName ? initialsOf(me.displayName) : 'ME'}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
             <Textarea
