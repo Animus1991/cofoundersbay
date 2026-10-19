@@ -5311,3 +5311,62 @@ tsc web 0· vitest web 1048/1048 (133 αρχεία)· οι σελίδες του
 6. **«Courses» ή «μάθημα».** Η σελίδα κρατά το «Courses» στο chip, στο στατιστικό και στην κάρτα (γραπτή απόφαση στην κεφαλίδα του `strings-learning.ts`: η ελληνική γραφή για ed-tech το κρατά), ενώ ο βοηθός γράφει «μάθημα». Μία λέξη με δύο γραφές στο ίδιο προϊόν. Δεν άλλαξε, γιατί θα αντέφασκε στη γραπτή απόφαση· την ενοποίηση την αποφασίζετε εσείς.
 7. **Όρια του περιβάλλοντος.** Οι γραμματοσειρές είναι mock στο sandbox, άρα οι αριθμοί διάταξης είναι προσεγγιστικοί· το API δεν έχει πραγματική βάση· το στιγμιότυπο αναφοράς δεν επισυνάφθηκε ποτέ.
 8. **Το WIP** μένει στο branch του (58.1).
+
+## 59. Γύρος 2026-10-19 — έλεγχος branches, το κύριο checkout ενημερωμένο, και ένα κενό στα migrations
+
+Αφορμή (ο ιδιοκτήτης, 2026-10-19): «κάνε … έλεγχο στο πιο αναπτυγμένο branch στο github, και κάνε git pull όλες τις … αλλαγές … από άλλο LLM model, χωρίς καμία απολύτως παράλειψη, όπως και ξεκίνα ένα τοπικό server με όλες τις τελευταίες αλλαγές.»
+
+### 59.1 Ποιο branch είναι το πιο εξελιγμένο (μετρημένο)
+
+Μετά από `git fetch --all --prune` και στα δύο remotes (`origin` = Animus1991/cofoundersbay, `upstream` = tasoasteritopeleven/cofoundersbay), για κάθε branch μετρήθηκαν τα commits που λείπουν από το `claude/project-audit-upgrade-y2ebnr`, με δύο τρόπους: `rev-list` και `git cherry`, που πιάνει και τα αντιγραμμένα commits.
+
+| branch | τελευταίο commit | λείπουν από το κύριο |
+|---|---|---|
+| `origin/claude/project-audit-upgrade-y2ebnr` | 2026-10-19 (8c13dee5) | το ίδιο το κύριο |
+| `origin/wip/main-checkout-pre-audit` | 2026-10-18 | 1 (το WIP του κύριου checkout) |
+| `origin/cursor/next-improvements-1514` | 2026-10-17 | 0 |
+| `origin/claude/friendly-archimedes-xifgnj` | 2026-10-13 | 0 |
+| `origin/cursor/theme-meter-colors-1514` | 2026-10-11 | 0 |
+| `origin/main` | 2026-10-09 | 0 (174 πίσω) |
+| `origin/cursor/phone-fonts-minus-2-53e0`, `ui-upgrade-cloudflare-preview-53e0`, `phone-component-sizes-53e0`, `ai-os-fullpage-chat-53e0` | 2026-09-13 έως 2026-10-08 | 0 |
+| `origin/integration/ai-platform-upgrade` | 2026-10-01 | 0 |
+| `upstream/main`, `upstream/cursor/all-latest-upgrades-9f73` | 2026-10-10/11 | 0 |
+
+Επίσης ελέγχθηκαν όλα τα τοπικά branches (κανένα δεν έχει commit εκτός του κύριου, πέρα από το WIP) και τα worktrees του Windsurf (`cascade/*`, καθαρά, μέσα στο κύριο). Το worktree του Devin έχει μόνο δύο scripts ελέγχου, χωρίς commit.
+
+**Το WIP**, κρίνεται αρχείο προς αρχείο. Οι ιδέες του που άξιζαν υπάρχουν ήδη στο κύριο: η NeedCard χωρίς πλάγια, η παλέτα εντολών που ανοίγει τον βοηθό ως popup, και το περίγραμμα του outline κουμπιού. Τα υπόλοιπα θα ήταν οπισθοδρόμηση:
+
+- ο τίτλος της αρχικής στα 15px, με το test του να το απαιτεί
+- μικρότερα κουμπιά στην αρχική
+- το `api.ts` του σβήνει την αναφορά διαφάνειας (`getTransparencyReport`)
+- 193 000 γραμμές αρχείων probe
+
+Μένει στο branch του, όπως έκρινε και η §58.1.
+
+### 59.2 Το κύριο checkout
+
+Το `IdeaProjects\CoFounderBay` ήταν πια καθαρό. Το Devin είχε κάνει commit το WIP του στο `wip/main-checkout-pre-audit`. Πέρασε στο `claude/project-audit-upgrade-y2ebnr` με fast-forward 45 commits: 337 αρχεία, από τον ιδιοκτήτη/Devin (22), το Cursor (19) και το Claude cloud (4). Οι εξαρτήσεις δεν άλλαξαν, οπότε δεν χρειάστηκε install. Χτίστηκαν ξανά το `@cofounderbay/shared` και ο Prisma client, γιατί προστέθηκε η στήλη `draftNoteEl`.
+
+### 59.3 Έλεγχος του κύριου
+
+| έλεγχος | αποτέλεσμα |
+|---|---|
+| `tsc` web, API | 0, 0 |
+| web vitest | 186 αρχεία, 1339/1339 |
+| API vitest (`pnpm test`, με το `.devin/vitest.api.config.ts`) | 58 αρχεία, 546/546 |
+| `next build` | 154/154 σελίδες, 104 kB κοινό JS |
+| browser (production, demo, ελληνικά, 1440): πίνακας, εξερεύνηση, εκδηλώσεις, κοινότητες, ρυθμίσεις, μάθηση, επιτεύγματα, συστάσεις, μέντορες, μηνύματα | 0 σφάλματα κονσόλας, 0 σπασμένες εικόνες |
+| μυστικά στο git (`.env`, κλειδιά, tokens) | κανένα |
+
+Χωρίς το config, το API έδειχνε 40 κόκκινα. Το vitest μεταγλωττίζει χωρίς decorator metadata, οπότε το Nest δεν περνά τα services στους controllers. Επιπλέον έβρισκε 17 παλιά tests μέσα στο `dist/`. Ο σωστός τρόπος είναι το `pnpm test`.
+
+### 59.4 Ευρήματα
+
+1. **Κρίσιμο: τα migrations δεν περιγράφουν τη βάση.** Τα πέντε migrations δημιουργούν 65 πίνακες, ενώ το σχήμα έχει 211 μοντέλα. Λείπουν 146, ανάμεσά τους `Milestone`, `Endorsement`, όλο το Builder, το Research και το `Organization`. Το `scripts/deploy.sh` τρέχει `prisma migrate deploy`, άρα σε καινούρια βάση production τα περισσότερα features θα αποτύγχαναν. Το `production-setup.sh` δοκιμάζει πρώτα `db push --accept-data-loss`, που δεν πρέπει να τρέχει σε βάση με δεδομένα. Και η στήλη `draftNoteEl` (commit 9986bda3) προστέθηκε χωρίς migration. **Λύση:** ένα baseline migration με όλο το σχήμα. Οι υπάρχουσες βάσεις (φτιαγμένες με `db push`) το σημειώνουν ως εφαρμοσμένο με `prisma migrate resolve --applied`. Χρειάζεται Postgres για να βγει το διάφορο από τα παλιά migrations, οπότε θα γίνει όταν τρέξει το Docker.
+2. Το `tsconfig.build.json` του API εξαιρούσε τα `*.spec.ts` αλλά όχι τα `*.test.ts`, οπότε το build έβαζε tests στο `dist`. **Διορθώθηκε.**
+3. Στις Ρυθμίσεις, στο «Ανοιχτός/ή σε → Ποιος το βλέπει», οι τρεις επιλογές στέκονταν σε τρεις στήλες μέσα σε μισή σελίδα, και ο τίτλος «Μόνο για τις αντιστοιχίσεις» έπεφτε πάνω στον διπλανό. **Διορθώθηκε:** μία επιλογή ανά γραμμή, με αναδίπλωση.
+4. Μένουν από την §58.7 το `main` (fast-forward, απόφαση του ιδιοκτήτη) και τα σημεία 2 έως 6.
+
+### 59.5 Server
+
+Τρέχει production build από το `IdeaProjects\CoFounderBay` στο `http://localhost:3000` (`next start -p 3000 -H ::`), με όλες τις αλλαγές του κύριου. Ο παλιός server του worktree σταμάτησε. Μόνο το web τρέχει, και το demo δεν χρειάζεται API. Για πραγματικούς λογαριασμούς χρειάζονται Docker (Postgres, Redis) και το API στο 3001.

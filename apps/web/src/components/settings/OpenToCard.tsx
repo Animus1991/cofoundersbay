@@ -102,12 +102,15 @@ export function OpenToCard() {
 
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium text-foreground"><BilingualText en="Who sees it" el="Ποιος το βλέπει" compact /></legend>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {/* One choice per row: the card is half the page on a desktop, and
+              three columns by the window's width squeezed the titles until
+              "Μόνο για τις αντιστοιχίσεις" ran over its neighbour. */}
+          <div className="grid grid-cols-1 gap-2">
             {OPEN_TO_VISIBILITIES.map((v) => (
               <label key={v} className="flex cursor-pointer items-start gap-3 rounded-lg border border-border px-3 py-2 has-[:checked]:border-primary/40">
                 <input type="radio" name="open-to-visibility" className="mt-1" checked={visibility === v} onChange={() => setVisibility(v)} />
                 <span className="min-w-0">
-                  <span className="block text-sm font-medium text-foreground"><BilingualText en={OPEN_TO_VISIBILITY_COPY[v].en} el={OPEN_TO_VISIBILITY_COPY[v].el} compact /></span>
+                  <span className="block text-sm font-medium text-foreground"><BilingualText en={OPEN_TO_VISIBILITY_COPY[v].en} el={OPEN_TO_VISIBILITY_COPY[v].el} wrap /></span>
                   <span className="block text-xs text-muted-foreground"><BilingualText en={OPEN_TO_VISIBILITY_COPY[v].hintEn} el={OPEN_TO_VISIBILITY_COPY[v].hintEl} wrap /></span>
                 </span>
               </label>

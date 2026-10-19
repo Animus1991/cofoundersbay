@@ -12,6 +12,7 @@
     "dist",
     "test",
     "**/*.spec.ts",
+    "**/*.test.ts",
     "prisma/**/*"
   ]
 }
