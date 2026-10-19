@@ -160,3 +160,23 @@ export function scopedPrompt(question: string, scope: HomeAskScope | undefined, 
   const lead = lang === 'el' ? scope?.leadEl : scope?.leadEn;
   return lead ? `${lead}: ${q}` : q;
 }
+
+/** Lower case without accents, so "/μεντ" finds "Βρείτε μέντορα". */
+function fold(text: string): string {
+  return text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+}
+
+/**
+ * The commands "/" offers: every chip and every item of a chip's menu, each
+ * once, narrowed by the words after the slash in either language. `null`
+ * when the box does not start with a slash.
+ */
+export function slashCommands(actions: HomeAskAction[], value: string): HomeAskAction[] | null {
+  if (!value.startsWith('/')) return null;
+  const words = fold(value.slice(1)).split(/\s+/).filter(Boolean);
+  const flat = actions.flatMap((action) => (action.items?.length ? action.items : [action]));
+  return flat.filter((action) => {
+    const label = fold(`${action.en} ${action.el}`);
+    return words.every((word) => label.includes(word));
+  });
+}

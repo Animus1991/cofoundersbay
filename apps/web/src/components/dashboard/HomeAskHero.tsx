@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { usePopupChatOptional } from '@/contexts/PopupChatContext';
-import { HOME_ASK, scopedPrompt, type HomeAskAction, type HomeRole } from '@/lib/home-ask';
+import { HOME_ASK, scopedPrompt, slashCommands, type HomeAskAction, type HomeRole } from '@/lib/home-ask';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
@@ -48,6 +48,9 @@ export function partOfDay(hour: number): Part {
  *   assistant was asked is exactly what the chat shows.
  * - A chip asks the assistant a ready question or opens a page; a chip with a
  *   chevron opens a short menu of them.
+ * - "/" at the start of the box lists the same starting points as commands,
+ *   narrowed as you type (Copilot Chat's slash commands): arrows move, Enter
+ *   runs the highlighted one, Escape clears.
  */
 export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string; lead?: Part }) {
   const sayOne = useBilingualString();
@@ -64,6 +67,10 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string
   useEffect(() => setPart(partOfDay(new Date().getHours())), []);
   const hello = part ?? { en: 'Hello', el: 'Γεια σας' };
   const scope = config.scopes.find((s) => s.id === scopeId) ?? config.scopes[0];
+  const [activeCommand, setActiveCommand] = useState(0);
+  const commands = slashCommands(config.actions, value);
+  const listOpen = commands !== null && commands.length > 0;
+  const active = listOpen ? Math.min(activeCommand, commands.length - 1) : -1;
 
   function send(question: string) {
     const q = question.trim();
@@ -83,10 +90,34 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (listOpen && commands) {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const step = event.key === 'ArrowDown' ? 1 : -1;
+        setActiveCommand((active + step + commands.length) % commands.length);
+        return;
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setValue('');
+        return;
+      }
+      if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+        event.preventDefault();
+        runCommand(commands[active]);
+        return;
+      }
+    }
     if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault();
       submit();
     }
+  }
+
+  function runCommand(action: HomeAskAction) {
+    setValue('');
+    setActiveCommand(0);
+    run(action);
   }
 
   function run(action: HomeAskAction) {
@@ -117,13 +148,39 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string
         <textarea
           id={`${boxId}-box`}
           value={value}
-          onChange={(event) => setValue(event.target.value)}
+          onChange={(event) => { setValue(event.target.value); setActiveCommand(0); }}
           onKeyDown={onKeyDown}
+          // A textarea keeps the textbox role (combobox is not allowed on
+          // it); these three still tie it to the command list.
+          aria-controls={listOpen ? `${boxId}-commands` : undefined}
+          aria-autocomplete="list"
+          aria-activedescendant={listOpen ? `${boxId}-command-${active}` : undefined}
           rows={2}
           maxLength={2000}
           placeholder={sayOne('Ask anything, or ask for something to be done', 'Ρωτήστε οτιδήποτε ή ζητήστε να γίνει κάτι')}
           className="block max-h-48 min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
         />
+        {listOpen && commands ? (
+          <ul id={`${boxId}-commands`} role="listbox" aria-label={bilingualAria('Commands', 'Εντολές')} className="mx-2 mb-2 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1">
+            {commands.map((command, index) => (
+              <li
+                key={command.id}
+                id={`${boxId}-command-${index}`}
+                role="option"
+                aria-selected={index === active}
+                // mousedown, not click: the box keeps its focus.
+                onMouseDown={(event) => { event.preventDefault(); runCommand(command); }}
+                onMouseEnter={() => setActiveCommand(index)}
+                className={cn(
+                  'flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm',
+                  index === active ? 'bg-muted text-foreground' : 'text-muted-foreground',
+                )}
+              >
+                <BilingualText en={command.en} el={command.el} compact />
+              </li>
+            ))}
+          </ul>
+        ) : null}
         <div className="flex items-center gap-2 px-2 pb-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -150,7 +207,7 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string
             </DropdownMenuContent>
           </DropdownMenu>
           <span className="ml-auto hidden text-2xs text-muted-foreground sm:inline">
-            <BilingualText en="Enter to send · Shift+Enter for a new line" el="Enter για αποστολή · Shift+Enter για νέα γραμμή" compact />
+            <BilingualText en="Enter to send · Shift+Enter for a new line · / for commands" el="Enter για αποστολή · Shift+Enter για νέα γραμμή · / για εντολές" compact />
           </span>
           <Button
             type="submit"

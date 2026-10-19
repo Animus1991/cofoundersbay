@@ -35,7 +35,6 @@ import {
   Star,
   Award,
   Activity,
-  ExternalLink,
   FolderOpen,
   Plus,
   BarChart3,
@@ -58,7 +57,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { BilingualText } from '@/components/common/BilingualText';
-import { SkillChip } from '@/components/common/SkillChip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { ContributionGraph } from '@/components/shared/ContributionGraph';
@@ -650,7 +648,7 @@ export default function ProfilePage() {
                       <BilingualText en={profileEn('bio_empty_hint')} el={profileEl('bio_empty_hint')} />
                     </p>
                     <Button variant="outline" size="sm" asChild>
-                      <Link href="/profile/edit">
+                      <Link href="/profile/edit#pe-f1">
                         <BilingualText en={profileEn('add_bio')} el={profileEl('add_bio')} />
                       </Link>
                     </Button>
@@ -726,7 +724,7 @@ export default function ProfilePage() {
                     <BilingualText en={profileEn('top_skills')} el={profileEl('top_skills')} />
                   </CardTitle>
                   <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible" asChild>
-                    <Link href="/profile/edit">
+                    <Link href="/profile/edit#skills">
                       <Plus className="icon-sm" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
                     </Link>
                   </Button>

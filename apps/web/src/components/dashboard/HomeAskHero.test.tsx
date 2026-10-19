@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { HOME_ASK } from '@/lib/home-ask';
+import { HOME_ASK, slashCommands } from '@/lib/home-ask';
 import { HomeAskHero, partOfDay } from './HomeAskHero';
 
 const state = vi.hoisted(() => ({
@@ -97,6 +97,43 @@ describe('HomeAskHero', () => {
     const item = cofounder.items![1];
     fireEvent.click(within(menu).getByRole('menuitem', { name: item.en }));
     expect(state.ask).toHaveBeenLastCalledWith(item.prompt!.en);
+  });
+
+  it('lists the starting points after a slash and runs the chosen one', () => {
+    render(<HomeAskHero role="founder" name="Alex" />);
+    fireEvent.change(box(), { target: { value: '/mentor' } });
+    const options = within(screen.getByRole('listbox')).getAllByRole('option');
+    expect(options.map((o) => o.textContent)).toEqual(['Find a mentor']);
+    fireEvent.keyDown(box(), { key: 'Enter' });
+    const mentor = HOME_ASK.founder.actions.find((a) => a.id === 'mentor')!;
+    expect(state.ask).toHaveBeenCalledWith(mentor.prompt!.en);
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
+  it('moves through the commands with the arrows and clears on Escape', () => {
+    render(<HomeAskHero role="founder" name="Alex" />);
+    fireEvent.change(box(), { target: { value: '/' } });
+    const first = screen.getAllByRole('option')[0];
+    expect(first.getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(box(), { key: 'ArrowDown' });
+    expect(screen.getAllByRole('option')[1].getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(box(), { key: 'ArrowUp' });
+    fireEvent.keyDown(box(), { key: 'ArrowUp' });
+    const options = screen.getAllByRole('option');
+    expect(options[options.length - 1].getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(box(), { key: 'Escape' });
+    expect((box() as HTMLTextAreaElement).value).toBe('');
+    expect(state.ask).not.toHaveBeenCalled();
+  });
+
+  it('finds a command in Greek without the accents', () => {
+    const found = slashCommands(HOME_ASK.founder.actions, '/μεντορα');
+    expect(found?.map((a) => a.id)).toEqual(['mentor']);
+    expect(slashCommands(HOME_ASK.founder.actions, 'no slash')).toBeNull();
+    // A menu's items are commands of their own; the menu itself is not.
+    const all = slashCommands(HOME_ASK.founder.actions, '/')!.map((a) => a.id);
+    expect(all).toContain('tech');
+    expect(all).not.toContain('cofounder');
   });
 
   it('opens the assistant page when there is no chat window to ask', () => {
