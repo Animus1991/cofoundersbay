@@ -221,6 +221,11 @@ function persist() {
   }
 }
 
+/** An empty logo field, which the demo photos fill with a picture of the partner's trade. */
+function withPartnerLogo<T extends object>(view: T): T & { partnerLogo: null } {
+  return { ...view, partnerLogo: null };
+}
+
 export function resetDemoPerks() {
   memory = null;
   try {
@@ -282,26 +287,26 @@ export function previewPerksApi(
     const open = rows
       .map((r) => r.perk)
       .filter((p) => perkIsOpen(p, now) && (!category || p.category === (category as PerkCategory)))
-      .map((p) => perkForReader(p, { claimed: p.claimed }));
+      .map((p) => withPartnerLogo(perkForReader(p, { claimed: p.claimed })));
     return { perks: rankPerksForStage(open, isCardStage(stage) ? (stage as PerkStage) : null) };
   }
   if (parts.length === 3 && parts[2] === 'claimed' && method === 'GET') {
     const mine = rows.map((r) => r.perk).filter((p) => p.claimed);
     mine.sort((a, b) => (b.claimedAt ?? '').localeCompare(a.claimedAt ?? ''));
-    return { perks: mine.map((p) => perkForReader(p, { claimed: true })) };
+    return { perks: mine.map((p) => withPartnerLogo(perkForReader(p, { claimed: true }))) };
   }
   if (parts.length === 4 && parts[3] === 'claim' && method === 'POST') {
     const row = rows.find((r) => r.perk.id === parts[2]);
     if (!row) throw new DemoRefusal(404, 'That perk does not exist', { messageEl: 'Αυτή η προσφορά δεν υπάρχει.' });
-    if (row.perk.claimed) return { perk: perkForReader(row.perk, { claimed: true }) };
+    if (row.perk.claimed) return { perk: withPartnerLogo(perkForReader(row.perk, { claimed: true })) };
     if (!perkIsOpen(row.perk, now)) throw new DemoRefusal(409, 'This perk is no longer offered', { messageEl: 'Αυτή η προσφορά δεν προσφέρεται πια.' });
     state.claims[row.perk.id] = now;
     persist();
     const claimed = all(state, now).find((r) => r.perk.id === row.perk.id)!.perk;
-    return { perk: perkForReader(claimed, { claimed: true }) };
+    return { perk: withPartnerLogo(perkForReader(claimed, { claimed: true })) };
   }
   if (parts.length === 4 && parts[2] === 'admin' && parts[3] === 'all' && method === 'GET') {
-    return { perks: rows.map((r) => perkForReader(r.perk, { claimed: r.perk.claimed, admin: true })) };
+    return { perks: rows.map((r) => withPartnerLogo(perkForReader(r.perk, { claimed: r.perk.claimed, admin: true }))) };
   }
   if (parts.length === 3 && parts[2] === 'admin' && method === 'POST') {
     const input = readPerkInput(body);
@@ -320,7 +325,7 @@ export function previewPerksApi(
     state.off = state.off.filter((id) => id !== row.perk.id);
     if (!body.active) state.off.push(row.perk.id);
     persist();
-    return { perk: perkForReader({ ...row.perk, active: body.active }, { claimed: row.perk.claimed, admin: true }) };
+    return { perk: withPartnerLogo(perkForReader({ ...row.perk, active: body.active }, { claimed: row.perk.claimed, admin: true })) };
   }
   return undefined;
 }

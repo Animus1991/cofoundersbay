@@ -18,10 +18,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { useModalA11y } from '@/hooks/useModalA11y';
 import { useHydrated } from '@/components/common/RelativeTime';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
@@ -394,8 +394,9 @@ function PipelineView({
                       <CardHead
                         mark={(
                           <Avatar className="h-8 w-8 rounded-xl">
+                            <AvatarImage src={lead.logoUrl} alt="" className="rounded-xl" />
                             <AvatarFallback className="rounded-xl bg-primary/10 text-xs font-semibold text-primary-accessible">
-                              {lead.name[0]}
+                              {initialsOf(lead.name)}
                             </AvatarFallback>
                           </Avatar>
                         )}
@@ -652,7 +653,8 @@ function InvestorListView({
               <CardHead
                 mark={(
                   <Avatar className="h-10 w-10 rounded-xl">
-                    <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{lead.name[0]}</AvatarFallback>
+                    <AvatarImage src={lead.logoUrl} alt="" className="rounded-xl" />
+                    <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initialsOf(lead.name)}</AvatarFallback>
                   </Avatar>
                 )}
                 title={<LeadName lead={lead} as="span" />}

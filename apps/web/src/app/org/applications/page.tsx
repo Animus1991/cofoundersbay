@@ -57,6 +57,7 @@ import { StatusText } from '@/components/common/StatusText';
 import { formatDate } from '@/lib/i18n/format';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { demoMark } from '@/lib/demo/photos';
 
 /**
  * An application is a program participant whose status says so.
@@ -168,7 +169,7 @@ function ApplicationCard({
         <CardHead
           mark={(
             <Avatar className="h-10 w-10 rounded-xl">
-              <AvatarImage src={application.logoUrl} />
+              <AvatarImage src={application.logoUrl ?? demoMark(application.startupName, [application.industry])} alt="" className="rounded-xl" />
               <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold">
                 {initials}
               </AvatarFallback>

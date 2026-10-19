@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,6 +44,7 @@ import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { bilingualAria } from '@/lib/i18n/format';
+import { demoMark } from '@/lib/demo/photos';
 
 /*
  * The organisation's home.
@@ -294,6 +295,7 @@ export default function IncubatorDashboard() {
                     key={row.id}
                     mark={(
                       <Avatar className="h-10 w-10">
+                        <AvatarImage src={row.user.profile?.avatarUrl ?? undefined} alt="" />
                         <AvatarFallback className="bg-muted text-foreground">{initialsOf(name)}</AvatarFallback>
                       </Avatar>
                     )}
@@ -376,7 +378,8 @@ export default function IncubatorDashboard() {
                         key={row.id}
                         mark={(
                           <Avatar className="h-10 w-10 rounded-xl">
-                            <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{startup[0]?.toUpperCase()}</AvatarFallback>
+                            <AvatarImage src={demoMark(startup, [program?.title])} alt="" className="rounded-xl" />
+                            <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initialsOf(startup)}</AvatarFallback>
                           </Avatar>
                         )}
                         title={<span className="block truncate">{startup}</span>}

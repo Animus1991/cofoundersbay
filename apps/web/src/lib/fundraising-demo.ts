@@ -1,3 +1,5 @@
+import { attachDemoPhotos } from '@/lib/demo/photos';
+
 export type RoundStatus = 'planning' | 'active' | 'closing' | 'closed';
 export type InvestorStatus = 'prospect' | 'contacted' | 'meeting' | 'dd' | 'committed' | 'passed';
 export type DocStatus = 'draft' | 'ready' | 'shared';
@@ -19,6 +21,8 @@ export type FundRound = {
 export type InvestorLead = {
   id: string;
   name: string;
+  /** A picture for the demo's own leads; a member's leads have none and show initials. */
+  logoUrl?: string;
   nameEl?: string;
   firm?: string;
   type: string;
@@ -219,10 +223,12 @@ export function writeFundraisingOverlay(overlay: FundraisingOverlay) {
 
 export function resolveFundraisingLeads(overlay: Partial<FundraisingOverlay> = emptyFundraisingOverlay()): InvestorLead[] {
   const resolved = coerceFundraisingOverlay(overlay);
-  const fromSeed = FUNDRAISING_SEED_LEADS.map((l) => ({
+  // The demo's leads carry a picture of who they are (an angel network, a
+  // warm intro in Athens); leads a member adds are theirs and keep initials.
+  const fromSeed = attachDemoPhotos(FUNDRAISING_SEED_LEADS.map((l) => ({
     ...l,
     status: resolved.status[l.id] ?? l.status,
-  }));
+  })), { logoKey: 'logoUrl' });
   const created = resolved.created.map((l) => ({
     ...l,
     status: resolved.status[l.id] ?? l.status,

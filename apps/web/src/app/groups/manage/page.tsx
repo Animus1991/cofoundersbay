@@ -29,7 +29,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
@@ -51,6 +51,7 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { demoMark } from '@/lib/demo/photos';
 
 type ManagedGroup = {
   id: string;
@@ -96,8 +97,9 @@ function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & Grou
         <CardHead
           mark={(
             <Avatar className="h-10 w-10 rounded-xl">
+              <AvatarImage src={demoMark(group.name, [group.category])} alt="" className="rounded-xl" />
               <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
-                {group.name?.[0] ?? '?'}
+                {group.name ? initialsOf(group.name) : '?'}
               </AvatarFallback>
             </Avatar>
           )}

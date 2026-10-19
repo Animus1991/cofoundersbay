@@ -3056,6 +3056,8 @@ export interface OpportunityItem {
   description: string | null;
   type: OpportunityType;
   company: string | null;
+  /** The company's logo, when the listing names one and a picture is known. */
+  companyLogo?: string | null;
   location: string | null;
   isRemote: boolean;
   url: string | null;

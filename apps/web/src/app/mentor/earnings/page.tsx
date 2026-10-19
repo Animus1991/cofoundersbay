@@ -29,6 +29,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { getMeProfile } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { MENTOR_DEMO_EARNINGS } from '@/lib/demo/mentor-world';
+import { demoPortrait } from '@/lib/demo/photos';
 
 // ── Mock data (replace with real API calls) ──────────────────────────────────
 
@@ -45,7 +46,7 @@ const MOCK_TRANSACTION_ROWS = MENTOR_DEMO_EARNINGS;
 function mockTransactions() {
   return MOCK_TRANSACTION_ROWS.map((r) => ({
     id: r.id,
-    mentee: { name: r.name, avatarUrl: null as string | null },
+    mentee: { name: r.name, avatarUrl: demoPortrait(r.name) as string | null },
     type: 'session',
     duration: r.duration,
     amount: r.amount,

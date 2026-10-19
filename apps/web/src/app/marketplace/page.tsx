@@ -27,7 +27,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { listMarketplaceServices, type MarketplaceCategory } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
@@ -37,6 +37,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { durationEl } from '@/lib/i18n/units';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -81,7 +82,7 @@ const CATEGORIES = Object.keys(CAT_CONFIG);
 
 // ── Mock Data ──────────────────────────────────────────────────────────────────
 
-const MOCK_PROVIDERS: ServiceProvider[] = [
+const MOCK_PROVIDERS: ServiceProvider[] = attachDemoPhotos([
   {
     id: '1', providerName: 'Alexandra Kosta', providerTitle: 'Startup Legal Counsel',
     title: 'Startup Legal Package', description: 'Full legal coverage for early-stage startups: incorporation, term sheets, SAFE notes, IP protection, NDAs, and co-founder agreements.',
@@ -138,7 +139,7 @@ const MOCK_PROVIDERS: ServiceProvider[] = [
     pricing: 'Custom', pricingTier: 'custom', avgRating: 4.7, reviewCount: 15, clientCount: 22,
     responseTime: '< 48h', location: 'Athens, GR', isVerified: false, isFeatured: false, isAvailable: true,
   },
-];
+]);
 
 // ── Provider Card ──────────────────────────────────────────────────────────────
 
@@ -188,7 +189,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             <Avatar className="h-10 w-10 rounded-xl">
               <AvatarImage src={provider.providerAvatar} />
               <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold">
-                {provider.providerName[0]}
+                {initialsOf(provider.providerName)}
               </AvatarFallback>
             </Avatar>
           )}

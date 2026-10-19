@@ -21,7 +21,7 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { RelativeTime, useHydrated } from '@/components/common/RelativeTime';
 import { StatusText } from '@/components/common/StatusText';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -109,6 +109,7 @@ function PerkCard({
         <CardHead
           mark={(
             <Avatar className="h-10 w-10 rounded-xl" data-keep-icon="">
+              <AvatarImage src={(perk as PerkView & { partnerLogo?: string | null }).partnerLogo ?? undefined} alt="" className="rounded-xl" />
               <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initialsOf(perk.partner)}</AvatarFallback>
             </Avatar>
           )}

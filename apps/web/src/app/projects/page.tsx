@@ -47,7 +47,7 @@ import {
   PROJECT_STAGE_FULL_KEYS,
   PROJECT_ROLE_TITLE_EL,
 } from '@/lib/i18n/strings-projects';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import {
   listDemoProjects,
@@ -127,8 +127,9 @@ function ProjectCard({
   // A project is an organisation-like thing: a rounded-square mark with its initial.
   const mark = (
     <Avatar className="h-10 w-10 rounded-xl">
+      <AvatarImage src={project.logoUrl} alt="" className="rounded-xl" />
       <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
-        {project.name[0]?.toUpperCase()}
+        {initialsOf(project.name)}
       </AvatarFallback>
     </Avatar>
   );
@@ -158,7 +159,7 @@ function ProjectCard({
         <Avatar key={m.id} className="h-8 w-8 border-2 border-background">
           <AvatarImage src={m.avatar} />
           <AvatarFallback className="bg-primary/10 text-xs text-primary-accessible">
-            {m.name[0]}
+            {initialsOf(m.name)}
           </AvatarFallback>
         </Avatar>
       ))}

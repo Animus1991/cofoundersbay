@@ -55,7 +55,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -64,6 +64,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 type Startup = {
   id: string;
@@ -280,7 +281,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
   );
 }
 
-const ALL_STARTUPS: Startup[] = [
+const ALL_STARTUPS: Startup[] = attachDemoPhotos([
   { id: '1', name: 'NeuralFlow AI', tagline: 'AI-powered workflow automation for enterprises', industry: 'AI/ML', stage: 'Seed', location: 'San Francisco', teamSize: 3, readinessScore: 85, matchScore: 92, tags: ['SaaS', 'Automation'], raisingAmount: '$1.5M', businessModel: 'B2B', isHot: true, isFeatured: true, revenue: '$24K MRR' },
   { id: '2', name: 'GreenGrid Energy', tagline: 'Smart grid solutions for renewable energy', industry: 'CleanTech', stage: 'Pre-seed', location: 'Berlin', teamSize: 2, readinessScore: 72, matchScore: 78, tags: ['Energy', 'IoT'], raisingAmount: '$500K', businessModel: 'B2B', isHot: false, isFeatured: false, revenue: 'Pre-revenue' },
   { id: '3', name: 'PayStream', tagline: 'Next-gen payment infrastructure for SMBs', industry: 'FinTech', stage: 'Seed', location: 'London', teamSize: 4, readinessScore: 91, matchScore: 88, tags: ['Payments', 'API'], raisingAmount: '$2M', businessModel: 'B2B', isHot: true, isFeatured: true, revenue: '$58K MRR' },
@@ -288,7 +289,7 @@ const ALL_STARTUPS: Startup[] = [
   { id: '5', name: 'DataVault', tagline: 'Enterprise data security and compliance', industry: 'Cybersecurity', stage: 'Seed', location: 'New York', teamSize: 5, readinessScore: 78, matchScore: 85, tags: ['Security', 'Enterprise'], raisingAmount: '$3M', businessModel: 'B2B', isHot: false, isFeatured: false, revenue: '$12K MRR' },
   { id: '6', name: 'EduTrack', tagline: 'Adaptive learning for K-12 institutions', industry: 'EdTech', stage: 'Pre-seed', location: 'Toronto', teamSize: 3, readinessScore: 69, matchScore: 74, tags: ['Education', 'AI'], raisingAmount: '$600K', businessModel: 'B2B', isHot: false, isFeatured: false, revenue: 'Pre-revenue' },
   { id: '7', name: 'LogiChain', tagline: 'Supply chain visibility for e-commerce', industry: 'Logistics', stage: 'Series A', location: 'Singapore', teamSize: 8, readinessScore: 93, matchScore: 80, tags: ['Logistics', 'Analytics'], raisingAmount: '$5M', businessModel: 'B2B', isHot: true, isFeatured: false, revenue: '$210K MRR' },
-];
+], { logoKey: 'logoUrl' });
 
 export default function InvestorScoutingPage() {
   const sayOne = useBilingualString();
@@ -415,7 +416,8 @@ export default function InvestorScoutingPage() {
                   key={s.id}
                   mark={(
                     <Avatar className="h-10 w-10 rounded-xl">
-                      <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{s.name[0]}</AvatarFallback>
+                      <AvatarImage src={s.logoUrl} alt="" className="rounded-xl" />
+                      <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initialsOf(s.name)}</AvatarFallback>
                     </Avatar>
                   )}
                   title={<Link href={`/startups/${s.id}`} className="transition-colors hover:text-primary-accessible">{s.name}</Link>}

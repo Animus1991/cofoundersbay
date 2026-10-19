@@ -1,3 +1,5 @@
+import { attachDemoPhotos } from '@/lib/demo/photos';
+
 export type ProjectStatus = 'idea' | 'validating' | 'building' | 'launched' | 'scaling';
 
 export type DemoRole = {
@@ -37,6 +39,8 @@ export type DemoUpdate = {
 export type DemoProject = {
   id: string;
   name: string;
+  /** A picture for the demo's own projects; a member's projects have none and show initials. */
+  logoUrl?: string;
   tagline: string;
   description: string;
   /**
@@ -303,12 +307,14 @@ const SEED_IDS = new Set(DEMO_PROJECTS_SEED.map((p) => p.id));
 
 export function resolveDemoProjects(overlay: Partial<ProjectsOverlay> = emptyProjectsOverlay()): DemoProject[] {
   const resolved = coerceOverlay(overlay);
-  const fromSeed = DEMO_PROJECTS_SEED
+  // The demo's projects carry a picture of what they build and faces for
+  // their teams; a project a member creates is theirs and keeps initials.
+  const fromSeed = attachDemoPhotos(DEMO_PROJECTS_SEED
     .filter((p) => !resolved.deleted.includes(p.id))
     .map((p) => ({
       ...p,
       isStarred: resolved.starred[p.id] ?? p.isStarred,
-    }));
+    })), { portraitKey: 'avatar', logoKey: 'logoUrl' });
   const created = resolved.created
     .filter((p) => !resolved.deleted.includes(p.id) && !SEED_IDS.has(p.id))
     .map((p) => {

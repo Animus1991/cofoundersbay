@@ -10,7 +10,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { RowHead, EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { discoverMentors } from '@/lib/api';
@@ -140,6 +140,7 @@ export default function MentorshipManagementPage() {
               <RowHead
                 mark={(
                   <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarImage src={(m as { avatarUrl?: string | null }).avatarUrl ?? undefined} alt="" />
                     <AvatarFallback className="bg-muted text-foreground">{initialsOf(m.displayName)}</AvatarFallback>
                   </Avatar>
                 )}

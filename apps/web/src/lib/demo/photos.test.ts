@@ -5,6 +5,7 @@ import {
   demoAgentPhoto,
   demoCover,
   demoLogo,
+  demoMark,
   demoPortrait,
   photoThemeOf,
   themePhotos,
@@ -114,6 +115,47 @@ describe('demo photos: people', () => {
   it('shows each assistant agent with a photo of what it helps with', () => {
     expect(photoIdOf(demoAgentPhoto('pitch-coach'))).toBe(themePhotos('stage')[0]);
     expect(demoAgentPhoto('unknown-agent')).toMatch(/^https:\/\/images\.unsplash\.com\//);
+  });
+});
+
+describe('demo photos: marks and less common fields', () => {
+  it('names an invitee known only by email from the mailbox, and leaves a role mailbox alone', () => {
+    const [ioanna, office] = attachDemoPhotos([{ email: 'ioanna@aegeanlab.example', avatarUrl: null }, { email: 'hello@old-venture.example', avatarUrl: null }], { portraitKey: 'avatarUrl' });
+    expect(ioanna.avatarUrl).toBe(demoPortrait('Ioanna'));
+    expect(office.avatarUrl).toBeNull();
+  });
+
+  it('gives a provider a face when it is a person and a picture of the trade when it is a firm', () => {
+    const [person, firm] = attachDemoPhotos([
+      { id: '1', providerName: 'Alexandra Kosta', category: 'legal' },
+      { id: '2', providerName: 'ByteCraft Studio', category: 'development' },
+    ]) as Array<{ providerAvatar?: string }>;
+    expect(person.providerAvatar).toBe(demoPortrait('Alexandra Kosta'));
+    expect(firm.providerAvatar).toMatch(/^https:\/\/images\.unsplash\.com\/.*w=160&h=160/);
+  });
+
+  it("fills a partner's and a company's logo from the right name", () => {
+    expect(isFrom(attachDemoPhotos({ partner: 'Kyma Energy', partnerLogo: null }).partnerLogo, 'energy')).toBe(true);
+    expect(isFrom(attachDemoPhotos({ title: 'Head of growth', company: 'Brightharbor Legal', companyLogo: null }).companyLogo, 'legal')).toBe(true);
+  });
+
+  it('gives a team member a face, not a logo, in a list of companies', () => {
+    const [project] = attachDemoPhotos([{ name: 'Harbor', industry: 'Logistics', members: [{ id: 'm1', name: 'Elena Papadopoulos', role: 'Founder' }] }], { portraitKey: 'avatar', logoKey: 'logoUrl' }) as Array<{ logoUrl?: string; members: Array<{ avatar?: string; logoUrl?: string }> }>;
+    expect(project.logoUrl).toMatch(/^https:\/\/images\.unsplash\.com\//);
+    expect(project.members[0].avatar).toBe(demoPortrait('Elena Papadopoulos'));
+    expect(project.members[0].logoUrl).toBeUndefined();
+  });
+
+  it('adds a portrait to a named person even without an id', () => {
+    expect((attachDemoPhotos({ displayName: 'Sofia Alexiou' }) as { avatarUrl?: string }).avatarUrl).toBe(demoPortrait('Sofia Alexiou'));
+  });
+
+  it('draws a mark from a name only in the demo', () => {
+    localStorage.removeItem('cfb_demo_data');
+    expect(demoMark('Taverna OS')).toBeUndefined();
+    localStorage.setItem('cfb_demo_data', '1');
+    expect(isFrom(demoMark('Taverna OS'), 'food')).toBe(true);
+    localStorage.removeItem('cfb_demo_data');
   });
 });
 

@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import {
@@ -37,6 +37,7 @@ import { StatusText } from '@/components/common/StatusText';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { demoMark } from '@/lib/demo/photos';
 
 /**
  * The page's own row from the API row.
@@ -162,6 +163,7 @@ function ProgramCard({ program }: { program: Program }) {
         <CardHead
           mark={(
             <Avatar className="h-10 w-10 rounded-xl">
+              <AvatarImage src={demoMark(program.name, [program.type])} alt="" className="rounded-xl" />
               {/* Stands in for the programme's logo: an avatar, not decoration. */}
               <AvatarFallback data-keep-icon className="rounded-xl bg-primary/10 text-primary-accessible">
                 <Award className="icon-md" aria-hidden="true" />

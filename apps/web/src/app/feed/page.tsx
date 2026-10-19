@@ -57,6 +57,7 @@ import {
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { useStoredUser } from '@/hooks/useStoredUser';
 
 type PostType = 'update' | 'milestone' | 'question' | 'announcement' | 'achievement';
 
@@ -196,6 +197,8 @@ function PostCard({
   /** Opens the report dialog for the post's author. */
   onReport: () => void;
 }) {
+  // The reader's own picture beside the comment box (the demo's is Alex's).
+  const me = useStoredUser();
   const sayOne = useBilingualString();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -352,7 +355,8 @@ function PostCard({
         {showComments && (
           <div className="flex gap-3 border-t border-border pt-3">
             <Avatar className="h-8 w-8">
-              <AvatarFallback className="text-xs">ME</AvatarFallback>
+              <AvatarImage src={me?.avatarUrl ?? undefined} alt="" />
+              <AvatarFallback className="text-xs">{me?.displayName ? initialsOf(me.displayName) : 'ME'}</AvatarFallback>
             </Avatar>
             <div className="flex min-w-0 flex-1 gap-2">
               {/* The page passed onComment={() => {}}: Send cleared the

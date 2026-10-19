@@ -157,7 +157,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
             /* A company's listing shows the company's mark; a person's listing
                shows the person, round like every person on the platform. */
             <Avatar className={cn('h-10 w-10 ring-2 ring-border/60', opportunity.company ? 'rounded-xl' : 'rounded-full')}>
-              {!opportunity.company && <AvatarImage src={opportunity.createdBy?.avatarUrl ?? undefined} alt="" />}
+              <AvatarImage src={(opportunity.company ? opportunity.companyLogo : opportunity.createdBy?.avatarUrl) ?? undefined} alt="" />
               <AvatarFallback className={cn('bg-primary/15 text-foreground font-semibold text-sm', opportunity.company ? 'rounded-xl' : 'rounded-full')}>
                 {opportunity.company ? initials : initialsOf(opportunity.createdBy?.displayName)}
               </AvatarFallback>

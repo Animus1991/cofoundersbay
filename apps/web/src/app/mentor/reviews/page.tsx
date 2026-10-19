@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { MENTOR_DEMO_REVIEWS } from '@/lib/demo/mentor-world';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -35,6 +35,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { demoPortrait } from '@/lib/demo/photos';
 
 type Review = {
   id: string;
@@ -73,7 +74,7 @@ function ReviewCard({ review }: { review: Review }) {
           mark={(
             <Avatar className="h-10 w-10">
               <AvatarImage src={review.menteeAvatar} alt="" />
-              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{review.mentee[0]?.toUpperCase()}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(review.mentee)}</AvatarFallback>
             </Avatar>
           )}
           title={review.mentee}
@@ -111,6 +112,7 @@ function sampleReviews(now: number | null): Review[] {
   return MENTOR_DEMO_REVIEWS.map((r) => ({
     id: r.id,
     mentee: r.mentee,
+    menteeAvatar: demoPortrait(r.mentee) ?? undefined,
     rating: r.rating,
     comment: r.comment,
     date: now == null ? '' : formatDate(now - r.ago * 86_400_000, 'en', { day: '2-digit', month: '2-digit', year: 'numeric' }),

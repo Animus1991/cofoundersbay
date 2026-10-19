@@ -185,6 +185,41 @@ export function demoLogo(name: string, about: ReadonlyArray<string | null | unde
   return demoCover(name, size, size, [name, ...about], 'office');
 }
 
+/**
+ * Whether this browser is in the demo. A copy of `isPreviewDemo`, because
+ * preview-demo.ts imports this module (the account's picture) and importing it
+ * back would read that constant before it exists.
+ */
+function inDemoBrowser(): boolean {
+  if (typeof document === 'undefined') return false;
+  try {
+    return (
+      document.cookie.includes('cfb_preview_demo=1') ||
+      document.cookie.includes('cfb_session=preview-demo') ||
+      window.localStorage.getItem('cfb_demo_data') === '1' ||
+      window.location.hostname.endsWith('.trycloudflare.com')
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * A picture for a mark a page draws from a name (a startup read from a
+ * headline, a cohort, a community), in the demo only: a real account keeps
+ * its initials or icon until an organisation uploads a logo. Radix shows the
+ * image only after it loads, so the server's render (no picture) still matches.
+ */
+export function demoMark(
+  name: string | null | undefined,
+  about: ReadonlyArray<string | null | undefined> = [],
+  size = 160,
+): string | undefined {
+  const text = name?.trim();
+  if (!text || !inDemoBrowser()) return undefined;
+  return demoLogo(text, about, size);
+}
+
 /* ---------------------------------------------------------------- people */
 
 const WOMEN = new Set([
@@ -343,7 +378,7 @@ export function demoAgentPhoto(agentId: string, size = 96): string {
 /* ------------------------------------------------------- filling payloads */
 
 const PORTRAIT_KEYS = new Set(['avatarUrl', 'avatar', 'profilePhoto', 'photoUrl', 'photoURL', 'picture']);
-const LOGO_KEYS = new Set(['logoUrl', 'providerLogo', 'companyLogo', 'organizationLogo', 'orgLogoUrl']);
+const LOGO_KEYS = new Set(['logoUrl', 'providerLogo', 'companyLogo', 'partnerLogo', 'organizationLogo', 'orgLogoUrl']);
 const COVER_KEYS = new Set(['coverImageUrl', 'imageUrl', 'heroImageUrl', 'coverUrl', 'bannerUrl']);
 /** `clientAvatar` belongs to `clientName`, `fromUserAvatar` to `fromUserName`, and so on. */
 const PREFIXED_PORTRAIT = /^([a-z][a-zA-Z]*)(Avatar|AvatarUrl|Photo|PhotoUrl)$/;
@@ -360,9 +395,19 @@ function isEmpty(value: unknown): boolean {
   return value === null || value === undefined || value === '';
 }
 
+/**
+ * "ioanna@aegeanlab.example" → "Ioanna": someone invited by email has no name
+ * yet, but the mailbox usually is one. "hello@…" gives a word no list knows,
+ * so it keeps its initials.
+ */
+function nameFromEmail(value: unknown): string | null {
+  const local = textOf(value)?.split('@')[0]?.split(/[._+-]/)[0];
+  return local && /^\p{L}{2,}$/u.test(local) ? local[0].toUpperCase() + local.slice(1).toLowerCase() : null;
+}
+
 function personNameOf(obj: Record<string, unknown>): string | null {
   const full = [textOf(obj.firstName), textOf(obj.lastName)].filter(Boolean).join(' ');
-  return textOf(obj.displayName) ?? textOf(obj.fullName) ?? textOf(obj.name) ?? (full || null);
+  return textOf(obj.displayName) ?? textOf(obj.fullName) ?? textOf(obj.name) ?? (full || null) ?? nameFromEmail(obj.email);
 }
 
 function portraitFor(obj: Record<string, unknown>): string | null {
@@ -402,11 +447,29 @@ function coverFor(obj: Record<string, unknown>): string | null {
   return seed ? demoCover(seed, 1200, 400, aboutOf(obj), KIND_FALLBACK[kindOf(obj)]) : null;
 }
 
+/** The name an organisation's picture is chosen by, for each field that holds one. */
+function logoNameOf(obj: Record<string, unknown>, key: string): string | null {
+  switch (key) {
+    case 'providerLogo':
+    case 'providerAvatar':
+      return textOf(obj.providerName) ?? textOf(obj.provider) ?? textOf(obj.name);
+    case 'partnerLogo':
+      return textOf(obj.partner) ?? textOf(obj.partnerName) ?? textOf(obj.name);
+    case 'companyLogo':
+      return textOf(obj.company) ?? textOf(obj.companyName) ?? textOf(obj.name);
+    default:
+      return textOf(obj.name) ?? textOf(obj.displayName) ?? textOf(obj.companyName) ?? textOf(obj.company) ?? textOf(obj.title);
+  }
+}
+
 function logoFor(obj: Record<string, unknown>, key: string): string | null {
-  const name = key === 'providerLogo'
-    ? textOf(obj.providerName) ?? textOf(obj.provider) ?? textOf(obj.name)
-    : textOf(obj.name) ?? textOf(obj.displayName) ?? textOf(obj.companyName) ?? textOf(obj.title);
-  return name ? demoLogo(name, [textOf(obj.industry), textOf(obj.sector), textOf(obj.category)]) : null;
+  const name = logoNameOf(obj, key);
+  return name ? demoLogo(name, [textOf(obj.industry), textOf(obj.sector), textOf(obj.category), textOf(obj.type)]) : null;
+}
+
+/** A provider is a person or a firm: a face for "Alexandra Kosta", a picture of the trade for "ByteCraft Studio". */
+function providerPicture(obj: Record<string, unknown>, key: string): string | null {
+  return demoPortrait(textOf(obj.providerName)) ?? logoFor(obj, key);
 }
 
 function isPersonRecord(obj: Record<string, unknown>): boolean {
@@ -444,7 +507,7 @@ function fill(obj: Record<string, unknown>, options: Options): Record<string, un
     } else if (PORTRAIT_KEYS.has(key) || key === options.portraitKey) {
       next[key] = portraitFor(obj) ?? value;
     } else if (prefixed) {
-      next[key] = demoPortrait(textOf(obj[`${prefixed[1]}Name`])) ?? value;
+      next[key] = (prefixed[1] === 'provider' ? providerPicture(obj, key) : demoPortrait(textOf(obj[`${prefixed[1]}Name`]))) ?? value;
     } else if (LOGO_KEYS.has(key)) {
       next[key] = logoFor(obj, key) ?? value;
     } else if (COVER_KEYS.has(key)) {
@@ -459,13 +522,15 @@ function fill(obj: Record<string, unknown>, options: Options): Record<string, un
   const portraitKey = options.portraitKey ?? 'avatarUrl';
   const named = options.portraitKey
     ? personNameOf(obj)
-    : (textOf(obj.displayName) ?? textOf(obj.fullName) ?? textOf(obj.firstName)) && (textOf(obj.id) ?? textOf(obj.userId));
+    : textOf(obj.displayName) ?? textOf(obj.fullName) ?? textOf(obj.firstName);
   if (!hasPortraitKey && !(portraitKey in obj) && named && !hasLogoKey(obj)) {
     const portrait = portraitFor(obj);
     if (portrait) next[portraitKey] = portrait;
   }
-  // A company in a list passed with `logoKey` gets a picture of its sector.
-  if (options.logoKey && !(options.logoKey in obj) && (textOf(obj.name) ?? textOf(obj.companyName))) {
+  // A company in a list passed with `logoKey` gets a picture of its sector; a
+  // person in the same list (a team member) is left to the portrait rules.
+  const companyName = textOf(obj.name) ?? textOf(obj.companyName);
+  if (options.logoKey && !(options.logoKey in obj) && companyName && !demoPortrait(companyName)) {
     next[options.logoKey] = logoFor(obj, options.logoKey);
   }
   // `clientName: 'Tom Brown'` with no `clientAvatar` beside it gets one.
@@ -473,7 +538,7 @@ function fill(obj: Record<string, unknown>, options: Options): Record<string, un
     const prefix = key.endsWith('Name') ? key.slice(0, -4) : '';
     if (!PERSON_PREFIX.test(prefix)) continue;
     if ([`${prefix}Avatar`, `${prefix}AvatarUrl`, `${prefix}Photo`, `${prefix}PhotoUrl`].some((own) => own in obj)) continue;
-    const portrait = demoPortrait(textOf(value));
+    const portrait = prefix === 'provider' ? providerPicture(obj, `${prefix}Avatar`) : demoPortrait(textOf(value));
     if (portrait) next[`${prefix}Avatar`] = portrait;
   }
   return next;

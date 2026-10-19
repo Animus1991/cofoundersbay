@@ -30,7 +30,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { formatRelativeTime } from '@/lib/utils';
+import { formatRelativeTime, initialsOf } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -58,6 +58,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { RailStats } from '@/components/layout/RailParts';
 import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { FactLine } from '@/components/common/FactLine';
+import { demoMark } from '@/lib/demo/photos';
 
 /**
  * The page's own row from a group.
@@ -133,8 +134,9 @@ function CommunityCard({
           mark={(
             <Link href={`/groups/${community.id}`} aria-label={bilingualInline(`Open ${community.name}`, `Άνοιγμα: ${community.name}`)}>
               <Avatar className="h-10 w-10 rounded-xl">
+                <AvatarImage src={demoMark(community.name, [community.category])} alt="" className="rounded-xl" />
                 <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold">
-                  {community.name[0]?.toUpperCase()}
+                  {initialsOf(community.name)}
                 </AvatarFallback>
               </Avatar>
             </Link>

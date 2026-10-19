@@ -4808,7 +4808,9 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
       .filter((o) => !type || o.type === type)
       .filter((o) => isRemote == null || o.isRemote === (isRemote === 'true'))
       .filter((o) => !search || `${o.title} ${o.description ?? ''} ${o.company ?? ''} ${o.tags.join(' ')}`.toLowerCase().includes(search));
-    const opportunities = matched.slice(offset, offset + limit);
+    // A listing that names a company gets an empty logo field, which the
+    // demo photos fill with a picture of the company's sector.
+    const opportunities = matched.slice(offset, offset + limit).map((o) => (o.company ? { ...o, companyLogo: null } : o));
     return { opportunities, total: matched.length, hasMore: offset + opportunities.length < matched.length };
   }
 
