@@ -25,7 +25,6 @@ import { StatusText } from '@/components/common/StatusText';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { useSession } from '@/hooks/useSession';
 import {
@@ -42,6 +41,7 @@ import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { priceEl } from '@/lib/i18n/units';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 
 /*
  * The provider's one home.
@@ -234,7 +234,7 @@ export default function ProviderDashboard() {
   }
 
   return (
-    <AppShell
+    <AppShell askAi={false}
       description="Inquiries, active projects, services and reviews - in one view."
       descriptionEl="Αιτήματα, ενεργά έργα, υπηρεσίες και αξιολογήσεις — σε μία προβολή."
       actions={
@@ -253,7 +253,7 @@ export default function ProviderDashboard() {
       }
     >
       <div className="space-y-6">
-        <DashboardGreeting name={displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
+        <HomeAskHero role="provider" name={displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
 
         {!inquiriesLoading && waiting[0] ? (
           <HomeNextStep

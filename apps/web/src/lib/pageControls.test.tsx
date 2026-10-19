@@ -533,6 +533,7 @@ describe('pages that offer controls', () => {
       'src/components/common/LanguagePreferenceToggle.tsx': 'app chrome',
       'src/components/common/LanguageSwitcher.tsx': 'app chrome',
       'src/components/theme/ThemeSwitcher.tsx': 'app chrome',
+      'src/components/dashboard/HomeAskHero.tsx': 'questions for the assistant itself: each item sends its prompt to the chat, and the scope menu only frames the next question',
     };
     const menuFiles = walk('src').filter((f) => /DropdownMenuItem[^>]*on(Click|Select)=/.test(readFileSync(f, 'utf8')));
     const uncovered = menuFiles

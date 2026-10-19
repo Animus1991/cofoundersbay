@@ -38,10 +38,10 @@ import {
 } from '@/lib/api';
 import { fromBooking } from '@/lib/mentoring/sessions';
 import { mentorDemoMonthEarnings, mentorDemoRating } from '@/lib/demo/mentor-world';
-import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
+import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 
 type MenteeRow = { id: string; name: string; startup: string | null; sessionsCompleted: number; avatarUrl: string | null };
 type SessionRow = { id: string; menteeName: string; scheduledAt: string; duration: number; meetingUrl?: string | null };
@@ -295,7 +295,7 @@ export default function MentorDashboard() {
   ) : null;
 
   return (
-    <AppShell showHelp
+    <AppShell askAi={false} showHelp
       description="Sessions, mentee requests, reviews, and earnings at a glance."
       descriptionEl="Συνεδρίες, αιτήματα καθοδηγούμενων, αξιολογήσεις και έσοδα με μια ματιά."
       actions={
@@ -306,7 +306,7 @@ export default function MentorDashboard() {
       }
     >
       <div className="space-y-6">
-        <DashboardGreeting name={displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
+        <HomeAskHero role="mentor" name={displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
 
         {/* One next step, before everything else. Within the hour it stays the
             status line; otherwise the next session, or the first request. */}

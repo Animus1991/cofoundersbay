@@ -36,6 +36,8 @@ import { adminGetAbuseStats, getAdminHealth, getAdminStats, type AdminHealth } f
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { cn, formatRelativeTime } from '@/lib/utils';
+import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { useStoredUser } from '@/hooks/useStoredUser';
 
 /*
  * The platform admin's home: what the platform holds, who is using it, what
@@ -95,6 +97,8 @@ type Attention = {
 };
 
 export default function AdminDashboardPage() {
+  const me = useStoredUser();
+  const adminName = me?.displayName?.split(' ')[0] ?? 'Admin';
   const [period, setPeriod] = useState<Period>('week');
   const { apiAvailable, pollInterval } = usePollingGuards();
 
@@ -208,6 +212,7 @@ export default function AdminDashboardPage() {
 
   return (
     <AppShell
+      askAi={false}
       title="Platform overview"
       titleEl="Επισκόπηση πλατφόρμας"
       description="Who uses the platform, what waits on an admin, and how the API is running."
@@ -238,6 +243,7 @@ export default function AdminDashboardPage() {
       }
     >
       <div className="space-y-6">
+        <HomeAskHero role="admin" name={adminName} lead={{ en: 'What waits on an admin, and how the platform is doing.', el: 'Τι περιμένει διαχειριστή, και πώς πάει η πλατφόρμα.' }} />
         {attention[0] ? (
           <HomeNextStep
             tone="waiting"

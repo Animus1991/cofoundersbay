@@ -28,7 +28,6 @@ import { RelativeTime } from '@/components/common/RelativeTime';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
-import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { useSession } from '@/hooks/useSession';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import {
@@ -45,6 +44,7 @@ import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { bilingualAria } from '@/lib/i18n/format';
 import { demoMark } from '@/lib/demo/photos';
+import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 
 /*
  * The organisation's home.
@@ -193,7 +193,7 @@ export default function IncubatorDashboard() {
   }
 
   return (
-    <AppShell showHelp
+    <AppShell askAi={false} showHelp
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1.5">
@@ -210,7 +210,7 @@ export default function IncubatorDashboard() {
       }
     >
       <div className="space-y-6">
-        <DashboardGreeting name={displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
+        <HomeAskHero role="incubator" name={displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
 
         {!loading && nextApplication ? (
           <HomeNextStep

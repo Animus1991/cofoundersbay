@@ -37,12 +37,12 @@ import {
   type InvestorDeal,
   type PipelineStage,
 } from '@/lib/api';
-import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { formatCompactMoney } from '@/lib/i18n/format';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { dealEventTitleEl } from '@/lib/i18n/deal-events';
+import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 
 /*
  * The investor's home, read from the investor's own board.
@@ -210,7 +210,7 @@ export default function InvestorDashboard() {
   }
 
   return (
-    <AppShell showHelp
+    <AppShell askAi={false} showHelp
       description="Pipeline health, deal flow, and portfolio performance — in one view."
       descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
       actions={
@@ -221,7 +221,7 @@ export default function InvestorDashboard() {
       }
     >
       <div className="space-y-6">
-        <DashboardGreeting name={displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
+        <HomeAskHero role="investor" name={displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
 
         {!dealsLoading && active[0] ? (
           <HomeNextStep

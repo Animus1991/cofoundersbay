@@ -1,6 +1,5 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
@@ -46,7 +45,7 @@ import {
 import { NextActionBanner, deriveNextAction } from '@/components/gamification/NextActionBanner';
 import { VentureReadinessCard } from '@/components/gamification/VentureReadinessCard';
 import { CommitmentOutcomes } from '@/components/commitments/CommitmentOutcomes';
-import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
+import { WhatsNewPanel, WhatsNewRail } from '@/components/dashboard/WhatsNewPanel';
 import {
   FIRST_MOVE_LATER_KEY,
   FULL_DASHBOARD_KEY,
@@ -76,6 +75,7 @@ import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { matchReasonCopy } from '@/lib/match-reason';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
+import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 const FOUNDER_TOUR: TourStep[] = [
   {
     target: 'founder-stats',
@@ -106,13 +106,6 @@ const FOUNDER_TOUR: TourStep[] = [
     bodyEl: 'Αυτή είναι η βαθμολογία προς επενδυτές σε έξι διαστάσεις. Το τσεκάρισμα κριτηρίων ενημερώνει την αποθηκευμένη βαθμολογία. Δεν είναι ο ίδιος αριθμός με την «Πρόοδο ιδρυτή» στην κεφαλίδα.',
   },
 ];
-
-function getTimeBasedGreeting(): { en: string; el: string } {
-  const hour = new Date().getHours();
-  if (hour < 12) return { en: dashboardEn('good_morning'), el: dashboardEl('good_morning') };
-  if (hour < 17) return { en: dashboardEn('good_afternoon'), el: dashboardEl('good_afternoon') };
-  return { en: dashboardEn('good_evening'), el: dashboardEl('good_evening') };
-}
 
 function AskAiButton({
   labelEn,
@@ -502,7 +495,6 @@ export default function FounderDashboardContent() {
   const fundRound = fundraisingRoundView(FUNDRAISING_SEED_LEADS);
   const fundStats = fundraisingPipelineStats(FUNDRAISING_SEED_LEADS);
   const fundingPct = Math.round((fundRound.raised / fundRound.target) * 100);
-  const greeting = getTimeBasedGreeting();
   /*
    * The founder's own milestones, from the endpoint /milestones reads, on its
    * query keys - so the tile, the list under it and that page cannot disagree,
@@ -1221,18 +1213,25 @@ export default function FounderDashboardContent() {
         </div>
       ),
     },
+    {
+      // GitHub keeps its changelog in the dashboard's right column; this is
+      // the same list as the card at the foot of the page, always reachable.
+      id: 'whats-new',
+      glyph: 'spark',
+      labelEn: 'What’s new',
+      labelEl: 'Τι νέο',
+      content: <WhatsNewRail audience="founder" />,
+    },
   ];
   return (
     <AppShell
       rail={rail}
       showHelp
-      // One Ask AI in the header, not three. AppShell renders its own whenever the
-      // page has a title, and this page was additionally passing an AIInsightButton
-      // and an AskAiButton through `actions` — on a 360px screen that stacked into
-      // three near-identical buttons. Handing AppShell the specific prompt keeps the
-      // most useful of the three in the standard position; the prompt-less "open the
-      // assistant" affordance is unchanged and still reachable from the chat bubble.
-      askAi="Brief me on this founder dashboard: what needs attention this week, summarize the graph, and the next action among intros, matches, messages, or profile gaps."
+      // One question box on this page: the home's own (HomeAskHero, below the
+      // title). The header's one-line field would be a second one; its weekly
+      // brief prompt is the hero's "My week" chip. The chat bubble still opens
+      // the assistant without a prompt.
+      askAi={false}
       actions={
         <>
           <Badge variant="outline" className="gap-1.5">
@@ -1255,15 +1254,10 @@ export default function FounderDashboardContent() {
       <FirstRunTour tourId="founder-dashboard" steps={FOUNDER_TOUR} ready={mounted && firstMove.settled && !restFolded} />
       <div className="min-w-0 space-y-6 overflow-x-clip">
 
-        <p className="text-sm text-muted-foreground">
-          <BilingualText
-            en={`${greeting.en}, ${displayName}. ${dashboardEn('greeting_lead')}`}
-            el={`${greeting.el}, ${displayName}. ${dashboardEl('greeting_lead')}`}
-            stacked
-            wrap
-            secondaryFrom="lg"
-          />
-        </p>
+        {/* GitHub's home: a greeting over one question box and the jobs to
+            start from. The weekly brief the header's field used to send is
+            the "My week" chip. */}
+        <HomeAskHero role="founder" name={displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
 
         {showFirstMove && (
           <FounderFirstMove

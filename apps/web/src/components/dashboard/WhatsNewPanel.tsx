@@ -108,3 +108,29 @@ export function WhatsNewPanel({ audience }: { audience: WhatsNewAudience }) {
     </Card>
   );
 }
+
+/**
+ * What's new as a short list for the page rail, the way GitHub's dashboard
+ * keeps "Latest from our changelog" in its right column. Unlike the card, it
+ * cannot be hidden: hiding the card used to be the only way to stop seeing
+ * it, and then the list was gone for good.
+ */
+export function WhatsNewRail({ audience, limit = 6 }: { audience: WhatsNewAudience; limit?: number }) {
+  const items = whatsNewItems(audience).slice(0, limit);
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground">
+        <BilingualText en="Added 7–18 October 2026, newest first." el="Προστέθηκαν 7–18 Οκτωβρίου 2026, τα νεότερα πρώτα." wrap />
+      </p>
+      <ol className="space-y-0.5 border-l border-border pl-3">
+        {items.map((item) => (
+          <li key={item.en} className="min-w-0">
+            <Link href={item.href} className="block rounded-md px-1.5 py-1.5 text-sm text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <BilingualText en={item.en} el={item.el} wrap />
+            </Link>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
