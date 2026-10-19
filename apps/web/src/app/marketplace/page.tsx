@@ -33,36 +33,17 @@ import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { durationEl } from '@/lib/i18n/units';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { DEMO_PROVIDERS, type DemoProvider } from '@/lib/demo/marketplace-world';
+import { placeEl } from '@/lib/i18n/places';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type ServiceProvider = {
-  id: string;
-  providerName: string;
-  providerAvatar?: string;
-  providerTitle: string;
-  title: string;
-  description: string;
-  category: string;
-  specialties: string[];
-  pricing: string;
-  pricingTier: 'free' | 'paid' | 'custom';
-  avgRating: number;
-  reviewCount: number;
-  clientCount: number;
-  responseTime: string;
-  location: string;
-  isVerified: boolean;
-  isFeatured: boolean;
-  isAvailable: boolean;
-  websiteUrl?: string;
-  contactUrl?: string;
-};
+type ServiceProvider = DemoProvider;
 
 // ── Category Config ────────────────────────────────────────────────────────────
 
@@ -82,64 +63,8 @@ const CATEGORIES = Object.keys(CAT_CONFIG);
 
 // ── Mock Data ──────────────────────────────────────────────────────────────────
 
-const MOCK_PROVIDERS: ServiceProvider[] = attachDemoPhotos([
-  {
-    id: '1', providerName: 'Alexandra Kosta', providerTitle: 'Startup Legal Counsel',
-    title: 'Startup Legal Package', description: 'Full legal coverage for early-stage startups: incorporation, term sheets, SAFE notes, IP protection, NDAs, and co-founder agreements.',
-    category: 'legal', specialties: ['Incorporation', 'Term Sheets', 'IP', 'SAFE Notes'],
-    pricing: 'From €500', pricingTier: 'paid', avgRating: 4.9, reviewCount: 47, clientCount: 82,
-    responseTime: '< 24h', location: 'Athens, GR', isVerified: true, isFeatured: true, isAvailable: true,
-  },
-  {
-    id: '2', providerName: 'Mark Thompson', providerTitle: 'CFO-as-a-Service',
-    title: 'Financial Modeling & Fundraising Prep', description: 'Build investor-grade financial models, cap tables, and fundraising narratives. Former accelerator CFO advising early-stage teams.',
-    category: 'finance', specialties: ['Financial Modeling', 'Cap Table', 'Pitch Financials', 'Due Diligence'],
-    pricing: 'From €800/mo', pricingTier: 'paid', avgRating: 4.8, reviewCount: 34, clientCount: 61,
-    responseTime: '< 48h', location: 'London, UK', isVerified: true, isFeatured: true, isAvailable: true,
-  },
-  {
-    id: '3', providerName: 'Sofia Papadaki', providerTitle: 'Growth Marketing Strategist',
-    title: 'GTM Strategy & Growth Hacking', description: 'Full-funnel growth strategy for B2B SaaS. SEO, paid acquisition, content, and lifecycle marketing. 3x average ARR growth for clients.',
-    category: 'marketing', specialties: ['GTM Strategy', 'SEO', 'Paid Ads', 'B2B SaaS'],
-    pricing: 'From €600/mo', pricingTier: 'paid', avgRating: 4.7, reviewCount: 28, clientCount: 40,
-    responseTime: '< 12h', location: 'Remote', isVerified: true, isFeatured: false, isAvailable: true,
-  },
-  {
-    id: '4', providerName: 'ByteCraft Studio', providerTitle: 'Full-Stack Development Agency',
-    title: 'MVP Development & Technical Architecture', description: 'From zero to deployed MVP in 6-8 weeks. React/Next.js + Node.js. Technical co-founder level quality without the equity.',
-    category: 'development', specialties: ['React', 'Node.js', 'MVP', 'Architecture'],
-    pricing: 'From €5K', pricingTier: 'paid', avgRating: 4.6, reviewCount: 19, clientCount: 28,
-    responseTime: '< 24h', location: 'Berlin, DE', isVerified: true, isFeatured: true, isAvailable: false,
-  },
-  {
-    id: '5', providerName: 'Pavlos Georgiadis', providerTitle: 'Brand & UX Designer',
-    title: 'Brand Identity & Product Design', description: 'End-to-end brand and product design. Logo, design system, UI/UX for web and mobile. Previously led design at 2 unicorns.',
-    category: 'design', specialties: ['Brand Identity', 'UI/UX', 'Design Systems', 'Figma'],
-    pricing: 'From €1.5K', pricingTier: 'paid', avgRating: 4.9, reviewCount: 63, clientCount: 90,
-    responseTime: '< 6h', location: 'Thessaloniki, GR', isVerified: true, isFeatured: false, isAvailable: true,
-  },
-  {
-    id: '6', providerName: 'Elena Vasilis', providerTitle: 'Startup Strategy Consultant',
-    title: 'Business Model & Investor Readiness', description: 'Validate your business model, refine positioning, and prepare for investor conversations. Former VC turned founder advisor.',
-    category: 'consulting', specialties: ['Business Model', 'Investor Readiness', 'Strategy', 'Positioning'],
-    pricing: 'From €300/session', pricingTier: 'paid', avgRating: 4.8, reviewCount: 41, clientCount: 55,
-    responseTime: '< 24h', location: 'Amsterdam, NL', isVerified: true, isFeatured: false, isAvailable: true,
-  },
-  {
-    id: '7', providerName: 'James Obi', providerTitle: 'Founder & Executive Coach',
-    title: 'Founder Coaching & Leadership Development', description: 'ICF-certified executive coach specializing in first-time founders. Clarity, resilience, team leadership, and high-performance habits.',
-    category: 'coaching', specialties: ['Executive Coaching', 'Leadership', 'Mindset', 'Team Dynamics'],
-    pricing: 'From €150/session', pricingTier: 'paid', avgRating: 5.0, reviewCount: 22, clientCount: 35,
-    responseTime: '< 24h', location: 'Remote', isVerified: true, isFeatured: false, isAvailable: true,
-  },
-  {
-    id: '8', providerName: 'Anna Christodoulou', providerTitle: 'Talent & Recruiting Partner',
-    title: 'Technical & Startup Recruiting', description: 'Hire your first 10 engineers and product managers faster. Startup-native recruiting methodology with pre-vetted candidate pipeline.',
-    category: 'other', specialties: ['Tech Recruiting', 'Talent Strategy', 'Sourcing', 'Interviews'],
-    pricing: 'Custom', pricingTier: 'custom', avgRating: 4.7, reviewCount: 15, clientCount: 22,
-    responseTime: '< 48h', location: 'Athens, GR', isVerified: false, isFeatured: false, isAvailable: true,
-  },
-]);
+// The demo's providers (demo/marketplace-world), each with a member behind the listing.
+const MOCK_PROVIDERS: ServiceProvider[] = attachDemoPhotos(DEMO_PROVIDERS);
 
 // ── Provider Card ──────────────────────────────────────────────────────────────
 
@@ -155,6 +80,9 @@ const MOCK_PROVIDERS: ServiceProvider[] = attachDemoPhotos([
 function priceForDisplay(raw: string, lang: 'en' | 'el'): string {
   const value = raw.replace(/^\s*(from|starting at)\s+/i, '');
   if (lang !== 'el') return value;
+  // Whole-word prices first: "Custom" was printed as it came.
+  const whole: Record<string, string> = { custom: 'Κατόπιν συνεννόησης', contact: 'Επικοινωνήστε', free: 'Δωρεάν' };
+  if (whole[value.trim().toLowerCase()]) return whole[value.trim().toLowerCase()];
   return value
     .replace(/\/mo\b/i, '/μήνα')
     .replace(/\/month\b/i, '/μήνα')
@@ -163,6 +91,7 @@ function priceForDisplay(raw: string, lang: 'en' | 'el'): string {
 }
 
 function ProviderCard({ provider, featured }: { provider: ServiceProvider; featured?: boolean }) {
+  const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
   const [saved, setSaved] = useState(false);
   const catCfg = CAT_CONFIG[provider.category] ?? CAT_CONFIG['other'];
@@ -205,13 +134,17 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           aside={(
             /* Their tap target and accessible name (this icon-only button had
                neither), kept with our icon-size and contrast-safe tokens. */
+            /* An icon with its name, not icon and word: on a card a quarter of
+               the page wide the word ran out past the card's edge. */
             <button
+              type="button"
               onClick={() => setSaved(!saved)}
-              className="tap-target flex h-11 w-11 shrink-0 items-center justify-center gap-1.5 rounded-md hover:bg-muted transition-colors sm:w-auto sm:px-3"
-              aria-label={saved ? 'Remove bookmark' : 'Save provider'}
+              className="tap-target -mr-2 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-muted"
+              aria-label={saved ? bilingualAria('Remove from saved', 'Αφαίρεση από τα αποθηκευμένα') : bilingualAria('Save provider', 'Αποθήκευση παρόχου')}
+              aria-pressed={saved}
+              title={saved ? sayOne('Saved', 'Αποθηκεύτηκε') : sayOne('Save', 'Αποθήκευση')}
             >
-              <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
-              <span className="hidden sm:inline text-sm"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
+              <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
             </button>
           )}
         />
@@ -235,7 +168,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             items={[
               <BilingualText key="response" en={provider.responseTime} el={durationEl(provider.responseTime)} compact />,
               <BilingualText key="clients" en={`${provider.clientCount} clients`} el={`${provider.clientCount} πελάτες`} compact />,
-              provider.location,
+              <BilingualText key="place" en={provider.location} el={placeEl(provider.location)} compact />,
               <span key="avail" className={provider.isAvailable ? 'text-status-success' : undefined}>
                 {provider.isAvailable
                   ? <BilingualText en="Available" el="Διαθέσιμος" compact />
@@ -255,9 +188,18 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             </div>
           )}
         >
-            {/* Neither had a handler. A listing carries its provider's own
-                contact and website links, so those are what these open. */}
-            {provider.contactUrl ? (
+            {/* A provider with a member behind the listing is written to here,
+                in a conversation on the platform; "Request" opens it with the
+                service already named. A listing without one falls back to its
+                own contact and website links, and only with neither is the
+                button off. */}
+            {provider.providerUserId ? (
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1" asChild>
+                <Link href={`/messages?to=${encodeURIComponent(provider.providerUserId)}`}>
+                  <MessageCircle className="icon-sm" aria-hidden="true" /><BilingualText en="Message" el="Μήνυμα" compact />
+                </Link>
+              </Button>
+            ) : provider.contactUrl ? (
               <Button variant="outline" size="sm" className="h-8 text-xs gap-1" asChild>
                 <a href={provider.contactUrl} target="_blank" rel="noopener noreferrer">
                   <MessageCircle className="icon-sm" aria-hidden="true" /><BilingualText en="Message" el="Μήνυμα" compact />
@@ -270,7 +212,13 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
                 </Button>
               </WithDisabledReason>
             )}
-            {provider.isAvailable && (provider.websiteUrl || provider.contactUrl) ? (
+            {provider.isAvailable && provider.providerUserId ? (
+              <Button size="sm" className="h-8 text-xs" asChild>
+                <Link href={`/messages?to=${encodeURIComponent(provider.providerUserId)}&text=${encodeURIComponent(sayOne(`Hello ${provider.providerName}, I would like to ask about "${provider.title}".`, `Γεια σας ${provider.providerName}, θα ήθελα να ρωτήσω για την υπηρεσία «${provider.title}».`))}`}>
+                  <BilingualText en="Request" el="Αίτημα" compact />
+                </Link>
+              </Button>
+            ) : provider.isAvailable && (provider.websiteUrl || provider.contactUrl) ? (
               <Button size="sm" className="h-8 text-xs" asChild>
                 <a href={provider.websiteUrl ?? provider.contactUrl} target="_blank" rel="noopener noreferrer"><BilingualText en="Request" el="Αίτημα" compact /></a>
               </Button>
@@ -357,6 +305,7 @@ export default function MarketplacePage() {
     websiteUrl: s.websiteUrl ?? undefined,
     contactUrl: s.contactUrl ?? undefined,
     providerAvatar: s.providerLogo ?? undefined,
+    providerUserId: s.providerUserId ?? undefined,
   }));
 
   const allProviders = backendProviders.length > 0 ? backendProviders : showDemoData ? MOCK_PROVIDERS : [];

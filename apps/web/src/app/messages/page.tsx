@@ -40,6 +40,7 @@ import {
   respondToConnectionRequest,
   getMe,
   ApiError,
+  apiRequest,
   type ConversationSummary,
   type MessageItem,
   type ConnectionRequestItem,
@@ -572,6 +573,10 @@ export default function MessagesPage() {
         if (conv) {
           setSelectedConversation(conv);
           setIsMobileViewingChat(true);
+          // "Request" on a marketplace card opens the thread with the
+          // message already started; the reader edits it before sending.
+          const text = searchParams?.get('text');
+          if (text) setComposerDraft(text.slice(0, 2000));
         }
       } catch (e) {
         if (cancelled) return;
@@ -710,6 +715,12 @@ export default function MessagesPage() {
     setComposerDraft(undefined);
 
     if (preview && (!s || !s.connected)) {
+      // The demo keeps what the visitor writes for the session, so the
+      // thread is still there after a reload (demo/messages-world).
+      void apiRequest(`/api/messages/conversations/${encodeURIComponent(selectedConversation.id)}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({ body: content }),
+      }).catch(() => {});
       setConversations((prev) =>
         prev.map((c) =>
           c.id === selectedConversation.id

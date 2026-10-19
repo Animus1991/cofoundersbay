@@ -101,6 +101,8 @@ export class MarketplaceService {
         description: s.description,
         category: s.category,
         providerName: s.providerName,
+        // The member behind the listing: the web opens a conversation with them.
+        providerUserId: s.createdById,
         providerLogo: s.providerLogo,
         pricing: s.pricing,
         contactUrl: s.contactUrl,

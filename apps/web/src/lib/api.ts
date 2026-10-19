@@ -3215,6 +3215,8 @@ export interface MarketplaceServiceItem {
   description: string | null;
   category: MarketplaceCategory;
   providerName: string;
+  /** The member who listed the service; the marketplace opens a conversation with them. */
+  providerUserId?: string | null;
   providerLogo: string | null;
   pricing: string | null;
   contactUrl: string | null;

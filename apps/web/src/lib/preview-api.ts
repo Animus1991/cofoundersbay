@@ -28,7 +28,11 @@ import { PREVIEW_MESSAGE_EL } from './i18n/strings-messages';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis, placeVariants } from '@cofounderbay/shared';
 import type { FeedPost } from './api';
-import { ORG, ORG_FOUNDERS, ORG_INVESTORS, ORG_MENTORS, ORG_SLUG, ORG_STAFF } from './demo/org-world';
+import { ORG, ORG_FOUNDERS, ORG_INVESTORS, ORG_MENTORS, ORG_SLUG, ORG_STAFF, orgPerson } from './demo/org-world';
+import { demoInvestorPerson } from './demo/investors-world';
+import { demoProviderPerson } from './demo/marketplace-world';
+import { previewMessagesWorld } from './demo/messages-world';
+import { DemoRefusal } from './demo/demo-refusal';
 import {
   harborApplicationDrafts,
   isStaleHarborApplicationBlob,
@@ -1905,6 +1909,41 @@ type PreviewBooking = {
   mentee: { id: string; displayName: string; avatarUrl: string | null };
 };
 
+/**
+ * Any member the demo knows, by id: the cast, the investors and providers of
+ * their own worlds, the organisation's people and the admin list. The
+ * profile page and new conversations read this, so "Message" on an investor
+ * opens that investor and a profile shows the person asked for; both used to
+ * fall back to Elena.
+ */
+function demoPersonById(id: string) {
+  const cast = PEOPLE.find((p) => p.userId === id || p.id === id);
+  if (cast) return cast;
+  const fromWorld = demoInvestorPerson(id) ?? demoProviderPerson(id);
+  if (fromWorld) return fromWorld;
+  const org = orgPerson(id);
+  if (org) {
+    const mentor = ORG_MENTORS.find((m) => m.id === id);
+    return {
+      id: `hit-${id}`,
+      userId: id,
+      displayName: org.name,
+      headline: org.headline,
+      bio: org.headline,
+      location: org.location,
+      role: mentor ? 'mentor' : ORG_INVESTORS.some((i) => i.id === id) ? 'investor' : 'founder',
+      avatarUrl: null,
+      skillNames: mentor?.expertise ?? [],
+      industries: [] as string[],
+    };
+  }
+  const admin = PREVIEW_ADMIN_USERS.find((u) => u.id === id);
+  if (admin) {
+    return { id: `hit-${id}`, userId: id, displayName: admin.name, headline: '', bio: '', location: '', role: admin.role, avatarUrl: null, skillNames: [] as string[], industries: [] as string[] };
+  }
+  return null;
+}
+
 function previewBookingPerson(id: string, fallbackName: string) {
   const u = PREVIEW_ADMIN_USERS.find((x) => x.id === id);
   const p = PEOPLE.find((x) => x.userId === id);
@@ -3063,6 +3102,16 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     return { suggestions: PEOPLE };
   }
 
+  // Conversations: the seed threads plus what the visitor starts and writes
+  // this session (demo/messages-world).
+  const messagesAnswer = previewMessagesWorld(pathname, method, body, {
+    seedConversations: CONVERSATIONS,
+    seedMessages: MESSAGES,
+    personById: demoPersonById,
+    me: { id: ME_ID, displayName: 'Alex Demo', role: 'founder' },
+    now: () => new Date(previewNowMs()).toISOString(),
+  });
+  if (messagesAnswer !== undefined) return messagesAnswer;
   if (pathname === '/api/messages/conversations') {
     return { conversations: CONVERSATIONS };
   }
@@ -3873,9 +3922,10 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   // whose missing skillId also tripped React's duplicate-key warning. Resolved
   // from PEOPLE so a card opened from Discover shows the person that was clicked.
   if (/^\/api\/profiles\/[^/]+$/.test(pathname)) {
-    const id = pathname.split('/').pop() ?? '';
-    const person =
-      PEOPLE.find((p) => p.userId === id || p.id === id) ?? PEOPLE[0];
+    const id = decodeURIComponent(pathname.split('/').pop() ?? '');
+    const found = demoPersonById(id);
+    if (!found) throw new DemoRefusal(404, 'Profile not found', { messageEl: 'Το προφίλ δεν βρέθηκε.' });
+    const person = found as typeof found & { lookingFor?: string; availability?: string };
     const slug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     return {
       id: person.id,

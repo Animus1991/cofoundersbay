@@ -37,6 +37,11 @@ import { STATUS } from '@/lib/semantic-colors';
 import { AskIntroButton } from '@/components/intros/AskIntroDialog';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { DEMO_INVESTORS } from '@/lib/demo/investors-world';
+import { useHydrated } from '@/components/common/RelativeTime';
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { termDisplay } from '@/lib/i18n/terms';
+import { placeEl } from '@/lib/i18n/places';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -153,56 +158,9 @@ function hitToInvestor(hit: SearchHit): Investor {
  * The people and firms are invented; none names a real fund or company, and
  * none has a profile or an inbox, so their Profile and Intro buttons say so.
  */
-const SAMPLE_INVESTORS: Investor[] = attachDemoPhotos([
-  {
-    id: 'sample-inv-1', userId: 'sample-inv-1', displayName: 'Irini Kosta', investorType: 'angel_investor',
-    firmName: 'Kosta Angels', firmRole: 'Founding partner',
-    thesisSummary: 'AI-native tools that remove human bottlenecks from B2B workflows.',
-    industries: ['AI/ML', 'Developer tools', 'B2B SaaS'], stages: ['pre-seed', 'seed'],
-    checkSizeMin: 25_000, checkSizeMax: 150_000, geographies: ['Greece', 'EU'],
-    isVerified: true, isActivelyScouting: true, portfolioCount: 24, viewCount: 1842, dealsThisYear: 6, sample: true,
-  },
-  {
-    id: 'sample-inv-2', userId: 'sample-inv-2', displayName: 'Michalis Theodorou', investorType: 'vc',
-    firmName: 'Levant Capital', firmRole: 'Principal',
-    thesisSummary: 'B2B SaaS with strong net revenue retention and a clear expansion path.',
-    industries: ['B2B SaaS', 'FinTech', 'Digital health'], stages: ['seed', 'series-a'],
-    checkSizeMin: 500_000, checkSizeMax: 3_000_000, geographies: ['Greece', 'Cyprus', 'UK'],
-    isVerified: true, isActivelyScouting: true, portfolioCount: 45, viewCount: 3210, dealsThisYear: 12, sample: true,
-  },
-  {
-    id: 'sample-inv-3', userId: 'sample-inv-3', displayName: 'Helena Brandt', investorType: 'angel_investor',
-    firmRole: 'Independent angel',
-    thesisSummary: 'Financial infrastructure: payments, embedded finance and access to credit.',
-    industries: ['FinTech', 'Payments', 'Embedded finance'], stages: ['pre-seed', 'seed'],
-    checkSizeMin: 10_000, checkSizeMax: 75_000, geographies: ['UK', 'EU'],
-    isVerified: true, isActivelyScouting: true, portfolioCount: 18, viewCount: 967, dealsThisYear: 5, sample: true,
-  },
-  {
-    id: 'sample-inv-4', userId: 'sample-inv-4', displayName: 'Andreas Papadopoulos', investorType: 'vc',
-    firmName: 'Meridian Deep Tech Fund', firmRole: 'Partner',
-    thesisSummary: 'Deep tech, climate and biotech from Southern Europe with global ambitions.',
-    industries: ['Deep tech', 'Climate', 'Biotech'], stages: ['seed', 'series-a'],
-    checkSizeMin: 200_000, checkSizeMax: 1_500_000, geographies: ['Greece', 'SE Europe', 'EU'],
-    isVerified: true, isActivelyScouting: false, portfolioCount: 31, viewCount: 2104, dealsThisYear: 8, sample: true,
-  },
-  {
-    id: 'sample-inv-5', userId: 'sample-inv-5', displayName: 'Priya Nair', investorType: 'vc_scout',
-    firmName: 'Scout programme', firmRole: 'Scout',
-    thesisSummary: 'Consumer health, mental wellness and longevity at pre-seed.',
-    industries: ['Health tech', 'Mental health', 'Wellness'], stages: ['pre-seed', 'seed'],
-    checkSizeMin: 100_000, checkSizeMax: 500_000, geographies: ['UK', 'India'],
-    isVerified: true, isActivelyScouting: true, portfolioCount: 9, viewCount: 712, dealsThisYear: 3, sample: true,
-  },
-  {
-    id: 'sample-inv-6', userId: 'sample-inv-6', displayName: 'Klaus Weber', investorType: 'family_office',
-    firmName: 'Weber Family Office', firmRole: 'Investment director',
-    thesisSummary: 'Capital-efficient SaaS and marketplaces with €500K+ ARR.',
-    industries: ['SaaS', 'Marketplaces', 'E-commerce'], stages: ['series-a', 'series-b'],
-    checkSizeMin: 1_000_000, checkSizeMax: 5_000_000, geographies: ['DACH', 'EU'],
-    isVerified: false, isActivelyScouting: false, portfolioCount: 14, viewCount: 455, dealsThisYear: 2, sample: true,
-  },
-]);
+// The demo's investors (demo/investors-world): the demo has their profiles and
+// opens conversations with them, so in the demo their buttons work.
+const SAMPLE_INVESTORS: Investor[] = attachDemoPhotos(DEMO_INVESTORS.map((inv) => ({ ...inv, sample: true })));
 
 // ── Investor card ──────────────────────────────────────────────────────────────
 
@@ -247,6 +205,9 @@ function InvestorCard({
   saved: boolean;
   onToggleSave: () => void;
 }) {
+  // The demo has these investors' profiles and opens conversations with
+  // them; a real account's sample rows have neither.
+  const inDemo = useHydrated() && isPreviewDemo();
   const sampleReasonId = useId();
   const initials = initialsOf(investor.displayName);
   const checkSize = formatCheckSize(investor.checkSizeMin, investor.checkSizeMax);
@@ -333,7 +294,7 @@ function InvestorCard({
         {investor.industries.length ? (
           <CardFact en="Sectors" el="Τομείς">
             <TagList label={bilingualInline('Sectors', 'Τομείς')}>
-              {investor.industries.map((name) => <QuietTag key={name}>{name}</QuietTag>)}
+              {investor.industries.map((name) => <QuietTag key={name}>{termDisplay(name)}</QuietTag>)}
             </TagList>
           </CardFact>
         ) : null}
@@ -357,7 +318,7 @@ function InvestorCard({
         {places.length ? (
           <CardFact en="Place" el="Τόπος">
             <TagList label={bilingualInline('Place', 'Τόπος')}>
-              {places.map((place) => <QuietTag key={place}>{place}</QuietTag>)}
+              {places.map((place) => <QuietTag key={place}><BilingualText en={place} el={placeEl(place)} compact /></QuietTag>)}
             </TagList>
           </CardFact>
         ) : null}
@@ -380,7 +341,7 @@ function InvestorCard({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2 pt-1">
-          {investor.sample ? (
+          {investor.sample && !inDemo ? (
             <div className="flex max-w-full flex-col items-start gap-1">
               <div className="flex flex-wrap items-center gap-2">
                 <Button variant="outline" size="sm" disabled title={bilingualInline(sampleReasonEn, sampleReasonEl)} aria-describedby={sampleReasonId}>
