@@ -14,7 +14,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { usePopupChatOptional } from '@/contexts/PopupChatContext';
-import { HOME_ASK, scopedPrompt, slashCommands, type HomeAskAction, type HomeRole } from '@/lib/home-ask';
+import { HOME_ASK, nowStartingPoints, scopedPrompt, slashCommands, type HomeAskAction, type HomeRole } from '@/lib/home-ask';
+import { useUnreadCounts } from '@/hooks/useUnreadCounts';
+import { Counter } from '@/components/ui/counter';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
@@ -48,6 +50,9 @@ export function partOfDay(hour: number): Part {
  *   assistant was asked is exactly what the chat shows.
  * - A chip asks the assistant a ready question or opens a page; a chip with a
  *   chevron opens a short menu of them.
+ * - What waits right now (intro requests, unread messages, notifications)
+ *   leads the row as chips with their counts, each asking the assistant to
+ *   deal with it; they come from the same counts as the bell and sidebar.
  * - "/" at the start of the box lists the same starting points as commands,
  *   narrowed as you type (Copilot Chat's slash commands): arrows move, Enter
  *   runs the highlighted one, Escape clears.
@@ -60,6 +65,7 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string
   const pathname = usePathname();
   const boxId = useId();
   const config = HOME_ASK[role];
+  const now = nowStartingPoints(useUnreadCounts());
   const [scopeId, setScopeId] = useState(config.scopes[0]?.id ?? 'all');
   const [value, setValue] = useState('');
   const [part, setPart] = useState<Part | null>(null);
@@ -222,6 +228,22 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string
       </form>
 
       <ul className="flex flex-wrap gap-2" aria-label={bilingualAria('Starting points', 'Σημεία εκκίνησης')}>
+        {now.map((action) => (
+          <li key={action.id}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              data-home-now=""
+              className="h-8 gap-1.5 rounded-full border-primary-muted bg-primary-subtle px-3 text-xs"
+              onClick={() => run(action)}
+            >
+              <CfbGlyph name={action.glyph} className="icon-sm" />
+              <BilingualText en={action.en} el={action.el} compact />
+              <Counter value={action.count} tone="attention" />
+            </Button>
+          </li>
+        ))}
         {config.actions.map((action) => (
           <li key={action.id}>
             {action.items?.length ? (

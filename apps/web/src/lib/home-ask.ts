@@ -180,3 +180,56 @@ export function slashCommands(actions: HomeAskAction[], value: string): HomeAskA
     return words.every((word) => label.includes(word));
   });
 }
+
+/** A starting point that exists because something is waiting, with how many. */
+export type HomeAskNow = HomeAskAction & { count: number };
+
+/**
+ * What is waiting right now, as starting points: each asks the assistant to
+ * deal with it. Built from the same unread counts the bell, the sidebar and
+ * the chat bubble show, so the numbers agree everywhere; nothing is shown
+ * when nothing waits.
+ */
+export function nowStartingPoints(counts: { messages: number; intros: number; notifications: number }): HomeAskNow[] {
+  const out: HomeAskNow[] = [];
+  if (counts.intros > 0) {
+    out.push({
+      id: 'now-intros',
+      en: 'Intro requests',
+      el: 'Αιτήματα γνωριμίας',
+      glyph: 'people',
+      count: counts.intros,
+      prompt: {
+        en: 'Who has asked me for an intro, and how should I answer each one?',
+        el: 'Ποιοι μου ζήτησαν γνωριμία, και πώς να απαντήσω στον καθένα;',
+      },
+    });
+  }
+  if (counts.messages > 0) {
+    out.push({
+      id: 'now-messages',
+      en: 'Unread messages',
+      el: 'Αδιάβαστα μηνύματα',
+      glyph: 'messages',
+      count: counts.messages,
+      prompt: {
+        en: 'Summarise my unread messages and draft the replies that matter.',
+        el: 'Σύνοψε τα αδιάβαστα μηνύματά μου και ετοίμασε τις απαντήσεις που έχουν σημασία.',
+      },
+    });
+  }
+  if (counts.notifications > 0) {
+    out.push({
+      id: 'now-notifications',
+      en: 'Notifications',
+      el: 'Ειδοποιήσεις',
+      glyph: 'bell',
+      count: counts.notifications,
+      prompt: {
+        en: 'What in my notifications needs me, and what can I mark read?',
+        el: 'Τι από τις ειδοποιήσεις μου με χρειάζεται, και τι μπορώ να σημειώσω ως αναγνωσμένο;',
+      },
+    });
+  }
+  return out;
+}

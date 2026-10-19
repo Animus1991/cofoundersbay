@@ -8,6 +8,7 @@ const state = vi.hoisted(() => ({
   push: vi.fn(),
   ask: vi.fn(),
   popup: true,
+  counts: { messages: 0, intros: 0, notifications: 0 },
 }));
 
 vi.mock('next/navigation', () => ({
@@ -17,6 +18,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/contexts/PopupChatContext', () => ({
   usePopupChatOptional: () => (state.popup ? { ask: state.ask } : null),
 }));
+vi.mock('@/hooks/useUnreadCounts', () => ({ useUnreadCounts: () => state.counts }));
 vi.mock('@/components/common/BilingualText', () => ({ BilingualText: ({ en }: { en: string }) => <span>{en}</span> }));
 vi.mock('@/components/icons/CfbGlyph', () => ({ CfbGlyph: () => <span aria-hidden="true" /> }));
 
@@ -36,6 +38,7 @@ beforeAll(() => {
 beforeEach(() => {
   state.pathname = '/dashboard';
   state.popup = true;
+  state.counts = { messages: 0, intros: 0, notifications: 0 };
   state.push.mockReset();
   state.ask.mockReset();
   localStorage.clear();
@@ -134,6 +137,22 @@ describe('HomeAskHero', () => {
     const all = slashCommands(HOME_ASK.founder.actions, '/')!.map((a) => a.id);
     expect(all).toContain('tech');
     expect(all).not.toContain('cofounder');
+  });
+
+  it('leads with what is waiting, with its count, and asks the assistant to deal with it', () => {
+    state.counts = { messages: 3, intros: 2, notifications: 0 };
+    render(<HomeAskHero role="founder" name="Alex" />);
+    const intros = screen.getByRole('button', { name: /^Intro requests/ });
+    expect(intros.textContent).toContain('2');
+    expect(screen.getByRole('button', { name: /^Unread messages/ }).textContent).toContain('3');
+    expect(screen.queryByRole('button', { name: /^Notifications/ })).toBeNull();
+    fireEvent.click(intros);
+    expect(state.ask).toHaveBeenCalledWith('Who has asked me for an intro, and how should I answer each one?');
+  });
+
+  it('shows nothing extra when nothing waits', () => {
+    render(<HomeAskHero role="mentor" name="Alex" />);
+    expect(document.querySelector('[data-home-now]')).toBeNull();
   });
 
   it('opens the assistant page when there is no chat window to ask', () => {
