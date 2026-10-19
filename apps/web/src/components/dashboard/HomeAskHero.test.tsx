@@ -56,8 +56,9 @@ const openMenu = (name: RegExp) => {
 describe('HomeAskHero', () => {
   it('greets by name over one question box', () => {
     render(<HomeAskHero role="founder" name="Alex" lead={{ en: 'Here is your week.', el: 'Η εβδομάδα σας.' }} />);
-    expect(screen.getByRole('heading', { level: 2 }).textContent).toMatch(/, Alex$/);
-    expect(screen.getByText('Here is your week.')).toBeTruthy();
+    // One quiet line, as the homes had it: not a heading competing with the page title.
+    expect(screen.queryByRole('heading')).toBeNull();
+    expect(screen.getByText(/, Alex\. Here is your week\.$/)).toBeTruthy();
     expect(screen.getAllByRole('textbox')).toHaveLength(1);
   });
 

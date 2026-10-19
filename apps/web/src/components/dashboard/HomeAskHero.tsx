@@ -133,16 +133,17 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string
 
   return (
     <section aria-labelledby={`${boxId}-title`} className="space-y-3" data-home-ask="">
-      <div className="space-y-0.5">
-        <h2 id={`${boxId}-title`} className="text-lg font-semibold leading-tight text-foreground">
-          <BilingualText en={`${hello.en}, ${name}`} el={`${hello.el}, ${name}`} compact />
-        </h2>
-        {lead ? (
-          <p className="text-sm text-muted-foreground">
-            <BilingualText en={lead.en} el={lead.el} wrap />
-          </p>
-        ) : null}
-      </div>
+      {/* The greeting as it was before the box arrived: one quiet line at
+          body size, not a heading (the page title is the heading). */}
+      <p id={`${boxId}-title`} className="text-sm text-muted-foreground">
+        <BilingualText
+          en={`${hello.en}, ${name}.${lead ? ` ${lead.en}` : ''}`}
+          el={`${hello.el}, ${name}.${lead ? ` ${lead.el}` : ''}`}
+          stacked
+          wrap
+          secondaryFrom="lg"
+        />
+      </p>
 
       <form
         onSubmit={submit}
