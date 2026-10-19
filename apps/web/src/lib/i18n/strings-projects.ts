@@ -183,6 +183,10 @@ export const PROJECT_STRINGS: Record<string, BilingualPair> = {
   // tools they were nor what would happen.
   link_into: { en: 'Continue in your workspace', el: 'Συνεχίστε στον χώρο σας' },
   see_team: { en: 'See the whole team', el: 'Όλη η ομάδα' },
+  // Short labels for the two buttons side by side in the right column; the
+  // full wording is their tooltip.
+  message_short: { en: 'Message', el: 'Μήνυμα' },
+  schedule_short: { en: 'Schedule', el: 'Ραντεβού' },
   milestones_of: { en: 'milestones', el: 'ορόσημα' },
   link_idea: { en: 'Idea Core', el: 'Πυρήνας ιδέας' },
   link_milestones: { en: 'Milestones', el: 'Ορόσημα' },

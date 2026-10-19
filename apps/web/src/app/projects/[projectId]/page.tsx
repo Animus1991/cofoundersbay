@@ -488,15 +488,27 @@ export default function ProjectDetailPage() {
                     />
                   </Button>
                 )}
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                  <Button variant="outline" size="sm" className={`h-auto min-h-9 w-full gap-2 whitespace-normal py-1.5 ${BUILDER_BTN}`} onClick={() => openAskAi(project.founder.id, 'messages')}>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={`h-auto min-h-9 w-full gap-2 whitespace-normal py-1.5 ${BUILDER_BTN}`}
+                    title={bilingualAria(projectEn('message_team'), projectEl('message_team'))}
+                    onClick={() => openAskAi(project.founder.id, 'messages')}
+                  >
                     <CfbGlyph name="messages" className="icon-sm shrink-0" />
-                    <BilingualText en={projectEn('message_team')} el={projectEl('message_team')} wrap />
+                    <BilingualText en={projectEn('message_short')} el={projectEl('message_short')} compact />
                   </Button>
-                  <Button variant="outline" size="sm" className={`h-auto min-h-9 w-full gap-2 whitespace-normal py-1.5 ${BUILDER_BTN}`} asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={`h-auto min-h-9 w-full gap-2 whitespace-normal py-1.5 ${BUILDER_BTN}`}
+                    title={bilingualAria(projectEn('schedule_call'), projectEl('schedule_call'))}
+                    asChild
+                  >
                     <Link href="/calendar">
                       <CfbGlyph name="calendar" className="icon-sm shrink-0" />
-                      <BilingualText en={projectEn('schedule_call')} el={projectEl('schedule_call')} wrap />
+                      <BilingualText en={projectEn('schedule_short')} el={projectEl('schedule_short')} compact />
                     </Link>
                   </Button>
                 </div>
