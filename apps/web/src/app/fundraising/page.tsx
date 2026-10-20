@@ -255,6 +255,38 @@ function AddLeadModal({
   );
 }
 
+/**
+ * The investor messages a founder writes most, as the AI Studio prototype
+ * keeps them under its round ("Πρότυπα email"). Here each asks the assistant
+ * to draft it, held to the same rule as a lead's Message: only the saved
+ * round, deck and data room, and a question rather than an invented figure.
+ */
+const GROUNDING_EN = 'Use only my saved round details, pitch deck and data room; ask me which investor and for anything missing rather than inventing amounts or commitments.';
+const GROUNDING_EL = 'Χρησιμοποίησε μόνο τα αποθηκευμένα στοιχεία του γύρου, το pitch deck και το data room· ρώτα με σε ποιον επενδυτή και ό,τι λείπει, χωρίς να επινοείς ποσά ή δεσμεύσεις.';
+const MESSAGE_TEMPLATES = [
+  {
+    id: 'first',
+    en: 'First contact',
+    el: 'Πρώτη επαφή',
+    promptEn: `Draft a first email to an investor about my round. ${GROUNDING_EN}`,
+    promptEl: `Γράψε ένα πρώτο email σε επενδυτή για τον γύρο μου. ${GROUNDING_EL}`,
+  },
+  {
+    id: 'reminder',
+    en: 'Reminder',
+    el: 'Υπενθύμιση',
+    promptEn: `Draft a short, polite reminder to an investor who has not replied. ${GROUNDING_EN}`,
+    promptEl: `Γράψε μια σύντομη, ευγενική υπενθύμιση σε επενδυτή που δεν έχει απαντήσει. ${GROUNDING_EL}`,
+  },
+  {
+    id: 'data-room',
+    en: 'Data room access',
+    el: 'Πρόσβαση στο data room',
+    promptEn: `Draft a note that gives an investor access to my data room and says what is in it. ${GROUNDING_EN}`,
+    promptEl: `Γράψε ένα σημείωμα που δίνει σε επενδυτή πρόσβαση στο data room και λέει τι περιέχει. ${GROUNDING_EL}`,
+  },
+] as const;
+
 function RoundCard({
   round,
   onAdd,
@@ -263,6 +295,7 @@ function RoundCard({
   onAdd: () => void;
 }) {
   const { primary } = useLanguagePreference();
+  const { ask } = usePopupChat();
   // The page is prerendered, so "days left" computed during render is frozen
   // at build time — the client hydrates with a different day count (#418).
   // Until the browser has its own clock the tile shows the fixed closing
@@ -349,6 +382,24 @@ function RoundCard({
             </div>
           ))}
         </dl>
+
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label={bilingualAria('Write with the assistant', 'Γράψτε με τον βοηθό')}>
+          <span className="text-xs text-muted-foreground">
+            <BilingualText en="Write with the assistant:" el="Γράψτε με τον βοηθό:" compact />
+          </span>
+          {MESSAGE_TEMPLATES.map((template) => (
+            <Button
+              key={template.id}
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-full px-2.5 text-xs"
+              onClick={() => ask(primary === 'el' ? template.promptEl : template.promptEn)}
+            >
+              <BilingualText en={template.en} el={template.el} compact />
+            </Button>
+          ))}
+        </div>
 
         <CardFoot>
           <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={onAdd}>
