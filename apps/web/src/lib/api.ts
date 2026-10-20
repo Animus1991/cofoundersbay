@@ -957,8 +957,14 @@ export async function markNotificationRead(id: string): Promise<{ ok: true }> {
   return apiRequest(`/api/notifications/${id}/read`, { method: 'PATCH' });
 }
 
-export async function markAllNotificationsRead(): Promise<{ ok: true }> {
+/** Answers with the ids it marked, which `markNotificationsUnread` takes back. */
+export async function markAllNotificationsRead(): Promise<{ ok: true; ids?: string[] }> {
   return apiRequest('/api/notifications/mark-all-read', { method: 'POST' });
+}
+
+/** The undo of "mark all read": these, and only these, unread again. */
+export async function markNotificationsUnread(ids: string[]): Promise<{ ok: true; count?: number }> {
+  return apiRequest('/api/notifications/mark-unread', { method: 'POST', body: JSON.stringify({ ids }) });
 }
 
 export async function deleteNotification(id: string): Promise<{ ok: true }> {

@@ -328,6 +328,9 @@ export const TOAST_EL: Record<string, string> = {
   "Override failed": "Η παράκαμψη απέτυχε",
   "PNG Export": "Εξαγωγή PNG",
   "Passed": "Απορρίφθηκε",
+  // Notifications: "Mark all read" and its Undo.
+  "All notifications marked read": "Όλες οι ειδοποιήσεις σημειώθηκαν ως αναγνωσμένες",
+  "Could not mark them unread": "Δεν έγινε επαναφορά ως αδιάβαστες",
   // The API's refusal when a member limits who may start a conversation
   // (Settings > Privacy, shared/visibility messagePolicy).
   "This member is not taking new conversations": "Αυτό το μέλος δεν δέχεται νέες συνομιλίες",

@@ -31,9 +31,12 @@ import {
   listNotifications,
   markNotificationRead,
   markAllNotificationsRead,
+  markNotificationsUnread,
   deleteNotification,
   type NotificationItem,
 } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
   connection: UserPlus,
@@ -247,6 +250,12 @@ export default function NotificationsPage() {
 
   const notifications = useMemo(() => data?.notifications ?? [], [data]);
   const unreadCount = notifications.filter((n) => !n.readAt).length;
+  const sayOne = useBilingualString();
+  const { success, error: showError } = useToast();
+  // What the last "mark all read" marked, as the API answered it: the one
+  // thing its Undo may make unread again (the AI Studio prototype restores
+  // the same way, but only its local rows; ours restores the server's too).
+  const [lastMarked, setLastMarked] = useState<string[]>([]);
 
   const markRead = useMutation({
     mutationFn: markNotificationRead,
@@ -262,8 +271,15 @@ export default function NotificationsPage() {
     onSettled: () => qc.invalidateQueries({ queryKey: qk('notifications') }),
   });
 
+  const restoreUnread = useMutation({
+    mutationFn: markNotificationsUnread,
+    onSuccess: () => setLastMarked([]),
+    onSettled: () => qc.invalidateQueries({ queryKey: qk('notifications') }),
+  });
+
   const markAllRead = useMutation({
     mutationFn: markAllNotificationsRead,
+    onSuccess: (res) => setLastMarked(res?.ids ?? []),
     onMutate: async () => {
       await qc.cancelQueries({ queryKey });
       qc.setQueryData(queryKey, (old: typeof data) => ({
@@ -293,8 +309,41 @@ export default function NotificationsPage() {
       unavailableEn: unreadCount === 0 ? 'Nothing is unread.' : undefined,
       unavailableEl: unreadCount === 0 ? 'Δεν υπάρχει τίποτα αδιάβαστο.' : undefined,
       run: async () => { await markAllRead.mutateAsync(); },
+      // Exact: the API answers with the ids it marked, and only those return.
+      undo: () => (unreadCount > 0 ? { control: 'restore_unread' } : undefined),
+    },
+    {
+      id: 'restore_unread',
+      labelEn: 'Make the notifications just marked read unread again',
+      labelEl: 'Ξανά ως αδιάβαστες όσες μόλις σημειώθηκαν αναγνωσμένες',
+      writes: true,
+      unavailableEn: lastMarked.length ? undefined : 'Nothing was just marked read.',
+      unavailableEl: lastMarked.length ? undefined : 'Δεν σημειώθηκε κάτι μόλις ως αναγνωσμένο.',
+      run: async () => {
+        if (!lastMarked.length) return { error: 'Nothing was just marked read.' };
+        await restoreUnread.mutateAsync(lastMarked);
+      },
     },
   ]);
+
+  // The header button: the same write, and a toast whose Undo takes back
+  // exactly what it marked.
+  const markAllWithUndo = () => {
+    markAllRead.mutate(undefined, {
+      onSuccess: (res) => {
+        const ids = res?.ids ?? [];
+        if (!ids.length) return;
+        success('All notifications marked read', undefined, {
+          action: {
+            label: sayOne('Undo', 'Αναίρεση'),
+            onClick: () => restoreUnread.mutate(ids, {
+              onError: (err) => showError('Could not mark them unread', err instanceof Error ? err.message : undefined),
+            }),
+          },
+        });
+      },
+    });
+  };
 
   const deleteN = useMutation({
     mutationFn: deleteNotification,
@@ -507,7 +556,7 @@ export default function NotificationsPage() {
                 variant="ghost"
                 size="sm"
                 className="ml-auto h-8 gap-1.5 px-2.5 text-xs"
-                onClick={() => markAllRead.mutate()}
+                onClick={markAllWithUndo}
                 disabled={markAllRead.isPending}
               >
                 <CheckCheck className="icon-sm" aria-hidden="true" />

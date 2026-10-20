@@ -3,6 +3,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
+import { MarkNotificationsUnreadDto } from './dto/mark-notifications-unread.dto';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
@@ -77,13 +78,36 @@ export class NotificationsController {
     return { ok: true };
   }
 
+  /**
+   * Answers with the ids it marked, so "Undo" (the page's toast, the
+   * assistant's card) can make exactly these unread again through
+   * `mark-unread`, and no others. One that arrives between the read and the
+   * write stays unread: it was not in the pile the member cleared.
+   */
   @Post('mark-all-read')
   async markAllRead(@CurrentUser() user: { id: string }) {
-    await this.prisma.notification.updateMany({
+    const unread = await this.prisma.notification.findMany({
       where: { userId: user.id, readAt: null },
-      data: { readAt: new Date() },
+      select: { id: true },
     });
-    return { ok: true };
+    const ids = unread.map((n) => n.id);
+    if (ids.length) {
+      await this.prisma.notification.updateMany({
+        where: { userId: user.id, id: { in: ids }, readAt: null },
+        data: { readAt: new Date() },
+      });
+    }
+    return { ok: true, ids };
+  }
+
+  /** The opposite of mark-all-read, for the member's own notifications only. */
+  @Post('mark-unread')
+  async markUnread(@CurrentUser() user: { id: string }, @Body() body: MarkNotificationsUnreadDto) {
+    const result = await this.prisma.notification.updateMany({
+      where: { userId: user.id, id: { in: body.ids }, readAt: { not: null } },
+      data: { readAt: null },
+    });
+    return { ok: true, count: result.count };
   }
 
   @Delete(':id')

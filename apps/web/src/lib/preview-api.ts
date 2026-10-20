@@ -19,6 +19,7 @@ import { previewIntrosApi } from './demo/intros-world';
 import { previewSkillEvidenceApi } from './demo/skill-evidence-world';
 import { previewEndorsementsApi } from './demo/endorsements-world';
 import { previewNotificationPrefsApi } from './demo/notification-prefs-world';
+import { demoNotifications, previewNotificationsApi } from './demo/notifications-world';
 import { previewLearningApi } from './demo/learning-world';
 import { previewTransparencyApi } from './demo/transparency-world';
 import { previewScoutApi } from './demo/scout-world';
@@ -2778,6 +2779,16 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   if (endorsementsAnswer !== undefined) return endorsementsAnswer;
   const notificationPrefsAnswer = previewNotificationPrefsApi(pathname, method, (body ?? {}) as Record<string, unknown>);
   if (notificationPrefsAnswer !== undefined) return notificationPrefsAnswer;
+  // The notifications themselves: read, unread again and deleted hold for the tab.
+  const notificationsAnswer = previewNotificationsApi(
+    pathname,
+    new URLSearchParams(path.split('?')[1] ?? ''),
+    method,
+    (body ?? {}) as Record<string, unknown>,
+    NOTIFICATIONS,
+    new Date(previewNowMs()).toISOString(),
+  );
+  if (notificationsAnswer !== undefined) return notificationsAnswer;
   // The learning library, read from the same six resources the /learning page
   // shows (its writes are answered further down, unstored).
   const learningAnswer = previewLearningApi(pathname, new URLSearchParams(path.split('?')[1] ?? ''), method, previewNowMs());
@@ -3171,12 +3182,6 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     };
   }
 
-  if (pathname === '/api/notifications' || pathname.startsWith('/api/notifications?')) {
-    return { notifications: NOTIFICATIONS, nextCursor: null };
-  }
-  if (pathname === '/api/notifications/unread-count') {
-    return { count: 2 };
-  }
 
   // The account export, built from the demo's own records the way the API
   // builds it from the database: only what the demo user owns or sent.
@@ -3210,7 +3215,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
       };
     }
     if (sections.includes('activity')) {
-      data.activity = { notifications: { items: NOTIFICATIONS.map((n) => ({ type: n.type, title: n.title, createdAt: n.createdAt })), truncated: false } };
+      data.activity = { notifications: { items: demoNotifications(NOTIFICATIONS).map((n) => ({ type: n.type, title: n.title, createdAt: n.createdAt })), truncated: false } };
     }
     if (sections.includes('milestones')) {
       applyHarborMilestoneSeedIfStale();
