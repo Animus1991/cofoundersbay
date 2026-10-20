@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Plus, CheckCircle2, Clock, ArrowRight, Edit2, Trash2, RefreshCw, MoreVertical, Search, LayoutGrid, LayoutList, X, Share2 } from 'lucide-react';
+import { Plus, CheckCircle2, Clock, ArrowRight, Edit2, Trash2, RefreshCw, MoreVertical, Search, LayoutGrid, LayoutList, Columns3, X, Share2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -13,6 +13,7 @@ import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Counter } from '@/components/ui/counter';
 import { Card, CardContent } from '@/components/ui/card';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
@@ -301,6 +302,56 @@ function MilestoneCard({
   );
 }
 
+// ── Board ────────────────────────────────────────────────────────────────────
+/** The board's columns, in the order work moves; cancelled appears only when something is. */
+const BOARD_STATUSES: MilestoneStatus[] = ['todo', 'in_progress', 'blocked', 'completed'];
+
+/**
+ * The milestones in one column per status, as the AI Studio prototype lays
+ * them out: where each goal stands reads at a glance, and the column heads
+ * count it. The cards are the list's own, menu and all; moving one is the
+ * card's status action, so the board needs no drag to stay complete.
+ */
+function MilestoneBoard({
+  items,
+  onEdit,
+  onStatusChange,
+  onDelete,
+}: {
+  items: Milestone[];
+  onEdit: (m: Milestone) => void;
+  onStatusChange: (id: string, status: MilestoneStatus) => void;
+  onDelete: (id: string) => void;
+}) {
+  const statuses: MilestoneStatus[] = items.some((m) => m.status === 'cancelled') ? [...BOARD_STATUSES, 'cancelled'] : BOARD_STATUSES;
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-4">
+      {statuses.map((status) => {
+        const config = STATUS_CONFIG[status];
+        const column = items.filter((m) => m.status === status);
+        return (
+          <section key={status} className="min-w-0 space-y-3" aria-label={bilingualAria(milestoneEn(config.statusKey), milestoneEl(config.statusKey))}>
+            <h2 className="flex items-center gap-2 px-1 text-sm font-medium text-foreground">
+              <span className={cn('h-2 w-2 shrink-0 rounded-full bg-current', STATUS[config.tone].icon)} aria-hidden="true" />
+              <BilingualText en={milestoneEn(config.statusKey)} el={milestoneEl(config.statusKey)} compact />
+              <Counter value={column.length} />
+            </h2>
+            {column.length ? (
+              column.map((m) => (
+                <MilestoneCard key={m.id} item={m} onEdit={onEdit} onStatusChange={onStatusChange} onDelete={onDelete} />
+              ))
+            ) : (
+              <p className="rounded-xl border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
+                <BilingualText en="Nothing here" el="Τίποτα εδώ" compact />
+              </p>
+            )}
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Summary card ─────────────────────────────────────────────────────────────
 function SummaryBar({ summary }: { summary: { counts?: Record<string, number>; total?: number; overdue?: number; dueSoon?: number; completionRate?: number } | undefined }) {
   const counts = summary?.counts;
@@ -366,7 +417,7 @@ export default function MilestonesPage() {
   const [priorityFilter, setPriorityFilter] = useState<MilestonePriority | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'board'>('list');
   const [editTarget, setEditTarget] = useState<Milestone | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -512,7 +563,8 @@ export default function MilestonesPage() {
     choiceControl('view', 'Milestone layout', 'Διάταξη ορόσημων', [
       { value: 'list', en: 'List', el: 'Λίστα' },
       { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
-    ], viewMode, (v) => setViewMode(v as 'list' | 'grid')),
+      { value: 'board', en: 'Board by status', el: 'Πίνακας ανά κατάσταση' },
+    ], viewMode, (v) => setViewMode(v as 'list' | 'grid' | 'board')),
     // The row menu's own actions over the rows on screen: set a status
     // (the same update the status menu makes), edit, and delete - which
     // still asks first.
@@ -687,6 +739,13 @@ export default function MilestonesPage() {
                   aria-label={bilingualAria(milestoneEn('view_grid'), milestoneEl('view_grid'))}
                   aria-pressed={viewMode === 'grid'}
                 ><LayoutGrid className="icon-sm" /></button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('board')}
+                  className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'board' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+                  aria-label={bilingualAria(milestoneEn('view_board'), milestoneEl('view_board'))}
+                  aria-pressed={viewMode === 'board'}
+                ><Columns3 className="icon-sm" /></button>
               </div>
               <Button type="button" variant="ghost" size="icon" className={`ml-auto h-8 w-8 ${BUILDER_BTN}`} onClick={() => refetch()} aria-label={bilingualAria(milestoneEn('refresh'), milestoneEl('refresh'))}>
                 <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
@@ -825,17 +884,26 @@ export default function MilestonesPage() {
             )}
           </div>
         ) : (
-          <div className={cn(viewMode === 'grid' ? 'grid grid-cols-1 gap-3 sm:grid-cols-2' : 'space-y-3')}>
-            {milestones.map((m) => (
-              <MilestoneCard
-                key={m.id}
-                item={m}
-                onEdit={setEditTarget}
-                onStatusChange={handleStatusChange}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
+          viewMode === 'board' ? (
+            <MilestoneBoard
+              items={milestones}
+              onEdit={setEditTarget}
+              onStatusChange={handleStatusChange}
+              onDelete={handleDelete}
+            />
+          ) : (
+            <div className={cn(viewMode === 'grid' ? 'grid grid-cols-1 gap-3 sm:grid-cols-2' : 'space-y-3')}>
+              {milestones.map((m) => (
+                <MilestoneCard
+                  key={m.id}
+                  item={m}
+                  onEdit={setEditTarget}
+                  onStatusChange={handleStatusChange}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+          )
         )}
       </div>
 

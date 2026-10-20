@@ -618,8 +618,14 @@ export default function ProfilePage() {
             Link") and ran 315px longer than the profile it sat next to. They
             are the page rail's sections now: one place for what supports the
             profile, and the profile itself gets the width. */}
-        <div className="grid grid-cols-1 gap-6">
-          <div className="space-y-6">
+        {/* Two columns from xl, as the AI Studio prototype lays a profile
+            out: the story (about, activity, experience, evidence, portfolio)
+            on the left, the facts a visitor scans (what they are looking for,
+            role details, top skills) beside it. Below xl it is one column in
+            the same order as before. Nothing here repeats the header's
+            actions, which is what the old hand-built side column did. */}
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 xl:items-start">
+          <div className="min-w-0 space-y-6 xl:col-span-2">
             {/* Bio */}
             <Card className="animate-fade-in stagger-1">
               <CardHeader>
@@ -661,111 +667,6 @@ export default function ProfilePage() {
           {/* What this person has published, and the roles they have held. */}
           <ProfileActivity userId={profile.userId} own />
           <ProfileExperience payload={rolePayload} own />
-
-          {/* Intent cards — What I'm looking for */}
-          {(() => {
-            const p = rolePayload as Record<string, unknown>;
-            // A field can arrive as a list (lookingFor: ['cofounder', 'mentor']):
-            // React prints an array's items back to back, which read as
-            // "cofoundermentor". Each value is one word, read through the
-            // shared enum map. Stage and commitment are left to the founder
-            // details card below, which already shows both.
-            const words = (v: unknown): string[] =>
-              (Array.isArray(v) ? v : [v]).filter((x): x is string => typeof x === 'string' && x.trim() !== '');
-            const shownBelow = profile.role === 'founder';
-            const cards: { labelEn: string; labelEl: string; values: string[] }[] = [
-              { labelEn: profileEn('looking_for'), labelEl: profileEl('looking_for'), values: words(p.lookingFor) },
-              { labelEn: profileEn('startup_stage'), labelEl: profileEl('startup_stage'), values: shownBelow ? [] : words(p.stage) },
-              { labelEn: profileEn('commitment'), labelEl: profileEl('commitment'), values: shownBelow ? [] : words(p.commitment) },
-              { labelEn: profileEn('compensation'), labelEl: profileEl('compensation'), values: words(p.compensation) },
-            ].filter((c) => c.values.length > 0);
-            if (!cards.length) return null;
-            return (
-              <Card className="animate-fade-in stagger-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="icon-md text-muted-foreground" aria-hidden="true" />
-                    <BilingualText en={profileEn('what_looking_for')} el={profileEl('what_looking_for')} />
-                  </CardTitle>
-                </CardHeader>
-                {/* Label over value, each pair on the title's left edge, the
-                    way the details card below reads. The pairs carried an
-                    icon well each, a second axis in front of the labels. */}
-                <CardContent className={cn('grid grid-cols-1 gap-4', cards.length > 1 && 'sm:grid-cols-2')}>
-                  {cards.map(({ labelEn, labelEl, values }) => (
-                    <div key={labelEn} className="min-w-0 space-y-1">
-                      {/* min-w-0 and `wrap`: "Startup stage · Στάδιο νεοφυούς
-                          επιχείρησης" is wider than two columns leave at 1024px. */}
-                      <p className="min-w-0 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                        <BilingualText en={labelEn} el={labelEl} compact wrap />
-                      </p>
-                      <FactLine className="text-sm font-medium text-foreground" items={values.map((v) => <StatusText key={v} value={v} />)} />
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            );
-          })()}
-
-          {/* Role-specific details */}
-          {Object.keys(rolePayload).some((k) => k !== 'experience' && k !== 'education') && (
-            <div className="animate-fade-in stagger-2">
-              <RoleDetails role={profile.role} payload={rolePayload} />
-            </div>
-          )}
-
-          {/* Skill proficiency bars */}
-          {profile.skills && profile.skills.length > 0 && (
-            <Card className="animate-fade-in stagger-3">
-              <CardHeader>
-                <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="icon-md text-muted-foreground" aria-hidden="true" />
-                    <BilingualText en={profileEn('top_skills')} el={profileEl('top_skills')} />
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible" asChild>
-                    <Link href="/profile/edit#skills">
-                      <Plus className="icon-sm" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {/* A level shows only when the person declared one. The bars
-                    used to invent both a level and a percentage from the
-                    skill's place in the list. */}
-                <ul className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
-                  {(showAllSkills ? profile.skills : profile.skills.slice(0, 6)).map((s, i) => (
-                    <li key={s.skillId ?? s.skillName ?? i} className="flex min-w-0 items-center justify-between gap-3 border-b border-border py-2.5">
-                      <span className="min-w-0 truncate text-sm font-medium text-foreground">{s.skillName}</span>
-                      {s.level ? (
-                        <Badge variant="secondary" size="sm" className="shrink-0 bg-background"><StatusText value={s.level} /></Badge>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-                {profile.skills.length > 6 && (
-                  <div className="mt-4 pt-4 border-t border-border">
-                    {/* It offered to show all of them and did nothing; the six
-                        after the sixth were simply unreachable. */}
-                    <Button
-                      variant="link"
-                      size="sm"
-                      className="text-muted-foreground h-auto p-0"
-                      aria-expanded={showAllSkills}
-                      onClick={() => setShowAllSkills((shown: boolean) => !shown)}
-                    >
-                      {showAllSkills ? (
-                        <BilingualText en="Show fewer" el="Εμφάνιση λιγότερων" />
-                      ) : (
-                        <BilingualText en={`${profileEn('show_all_skills')} ${profile.skills.length} ${profileEn('skills_suffix')}`} el={`${profileEl('show_all_skills')} ${profile.skills.length} ${profileEl('skills_suffix')}`} />
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
           {/* Skills tied to the work that shows them */}
           {meId ? <SkillEvidencePanel userId={meId} editable /> : null}
@@ -833,7 +734,114 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           )}
-        </div>
+          </div>
+          <div className="min-w-0 space-y-6">
+          {/* Intent cards — What I'm looking for */}
+          {(() => {
+            const p = rolePayload as Record<string, unknown>;
+            // A field can arrive as a list (lookingFor: ['cofounder', 'mentor']):
+            // React prints an array's items back to back, which read as
+            // "cofoundermentor". Each value is one word, read through the
+            // shared enum map. Stage and commitment are left to the founder
+            // details card below, which already shows both.
+            const words = (v: unknown): string[] =>
+              (Array.isArray(v) ? v : [v]).filter((x): x is string => typeof x === 'string' && x.trim() !== '');
+            const shownBelow = profile.role === 'founder';
+            const cards: { labelEn: string; labelEl: string; values: string[] }[] = [
+              { labelEn: profileEn('looking_for'), labelEl: profileEl('looking_for'), values: words(p.lookingFor) },
+              { labelEn: profileEn('startup_stage'), labelEl: profileEl('startup_stage'), values: shownBelow ? [] : words(p.stage) },
+              { labelEn: profileEn('commitment'), labelEl: profileEl('commitment'), values: shownBelow ? [] : words(p.commitment) },
+              { labelEn: profileEn('compensation'), labelEl: profileEl('compensation'), values: words(p.compensation) },
+            ].filter((c) => c.values.length > 0);
+            if (!cards.length) return null;
+            return (
+              <Card className="animate-fade-in stagger-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="icon-md text-muted-foreground" aria-hidden="true" />
+                    <BilingualText en={profileEn('what_looking_for')} el={profileEl('what_looking_for')} />
+                  </CardTitle>
+                </CardHeader>
+                {/* Label over value, each pair on the title's left edge, the
+                    way the details card below reads. The pairs carried an
+                    icon well each, a second axis in front of the labels. */}
+                <CardContent className={cn('grid grid-cols-1 gap-4', cards.length > 1 && 'sm:grid-cols-2 xl:grid-cols-1')}>
+                  {cards.map(({ labelEn, labelEl, values }) => (
+                    <div key={labelEn} className="min-w-0 space-y-1">
+                      {/* min-w-0 and `wrap`: "Startup stage · Στάδιο νεοφυούς
+                          επιχείρησης" is wider than two columns leave at 1024px. */}
+                      <p className="min-w-0 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        <BilingualText en={labelEn} el={labelEl} compact wrap />
+                      </p>
+                      <FactLine className="text-sm font-medium text-foreground" items={values.map((v) => <StatusText key={v} value={v} />)} />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            );
+          })()}
+
+          {/* Role-specific details */}
+          {Object.keys(rolePayload).some((k) => k !== 'experience' && k !== 'education') && (
+            <div className="animate-fade-in stagger-2">
+              <RoleDetails role={profile.role} payload={rolePayload} />
+            </div>
+          )}
+
+          {/* Skill proficiency bars */}
+          {profile.skills && profile.skills.length > 0 && (
+            <Card className="animate-fade-in stagger-3">
+              <CardHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="icon-md text-muted-foreground" aria-hidden="true" />
+                    <BilingualText en={profileEn('top_skills')} el={profileEl('top_skills')} />
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible" asChild>
+                    <Link href="/profile/edit#skills">
+                      <Plus className="icon-sm" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
+                    </Link>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* A level shows only when the person declared one. The bars
+                    used to invent both a level and a percentage from the
+                    skill's place in the list. */}
+                <ul className="grid grid-cols-1 gap-x-8 sm:grid-cols-2 xl:grid-cols-1">
+                  {(showAllSkills ? profile.skills : profile.skills.slice(0, 6)).map((s, i) => (
+                    <li key={s.skillId ?? s.skillName ?? i} className="flex min-w-0 items-center justify-between gap-3 border-b border-border py-2.5">
+                      <span className="min-w-0 truncate text-sm font-medium text-foreground">{s.skillName}</span>
+                      {s.level ? (
+                        <Badge variant="secondary" size="sm" className="shrink-0 bg-background"><StatusText value={s.level} /></Badge>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+                {profile.skills.length > 6 && (
+                  <div className="mt-4 pt-4 border-t border-border">
+                    {/* It offered to show all of them and did nothing; the six
+                        after the sixth were simply unreachable. */}
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="text-muted-foreground h-auto p-0"
+                      aria-expanded={showAllSkills}
+                      onClick={() => setShowAllSkills((shown: boolean) => !shown)}
+                    >
+                      {showAllSkills ? (
+                        <BilingualText en="Show fewer" el="Εμφάνιση λιγότερων" />
+                      ) : (
+                        <BilingualText en={`${profileEn('show_all_skills')} ${profile.skills.length} ${profileEn('skills_suffix')}`} el={`${profileEl('show_all_skills')} ${profile.skills.length} ${profileEl('skills_suffix')}`} />
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          </div>
         </div>
       </div>
     </AppShell>

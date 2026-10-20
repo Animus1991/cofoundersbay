@@ -18,6 +18,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { buildIcs, downloadIcs, icsFileName } from '@/lib/ics';
 
 type Rsvp = 'going' | 'interested' | 'not_going';
 
@@ -28,40 +29,21 @@ const RSVP_OPTIONS: { value: Rsvp; en: string; el: string }[] = [
 ];
 
 /** RFC 5545 UTC timestamp: 20260924T170000Z. */
-function icsStamp(iso: string): string {
-  return new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-}
-
-/** RFC 5545 text escaping for SUMMARY / DESCRIPTION / LOCATION. */
-function icsText(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
-}
-
-function downloadIcs(event: EventItem) {
+/** This event as a calendar file (lib/ics: the semicolon is escaped now). */
+function downloadEventIcs(event: EventItem) {
   const url = `${window.location.origin}/events/${event.id}`;
-  const lines = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//CoFounderBay//Events//EN',
-    'BEGIN:VEVENT',
-    `UID:${event.id}@cofounderbay`,
-    `DTSTAMP:${icsStamp(new Date().toISOString())}`,
-    `DTSTART:${icsStamp(event.startAt)}`,
-    `DTEND:${icsStamp(event.endAt || event.startAt)}`,
-    `SUMMARY:${icsText(event.title)}`,
-    `DESCRIPTION:${icsText(`${event.description ?? ''}\n\n${url}`.trim())}`,
-    event.location ? `LOCATION:${icsText(event.location)}` : event.meetingUrl ? `LOCATION:${icsText(event.meetingUrl)}` : '',
-    `URL:${url}`,
-    'END:VEVENT',
-    'END:VCALENDAR',
-  ].filter(Boolean);
-  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
-  const href = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = href;
-  a.download = `${event.title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'event'}.ics`;
-  a.click();
-  URL.revokeObjectURL(href);
+  downloadIcs(
+    icsFileName(event.title, 'event'),
+    buildIcs([{
+      uid: event.id,
+      title: event.title,
+      start: event.startAt,
+      end: event.endAt || event.startAt,
+      description: event.description ?? '',
+      location: event.location || event.meetingUrl || null,
+      url,
+    }]),
+  );
 }
 
 /**
@@ -155,7 +137,7 @@ export default function EventDetailPage() {
       writes: false,
       unavailableEn: unloaded,
       unavailableEl: unloadedEl,
-      run: () => { if (event) downloadIcs(event); },
+      run: () => { if (event) downloadEventIcs(event); },
     },
     {
       id: 'copy_event_link',
@@ -216,7 +198,7 @@ export default function EventDetailPage() {
       askAi={`Help me prepare for the event "${event.title}".`}
       actions={
         <>
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => downloadIcs(event)}>
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => downloadEventIcs(event)}>
             <CalendarPlus className="icon-sm" aria-hidden="true" />
             <BilingualText en="Add to calendar" el="Προσθήκη στο ημερολόγιο" compact />
           </Button>

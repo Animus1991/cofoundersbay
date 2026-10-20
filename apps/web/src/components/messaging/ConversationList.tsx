@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { StatusText } from '@/components/common/StatusText';
+import { Counter } from '@/components/ui/counter';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -147,9 +149,17 @@ function ConversationItem({
           </span>
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-2">
+          {/* Who they are before what they said: the AI Studio prototype puts
+              the role in front of the preview, so a mentor's note and a
+              founder's read differently at a glance. */}
+          {conversation.recipientRole ? (
+            <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-2xs leading-none text-muted-foreground">
+              <StatusText value={conversation.recipientRole} />
+            </span>
+          ) : null}
           <p
             className={cn(
-              'truncate text-xs leading-snug',
+              'min-w-0 flex-1 truncate text-xs leading-snug',
               unread ? 'font-medium text-foreground/80' : 'text-muted-foreground',
             )}
           >
@@ -224,10 +234,16 @@ export function ConversationList({
   const t = useMessagesPrimaryText();
   const { primary } = useLanguagePreference();
   const [searchQuery, setSearchQuery] = useState('');
+  const [unreadOnly, setUnreadOnly] = useState(false);
   const yesterday = t(messagesEn('yesterday'), messagesEl('yesterday'));
+  const unreadThreads = conversations.filter((c) => !c.isArchived && c.unreadCount > 0).length;
+  // The filter turns itself off when nothing is unread any more, rather than
+  // leaving an empty list behind a pressed button.
+  const showUnreadOnly = unreadOnly && unreadThreads > 0;
 
   const filteredConversations = conversations.filter((c) => {
     if (c.isArchived) return false;
+    if (showUnreadOnly && c.unreadCount === 0) return false;
     const q = searchQuery.trim().toLowerCase();
     if (!q) return true;
     return (
@@ -254,6 +270,20 @@ export function ConversationList({
               aria-label={bilingualAria(messagesEn('search_conversations'), messagesEl('search_conversations'))}
             />
           </div>
+          {unreadThreads > 0 ? (
+            <button
+              type="button"
+              aria-pressed={showUnreadOnly}
+              onClick={() => setUnreadOnly((v) => !v)}
+              className={cn(
+                'inline-flex h-10 shrink-0 items-center rounded-full px-3 text-xs font-medium ring-1 transition-colors',
+                showUnreadOnly ? 'bg-primary/10 text-primary-accessible ring-primary/30' : 'bg-background/80 text-muted-foreground ring-border/50 hover:text-foreground',
+              )}
+            >
+              <BilingualText en="Unread" el="Αδιάβαστες" compact />
+              <Counter value={unreadThreads} tone="attention" />
+            </button>
+          ) : null}
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   Calendar as CalendarIcon,
+  Download,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -41,6 +42,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { getUpcomingMentorshipSessions, listEvents, listMilestones, type EventItem, type Milestone, type MentorshipSessionItem } from '@/lib/api';
+import { buildIcs, downloadIcs, type IcsEntry } from '@/lib/ics';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -195,6 +197,31 @@ function fromEvent(ev: EventItem): CalendarEvent {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * A calendar entry as a calendar-file entry: timed ones keep their UTC times,
+ * milestones and deadlines (no time) are all-day. The end is the start's day
+ * at `endTime`, or the next day's when the end reads earlier than the start.
+ */
+function toIcsEntry(e: CalendarEvent, origin: string, lang: 'en' | 'el'): IcsEntry {
+  const title = lang === 'el' && e.titleEl ? e.titleEl : e.title;
+  const location = lang === 'el' && e.locationEl ? e.locationEl : e.location;
+  let end: string | null = null;
+  if (e.time && e.endTime) {
+    const endIso = `${e.date.slice(0, 11)}${e.endTime}:00.000Z`;
+    end = Date.parse(endIso) > Date.parse(e.date) ? endIso : new Date(Date.parse(endIso) + 86_400_000).toISOString();
+  }
+  return {
+    uid: e.id,
+    title,
+    start: e.date,
+    end,
+    allDay: !e.time,
+    description: e.description ?? null,
+    location: location ?? null,
+    url: e.href ? `${origin}${e.href}` : null,
+  };
+}
 
 function isSameDay(a: Date, b: Date) {
   return (
@@ -438,6 +465,21 @@ export default function CalendarPage() {
     return filteredEvents.filter((e) => new Date(e.date) >= todayStart).slice(0, 8);
   }, [filteredEvents]);
 
+  // What the export carries: everything the filters leave, from today on.
+  const exportable = useMemo(() => {
+    const n = new Date();
+    const todayStart = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()));
+    return filteredEvents.filter((e) => new Date(e.date) >= todayStart);
+  }, [filteredEvents]);
+  const exportCalendar = () => {
+    if (!exportable.length) return;
+    const lang = document.documentElement.dataset.primaryLang === 'el' ? 'el' : 'en';
+    downloadIcs(
+      'cofounderbay-calendar.ics',
+      buildIcs(exportable.map((e) => toIcsEntry(e, window.location.origin, lang)), { name: 'CoFounderBay' }),
+    );
+  };
+
   // Stats
   const thisMonthEvents = filteredEvents.filter((e) => {
     const ed = new Date(e.date);
@@ -562,6 +604,19 @@ export default function CalendarPage() {
               <List className="icon-sm" />
             </Button>
           </div>
+          {/* The calendar from today on as a file for Google, Apple or Outlook,
+              as the AI Studio prototype offers ("Εξαγωγή .ics"). */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            disabled={!exportable.length}
+            onClick={exportCalendar}
+          >
+            <Download className="icon-sm" aria-hidden="true" />
+            <BilingualText en="Export .ics" el="Εξαγωγή .ics" compact />
+          </Button>
           {/* /events/create has existed all along. */}
           <Button asChild size="sm" className="gap-1.5">
             <Link href="/events/create"><Plus className="icon-sm" /> <BilingualText en="Add Event" el="Προσθήκη εκδήλωσης" compact /></Link>

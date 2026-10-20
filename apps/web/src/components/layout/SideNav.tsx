@@ -27,6 +27,7 @@ import { useStoredUser } from '@/hooks/useStoredUser';
 import { useRoleOptional } from '@/contexts/RoleContext';
 import { NotificationsBell } from './NotificationsBell';
 import { UserMenu } from './UserMenu';
+import { DemoExitInSidebar } from '@/components/common/OfflineIndicator';
 import { Button } from '@/components/ui/button';
 
 export function SideNav() {
@@ -364,8 +365,11 @@ export function SideNav() {
           ))}
         </nav>
 
-        {/* Search + bell stay in the rail; command/locale/theme/demo live in UserMenu. */}
-        <div className={cn('flex-shrink-0 border-t border-border', showLabels ? 'space-y-1 p-2' : 'flex flex-col items-center gap-0.5 px-0 py-1.5')}>
+        {/* Search + bell stay in the rail; command/locale/theme live in UserMenu.
+            The demo's Exit sits in this row too (it floated over page content
+            at the sidebar's edge); data-sidenav-footer tells the floating one
+            to stand aside. */}
+        <div data-sidenav-footer="" className={cn('flex-shrink-0 border-t border-border', showLabels ? 'space-y-1 p-2' : 'flex flex-col items-center gap-0.5 px-0 py-1.5')}>
           <div className={cn(showLabels ? 'flex items-center gap-0.5' : 'flex flex-col items-center gap-0.5')}>
             <Button
               type="button"
@@ -382,6 +386,7 @@ export function SideNav() {
               <CfbGlyph name="search" className={chromeIcon} />
             </Button>
             <NotificationsBell className={rail ? railSlot : 'h-8 w-8'} />
+            {mounted ? <DemoExitInSidebar rail={rail} /> : null}
           </div>
           {mounted ? (
             <UserMenu variant="sidebar" rail={rail} />

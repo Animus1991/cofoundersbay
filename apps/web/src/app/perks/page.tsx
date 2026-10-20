@@ -104,8 +104,10 @@ function PerkCard({
   };
   const revealed = perk.claimed || admin;
   return (
-    <Card id={`perk-${perk.id}`} className="scroll-mt-20">
-      <CardContent className="space-y-3">
+    <Card id={`perk-${perk.id}`} className="h-full scroll-mt-20">
+      {/* A column, so the foot (who claimed it, Claim) sits at the bottom of
+          every card in a row of the offers grid. */}
+      <CardContent className="flex h-full flex-col space-y-3">
         <CardHead
           mark={(
             <Avatar className="h-10 w-10 rounded-xl" data-keep-icon="">
@@ -176,6 +178,7 @@ function PerkCard({
             <BilingualText en={`Terms: ${perk.terms}`} el={`Όροι: ${perk.termsEl ?? perk.terms}`} wrap />
           </p>
         ) : null}
+        <div className="mt-auto">
         <CardFoot
           meta={
             perk.claimed && perk.claimedAt && !admin ? (
@@ -201,6 +204,7 @@ function PerkCard({
             </Button>
           ) : null}
         </CardFoot>
+        </div>
       </CardContent>
     </Card>
   );
@@ -444,7 +448,11 @@ export default function PerksPage() {
                 <Button size="sm" variant="outline" onClick={() => openRailSection('filters')}><BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact /></Button>,
               )
             ) : (
-              shown.map((p) => <PerkCard key={p.id} perk={p} now={now} stage={stageOrNull} busy={busy} onClaim={() => void runClaim(p)} />)
+              // Two to a row from xl, as the prototype grids its perks: a long
+              // single column made the offers a scroll rather than a choice.
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                {shown.map((p) => <PerkCard key={p.id} perk={p} now={now} stage={stageOrNull} busy={busy} onClaim={() => void runClaim(p)} />)}
+              </div>
             )}
           </TabsContent>
           <TabsContent value="claimed" className="space-y-4">
@@ -454,7 +462,9 @@ export default function PerksPage() {
               empty('You have not claimed a perk yet. Claim one under Offers to see its code here.', 'Δεν έχετε διεκδικήσει ακόμη προσφορά. Διεκδικήστε μία στις Προσφορές για να δείτε εδώ τον κωδικό της.',
                 <Button size="sm" variant="outline" onClick={() => setTab('offers')}><BilingualText en="See the offers" el="Δείτε τις προσφορές" compact /></Button>)
             ) : (
-              claimed.map((p) => <PerkCard key={p.id} perk={p} now={now} stage={stageOrNull} busy={busy} />)
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                {claimed.map((p) => <PerkCard key={p.id} perk={p} now={now} stage={stageOrNull} busy={busy} />)}
+              </div>
             )}
           </TabsContent>
           {isAdmin ? (

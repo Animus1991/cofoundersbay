@@ -653,12 +653,22 @@ export default function MatchesPage() {
     router.push(`/messages?to=${profile.userId}`);
   }, [router]);
 
+  // The toast offers the undo it used to only mention ("removed · Undo?",
+  // in English, with nothing to press): Undo brings this one card back.
   const handlePass = useCallback((id: string, name: string, userId: string) => {
     setPassedIds(prev => new Set(prev).add(id));
     setLastPassed(id);
     void recordMatchFeedback({ targetUserId: userId, feedback: 'declined' }).catch(() => {});
-    success('Passed', `${name} removed · Undo?`);
-  }, [success]);
+    success('Passed', name, {
+      action: {
+        label: sayOne('Undo', 'Αναίρεση'),
+        onClick: () => {
+          setPassedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
+          setLastPassed((last) => (last === id ? null : last));
+        },
+      },
+    });
+  }, [success, sayOne]);
 
   const handleUndoPass = useCallback(() => {
     if (!lastPassed) return;
@@ -1318,7 +1328,23 @@ export default function MatchesPage() {
               {/* Results footer */}
               {filtered.length > 0 && (
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
-                  <span>{filtered.length} match{filtered.length !== 1 ? 'es' : ''} shown{passedIds.size > 0 ? ` · ${passedIds.size} passed` : ''}</span>
+                  <span>
+                    <BilingualText
+                      en={`${filtered.length} ${filtered.length === 1 ? 'match' : 'matches'} shown${passedIds.size > 0 ? ` · ${passedIds.size} passed` : ''}`}
+                      el={`${filtered.length} ${filtered.length === 1 ? 'αντιστοίχιση εμφανίζεται' : 'αντιστοιχίσεις εμφανίζονται'}${passedIds.size > 0 ? ` · ${passedIds.size} ${passedIds.size === 1 ? 'απορρίφθηκε' : 'απορρίφθηκαν'}` : ''}`}
+                      compact
+                      wrap
+                    />
+                  </span>
+                  {passedIds.size > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => { setPassedIds(new Set()); setLastPassed(null); }}
+                      className="tap-target-y font-medium text-primary-accessible underline-offset-4 hover:underline"
+                    >
+                      <BilingualText en="Show the passed ones again" el="Επαναφορά όσων απορρίψατε" compact />
+                    </button>
+                  ) : null}
                 </div>
               )}
             </div>

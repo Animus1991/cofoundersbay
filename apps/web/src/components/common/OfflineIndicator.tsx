@@ -2,13 +2,15 @@
 
 import { useState, useEffect, useId, createContext, useContext, ReactNode } from 'react';
 import Link from 'next/link';
-import { WifiOff, Wifi, RefreshCw, Cloud, CloudOff, ServerCrash } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { WifiOff, Wifi, RefreshCw, Cloud, CloudOff, ServerCrash, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BilingualText } from '@/components/common/BilingualText';
 import { cn } from '@/lib/utils';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { commonEl, commonEn } from '@/lib/i18n/strings-common';
+import { bilingualAria } from '@/lib/i18n/format';
 import { useTopBannerHeight } from '@/components/layout/useTopBannerHeight';
 
 // Network status context
@@ -201,10 +203,9 @@ function DemoNotice() {
   );
 }
 
-export function DemoSessionBanner() {
-  const noticeId = useId();
+/** Whether this tab is the preview demo, kept in step with sign-in and storage events. */
+function useIsPreviewDemo(): boolean {
   const [previewDemo, setPreviewDemo] = useState(false);
-
   useEffect(() => {
     const sync = () => setPreviewDemo(isPreviewDemo());
     sync();
@@ -217,9 +218,12 @@ export function DemoSessionBanner() {
       window.removeEventListener('storage', sync);
     };
   }, []);
+  return previewDemo;
+}
 
-  if (!previewDemo) return null;
-
+/** The Exit control itself: a link to the register page, explained on hover. */
+function DemoExitButton({ className, iconOnly = false }: { className?: string; iconOnly?: boolean }) {
+  const noticeId = useId();
   return (
     <>
       <div id={noticeId} className="sr-only">
@@ -228,14 +232,17 @@ export function DemoSessionBanner() {
       <TooltipProvider delayDuration={200}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              asChild
-              size="sm"
-              variant="outline"
-              className="fixed z-40 left-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:bottom-4 sm:left-[calc(4.25rem+0.75rem)] lg:left-[calc(15rem+0.75rem)]"
-            >
-              <Link href="/register" aria-describedby={noticeId}>
-                <BilingualText en={commonEn('demo_exit')} el={commonEl('demo_exit')} compact />
+            <Button asChild size="sm" variant="outline" className={className}>
+              <Link
+                href="/register"
+                aria-describedby={noticeId}
+                aria-label={iconOnly ? bilingualAria('Exit the demo', 'Έξοδος από την επίδειξη') : undefined}
+              >
+                {iconOnly ? (
+                  <LogOut className="icon-md" aria-hidden="true" />
+                ) : (
+                  <BilingualText en={commonEn('demo_exit')} el={commonEl('demo_exit')} compact />
+                )}
               </Link>
             </Button>
           </TooltipTrigger>
@@ -245,6 +252,39 @@ export function DemoSessionBanner() {
         </Tooltip>
       </TooltipProvider>
     </>
+  );
+}
+
+/** Pages where Exit has nothing to do: they are the way out, or a step on it. */
+const NO_EXIT_ROUTES = ['/register', '/login', '/forgot-password', '/reset-password', '/auth'];
+
+/**
+ * Exit, where there is no sidebar to hold it: phones, and full-width pages
+ * such as the landing page. It used to float at the sidebar's edge on every
+ * page, over whatever the page drew there (a card's text, an event's photo);
+ * the AI Studio prototype keeps its Exit in the chrome, beside the account,
+ * and so does the sidebar now (`DemoExitInSidebar`). This one stands aside
+ * whenever a sidebar footer is on the page.
+ */
+export function DemoSessionBanner() {
+  const previewDemo = useIsPreviewDemo();
+  const pathname = usePathname();
+  if (!previewDemo) return null;
+  if (pathname && NO_EXIT_ROUTES.some((route) => pathname.startsWith(route))) return null;
+  return (
+    <DemoExitButton className="fixed z-40 left-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:bottom-4 sm:left-4 sm:[body:has([data-sidenav-footer])_&]:hidden" />
+  );
+}
+
+/** Exit in the sidebar's footer row, beside search and the bell: words when the sidebar is open, an icon on the rail. */
+export function DemoExitInSidebar({ rail }: { rail: boolean }) {
+  const previewDemo = useIsPreviewDemo();
+  if (!previewDemo) return null;
+  return (
+    <DemoExitButton
+      iconOnly={rail}
+      className={rail ? 'h-9 w-9 shrink-0 p-0 lg:h-[36px] lg:w-[36px]' : 'ml-auto h-8 shrink-0 px-2.5'}
+    />
   );
 }
 

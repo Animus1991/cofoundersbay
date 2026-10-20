@@ -245,11 +245,14 @@ function ProgramCard({
   // kind under it, the state at the right, then the sentence, the facts and
   // the actions, all on the mark's left edge.
   return (
-    <Card className={cn('card-interactive overflow-hidden transition-all hover:border-primary/30 group', isEnrolled && 'border-primary/40')}>
+    // From lg the cover sits at the card's left, the full height of it, as
+    // the AI Studio prototype lists programmes: the picture stays, and the
+    // list reads as rows instead of a stack of banners.
+    <Card className={cn('card-interactive overflow-hidden transition-all hover:border-primary/30 group', program.coverImageUrl && 'lg:flex', isEnrolled && 'border-primary/40')}>
       {program.coverImageUrl ? (
-        <img src={program.coverImageUrl} alt="" referrerPolicy="no-referrer" className="h-28 w-full object-cover" />
+        <img src={program.coverImageUrl} alt="" referrerPolicy="no-referrer" className="h-28 w-full object-cover lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch" />
       ) : null}
-      <CardContent className="space-y-3">
+      <CardContent className="min-w-0 space-y-3 lg:flex-1">
         <CardHead
           mark={(
             <Avatar className="h-10 w-10 rounded-xl">
@@ -318,7 +321,14 @@ function ProgramCard({
           <p className="text-xs text-muted-foreground">
             <span className="font-medium text-foreground"><BilingualText en="Offers" el="Προσφέρει" compact /></span>
             {': '}
-            {benefits.join(' · ')}
+            {/* One text node per benefit, so the catalog can give each its
+                Greek; joined into one string, none of them matched. */}
+            {benefits.map((benefit, i) => (
+              <span key={benefit}>
+                {i > 0 ? ' · ' : null}
+                <span>{benefit}</span>
+              </span>
+            ))}
           </p>
         ) : null}
 
@@ -673,7 +683,13 @@ export default function ProgramsPage() {
               </Card>
             ) : (
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">{filtered.length} program{filtered.length !== 1 ? 's' : ''} found</p>
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText
+                    en={`${filtered.length} program${filtered.length !== 1 ? 's' : ''} found`}
+                    el={`${filtered.length} ${filtered.length !== 1 ? 'προγράμματα βρέθηκαν' : 'πρόγραμμα βρέθηκε'}`}
+                    compact
+                  />
+                </p>
                 {filtered.map((p) => (
                   <ProgramCard key={p.id} program={p} isEnrolled={enrolledIds.has(p.id)} onApply={setApplyTarget} />
                 ))}

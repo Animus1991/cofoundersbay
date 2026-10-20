@@ -13,6 +13,7 @@ import { useTenant } from '@/components/providers/TenantContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { registerEmailError, registerPasswordError } from '@/lib/auth-fields';
 
 /**
@@ -34,7 +35,7 @@ const ROLES = [
     labelEl: 'Ιδρυτής',
     description: 'Build and lead startups',
     descriptionEl: 'Χτίστε και οδηγήστε startups',
-    badge: 'F',
+    glyph: 'builder',
   },
   {
     value: 'mentor',
@@ -42,7 +43,7 @@ const ROLES = [
     labelEl: 'Μέντορας',
     description: 'Coach and guide teams',
     descriptionEl: 'Καθοδηγήστε ομάδες',
-    badge: 'M',
+    glyph: 'mentor',
   },
   {
     value: 'investor',
@@ -50,7 +51,7 @@ const ROLES = [
     labelEl: 'Επενδυτής',
     description: 'Back early-stage teams',
     descriptionEl: 'Στηρίξτε ομάδες πρώιμου σταδίου',
-    badge: 'I',
+    glyph: 'wallet',
   },
   {
     value: 'org',
@@ -58,9 +59,9 @@ const ROLES = [
     labelEl: 'Οργανισμός',
     description: 'Represent a company',
     descriptionEl: 'Εκπροσωπήστε έναν οργανισμό',
-    badge: 'O',
+    glyph: 'building',
   },
-] as const;
+] as const satisfies ReadonlyArray<{ glyph: CfbGlyphName } & Record<string, string>>;
 
 // What joining gives you, not member counts: the platform publishes none, so
 // "10K+ members" and "80+ countries" were invented figures.
@@ -310,6 +311,7 @@ export default function RegisterPage() {
                       type="button"
                       onClick={() => setRole(r.value)}
                       aria-pressed={active}
+                      data-keep-icon=""
                       className={`flex items-start gap-2.5 rounded-xl border px-3 py-3 text-left text-sm transition-all focus-ring ${
                         active
                           ? 'border-primary/60 bg-primary/10 text-primary-accessible'
@@ -321,7 +323,9 @@ export default function RegisterPage() {
                           active ? 'bg-primary/15 text-primary-accessible' : 'bg-background text-muted-foreground'
                         }`}
                       >
-                        {r.badge}
+                        {/* The role's own mark, as the AI Studio prototype draws it;
+                            the English initials F, M, I, O meant nothing in Greek. */}
+                        <CfbGlyph name={r.glyph} className="icon-sm" />
                       </span>
                       {/* Stacked: a 2-column grid of cards is too narrow for
                           "Organization · Οργανισμός" on one line. */}
@@ -341,6 +345,21 @@ export default function RegisterPage() {
 
             <OAuthDivider />
             <OAuthButtons mode="register" disabled={loading} />
+
+            {/* What creating an account agrees to, said where it is done
+                (the prototype's sign-up says it under its buttons; ours did
+                not say it anywhere on the form). */}
+            <p className="text-center text-xs text-muted-foreground">
+              <BilingualText en="By creating an account you agree to the" el="Με τη δημιουργία λογαριασμού αποδέχεστε τους" compact />{' '}
+              <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
+                <BilingualText en="Terms of Service" el="Όρους χρήσης" compact />
+              </Link>{' '}
+              <BilingualText en="and the" el="και την" compact />{' '}
+              <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+                <BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact />
+              </Link>
+              .
+            </p>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">

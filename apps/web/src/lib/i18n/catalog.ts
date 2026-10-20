@@ -978,6 +978,16 @@ const el: Record<string, string> = {
   'e.g. Founder Meetup Athens Q2': 'π.χ. Συνάντηση ιδρυτών Αθήνας, 2ο τρίμηνο',
   'e.g. Station F, 5 Parvis Alan Turing, Paris': 'π.χ. Impact Hub, Καρύτση 10, Αθήνα',
   'Technical co-founder': 'Τεχνικός συνιδρυτής',
+  // Programme benefits in the demo organisation.
+  '€50K for 7% equity': '€50K για 7% μετοχών',
+  'A mentor for each founder': 'Ένας μέντορας για κάθε ιδρυτική ομάδα',
+  'Demo day with forty investors': 'Demo day με σαράντα επενδυτές',
+  'Utility pilot introductions': 'Γνωριμίες για πιλοτικά με εταιρείες κοινής ωφέλειας',
+  'Lab time at partner universities': 'Χρόνος σε εργαστήρια συνεργαζόμενων πανεπιστημίων',
+  '€30K grant': 'Επιχορήγηση €30K',
+  'Weekly founder office hours': 'Εβδομαδιαίες ώρες γραφείου για ιδρυτές',
+  'Customer interview playbook': 'Οδηγός συνεντεύξεων πελατών',
+  'Priority review for the seed accelerator': 'Προτεραιότητα αξιολόγησης για τον επιταχυντή seed',
 };
 
 const es: Record<string, string> = {

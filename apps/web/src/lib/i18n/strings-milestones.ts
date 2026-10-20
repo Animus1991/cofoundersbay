@@ -70,6 +70,7 @@ export const MILESTONE_STRINGS: Record<string, BilingualPair> = {
   clear_search: { en: 'Clear search', el: 'Καθαρισμός αναζήτησης' },
   view_list: { en: 'List view', el: 'Προβολή λίστας' },
   view_grid: { en: 'Grid view', el: 'Προβολή πλέγματος' },
+  view_board: { en: 'Board by status', el: 'Πίνακας ανά κατάσταση' },
   refresh: { en: 'Refresh', el: 'Ανανέωση' },
   empty_title: { en: 'No milestones yet', el: 'Δεν υπάρχουν ορόσημα' },
   empty_hint: {

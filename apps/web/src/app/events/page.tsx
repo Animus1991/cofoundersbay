@@ -242,13 +242,23 @@ export default function EventsPage() {
       }
     >
       <div className="space-y-6 pb-10">
-      <p className="text-sm text-muted-foreground">
-        <Link href="/events/create?kind=pitch-practice" className="text-primary-accessible">
-          <BilingualText en="Host a pitch practice" el="Διοργάνωση εξάσκησης παρουσίασης" compact />
-        </Link>
-        {' '}
-        <BilingualText en="A live workshop where founders present and hear notes." el="Ένα ζωντανό εργαστήριο όπου ιδρυτές παρουσιάζουν και ακούν σημειώσεις." wrap />
-      </p>
+      {/* What a pitch practice is, then the one way to host one, as the
+          AI Studio prototype's "host your own event" card reads. It was a
+          link run into a sentence ("Host a pitch practice A live workshop…"). */}
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">
+            <BilingualText en="Pitch practice" el="Εξάσκηση παρουσίασης" compact />
+          </span>
+          {' · '}
+          <BilingualText en="A live workshop where founders present and hear notes." el="Ένα ζωντανό εργαστήριο όπου ιδρυτές παρουσιάζουν και ακούν σημειώσεις." wrap />
+        </p>
+        <Button variant="outline" size="sm" className="shrink-0 self-start sm:self-auto" asChild>
+          <Link href="/events/create?kind=pitch-practice">
+            <BilingualText en="Host one" el="Διοργάνωση" compact />
+          </Link>
+        </Button>
+      </div>
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* min-w-0 so the tab list's own overflow-x-auto can bound it; without
