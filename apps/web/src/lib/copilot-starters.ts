@@ -135,6 +135,12 @@ export const PAGE_STARTERS: Record<string, PageStarter[]> = {
   '/connections': [read('Any connection requests waiting for me?', 'Έχω αιτήματα σύνδεσης σε αναμονή;', 'people', 'get_connections')],
   '/programs': [read('Which accelerator programmes are open right now?', 'Ποια προγράμματα επιτάχυνσης δέχονται αιτήσεις;', 'award', 'get_programs')],
   '/jobs': [read('Are there any open jobs I could apply to?', 'Υπάρχουν αγγελίες για θέσεις εργασίας;', 'briefcase', 'get_jobs')],
+  // The AI Studio prototype offers its page questions on more pages; these
+  // three are ones the eval fixture already holds, so the planner is known
+  // to answer them with the named read.
+  '/readiness': [read('How investor ready is my startup?', 'Πόσο καλή είναι η ετοιμότητα της startup μου;', 'gauge', 'get_readiness')],
+  '/mentoring': [read('Which mentors are available for sessions?', 'Ποιοι μέντορες είναι διαθέσιμοι;', 'mentor', 'get_mentors')],
+  '/discover': [read('Find a technical cofounder in Athens', 'Βρες τεχνικό συνιδρυτή στην Αθήνα', 'people', 'search_people')],
 };
 
 /** The starters for a path: its own entry, or the nearest parent's ("/matches/u1" reads "/matches"). */

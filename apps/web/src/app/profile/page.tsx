@@ -618,14 +618,18 @@ export default function ProfilePage() {
             Link") and ran 315px longer than the profile it sat next to. They
             are the page rail's sections now: one place for what supports the
             profile, and the profile itself gets the width. */}
-        {/* Two columns from xl, as the AI Studio prototype lays a profile
-            out: the story (about, activity, experience, evidence, portfolio)
-            on the left, the facts a visitor scans (what they are looking for,
-            role details, top skills) beside it. Below xl it is one column in
-            the same order as before. Nothing here repeats the header's
-            actions, which is what the old hand-built side column did. */}
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 xl:items-start">
-          <div className="min-w-0 space-y-6 xl:col-span-2">
+        {/* Two columns once the content itself is 56rem wide, as the AI Studio
+            prototype lays a profile out: the story (about, activity,
+            experience, evidence, portfolio) on the left, the facts a visitor
+            scans (what they are looking for, role details, top skills) beside
+            it. A container query, not a breakpoint: with the page rail open
+            the content is ~680px at 1440, and a viewport rule squeezed the
+            side column to 215px. Narrower, it is one column in the same order
+            as before. Nothing here repeats the header's actions, which is
+            what the old hand-built side column did. */}
+        <div className="[container-type:inline-size]">
+        <div className="grid grid-cols-1 gap-6 [@container(min-width:56rem)]:grid-cols-3 [@container(min-width:56rem)]:items-start">
+          <div className="min-w-0 space-y-6 [@container(min-width:56rem)]:col-span-2">
             {/* Bio */}
             <Card className="animate-fade-in stagger-1">
               <CardHeader>
@@ -765,7 +769,7 @@ export default function ProfilePage() {
                 {/* Label over value, each pair on the title's left edge, the
                     way the details card below reads. The pairs carried an
                     icon well each, a second axis in front of the labels. */}
-                <CardContent className={cn('grid grid-cols-1 gap-4', cards.length > 1 && 'sm:grid-cols-2 xl:grid-cols-1')}>
+                <CardContent className={cn('grid grid-cols-1 gap-4', cards.length > 1 && 'sm:grid-cols-2 [@container(min-width:56rem)]:grid-cols-1')}>
                   {cards.map(({ labelEn, labelEl, values }) => (
                     <div key={labelEn} className="min-w-0 space-y-1">
                       {/* min-w-0 and `wrap`: "Startup stage · Στάδιο νεοφυούς
@@ -808,7 +812,7 @@ export default function ProfilePage() {
                 {/* A level shows only when the person declared one. The bars
                     used to invent both a level and a percentage from the
                     skill's place in the list. */}
-                <ul className="grid grid-cols-1 gap-x-8 sm:grid-cols-2 xl:grid-cols-1">
+                <ul className="grid grid-cols-1 gap-x-8 sm:grid-cols-2 [@container(min-width:56rem)]:grid-cols-1">
                   {(showAllSkills ? profile.skills : profile.skills.slice(0, 6)).map((s, i) => (
                     <li key={s.skillId ?? s.skillName ?? i} className="flex min-w-0 items-center justify-between gap-3 border-b border-border py-2.5">
                       <span className="min-w-0 truncate text-sm font-medium text-foreground">{s.skillName}</span>
@@ -842,6 +846,7 @@ export default function ProfilePage() {
           )}
 
           </div>
+        </div>
         </div>
       </div>
     </AppShell>

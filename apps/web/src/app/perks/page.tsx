@@ -106,8 +106,9 @@ function PerkCard({
   return (
     <Card id={`perk-${perk.id}`} className="h-full scroll-mt-20">
       {/* A column, so the foot (who claimed it, Claim) sits at the bottom of
-          every card in a row of the offers grid. */}
-      <CardContent className="flex h-full flex-col space-y-3">
+          every card in a row of the offers grid. gap, not space-y: space-y's
+          margin outranks the foot's mt-auto and left the buttons unaligned. */}
+      <CardContent className="flex h-full flex-col gap-3">
         <CardHead
           mark={(
             <Avatar className="h-10 w-10 rounded-xl" data-keep-icon="">

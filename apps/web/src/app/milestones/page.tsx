@@ -107,11 +107,14 @@ function MilestoneCard({
   onEdit,
   onStatusChange,
   onDelete,
+  inBoard = false,
 }: {
   item: Milestone;
   onEdit: (m: Milestone) => void;
   onStatusChange: (id: string, status: MilestoneStatus) => void;
   onDelete: (id: string) => void;
+  /** On the board the column already names the status, so the card does not repeat it. */
+  inBoard?: boolean;
 }) {
   const { primary } = useLanguagePreference();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -162,7 +165,7 @@ function MilestoneCard({
               ]}
             />
           )}
-          aside={(
+          aside={inBoard ? undefined : (
             <Badge
               variant="outline"
               className="gap-1 rounded-full border-0 px-0 text-2xs font-medium text-muted-foreground"
@@ -338,7 +341,7 @@ function MilestoneBoard({
             </h2>
             {column.length ? (
               column.map((m) => (
-                <MilestoneCard key={m.id} item={m} onEdit={onEdit} onStatusChange={onStatusChange} onDelete={onDelete} />
+                <MilestoneCard key={m.id} item={m} onEdit={onEdit} onStatusChange={onStatusChange} onDelete={onDelete} inBoard />
               ))
             ) : (
               <p className="rounded-xl border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
