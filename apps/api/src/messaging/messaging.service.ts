@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { MESSAGE_SEARCH_WINDOW, messageSnippet, textMatches } from '@cofounderbay/shared';
+import { MESSAGE_SEARCH_WINDOW, messagePolicy, messageSnippet, textMatches, type MessagePolicy } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PresenceService } from './presence.service';
@@ -94,6 +94,25 @@ export class MessagingService {
     return !!blocked;
   }
 
+  private async recipientMessagePolicy(userId: string): Promise<MessagePolicy> {
+    const profile = await this.prisma.profile.findUnique({ where: { userId }, select: { visibilityRules: true } });
+    return messagePolicy(profile?.visibilityRules);
+  }
+
+  private async areConnected(userId: string, otherUserId: string): Promise<boolean> {
+    const accepted = await this.prisma.connectionRequest.findFirst({
+      where: {
+        status: 'accepted',
+        OR: [
+          { requesterId: userId, receiverId: otherUserId },
+          { requesterId: otherUserId, receiverId: userId },
+        ],
+      },
+      select: { id: true },
+    });
+    return !!accepted;
+  }
+
   async getConversationIdsForUser(userId: string): Promise<string[]> {
     const parts = await this.prisma.conversationParticipant.findMany({
       where: { userId },
@@ -126,6 +145,16 @@ export class MessagingService {
       select: { id: true },
     });
     if (existing) return existing;
+
+    // The recipient's "Who can start a conversation" (Settings > Privacy).
+    // Only a new thread is asked; an existing one carries on.
+    const policy = await this.recipientMessagePolicy(otherUserId);
+    if (policy === 'nobody') {
+      throw new ForbiddenException('This member is not taking new conversations');
+    }
+    if (policy === 'connections' && !(await this.areConnected(userId, otherUserId))) {
+      throw new ForbiddenException('This member takes new conversations from connections only');
+    }
 
     return this.prisma.conversation.create({
       data: {

@@ -133,6 +133,16 @@ const EXPERTISE_FILTERS = [
   'B2B Sales',
   'User Research',
 ];
+/** Greek for the expertise filters; the rail showed them in English only. */
+const EXPERTISE_EL: Record<string, string> = {
+  All: 'Όλοι οι τομείς',
+  'Product Strategy': 'Στρατηγική προϊόντος',
+  Fundraising: 'Χρηματοδότηση',
+  'Growth Marketing': 'Growth marketing',
+  'Tech Architecture': 'Τεχνική αρχιτεκτονική',
+  'B2B Sales': 'Πωλήσεις B2B',
+  'User Research': 'Έρευνα χρηστών',
+};
 
 function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) {
   // Shown only when known: search results carry no availability, and a green
@@ -655,7 +665,7 @@ export default function MentoringPage() {
       { value: 'all', en: 'All', el: 'Όλες' },
     ], sessionsTab, (v) => setSessionsTab(v as typeof sessionsTab)),
     choiceControl('mentor_price', 'Mentor price', 'Τιμή μέντορα', [...PRICE_OPTIONS], priceFilter, (v) => setPriceFilter(v as PriceFilter)),
-    choiceControl('mentor_expertise', 'Mentor expertise', 'Εξειδίκευση μέντορα', EXPERTISE_FILTERS.map((e) => ({ value: e, en: e === 'All' ? 'All areas' : e, el: e === 'All' ? 'Όλοι οι τομείς' : e })), selectedExpertise, setSelectedExpertise),
+    choiceControl('mentor_expertise', 'Mentor expertise', 'Εξειδίκευση μέντορα', EXPERTISE_FILTERS.map((e) => ({ value: e, en: e === 'All' ? 'All areas' : e, el: EXPERTISE_EL[e] ?? e })), selectedExpertise, setSelectedExpertise),
     {
       id: 'open_booking',
       labelEn: 'Open the booking form for mentor',
@@ -689,8 +699,10 @@ export default function MentoringPage() {
 
   /*
    * The column leads with the two sections, the search and the mentors. The
-   * three directory figures, the price filter and the expertise chips are
-   * auxiliary, so they live in the rail.
+   * directory figures and the price filter are auxiliary, so they live in the
+   * rail. Expertise is how a mentor is chosen, so its chips moved under the
+   * search, in view (the AI Studio prototype's mentors page does the same):
+   * in the rail, usually closed, the main filter was out of sight.
    */
   const rail: PageRailSection[] = [
     {
@@ -718,7 +730,8 @@ export default function MentoringPage() {
       glyph: 'sliders',
       labelEn: 'Filters',
       labelEl: 'Φίλτρα',
-      badge: activeFilters || null,
+      // The rail holds the price filter only now; expertise shows on the page.
+      badge: priceFilter !== 'Any' ? 1 : null,
       content: (
         <div className="space-y-4">
           {mainTab !== 'find' && (
@@ -727,13 +740,6 @@ export default function MentoringPage() {
             </p>
           )}
           <RailOptions title="Price" titleEl="Τιμή" options={PRICE_OPTIONS} value={priceFilter} onChange={(v) => { setPriceFilter(v); setMainTab('find'); }} />
-          <RailOptions
-            title="Expertise"
-            titleEl="Εξειδίκευση"
-            options={EXPERTISE_FILTERS.map((e) => ({ value: e, en: e === 'All' ? 'All areas' : e, el: e === 'All' ? 'Όλοι οι τομείς' : e }))}
-            value={selectedExpertise}
-            onChange={(v) => { setSelectedExpertise(v); setMainTab('find'); }}
-          />
           {activeFilters > 0 && (
             <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={clearFilters} />
           )}
@@ -785,7 +791,25 @@ export default function MentoringPage() {
                 className="pl-9"
               />
             </div>
-
+            <div className="flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label={bilingualInline('Expertise', 'Εξειδίκευση')}>
+              {EXPERTISE_FILTERS.map((e) => {
+                const on = selectedExpertise === e;
+                return (
+                  <button
+                    key={e}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setSelectedExpertise(e)}
+                    className={cn(
+                      'tap-target-y shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                      on ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                    )}
+                  >
+                    <BilingualText en={e === 'All' ? 'All areas' : e} el={EXPERTISE_EL[e] ?? e} compact />
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {mentorsError ? (

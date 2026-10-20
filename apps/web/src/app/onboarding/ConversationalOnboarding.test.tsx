@@ -50,6 +50,31 @@ describe('conversational onboarding', () => {
     expect(push).toHaveBeenCalledWith('/matches');
   });
 
+  it('asks a founder for stage, time and who they look for, and saves them as match fields', async () => {
+    saveOnboardingProgress('u1', { step: 'goals', form });
+    render(<ConversationalOnboarding />);
+    await screen.findByTestId('onboarding-goals', {}, { timeout: 4000 });
+    fireEvent.click(screen.getByRole('radio', { name: 'MVP' }));
+    fireEvent.click(screen.getByRole('radio', { name: /^Part-time/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Co-founder/ }));
+    fireEvent.click(screen.getByTestId('onboarding-goals-continue'));
+    fireEvent.click(await screen.findByTestId('onboarding-complete-button', {}, { timeout: 4000 }));
+    await waitFor(() => expect(createProfile).toHaveBeenCalled(), { timeout: 4000 });
+    expect(createProfile).toHaveBeenCalledWith(expect.objectContaining({
+      rolePayload: { stage: 'mvp', commitment: 'part-time', rolesSought: ['Co-founder'] },
+    }));
+    expect(screen.getByText('MVP · Part-time · Co-founder')).toBeTruthy();
+  });
+
+  it('skips the goals step for a mentor', async () => {
+    saveOnboardingProgress('u1', { step: 'bio', form: { ...form, role: 'mentor' } });
+    render(<ConversationalOnboarding />);
+    fireEvent.click(await screen.findByTestId('onboarding-skip-bio', {}, { timeout: 4000 }));
+    expect(await screen.findByTestId('onboarding-complete-button', {}, { timeout: 4000 })).toBeTruthy();
+    expect(screen.queryByTestId('onboarding-goals')).toBeNull();
+    expect(screen.getByTestId('onboarding-step-counter').textContent).toContain('of 6');
+  });
+
   it('still returns a member to the need card they came from', async () => {
     sessionStorage.setItem('cfb_return_to', '/commitments/card-1');
     saveOnboardingProgress('u1', { step: 'skills', form });

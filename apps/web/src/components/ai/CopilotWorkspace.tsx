@@ -41,7 +41,11 @@ import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria, formatLocalTime } from '@/lib/i18n/format';
-import { COPILOT_PRODUCT_LINKS } from '@/lib/copilot-starters';
+import { COPILOT_PRODUCT_LINKS, copilotStartersFor } from '@/lib/copilot-starters';
+import { composerMode, filterCommands, insertMention } from '@/lib/composer-menu';
+import { searchProfiles } from '@/lib/api';
+import { useRoleOptional } from '@/contexts/RoleContext';
+import { StatusText } from '@/components/common/StatusText';
 import { followUpsFor } from '@/lib/copilot-followups';
 import { getPageMeta } from '@/lib/page-registry';
 
@@ -180,6 +184,7 @@ export function CopilotWorkspace({
   const [threadsOpen, setThreadsOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const role = useRoleOptional()?.primaryRole;
 
   const chat = useAIChat({
     agentId: 'general',
@@ -188,6 +193,82 @@ export function CopilotWorkspace({
     pageContext: readsPage ? pageContext : undefined,
   });
   const agentList = chat.agents ?? [];
+
+  // ── "/" and "@" in the composer (the AI Studio prototype's, Copilot Chat's) ──
+  // "/" lists a new conversation and the questions this page and role are
+  // best answered with (the empty state's starters, each one an eval case);
+  // "@" looks people up with the command palette's search and puts the name
+  // into the question. Arrows move, Enter chooses, Escape closes.
+  const menuMode = composerMode(input);
+  const starterSet = useMemo(
+    () => copilotStartersFor(isPage ? 'page' : 'popup', { pathname: pageContext.route, role }),
+    [isPage, pageContext.route, role],
+  );
+  const commandItems = useMemo(
+    () => [
+      { id: 'new', kind: 'command' as const, en: 'New conversation', el: 'Νέα συνομιλία', hint: null as string | null },
+      ...starterSet.reads.map((s) => ({ id: `ask:${s.en}`, kind: 'ask' as const, en: s.en, el: s.el, hint: null as string | null })),
+      ...starterSet.writes.map((s) => ({ id: `ask:${s.en}`, kind: 'ask' as const, en: s.en, el: s.el, hint: null as string | null })),
+    ],
+    [starterSet],
+  );
+  const [people, setPeople] = useState<{ id: string; kind: 'person'; en: string; el: string; hint: string | null }[]>([]);
+  const mentionQuery = menuMode?.mode === 'mention' ? menuMode.query : null;
+  useEffect(() => {
+    if (mentionQuery === null || mentionQuery.length < 2) {
+      setPeople([]);
+      return;
+    }
+    let live = true;
+    const timer = setTimeout(() => {
+      searchProfiles({ q: mentionQuery, limit: 6 })
+        .then((res) => {
+          if (!live) return;
+          setPeople((res.hits ?? []).map((h) => ({ id: `person:${h.userId}`, kind: 'person' as const, en: h.displayName, el: h.displayName, hint: h.role })));
+        })
+        .catch(() => { if (live) setPeople([]); });
+    }, 200);
+    return () => { live = false; clearTimeout(timer); };
+  }, [mentionQuery]);
+  const [dismissedFor, setDismissedFor] = useState<string | null>(null);
+  const [activeItem, setActiveItem] = useState(0);
+  const menuItems = dismissedFor === input
+    ? []
+    : menuMode?.mode === 'slash'
+      ? filterCommands(commandItems, menuMode.query)
+      : menuMode?.mode === 'mention' ? people : [];
+  const menuOpen = menuItems.length > 0 && !chat.isStreaming;
+  const activeMenu = menuOpen ? Math.min(activeItem, menuItems.length - 1) : -1;
+
+  const chooseItem = (item: (typeof menuItems)[number]) => {
+    setActiveItem(0);
+    if (item.kind === 'command') {
+      setInput('');
+      chat.clearMessages();
+    } else if (item.kind === 'ask') {
+      setInput('');
+      void chat.sendMessage(primary === 'el' ? item.el : item.en);
+    } else if (menuMode?.mode === 'mention') {
+      setInput(insertMention(input, menuMode.start, item.en));
+    }
+    inputRef.current?.focus();
+  };
+
+  const onComposerKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!menuOpen) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const step = e.key === 'ArrowDown' ? 1 : -1;
+      setActiveItem((activeMenu + step + menuItems.length) % menuItems.length);
+    } else if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      chooseItem(menuItems[activeMenu]);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      setDismissedFor(input);
+    }
+  };
   const currentAgentConfig = agentList.find((a) => a.id === chat.currentAgent);
 
   useEffect(() => {
@@ -550,12 +631,48 @@ export function CopilotWorkspace({
                 </button>
               </div>
             ) : null}
+            {menuOpen ? (
+              <ul
+                id="copilot-composer-menu"
+                role="listbox"
+                aria-label={bilingualAria(menuMode?.mode === 'mention' ? 'People' : 'Commands and questions', menuMode?.mode === 'mention' ? 'Πρόσωπα' : 'Εντολές και ερωτήσεις')}
+                className="mb-1.5 max-h-56 overflow-y-auto rounded-md border border-border bg-popover p-1"
+              >
+                {menuItems.map((item, index) => (
+                  <li
+                    key={item.id}
+                    id={`copilot-composer-item-${index}`}
+                    role="option"
+                    aria-selected={index === activeMenu}
+                    // mousedown, not click: the field keeps its focus.
+                    onMouseDown={(event) => { event.preventDefault(); chooseItem(item); }}
+                    onMouseEnter={() => setActiveItem(index)}
+                    className={cn(
+                      'flex cursor-pointer items-baseline gap-2 rounded px-2 py-1.5 text-sm',
+                      index === activeMenu ? 'bg-muted text-foreground' : 'text-muted-foreground',
+                    )}
+                  >
+                    {item.kind === 'command' ? <span className="font-mono text-xs text-muted-foreground">/new</span> : null}
+                    <span className="min-w-0 truncate">
+                      <BilingualText en={item.en} el={item.el} compact />
+                    </span>
+                    {item.kind === 'person' && item.hint ? (
+                      <span className="shrink-0 text-xs text-muted-foreground"><StatusText value={item.hint} /></span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             <div className="flex items-center gap-2">
               <Input
                 ref={inputRef}
                 aria-label={sayOne('Ask AI', 'Ρωτήστε το AI')}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => { setInput(e.target.value); setActiveItem(0); }}
+                onKeyDown={onComposerKeyDown}
+                aria-controls={menuOpen ? 'copilot-composer-menu' : undefined}
+                aria-autocomplete="list"
+                aria-activedescendant={menuOpen ? `copilot-composer-item-${activeMenu}` : undefined}
                 placeholder={sayOne(
                   isPage
                     ? 'Search, intro, message, or go…'
@@ -596,8 +713,8 @@ export function CopilotWorkspace({
             {isPage || chat.messages.length > 0 ? (
               <p className="type-support mt-1.5 text-muted-foreground">
                 <BilingualText
-                  en="Changes wait for your confirmation."
-                  el="Οι αλλαγές γίνονται μόνο με την επιβεβαίωσή σας."
+                  en="Changes wait for your confirmation. “/” for commands, “@” for a person."
+                  el="Οι αλλαγές γίνονται μόνο με την επιβεβαίωσή σας. «/» για εντολές, «@» για πρόσωπο."
                   compact
                   wrap
                 />

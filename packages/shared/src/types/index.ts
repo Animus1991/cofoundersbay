@@ -34,6 +34,8 @@ export interface ProfileVisibilityRules {
   search?: 'visible' | 'hidden';
   /** `members`: the profile is not readable without signing in. */
   profile?: 'public' | 'members';
+  /** Who may start a new conversation: everyone (default), connections only, or nobody. */
+  messages?: 'anyone' | 'connections' | 'nobody';
 }
 
 export interface PublicProfile {

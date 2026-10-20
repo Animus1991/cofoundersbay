@@ -63,6 +63,7 @@ import { applyTheme, getStoredTheme, type ThemeName } from '@/lib/themes';
 import { NOTIFICATION_CATEGORIES, categoryChannelOn, channelsOf, setChannel, useNotificationPrefs, type NotificationCategoryDef } from '@/lib/notification-prefs';
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
+import { messagePolicy, type MessagePolicy } from '@cofounderbay/shared';
 
 /*
  * The quick notification switches here are the in-app channel of each
@@ -398,6 +399,13 @@ const PRIVACY_READ_ONLY: Partial<Record<(typeof PRIVACY_ITEMS)[number]['id'], { 
   },
 };
 
+/** The three answers to "Who can start a conversation with you". */
+const MESSAGE_POLICY_OPTIONS: { value: MessagePolicy; en: string; el: string; hintEn: string; hintEl: string }[] = [
+  { value: 'anyone', en: 'Every member', el: 'Όλα τα μέλη', hintEn: 'Any signed-in member can write first.', hintEl: 'Κάθε συνδεδεμένο μέλος μπορεί να γράψει πρώτο.' },
+  { value: 'connections', en: 'Connections only', el: 'Μόνο οι συνδέσεις σας', hintEn: 'Members you have a connection with.', hintEl: 'Μέλη με τα οποία έχετε σύνδεση.' },
+  { value: 'nobody', en: 'No new conversations', el: 'Καμία νέα συνομιλία', hintEn: 'Only the conversations you already have stay open.', hintEl: 'Μένουν ανοιχτές μόνο όσες συνομιλίες έχετε ήδη.' },
+];
+
 /** What each live switch does when off, in both languages. */
 const PRIVACY_LIVE_COPY = {
   publicProfile: {
@@ -470,6 +478,7 @@ function PrivacyCard() {
     publicProfile: rules.profile !== 'members',
     searchable: rules.search !== 'hidden',
   };
+  const messages = messagePolicy(rules);
   const save = useMutation({
     mutationFn: (patch: Record<string, string>) => updateProfile({ visibilityRules: { ...rules, ...patch } }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.me.profile() }),
@@ -477,6 +486,7 @@ function PrivacyCard() {
   });
   const setPublic = (on: boolean) => save.mutateAsync({ profile: on ? 'public' : 'members' });
   const setSearchable = (on: boolean) => save.mutateAsync({ search: on ? 'visible' : 'hidden' });
+  const setMessages = (policy: MessagePolicy) => save.mutateAsync({ messages: policy });
 
   // The same writes, offered to the assistant; each is the other's exact undo.
   usePageControls([
@@ -503,6 +513,18 @@ function PrivacyCard() {
       unavailableEl: me.data?.profile ? undefined : 'Το προφίλ σας δεν φορτώθηκε.',
       run: async (v) => { await setSearchable(v === 'on'); },
       undo: () => ({ control: 'set_appear_in_search', value: values.searchable ? 'on' : 'off' }),
+    },
+    {
+      id: 'set_message_policy',
+      labelEn: 'Who can start a conversation with me',
+      labelEl: 'Ποιος μπορεί να ξεκινήσει συνομιλία μαζί μου',
+      writes: true,
+      options: MESSAGE_POLICY_OPTIONS.map((o) => ({ value: o.value, labelEn: o.en, labelEl: o.el })),
+      current: messages,
+      unavailableEn: me.data?.profile ? undefined : 'Your profile has not loaded.',
+      unavailableEl: me.data?.profile ? undefined : 'Το προφίλ σας δεν φορτώθηκε.',
+      run: async (v) => { if (v === 'anyone' || v === 'connections' || v === 'nobody') await setMessages(v); },
+      undo: () => ({ control: 'set_message_policy', value: messages }),
     },
   ]);
 
@@ -556,6 +578,45 @@ function PrivacyCard() {
             </div>
           );
         })}
+        </div>
+        {/* Who may write first (shared/visibility messagePolicy, held by the
+            API where a new conversation is made). The AI Studio prototype
+            offers the same three under "Who messages you". */}
+        <div className="mt-1 space-y-2 border-t border-border py-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground" id="message-policy-label">
+              <BilingualText en="Who can start a conversation with you" el="Ποιος μπορεί να ξεκινήσει συνομιλία μαζί σας" compact />
+            </p>
+            <p className="text-xs text-muted-foreground">
+              <BilingualText en="Conversations already open carry on whatever you choose." el="Όσες συνομιλίες υπάρχουν ήδη συνεχίζουν, ό,τι κι αν επιλέξετε." wrap />
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="radiogroup" aria-labelledby="message-policy-label">
+            {MESSAGE_POLICY_OPTIONS.map((o) => {
+              const on = messages === o.value;
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  disabled={!me.data?.profile || save.isPending}
+                  onClick={() => { if (!on) void setMessages(o.value); }}
+                  className={cn(
+                    'min-w-0 rounded-lg border px-3 py-2 text-left transition-colors disabled:opacity-60',
+                    on ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/40',
+                  )}
+                >
+                  <span className={cn('block text-sm font-medium', on ? 'text-primary-accessible' : 'text-foreground')}>
+                    <BilingualText en={o.en} el={o.el} compact wrap />
+                  </span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    <BilingualText en={o.hintEn} el={o.hintEl} wrap />
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
         <ProfileViewsRow />
         <div className="mt-1 flex items-center justify-between gap-4 border-t border-border pt-3">

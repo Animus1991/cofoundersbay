@@ -25,3 +25,16 @@ export function isHiddenFromSearch(rules: unknown): boolean {
 export function isMembersOnlyProfile(rules: unknown): boolean {
   return rec(rules).profile === 'members';
 }
+
+export type MessagePolicy = 'anyone' | 'connections' | 'nobody';
+
+/**
+ * Who may start a new conversation with the member (`messages`): everyone,
+ * the default; connections only; or nobody. Conversations that already exist
+ * carry on whatever the setting, so changing it never cuts a thread off.
+ * The AI Studio prototype offers the same three under "Who messages you".
+ */
+export function messagePolicy(rules: unknown): MessagePolicy {
+  const v = rec(rules).messages;
+  return v === 'connections' || v === 'nobody' ? v : 'anyone';
+}

@@ -29,8 +29,15 @@ describe('onboarding progress', () => {
     expect(loadOnboardingProgress('u1', 2)).toBeNull();
   });
 
+  it('keeps a founder’s goals once answered, and only then', () => {
+    saveOnboardingProgress('u1', { step: 'skills', form: { ...form, stage: 'mvp', lookingFor: ['Co-founder', 7 as unknown as string] } }, 1);
+    expect(loadOnboardingProgress('u1', 2)?.form).toMatchObject({ stage: 'mvp', lookingFor: ['Co-founder'] });
+    expect(loadOnboardingProgress('u1', 2)?.form).not.toHaveProperty('commitment');
+  });
+
   it('lists the steps already answered', () => {
     expect(stepsBefore('name')).toEqual([]);
     expect(stepsBefore('location')).toEqual(['name', 'role', 'headline']);
+    expect(stepsBefore('skills')).toEqual(['name', 'role', 'headline', 'location', 'bio', 'goals']);
   });
 });

@@ -328,6 +328,10 @@ export const TOAST_EL: Record<string, string> = {
   "Override failed": "Η παράκαμψη απέτυχε",
   "PNG Export": "Εξαγωγή PNG",
   "Passed": "Απορρίφθηκε",
+  // The API's refusal when a member limits who may start a conversation
+  // (Settings > Privacy, shared/visibility messagePolicy).
+  "This member is not taking new conversations": "Αυτό το μέλος δεν δέχεται νέες συνομιλίες",
+  "This member takes new conversations from connections only": "Αυτό το μέλος δέχεται νέες συνομιλίες μόνο από τις συνδέσεις του",
   "Password changed": "Ο κωδικός άλλαξε",
   "Passwords do not match": "Οι κωδικοί δεν ταιριάζουν",
   "Payment successful": "Η πληρωμή ολοκληρώθηκε",

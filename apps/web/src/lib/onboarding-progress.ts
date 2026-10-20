@@ -8,7 +8,8 @@
  * start over, as before.
  */
 
-export type OnboardingStepId = 'name' | 'role' | 'headline' | 'location' | 'bio' | 'skills';
+/** 'goals' is a founder's step (stage, commitment, who they look for); other roles skip it. */
+export type OnboardingStepId = 'name' | 'role' | 'headline' | 'location' | 'bio' | 'goals' | 'skills';
 
 export type OnboardingProgress = {
   step: OnboardingStepId;
@@ -19,11 +20,15 @@ export type OnboardingProgress = {
     bio: string;
     role: 'founder' | 'mentor' | 'investor' | 'org';
     skillIds: string[];
+    /** A founder's match fields; present only once answered. */
+    stage?: string;
+    commitment?: string;
+    lookingFor?: string[];
   };
   at: number;
 };
 
-const STEPS: readonly OnboardingStepId[] = ['name', 'role', 'headline', 'location', 'bio', 'skills'];
+const STEPS: readonly OnboardingStepId[] = ['name', 'role', 'headline', 'location', 'bio', 'goals', 'skills'];
 const ROLES = ['founder', 'mentor', 'investor', 'org'] as const;
 /** Answers older than this were abandoned; the next visit starts clean. */
 const MAX_AGE_MS = 7 * 24 * 60 * 60_000;
@@ -56,6 +61,11 @@ export function loadOnboardingProgress(userId: string | null | undefined, now = 
         bio: text(f.bio),
         role: (ROLES as readonly string[]).includes(f.role as string) ? (f.role as OnboardingProgress['form']['role']) : 'founder',
         skillIds: Array.isArray(f.skillIds) ? f.skillIds.filter((s): s is string => typeof s === 'string').slice(0, 50) : [],
+        ...(typeof f.stage === 'string' && f.stage ? { stage: f.stage.slice(0, 100) } : {}),
+        ...(typeof f.commitment === 'string' && f.commitment ? { commitment: f.commitment.slice(0, 100) } : {}),
+        ...(Array.isArray(f.lookingFor) && f.lookingFor.length
+          ? { lookingFor: f.lookingFor.filter((s): s is string => typeof s === 'string').slice(0, 10) }
+          : {}),
       },
     };
   } catch {

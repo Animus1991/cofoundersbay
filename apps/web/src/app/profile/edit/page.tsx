@@ -64,6 +64,7 @@ import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { COMMITMENT_LEVELS, LOOKING_FOR_OPTIONS, STARTUP_STAGES } from '@/lib/founder-options';
 
 type Role = 'founder' | 'mentor' | 'investor' | 'org';
 
@@ -159,27 +160,10 @@ const roleOptions: { value: Role; label: string; labelEl: string; icon: React.El
   { value: 'org', label: 'Organization', labelEl: 'Οργανισμός', icon: Building2, description: 'Accelerator, incubator, or hub', descriptionEl: 'Επιταχυντής, θερμοκοιτίδα ή κόμβος' },
 ];
 
-const startupStages = [
-  { value: 'idea', label: 'Idea', labelEl: 'Ιδέα' },
-  { value: 'mvp', label: 'MVP', labelEl: 'MVP' },
-  { value: 'traction', label: 'Traction', labelEl: 'Traction' },
-  { value: 'scaling', label: 'Scaling', labelEl: 'Κλιμάκωση' },
-];
-const commitmentLevels = [
-  { value: 'full-time', label: 'Full-time', labelEl: 'Πλήρης απασχόληση', hint: 'This is your main work.', hintEl: 'Είναι η κύρια δουλειά σας.' },
-  { value: 'part-time', label: 'Part-time', labelEl: 'Μερική απασχόληση', hint: 'Alongside a job or studies.', hintEl: 'Παράλληλα με δουλειά ή σπουδές.' },
-  { value: 'weekends', label: 'Weekends only', labelEl: 'Μόνο Σαββατοκύριακα', hint: 'Weekends only, for now.', hintEl: 'Μόνο Σαββατοκύριακα, προς το παρόν.' },
-  { value: 'flexible', label: 'Flexible', labelEl: 'Ευέλικτα', hint: 'It varies from week to week.', hintEl: 'Αλλάζει από εβδομάδα σε εβδομάδα.' },
-];
-const lookingForOptions = [
-  { value: 'Co-founder', label: 'Co-founder', labelEl: 'Συνιδρυτής' },
-  { value: 'CTO', label: 'CTO', labelEl: 'CTO' },
-  { value: 'Designer', label: 'Designer', labelEl: 'Σχεδιαστής' },
-  { value: 'Marketing', label: 'Marketing', labelEl: 'Μάρκετινγκ' },
-  { value: 'Sales', label: 'Sales', labelEl: 'Πωλήσεις' },
-  { value: 'Operations', label: 'Operations', labelEl: 'Λειτουργίες' },
-  { value: 'Other', label: 'Other', labelEl: 'Άλλο' },
-];
+// The same lists sign-up asks from (lib/founder-options), so the two agree.
+const startupStages = STARTUP_STAGES;
+const commitmentLevels = COMMITMENT_LEVELS;
+const lookingForOptions = LOOKING_FOR_OPTIONS;
 const industryOptions = ['AI/ML', 'Fintech', 'Healthtech', 'E-commerce', 'SaaS', 'Marketplace', 'Gaming', 'Education', 'Climate', 'Web3', 'Hardware', 'Consumer', 'Enterprise', 'Other'];
 const industryEl: Record<string, string> = {
   'E-commerce': 'Ηλεκτρονικό εμπόριο',

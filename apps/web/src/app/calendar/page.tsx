@@ -19,6 +19,7 @@ import {
   Filter,
   LayoutGrid,
   List,
+  CalendarRange,
   CalendarDays,
   Sparkles,
   MessageCircle,
@@ -252,6 +253,91 @@ function formatUpcomingDate(iso: string, lang: 'en' | 'el'): string {
   return `${dt.getUTCDate()} ${MONTH_SHORT[lang][dt.getUTCMonth()]}`;
 }
 
+// ── Week ─────────────────────────────────────────────────────────────────────
+
+/** The seven UTC days of the week that holds `anchor`, Sunday first like the month grid. */
+function weekDays(anchor: Date): Date[] {
+  const start = new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), anchor.getUTCDate() - anchor.getUTCDay()));
+  return Array.from({ length: 7 }, (_, i) => new Date(start.getTime() + i * 86_400_000));
+}
+
+/**
+ * The week at a glance: one column per day with that day's entries, each in
+ * its kind's colour, as the AI Studio prototype's week view. Below `md` the
+ * days stack. An entry with a page opens it.
+ */
+function WeekView({
+  events,
+  anchor,
+  onAnchor,
+  lang,
+}: {
+  events: CalendarEvent[];
+  anchor: Date;
+  onAnchor: (d: Date) => void;
+  lang: 'en' | 'el';
+}) {
+  const days = weekDays(anchor);
+  const first = days[0];
+  const last = days[6];
+  const today = new Date();
+  const monthName = (d: Date) => (lang === 'el' ? MONTHS[d.getUTCMonth()].el : MONTHS[d.getUTCMonth()].en);
+  const range = first.getUTCMonth() === last.getUTCMonth()
+    ? `${first.getUTCDate()}–${last.getUTCDate()} ${monthName(last)} ${last.getUTCFullYear()}`
+    : `${first.getUTCDate()} ${MONTH_SHORT[lang][first.getUTCMonth()]} – ${last.getUTCDate()} ${MONTH_SHORT[lang][last.getUTCMonth()]} ${last.getUTCFullYear()}`;
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-2">
+          <Button variant="ghost" size="icon" onClick={() => onAnchor(new Date(anchor.getTime() - 7 * 86_400_000))} aria-label={bilingualAria('Previous week', 'Προηγούμενη εβδομάδα')}>
+            <ChevronLeft className="icon-sm" />
+          </Button>
+          <span className="text-sm font-semibold tabular-nums">{range}</span>
+          <Button variant="ghost" size="icon" onClick={() => onAnchor(new Date(anchor.getTime() + 7 * 86_400_000))} aria-label={bilingualAria('Next week', 'Επόμενη εβδομάδα')}>
+            <ChevronRight className="icon-sm" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <ol className="grid grid-cols-1 gap-2 md:grid-cols-7">
+          {days.map((day) => {
+            const items = events.filter((e) => isSameDay(new Date(e.date), day));
+            const isToday = isSameDay(day, today);
+            return (
+              <li key={day.toISOString()} className={cn('min-w-0 rounded-lg border border-border p-2 md:min-h-40', isToday && 'border-primary/40 bg-primary-subtle')}>
+                <p className={cn('mb-1.5 text-xs text-muted-foreground', isToday && 'font-semibold text-foreground')}>
+                  <BilingualText en={DAYS[day.getUTCDay()].en} el={DAYS[day.getUTCDay()].el} compact secondaryClassName="hidden" />{' '}
+                  <span className="tabular-nums">{day.getUTCDate()}</span>
+                </p>
+                {items.length ? (
+                  <ul className="space-y-1">
+                    {items.map((e) => {
+                      const cfg = TYPE_CONFIG[e.type];
+                      const body = (
+                        <>
+                          {e.time ? <span className="mr-1 tabular-nums">{e.time}</span> : null}
+                          <BilingualText en={e.title} el={e.titleEl} compact />
+                        </>
+                      );
+                      return (
+                        <li key={e.id} className={cn('truncate rounded border px-1.5 py-1 text-xs', cfg.bg, cfg.color)} title={lang === 'el' && e.titleEl ? e.titleEl : e.title}>
+                          {e.href ? <Link href={e.href} className="block truncate hover:underline">{body}</Link> : body}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-muted-foreground/60" aria-hidden="true">—</p>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ── Components ───────────────────────────────────────────────────────────────
 
 /**
@@ -411,7 +497,7 @@ export default function CalendarPage() {
   const [currentYear, setCurrentYear] = useState(now.getUTCFullYear());
   const [selectedDate, setSelectedDate] = useState(now);
   const [typeFilter, setTypeFilter] = useState<EventType | 'all'>('all');
-  const [view, setView] = useState<'calendar' | 'list'>('calendar');
+  const [view, setView] = useState<'calendar' | 'week' | 'list'>('calendar');
 
   const prevMonth = () => {
     if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear((y) => y - 1); }
@@ -600,6 +686,9 @@ export default function CalendarPage() {
             <Button variant={view === 'calendar' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8 rounded-r-none" onClick={() => setView('calendar')} aria-label={bilingualAria('Calendar view', 'Προβολή ημερολογίου')}>
               <LayoutGrid className="icon-sm" />
             </Button>
+            <Button variant={view === 'week' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8 rounded-none" onClick={() => setView('week')} aria-label={bilingualAria('Week view', 'Προβολή εβδομάδας')} aria-pressed={view === 'week'}>
+              <CalendarRange className="icon-sm" />
+            </Button>
             <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8 rounded-l-none" onClick={() => setView('list')} aria-label={bilingualAria('List view', 'Προβολή λίστας')}>
               <List className="icon-sm" />
             </Button>
@@ -718,6 +807,10 @@ export default function CalendarPage() {
               </Card>
             </div>
           </div>
+        ) : view === 'week' ? (
+          hydrated ? (
+            <WeekView events={filteredEvents} anchor={selectedDate} onAnchor={setSelectedDate} lang={primary} />
+          ) : null
         ) : (
           /* List view */
           <div className="space-y-3">

@@ -16,6 +16,7 @@ import { Logo } from '@/components/brand/Logo';
 import { bilingualInline } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { COMMITMENT_LEVELS, LOOKING_FOR_OPTIONS, STARTUP_STAGES, founderGoalsPayload } from '@/lib/founder-options';
 
 type Role = 'founder' | 'mentor' | 'investor' | 'org';
 
@@ -33,13 +34,21 @@ type Step =
   | 'headline'
   | 'location'
   | 'bio'
+  | 'goals'
   | 'skills'
   | 'submitting'
   | 'done';
 
-/** The six answers a founder gives, in order — the stepper and the "why" hint read from here. */
-type InputStep = 'name' | 'role' | 'headline' | 'location' | 'bio' | 'skills';
+/** The answers, in order — the stepper and the "why" hint read from here. */
+type InputStep = 'name' | 'role' | 'headline' | 'location' | 'bio' | 'goals' | 'skills';
 const INPUT_STEPS: InputStep[] = ['name', 'role', 'headline', 'location', 'bio', 'skills'];
+/**
+ * A founder answers one more: the match fields (stage, commitment, who they
+ * look for), before skills so skills stay the last step. Matching reads
+ * them; sign-up never asked, so a new founder was matched on defaults.
+ */
+const FOUNDER_STEPS: InputStep[] = ['name', 'role', 'headline', 'location', 'bio', 'goals', 'skills'];
+const stepsFor = (role: Role | null): InputStep[] => (role === 'founder' ? FOUNDER_STEPS : INPUT_STEPS);
 
 const STEP_META: Record<InputStep, { labelEn: string; labelEl: string; whyEn: string; whyEl: string }> = {
   name: {
@@ -67,6 +76,11 @@ const STEP_META: Record<InputStep, { labelEn: string; labelEl: string; whyEn: st
     whyEn: 'Gives the AI assistant and your matches context: what you are working on and what help you need. You can edit it any time.',
     whyEl: 'Δίνει στον βοηθό AI και στις αντιστοιχίσεις σας πλαίσιο: πάνω σε τι δουλεύετε και τι βοήθεια χρειάζεστε. Μπορείτε να το αλλάξετε οποτεδήποτε.',
   },
+  goals: {
+    labelEn: 'Goals', labelEl: 'Στόχοι',
+    whyEn: 'Match scores read these: people at your stage, who give the time you give, in the role you need, come first. Skip any you have not decided.',
+    whyEl: 'Η βαθμολογία αντιστοίχισης τα διαβάζει: πρώτα εμφανίζονται όσοι είναι στο στάδιό σας, δίνουν τον χρόνο που δίνετε και καλύπτουν τον ρόλο που χρειάζεστε. Παραλείψτε όποιο δεν έχετε αποφασίσει.',
+  },
   skills: {
     labelEn: 'Skills', labelEl: 'Δεξιότητες',
     whyEn: 'Skill overlap and complementarity are the largest part of your match score. Pick the ones you would actually bring to a team.',
@@ -83,14 +97,18 @@ const ROLE_OPTIONS: { value: Role; label: string; labelEl: string; desc: string;
 
 const BOT_QUESTIONS: Record<Step, { en: string; el: string }> = {
   welcome: {
-    en: "Welcome to CoFounderBay! I'll help you set up your profile in six quick steps — about three minutes. Every answer shapes who you get matched with.",
-    el: 'Καλώς ήρθατε στο CoFounderBay! Θα σας βοηθήσω να φτιάξετε το προφίλ σας σε έξι γρήγορα βήματα — περίπου τρία λεπτά. Κάθε απάντηση διαμορφώνει με ποιους θα αντιστοιχιστείτε.',
+    en: "Welcome to CoFounderBay! I'll help you set up your profile in a few quick steps — about three minutes. Every answer shapes who you get matched with.",
+    el: 'Καλώς ήρθατε στο CoFounderBay! Θα σας βοηθήσω να φτιάξετε το προφίλ σας σε λίγα γρήγορα βήματα — περίπου τρία λεπτά. Κάθε απάντηση διαμορφώνει με ποιους θα αντιστοιχιστείτε.',
   },
   name: { en: "Let's start! What should we call you?", el: 'Ας ξεκινήσουμε! Πώς να σας λέμε;' },
   role: { en: 'Nice to meet you! What best describes your role?', el: 'Χαίρω πολύ! Τι περιγράφει καλύτερα τον ρόλο σας;' },
   headline: { en: 'Perfect. What\'s your professional headline? (e.g. "Founder @ Stealth | Building AI tools")', el: 'Τέλεια. Ποιος είναι ο επαγγελματικός σας τίτλος; (π.χ. «Founder @ Stealth | Φτιάχνω εργαλεία AI»)' },
   location: { en: 'Where are you based? You can skip this.', el: 'Πού βρίσκεστε; Μπορείτε να το παραλείψετε.' },
   bio: { en: "Tell us a bit about yourself — what you're working on and what you're looking for.", el: 'Πείτε μας λίγα λόγια — πάνω σε τι δουλεύετε και τι ψάχνετε.' },
+  goals: {
+    en: 'Where is your startup, how much time do you give it, and who are you looking for? These decide who you see in Matches.',
+    el: 'Σε ποιο στάδιο είναι το startup σας, πόσο χρόνο του δίνετε, και ποιον ψάχνετε; Αυτά καθορίζουν ποιους βλέπετε στις Αντιστοιχίσεις.',
+  },
   skills: { en: 'Last step: what are your key skills? Select all that apply.', el: 'Τελευταίο βήμα: ποιες είναι οι βασικές σας δεξιότητες; Επιλέξτε όσες ισχύουν.' },
   submitting: { en: 'Creating your profile…', el: 'Δημιουργία του προφίλ σας…' },
   done: {
@@ -149,6 +167,7 @@ export function ConversationalOnboarding() {
   const [inputValue, setInputValue] = useState('');
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [goals, setGoals] = useState<{ stage: string; commitment: string; lookingFor: string[] }>({ stage: '', commitment: '', lookingFor: [] });
   const [skills, setSkills] = useState<Skill[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -156,13 +175,23 @@ export function ConversationalOnboarding() {
   // at the moment the bubble is created, so earlier bubbles never re-flow.
   const say = useCallback((q: { en: string; el: string }) => (primary === 'el' ? q.el : q.en), [primary]);
 
-  const form = useRef({
+  const form = useRef<{
+    displayName: string;
+    headline: string;
+    location: string;
+    bio: string;
+    role: Role;
+    skillIds: string[];
+    stage?: string;
+    commitment?: string;
+    lookingFor?: string[];
+  }>({
     displayName: '',
     headline: '',
     location: '',
     bio: '',
-    role: 'founder' as Role,
-    skillIds: [] as string[],
+    role: 'founder',
+    skillIds: [],
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -201,6 +230,8 @@ export function ConversationalOnboarding() {
     if (saved && saved.step !== 'name') {
       form.current = { ...saved.form };
       setSelectedSkills(saved.form.skillIds);
+      const { stage = '', commitment = '', lookingFor = [] } = saved.form;
+      setGoals({ stage, commitment, lookingFor });
       const roleOption = ROLE_OPTIONS.find((r) => r.value === saved.form.role);
       if (stepsBefore(saved.step).includes('role')) setSelectedRole(saved.form.role);
       const answer = (id: InputStep): string => {
@@ -210,12 +241,13 @@ export function ConversationalOnboarding() {
         if (id === 'headline') return f.headline;
         if (id === 'location') return f.location || say({ en: 'Not specified', el: 'Δεν προσδιορίστηκε' });
         if (id === 'bio') return f.bio ? (f.bio.length > 60 ? f.bio.slice(0, 57) + '...' : f.bio) : say({ en: 'Skipped', el: 'Παραλείφθηκε' });
+        if (id === 'goals') return goalsSummary(f);
         return '';
       };
       const now = new Date();
       setMessages([
         { id: crypto.randomUUID(), from: 'bot', content: say(BOT_QUESTIONS.welcome), timestamp: now },
-        ...stepsBefore(saved.step).flatMap((id) => [
+        ...stepsBefore(saved.step).filter((id) => id !== 'goals' || saved.form.role === 'founder').flatMap((id) => [
           { id: crypto.randomUUID(), from: 'bot' as const, content: say(BOT_QUESTIONS[id]), timestamp: now },
           { id: crypto.randomUUID(), from: 'user' as const, content: answer(id), timestamp: now },
         ]),
@@ -233,6 +265,20 @@ export function ConversationalOnboarding() {
     listSkills().then(setSkills).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /** "Idea · Part-time · Co-founder, CTO" in the reader's language, or "Skipped". */
+  function goalsSummary(g: { stage?: string; commitment?: string; lookingFor?: string[] }): string {
+    const pick = (list: { value: string; label: string; labelEl: string }[], v?: string) => {
+      const o = list.find((x) => x.value === v);
+      return o ? say({ en: o.label, el: o.labelEl }) : null;
+    };
+    const parts = [
+      pick(STARTUP_STAGES, g.stage),
+      pick(COMMITMENT_LEVELS, g.commitment),
+      (g.lookingFor ?? []).map((v) => pick(LOOKING_FOR_OPTIONS, v) ?? v).join(', ') || null,
+    ].filter(Boolean);
+    return parts.length ? parts.join(' · ') : say({ en: 'Skipped', el: 'Παραλείφθηκε' });
+  }
 
   const advanceTo = useCallback(async (nextStep: Step, userMsg?: string) => {
     if (userMsg) addUserMessage(userMsg);
@@ -274,8 +320,18 @@ export function ConversationalOnboarding() {
   const handleSubmitBio = useCallback(async () => {
     const bio = inputValue.trim();
     form.current.bio = bio;
-    await advanceTo('skills', bio.length > 60 ? bio.slice(0, 57) + '...' : bio || say({ en: 'Skipped', el: 'Παραλείφθηκε' }));
+    await advanceTo(form.current.role === 'founder' ? 'goals' : 'skills', bio.length > 60 ? bio.slice(0, 57) + '...' : bio || say({ en: 'Skipped', el: 'Παραλείφθηκε' }));
   }, [inputValue, advanceTo, say]);
+
+  const handleSubmitGoals = useCallback(async (skip = false) => {
+    const answer = skip ? { stage: '', commitment: '', lookingFor: [] } : goals;
+    form.current.stage = answer.stage || undefined;
+    form.current.commitment = answer.commitment || undefined;
+    form.current.lookingFor = answer.lookingFor.length ? answer.lookingFor : undefined;
+    if (skip) setGoals(answer);
+    await advanceTo('skills', goalsSummary(answer));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goals, advanceTo]);
 
   const handleToggleSkill = useCallback((skillId: string, skillName: string) => {
     setSelectedSkills((prev) =>
@@ -305,6 +361,9 @@ export function ConversationalOnboarding() {
         location: form.current?.location || undefined,
         role: form.current.role,
         skillIds: form.current.skillIds.length ? form.current.skillIds : undefined,
+        rolePayload: form.current.role === 'founder'
+          ? founderGoalsPayload({ stage: form.current.stage, commitment: form.current.commitment, lookingFor: form.current.lookingFor })
+          : undefined,
       });
       clearOnboardingProgress(readStoredUser()?.id);
       await addBotMessage(say(BOT_QUESTIONS.done), 500);
@@ -328,11 +387,12 @@ export function ConversationalOnboarding() {
     }
   };
 
-  const stepIndex = INPUT_STEPS.indexOf(step as InputStep);
+  const steps = stepsFor(selectedRole);
+  const stepIndex = steps.indexOf(step as InputStep);
   const isInputStep = stepIndex >= 0;
-  const completedCount = step === 'submitting' || step === 'done' ? INPUT_STEPS.length : Math.max(stepIndex, 0);
-  const progress = (completedCount / INPUT_STEPS.length) * 100;
-  const meta = isInputStep ? STEP_META[INPUT_STEPS[stepIndex]] : null;
+  const completedCount = step === 'submitting' || step === 'done' ? steps.length : Math.max(stepIndex, 0);
+  const progress = (completedCount / steps.length) * 100;
+  const meta = isInputStep ? STEP_META[steps[stepIndex]] : null;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -349,8 +409,8 @@ export function ConversationalOnboarding() {
                 <BilingualText en="Done" el="Ολοκληρώθηκε" compact />
               ) : (
                 <BilingualText
-                  en={`Step ${Math.min(completedCount + 1, INPUT_STEPS.length)} of ${INPUT_STEPS.length}`}
-                  el={`Βήμα ${Math.min(completedCount + 1, INPUT_STEPS.length)} από ${INPUT_STEPS.length}`}
+                  en={`Step ${Math.min(completedCount + 1, steps.length)} of ${steps.length}`}
+                  el={`Βήμα ${Math.min(completedCount + 1, steps.length)} από ${steps.length}`}
                   compact
                 />
               )}
@@ -361,8 +421,8 @@ export function ConversationalOnboarding() {
             className="h-1.5"
             aria-label={bilingualInline('Profile setup progress', 'Πρόοδος ρύθμισης προφίλ')}
           />
-          <ol className="grid grid-cols-6 gap-1" aria-label={bilingualInline('Setup steps', 'Βήματα ρύθμισης')}>
-            {INPUT_STEPS.map((s, i) => {
+          <ol className={steps.length === 7 ? 'grid grid-cols-7 gap-1' : 'grid grid-cols-6 gap-1'} aria-label={bilingualInline('Setup steps', 'Βήματα ρύθμισης')}>
+            {steps.map((s, i) => {
               const state = i < completedCount ? 'done' : i === completedCount && step !== 'done' ? 'current' : 'todo';
               return (
                 <li
@@ -555,6 +615,82 @@ export function ConversationalOnboarding() {
                   <BilingualText en="Skip for now" el="Παράλειψη για τώρα" compact />
                 </button>
                 <Button onClick={() => void handleSubmitBio()} className="gap-2" data-testid="onboarding-continue-button">
+                  <ArrowRight className="icon-sm" />
+                  <BilingualText en="Continue" el="Συνέχεια" compact />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* A founder's match fields: one stage, one commitment, any roles. */}
+          {step === 'goals' && !showTyping && (
+            <div className="space-y-3" data-testid="onboarding-goals">
+              {([
+                { key: 'stage', en: 'Stage', el: 'Στάδιο', options: STARTUP_STAGES },
+                { key: 'commitment', en: 'Time you give it', el: 'Χρόνος που του δίνετε', options: COMMITMENT_LEVELS },
+              ] as const).map((group) => (
+                <div key={group.key} className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground" id={`ob-${group.key}`}>
+                    <BilingualText en={group.en} el={group.el} compact />
+                  </p>
+                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby={`ob-${group.key}`}>
+                    {group.options.map((o) => {
+                      const on = goals[group.key] === o.value;
+                      return (
+                        <button
+                          key={o.value}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          onClick={() => setGoals((g) => ({ ...g, [group.key]: on ? '' : o.value }))}
+                          className={cn(
+                            'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                            on ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border text-muted-foreground hover:border-primary/50',
+                          )}
+                        >
+                          {on && <Check className="inline icon-sm mr-1" />}
+                          <BilingualText en={o.label} el={o.labelEl} compact />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground" id="ob-looking-for">
+                  <BilingualText en="Looking for" el="Ψάχνω για" compact />
+                </p>
+                <div className="flex flex-wrap gap-2" role="group" aria-labelledby="ob-looking-for">
+                  {LOOKING_FOR_OPTIONS.map((o) => {
+                    const on = goals.lookingFor.includes(o.value);
+                    return (
+                      <button
+                        key={o.value}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => setGoals((g) => ({ ...g, lookingFor: on ? g.lookingFor.filter((v) => v !== o.value) : [...g.lookingFor, o.value] }))}
+                        className={cn(
+                          'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                          on ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border text-muted-foreground hover:border-primary/50',
+                        )}
+                      >
+                        {on && <Check className="inline icon-sm mr-1" />}
+                        <BilingualText en={o.label} el={o.labelEl} compact />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                  data-testid="onboarding-skip-goals"
+                  onClick={() => void handleSubmitGoals(true)}
+                >
+                  <BilingualText en="Skip for now" el="Παράλειψη για τώρα" compact />
+                </button>
+                <Button onClick={() => void handleSubmitGoals()} className="gap-2" data-testid="onboarding-goals-continue">
                   <ArrowRight className="icon-sm" />
                   <BilingualText en="Continue" el="Συνέχεια" compact />
                 </Button>

@@ -10,6 +10,8 @@ export const profileVisibilitySchema = z.object({
   // Read by search, matching, the scout and the profile read (shared/visibility).
   search: z.enum(['visible', 'hidden']).optional(),
   profile: z.enum(['public', 'members']).optional(),
+  // Who may start a new conversation (shared/visibility messagePolicy).
+  messages: z.enum(['anyone', 'connections', 'nobody']).optional(),
 });
 
 // Role-specific payloads (flexible for search/filters later)
