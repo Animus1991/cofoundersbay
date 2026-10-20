@@ -18,9 +18,14 @@ import {
   usePageRail,
 } from './PageRailContext';
 
-/** Phone size of the thread's tools icon: the ghost h-9 floor. */
-const PHONE_TOOLS_HEIGHT = 28.939;
-const PHONE_TOOLS_WIDTH = 30.458;
+/** Phone size of the thread's tools icon: the ghost h-9 floor, times --button-y. */
+const PHONE_TOOLS_HEIGHT_BASE = 28.939;
+const PHONE_TOOLS_WIDTH_BASE = 30.458;
+
+function buttonY(): number {
+  if (typeof document === 'undefined') return 1;
+  return Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--button-y')) || 1;
+}
 
 /**
  * The thread icon is centered on the avatar row, 10px under the phone top
@@ -30,7 +35,7 @@ function phoneToolsPreferredTop(): number {
   const chromeY = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chrome-y')) || 0.99;
   const bar = document.querySelector('header.sticky');
   const barBottom = bar?.getBoundingClientRect().bottom ?? 3 * 16 * chromeY;
-  return barBottom + 10 + (2.5 * 16 * chromeY - PHONE_TOOLS_HEIGHT) / 2;
+  return barBottom + 10 + (2.5 * 16 * chromeY - PHONE_TOOLS_HEIGHT_BASE * buttonY()) / 2;
 }
 
 /** Viewport top the element has when the page is scrolled to the start. */
@@ -85,15 +90,16 @@ function placePhoneTools(button: HTMLButtonElement) {
     return;
   }
   const preferred = phoneToolsPreferredTop();
-  const left = window.innerWidth - 12 - PHONE_TOOLS_WIDTH;
+  const toolsHeight = PHONE_TOOLS_HEIGHT_BASE * buttonY();
+  const left = window.innerWidth - 12 - PHONE_TOOLS_WIDTH_BASE * buttonY();
   const obstacles = toolsColumnObstacles(left - 4, window.innerWidth - 12 + 4);
   const bar = document.querySelector('header.sticky');
   const minTop = (bar?.getBoundingClientRect().bottom ?? 0) + 2;
-  const maxTop = window.innerHeight - 80 - PHONE_TOOLS_HEIGHT;
+  const maxTop = window.innerHeight - 80 - toolsHeight;
   const gap = 4;
   const blocked = (top: number) => {
     const a = top - gap;
-    const b = top + PHONE_TOOLS_HEIGHT + gap;
+    const b = top + toolsHeight + gap;
     return obstacles.some((o) => o.bottom > a && o.top < b);
   };
   let chosen = preferred;

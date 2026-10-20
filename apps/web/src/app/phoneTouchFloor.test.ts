@@ -13,7 +13,8 @@ describe('phone touch floor', () => {
     expect(media).toContain('max-width: 639.98px');
     expect(media).not.toContain('min-width');
     const rule = css.slice(start, css.indexOf('.tap-target-y', start));
-    expect(rule).toContain('min-height: 30.458px');
+    // The phone ladder, 5% shorter since 2026-10-21 (--button-y, docs §64).
+    expect(rule).toContain('min-height: calc(30.458px * var(--button-y))');
     expect(rule).toContain('.h-7');
     expect(rule).toContain('.h-8');
     expect(rule).toContain('.h-9');

@@ -49,7 +49,8 @@ const buttonVariants = cva(
        * made the controls feel cramped.
        *
        * The height is 2% under the Help topic pill: 30.458px below 640px
-       * and 32.997px from there up. On a phone, a purple primary and a
+       * and 32.997px from there up, times --button-y (0.95 since
+       * 2026-10-21; 1 in the sidebar), so 28.935px and 31.347px. On a phone, a purple primary and a
        * transparent outline or ghost are another 5% under the pill, then
        * the same 2% (28.939px). xs stays the shorter mark. A call site that passes a
        * stacked label still grows with it.
@@ -64,13 +65,13 @@ const buttonVariants = cva(
        */
       size: {
         xs:   'h-7 min-h-7 px-2.5 text-xs lg:h-auto lg:min-h-[calc(28px*var(--chrome-y))] lg:px-[10px]',
-        sm:   'h-auto min-h-[30.458px] px-3 text-xs sm:min-h-[32.997px] lg:px-[12px]',
-        md:   'h-auto min-h-[30.458px] px-4 sm:min-h-[32.997px] lg:px-[16px]',
-        lg:   'h-auto min-h-[30.458px] px-6 text-base sm:min-h-[32.997px] lg:px-[24px]',
-        xl:   'h-auto min-h-[30.458px] px-8 text-base sm:min-h-[32.997px] lg:px-[32px]',
+        sm:   'h-auto min-h-[calc(30.458px*var(--button-y))] px-3 text-xs sm:min-h-[calc(32.997px*var(--button-y))] lg:px-[12px]',
+        md:   'h-auto min-h-[calc(30.458px*var(--button-y))] px-4 sm:min-h-[calc(32.997px*var(--button-y))] lg:px-[16px]',
+        lg:   'h-auto min-h-[calc(30.458px*var(--button-y))] px-6 text-base sm:min-h-[calc(32.997px*var(--button-y))] lg:px-[24px]',
+        xl:   'h-auto min-h-[calc(30.458px*var(--button-y))] px-8 text-base sm:min-h-[calc(32.997px*var(--button-y))] lg:px-[32px]',
         // An icon button has no text to outgrow its box, so it stays a fixed
         // square — the same height as the other buttons.
-        icon: 'h-[30.458px] w-[30.458px] min-h-[30.458px] min-w-[30.458px] sm:h-[32.997px] sm:w-[32.997px] sm:min-h-[32.997px] sm:min-w-[32.997px]',
+        icon: 'h-[calc(30.458px*var(--button-y))] w-[calc(30.458px*var(--button-y))] min-h-[calc(30.458px*var(--button-y))] min-w-[calc(30.458px*var(--button-y))] sm:h-[calc(32.997px*var(--button-y))] sm:w-[calc(32.997px*var(--button-y))] sm:min-h-[calc(32.997px*var(--button-y))] sm:min-w-[calc(32.997px*var(--button-y))]',
       },
     },
     defaultVariants: {

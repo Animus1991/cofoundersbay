@@ -25,6 +25,13 @@ html {
   --page-rail-width: 18.5rem;
   /* −1% component height. font-size / line-height never read this. */
   --chrome-y: 0.99;
+  /* Buttons 5% shorter (owner, 2026-10-21, docs §64): every button height
+     in the ladder below and in components/ui/button.tsx is multiplied by
+     this. The sidebar, the phone drawer and the tab bar set it back to 1.
+     Buttons under 28px are not on the ladder and keep their height: their
+     label already has 6px or less of clear space, and 24px is the
+     WCAG 2.5.8 floor. Type never reads it. */
+  --button-y: 0.95;
   /* Product chrome cluster (AI-converged). Locked founder dash pages
      keep the hold/kicker ladder and do not read these. */
   --type-caption: 12.61px;
@@ -1873,14 +1880,14 @@ html {
        inside it, so it shortens with this height. */
     :is(button, a, [role='tab'], [role='button']):is(.h-7, .h-8, .h-9, .h-10, .h-11, .h-12, .min-h-7, .min-h-8, .min-h-9, .min-h-10, .min-h-11, .min-h-12, .min-h-\[44px\]) {
       height: auto;
-      min-height: 30.458px;
+      min-height: calc(30.458px * var(--button-y));
     }
     :is(button, a, [role='button']):is(.w-7, .w-8, .w-9, .w-10, .w-11, .min-w-\[44px\]),
     :is(button, a, [role='button']).h-10.w-10,
     :is(button, a, [role='button']).h-11.w-11,
     :is(button, a, [role='button']).h-12.w-12 {
-      width: 30.458px;
-      min-width: 30.458px;
+      width: calc(30.458px * var(--button-y));
+      min-width: calc(30.458px * var(--button-y));
     }
 
     /* Purple primary and transparent outline/ghost buttons are 5% under
@@ -1890,36 +1897,41 @@ html {
        into Tailwind. */
     :is(button, a):is([class~='bg-primary'], [class~='bg-transparent']):not(.min-h-14):not(.min-h-16) {
       height: auto;
-      min-height: 28.939px;
+      min-height: calc(28.939px * var(--button-y));
     }
     :is(button, a)[class~='h-[30.458px]'][class~='w-[30.458px]']:is([class~='bg-primary'], [class~='bg-transparent']),
     :is(button, a).h-10.w-10:is([class~='bg-primary'], [class~='bg-transparent']),
     :is(button, a).h-11.w-11:is([class~='bg-primary'], [class~='bg-transparent']),
     :is(button, a).h-12.w-12:is([class~='bg-primary'], [class~='bg-transparent']) {
-      width: 28.939px;
-      min-width: 28.939px;
-      height: 28.939px;
-      min-height: 28.939px;
+      width: calc(28.939px * var(--button-y));
+      min-width: calc(28.939px * var(--button-y));
+      height: calc(28.939px * var(--button-y));
+      min-height: calc(28.939px * var(--button-y));
     }
 
     /* What a fingertip still missed at 390px (measured on 15 pages, 60
        targets): text buttons and links in rows that declare themselves
        targets (`tap-target-y`, 24px), native selects (32px), and switches
        (26px). A switch keeps its slim track; the area around it answers. */
-    .tap-target-y,
+    /* Rows that declare themselves targets are 5% shorter like every
+       button (41.8px, far above the 24px floor); a native select is a
+       field and stays 44px. */
+    .tap-target-y {
+      min-height: calc(44px * var(--button-y));
+    }
     select {
       min-height: 44px;
     }
     .tap-target-phone {
-      min-height: 30.458px;
-      min-width: 30.458px;
+      min-height: calc(30.458px * var(--button-y));
+      min-width: calc(30.458px * var(--button-y));
     }
     /* py-1.5 pills measure 31.08px from 6px of padding. 0.311px off each
        side is the 2% cut. Attribute selector, so it is not folded into
        the py-1.5 utility. */
     :is(button, a, [role='button'], [role='tab'])[class~='py-1.5'] {
-      padding-top: 5.689px;
-      padding-bottom: 5.689px;
+      padding-top: calc(5.689px - (1 - var(--button-y)) * 15.229px);
+      padding-bottom: calc(5.689px - (1 - var(--button-y)) * 15.229px);
     }
     /* The Ask AI bar follows the button inside it (the topic-pill height). */
     [data-ask-ai] {
@@ -2514,8 +2526,8 @@ html {
    cut is 0.311px, in the phone block above. */
 @media (min-width: 1024px) {
   :is(button, a, [role='button'], [role='tab'])[class~='py-1.5'] {
-    padding-top: calc(6px * var(--chrome-y) - 0.337px);
-    padding-bottom: calc(6px * var(--chrome-y) - 0.337px);
+    padding-top: calc(6px * var(--chrome-y) - 0.337px - (1 - var(--button-y)) * 16.499px);
+    padding-bottom: calc(6px * var(--chrome-y) - 0.337px - (1 - var(--button-y)) * 16.499px);
   }
 }
 
@@ -2526,15 +2538,15 @@ html {
 @media (min-width: 640px) {
   :is(button, a, [role='button']):is(.h-9, .h-10, .h-11, .h-12, .min-h-9, .min-h-10, .min-h-11, .min-h-12, .md\:h-9, .md\:h-10, .md\:min-h-9, .md\:min-h-10):not(.h-auto):not(.min-h-14):not(.min-h-16) {
     height: auto;
-    min-height: 32.997px;
+    min-height: calc(32.997px * var(--button-y));
   }
   :is(button, a, [role='button']).h-10.w-10,
   :is(button, a, [role='button']).h-11.w-11,
   :is(button, a, [role='button']).h-12.w-12 {
-    width: 32.997px;
-    min-width: 32.997px;
-    height: 32.997px;
-    min-height: 32.997px;
+    width: calc(32.997px * var(--button-y));
+    min-width: calc(32.997px * var(--button-y));
+    height: calc(32.997px * var(--button-y));
+    min-height: calc(32.997px * var(--button-y));
   }
 }
 
@@ -2544,7 +2556,7 @@ html {
 }
 [role='tablist'],
 [role='tab'] {
-  min-height: calc(2.75rem * var(--chrome-y));
+  min-height: calc(2.75rem * var(--chrome-y) * var(--button-y));
 }
 
 
@@ -4693,14 +4705,14 @@ input:is(
    writes `top` a little higher or lower. The word stays for the tablet pill. */
 @media (max-width: 639.98px) {
   button[data-page-tools].h-11 {
-    top: calc(3rem * var(--chrome-y) + 10px + (2.5rem * var(--chrome-y) - 28.939px) / 2);
+    top: calc(3rem * var(--chrome-y) + 10px + (2.5rem * var(--chrome-y) - 28.939px * var(--button-y)) / 2);
     right: max(0.75rem, env(safe-area-inset-right, 0px));
     bottom: auto;
     left: auto;
-    width: 30.458px;
-    min-width: 30.458px;
-    height: 28.939px;
-    min-height: 28.939px;
+    width: calc(30.458px * var(--button-y));
+    min-width: calc(30.458px * var(--button-y));
+    height: calc(28.939px * var(--button-y));
+    min-height: calc(28.939px * var(--button-y));
     padding: 0;
     border-radius: 0.75rem;
     border-color: transparent;
@@ -4823,4 +4835,44 @@ html[data-theme="studio"] #main-content [data-meter-slot='2'][role='progressbar'
 html[data-theme="studio"] ::selection {
   background-color: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
+}
+
+/* Buttons, tabs and pills whose height comes from their vertical padding
+   rather than a floor (tabs py-2: 35.6px on a desktop, 33.1px on a phone;
+   chips py-1: 29.7px; pills py-1.5 between 640 and 1023px: 33.8px) lose
+   5% of that height from their padding, half on each side. A link is
+   matched only when it is drawn as a pill or a framed button, so plain
+   list rows keep their padding. */
+@media (max-width: 1023.98px) {
+  :is(button, [role='button'], [role='tab'], a[class~='rounded-full'], a[class~='border'])[class~='py-2'] {
+    padding-top: calc(0.5rem - (1 - var(--button-y)) * 16.5px);
+    padding-bottom: calc(0.5rem - (1 - var(--button-y)) * 16.5px);
+  }
+  :is(button, [role='button'], [role='tab'], a[class~='rounded-full'], a[class~='border'])[class~='py-1'] {
+    padding-top: calc(0.25rem - (1 - var(--button-y)) * 14.5px);
+    padding-bottom: calc(0.25rem - (1 - var(--button-y)) * 14.5px);
+  }
+}
+@media (min-width: 640px) and (max-width: 1023.98px) {
+  :is(button, a, [role='button'], [role='tab'])[class~='py-1.5'] {
+    padding-top: calc(0.375rem - (1 - var(--button-y)) * 16.9px);
+    padding-bottom: calc(0.375rem - (1 - var(--button-y)) * 16.9px);
+  }
+}
+@media (min-width: 1024px) {
+  :is(button, [role='button'], [role='tab'], a[class~='rounded-full'], a[class~='border'])[class~='py-2'] {
+    padding-top: calc(8px * var(--chrome-y) - (1 - var(--button-y)) * 17.8px);
+    padding-bottom: calc(8px * var(--chrome-y) - (1 - var(--button-y)) * 17.8px);
+  }
+  :is(button, [role='button'], [role='tab'], a[class~='rounded-full'], a[class~='border'])[class~='py-1'] {
+    padding-top: calc(4px * var(--chrome-y) - (1 - var(--button-y)) * 14.85px);
+    padding-bottom: calc(4px * var(--chrome-y) - (1 - var(--button-y)) * 14.85px);
+  }
+}
+
+/* Buttons are 5% shorter everywhere but the navigation (owner, 2026-10-21):
+   the sidebar, the phone drawer and the tab bar keep the full ladder. */
+[data-sidenav],
+[data-mobile-tabs] {
+  --button-y: 1;
 }
