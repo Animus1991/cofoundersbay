@@ -930,6 +930,29 @@ export default function SettingsPage() {
 
       {hasToken && (
         <div className="space-y-6 pb-10">
+          {/* Where the rail is a sheet (below lg), the cards' index stands at
+              the top in sight, as the AI Studio prototype's section tabs do on
+              a phone; the page is one long column there. Same ids as the
+              rail's "On this page", so each chip is a jump, not a second
+              control. */}
+          <nav
+            aria-label={bilingualAria('On this page', 'Σε αυτή τη σελίδα')}
+            data-testid="settings-section-index"
+            className="-mx-1 overflow-x-auto px-1 scrollbar-hide lg:hidden"
+          >
+            <ul className="flex w-max gap-1.5 pb-0.5">
+              {PAGE_SECTIONS.map((section) => (
+                <li key={section.id}>
+                  <a
+                    href={`#${section.id}`}
+                    className="tap-target-y inline-flex shrink-0 items-center rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground focus-ring"
+                  >
+                    <BilingualText en={section.en} el={section.el} compact />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
           <LanguageCard />
           <AppearanceCard />
           {/* Short account cards in two explicit columns. A flowing grid would

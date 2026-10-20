@@ -222,7 +222,18 @@ function useIsPreviewDemo(): boolean {
 }
 
 /** The Exit control itself: a link to the register page, explained on hover. */
-function DemoExitButton({ className, iconOnly = false }: { className?: string; iconOnly?: boolean }) {
+function DemoExitButton({
+  className,
+  iconOnly = false,
+  side = 'top',
+  marker,
+}: {
+  className?: string;
+  iconOnly?: boolean;
+  side?: 'top' | 'bottom';
+  /** A data attribute naming where this copy lives, so the floating one can stand aside. */
+  marker?: string;
+}) {
   const noticeId = useId();
   return (
     <>
@@ -234,6 +245,7 @@ function DemoExitButton({ className, iconOnly = false }: { className?: string; i
           <TooltipTrigger asChild>
             <Button asChild size="sm" variant="outline" className={className}>
               <Link
+                {...(marker ? { [marker]: '' } : {})}
                 href="/register"
                 aria-describedby={noticeId}
                 aria-label={iconOnly ? bilingualAria('Exit the demo', 'Έξοδος από την επίδειξη') : undefined}
@@ -246,7 +258,7 @@ function DemoExitButton({ className, iconOnly = false }: { className?: string; i
               </Link>
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="top" align="start" className="max-w-sm text-xs">
+          <TooltipContent side={side} align={side === 'top' ? 'start' : 'end'} className="max-w-sm text-xs">
             <DemoNotice />
           </TooltipContent>
         </Tooltip>
@@ -264,7 +276,9 @@ const NO_EXIT_ROUTES = ['/register', '/login', '/forgot-password', '/reset-passw
  * page, over whatever the page drew there (a card's text, an event's photo);
  * the AI Studio prototype keeps its Exit in the chrome, beside the account,
  * and so does the sidebar now (`DemoExitInSidebar`). This one stands aside
- * whenever a sidebar footer is on the page.
+ * whenever a sidebar footer is on the page, and on phones whenever the top
+ * bar holds Exit (`DemoExitInTopBar`): floating above the tabs it covered a
+ * heading or a card's title on every page.
  */
 export function DemoSessionBanner() {
   const previewDemo = useIsPreviewDemo();
@@ -272,7 +286,7 @@ export function DemoSessionBanner() {
   if (!previewDemo) return null;
   if (pathname && NO_EXIT_ROUTES.some((route) => pathname.startsWith(route))) return null;
   return (
-    <DemoExitButton className="fixed z-40 left-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:bottom-4 sm:left-4 sm:[body:has([data-sidenav-footer])_&]:hidden" />
+    <DemoExitButton className="fixed z-40 left-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] max-sm:[body:has([data-topbar-exit])_&]:hidden sm:bottom-4 sm:left-4 sm:[body:has([data-sidenav-footer])_&]:hidden" />
   );
 }
 
@@ -286,6 +300,16 @@ export function DemoExitInSidebar({ rail }: { rail: boolean }) {
       className={rail ? 'h-9 w-9 shrink-0 p-0 lg:h-[36px] lg:w-[36px]' : 'ml-auto h-8 shrink-0 px-2.5'}
     />
   );
+}
+
+/**
+ * Exit in the phone top bar, in words, as the AI Studio prototype has it
+ * beside its language switch: always in reach, over nothing.
+ */
+export function DemoExitInTopBar() {
+  const previewDemo = useIsPreviewDemo();
+  if (!previewDemo) return null;
+  return <DemoExitButton side="bottom" marker="data-topbar-exit" className="mr-0.5 h-8 shrink-0 px-2.5" />;
 }
 
 // Small offline indicator for status bar

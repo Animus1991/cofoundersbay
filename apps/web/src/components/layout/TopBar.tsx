@@ -22,6 +22,7 @@ import { useOpenCommandPalette } from './CommandPaletteHost';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { useI18n } from '@/components/common/I18nProvider';
 import { TOP_BANNER_STACK } from './useTopBannerHeight';
+import { DemoExitInTopBar } from '@/components/common/OfflineIndicator';
 
 function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
   const { showDemoData, toggleDemoData } = useDemoData();
@@ -101,6 +102,7 @@ export function TopBar() {
       <MobileNav />
       <SearchBar />
       <div className="min-w-0 flex-1" />
+      <DemoExitInTopBar />
       <div className="flex shrink-0 items-center gap-0.5">
         <MobileToolsMenu onCommand={() => setCommandOpen(true)} />
         <LanguageSwitcher iconOnly className="h-9 w-9" />

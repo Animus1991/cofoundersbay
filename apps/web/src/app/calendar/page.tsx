@@ -255,6 +255,8 @@ function formatUpcomingDate(iso: string, lang: 'en' | 'el'): string {
 
 // ── Week ─────────────────────────────────────────────────────────────────────
 
+const MONTHS_GENITIVE_EL = ['Ιανουαρίου', 'Φεβρουαρίου', 'Μαρτίου', 'Απριλίου', 'Μαΐου', 'Ιουνίου', 'Ιουλίου', 'Αυγούστου', 'Σεπτεμβρίου', 'Οκτωβρίου', 'Νοεμβρίου', 'Δεκεμβρίου'];
+
 /** The seven UTC days of the week that holds `anchor`, Sunday first like the month grid. */
 function weekDays(anchor: Date): Date[] {
   const start = new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), anchor.getUTCDate() - anchor.getUTCDay()));
@@ -281,7 +283,8 @@ function WeekView({
   const first = days[0];
   const last = days[6];
   const today = new Date();
-  const monthName = (d: Date) => (lang === 'el' ? MONTHS[d.getUTCMonth()].el : MONTHS[d.getUTCMonth()].en);
+  // After a day number Greek takes the genitive: «18–24 Οκτωβρίου», not «Οκτώβριος».
+  const monthName = (d: Date) => (lang === 'el' ? MONTHS_GENITIVE_EL[d.getUTCMonth()] : MONTHS[d.getUTCMonth()].en);
   const range = first.getUTCMonth() === last.getUTCMonth()
     ? `${first.getUTCDate()}–${last.getUTCDate()} ${monthName(last)} ${last.getUTCFullYear()}`
     : `${first.getUTCDate()} ${MONTH_SHORT[lang][first.getUTCMonth()]} – ${last.getUTCDate()} ${MONTH_SHORT[lang][last.getUTCMonth()]} ${last.getUTCFullYear()}`;
