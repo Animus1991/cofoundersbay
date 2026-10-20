@@ -84,6 +84,15 @@ import { DomI18n } from '@/components/common/DomI18n';
 import { PhonePlaceholderFit } from '@/components/layout/PhonePlaceholderFit';
 import { IosFieldZoom } from '@/components/layout/IosFieldZoom';
 import { ConfirmProvider } from '@/components/ui/confirm-dialog';
+import { THEME_ROOT } from '@/lib/themes';
+
+/*
+ * The theme on <html> before the first paint. Without it the page painted
+ * :root (the Lilac palette) and switched once React mounted, so every load
+ * of the Light theme flashed lilac first. Same table as applyTheme and
+ * RoleTheme (lib/themes THEME_ROOT); no saved choice follows the OS.
+ */
+const THEME_BOOT = `(function(){try{var m=${JSON.stringify(THEME_ROOT)};var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var r=document.documentElement;if(t==='system'){r.classList.add(d?'dark':'light');r.setAttribute('data-theme','system');return;}var e=m[t]||m[d?'dark':'light'];r.classList.add(e.mode);if(e.dataTheme)r.setAttribute('data-theme',e.dataTheme);}catch(_){}})();`;
 
 export const metadata: Metadata = {
   title: {
@@ -139,6 +148,9 @@ export default function RootLayout({
       className={`scroll-smooth ${inter.variable} ${commissioner.variable} ${jetbrainsMono.variable} ${coMarkFont.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+      </head>
       <body
         suppressHydrationWarning
         className="bg-background text-foreground font-sans antialiased"

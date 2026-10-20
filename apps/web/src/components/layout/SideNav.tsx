@@ -197,6 +197,7 @@ export function SideNav() {
         )}
         onPointerEnter={startPeek}
         onPointerLeave={endPeek}
+        data-sidenav=""
         data-rail={mounted && rail ? 'true' : undefined}
         data-peek={mounted && peeking ? 'true' : undefined}
         aria-label={bilingualAria(commonEn('main_navigation'), commonEl('main_navigation'))}
@@ -287,6 +288,7 @@ export function SideNav() {
                       {/* Active left bar */}
                       {active && showLabels && (
                         <span
+                          data-active-bar=""
                           className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary"
                           aria-hidden="true"
                         />

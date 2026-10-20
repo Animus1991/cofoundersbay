@@ -229,7 +229,8 @@ export function EventCard({
           {/* Host */}
           <div className="mt-4 flex items-center gap-3">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={event.hostAvatar || undefined} />
+              {/* The name sits beside it, so the photo is decorative (WCAG 1.1.1). */}
+              <AvatarImage src={event.hostAvatar || undefined} alt="" />
               <AvatarFallback className="bg-primary/20 text-primary-accessible text-xs">
                 {initialsOf(event.hostName)}
               </AvatarFallback>

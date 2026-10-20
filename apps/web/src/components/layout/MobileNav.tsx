@@ -169,7 +169,7 @@ export function MobileNav() {
             <LanguagePanel sidebar />
           </div>
 
-          <nav className="px-2 py-3" data-keep-icon="" aria-label={t('Primary mobile navigation')}>
+          <nav className="px-2 py-3" data-keep-icon="" data-sidenav="" aria-label={t('Primary mobile navigation')}>
             {sections.map(({ section, links }, sectionIndex) => (
               <div key={section} className="mb-3">
                 <p

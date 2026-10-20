@@ -1,6 +1,6 @@
 'use client';
 
-import { Moon, Sun, Monitor, Minus, Palette, Sunrise } from 'lucide-react';
+import { Moon, Sun, Monitor, Minus, Palette, Sunrise, Flower2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,6 +15,7 @@ export function ThemeToggle() {
 
   const icons: Partial<Record<typeof theme, typeof Sun>> = {
     light: Sun,
+    lilac: Flower2,
     dark: Moon,
     system: Monitor,
     alliance: Palette,
@@ -35,6 +36,10 @@ export function ThemeToggle() {
         <DropdownMenuItem onClick={() => setTheme('light')} className="gap-2">
           <Sun className="icon-sm" />
           Light
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('lilac')} className="gap-2">
+          <Flower2 className="icon-sm" />
+          Lilac
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('dark')} className="gap-2">
           <Moon className="icon-sm" />

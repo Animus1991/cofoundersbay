@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise } from 'lucide-react';
+import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise, Flower2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -28,8 +28,16 @@ export const THEME_OPTIONS = [
   {
     name: 'light' as ThemeName,
     label: 'Light',
-    description: 'Soft lilac on cool grey',
+    description: 'Warm stone with ink',
     icon: Sun,
+    swatch: ['#fafaf9', '#292524', '#765fe7'],
+  },
+  {
+    // The Light theme before 2026-10-20, kept as a choice.
+    name: 'lilac' as ThemeName,
+    label: 'Lilac',
+    description: 'Soft lilac on cool grey',
+    icon: Flower2,
     swatch: ['#f6f6f7', '#765fe7', '#6e659a'],
   },
   {

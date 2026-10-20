@@ -114,6 +114,9 @@ const el: Record<string, string> = {
   Mint: 'Μέντα',
   Apricot: 'Βερίκοκο',
   'Soft lilac on cool grey': 'Απαλό λιλά σε ψυχρό γκρι',
+  // The Light theme since 2026-10-20 (the AI Studio prototype's look), and the one before it.
+  'Warm stone with ink': 'Ζεστό γκρι με μαύρο μελάνι',
+  Lilac: 'Λιλά',
   'Soft sky blue, cool and clear': 'Απαλό γαλάζιο, δροσερό και καθαρό',
   'Warm cream with a soft mint': 'Ζεστή κρέμα με απαλή μέντα',
   'Warm neutral with a soft apricot': 'Ζεστό ουδέτερο με απαλό βερικοκί',

@@ -487,6 +487,49 @@ html {
     --accent-foreground: 24 10% 12%;
     --ring: 23 44.8% 41.5%;
   }
+  /* ── "Light" (data-theme="studio") — the AI Studio prototype's look,
+     adopted 2026-10-20 (docs §63). Warm stone neutrals (Tailwind's stone),
+     a white card and a white sidebar on a stone-50 page, and ink (#292524)
+     as the one action colour: buttons, the selected destination, progress.
+     The brand lilac stays as the mark only: the logotype's "Bay" and the
+     one accent stroke of each platform glyph (Bay duo). Locked like the
+     accent themes (html[data-theme] beats .role-*), so a role's hue does
+     not repaint it. Each value solved against its floor: foreground 16.7
+     on the page, muted 5.27 on the page and 5.05 on muted, white on ink
+     15.2, card edge 1.19, field edge 1.32, focus ring 5.27. Type is not
+     touched. The previous Light is the "Lilac" theme (no data-theme). ── */
+  html[data-theme="studio"] {
+    --shadow-color: 24 10% 10%;
+    --shadow-strength: 1;
+    --background: 60 9.1% 97.8%;          /* stone-50 #fafaf9, the page */
+    --foreground: 24 9.8% 10%;            /* stone-900 #1c1917 */
+    --card: 0 0% 100%;
+    --card-foreground: 24 9.8% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 24 9.8% 10%;
+    --primary: 12 6.5% 15.1%;             /* stone-800 #292524, white label 15.2:1 */
+    --primary-foreground: 0 0% 100%;
+    --primary-mid: 24 8% 30%;             /* tints only (/5../40): warm greys, not a hue */
+    --primary-accessible: 12 6.5% 15.1%;  /* links and kickers, 14.5:1 on the page */
+    --secondary: 60 4.8% 95.9%;           /* stone-100 */
+    --secondary-foreground: 24 9.8% 10%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 6% 41%;        /* 5.51 on card, 5.27 on page, 5.05 on muted */
+    --accent: 60 4.8% 95.9%;              /* hover surface */
+    --accent-foreground: 24 9.8% 10%;
+    --destructive: 2 30.5% 42.6%;         /* white on it 6.31 */
+    --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 2 33.5% 38.8%;
+    --border: 30 6% 92%;                  /* 1.19 on card, a hairline */
+    --input: 20 5.9% 88%;                 /* 1.32 on card, a control's edge */
+    --ring: 25 6% 41%;                    /* 5.27 on the page */
+    --radius: 16px;                       /* cards 16, controls and rows 12, tiles 14 */
+    --brand: 250 74% 63.9%;               /* #765fe7, the mark */
+    --gradient-primary: linear-gradient(hsl(var(--primary)), hsl(var(--primary)));
+    --gradient-hero: linear-gradient(hsl(24 9.8% 10%), hsl(24 9.8% 10%));
+    color-scheme: light;
+  }
+
   /* Dark surfaces fill with the same deepened accent and a white label; their tints
      come from that same tone. */
   html.dark,
@@ -4688,4 +4731,96 @@ input:is(
 }
 :is([class~='bg-primary'], [class~='bg-primary-accessible']) .cfb-glyph [data-accent] {
   color: inherit;
+}
+
+/* ── "Light" (data-theme="studio") component layer — docs §63 ─────────────
+   The AI Studio prototype's treatments, on our components. Colour and
+   surface only: no size, weight or spacing of type changes here. */
+
+/* The mark keeps the brand: one lilac stroke per platform glyph (Bay duo)
+   and the logotype's "Bay". On an ink fill the stroke takes the fill's
+   own colour, as it does on any solid fill. */
+html[data-theme="studio"] .cfb-glyph [data-accent] {
+  color: hsl(var(--brand));
+}
+html[data-theme="studio"] :is([class~='bg-primary'], [class~='bg-primary-accessible']) .cfb-glyph [data-accent] {
+  color: inherit;
+}
+html[data-theme="studio"] [data-logotype] [class~='text-primary'] {
+  color: hsl(var(--brand));
+}
+
+/* The sidebar is a white column on the stone page, as the prototype's.
+   Its own class asks for bg-card/98, which Tailwind never generated (98 is
+   not on the opacity scale), so in every theme it has been see-through. */
+html[data-theme="studio"] aside[data-sidenav] {
+  background-color: hsl(var(--card));
+}
+
+/* The selected destination is an ink pill with white words, as in the
+   prototype's sidebar and drawer; the thin left bar it replaces is hidden,
+   and a count on it turns white so it does not vanish into the ink. */
+html[data-theme="studio"] [data-sidenav] a[aria-current='page'] {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+html[data-theme="studio"] [data-sidenav] a[aria-current='page'] :is(.text-foreground, .text-muted-foreground, .bilingual-secondary) {
+  color: inherit;
+}
+html[data-theme="studio"] [data-sidenav] a[aria-current='page'] .cfb-glyph [data-accent] {
+  color: inherit;
+}
+html[data-theme="studio"] [data-sidenav] a[aria-current='page'] [data-active-bar] {
+  display: none;
+}
+html[data-theme="studio"] [data-sidenav] a[aria-current='page'] [class~='bg-primary'] {
+  background-color: hsl(var(--primary-foreground));
+  color: hsl(var(--primary));
+}
+
+/* What comes next is the one inverted surface on a home: an ink card with
+   white words and a white action, as the prototype's "Επόμενο". What waits
+   on you stays amber. Secondary words on the ink: stone-300, 10.2:1. */
+html[data-theme="studio"] [data-next-step='next'] {
+  background-color: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+html[data-theme="studio"] [data-next-step='next'] :is(.text-foreground, .text-primary-accessible) {
+  color: hsl(var(--primary-foreground));
+}
+html[data-theme="studio"] [data-next-step='next'] :is(.text-muted-foreground, .bilingual-secondary) {
+  color: hsl(24 5.7% 82.9%);
+}
+html[data-theme="studio"] [data-next-step='next'] > [data-keep-icon] {
+  background-color: hsl(0 0% 100% / 0.1);
+  color: hsl(var(--primary-foreground));
+}
+html[data-theme="studio"] [data-next-step='next'] > :is(a, button) {
+  background-color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary-foreground));
+  color: hsl(var(--primary));
+}
+html[data-theme="studio"] [data-next-step='next'] > :is(a, button):hover {
+  background-color: hsl(var(--secondary));
+}
+html[data-theme="studio"] [data-next-step='next'] > :is(a, button) .cfb-glyph [data-accent] {
+  color: inherit;
+}
+
+/* Achievement meters keep the lively accents of the other themes (lilac,
+   mint, apricot); an ordinary progress bar is ink, as in the prototype. */
+html[data-theme="studio"] #main-content [data-meter-slot='0'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-lilac));
+}
+html[data-theme="studio"] #main-content [data-meter-slot='1'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html[data-theme="studio"] #main-content [data-meter-slot='2'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-apricot));
+}
+
+html[data-theme="studio"] ::selection {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
 }

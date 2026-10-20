@@ -2,7 +2,7 @@
 
 import { useEffect, useState, createContext, useContext, useCallback } from 'react';
 
-type Theme = 'dark' | 'light' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot';
+type Theme = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot';
 type Role = 'founder' | 'mentor' | 'investor' | 'org' | null;
 
 const roleClasses = ['role-founder', 'role-mentor', 'role-investor', 'role-org'];
@@ -51,6 +51,13 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
       const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       root.classList.add(systemDark ? 'dark' : 'light');
       root.setAttribute('data-theme', 'system');
+    } else if (newTheme === 'light') {
+      // The AI Studio prototype's look (docs §63, lib/themes THEME_ROOT).
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'studio');
+    } else if (newTheme === 'lilac') {
+      root.removeAttribute('data-theme');
+      root.classList.add('light');
     } else {
       root.removeAttribute('data-theme');
       root.classList.add(newTheme);
