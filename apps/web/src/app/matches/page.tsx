@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  Sparkles, ArrowRight, UserPlus, ArrowUpDown, RefreshCw, BarChart3, Award, Zap, ChevronRight,
+  Sparkles, ArrowRight, UserPlus, ArrowUpDown, RefreshCw, BarChart3, Award, Zap,
   X, LayoutGrid, List, Search, MapPin, Briefcase, GraduationCap, DollarSign, Users,
   Bookmark, BookmarkCheck, MessageCircle, Heart, RotateCcw, SlidersHorizontal, Clock,
   TrendingUp, Star, CheckCircle2, CheckSquare,
@@ -45,6 +45,7 @@ import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { FactLine } from '@/components/common/FactLine';
 import { matchReasonCopy } from '@/lib/match-reason';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { PageFacts } from '@/components/common/PageFacts';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
@@ -1044,68 +1045,32 @@ export default function MatchesPage() {
           </div>
         )}
 
-        {/* ── Stats bar ── */}
+        {/* ── The figures, one line (docs §64) ──
+            Four figure tiles and a banner ("3 excellent matches ready to
+            connect · View") stood between the title and the first person:
+            the first card started at 480px. The figures are one line now,
+            the same four the tour describes, and "excellent" is the banner's
+            View: it shows them. Undo stays in the toolbar and the toast. */}
         {hasToken && !isLoading && visible.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-tour="matches-stats">
-            {[
-              { labelEn: matchesEn('total_matches'), labelEl: matchesEl('total_matches'), value: counts.all },
-              { labelEn: matchesEn('excellent_80'), labelEl: matchesEl('excellent_80'), value: counts.excellent },
-              { labelEn: matchesEn('avg_score'), labelEl: matchesEl('avg_score'), value: `${avgScore}%` },
-              { labelEn: matchesEn('top_score'), labelEl: matchesEl('top_score'), value: `${topScore}%` },
-            ].map(({ labelEn, labelEl, value }) => (
-              <Card key={labelEn} className="min-w-0 shadow-sm border-border">
-                <CardContent className="min-w-0">
-                  <p className="text-lg font-bold tabular-nums leading-none text-foreground sm:text-xl">{value}</p>
-                  <p className="mt-0.5 text-2xs leading-tight text-muted-foreground">
-                    <BilingualText en={labelEn} el={labelEl} compact wrap />
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <PageFacts
+            data-tour="matches-stats"
+            labelEn="Your matches in figures"
+            labelEl="Οι αντιστοιχίσεις σας σε αριθμούς"
+            facts={[
+              { id: 'all', value: counts.all, en: counts.all === 1 ? 'match' : 'matches', el: counts.all === 1 ? 'αντιστοίχιση' : 'αντιστοιχίσεις' },
+              {
+                id: 'excellent',
+                value: counts.excellent > 0 ? counts.excellent : null,
+                en: counts.excellent === 1 ? 'excellent (80%+), ready to connect' : 'excellent (80%+), ready to connect',
+                el: counts.excellent === 1 ? 'εξαιρετική (80%+), έτοιμη για σύνδεση' : 'εξαιρετικές (80%+), έτοιμες για σύνδεση',
+                onSelect: () => setActiveFilter(activeFilter === 'excellent' ? 'all' : 'excellent'),
+                selected: activeFilter === 'excellent',
+              },
+              { id: 'avg', value: `${avgScore}%`, en: 'average', el: 'μέσος βαθμός' },
+              { id: 'top', value: `${topScore}%`, en: 'top score', el: 'υψηλότερος' },
+            ]}
+          />
         )}
-
-        {/* ── Insights banner (excellent matches) ── */}
-        {hasToken && !isLoading && counts.excellent > 0 && (() => {
-          const bannerActions = (
-            <>
-              {lastPassed && (
-                <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-muted-foreground">
-                  <RotateCcw className="icon-sm" /> <BilingualText en="Undo" el="Αναίρεση" compact />
-                </Button>
-              )}
-              <Button size="sm" variant="outline" onClick={() => setActiveFilter('excellent')} className="gap-1.5">
-                <BilingualText en="View" el="Προβολή" compact /> <ChevronRight className="icon-sm" />
-              </Button>
-            </>
-          );
-          // A card's head: the news as the title, the top score under it;
-          // the way to them at the right, under the line on a phone.
-          return (
-            <div className={cn('space-y-3 rounded-2xl border bg-status-success-bg/40 p-4 animate-in fade-in slide-in-from-top-1 duration-300', STATUS.success.border)}>
-              <CardHead
-                titleAs="p"
-                title={(
-                  <BilingualText
-                    en={`${counts.excellent} excellent ${counts.excellent === 1 ? 'match' : 'matches'} ready to connect`}
-                    el={`${counts.excellent} ${counts.excellent === 1 ? 'εξαιρετική αντιστοίχιση έτοιμη' : 'εξαιρετικές αντιστοιχίσεις έτοιμες'} για σύνδεση`}
-                    wrap
-                  />
-                )}
-                subtitle={(
-                  <BilingualText
-                    en={`Top score ${topScore}% · These profiles are highly compatible, so reach out now`}
-                    el={`Κορυφαία βαθμολογία ${topScore}% · Αυτά τα προφίλ σάς ταιριάζουν πολύ, στείλτε μήνυμα τώρα`}
-                    wrap
-                  />
-                )}
-                asideClassName="hidden sm:flex"
-                aside={bannerActions}
-              />
-              <div className="flex flex-wrap items-center gap-2 sm:hidden">{bannerActions}</div>
-            </div>
-          );
-        })()}
 
         {/* ── No data at all ── */}
         {hasToken && !isLoading && visible.length === 0 && (
@@ -1159,7 +1124,9 @@ export default function MatchesPage() {
               {/* Results toolbar */}
               <div className="flex min-w-0 flex-wrap items-center justify-between gap-2" data-tour="matches-toolbar">
                 <p className="min-w-0 text-xs text-muted-foreground">
-                  {filtered.length > 0 && (
+                  {/* The figures line above already says the total; this
+                      count speaks only when a filter or a pass changed it. */}
+                  {filtered.length > 0 && (filtered.length !== counts.all || passedIds.size > 0) && (
                     <BilingualText
                       en={`${filtered.length} ${filtered.length === 1 ? 'match' : 'matches'}${passedIds.size > 0 ? ` · ${passedIds.size} passed` : ''}`}
                       el={`${filtered.length} ${filtered.length === 1 ? 'αντιστοίχιση' : 'αντιστοιχίσεις'}${passedIds.size > 0 ? ` · ${passedIds.size} απορρίφθηκαν` : ''}`}

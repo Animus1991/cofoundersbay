@@ -2,12 +2,11 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Bot } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getActiveNavHref, getSectionsForMode, modeForPath, type SidebarMode } from './nav-modes';
-import { ModeSwitcher } from './ModeSwitcher';
+import { getActiveNavHref, getUnifiedSections } from './nav-modes';
+import { useNavSections } from './useNavSections';
 import { useSidebar } from './SidebarContext';
-import { useSidebarMode } from '@/hooks/use-sidebar-mode';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -38,7 +37,6 @@ export function SideNav() {
   const user = useStoredUser();
   const role = useRoleOptional();
   const primaryRole = role?.primaryRole;
-  const [mode, setMode] = useSidebarMode();
   // Between `sm` and `lg` the aside is a fixed 68px rail, so it renders its
   // collapsed contents regardless of the stored preference; the preference
   // still governs from `lg` up, where the 240px drawer fits.
@@ -113,39 +111,24 @@ export function SideNav() {
     return () => window.removeEventListener('cfb:logout', handleLogout);
   }, [router]);
 
-  // Handle mode change with persistence
-  const handleModeChange = useCallback((newMode: SidebarMode) => {
-    setMode(newMode);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('cfb:sidebar-mode', newMode);
-    }
-  }, [setMode]);
-
   // primaryRole comes from RoleContext (root-level, API-backed — the single source
   // of truth per docs/AI_PLATFORM_UPGRADE_PLAN.md §1.2). user?.role is a coarser
   // string cached in localStorage at login and only used as a fallback while
   // RoleContext is still loading or if it failed to fetch.
   const effectiveRole = primaryRole ?? user?.role;
-  const sections = useMemo(
-    () => getSectionsForMode(mode, effectiveRole),
-    [mode, effectiveRole],
-  );
+  // One list, every destination (docs §64): the three modes (Work, Explore,
+  // Account) showed one group at a time, so a page's group had to be guessed
+  // before its link could be seen. Each section opens and closes in place;
+  // the role's work starts open, the rest as an index of section names, and
+  // the current page's section always opens.
+  const sections = useMemo(() => getUnifiedSections(effectiveRole), [effectiveRole]);
   const glyphs = useMemo(() => sectionNavGlyphs(sections), [sections]);
 
-  // A page reached from anywhere (a card, the assistant, a notification)
-  // shows the list it lives in: on /discover the sidebar stayed on Work with
-  // nothing lit while Explore held the page. Only a navigation, or the stored
-  // mode arriving after mount, moves it; a click on the switch sticks.
-  useEffect(() => {
-    if (!mounted) return;
-    const next = modeForPath(pathname, mode, effectiveRole);
-    if (next !== mode) setMode(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, effectiveRole, mounted]);
   // The most specific entry only, as MobileNav does: a prefix test lit
   // "Admin console" (/admin) on every admin page, beside the page's own
   // entry, and General (/settings) beside every settings page.
   const activeHref = getActiveNavHref(pathname, sections);
+  const { isOpen, toggle: toggleSection } = useNavSections(sections, activeHref);
 
   // The current page's entry in view. Messages sits below the fold of the
   // founder's Work list at 900px, so the page was lit where nobody could see.
@@ -153,7 +136,7 @@ export function SideNav() {
   useEffect(() => {
     if (!mounted) return;
     navRef.current?.querySelector<HTMLElement>('[aria-current="page"]')?.scrollIntoView?.({ block: 'nearest' });
-  }, [activeHref, mode, mounted]);
+  }, [activeHref, mounted]);
 
   // Hide sidebar on auth pages
   const isAuthPage =
@@ -227,32 +210,89 @@ export function SideNav() {
           )}
         </div>
 
-        {/* ── Mode Switcher ── */}
-        <ModeSwitcher currentMode={mode} onModeChange={handleModeChange} variant={showLabels ? 'list' : 'rail'} />
-
         {/* ── Navigation ── */}
         <nav ref={navRef} className={cn('flex-1 overflow-y-auto overflow-x-hidden py-1 scrollbar-hide', rail && 'flex flex-col items-center')}>
-          {sections.map(({ section, links }, sectionIndex) => (
-            <div key={section} className={cn('mb-0.5', rail && 'flex w-full flex-col items-center')}>
+          {sections.map((sectionData, sectionIndex) => {
+            const { id, section, links, group } = sectionData;
+            const open = isOpen(sectionData);
+            const listId = `sidenav-${id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
+            // A closed section still says what waits in it.
+            const waiting = open ? 0 : links.reduce((sum, link) => sum + badgeFor(link.href, link.badge), 0);
+            const startsGroup = sectionIndex > 0 && sections[sectionIndex - 1].group !== group;
+            const sectionName = bilingualAria(section, getNavSectionEl(section));
+            return (
+            <div
+              key={id}
+              className={cn(
+                'mb-0.5',
+                rail && 'flex w-full flex-col items-center',
+                startsGroup && 'mt-1.5 border-t border-border/60 pt-1',
+              )}
+            >
               {/* nav-section-label, not plain text-xs: these section headings
                   take the display steps' -2% per pass while the links under them
                   take the +2% of the body scale. The uppercase + tracking classes
                   still mark a kicker; globals.css paints them as the source
-                  title case (Dashboard), not DASHBOARD. */}
+                  title case (Dashboard), not DASHBOARD. The heading is the
+                  section's switch: it opens and closes the list under it. */}
               {showLabels ? (
-                <p className="nav-section-label mx-3 mb-1 mt-2.5 text-xs text-muted-foreground first:mt-1">
-                  <BilingualText
-                    en={section}
-                    el={getNavSectionEl(section)}
-                    stacked
-                    primaryClassName="font-semibold uppercase tracking-widest"
-                    secondaryClassName="normal-case tracking-normal"
-                  />
-                </p>
-              ) : (
+                <button
+                  type="button"
+                  onClick={() => toggleSection(sectionData)}
+                  aria-expanded={open}
+                  aria-controls={listId}
+                  className="nav-section-label mx-2 mb-0.5 mt-1 flex w-[calc(100%-1rem)] items-center gap-1 rounded-md px-1 text-left text-xs text-muted-foreground transition-colors hover:text-foreground focus-ring"
+                >
+                  <span className="min-w-0 flex-1">
+                    <BilingualText
+                      en={section}
+                      el={getNavSectionEl(section)}
+                      stacked
+                      primaryClassName="font-semibold uppercase tracking-widest"
+                      secondaryClassName="normal-case tracking-normal"
+                    />
+                  </span>
+                  {waiting > 0 ? (
+                    <span
+                      aria-hidden="true"
+                      className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold leading-none text-primary-foreground"
+                    >
+                      {waiting > 99 ? '99+' : waiting}
+                    </span>
+                  ) : null}
+                  <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', !open && '-rotate-90')} aria-hidden="true" />
+                  {waiting > 0 ? (
+                    <span className="sr-only">
+                      {bilingualAria(`${waiting} unread`, `${waiting} ${waiting === 1 ? 'αδιάβαστο' : 'αδιάβαστα'}`)}
+                    </span>
+                  ) : null}
+                </button>
+              ) : open ? (
                 <div className="mx-auto my-1.5 h-px w-6 bg-border/50" />
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(sectionData)}
+                      aria-expanded={false}
+                      aria-label={bilingualAria(`Open the ${section} section`, `Άνοιγμα της ενότητας ${getNavSectionEl(section) ?? section}`)}
+                      className={cn(railSlot, 'relative text-muted-foreground/60 transition-colors hover:bg-secondary/70 hover:text-foreground focus-ring')}
+                    >
+                      <NavIcon href={links[0].href} name={glyphs[sectionIndex]?.[0] ?? null} fallback={links[0].icon} className={chromeIcon} />
+                      <ChevronDown className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5" aria-hidden="true" />
+                      {waiting > 0 ? (
+                        <span aria-hidden="true" className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold leading-none text-primary-foreground ring-2 ring-card">
+                          {waiting > 9 ? '9+' : waiting}
+                        </span>
+                      ) : null}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="text-xs">{sectionName}</TooltipContent>
+                </Tooltip>
               )}
-              <ul className={cn('space-y-0.5', showLabels ? 'px-2' : 'flex w-full flex-col items-center px-0')}>
+              {open ? (
+              <ul id={listId} className={cn('space-y-0.5', showLabels ? 'px-2' : 'flex w-full flex-col items-center px-0')}>
                 {links.map(({ href, label, icon: Icon, badge: badgeType }, linkIndex) => {
                   const active = href === activeHref;
                   const badge = badgeFor(href, badgeType);
@@ -363,8 +403,10 @@ export function SideNav() {
                   );
                 })}
               </ul>
+              ) : null}
             </div>
-          ))}
+            );
+          })}
         </nav>
 
         {/* Search + bell stay in the rail; command/locale/theme live in UserMenu.

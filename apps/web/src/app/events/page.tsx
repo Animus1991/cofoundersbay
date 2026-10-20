@@ -242,25 +242,12 @@ export default function EventsPage() {
       }
     >
       <div className="space-y-6 pb-10">
-      {/* What a pitch practice is, then the one way to host one, as the
-          AI Studio prototype's "host your own event" card reads. It was a
-          link run into a sentence ("Host a pitch practice A live workshop…"). */}
-      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="min-w-0 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">
-            <BilingualText en="Pitch practice" el="Εξάσκηση παρουσίασης" compact />
-          </span>
-          {' · '}
-          <BilingualText en="A live workshop where founders present and hear notes." el="Ένα ζωντανό εργαστήριο όπου ιδρυτές παρουσιάζουν και ακούν σημειώσεις." wrap />
-        </p>
-        <Button variant="outline" size="sm" className="shrink-0 self-start sm:self-auto" asChild>
-          <Link href="/events/create?kind=pitch-practice">
-            <BilingualText en="Host one" el="Διοργάνωση" compact />
-          </Link>
-        </Button>
-      </div>
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* One row: the tabs, the search, the view (docs §64). The search
+            had a full-width row of its own between the tabs and the first
+            event; the AI Studio prototype keeps the list right under its
+            tabs. On a phone the row wraps: tabs, then search and view. */}
+        <div className="flex flex-wrap items-center gap-3">
           {/* min-w-0 so the tab list's own overflow-x-auto can bound it; without
               it the list sat at min-content and the last trigger sat 8px past
               the viewport at 640px. */}
@@ -277,6 +264,16 @@ export default function EventsPage() {
             </TabsTrigger>
           </TabsList>
 
+          <div className="relative min-w-[12rem] flex-1 sm:ml-auto sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Input
+              placeholder={sayOne('Search events…', 'Αναζήτηση εκδηλώσεων…')}
+              aria-label={bilingualInline('Search events', 'Αναζήτηση εκδηλώσεων')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
           <div className="flex items-center gap-1 rounded-lg border border-border p-1">
             <Button aria-label={bilingualInline('Grid view', 'Προβολή πλέγματος')} aria-pressed={viewMode === 'grid'}
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
@@ -297,21 +294,8 @@ export default function EventsPage() {
           </div>
         </div>
 
-        <div className="mt-5">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-            <Input
-              placeholder={sayOne('Search events…', 'Αναζήτηση εκδηλώσεων…')}
-              aria-label={bilingualInline('Search events', 'Αναζήτηση εκδηλώσεων')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-        </div>
-
         {(['upcoming', 'my-events', 'past'] as const).map((tab) => (
-          <TabsContent key={tab} value={tab} className="mt-6">
+          <TabsContent key={tab} value={tab} className="mt-5">
             {isError ? (
               <div className="flex flex-col items-center gap-3 py-16 text-center">
                 <p className="text-sm text-muted-foreground">
@@ -416,6 +400,26 @@ export default function EventsPage() {
           </TabsContent>
         ))}
       </Tabs>
+      {/* What a pitch practice is, then the one way to host one, as the
+          AI Studio prototype's "host your own event" card reads. It was a
+          link run into a sentence ("Host a pitch practice A live workshop…").
+          It sits after the events, where the prototype keeps it (the foot of
+          its side column): the header's Create Event is the page's primary
+          action, and this is the second way in (docs §64). */}
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">
+            <BilingualText en="Pitch practice" el="Εξάσκηση παρουσίασης" compact />
+          </span>
+          {' · '}
+          <BilingualText en="A live workshop where founders present and hear notes." el="Ένα ζωντανό εργαστήριο όπου ιδρυτές παρουσιάζουν και ακούν σημειώσεις." wrap />
+        </p>
+        <Button variant="outline" size="sm" className="shrink-0 self-start sm:self-auto" asChild>
+          <Link href="/events/create?kind=pitch-practice">
+            <BilingualText en="Host one" el="Διοργάνωση" compact />
+          </Link>
+        </Button>
+      </div>
       </div>
     </AppShell>
   );

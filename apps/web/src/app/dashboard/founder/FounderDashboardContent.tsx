@@ -1311,20 +1311,6 @@ export default function FounderDashboardContent() {
         )}
 
         <div id="founder-dashboard-rest" hidden={restFolded} className="min-w-0 space-y-6">
-          {/* Getting-started checklist. */}
-          <OnboardingChecklist steps={onboardingSteps} />
-          <FounderPaths />
-
-          {/* One "what to do next" prompt at a time.
-              The checklist already names the next incomplete step and links to it,
-              so a NextActionBanner above it was a second copy of the same advice.
-              Once the checklist is finished or dismissed the banner takes over, so
-              the guidance is never lost. `undefined` means localStorage has not
-              been read yet — render nothing rather than flash the banner. */}
-          {nextAction && (checklistDone || checklistDismissed === true) && (
-            <NextActionBanner action={nextAction} />
-          )}
-
           {/* Stats */}
           <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" data-tour="founder-stats">
             <MetricTile
@@ -1410,6 +1396,24 @@ export default function FounderDashboardContent() {
                   }
                 />
             </div>
+          )}
+
+          {/* Getting-started checklist and the three doors, after the
+              figures: the AI Studio prototype's home goes next step, this
+              week, people, then what changed. A new founder still meets the
+              first move at the top (FounderFirstMove); this is the full list
+              (docs §64). */}
+          <OnboardingChecklist steps={onboardingSteps} />
+          <FounderPaths />
+
+          {/* One "what to do next" prompt at a time.
+              The checklist already names the next incomplete step and links to it,
+              so a NextActionBanner above it was a second copy of the same advice.
+              Once the checklist is finished or dismissed the banner takes over, so
+              the guidance is never lost. `undefined` means localStorage has not
+              been read yet — render nothing rather than flash the banner. */}
+          {nextAction && (checklistDone || checklistDismissed === true) && (
+            <NextActionBanner action={nextAction} />
           )}
 
           {/* Beside readiness: whether the people the startup needs are coming -

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MobileNav } from './MobileNav';
 import { MobileBottomNav } from './MobileBottomNav';
 import { SidebarProvider } from './SidebarContext';
-import { getSectionsForMode, type SidebarMode } from './nav-modes';
+import { getSectionsForMode, getUnifiedSections, type SidebarMode } from './nav-modes';
 import { getNavLabelEl, getNavSectionEl } from '@/lib/i18n/strings-nav';
 import { LanguagePreferenceProvider } from '@/lib/i18n/LanguagePreferenceContext';
 
@@ -38,17 +38,30 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('Mobile navigation destinations', () => {
-  it.each(['founder', 'mentor', 'investor', 'service_provider', 'org', 'admin', 'tenant_admin'])('preserves every existing destination and translation for %s across all modes', (role) => {
+  // The three modes became one list (docs §64). Every destination of every
+  // former mode must still be there, translated: opening each closed section
+  // by its name reaches all of them.
+  it.each(['founder', 'mentor', 'investor', 'service_provider', 'org', 'admin', 'tenant_admin'])('preserves every existing destination and translation for %s in the single list', (role) => {
     localStorage.setItem('cfb:language-display', 'bilingual');
     state.role = role;
     render(<Navigation />);
     const drawer = openDrawer();
+    const navigation = within(drawer).getByRole('navigation');
+    for (const header of within(navigation).getAllByRole('button')) {
+      if (header.getAttribute('aria-expanded') === 'false') fireEvent.click(header);
+    }
+    for (const header of within(navigation).getAllByRole('button')) {
+      expect(header.getAttribute('aria-expanded')).toBe('true');
+    }
+    // A destination listed in two former modes (the assistant: Work's "AI
+    // Assistant", Explore's "Ask AI") appears once, under its first name.
+    const checked = new Set<string>();
     for (const mode of ['work', 'explore', 'account'] as SidebarMode[]) {
-      fireEvent.click(within(drawer).getByRole('button', { name: new RegExp(`^${mode === 'work' ? 'Work' : mode === 'explore' ? 'Explore' : 'Account'}`) }));
-      const navigation = within(drawer).getByRole('navigation');
       for (const section of getSectionsForMode(mode, role)) {
         expect(navigation.textContent).toContain(getNavSectionEl(section.section) ?? section.section);
         for (const link of section.links) {
+          if (checked.has(link.href)) continue;
+          checked.add(link.href);
           const anchor = Array.from(navigation.querySelectorAll('a')).find((element) => element.getAttribute('href') === link.href);
           expect(anchor, link.href).toBeDefined();
           expect(anchor!.textContent).toContain(link.label);
@@ -57,6 +70,37 @@ describe('Mobile navigation destinations', () => {
         }
       }
     }
+    // Each destination once.
+    const hrefs = Array.from(navigation.querySelectorAll('a')).map((a) => a.getAttribute('href'));
+    expect(new Set(hrefs).size).toBe(hrefs.length);
+  });
+
+  it('opens the role\'s work and the current page\'s section, and keeps the rest as section names', () => {
+    state.pathname = '/events';
+    render(<Navigation />);
+    const navigation = within(openDrawer()).getByRole('navigation');
+    const sections = getUnifiedSections('founder');
+    const headers = within(navigation).getAllByRole('button');
+    expect(headers).toHaveLength(sections.length);
+    const open = sections.filter((section, i) => headers[i].getAttribute('aria-expanded') === 'true').map((s) => s.id);
+    expect(open).toContain('work:Dashboard');
+    expect(open).toContain('explore:Community');
+    expect(open).not.toContain('account:Settings');
+    expect(navigation.querySelector('a[href="/events"]')?.getAttribute('aria-current')).toBe('page');
+  });
+
+  it('remembers a section the reader opened or closed', () => {
+    const first = render(<Navigation />);
+    let navigation = within(openDrawer()).getByRole('navigation');
+    fireEvent.click(within(navigation).getByRole('button', { name: /^Network/ }));
+    fireEvent.click(within(navigation).getByRole('button', { name: /^Build/ }));
+    expect(navigation.querySelector('a[href="/connections"]')).not.toBeNull();
+    expect(navigation.querySelector('a[href="/builder"]')).toBeNull();
+    first.unmount();
+    render(<Navigation />);
+    navigation = within(openDrawer()).getByRole('navigation');
+    expect(navigation.querySelector('a[href="/connections"]')).not.toBeNull();
+    expect(navigation.querySelector('a[href="/builder"]')).toBeNull();
   });
 
   it('marks only the most specific destination as current', () => {
@@ -156,10 +200,13 @@ describe('Mobile drawer keyboard and language', () => {
     expect(profile.textContent).toContain('Profile');
   });
 
-  it('exposes notification counts in account mode', () => {
-    localStorage.setItem('cfb:sidebar-mode', 'account');
+  it('shows a closed section\'s unread count on its name, and on the link once open', () => {
     render(<Navigation />);
     const navigation = within(openDrawer()).getByRole('navigation');
+    const activity = within(navigation).getByRole('button', { name: /^Activity/ });
+    expect(activity.getAttribute('aria-expanded')).toBe('false');
+    expect(activity.textContent).toContain('4');
+    fireEvent.click(activity);
     expect(navigation.querySelector('a[href="/notifications"]')?.textContent).toContain('4');
   });
 

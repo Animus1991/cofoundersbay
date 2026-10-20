@@ -2,16 +2,15 @@
 
 import { useEffect, useMemo, useRef, type MouseEvent } from 'react';
 import { usePathname } from 'next/navigation';
-import { Menu, LogOut, User, Settings, Bot } from 'lucide-react';
+import { Menu, LogOut, User, Settings, Bot, ChevronDown } from 'lucide-react';
 import { LanguagePanel } from '@/components/common/LanguageSwitcher';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ModeSwitcher } from './ModeSwitcher';
-import { getActiveNavHref, getSectionsForMode } from './nav-modes';
+import { getActiveNavHref, getUnifiedSections } from './nav-modes';
+import { useNavSections } from './useNavSections';
 import { useSidebar } from './SidebarContext';
-import { useSidebarMode } from '@/hooks/use-sidebar-mode';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -28,7 +27,6 @@ export function MobileNav() {
   const pathname = usePathname();
   const { t } = useI18n();
   const { mobileNavOpen, mobileNavId, setMobileNavOpen } = useSidebar();
-  const [mode, setMode] = useSidebarMode();
   const { messages: unreadMessages, intros: pendingIntros, notifications: unreadNotifications } = useUnreadCounts();
   const user = useStoredUser();
   const role = useRoleOptional();
@@ -65,12 +63,15 @@ export function MobileNav() {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [mobileNavOpen, setMobileNavOpen]);
 
+  // The sidebar's single list (docs §64): every destination, each section
+  // opening in place, the open state shared with the desktop sidebar.
   const sections = useMemo(
-    () => getSectionsForMode(mode, primaryRole ?? user?.role),
-    [mode, primaryRole, user?.role],
+    () => getUnifiedSections(primaryRole ?? user?.role),
+    [primaryRole, user?.role],
   );
   const glyphs = useMemo(() => sectionNavGlyphs(sections), [sections]);
   const activeHref = getActiveNavHref(pathname, sections);
+  const { isOpen, toggle: toggleSection } = useNavSections(sections, activeHref);
 
   const handleLogout = () => {
     clearPreviewDemoSession();
@@ -132,8 +133,8 @@ export function MobileNav() {
             </SheetTitle>
             <SheetDescription className="sr-only">
               <BilingualText
-                en="Choose Work, Explore or Account to browse destinations."
-                el="Επιλέξτε Εργασία, Εξερεύνηση ή Λογαριασμό για να δείτε τις διαθέσιμες σελίδες."
+                en="Every destination, by section. A section's name opens or closes it."
+                el="Όλοι οι προορισμοί, ανά ενότητα. Το όνομα μιας ενότητας την ανοίγει ή την κλείνει."
               />
             </SheetDescription>
           </SheetHeader>
@@ -163,28 +164,48 @@ export function MobileNav() {
             </OptimizedLink>
           )}
 
-          <ModeSwitcher currentMode={mode} onModeChange={setMode} variant="row" />
-
           <div className="border-b border-border px-3 py-3">
             <LanguagePanel sidebar />
           </div>
 
           <nav className="px-2 py-3" data-keep-icon="" data-sidenav="" aria-label={t('Primary mobile navigation')}>
-            {sections.map(({ section, links }, sectionIndex) => (
-              <div key={section} className="mb-3">
-                <p
-                  className="px-3 pb-1 text-xs text-muted-foreground"
+            {sections.map((sectionData, sectionIndex) => {
+              const { id, section, links, group } = sectionData;
+              const open = isOpen(sectionData);
+              const listId = `mobilenav-${id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
+              const waiting = open ? 0 : links.reduce((sum, link) => sum + badgeFor(link.href, link.badge), 0);
+              const startsGroup = sectionIndex > 0 && sections[sectionIndex - 1].group !== group;
+              return (
+              <div key={id} className={cn('mb-2', startsGroup && 'mt-1 border-t border-border/60 pt-2')}>
+                <button
+                  type="button"
+                  onClick={() => toggleSection(sectionData)}
+                  aria-expanded={open}
+                  aria-controls={listId}
+                  className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 pb-1 text-left text-xs text-muted-foreground transition-colors hover:text-foreground focus-ring"
                   data-sidebar-control={section === 'Dashboard' ? 'section' : undefined}
                 >
-                  <BilingualText
-                    en={section}
-                    el={getNavSectionEl(section)}
-                    stacked
-                    primaryClassName="font-semibold uppercase tracking-wider whitespace-normal"
-                    secondaryClassName="whitespace-normal"
-                  />
-                </p>
-                <ul className="space-y-0.5">
+                  <span className="min-w-0 flex-1">
+                    <BilingualText
+                      en={section}
+                      el={getNavSectionEl(section)}
+                      stacked
+                      primaryClassName="font-semibold uppercase tracking-wider whitespace-normal"
+                      secondaryClassName="whitespace-normal"
+                    />
+                  </span>
+                  {waiting > 0 ? (
+                    <>
+                      <span aria-hidden="true" className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">
+                        {waiting > 99 ? '99+' : waiting}
+                      </span>
+                      <span className="sr-only">{bilingualAria(`${waiting} unread`, `${waiting} αδιάβαστα`)}</span>
+                    </>
+                  ) : null}
+                  <ChevronDown className={cn('icon-sm shrink-0 transition-transform', !open && '-rotate-90')} aria-hidden="true" />
+                </button>
+                {open ? (
+                <ul id={listId} className="space-y-0.5">
                   {links.map(({ href, label, icon: Icon, badge: badgeType }, linkIndex) => {
                     const active = activeHref === href;
                     const badge = badgeFor(href, badgeType);
@@ -239,8 +260,10 @@ export function MobileNav() {
                     );
                   })}
                 </ul>
+                ) : null}
               </div>
-            ))}
+              );
+            })}
           </nav>
 
           <div className="safe-bottom space-y-1 border-t border-border p-3">

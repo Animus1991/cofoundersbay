@@ -276,18 +276,20 @@ export function AppShell({
     // /matches, pitch-deck) lands on this wrapper instead — same clipping.
     <div className={cn('space-y-5', insideFrame && contentClassName)}>
       {headerShown && (
-        <header className="space-y-3">
-          {/* The title takes the row. The ask field sits under it, the full
-              width of the page, the way a question box sits under a greeting:
-              beside the title it asked for 57.5rem and bilingual headings
-              broke mid-phrase. Help stays on the title row. */}
-          <section className="space-y-3">
-            {/* GitHub's PageHeader: the page's own actions sit on the title
-                row, right-aligned, in the same place on every page, so "what
-                can I do here" is answered before the body is read. Below sm
-                they wrap under the title, full width. (§55) */}
-            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start">
-              <div className="min-w-0 flex-1" data-page-header="">
+        <header className="space-y-3 [container-type:inline-size]">
+          {/* One header row, as in the AI Studio prototype (docs §64): the
+              title on the left; the page's actions, the ask field and help on
+              the right, in the same place on every page (GitHub's PageHeader,
+              §55). The field joins the row only when the header itself is at
+              least 64rem wide (840px on a desktop), a container query rather
+              than a breakpoint, so an open page rail or a narrow window keeps
+              the old layout: the field under the title, full width. That is
+              what stops the mid-phrase heading breaks the field once caused
+              beside the title, when it asked for 57.5rem. Below sm the actions
+              wrap under the title, full width. */}
+          <section>
+            <div className="grid min-w-0 grid-cols-1 items-start gap-3 [grid-template-areas:'title'_'actions'_'ask'] sm:grid-cols-[minmax(0,1fr)_auto] sm:[grid-template-areas:'title_actions'_'ask_ask'] [@container(min-width:64rem)]:grid-cols-[minmax(0,1fr)_auto_18rem] [@container(min-width:64rem)]:[grid-template-areas:'title_actions_ask']">
+              <div className="min-w-0 [grid-area:title]" data-page-header="">
                 {pageTitle && (
                   <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
                     <BilingualText en={pageTitle} el={pageTitleEl} />
@@ -306,18 +308,18 @@ export function AppShell({
                 )}
               </div>
               {(actions || showHelp) && (
-                <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end" data-page-actions="">
+                <div className="flex shrink-0 flex-wrap items-center gap-2 [grid-area:actions] sm:justify-end" data-page-actions="">
                   {actions}
                   {showHelp && <PageContextualHelp compact defaultOpen={false} />}
                 </div>
               )}
+              {showAskAi && (
+                <AIComposer
+                  prompt={askAiPrompt}
+                  className="w-full min-w-0 [grid-area:ask]"
+                />
+              )}
             </div>
-            {showAskAi && (
-              <AIComposer
-                prompt={askAiPrompt}
-                className="w-full min-w-0"
-              />
-            )}
           </section>
           {/* Always present, hidden while empty: the slot page-level notes
               portal into (PageHeaderSlot: sample-data pill, drafts). */}
