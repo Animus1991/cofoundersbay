@@ -47,6 +47,14 @@ describe('mark all read, and its undo', () => {
     });
   });
 
+  it('marks only the named ones read, the member’s own unread ones, and answers with them', async () => {
+    const { controller, prisma } = setup(['n2']);
+    await expect(controller.markSomeRead(me, { ids: ['n1', 'n2'] })).resolves.toEqual({ ok: true, ids: ['n2'] });
+    expect(prisma.notification.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: 'me', id: { in: ['n1', 'n2'] }, readAt: null } }));
+    const write = prisma.notification.updateMany.mock.calls[0][0];
+    expect(write.where).toEqual({ userId: 'me', id: { in: ['n2'] }, readAt: null });
+  });
+
   it('refuses a body that is not a short list of ids', () => {
     const errors = (body: unknown) => validateSync(plainToInstance(MarkNotificationsUnreadDto, body)).length;
     expect(errors({ ids: ['n1'] })).toBe(0);

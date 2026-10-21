@@ -11,7 +11,8 @@ import {
   Bookmark, BookmarkCheck, MessageCircle, Heart, RotateCcw, SlidersHorizontal, Clock,
   TrendingUp, Star, CheckCircle2, CheckSquare,
 } from 'lucide-react';
-import { getRecommendations, getMatchBreakdown, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
+import { getRecommendations, getMatchBreakdown, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, restoreMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
+import { createPassLedger } from '@/lib/match-pass';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
@@ -364,14 +365,16 @@ function MatchListRow({
             <div className="flex items-center gap-1.5">
               <button onClick={onPass}
                 className="flex h-10 w-10 items-center justify-center gap-1.5 rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible sm:w-auto sm:px-3"
-                aria-label={`Pass on ${hit.displayName}`}>
+                aria-label={bilingualAria(`Pass on ${hit.displayName}`, `Παράλειψη: ${hit.displayName}`)}>
                 <X className="icon-sm" />
-                <span className="hidden sm:inline text-xs"><BilingualText en="Pass" el="Παράβλεψη" compact /></span>
+                <span className="hidden sm:inline text-xs"><BilingualText en="Pass" el="Παράλειψη" compact /></span>
               </button>
               <button onClick={onSave}
                 className={cn('flex h-10 w-10 items-center justify-center gap-1.5 rounded-full border border-border transition-colors sm:w-auto sm:px-3', isSaved ? STATUS.warning.icon : 'text-muted-foreground hover:text-status-warning')}
                 aria-pressed={isSaved}
-                aria-label={isSaved ? `${hit.displayName} is on your shortlist` : `Save ${hit.displayName} to your shortlist`}>
+                aria-label={isSaved
+                  ? bilingualAria(`${hit.displayName} is on your shortlist`, `${hit.displayName}: στη λίστα σας`)
+                  : bilingualAria(`Save ${hit.displayName} to your shortlist`, `Αποθήκευση: ${hit.displayName} στη λίστα σας`)}>
                 {isSaved ? <BookmarkCheck className="icon-sm" /> : <Bookmark className="icon-sm" />}
                 <span className="hidden sm:inline text-xs"><BilingualText en={isSaved ? 'Saved' : 'Save'} el={isSaved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
               </button>
@@ -654,28 +657,44 @@ export default function MatchesPage() {
     router.push(`/messages?to=${profile.userId}`);
   }, [router]);
 
+  // What each pass replaced on the server (lib/match-pass): Undo sends
+  // exactly that back. Before, Undo only brought the card back on screen; the
+  // pass stayed on the server and the person ranked lower from then on.
+  const [passLedger] = useState(() => createPassLedger({
+    record: (userId) => recordMatchFeedback({ targetUserId: userId, feedback: 'declined' }),
+    restore: (r) => restoreMatchFeedback({ targetUserId: r.userId, previous: r.previous, signalId: r.signalId }),
+  }));
+
+  const unpass = useCallback((ids: string[]) => {
+    if (!ids.length) return;
+    setPassedIds((prev) => {
+      const next = new Set(prev);
+      for (const id of ids) next.delete(id);
+      return next;
+    });
+    setLastPassed((last) => (last && ids.includes(last) ? null : last));
+    for (const id of ids) void passLedger.takeBack(id);
+  }, [passLedger]);
+
   // The toast offers the undo it used to only mention ("removed · Undo?",
-  // in English, with nothing to press): Undo brings this one card back.
+  // in English, with nothing to press): Undo brings this one card back, on
+  // the screen and on the server.
   const handlePass = useCallback((id: string, name: string, userId: string) => {
     setPassedIds(prev => new Set(prev).add(id));
     setLastPassed(id);
-    void recordMatchFeedback({ targetUserId: userId, feedback: 'declined' }).catch(() => {});
+    passLedger.pass(id, userId);
     success('Passed', name, {
       action: {
         label: sayOne('Undo', 'Αναίρεση'),
-        onClick: () => {
-          setPassedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
-          setLastPassed((last) => (last === id ? null : last));
-        },
+        onClick: () => unpass([id]),
       },
     });
-  }, [success, sayOne]);
+  }, [success, sayOne, unpass, passLedger]);
 
   const handleUndoPass = useCallback(() => {
     if (!lastPassed) return;
-    setPassedIds(prev => { const next = new Set(prev); next.delete(lastPassed); return next; });
-    setLastPassed(null);
-  }, [lastPassed]);
+    unpass([lastPassed]);
+  }, [lastPassed, unpass]);
 
   // The heart flips at once and a failed write flips it back. The request
   // used to be sent from inside the state updater, which React may run twice,
@@ -837,6 +856,19 @@ export default function MatchesPage() {
       writes: true,
       options: hitRows(filtered),
       run: (v) => { const hit = hitById(v); if (hit) handlePass(hit.id, hit.displayName, hit.userId); },
+      // Exact: the feedback answered with what it replaced, and unpass_match
+      // puts that back on the server as well as the card on the screen.
+      undo: (v) => (v ? { control: 'unpass_match', value: v } : undefined),
+    },
+    {
+      id: 'unpass_match',
+      labelEn: 'Bring back a match you passed on',
+      labelEl: 'Επαναφορά αντιστοίχισης που απορρίψατε',
+      writes: true,
+      options: hitRows(suggestions.filter((h) => passedIds.has(h.id))),
+      unavailableEn: passedIds.size ? undefined : 'You have not passed on anyone here.',
+      unavailableEl: passedIds.size ? undefined : 'Δεν έχετε απορρίψει κανέναν εδώ.',
+      run: (v) => { if (v && passedIds.has(v)) unpass([v]); else return ROW_GONE; },
     },
   ]);
 
@@ -1157,11 +1189,11 @@ export default function MatchesPage() {
 
                   <div className="flex items-center gap-1 rounded-lg border border-border p-0.5">
                     {([
-                      { mode: 'grid2' as ViewMode, icon: LayoutGrid, title: '2-col', small: false, mobile: true },
-                      { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: '3-col', small: true, mobile: false },
-                      { mode: 'list'  as ViewMode, icon: List,       title: 'List',  small: false, mobile: true },
+                      { mode: 'grid2' as ViewMode, icon: LayoutGrid, title: bilingualAria('Two columns', 'Δύο στήλες'), small: false, mobile: true },
+                      { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: bilingualAria('Three columns', 'Τρεις στήλες'), small: true, mobile: false },
+                      { mode: 'list'  as ViewMode, icon: List,       title: bilingualAria('List', 'Λίστα'), small: false, mobile: true },
                     ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean; mobile: boolean }[]).map(({ mode, icon: Icon, title, small, mobile }) => (
-                      <button key={mode} onClick={() => setViewMode(mode)} title={title} aria-label={`${title} view`}
+                      <button key={mode} onClick={() => setViewMode(mode)} title={title} aria-label={title} aria-pressed={viewMode === mode}
                         className={cn('h-9 items-center justify-center rounded-xl px-2 transition-all',
                           mobile ? 'flex' : 'hidden sm:flex',
                           viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
@@ -1172,7 +1204,7 @@ export default function MatchesPage() {
                   </div>
 
                   {lastPassed && (
-                    <Button size="sm" variant="ghost" onClick={handleUndoPass} aria-label="Undo the last pass" className="gap-1.5 text-xs h-8 text-muted-foreground px-2 sm:px-3">
+                    <Button size="sm" variant="ghost" onClick={handleUndoPass} aria-label={bilingualAria('Undo the last pass', 'Αναίρεση της τελευταίας παράλειψης')} className="gap-1.5 text-xs h-8 text-muted-foreground px-2 sm:px-3">
                       <RotateCcw className="icon-sm" aria-hidden="true" />
                       <span className="hidden sm:inline"><BilingualText en="Undo" el="Αναίρεση" compact /></span>
                     </Button>
@@ -1306,7 +1338,7 @@ export default function MatchesPage() {
                   {passedIds.size > 0 ? (
                     <button
                       type="button"
-                      onClick={() => { setPassedIds(new Set()); setLastPassed(null); }}
+                      onClick={() => unpass([...passedIds])}
                       className="tap-target-y font-medium text-primary-accessible underline-offset-4 hover:underline"
                     >
                       <BilingualText en="Show the passed ones again" el="Επαναφορά όσων απορρίψατε" compact />

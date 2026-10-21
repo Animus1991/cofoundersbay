@@ -3113,6 +3113,11 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
       reasons: target.matchReasons,
     };
   }
+  // Feedback is a write: the demo keeps no outcome, so there is nothing a
+  // pass replaced and nothing for its Undo to put back. These answered with
+  // the people list before, a read's answer to a write.
+  if (method === 'POST' && pathname === '/api/recommendations/feedback') return { ok: true, previous: null, signalId: null };
+  if (method === 'POST' && (pathname === '/api/recommendations/feedback/restore' || pathname === '/api/recommendations/signal')) return { ok: true };
   if (pathname.startsWith('/api/recommendations') || pathname.startsWith('/api/matching/recommendations')) {
     return { suggestions: PEOPLE };
   }

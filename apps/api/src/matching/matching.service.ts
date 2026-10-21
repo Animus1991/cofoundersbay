@@ -17,6 +17,13 @@ export interface MatchingCriteria {
   modelVersion?: string;
 }
 
+/** A member's outcome for one person, as feedback found it and restore puts it back. */
+export interface MatchOutcomeSnapshot {
+  feedback: string;
+  connectionStarted: boolean;
+  conversationStarted: boolean;
+}
+
 export interface ScoreBreakdown {
   role: number;
   skills: number;
@@ -131,15 +138,28 @@ export class MatchingService {
 
   // ── Feedback ───────────────────────────────────────────────────────────────
 
+  /**
+   * Records one member's feedback on one person, and answers with what it
+   * replaced: the outcome as it was (`previous`, null when there was none)
+   * and the behavioural signal it wrote (`signalId`). With those,
+   * `restoreFeedback` takes the feedback back exactly - the Undo of "Pass",
+   * which used to bring the card back on screen while the server kept the
+   * pass and ranked the person lower from then on.
+   */
   async recordFeedback(params: {
     sourceUserId: string;
     targetUserId: string;
     feedback: string;
     connectionStarted?: boolean;
     conversationStarted?: boolean;
-  }): Promise<void> {
+  }): Promise<{ previous: MatchOutcomeSnapshot | null; signalId: string }> {
+    const where = { sourceUserId_targetUserId: { sourceUserId: params.sourceUserId, targetUserId: params.targetUserId } };
+    const before = await this.prisma.matchOutcome.findUnique({
+      where,
+      select: { feedback: true, connectionStarted: true, conversationStarted: true },
+    });
     await this.prisma.matchOutcome.upsert({
-      where: { sourceUserId_targetUserId: { sourceUserId: params.sourceUserId, targetUserId: params.targetUserId } },
+      where,
       create: {
         sourceUserId: params.sourceUserId,
         targetUserId: params.targetUserId,
@@ -155,11 +175,61 @@ export class MatchingService {
     });
 
     // Record behavioral signal
-    await this.recordBehavioralSignal(params.sourceUserId, 'match_feedback', params.targetUserId, 'user',
+    const signalId = await this.recordBehavioralSignal(params.sourceUserId, 'match_feedback', params.targetUserId, 'user',
       params.feedback === 'accepted' ? 2.0 : params.feedback === 'declined' ? -1.0 : 0.5);
 
     // Invalidate cache
     await this.cache.invalidateByTag(`matches:v2:${params.sourceUserId}`);
+    return {
+      previous: before
+        ? { feedback: String(before.feedback), connectionStarted: before.connectionStarted, conversationStarted: before.conversationStarted }
+        : null,
+      signalId,
+    };
+  }
+
+  /**
+   * Takes one feedback back: the outcome returns to what `recordFeedback`
+   * answered it was (removed when there was none), and the signal that
+   * feedback wrote is deleted - only the member's own, and only a feedback
+   * signal, whatever id is sent.
+   */
+  async restoreFeedback(params: {
+    sourceUserId: string;
+    targetUserId: string;
+    previous?: MatchOutcomeSnapshot | null;
+    signalId?: string;
+  }): Promise<{ restored: boolean }> {
+    const where = { sourceUserId_targetUserId: { sourceUserId: params.sourceUserId, targetUserId: params.targetUserId } };
+    if (params.previous) {
+      await this.prisma.matchOutcome.upsert({
+        where,
+        create: {
+          sourceUserId: params.sourceUserId,
+          targetUserId: params.targetUserId,
+          feedback: params.previous.feedback as any,
+          connectionStarted: params.previous.connectionStarted,
+          conversationStarted: params.previous.conversationStarted,
+        },
+        update: {
+          feedback: params.previous.feedback as any,
+          connectionStarted: params.previous.connectionStarted,
+          conversationStarted: params.previous.conversationStarted,
+        },
+      });
+    } else {
+      await this.prisma.matchOutcome.deleteMany({
+        where: { sourceUserId: params.sourceUserId, targetUserId: params.targetUserId },
+      });
+    }
+    if (params.signalId) {
+      await this.prisma.userBehaviorSignal.deleteMany({
+        where: { id: params.signalId, userId: params.sourceUserId, signalType: 'match_feedback', targetId: params.targetUserId },
+      });
+    }
+    await this.cache.invalidateByTag(`matches:v2:${params.sourceUserId}`);
+    await this.cache.del(`fv:${params.sourceUserId}`);
+    return { restored: true };
   }
 
   async recordBehavioralSignal(
@@ -168,12 +238,14 @@ export class MatchingService {
     targetId?: string,
     targetType?: string,
     value = 1.0,
-  ): Promise<void> {
-    await this.prisma.userBehaviorSignal.create({
+  ): Promise<string> {
+    const signal = await this.prisma.userBehaviorSignal.create({
       data: { userId, signalType, targetId, targetType, value },
+      select: { id: true },
     });
     // Invalidate feature vector cache so it rebuilds with new signals
     await this.cache.del(`fv:${userId}`);
+    return signal?.id ?? '';
   }
 
   // ── Legacy: backward-compatible feedback method ────────────────────────────

@@ -12,6 +12,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { MatchingService } from './matching.service';
+import { RestoreMatchFeedbackDto } from './dto/restore-feedback.dto';
 
 @Controller('recommendations')
 @UseGuards(JwtAuthGuard)
@@ -97,12 +98,28 @@ export class MatchingController {
       conversationStarted?: boolean;
     },
   ) {
-    await this.matching.recordFeedback({
+    // `previous` and `signalId` are what an Undo sends back to /feedback/restore.
+    const { previous, signalId } = await this.matching.recordFeedback({
       sourceUserId: user.id,
       targetUserId: body.targetUserId,
       feedback: body.feedback,
       connectionStarted: body.connectionStarted,
       conversationStarted: body.conversationStarted,
+    });
+    return { ok: true, previous, signalId };
+  }
+
+  /** The exact opposite of one `feedback` call, for the member's own outcome only. */
+  @Post('feedback/restore')
+  async restoreFeedback(
+    @CurrentUser() user: { id: string },
+    @Body() body: RestoreMatchFeedbackDto,
+  ) {
+    await this.matching.restoreFeedback({
+      sourceUserId: user.id,
+      targetUserId: body.targetUserId,
+      previous: body.previous ?? null,
+      signalId: body.signalId,
     });
     return { ok: true };
   }

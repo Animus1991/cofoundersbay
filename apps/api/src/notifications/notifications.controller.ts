@@ -100,6 +100,28 @@ export class NotificationsController {
     return { ok: true, ids };
   }
 
+  /**
+   * Marks the named notifications read, the member's own unread ones only,
+   * and answers with the ids it marked, as mark-all-read does. The inbox uses
+   * it while a category is chosen: "mark all read" there used to clear every
+   * category, including the ones the reader could not see.
+   */
+  @Post('mark-read')
+  async markSomeRead(@CurrentUser() user: { id: string }, @Body() body: MarkNotificationsUnreadDto) {
+    const unread = await this.prisma.notification.findMany({
+      where: { userId: user.id, id: { in: body.ids }, readAt: null },
+      select: { id: true },
+    });
+    const ids = unread.map((n) => n.id);
+    if (ids.length) {
+      await this.prisma.notification.updateMany({
+        where: { userId: user.id, id: { in: ids }, readAt: null },
+        data: { readAt: new Date() },
+      });
+    }
+    return { ok: true, ids };
+  }
+
   /** The opposite of mark-all-read, for the member's own notifications only. */
   @Post('mark-unread')
   async markUnread(@CurrentUser() user: { id: string }, @Body() body: MarkNotificationsUnreadDto) {

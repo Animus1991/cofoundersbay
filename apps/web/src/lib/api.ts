@@ -962,6 +962,11 @@ export async function markAllNotificationsRead(): Promise<{ ok: true; ids?: stri
   return apiRequest('/api/notifications/mark-all-read', { method: 'POST' });
 }
 
+/** The named notifications read (the member's own unread ones); answers with the ids it marked. */
+export async function markNotificationsRead(ids: string[]): Promise<{ ok: true; ids?: string[] }> {
+  return apiRequest('/api/notifications/mark-read', { method: 'POST', body: JSON.stringify({ ids }) });
+}
+
 /** The undo of "mark all read": these, and only these, unread again. */
 export async function markNotificationsUnread(ids: string[]): Promise<{ ok: true; count?: number }> {
   return apiRequest('/api/notifications/mark-unread', { method: 'POST', body: JSON.stringify({ ids }) });
@@ -4627,14 +4632,32 @@ export async function getAIRecommendations(limit?: number): Promise<{ suggestion
   return apiRequest(`/api/recommendations${q}`);
 }
 
-/** Record rich match feedback (not relevant, not now, etc.) */
+/** A member's outcome for one person before a feedback changed it. */
+export type MatchOutcomeSnapshot = { feedback: MatchFeedbackType; connectionStarted: boolean; conversationStarted: boolean };
+
+/**
+ * Record rich match feedback (not relevant, not now, etc.). Answers with what
+ * it replaced (`previous`, null when nothing) and the signal it wrote, which
+ * is all `restoreMatchFeedback` needs to take it back exactly.
+ */
 export async function recordMatchFeedback(params: {
   targetUserId: string;
   feedback: MatchFeedbackType;
   connectionStarted?: boolean;
   conversationStarted?: boolean;
-}): Promise<{ ok: boolean }> {
+}): Promise<{ ok: boolean; previous?: MatchOutcomeSnapshot | null; signalId?: string | null }> {
   return apiRequest('/api/recommendations/feedback', { method: 'POST', body: JSON.stringify(params) });
+}
+
+/** The exact undo of one `recordMatchFeedback`, from what it answered. */
+export async function restoreMatchFeedback(params: {
+  targetUserId: string;
+  previous?: MatchOutcomeSnapshot | null;
+  signalId?: string | null;
+}): Promise<{ ok: boolean }> {
+  const body: Record<string, unknown> = { targetUserId: params.targetUserId, previous: params.previous ?? null };
+  if (params.signalId) body.signalId = params.signalId;
+  return apiRequest('/api/recommendations/feedback/restore', { method: 'POST', body: JSON.stringify(body) });
 }
 
 /** Record a behavioral signal (e.g. profile_view, match_click) */

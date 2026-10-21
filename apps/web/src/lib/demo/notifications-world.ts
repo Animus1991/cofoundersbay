@@ -114,6 +114,17 @@ export function previewNotificationsApi<T extends Row>(
     return { ok: true, ids };
   }
 
+  // The named ones read, as the API's mark-read: the inbox uses it while a category is chosen.
+  if (pathname === '/api/notifications/mark-read' && method === 'POST') {
+    const asked = Array.isArray(body.ids) ? body.ids : null;
+    if (!asked || asked.length === 0 || asked.some((id) => typeof id !== 'string')) {
+      throw new DemoRefusal(400, 'ids must be a non-empty array of strings', { reason: 'ids' });
+    }
+    const ids = rows.filter((n) => !n.readAt && asked.includes(n.id)).map((n) => n.id);
+    setReadAt(ids, nowIso);
+    return { ok: true, ids };
+  }
+
   if (pathname === '/api/notifications/mark-unread' && method === 'POST') {
     const asked = Array.isArray(body.ids) ? body.ids : null;
     if (!asked || asked.length === 0 || asked.some((id) => typeof id !== 'string')) {

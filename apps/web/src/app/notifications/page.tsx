@@ -31,6 +31,7 @@ import {
   listNotifications,
   markNotificationRead,
   markAllNotificationsRead,
+  markNotificationsRead,
   markNotificationsUnread,
   deleteNotification,
   type NotificationItem,
@@ -277,6 +278,16 @@ export default function NotificationsPage() {
     onSettled: () => qc.invalidateQueries({ queryKey: qk('notifications') }),
   });
 
+  // While a category is chosen, the header's action applies to what is shown:
+  // "mark all read" there used to clear every category, the hidden ones too.
+  const categoryChosen = activeTab !== 'all';
+  const shownUnreadIds = notifications.filter((n) => !n.readAt).map((n) => n.id);
+  const markShownRead = useMutation({
+    mutationFn: markNotificationsRead,
+    onSuccess: (res) => setLastMarked(res?.ids ?? []),
+    onSettled: () => qc.invalidateQueries({ queryKey: qk('notifications') }),
+  });
+
   const markAllRead = useMutation({
     mutationFn: markAllNotificationsRead,
     onSuccess: (res) => setLastMarked(res?.ids ?? []),
@@ -313,6 +324,17 @@ export default function NotificationsPage() {
       undo: () => (unreadCount > 0 ? { control: 'restore_unread' } : undefined),
     },
     {
+      id: 'mark_shown_read',
+      labelEn: 'Mark the notifications shown read (the chosen category only)',
+      labelEl: 'Σήμανση των ειδοποιήσεων που φαίνονται ως αναγνωσμένων (μόνο η κατηγορία που επιλέξατε)',
+      writes: true,
+      unavailableEn: shownUnreadIds.length === 0 ? 'Nothing shown is unread.' : undefined,
+      unavailableEl: shownUnreadIds.length === 0 ? 'Τίποτα από όσα φαίνονται δεν είναι αδιάβαστο.' : undefined,
+      run: async () => { await markShownRead.mutateAsync(shownUnreadIds); },
+      // Exact: the API answers with the ids it marked, and only those return.
+      undo: () => (shownUnreadIds.length > 0 ? { control: 'restore_unread' } : undefined),
+    },
+    {
       id: 'restore_unread',
       labelEn: 'Make the notifications just marked read unread again',
       labelEl: 'Ξανά ως αδιάβαστες όσες μόλις σημειώθηκαν αναγνωσμένες',
@@ -334,6 +356,24 @@ export default function NotificationsPage() {
         const ids = res?.ids ?? [];
         if (!ids.length) return;
         success('All notifications marked read', undefined, {
+          action: {
+            label: sayOne('Undo', 'Αναίρεση'),
+            onClick: () => restoreUnread.mutate(ids, {
+              onError: (err) => showError('Could not mark them unread', err instanceof Error ? err.message : undefined),
+            }),
+          },
+        });
+      },
+    });
+  };
+
+  const markShownWithUndo = () => {
+    if (!shownUnreadIds.length) return;
+    markShownRead.mutate(shownUnreadIds, {
+      onSuccess: (res) => {
+        const ids = res?.ids ?? [];
+        if (!ids.length) return;
+        success('These notifications marked read', undefined, {
           action: {
             label: sayOne('Undo', 'Αναίρεση'),
             onClick: () => restoreUnread.mutate(ids, {
@@ -556,11 +596,15 @@ export default function NotificationsPage() {
                 variant="ghost"
                 size="sm"
                 className="ml-auto h-8 gap-1.5 px-2.5 text-xs"
-                onClick={markAllWithUndo}
-                disabled={markAllRead.isPending}
+                onClick={categoryChosen ? markShownWithUndo : markAllWithUndo}
+                disabled={markAllRead.isPending || markShownRead.isPending}
               >
                 <CheckCheck className="icon-sm" aria-hidden="true" />
-                <BilingualText en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} compact />
+                {categoryChosen ? (
+                  <BilingualText en="Mark these read" el="Σήμανση αυτών ως αναγνωσμένων" compact />
+                ) : (
+                  <BilingualText en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} compact />
+                )}
               </Button>
             ) : null}
           </div>

@@ -33,6 +33,16 @@ describe('demo notifications keep what the visitor did', () => {
     expect(unreadIds()).toEqual(['a', 'b']);
   });
 
+  it('marks only the named unread ones read while a category is chosen, and the undo restores them', () => {
+    const marked = api('/api/notifications/mark-read', 'POST', { ids: ['b', 'c'] });
+    // c was already read: only b changed.
+    expect(marked).toEqual({ ok: true, ids: ['b'] });
+    expect(unreadIds()).toEqual(['a']);
+    api('/api/notifications/mark-unread', 'POST', { ids: marked.ids as string[] });
+    expect(unreadIds()).toEqual(['a', 'b']);
+    expect(() => api('/api/notifications/mark-read', 'POST', {})).toThrow(/ids/);
+  });
+
   it('refuses an undo without ids', () => {
     expect(() => api('/api/notifications/mark-unread', 'POST', {})).toThrow(/ids/);
     expect(() => api('/api/notifications/mark-unread', 'POST', { ids: [1] })).toThrow(/ids/);
