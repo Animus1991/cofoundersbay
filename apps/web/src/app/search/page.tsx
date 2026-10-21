@@ -34,7 +34,7 @@ import {
   type SearchCategoryKey,
   type SearchResultTypeKey,
 } from '@/lib/i18n/strings-search';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 import { qk } from '@/lib/query-keys';
@@ -200,7 +200,7 @@ function ResultCard({ result }: { result: SearchResult }) {
               <Avatar className={cn('h-10 w-10', shape)}>
                 <AvatarImage src={result.imageUrl} alt="" />
                 <AvatarFallback className={cn('bg-primary/10 text-primary-accessible', shape)}>
-                  {result.title[0]?.toUpperCase()}
+                  {initialsOf(result.title)}
                 </AvatarFallback>
               </Avatar>
             ) : (

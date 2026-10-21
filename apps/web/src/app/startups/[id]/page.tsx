@@ -25,11 +25,12 @@ import {
   PIPELINE_STAGES,
   type PipelineStage,
 } from '@/lib/api';
-import { formatRelativeTime } from '@/lib/utils';
+import { formatRelativeTime, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, usePageControls } from '@/lib/page-controls';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { bilingualAria } from '@/lib/i18n/format';
 
 const STAGE_LABEL: Record<PipelineStage, { en: string; el: string }> = {
   discovered: { en: 'Discovered', el: 'Εντοπίστηκε' },
@@ -269,7 +270,7 @@ export default function StartupDealPage() {
             <CardContent>
               <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); if (note.trim()) addNote.mutate(); }}>
                 <Textarea
-                  aria-label="Note"
+                  aria-label={bilingualAria('Note', 'Σημείωση')}
                   rows={3}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
@@ -313,7 +314,7 @@ export default function StartupDealPage() {
                 mark={(
                   <Avatar className="h-10 w-10 rounded-xl">
                     {deal.logoUrl ? <AvatarImage src={deal.logoUrl} alt="" /> : null}
-                    <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{deal.name[0]?.toUpperCase()}</AvatarFallback>
+                    <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initialsOf(deal.name)}</AvatarFallback>
                   </Avatar>
                 )}
                 title={deal.name}
@@ -351,7 +352,7 @@ export default function StartupDealPage() {
                   mark={(
                     <Avatar className="h-10 w-10">
                       {deal.founder.avatarUrl ? <AvatarImage src={deal.founder.avatarUrl} alt="" /> : null}
-                      <AvatarFallback>{(deal.founder?.displayName ?? '?')[0]?.toUpperCase()}</AvatarFallback>
+                      <AvatarFallback>{initialsOf(deal.founder?.displayName)}</AvatarFallback>
                     </Avatar>
                   )}
                   title={(

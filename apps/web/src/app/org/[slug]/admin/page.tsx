@@ -60,7 +60,7 @@ import {
   updateOrganizationMember,
   type OrgAdminMember,
 } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
@@ -470,7 +470,7 @@ export default function OrgAdminPage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></p>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger aria-label="Role" className="mt-2">
+              <SelectTrigger aria-label={bilingualAria('Role', 'Ρόλος')} className="mt-2">
                 <SelectValue placeholder={sayOne("All roles", "Όλοι οι ρόλοι")} />
               </SelectTrigger>
               <SelectContent>
@@ -568,7 +568,7 @@ export default function OrgAdminPage() {
             <Avatar className="h-12 w-12 rounded-xl">
               <AvatarImage src={org.logo} />
               <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible text-lg">
-                {org.name[0]}
+                {initialsOf(org.name)}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
@@ -623,7 +623,7 @@ export default function OrgAdminPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
-                aria-label="Search members"
+                aria-label={bilingualAria('Search members', 'Αναζήτηση μελών')}
               />
             </div>
 
@@ -647,7 +647,7 @@ export default function OrgAdminPage() {
                           <Avatar className="h-9 w-9">
                             <AvatarImage src={member.avatar} />
                             <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">
-                              {member.name[0]}
+                              {initialsOf(member.name)}
                             </AvatarFallback>
                           </Avatar>
                           <div>
@@ -824,7 +824,7 @@ export default function OrgAdminPage() {
             <div>
               <label htmlFor="invite-role" className="block text-sm font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></label>
               <Select value={inviteRole} onValueChange={setInviteRole}>
-                <SelectTrigger id="invite-role" aria-label="Role" className="mt-2">
+                <SelectTrigger id="invite-role" aria-label={bilingualAria('Role', 'Ρόλος')} className="mt-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

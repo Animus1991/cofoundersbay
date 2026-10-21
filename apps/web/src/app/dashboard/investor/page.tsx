@@ -28,7 +28,7 @@ import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashbo
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { StatusText } from '@/components/common/StatusText';
 import { useSession } from '@/hooks/useSession';
-import { cn, companyStageLabel } from '@/lib/utils';
+import { cn, companyStageLabel, initialsOf } from '@/lib/utils';
 import {
   getInvestorActivity,
   getInvestorSummary,
@@ -126,7 +126,7 @@ function DealRow({ deal, trailing }: { deal: InvestorDeal; trailing: React.React
           <Avatar className="h-10 w-10 rounded-xl">
             <AvatarImage src={deal.logoUrl ?? undefined} alt="" />
             <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
-              {deal.name?.[0]?.toUpperCase() ?? '?'}
+              {initialsOf(deal.name)}
             </AvatarFallback>
           </Avatar>
         )}

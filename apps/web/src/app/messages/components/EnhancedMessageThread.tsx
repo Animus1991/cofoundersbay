@@ -35,7 +35,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
@@ -150,7 +150,7 @@ export function EnhancedMessageThread({
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
             <AvatarImage src={otherParticipant?.avatar} />
-            <AvatarFallback>{otherParticipant?.name?.[0]}</AvatarFallback>
+            <AvatarFallback>{initialsOf(otherParticipant?.name ?? '')}</AvatarFallback>
           </Avatar>
           <div>
             <h3 className="font-semibold">{otherParticipant?.name}</h3>
@@ -258,7 +258,7 @@ export function EnhancedMessageThread({
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={participants.find(p => p.id === message.senderId)?.avatar} />
                   <AvatarFallback>
-                    {participants.find(p => p.id === message.senderId)?.name?.[0]}
+                    {initialsOf(participants.find(p => p.id === message.senderId)?.name)}
                   </AvatarFallback>
                 </Avatar>
               ) : (

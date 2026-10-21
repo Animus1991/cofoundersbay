@@ -29,7 +29,7 @@ import {
   List,
   SlidersHorizontal
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
@@ -339,7 +339,7 @@ export function EnhancedMemberDirectory() {
                 <div className="relative">
                   <Avatar className={cn(viewMode === 'list' ? "h-12 w-12" : "h-16 w-16")}>
                     <AvatarImage src={member.avatar} />
-                    <AvatarFallback>{member.name[0]}</AvatarFallback>
+                    <AvatarFallback>{initialsOf(member.name)}</AvatarFallback>
                   </Avatar>
                   {member.online && (
                     <span className="absolute bottom-0 right-0 h-4 w-4 bg-status-success-mark rounded-full border-2 border-background" />

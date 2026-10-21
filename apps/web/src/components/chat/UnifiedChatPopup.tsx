@@ -22,7 +22,7 @@ import {
   UserCheck,
   User,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -120,7 +120,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
             <Avatar className="h-10 w-10">
               <AvatarImage src={conv.recipientAvatar ?? undefined} />
               <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary-accessible">
-                {conv.recipientName[0]?.toUpperCase()}
+                {initialsOf(conv.recipientName)}
               </AvatarFallback>
             </Avatar>
             {conv.isOnline && (
@@ -721,7 +721,7 @@ export function UnifiedChatPopup() {
                     <Avatar className="h-7 w-7">
                       <AvatarImage src={selected.recipientAvatar ?? undefined} />
                       <AvatarFallback className="text-2xs font-semibold bg-primary/15 text-primary-accessible">
-                        {selected.recipientName[0]?.toUpperCase()}
+                        {initialsOf(selected.recipientName)}
                       </AvatarFallback>
                     </Avatar>
                     {selected.isOnline && (
@@ -808,7 +808,7 @@ export function UnifiedChatPopup() {
                               <Avatar className="h-6 w-6 shrink-0 mb-0.5">
                                 <AvatarImage src={selected.recipientAvatar ?? undefined} />
                                 <AvatarFallback className="text-2xs bg-primary/15 text-primary-accessible">
-                                  {selected.recipientName[0]?.toUpperCase()}
+                                  {initialsOf(selected.recipientName)}
                                 </AvatarFallback>
                               </Avatar>
                             )}

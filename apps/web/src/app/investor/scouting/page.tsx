@@ -174,7 +174,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
             <Avatar className="h-10 w-10 rounded-xl">
               <AvatarImage src={startup.logoUrl} alt="" />
               <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
-                {startup.name[0]?.toUpperCase()}
+                {initialsOf(startup.name)}
               </AvatarFallback>
             </Avatar>
           )}

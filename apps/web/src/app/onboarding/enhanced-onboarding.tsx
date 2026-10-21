@@ -42,7 +42,7 @@ import { createProfile, uploadAvatar, listSkills,
   type Skill,
 } from '@/lib/api';
 import { analytics } from '@/lib/analytics';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -656,7 +656,7 @@ function ProfileStep({
             <Avatar className="h-20 w-20">
               <AvatarImage src={avatarPreview} />
               <AvatarFallback>
-                {data.displayName ? data.displayName[0].toUpperCase() : 'U'}
+                {initialsOf(data.displayName)}
               </AvatarFallback>
             </Avatar>
             <label className="absolute bottom-0 right-0 p-1 bg-primary rounded-full cursor-pointer">

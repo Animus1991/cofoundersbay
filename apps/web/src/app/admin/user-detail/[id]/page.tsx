@@ -42,6 +42,7 @@ import {
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { formatRelativeTime, initialsOf } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 
 // The API's Role enum; ChangeUserRoleDto accepts nothing else.
 const ROLES = [
@@ -292,7 +293,7 @@ export default function AdminUserDetailPage() {
                   <BilingualText en="Role" el="Ρόλος" compact />
                 </label>
                 <Select value={user.role} onValueChange={(v) => { if (v !== user.role) role.mutate(v); }} disabled={role.isPending}>
-                  <SelectTrigger id="user-role" aria-label="Role">
+                  <SelectTrigger id="user-role" aria-label={bilingualAria('Role', 'Ρόλος')}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

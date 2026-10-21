@@ -17,7 +17,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from '@/hooks/useSession';
 import { isPreviewDemo } from '@/lib/preview-demo';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import {
   getDashboardActivity,
   getDashboardMe,
@@ -111,7 +111,7 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={match.avatarUrl ?? undefined} />
         <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
-          {match.displayName?.[0]?.toUpperCase() ?? '?'}
+          {initialsOf(match.displayName)}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
@@ -141,7 +141,7 @@ function MentorSuggestionCard({ mentor }: { mentor: MentorProfileItem }) {
       <Avatar className="h-9 w-9 shrink-0">
         <AvatarImage src={mentor.avatarUrl ?? undefined} />
         <AvatarFallback className="bg-status-success-bg text-status-success text-sm font-semibold">
-          {mentor.displayName?.[0]?.toUpperCase() ?? 'M'}
+          {initialsOf(mentor.displayName)}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">

@@ -33,7 +33,7 @@ describe('BoardMiniMap', () => {
     const frame = container.firstElementChild as HTMLElement;
     expect(frame.dataset.compact).toBe('false');
     expect(frame.style.width).toBe('182px');
-    expect(screen.getByRole('img', { name: 'Canvas mini-map' }).getAttribute('width')).toBe('180');
+    expect(screen.getByRole('img', { name: /^Canvas mini-map/ }).getAttribute('width')).toBe('180');
 
     rerender(
       <BoardMiniMap
@@ -47,7 +47,7 @@ describe('BoardMiniMap', () => {
       />,
     );
     expect(frame.dataset.compact).toBe('true');
-    expect(screen.getByRole('img', { name: 'Canvas mini-map' }).getAttribute('width')).toBe('112');
+    expect(screen.getByRole('img', { name: /^Canvas mini-map/ }).getAttribute('width')).toBe('112');
   });
 
   it('navigates the canvas when the map is clicked', () => {
@@ -63,7 +63,7 @@ describe('BoardMiniMap', () => {
       />,
     );
 
-    const svg = screen.getByRole('img', { name: 'Canvas mini-map' });
+    const svg = screen.getByRole('img', { name: /^Canvas mini-map/ });
     vi.spyOn(svg, 'getBoundingClientRect').mockReturnValue({
       left: 0, top: 0, right: 180, bottom: 120, width: 180, height: 120, x: 0, y: 0, toJSON: () => ({}),
     });

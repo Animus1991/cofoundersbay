@@ -22,7 +22,7 @@ import {
   Target,
   Zap
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { FactLine } from '@/components/common/FactLine';
 
@@ -234,7 +234,7 @@ export function SmartRecommendations() {
             mark={rec.type === 'person' ? (
               <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
                 <AvatarImage src={rec.image} />
-                <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">{rec.title[0]}</AvatarFallback>
+                <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">{initialsOf(rec.title)}</AvatarFallback>
               </Avatar>
             ) : (
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary-accessible ring-2 ring-primary/20">

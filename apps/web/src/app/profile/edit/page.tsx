@@ -61,7 +61,7 @@ import { calculateProfileCompletion } from '@/components/common/ProfileCompletio
 import { useToast } from '@/components/ui/toast';
 import { ImageCropperTrigger } from '@/components/ui/image-cropper';
 import { analytics } from '@/lib/analytics';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { COMMITMENT_LEVELS, LOOKING_FOR_OPTIONS, STARTUP_STAGES } from '@/lib/founder-options';
@@ -814,7 +814,7 @@ export default function ProfileEditPage() {
                         <Avatar className="h-28 w-28 ring-4 ring-background">
                           <AvatarImage src={form.avatarUrl || undefined} />
                           <AvatarFallback className="bg-primary/10 text-primary-accessible text-3xl font-semibold">
-                            {form.displayName[0]?.toUpperCase() || '?'}
+                            {initialsOf(form.displayName)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">

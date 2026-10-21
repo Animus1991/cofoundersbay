@@ -7,6 +7,8 @@ import {
   Spline, Library,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 export type DrawTool =
   | 'select'
@@ -24,6 +26,7 @@ export type DrawTool =
 
 interface ToolGroup {
   label: string;
+  labelEl: string;
   tools: ToolDef[];
 }
 
@@ -31,6 +34,7 @@ interface ToolDef {
   tool: DrawTool;
   icon: React.ElementType;
   label: string;
+  labelEl: string;
   shortcut?: string;
   color?: string;
 }
@@ -38,39 +42,44 @@ interface ToolDef {
 const TOOL_GROUPS: ToolGroup[] = [
   {
     label: 'Selection',
+    labelEl: 'Επιλογή',
     tools: [
-      { tool: 'select', icon: MousePointer2, label: 'Select', shortcut: 'V' },
-      { tool: 'hand',   icon: Hand,          label: 'Pan',    shortcut: 'H' },
+      { tool: 'select', icon: MousePointer2, label: 'Select', labelEl: 'Επιλογή', shortcut: 'V' },
+      { tool: 'hand',   icon: Hand,          label: 'Pan',    labelEl: 'Μετακίνηση καμβά', shortcut: 'H' },
     ],
   },
   {
     label: 'Shapes',
+    labelEl: 'Σχήματα',
     tools: [
-      { tool: 'shape_rect',     icon: Square,    label: 'Rectangle', shortcut: 'R', color: '#3B82F6' },
-      { tool: 'shape_circle',   icon: Circle,    label: 'Circle',    shortcut: 'O', color: '#8B5CF6' },
-      { tool: 'shape_diamond',  icon: Diamond,   label: 'Diamond',   shortcut: 'D', color: '#F59E0B' },
-      { tool: 'shape_triangle', icon: Triangle,  label: 'Triangle',  shortcut: 'T', color: '#10B981' },
-      { tool: 'shape_line',     icon: Minus,     label: 'Line',      shortcut: 'L', color: '#94A3B8' },
-      { tool: 'shape_arrow',    icon: MoveRight, label: 'Arrow',     shortcut: 'A', color: '#6366F1' },
+      { tool: 'shape_rect',     icon: Square,    label: 'Rectangle', labelEl: 'Ορθογώνιο', shortcut: 'R', color: '#3B82F6' },
+      { tool: 'shape_circle',   icon: Circle,    label: 'Circle',    labelEl: 'Κύκλος', shortcut: 'O', color: '#8B5CF6' },
+      { tool: 'shape_diamond',  icon: Diamond,   label: 'Diamond',   labelEl: 'Ρόμβος', shortcut: 'D', color: '#F59E0B' },
+      { tool: 'shape_triangle', icon: Triangle,  label: 'Triangle',  labelEl: 'Τρίγωνο', shortcut: 'T', color: '#10B981' },
+      { tool: 'shape_line',     icon: Minus,     label: 'Line',      labelEl: 'Γραμμή', shortcut: 'L', color: '#94A3B8' },
+      { tool: 'shape_arrow',    icon: MoveRight, label: 'Arrow',     labelEl: 'Βέλος', shortcut: 'A', color: '#6366F1' },
     ],
   },
   {
     label: 'Text & Notes',
+    labelEl: 'Κείμενο και σημειώσεις',
     tools: [
-      { tool: 'shape_text', icon: Type,        label: 'Text Label', shortcut: 'X', color: '#475569' },
-      { tool: 'note',       icon: StickyNote,  label: 'Sticky Note', shortcut: 'N', color: '#F59E0B' },
+      { tool: 'shape_text', icon: Type,        label: 'Text Label', labelEl: 'Ετικέτα κειμένου', shortcut: 'X', color: '#475569' },
+      { tool: 'note',       icon: StickyNote,  label: 'Sticky Note', labelEl: 'Αυτοκόλλητο σημείωμα', shortcut: 'N', color: '#F59E0B' },
     ],
   },
   {
     label: 'Connect',
+    labelEl: 'Σύνδεση',
     tools: [
-      { tool: 'connect', icon: GitBranch, label: 'Connector', shortcut: 'C', color: '#10B981' },
+      { tool: 'connect', icon: GitBranch, label: 'Connector', labelEl: 'Σύνδεσμος', shortcut: 'C', color: '#10B981' },
     ],
   },
   {
     label: 'Diagram',
+    labelEl: 'Διάγραμμα',
     tools: [
-      { tool: 'mermaid', icon: Spline, label: 'Mermaid Diagram', shortcut: 'M', color: '#EC4899' },
+      { tool: 'mermaid', icon: Spline, label: 'Mermaid Diagram', labelEl: 'Διάγραμμα Mermaid', shortcut: 'M', color: '#EC4899' },
     ],
   },
 ];
@@ -83,6 +92,9 @@ interface CanvasDrawToolbarProps {
 }
 
 export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, libraryOpen }: CanvasDrawToolbarProps) {
+  // Named in the reader's language for the tooltip and in both for screen
+  // readers, as the rest of the board: every tool was English-only.
+  const sayOne = useBilingualString();
   const handlePick = useCallback((tool: DrawTool) => (e: React.SyntheticEvent) => {
     e.stopPropagation();
     onToolChange(tool);
@@ -92,7 +104,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
     <div
       data-canvas-chrome
       role="toolbar"
-      aria-label="Drawing tools"
+      aria-label={bilingualAria('Drawing tools', 'Εργαλεία σχεδίασης')}
       className={cn(
         'flex items-center gap-1 py-1.5 px-1.5 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl z-40 select-none',
         // Phone: horizontal strip that can scroll. Tablet/desktop: vertical rail.
@@ -106,7 +118,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
         <div
           key={group.label}
           role="group"
-          aria-label={group.label}
+          aria-label={bilingualAria(group.label, group.labelEl)}
           className="flex flex-row sm:flex-col items-center gap-0.5 shrink-0"
         >
           {gi > 0 && (
@@ -118,14 +130,16 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
           {group.tools.map((def) => {
             const Icon = def.icon;
             const isActive = activeTool === def.tool;
-            const title = `${def.label}${def.shortcut ? ` (${def.shortcut})` : ''}`;
+            const key = def.shortcut ? ` (${def.shortcut})` : '';
+            const title = sayOne(`${def.label}${key}`, `${def.labelEl}${key}`);
+            const name = bilingualAria(`${def.label}${key}`, `${def.labelEl}${key}`);
             return (
               <button
                 key={def.tool}
                 type="button"
                 onClick={handlePick(def.tool)}
                 title={title}
-                aria-label={title}
+                aria-label={name}
                 aria-pressed={isActive}
                 className={cn(
                   'flex h-11 w-11 items-center justify-center rounded-md transition-all duration-100 shrink-0 sm:h-8 sm:w-8',
@@ -149,8 +163,8 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onToggleLibrary(); }}
-            title="Shape Library (Shapes panel)"
-            aria-label="Shape Library"
+            title={sayOne('Shape Library (Shapes panel)', 'Βιβλιοθήκη σχημάτων (πάνελ σχημάτων)')}
+            aria-label={bilingualAria('Shape Library', 'Βιβλιοθήκη σχημάτων')}
             aria-pressed={!!libraryOpen}
             className={cn(
               'flex h-11 w-11 items-center justify-center rounded-md transition-all duration-100 shrink-0 sm:h-8 sm:w-8',
@@ -170,7 +184,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
           backgroundColor:
             TOOL_GROUPS.flatMap((g) => g.tools).find((t) => t.tool === activeTool)?.color ?? '#3B82F6',
         }}
-        title="Active tool"
+        title={sayOne('Active tool', 'Ενεργό εργαλείο')}
         aria-hidden="true"
       />
     </div>

@@ -23,7 +23,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { formatRelativeTime } from '@/lib/utils';
+import { formatRelativeTime, initialsOf } from '@/lib/utils';
 import { listServiceInquiries, updateServiceInquiry, type ServiceInquiryItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -124,7 +124,7 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
           mark={(
             <Avatar className="h-10 w-10">
               <AvatarImage src={project.clientAvatar} alt="" />
-              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{project.clientName[0]?.toUpperCase()}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(project.clientName)}</AvatarFallback>
             </Avatar>
           )}
           title={(

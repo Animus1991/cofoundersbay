@@ -4,6 +4,7 @@ import type { ElementType, ReactNode } from 'react';
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 import { closePageTools } from './PageRailContext';
 
 /**
@@ -86,7 +87,9 @@ export function RailOptions<V extends string>({
   onChange: (value: V) => void;
 }) {
   return (
-    <div role="group" aria-label={title} className="space-y-1">
+    // Named in both languages, as everything else in the rail: a Greek screen
+    // reader announced "Format" over a row of Greek options.
+    <div role="group" aria-label={bilingualAria(title, titleEl ?? title)} className="space-y-1">
       <p className="px-2.5 pb-0.5 text-xs font-medium text-muted-foreground">
         <BilingualText en={title} el={titleEl} compact />
       </p>

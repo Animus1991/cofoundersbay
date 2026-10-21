@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { companyStageLabel, formatRelativeTime } from '@/lib/utils';
+import { companyStageLabel, formatRelativeTime, initialsOf } from '@/lib/utils';
 import {
   listInvestorDeals,
   getInvestorActivity,
@@ -268,7 +268,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
             <Avatar className="h-10 w-10 rounded-xl">
               <AvatarImage src={startup.logoUrl ?? undefined} alt="" />
               <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
-                {startup.name[0]}
+                {initialsOf(startup.name)}
               </AvatarFallback>
             </Avatar>
           )}
@@ -639,7 +639,7 @@ export default function InvestorWatchlistPage() {
                       mark={(
                         <Avatar className="h-10 w-10 rounded-xl">
                           <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
-                            {item.startupName[0]}
+                            {initialsOf(item.startupName)}
                           </AvatarFallback>
                         </Avatar>
                       )}

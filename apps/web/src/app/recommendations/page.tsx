@@ -56,7 +56,7 @@ import {
   type MatchFeedbackType,
   type MatchExplanationItem,
 } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
@@ -315,7 +315,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
               <Avatar className="h-10 w-10 ring-2 ring-border group-hover:ring-primary/20 transition-all">
                 <AvatarImage src={avatarUrl ?? undefined} alt="" />
                 <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary-accessible">
-                  {displayName?.[0]?.toUpperCase() ?? '?'}
+                  {initialsOf(displayName)}
                 </AvatarFallback>
               </Avatar>
             </Link>
@@ -647,7 +647,7 @@ export default function RecommendationsPage() {
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={m.profile?.avatarUrl ?? undefined} alt="" />
                       <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary-accessible">
-                        {m.profile?.displayName?.[0] ?? '?'}
+                        {initialsOf(m.profile?.displayName)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">

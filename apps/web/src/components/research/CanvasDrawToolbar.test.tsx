@@ -9,13 +9,13 @@ describe('CanvasDrawToolbar', () => {
     const onToolChange = vi.fn();
     render(<CanvasDrawToolbar activeTool="select" onToolChange={onToolChange} />);
 
-    expect(screen.getByRole('toolbar', { name: 'Drawing tools' })).toBeTruthy();
-    const select = screen.getByRole('button', { name: 'Select (V)' });
-    const pan = screen.getByRole('button', { name: 'Pan (H)' });
+    expect(screen.getByRole('toolbar', { name: /^Drawing tools/ })).toBeTruthy();
+    const select = screen.getByRole('button', { name: /^Select \(V\)/ });
+    const pan = screen.getByRole('button', { name: /^Pan \(H\)/ });
     expect(select.getAttribute('aria-pressed')).toBe('true');
     expect(pan.getAttribute('aria-pressed')).toBe('false');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Rectangle (R)' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Rectangle \(R\)/ }));
     expect(onToolChange).toHaveBeenCalledExactlyOnceWith('shape_rect');
   });
 
@@ -30,7 +30,7 @@ describe('CanvasDrawToolbar', () => {
       />,
     );
 
-    const library = screen.getByRole('button', { name: 'Shape Library' });
+    const library = screen.getByRole('button', { name: /^Shape Library/ });
     expect(library.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(library);
     expect(onToggleLibrary).toHaveBeenCalledTimes(1);

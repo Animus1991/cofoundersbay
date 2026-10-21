@@ -36,7 +36,7 @@ import {
   projectEl,
   PROJECT_STAGE_FULL_KEYS,
 } from '@/lib/i18n/strings-projects';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { CANCELLED, ROW_GONE, rowOptions, usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import {
@@ -360,7 +360,7 @@ export default function ProjectDetailPage() {
                           <Avatar className="h-10 w-10">
                             <AvatarImage src={member.avatar} />
                             <AvatarFallback className="bg-primary/10 text-primary-accessible">
-                              {member.name[0]}
+                              {initialsOf(member.name)}
                             </AvatarFallback>
                           </Avatar>
                         )}
@@ -533,7 +533,7 @@ export default function ProjectDetailPage() {
                         <Link href={`/profiles/${member.id}`} title={member.name} aria-label={member.name} className="block rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                           <Avatar className="h-9 w-9 ring-2 ring-background">
                             <AvatarImage src={member.avatar} alt="" />
-                            <AvatarFallback className="bg-primary/10 text-xs text-primary-accessible">{member.name[0]}</AvatarFallback>
+                            <AvatarFallback className="bg-primary/10 text-xs text-primary-accessible">{initialsOf(member.name)}</AvatarFallback>
                           </Avatar>
                         </Link>
                       </li>
@@ -632,7 +632,7 @@ export default function ProjectDetailPage() {
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={project.founder.avatar} />
                       <AvatarFallback className="bg-primary/10 text-primary-accessible">
-                        {project.founder.name[0]}
+                        {initialsOf(project.founder.name)}
                       </AvatarFallback>
                     </Avatar>
                   )}

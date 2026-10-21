@@ -32,7 +32,7 @@ import {
 import { EmptyOrgStartups, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
@@ -145,7 +145,7 @@ function StartupCard({ startup }: { startup: Startup }) {
               <Avatar className="h-10 w-10 rounded-xl">
                 <AvatarImage src={startup.logoUrl} alt="" />
                 <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
-                  {startup.name?.[0]?.toUpperCase() ?? '?'}
+                  {initialsOf(startup.name)}
                 </AvatarFallback>
               </Avatar>
             </Link>

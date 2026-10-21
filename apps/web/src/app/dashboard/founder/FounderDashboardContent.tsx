@@ -18,7 +18,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { isPreviewDemo } from '@/lib/preview-demo';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { queryKeys, qk } from '@/lib/query-keys';
 import {
@@ -304,7 +304,7 @@ function MatchPreviewRow({ match }: { match: SearchHit }) {
           <Avatar className="h-10 w-10">
             <AvatarImage src={match.avatarUrl ?? undefined} alt="" />
             <AvatarFallback className="bg-muted text-sm font-medium text-muted-foreground">
-              {match.displayName?.[0]?.toUpperCase() ?? '?'}
+              {initialsOf(match.displayName)}
             </AvatarFallback>
           </Avatar>
         )}

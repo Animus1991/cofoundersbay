@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getOrgOpportunities, getOrgCohorts, getOrgMembers, type OrgProfile, type OpportunityItem, type CohortItem, type OrgMember } from '@/lib/api';
-import { cn, formatRelativeTime } from '@/lib/utils';
+import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { AppShell } from '@/components/layout/AppShell';
 import { ListEmptyState } from '@/components/common/EmptyStates';
@@ -366,7 +366,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                           <Avatar className="h-10 w-10">
                             <AvatarImage src={member.avatarUrl ?? undefined} />
                             <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
-                              {member.displayName?.[0]?.toUpperCase() ?? 'M'}
+                              {initialsOf(member.displayName)}
                             </AvatarFallback>
                           </Avatar>
                         )}

@@ -694,7 +694,7 @@ export default function PitchDeckPage() {
                   key={i}
                   type="button"
                   onClick={() => setCurrentSlide(i)}
-                  aria-label={`Slide ${i + 1} of ${slides.length}`}
+                  aria-label={bilingualAria(`Slide ${i + 1} of ${slides.length}`, `Διαφάνεια ${i + 1} από ${slides.length}`)}
                   aria-current={i === currentSlide ? 'step' : undefined}
                   className={cn(
                     'rounded-full transition-all',

@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 
 /**
  * The top of a profile, read the way a professional profile is read: a quiet
@@ -78,7 +78,7 @@ export function ProfileHero({
               <Avatar className={cn('h-24 w-24 ring-4 ring-background sm:h-28 sm:w-28 md:h-32 md:w-32', shape === 'organisation' && 'rounded-2xl')}>
                 <AvatarImage src={avatarUrl ?? undefined} alt="" className={shape === 'organisation' ? 'rounded-2xl' : undefined} />
                 <AvatarFallback className={cn('bg-primary/10 text-3xl font-semibold text-primary-accessible', shape === 'organisation' && 'rounded-2xl')} data-keep-icon="">
-                  {name?.[0]?.toUpperCase() ?? '?'}
+                  {initialsOf(name)}
                 </AvatarFallback>
               </Avatar>
               {avatarMark}

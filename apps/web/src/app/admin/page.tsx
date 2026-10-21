@@ -93,7 +93,7 @@ import { ExperimentationPanel } from '@/components/admin/ExperimentationPanel';
 import { BehaviorAdminPanel } from '@/components/behavioral/BehaviorAdminPanel';
 import { useToast } from '@/components/ui/toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
@@ -276,7 +276,7 @@ function ReportCard({
             <Link href={`/profiles/${report.reported.id}`} aria-label={bilingualInline(`Open the profile of ${report.reported?.name || report.reported.email}`, `Άνοιγμα προφίλ: ${report.reported?.name || report.reported.email}`)}>
               <Avatar className="h-10 w-10">
                 <AvatarFallback className="bg-destructive/20 text-destructive-accessible">
-                  {report.reported.name?.[0]?.toUpperCase() ?? '?'}
+                  {initialsOf(report.reported.name)}
                 </AvatarFallback>
               </Avatar>
             </Link>
@@ -385,7 +385,7 @@ function UserRow({
             <Avatar className="h-10 w-10 shrink-0">
               <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
               <AvatarFallback className="bg-primary/20 text-primary-accessible">
-                {displayName[0]?.toUpperCase()}
+                {initialsOf(displayName)}
               </AvatarFallback>
             </Avatar>
           </Link>

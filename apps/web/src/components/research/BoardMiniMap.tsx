@@ -2,6 +2,7 @@
 
 import { useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 import type { ResearchNode } from '@/lib/api';
 import { nodePaintColor } from '@/lib/canvas/canvas-geometry';
 
@@ -134,7 +135,7 @@ export function BoardMiniMap({
         onMouseDown={(e) => e.stopPropagation()}
         onClick={handleClick}
         role="img"
-        aria-label="Canvas mini-map"
+        aria-label={bilingualAria('Canvas mini-map', 'Μικρός χάρτης του καμβά')}
       >
         {/* Background */}
         <rect x={0} y={0} width={miniW} height={miniH} fill="hsl(var(--muted))" />

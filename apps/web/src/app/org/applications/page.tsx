@@ -185,7 +185,19 @@ function ApplicationCard({
               {application.startupName}
             </button>
           )}
-          subtitle={[application.founderName, application.industry, application.location].filter(Boolean).join(' · ') || undefined}
+          // One text node per part, so the page translation gives the industry
+          // and the place their Greek; joined into one string ("Elena · Logistics ·
+          // Athens, Greece") none of them matched (as the programmes' benefits, §62).
+          subtitle={[application.founderName, application.industry, application.location].some(Boolean) ? (
+            <>
+              {[application.founderName, application.industry, application.location].filter(Boolean).map((part, i) => (
+                <span key={`${i}-${part}`}>
+                  {i > 0 ? ' · ' : null}
+                  <span>{part}</span>
+                </span>
+              ))}
+            </>
+          ) : undefined}
           asideStays
           aside={(
             <>
@@ -483,7 +495,14 @@ export default function OrgApplicationsPage() {
           <DialogHeader>
             <DialogTitle>{reviewing?.startupName}</DialogTitle>
             <DialogDescription>
-              {reviewing ? `by ${reviewing.founderName} · ${reviewing.program}` : ''}
+              {reviewing ? (
+                <BilingualText
+                  en={`by ${reviewing.founderName} · ${reviewing.program}`}
+                  el={`από ${reviewing.founderName} · ${reviewing.program}`}
+                  compact
+                  wrap
+                />
+              ) : ''}
             </DialogDescription>
           </DialogHeader>
           {reviewing && (

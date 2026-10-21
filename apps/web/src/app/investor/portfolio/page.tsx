@@ -12,7 +12,7 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AppShell } from '@/components/layout/AppShell';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { companyStageLabel, formatRelativeTime } from '@/lib/utils';
+import { companyStageLabel, formatRelativeTime, initialsOf } from '@/lib/utils';
 import {
   listInvestorDeals,
   getInvestorSummary,
@@ -205,7 +205,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
             <Avatar className="h-10 w-10 rounded-xl">
               <AvatarImage src={investment.logoUrl} alt="" />
               <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
-                {investment.name[0]?.toUpperCase()}
+                {initialsOf(investment.name)}
               </AvatarFallback>
             </Avatar>
           )}

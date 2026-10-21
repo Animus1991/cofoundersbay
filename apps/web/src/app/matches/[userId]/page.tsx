@@ -67,7 +67,7 @@ function DonutScore({ score }: { score: number }) {
   const circ = 2 * Math.PI * r;
   const filled = (score / 100) * circ;
   return (
-    <div className="relative flex shrink-0 items-center justify-center" style={{ width: 104, height: 104 }} role="img" aria-label={`${score}% match`}>
+    <div className="relative flex shrink-0 items-center justify-center" style={{ width: 104, height: 104 }} role="img" aria-label={bilingualAria(`${score}% match`, `${score}% αντιστοίχιση`)}>
       <svg width={104} height={104} viewBox="0 0 100 100" aria-hidden="true">
         {/* The track was a literal #333333, invisible on the dark card and
             heavy on the light one; it is the muted token now. */}

@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { getMeProfile, getMyProviderListing, getProviderSummary, saveMyProviderListing, type ProviderListing } from '@/lib/api';
 import { useFormDraft } from '@/lib/form-draft';
@@ -238,7 +238,7 @@ export default function ProviderProfilePage() {
                 <Avatar className="h-10 w-10 rounded-xl ring-2 ring-primary/20">
                   <AvatarImage src={avatarUrl ?? undefined} alt="" />
                   <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
-                    {displayName[0]?.toUpperCase()}
+                    {initialsOf(displayName)}
                   </AvatarFallback>
                 </Avatar>
               )}

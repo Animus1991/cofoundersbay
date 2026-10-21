@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { getMeProfile, getMentorDashboardStats, getMyMentorListing, saveMyMentorListing, type MentorListing } from '@/lib/api';
 import { useFormDraft } from '@/lib/form-draft';
@@ -245,7 +245,7 @@ export default function MentorProfilePage() {
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={avatarUrl ?? undefined} alt="" />
                   <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
-                    {displayName[0]?.toUpperCase()}
+                    {initialsOf(displayName)}
                   </AvatarFallback>
                 </Avatar>
               )}

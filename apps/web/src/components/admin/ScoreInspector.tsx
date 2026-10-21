@@ -23,6 +23,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { StatusText } from '@/components/common/StatusText';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { initialsOf } from '@/lib/utils';
 
 const STATUS_COLORS: Record<string, string> = {
   pending:  'bg-status-warning-bg text-status-warning',
@@ -171,7 +172,7 @@ export function ScoreInspector() {
                   <Avatar className="h-10 w-10">
                     {report.avatarUrl ? <AvatarImage src={report.avatarUrl} alt="" /> : null}
                     <AvatarFallback className="bg-status-accent-bg font-semibold text-status-accent">
-                      {(report.displayName ?? report.email ?? '?')[0]?.toUpperCase()}
+                      {initialsOf(report.displayName ?? report.email)}
                     </AvatarFallback>
                   </Avatar>
                 )}
