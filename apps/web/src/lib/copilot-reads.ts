@@ -96,6 +96,7 @@ import { isCardStage, PERK_CATEGORY_COPY } from '@cofounderbay/shared';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
+import { calendarDaysUntil } from '@/lib/calendar-days';
 
 /**
  * What the assistant can read about the product areas it used to be blind to.
@@ -952,7 +953,7 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
         `**${el ? round.nameEl ?? round.name : round.name}**: ${t('{raised} of {target} raised ({pct}%).', { raised: fmtMoney(round.raised, round.currency), target: fmtMoney(round.target, round.currency), pct })}`,
       ];
       if (round.closingDate) {
-        const days = Math.ceil((Date.parse(round.closingDate) - Date.now()) / 86_400_000);
+        const days = calendarDaysUntil(round.closingDate) ?? 0;
         line.push(days < 0 ? t('The closing date has passed.') : days === 0 ? t('Closes today.') : days === 1 ? t('Closes tomorrow.') : t('Closes in {days} days.', { days }));
       }
       if (round.leadInvestor) line.push(t('Lead investor: {name}.', { name: round.leadInvestor }));

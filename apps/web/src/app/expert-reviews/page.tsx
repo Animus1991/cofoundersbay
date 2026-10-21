@@ -58,6 +58,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { ASK } from '@/lib/page-questions';
 
 /** Why the one disabled control is disabled, in both languages. */
 const MESSAGE_HINT = bilingualAria(
@@ -778,7 +779,7 @@ export default function ExpertReviewsPage() {
   ];
 
   return (
-    <AppShell showHelp rail={rail} askAi="Which expert review should I request first — pitch deck, financial model, or go-to-market — given my current readiness gaps?">
+    <AppShell showHelp rail={rail} askAi={ASK.expertReviews}>
       <div className="space-y-6 pb-10">
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>

@@ -15,8 +15,8 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
     el: 'Ιεραρχήστε το pipeline με βάση τον Builder, το pitch deck και τα κενά του Data Room.',
   },
   ask_ai_hint_harbor: {
-    en: 'Propose who to contact next on Harbor\'s $750K seed (Athens Tech Angels, $375K committed; $375K remaining; warm intro from Athens founder networks) from Idea Core, the pitch deck, Research, and data-room gaps.',
-    el: 'Προτείνετε ποιον να προσεγγίσετε μετά στον γύρο Harbor $750K (Athens Tech Angels, $375K δεσμευμένα· απομένουν $375K· ζεστή γνωριμία μέσω δικτύων ιδρυτών στην Αθήνα) από τον Πυρήνα ιδέας, το pitch deck, την Έρευνα και τα κενά του Data Room.',
+    en: 'Propose who to contact next on Harbor\'s €750K seed (Athens Tech Angels, €375K committed; €375K remaining; warm intro from Athens founder networks) from Idea Core, the pitch deck, Research, and data-room gaps.',
+    el: 'Προτείνετε ποιον να προσεγγίσετε μετά στον γύρο Harbor €750K (Athens Tech Angels, €375K δεσμευμένα· απομένουν €375K· ζεστή γνωριμία μέσω δικτύων ιδρυτών στην Αθήνα) από τον Πυρήνα ιδέας, το pitch deck, την Έρευνα και τα κενά του Data Room.',
   },
   link_into: { en: 'Carry this round into', el: 'Μεταφέρετε αυτόν τον γύρο στο' },
   link_idea: { en: 'Idea Core', el: 'Πυρήνας ιδέας' },
@@ -48,6 +48,7 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
   stat_closing: { en: 'Closing', el: 'Κλείσιμο' },
   days_left: { en: '{count} days left', el: '{count} ημέρες ακόμη' },
   days_left_one: { en: '1 day left', el: '1 ημέρα ακόμη' },
+  closes_today: { en: 'Closes today', el: 'Κλείνει σήμερα' },
   overdue: { en: 'Overdue', el: 'Εκπρόθεσμο' },
   closing_tbd: { en: 'TBD', el: 'Εκκρεμεί' },
   lead_investor: { en: 'Lead investor', el: 'Επικεφαλής επενδυτής' },

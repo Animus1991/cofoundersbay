@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils';
  */
 export type PageFact = {
   id: string;
-  /** The figure, first and in the text colour. Empty hides the fact. */
+  /** The figure, first and in the text colour. Empty (or a dash) hides the fact. */
   value: ReactNode;
   /** The words after the figure. */
   en: string;
@@ -46,7 +46,8 @@ export function PageFacts({
   labelEl: string;
   className?: string;
 } & Omit<HTMLAttributes<HTMLUListElement>, 'children'>) {
-  const shown = facts.filter((fact) => fact.value !== null && fact.value !== undefined && fact.value !== '');
+  // A dash is not a figure: "— average readiness" read as a broken number.
+  const shown = facts.filter((fact) => fact.value !== null && fact.value !== undefined && fact.value !== '' && fact.value !== '—');
   if (shown.length === 0) return null;
   return (
     <ul

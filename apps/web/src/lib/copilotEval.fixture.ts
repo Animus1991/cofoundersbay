@@ -144,6 +144,18 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'Βοήθησέ με να συντάξω την πρώτη μου κάρτα ανάγκης', tool: 'draft_need_card' },  // The founder's round and leads were a page the assistant could not read.
   { message: 'How is my fundraising going?', tool: 'get_fundraising', read: true },
   { message: 'Πώς πάει η χρηματοδότησή μου;', tool: 'get_fundraising', read: true },
+  // 2026-10-21 (b), from the pages' ready questions (pageAsks.test.ts). A
+  // question with nobody named proposed a change: "mark" inside
+  // "go-to-market" ticked a readiness criterion, "joined" proposed a join,
+  // "ask for an intro" an intro to no one; and a sentence was searched for.
+  { message: 'Which expert review should I request first, given my go-to-market and readiness gaps?', tool: 'get_expert_reviews', read: true },
+  { message: 'Ποια αξιολόγηση ειδικού να ζητήσω πρώτα, με βάση τα κενά της ετοιμότητάς μου;', tool: 'get_expert_reviews', read: true },
+  { message: 'I have not joined any groups. Which communities fit a founder like me?', tool: 'get_groups', read: true },
+  { message: 'Δεν είμαι μέλος σε καμία ομάδα. Ποιες κοινότητες είναι κατάλληλες για μένα;', tool: 'get_groups', read: true },
+  { message: 'Which kind of investor suits my stage, and how should I ask for an intro?', tool: 'search_people', read: true },
+  { message: 'Ποιο είδος επενδυτή είναι κατάλληλο για το στάδιό μου, και πώς να ζητήσω γνωριμία;', tool: 'search_people', read: true },
+  { message: 'What is coming up on my calendar this week?', tool: 'get_events', read: true },
+  { message: 'Τι έχει το ημερολόγιό μου αυτή την εβδομάδα;', tool: 'get_events', read: true },
 ];
 
 /** Writes the planner may propose; a question proposing one of these fails. */

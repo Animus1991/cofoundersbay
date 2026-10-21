@@ -89,7 +89,7 @@ function seedPreviewGtmNodes() {
     { ...base, id: 'n-gtm-channel', type: 'note', title: 'Channels', content: '<p>Discover, matches, and shareable Builder docs. First path: founder networks in Athens and EU time zones, then mentor intros.</p><p>Discover, matches και παραδοτέα Builder που μοιράζονται. Πρώτη διαδρομή: δίκτυα ιδρυτών στην Αθήνα και ζώνες ΕΕ, μετά γνωριμίες με μέντορες.</p>', posX: 720, posY: 80, width: 280, height: 200, color: '#D1FAE5' },
     { ...base, id: 'n-gtm-offer', type: 'note', title: 'Offer', content: '<p>One workspace: graph + readiness + builder. First conversion: a filled Idea Core and a research board they can share.</p><p>Ένας χώρος εργασίας: γράφος + ετοιμότητα + builder. Πρώτη μετατροπή: συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας που μοιράζεται.</p>', posX: 80, posY: 320, width: 280, height: 200, color: '#FCE7F3' },
     { ...base, id: 'n-gtm-comp', type: 'note', title: 'Competition', content: '<p>Direct: matching directories that stop at the intro. Indirect: spreadsheets and chat that stitch matching, messaging, and fundraising by hand.</p><p>Άμεσος: κατάλογοι matching που σταματούν στην εισαγωγή. Έμμεσος: spreadsheets και chat που ράβουν matching, μηνύματα και χρηματοδότηση στο χέρι.</p>', posX: 400, posY: 320, width: 280, height: 200, color: '#FEE2E2' },
-    { ...base, id: 'n-gtm-metrics', type: 'note', title: 'Metrics', content: '<p>Seed: $375K committed of a $750K target. Lead: Athens Tech Angels.</p><p>Γύρος: $375K δεσμευμένα από στόχο $750K. Lead: Athens Tech Angels.</p>', posX: 720, posY: 320, width: 280, height: 200, color: '#EDE9FE' },
+    { ...base, id: 'n-gtm-metrics', type: 'note', title: 'Metrics', content: '<p>Seed: €375K committed of a €750K target. Lead: Athens Tech Angels.</p><p>Γύρος: €375K δεσμευμένα από στόχο €750K. Lead: Athens Tech Angels.</p>', posX: 720, posY: 320, width: 280, height: 200, color: '#EDE9FE' },
   ];
 }
 
@@ -143,7 +143,7 @@ function applyHarborGtmSeedIfStale() {
   if (changed || previewGtmMeta.description === 'Sample research board for the preview.') {
     previewGtmMeta = {
       ...previewGtmMeta,
-      description: 'Harbor GTM notes aligned with Idea Core and the $750K seed.',
+      description: 'Harbor GTM notes aligned with Idea Core and the €750K seed.',
       icon: previewGtmMeta.icon === 'flask' ? 'sparkles' : previewGtmMeta.icon,
       updatedAt: new Date(previewNowMs()).toISOString(),
     };
@@ -162,7 +162,7 @@ let previewGtmMeta: {
   updatedAt: string;
 } = {
   title: 'Go-to-market canvas',
-  description: 'Harbor GTM notes aligned with Idea Core and the $750K seed.',
+  description: 'Harbor GTM notes aligned with Idea Core and the €750K seed.',
   visibility: 'private',
   tags: ['gtm'],
   color: '#6756dc',
@@ -509,7 +509,7 @@ let previewBuilderDocs: PreviewBuilderDoc[] = [
       deckType: 'investor',
       companyName: 'Harbor',
       tagline: 'The operating system for early-stage founders.',
-      askAmount: '$750,000',
+      askAmount: '€750,000',
       useOfFunds: [],
       slides: [
         {
@@ -580,7 +580,7 @@ const PREVIEW_PITCH_V1 = {
   deckType: 'investor',
   companyName: 'Harbor',
   tagline: 'The operating system for early-stage founders.',
-  askAmount: '$750,000',
+  askAmount: '€750,000',
   useOfFunds: [] as string[],
   slides: [
     {
@@ -602,11 +602,11 @@ const PREVIEW_PITCH_V1 = {
   ],
 };
 
-/** Empty-slide fill only on the client. Numbers match Harbor Idea Core, Market, and the $750K seed. */
+/** Empty-slide fill only on the client. Numbers match Harbor Idea Core, Market, and the €750K seed. */
 const PREVIEW_PITCH_GENERATE = {
   companyName: 'Harbor',
   tagline: 'Graph + readiness + builder in the same product',
-  askAmount: '$750,000',
+  askAmount: '€750,000',
   useOfFunds: [
     'Product (40%) — matching, artefacts, and readiness in one workspace',
     'Go-to-market (30%) — founders who already sit in the graph',
@@ -661,7 +661,7 @@ const PREVIEW_PITCH_GENERATE = {
       type: 'traction',
       title: 'Traction',
       content:
-        'Seed in progress: $375K committed of a $750K target.\nLead: Athens Tech Angels.',
+        'Seed in progress: €375K committed of a €750K target.\nLead: Athens Tech Angels.',
       notes: 'Same raised and target as Fundraising.',
       order: 5,
     },
@@ -694,7 +694,7 @@ const PREVIEW_PITCH_GENERATE = {
       id: 'gen-fin',
       type: 'financials',
       title: 'Financials',
-      content: 'Seed: $750,000 SAFE.\nCommitted: $375K.\nRunway target: 18–24 months from this round.',
+      content: 'Seed: €750,000 SAFE.\nCommitted: €375K.\nRunway target: 18–24 months from this round.',
       notes: 'Same target and raised amount as the Harbor seed round.',
       order: 9,
     },
@@ -703,8 +703,8 @@ const PREVIEW_PITCH_GENERATE = {
       type: 'ask',
       title: 'The Ask',
       content:
-        'Raising: $750,000 seed (SAFE).\nUse of funds:\n• Product (40%)\n• Go-to-market (30%)\n• Team (20%)\n• Operations (10%)',
-      notes: 'The ask field on this deck is $750,000 — the same figure as Fundraising.',
+        'Raising: €750,000 seed (SAFE).\nUse of funds:\n• Product (40%)\n• Go-to-market (30%)\n• Team (20%)\n• Operations (10%)',
+      notes: 'The ask field on this deck is €750,000 — the same figure as Fundraising.',
       order: 10,
     },
     {
@@ -1338,7 +1338,7 @@ const FEED_POSTS = [
       role: 'founder',
     },
     type: 'milestone',
-    content: 'Athens Tech Angels committed $375K to the Harbor seed. Next: the remaining $375K and a complementary cofounder.',
+    content: 'Athens Tech Angels committed €375K to the Harbor seed. Next: the remaining €375K and a complementary cofounder.',
     likes: 47,
     comments: 12,
     shares: 5,
@@ -1415,29 +1415,29 @@ function previewMilestoneCollaborator(id: string | null) {
 }
 
 /**
- * Harbor tracker aligned with Idea Core, the GTM board, and the $750K seed.
+ * Harbor tracker aligned with Idea Core, the GTM board, and the €750K seed.
  * Fast Refresh can keep the old generic titles while this already returns Harbor.
  */
 function seedPreviewMilestones(): PreviewMilestone[] {
   const stamp = { ownerId: ME_ID, createdAt: NOW, updatedAt: NOW };
   return [
-    // "Close $750K seed" is due when the round closes (fundraising-demo, 15 October):
+    // "Close €750K seed" is due when the round closes (fundraising-demo, 15 October):
     // due on 20 August, the dashboard called it overdue beside a round that
     // the Fundraising page said closes in weeks. The demo keeps one overdue
     // milestone, the optional trademark filing, which contradicts nothing.
     { ...stamp, id: 'ms-1', collaboratorId: null, collaborator: null, title: 'Complementary cofounder — technical + commercial pair', description: 'Job: find a complementary cofounder.', status: 'todo', priority: 'high', category: 'hiring', dueDate: '2026-10-15T17:00:00.000Z', completedAt: null, progress: 0, notes: null },
     { ...stamp, id: 'ms-2', collaboratorId: null, collaborator: null, title: 'First founder-network path in Athens', description: 'Discover, matches, and shareable Builder docs. First path: founder networks in Athens and EU time zones.', status: 'todo', priority: 'medium', category: 'growth', dueDate: '2026-10-01T17:00:00.000Z', completedAt: null, progress: 0, notes: null },
     { ...stamp, id: 'ms-3', collaboratorId: null, collaborator: null, title: 'File Harbor trademark', description: 'Optional legal step.', status: 'todo', priority: 'low', category: 'other', dueDate: '2026-08-28T17:00:00.000Z', completedAt: null, progress: 0, notes: null },
-    { ...stamp, id: 'ms-4', collaboratorId: PREVIEW_MILESTONE_ELENA.id, collaborator: previewMilestoneCollaborator(PREVIEW_MILESTONE_ELENA.id), title: 'Close $750K seed', description: '$375K committed of a $750K target. Lead: Athens Tech Angels.', status: 'in_progress', priority: 'high', category: 'fundraising', dueDate: '2026-10-15T17:00:00.000Z', completedAt: null, progress: 50 /* $375K of $750K */, notes: 'Same target as the Harbor pitch ask.' },
+    { ...stamp, id: 'ms-4', collaboratorId: PREVIEW_MILESTONE_ELENA.id, collaborator: previewMilestoneCollaborator(PREVIEW_MILESTONE_ELENA.id), title: 'Close €750K seed', description: '€375K committed of a €750K target. Lead: Athens Tech Angels.', status: 'in_progress', priority: 'high', category: 'fundraising', dueDate: '2026-10-15T17:00:00.000Z', completedAt: null, progress: 50 /* €375K of €750K */, notes: 'Same target as the Harbor pitch ask.' },
     { ...stamp, id: 'ms-5', collaboratorId: null, collaborator: null, title: 'Shareable Idea Core and GTM board', description: 'First conversion from the GTM offer: a filled Idea Core and a research board they can share.', status: 'in_progress', priority: 'medium', category: 'product', dueDate: '2026-09-12T17:00:00.000Z', completedAt: null, progress: 40, notes: null },
     { ...stamp, id: 'ms-6', collaboratorId: null, collaborator: null, title: 'Warm intro from Athens founder networks', description: 'Waiting on a warm intro from Athens founder networks.', status: 'blocked', priority: 'high', category: 'partnerships', dueDate: '2026-10-01T17:00:00.000Z', completedAt: null, progress: 20, notes: null },
     // Tracks the Builder canvas, which is a draft with one of nine blocks filled.
     { ...stamp, id: 'ms-9', collaboratorId: null, collaborator: null, title: 'BMC v1 in Builder', description: 'Value proposition and channels next; one of the nine blocks is filled.', status: 'in_progress', priority: 'medium', category: 'product', dueDate: '2026-09-30T17:00:00.000Z', completedAt: null, progress: 11, notes: null },
     { ...stamp, id: 'ms-7', collaboratorId: null, collaborator: null, title: 'Idea Core v1 in Builder', description: 'Problem, complementary-cofounder audience, graph + readiness + builder.', status: 'completed', priority: 'medium', category: 'product', dueDate: '2026-06-20T17:00:00.000Z', completedAt: '2026-06-18T12:00:00.000Z', progress: 100, notes: null },
     { ...stamp, id: 'ms-8', collaboratorId: null, collaborator: null, title: 'First mentor office hours', description: null, status: 'completed', priority: 'low', category: 'growth', dueDate: '2026-07-15T17:00:00.000Z', completedAt: '2026-07-14T12:00:00.000Z', progress: 100, notes: null },
-    { ...stamp, id: 'ms-10', collaboratorId: null, collaborator: null, title: 'Pitch deck outline for the $750K seed', description: 'Same ask as the Harbor pitch deck.', status: 'completed', priority: 'high', category: 'fundraising', dueDate: '2026-08-01T17:00:00.000Z', completedAt: '2026-07-30T12:00:00.000Z', progress: 100, notes: null },
+    { ...stamp, id: 'ms-10', collaboratorId: null, collaborator: null, title: 'Pitch deck outline for the €750K seed', description: 'Same ask as the Harbor pitch deck.', status: 'completed', priority: 'high', category: 'fundraising', dueDate: '2026-08-01T17:00:00.000Z', completedAt: '2026-07-30T12:00:00.000Z', progress: 100, notes: null },
     { ...stamp, id: 'ms-11', collaboratorId: null, collaborator: null, title: 'Readiness score above 40', description: null, status: 'completed', priority: 'medium', category: 'other', dueDate: '2026-08-10T17:00:00.000Z', completedAt: '2026-08-08T12:00:00.000Z', progress: 100, notes: null },
-    { ...stamp, id: 'ms-12', collaboratorId: null, collaborator: null, title: 'GTM canvas on Research', description: 'Harbor GTM notes aligned with Idea Core and the $750K seed.', status: 'completed', priority: 'medium', category: 'product', dueDate: '2026-08-25T17:00:00.000Z', completedAt: '2026-08-22T12:00:00.000Z', progress: 100, notes: null },
+    { ...stamp, id: 'ms-12', collaboratorId: null, collaborator: null, title: 'GTM canvas on Research', description: 'Harbor GTM notes aligned with Idea Core and the €750K seed.', status: 'completed', priority: 'medium', category: 'product', dueDate: '2026-08-25T17:00:00.000Z', completedAt: '2026-08-22T12:00:00.000Z', progress: 100, notes: null },
   ];
 }
 

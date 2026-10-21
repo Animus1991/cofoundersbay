@@ -17,7 +17,7 @@ import type { AIToolCallProposal } from '@/lib/ai-api';
 import { isAppLocale, translate, type TranslateVars } from '@/lib/i18n/translate';
 import type { AppLocale } from '@/lib/locale';
 import { isPreviewDemo } from '@/lib/preview-demo';
-import { planCopilotTools, detectPersonName, asksAboutThisPage, railSectionFor, pageControlFor, pageListFor } from '@/lib/copilot-planner';
+import { planCopilotTools, detectPersonName, asksAboutThisPage, asksAboutSamples, railSectionFor, pageControlFor, pageListFor } from '@/lib/copilot-planner';
 import { AREA_READERS, isAreaRead } from '@/lib/copilot-reads';
 import type {
   CopilotAction,
@@ -522,6 +522,22 @@ export async function runCopilotTurn(
     else if (screen.state === 'demo') parts.push(t('These are showcase figures, not your account.'));
 
     sections.push(parts.join(' '));
+  }
+
+  // "Why are these samples?" is answered here, from the page: the summary
+  // the planner falls back to was an answer to another question.
+  if (asksAboutSamples(userMessage)) {
+    const sampleLists = (pageContext?.lists ?? []).filter((list) => list.sample).map((list) => list.label);
+    sections.push([
+      t('Some of what this page shows is sample data, so you can see how it works before your own data is there.'),
+      sampleLists.length ? t('Samples here: {lists}.', { lists: sampleLists.join(', ') }) : '',
+      t('Samples are not your account, and nothing done to them reaches anyone.'),
+      t('Hide sample data, in your account menu, turns them off on every page.'),
+    ].filter(Boolean).join(' '));
+    if (!options?.tools) {
+      planned = [];
+      usedTools = [];
+    }
   }
 
   // The page rail: the tools to the right of the column. Named when the

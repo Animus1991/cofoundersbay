@@ -26,6 +26,7 @@ import { getAnalyticsOverview } from '@/lib/api';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
+import { ASK } from '@/lib/page-questions';
 
 // ── Mock analytics data ───────────────────────────────────────────────────────
 
@@ -363,7 +364,7 @@ export default function ProviderAnalyticsPage() {
           <SampleDataNotice
             surface="Provider analytics"
             detail="The metric cards, traffic sources, funnel and service rows are illustrative - live analytics cover profile views, connections, messages and engagement."
-            askAiPrompt="Why does the analytics page show sample numbers?"
+            askAiPrompt={ASK.providerAnalyticsSample}
           />
         )}
 

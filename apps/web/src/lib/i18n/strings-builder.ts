@@ -450,7 +450,7 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   pitch_ask: { en: 'Funding Ask', el: 'Αίτημα χρηματοδότησης' },
   pitch_company_ph: { en: 'Your company name', el: 'Όνομα εταιρείας' },
   pitch_tagline_ph: { en: 'Your company tagline', el: 'Σλόγκαν εταιρείας' },
-  pitch_ask_ph: { en: 'e.g., $750,000', el: 'π.χ. $750.000' },
+  pitch_ask_ph: { en: 'e.g., €750,000', el: 'π.χ. €750.000' },
   pitch_lead: {
     en: 'Slides stay linked to Builder artefacts — Idea Core, Market, Financials, and the Ask.',
     el: 'Οι διαφάνειες συνδέονται με τα παραδοτέα του Builder — ιδέα, αγορά, οικονομικά και αίτημα.',
@@ -598,8 +598,8 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
     el: 'Ρωτήστε το AI να συντάξει κενές απαντήσεις σε αυτό το πρόγραμμα',
   },
   app_ask_hint_harbor: {
-    en: 'Propose YC, Techstars, university, or grant answers from Idea Core, the GTM board, and the $750K seed (Athens Tech Angels, $375K committed), filling only empty fields.',
-    el: 'Προτείνετε απαντήσεις YC, Techstars, πανεπιστημίου ή επιχορήγησης από τον Πυρήνα ιδέας, τον πίνακα GTM και τον γύρο $750K (Athens Tech Angels, $375K δεσμευμένα), μόνο στα κενά πεδία.',
+    en: 'Propose YC, Techstars, university, or grant answers from Idea Core, the GTM board, and the €750K seed (Athens Tech Angels, €375K committed), filling only empty fields.',
+    el: 'Προτείνετε απαντήσεις YC, Techstars, πανεπιστημίου ή επιχορήγησης από τον Πυρήνα ιδέας, τον πίνακα GTM και τον γύρο €750K (Athens Tech Angels, €375K δεσμευμένα), μόνο στα κενά πεδία.',
   },
   app_link_into: { en: 'Carry these drafts into', el: 'Μεταφέρετε αυτά τα πρόχειρα στο' },
   app_link_idea: { en: 'Idea Core', el: 'Πυρήνας ιδέας' },

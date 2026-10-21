@@ -124,8 +124,8 @@ function getBoardGlyph(iconValue: string | null): CfbGlyphName {
  * exact English description, so user-authored boards are never touched.
  */
 const PREVIEW_BOARD_DESC_EL: Record<string, string> = {
-  'Harbor GTM notes aligned with Idea Core and the $750K seed.':
-    'Σημειώσεις GTM του Harbor σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο $750K.',
+  'Harbor GTM notes aligned with Idea Core and the €750K seed.':
+    'Σημειώσεις GTM του Harbor σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο €750K.',
 };
 
 const PREVIEW_BOARD_TITLE_EL: Record<string, string> = {
@@ -630,8 +630,14 @@ export default function ResearchBoardsPage() {
   ];
   const harborLive = boards.some((b) => b.id === 'board-gtm' && !b.isArchived);
   const askAi = harborLive
-    ? 'Open the Harbor go-to-market board and tell me what to capture next — problem, customer, channels, offer, competition, and the $750K seed metrics — then how to carry findings into Idea Core or Market analysis.'
-    : 'Help me open a market, product, or competitive research board and tell me what to capture first.';
+    ? {
+        en: 'Open the Harbor go-to-market board and tell me what to capture next — problem, customer, channels, offer, competition, and the €750K seed metrics — then how to carry findings into Idea Core or Market analysis.',
+        el: 'Άνοιξε τον πίνακα go-to-market του Harbor και πες μου τι να καταγράψω μετά — πρόβλημα, πελάτη, κανάλια, προσφορά, ανταγωνισμό και τους δείκτες του γύρου €750K — και πώς να περάσω τα ευρήματα στον Πυρήνα ιδέας ή στην Ανάλυση αγοράς.',
+      }
+    : {
+        en: 'Help me open a market, product, or competitive research board and tell me what to capture first.',
+        el: 'Βοήθησέ με να ανοίξω πίνακα έρευνας αγοράς, προϊόντος ή ανταγωνισμού και πες μου τι να καταγράψω πρώτα.',
+      };
 
   return (
     <AppShell

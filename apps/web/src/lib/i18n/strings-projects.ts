@@ -15,8 +15,8 @@ export const PROJECT_STRINGS: Record<string, BilingualPair> = {
     el: 'Αντιστοιχίστε ανοιχτούς ρόλους στις δεξιότητές σας ή συντάξτε έργο από τον Builder.',
   },
   ask_ai_hint_harbor: {
-    en: 'Propose which Harbor project to join or start from Idea Core, the GTM board, the complementary-cofounder role, and the $750K seed (Athens Tech Angels, $375K committed).',
-    el: 'Προτείνετε ποιο έργο Harbor να ξεκινήσετε ή να ενταχθείτε από τον Πυρήνα ιδέας, τον πίνακα GTM, τον ρόλο συμπληρωματικού συνιδρυτή και τον γύρο $750K (Athens Tech Angels, $375K δεσμευμένα).',
+    en: 'Propose which Harbor project to join or start from Idea Core, the GTM board, the complementary-cofounder role, and the €750K seed (Athens Tech Angels, €375K committed).',
+    el: 'Προτείνετε ποιο έργο Harbor να ξεκινήσετε ή να ενταχθείτε από τον Πυρήνα ιδέας, τον πίνακα GTM, τον ρόλο συμπληρωματικού συνιδρυτή και τον γύρο €750K (Athens Tech Angels, €375K δεσμευμένα).',
   },
   ask_ai_create: {
     en: 'Ask AI to draft this project',

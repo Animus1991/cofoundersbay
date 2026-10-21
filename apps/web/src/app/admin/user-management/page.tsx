@@ -77,6 +77,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { ASK } from '@/lib/page-questions';
 
 type UserStatus = 'active' | 'suspended' | 'pending' | 'banned';
 // The API's Role enum (schema.prisma). The page used to offer moderator,
@@ -635,7 +636,7 @@ export default function AdminUserManagementPage() {
             <SampleDataNotice
               surface="User management"
               detail="These accounts are illustrative until the directory responds; moderation actions are disabled on them."
-              askAiPrompt="Why does admin user management show sample accounts?"
+              askAiPrompt={ASK.adminUsersSample}
             />
           )}
 

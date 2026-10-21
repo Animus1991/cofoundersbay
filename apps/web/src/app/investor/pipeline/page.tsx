@@ -38,6 +38,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { PageFacts } from '@/components/common/PageFacts';
+import { ASK } from '@/lib/page-questions';
 
 type PipelineStage = 'discovered' | 'reviewing' | 'meeting' | 'due_diligence' | 'negotiating' | 'invested' | 'passed';
 
@@ -366,7 +367,7 @@ export default function InvestorPipelinePage() {
           illustration="rocket"
           title="No deals in pipeline"
           description="Start scouting startups to build your investment pipeline."
-          askAiPrompt="My investment pipeline is empty. How should I scout startups on CoFounderBay and what to shortlist first?"
+          askAiPrompt={ASK.pipelineEmpty}
           action={<Button asChild><Link href="/investor/scouting"><Telescope className="mr-2 icon-sm" /><BilingualText en="Scout Startups" el="Αναζήτηση startups" compact /></Link></Button>}
         />
       </AppShell>
@@ -400,8 +401,9 @@ export default function InvestorPipelinePage() {
           labelEl="Το pipeline σας σε αριθμούς"
           facts={[
             { id: 'deals', value: deals.length, en: deals.length === 1 ? 'deal' : 'deals', el: deals.length === 1 ? 'ευκαιρία' : 'ευκαιρίες' },
-            { id: 'value', value: pipelineValue, en: 'pipeline value', el: 'αξία ροής' },
-            { id: 'readiness', value: avgReadiness == null ? '—' : `${avgReadiness}%`, en: 'average readiness', el: 'μέση ετοιμότητα' },
+            { id: 'value', value: pipelineValue === '—' ? null : pipelineValue, en: 'pipeline value', el: 'αξία ροής' },
+            // Said only when known: "— average readiness" read as a broken figure.
+            { id: 'readiness', value: avgReadiness == null ? null : `${avgReadiness}%`, en: 'average readiness', el: 'μέση ετοιμότητα' },
             { id: 'invested', value: deals.filter((d) => d.pipelineStage === 'invested').length, en: 'invested', el: 'με επένδυση' },
           ]}
         />

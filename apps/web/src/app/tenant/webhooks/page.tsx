@@ -33,6 +33,7 @@ import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { UnavailableButton } from '@/components/common/UnavailableButton';
 import { BilingualText } from '@/components/common/BilingualText';
 import { usePageList } from '@/lib/page-controls';
+import { ASK } from '@/lib/page-questions';
 
 type WebhookItem = {
   id: string;
@@ -196,7 +197,7 @@ export default function TenantWebhooksPage() {
           <SampleDataNotice
             surface="Webhooks"
             detail="These endpoints are illustrative - webhook delivery has no backend yet, so nothing here sends, retries or logs."
-            askAiPrompt="Why does the webhooks page show sample endpoints?"
+            askAiPrompt={ASK.webhooksSample}
           />
         )}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-3 md:grid-cols-3">

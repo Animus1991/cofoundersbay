@@ -454,8 +454,8 @@ export default function TenantMembersPage() {
           labelEl="Τα μέλη σε αριθμούς"
           facts={[
             { id: 'members', value: members.length, en: members.length === 1 ? 'member' : 'members', el: 'μέλη' },
-            { id: 'online', value: onlineCount ?? '—', en: 'online now', el: 'συνδεδεμένοι τώρα' },
-            { id: 'engagement', value: avgEngagement == null ? '—' : `${avgEngagement}%`, en: 'average engagement', el: 'μέση συμμετοχή' },
+            { id: 'online', value: onlineCount ?? null, en: 'online now', el: 'συνδεδεμένοι τώρα' },
+            { id: 'engagement', value: avgEngagement == null ? null : `${avgEngagement}%`, en: 'average engagement', el: 'μέση συμμετοχή' },
             { id: 'pending', value: members.filter((m) => m.status === 'pending').length, en: 'pending approval', el: 'σε αναμονή έγκρισης' },
           ]}
         />

@@ -45,7 +45,8 @@ import {
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
-import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
+import type { AskText } from '@/lib/page-questions';
 import { highlightParts, stepMatch, threadMatches } from '@/lib/thread-search';
 import {
   messagesEn,
@@ -361,11 +362,17 @@ function DateDivider({ date }: { date: Date }) {
 }
 
 /** Wording only. The planner must not treat this as a request to send. */
-export function draftReplyPrompt(recipientName?: string | null): string {
+export function draftReplyPrompt(recipientName?: string | null): AskText {
   const name = recipientName?.trim();
   return name
-    ? `Draft a reply to ${name} in this conversation. Suggest the wording only. Do not send it.`
-    : 'Draft a reply in this conversation. Suggest the wording only. Do not send it.';
+    ? {
+        en: `Draft a reply to ${name} in this conversation. Suggest the wording only. Do not send it.`,
+        el: `Ετοίμασε μια απάντηση προς ${name} σε αυτή τη συνομιλία. Πρότεινε μόνο τη διατύπωση· μην τη στείλεις.`,
+      }
+    : {
+        en: 'Draft a reply in this conversation. Suggest the wording only. Do not send it.',
+        el: 'Ετοίμασε μια απάντηση σε αυτή τη συνομιλία. Πρότεινε μόνο τη διατύπωση· μην τη στείλεις.',
+      };
 }
 
 export function ChatWindow({
@@ -390,13 +397,12 @@ export function ChatWindow({
   initialSearch,
 }: ChatWindowProps) {
   const t = useMessagesPrimaryText();
-  const popup = usePopupChatOptional();
+  const { ask, inPlace } = useAskAssistant();
   // The draft sits on the composer, where the reply is written.
-  // It opens the assistant on this page and asks for wording only.
-  // Send stays the only control that delivers a message.
+  // It opens the assistant on this page and asks for wording only, in the
+  // reader's language. Send stays the only control that delivers a message.
   const draftReply = () => {
-    const prompt = draftReplyPrompt(conversation.recipientName);
-    if (popup) popup.ask(prompt);
+    if (inPlace) ask(draftReplyPrompt(conversation.recipientName));
     else onAskAi?.();
   };
   const [inputValue, setInputValue] = useState(initialDraft ?? '');

@@ -786,10 +786,10 @@ export default function MilestonesPage() {
     },
   ];
   const harborLive = (unfilteredData?.milestones ?? allMilestones).some(
-    (m) => m.title.includes('$750K') || m.id === 'ms-4',
+    (m) => m.title.includes('€750K') || m.id === 'ms-4',
   );
   const askAi = harborLive
-    ? 'Propose the next three Harbor milestones from Idea Core, the GTM board, the $750K seed (Athens Tech Angels, $375K committed), and anything overdue.'
+    ? 'Propose the next three Harbor milestones from Idea Core, the GTM board, the €750K seed (Athens Tech Angels, €375K committed), and anything overdue.'
     : 'Help me pick the next milestone from Builder, the pitch deck, and what is already overdue.';
 
   return (

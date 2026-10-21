@@ -478,7 +478,9 @@ function Board() {
     <AppShell
       showHelp
       rail={rail}
-      askAi={isOwner ? `Help me answer the responses to my need card “${card.title}”.` : `Help me decide whether to answer “${card.title}” and what to say.`}
+      askAi={isOwner
+        ? { en: `Help me answer the responses to my need card “${card.title}”.`, el: `Βοήθησέ με με τις απαντήσεις στην κάρτα ανάγκης μου «${card.title}».` }
+        : { en: `Help me decide whether to answer “${card.title}” and what to say.`, el: `Βοήθησέ με να αποφασίσω αν θα απαντήσω στην κάρτα «${card.title}» και τι να πω.` }}
       actions={
         isOwner ? (
           <div className="flex items-center gap-2">

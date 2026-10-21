@@ -57,6 +57,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { ASK } from '@/lib/page-questions';
 
 type Program = {
   /** Set on live rows; the owning organisation's own programs page. */
@@ -486,7 +487,7 @@ export default function AdminProgramsPage() {
           <SampleDataNotice
             surface="Programs"
             detail="There are no programmes yet, so these rows show the layout. Programmes appear here as organisations create them."
-            askAiPrompt="Why does the admin programs page show sample programmes?"
+            askAiPrompt={ASK.adminProgramsSample}
           />
         )}
         {/* Search stays with the list; status and type are in the rail, and

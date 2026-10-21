@@ -59,7 +59,7 @@ describe('sidebar copy', () => {
   });
 
   it("describes the destination, not the demo's data", () => {
-    // The /ai tooltip read «Βοηθός Harbor — … γύρος $750K» for every user.
+    // The /ai tooltip read «Βοηθός Harbor — … γύρος €750K» for every user.
     const offenders = Object.entries({ ...NAV_LINK_DESCRIPTIONS, ...NAV_DESCRIPTION_EL })
       .filter(([, v]) => /Harbor|\$\d/.test(v))
       .map(([k, v]) => `${k} -> ${v}`);

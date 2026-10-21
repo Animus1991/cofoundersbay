@@ -26,6 +26,7 @@ import { isPreviewDemo } from '@/lib/preview-demo';
 import { STATUS } from '@/lib/semantic-colors';
 import { cn, initialsOf } from '@/lib/utils';
 import { matchReasonCopy } from '@/lib/match-reason';
+import { calendarDaysUntil } from '@/lib/calendar-days';
 
 type PhoneActivity = {
   id: string;
@@ -79,13 +80,7 @@ function clock(iso: string): string {
 }
 
 function daysUntil(isoDate: string): number | null {
-  if (!isoDate) return null;
-  const [year, month, day] = isoDate.slice(0, 10).split('-').map(Number);
-  if (!year || !month || !day) return null;
-  const due = new Date(year, month - 1, day).getTime();
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  return Math.round((due - today) / 86_400_000);
+  return calendarDaysUntil(isoDate.slice(0, 10));
 }
 
 function shortName(name: string): string {

@@ -1,5 +1,6 @@
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { previewClockOffsetMs } from '@/lib/preview-api';
+import { calendarDaysUntil } from '@/lib/calendar-days';
 
 export type RoundStatus = 'planning' | 'active' | 'closing' | 'closed';
 export type InvestorStatus = 'prospect' | 'contacted' | 'meeting' | 'dd' | 'committed' | 'passed';
@@ -68,10 +69,10 @@ const FUNDRAISING_STALE_SNIPPETS = [
 /** Seed round — dashboard widget and /fundraising must read the same numbers. */
 export const FUNDRAISING_SEED_ROUND: FundRound = {
   id: 'r1',
-  name: 'Harbor $750K seed',
-  nameEl: 'Γύρος Harbor $750K',
+  name: 'Harbor €750K seed',
+  nameEl: 'Γύρος Harbor €750K',
   type: 'SAFE',
-  currency: '$',
+  currency: '€',
   target: 750_000,
   raised: 375_000,
   status: 'active',
@@ -89,13 +90,13 @@ export const FUNDRAISING_SEED_LEADS: InvestorLead[] = [
     name: 'Athens Tech Angels',
     type: 'Syndicate',
     stage: 'Pre-Seed / Seed',
-    checkSize: '$200K–$500K',
+    checkSize: '€200K–€500K',
     status: 'committed',
     lastContact: '2026-09-03T12:00:00.000Z',
     isVerified: true,
     href: '/investors',
-    notes: 'Lead investor — committed the full $375K raised so far.',
-    notesEl: 'Κύριος επενδυτής — δεσμεύτηκε και τα $375K που έχουν συγκεντρωθεί.',
+    notes: 'Lead investor — committed the full €375K raised so far.',
+    notesEl: 'Κύριος επενδυτής — δεσμεύτηκε και τα €375K που έχουν συγκεντρωθεί.',
   },
   {
     id: 'athens-network',
@@ -114,32 +115,32 @@ export const FUNDRAISING_SEED_LEADS: InvestorLead[] = [
   },
   {
     id: 'remaining-close',
-    name: 'Remaining $375K of the $750K seed',
-    nameEl: 'Υπόλοιπα $375K του γύρου $750K',
+    name: 'Remaining €375K of the €750K seed',
+    nameEl: 'Υπόλοιπα €375K του γύρου €750K',
     type: 'Syndicate',
     stage: 'Pre-Seed / Seed',
-    checkSize: '$375K remaining',
-    checkSizeEl: 'Υπόλοιπα $375K',
+    checkSize: '€375K remaining',
+    checkSizeEl: 'Υπόλοιπα €375K',
     status: 'meeting',
     lastContact: '2026-09-04T10:00:00.000Z',
     isVerified: false,
     href: '/builder/pitch-deck',
-    notes: 'Open ask to close the remaining $375K.',
-    notesEl: 'Ανοιχτό αίτημα για τα υπόλοιπα $375K.',
+    notes: 'Open ask to close the remaining €375K.',
+    notesEl: 'Ανοιχτό αίτημα για τα υπόλοιπα €375K.',
   },
 ];
 
 export const FUNDRAISING_SEED_DOCS: DataRoomDoc[] = [
-  { id: 'd1', name: 'Pitch deck for the $750K seed', nameEl: 'Pitch deck για τον γύρο $750K', category: 'Pitch', status: 'ready', isRequired: true, lastUpdated: '2026-09-03T12:00:00.000Z', href: '/builder/pitch-deck' },
+  { id: 'd1', name: 'Pitch deck for the €750K seed', nameEl: 'Pitch deck για τον γύρο €750K', category: 'Pitch', status: 'ready', isRequired: true, lastUpdated: '2026-09-03T12:00:00.000Z', href: '/builder/pitch-deck' },
   { id: 'd2', name: 'Idea Core one-pager', nameEl: 'Μονόφυλλο Πυρήνα ιδέας', category: 'Pitch', status: 'ready', isRequired: true, lastUpdated: '2026-08-30T12:00:00.000Z', href: '/builder?tab=idea-core' },
   { id: 'd3', name: 'Financials from Builder', nameEl: 'Οικονομικά από τον Builder', category: 'Financials', status: 'draft', isRequired: true, lastUpdated: '2026-09-01T12:00:00.000Z', href: '/builder?tab=financials' },
   { id: 'd4', name: 'Cap table (percentages TBD)', nameEl: 'Cap table (τα ποσοστά εκκρεμούν)', category: 'Legal', status: 'draft', isRequired: true, lastUpdated: '2026-08-23T12:00:00.000Z' },
-  { id: 'd5', name: 'SAFE / term sheet for the $750K seed', nameEl: 'SAFE / φύλλο όρων για τον γύρο $750K', category: 'Legal', status: 'draft', isRequired: true, lastUpdated: undefined },
+  { id: 'd5', name: 'SAFE / term sheet for the €750K seed', nameEl: 'SAFE / φύλλο όρων για τον γύρο €750K', category: 'Legal', status: 'draft', isRequired: true, lastUpdated: undefined },
   { id: 'd6', name: 'GTM board on Research', nameEl: 'Πίνακας GTM στην Έρευνα', category: 'Market', status: 'ready', isRequired: false, lastUpdated: '2026-08-29T09:00:00.000Z', href: '/research' },
   { id: 'd7', name: 'BMC in Builder', nameEl: 'BMC στον Builder', category: 'Product', status: 'ready', isRequired: false, lastUpdated: '2026-08-28T12:00:00.000Z', href: '/builder?tab=bmc' },
   { id: 'd8', name: 'Team: Elena & complementary-cofounder role', nameEl: 'Ομάδα: Elena και ρόλος συμπληρωματικού συνιδρυτή', category: 'Team', status: 'ready', isRequired: false, lastUpdated: '2026-08-16T12:00:00.000Z', href: '/projects/1' },
   { id: 'd9', name: 'Data room note for Athens Tech Angels', nameEl: 'Σημείωμα data room για τους Athens Tech Angels', category: 'Legal', status: 'shared', isRequired: false, lastUpdated: '2026-09-03T12:00:00.000Z' },
-  { id: 'd10', name: 'Remaining $375K close checklist', nameEl: 'Λίστα κλεισίματος υπόλοιπων $375K', category: 'Traction', status: 'draft', isRequired: false, lastUpdated: undefined },
+  { id: 'd10', name: 'Remaining €375K close checklist', nameEl: 'Λίστα κλεισίματος υπόλοιπων €375K', category: 'Traction', status: 'draft', isRequired: false, lastUpdated: undefined },
 ];
 
 export const PIPELINE_STAGES: InvestorStatus[] = ['prospect', 'contacted', 'meeting', 'dd', 'committed', 'passed'];
@@ -312,7 +313,7 @@ export function fmtMoney(n: number, currency = '$') {
   return `${currency}${n}`;
 }
 
+/** Calendar days to a date, in the reader's time zone (`calendarDaysUntil`). */
 export function daysUntil(iso?: string): number | null {
-  if (!iso) return null;
-  return Math.ceil((new Date(iso).getTime() - Date.now()) / 86_400_000);
+  return calendarDaysUntil(iso);
 }

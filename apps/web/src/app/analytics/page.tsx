@@ -544,10 +544,17 @@ export default function AnalyticsPage() {
   const msgMetric = metrics.find((m) => m.label === 'Messages Sent');
   const engMetric = metrics.find((m) => m.label === 'Engagement Rate');
   const periodLabel = period === '7d' ? '7 days' : period === '14d' ? '14 days' : period === '30d' ? '30 days' : '90 days';
+  const periodLabelEl = period === '7d' ? '7 ημέρες' : period === '14d' ? '14 ημέρες' : period === '30d' ? '30 ημέρες' : '90 ημέρες';
   const declining = metrics.filter((m) => m.changeType === 'decrease' && m.change !== null);
   const askPrompt = waiting
-    ? 'Summarize my profile analytics and tell me the next action on Discover, Messages, or my profile.'
-    : `Analytics last ${periodLabel}: ${viewsMetric?.value ?? 0} profile views (${viewsMetric?.change ?? 0}%), ${connMetric?.value ?? 0} new connections, ${msgMetric?.value ?? 0} messages sent, ${engMetric?.value ?? 0}% engagement. What should I do next on Discover, Messages, or my profile to grow this?`;
+    ? {
+        en: 'Summarize my profile analytics and tell me the next action on Discover, Messages, or my profile.',
+        el: 'Σύνοψε τα αναλυτικά του προφίλ μου και πες μου την επόμενη κίνηση στην Ανακάλυψη, στα Μηνύματα ή στο προφίλ μου.',
+      }
+    : {
+        en: `Analytics last ${periodLabel}: ${viewsMetric?.value ?? 0} profile views (${viewsMetric?.change ?? 0}%), ${connMetric?.value ?? 0} new connections, ${msgMetric?.value ?? 0} messages sent, ${engMetric?.value ?? 0}% engagement. What should I do next on Discover, Messages, or my profile to grow this?`,
+        el: `Αναλυτικά, τελευταίες ${periodLabelEl}: ${viewsMetric?.value ?? 0} προβολές προφίλ (${viewsMetric?.change ?? 0}%), ${connMetric?.value ?? 0} νέες συνδέσεις, ${msgMetric?.value ?? 0} μηνύματα, ${engMetric?.value ?? 0}% αλληλεπίδραση. Τι να κάνω μετά στην Ανακάλυψη, στα Μηνύματα ή στο προφίλ μου για να τα αυξήσω;`,
+      };
 
   /*
    * What frames the numbers, rather than being them.

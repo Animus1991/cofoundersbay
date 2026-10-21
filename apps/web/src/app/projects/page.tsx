@@ -617,8 +617,14 @@ export default function ProjectsPage() {
 
   const harborLive = projects.some((p) => p.name === 'Harbor' || p.id === '1');
   const askAi = harborLive
-    ? 'Propose which Harbor project to join or start from Idea Core, the GTM board, the complementary-cofounder role, and the $750K seed (Athens Tech Angels, $375K committed).'
-    : 'Help me pick a project from Builder artefacts and matches.';
+    ? {
+        en: 'Propose which Harbor project to join or start from Idea Core, the GTM board, the complementary-cofounder role, and the €750K seed (Athens Tech Angels, €375K committed).',
+        el: 'Πρότεινε σε ποιο project του Harbor να μπω ή ποιο να ξεκινήσω, από τον Πυρήνα ιδέας, τον πίνακα GTM, τον ρόλο του συμπληρωματικού συνιδρυτή και τον γύρο €750K (Athens Tech Angels, €375K δεσμευμένα).',
+      }
+    : {
+        en: 'Help me pick a project from Builder artefacts and matches.',
+        el: 'Βοήθησέ με να διαλέξω project από τα στοιχεία του Builder και τις αντιστοιχίσεις μου.',
+      };
 
   return (
     <AppShell

@@ -28,6 +28,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { Counter } from '@/components/ui/counter';
+import { ASK } from '@/lib/page-questions';
 
 const ACTIVITY_TOUR: TourStep[] = [
   {
@@ -476,7 +477,7 @@ export default function ActivityPage() {
     <AppShell
       rail={rail}
       showHelp
-      askAi="Summarise my recent network activity and tell me what to act on first: intros, unread notifications, or upcoming events."
+      askAi={ASK.activity}
     >
       <FirstRunTour tourId="activity" steps={ACTIVITY_TOUR} ready={!activityLoading} />
       <div className="space-y-6">

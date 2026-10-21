@@ -198,7 +198,10 @@ export default function StartupDealPage() {
     <AppShell
       title={deal.name}
       description={deal.tagline ?? undefined}
-      askAi={`Summarise where ${deal.name} stands in my pipeline and what I should do next.`}
+      askAi={{
+        en: `Summarise where ${deal.name} stands in my pipeline and what I should do next.`,
+        el: `Σύνοψε πού βρίσκεται το «${deal.name}» στο pipeline μου και τι να κάνω μετά.`,
+      }}
       actions={
         <>
           {next && !passed && (

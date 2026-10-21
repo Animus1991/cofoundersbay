@@ -39,7 +39,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
-import { usePopupChat } from '@/contexts/PopupChatContext';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
 
@@ -257,10 +257,16 @@ function EmptyState({
   onClear?: () => void;
 }) {
   const idle = !query;
-  const { ask } = usePopupChat();
+  const { ask } = useAskAssistant();
   const askPrompt = query
-    ? `No search results for "${query}" in ${category}. Suggest better people, jobs, or events to look for.`
-    : 'Help me search the network for a complementary cofounder.';
+    ? {
+        en: `No search results for "${query}" in ${categoryLabelEn(category)}. Suggest better people, jobs, or events to look for.`,
+        el: `Κανένα αποτέλεσμα για «${query}» στην κατηγορία ${categoryLabelEl(category)}. Πρότεινε καλύτερους ανθρώπους, θέσεις ή εκδηλώσεις για αναζήτηση.`,
+      }
+    : {
+        en: 'Help me search the network for a complementary cofounder.',
+        el: 'Βοήθησέ με να ψάξω στο δίκτυο για συμπληρωματικό συνιδρυτή.',
+      };
   return (
     <div className="flex flex-col items-center justify-center py-10 text-center sm:py-12">
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
@@ -329,7 +335,7 @@ function EmptyState({
 
 export default function SearchPage() {
   const router = useRouter();
-  const { ask } = usePopupChat();
+  const { ask } = useAskAssistant();
   const searchParams = useSearchParams();
   const initialQuery = searchParams?.get('q') || '';
   const initialCategory = (searchParams?.get('category') as SearchCategory) || 'all';
@@ -443,11 +449,17 @@ export default function SearchPage() {
     {
       id: 'ask_search_ai',
       labelEn: 'Ask AI about this search',
-      labelEl: 'Ρώτησε την AI για αυτή την αναζήτηση',
+      labelEl: 'Ρωτήστε το AI για αυτή την αναζήτηση',
       writes: false,
       run: () => ask(query
-        ? `No search results for "${query}" in ${category}. Suggest better people, jobs, or events to look for.`
-        : 'Help me search the network for a complementary cofounder.'),
+        ? {
+            en: `No search results for "${query}" in ${categoryLabelEn(category)}. Suggest better people, jobs, or events to look for.`,
+            el: `Κανένα αποτέλεσμα για «${query}» στην κατηγορία ${categoryLabelEl(category)}. Πρότεινε καλύτερους ανθρώπους, θέσεις ή εκδηλώσεις για αναζήτηση.`,
+          }
+        : {
+            en: 'Help me search the network for a complementary cofounder.',
+            el: 'Βοήθησέ με να ψάξω στο δίκτυο για συμπληρωματικό συνιδρυτή.',
+          }),
     },
   ]);
   usePageList([

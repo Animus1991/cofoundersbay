@@ -308,7 +308,7 @@ Return as a JSON object with slide content.`,
 Return JSON { "answers": { "<questionId>": "<text>" } }.
 Fill only questions whose current answer is empty in context.current.
 Do not invent users, press metrics, ARR, Sequoia, San Francisco HQ, or a second founder history.
-If traction is needed, use the $750K seed ($375K committed by Athens Tech Angels) and Builder artefacts already in context — not invented MRR or user counts.
+If traction is needed, use the €750K seed (€375K committed by Athens Tech Angels) and Builder artefacts already in context — not invented MRR or user counts.
 Respect each question's maxLength.
 
 Context: ${JSON.stringify(dto.context || {})}
@@ -362,7 +362,7 @@ Write an authentic answer that:
 1. Directly addresses the question
 2. Uses only facts in the context (Idea Core, GTM, seed)
 3. Does not invent users, press metrics, ARR, Sequoia, or a second founder history
-4. Treats traction as the $750K seed ($375K committed by Athens Tech Angels) when the context has no other numbers
+4. Treats traction as the €750K seed (€375K committed by Athens Tech Angels) when the context has no other numbers
 5. Stays within the question's maxLength when provided
 
 Return as JSON with an "answer" field containing the response.`;

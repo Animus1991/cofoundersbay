@@ -9,12 +9,14 @@ import { useI18n } from '@/components/common/I18nProvider';
 import { bilingualAria } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PageHeaderSlot } from '@/components/layout/PageHeaderSlot';
-import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
+import type { AskPrompt } from '@/lib/page-questions';
 
 type SampleDataNoticeProps = {
   surface: string;
   detail: string;
-  askAiPrompt: string;
+  /** A pair from `lib/page-questions`; a "why" question is answered from the page. */
+  askAiPrompt: AskPrompt;
   className?: string;
 };
 
@@ -24,7 +26,7 @@ type SampleDataNoticeProps = {
  */
 export function SampleDataNotice({ surface, detail, askAiPrompt, className }: SampleDataNoticeProps) {
   const { t } = useI18n();
-  const popup = usePopupChatOptional();
+  const { ask, hrefFor, inPlace } = useAskAssistant();
   const [open, setOpen] = useState(false);
   const { inHeader, slot } = useContext(PageHeaderSlot);
   const title = t('{surface} is showing sample items', { surface: t(surface) });
@@ -62,17 +64,17 @@ export function SampleDataNotice({ surface, detail, askAiPrompt, className }: Sa
         <p className="mt-0.5 text-xs text-muted-foreground">{t(detail)}</p>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        {popup ? (
+        {inPlace ? (
           <button
             type="button"
-            onClick={() => popup.ask(askAiPrompt)}
+            onClick={() => ask(askAiPrompt)}
             className="text-xs font-medium text-primary-accessible hover:underline"
           >
             <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />
           </button>
         ) : (
           <Link
-            href={`/ai?q=${encodeURIComponent(askAiPrompt)}`}
+            href={hrefFor(askAiPrompt)}
             className="text-xs font-medium text-primary-accessible hover:underline"
           >
             <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />

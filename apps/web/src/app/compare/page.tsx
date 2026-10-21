@@ -25,6 +25,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { StatusText } from '@/components/common/StatusText';
+import { ASK } from '@/lib/page-questions';
 
 const ComparisonChart = dynamic(
   () => import('./ComparisonChart').then((m) => ({ default: m.ComparisonChart })),
@@ -402,7 +403,7 @@ export default function ComparePage() {
             illustration="search"
             title={<BilingualText en="No profiles to compare" el="Κανένα προφίλ για σύγκριση" compact wrap />}
             description={<BilingualText en="Add profiles from your matches or search to compare them side by side" el="Προσθέστε προφίλ από τις αντιστοιχίσεις ή την αναζήτηση για να τα συγκρίνετε δίπλα-δίπλα" wrap />}
-            askAiPrompt="Help me pick two or three people from my matches to compare as potential cofounders."
+            askAiPrompt={ASK.compareEmpty}
             action={
               <Button onClick={handleAdd}>
                 <Plus className="icon-sm mr-2" aria-hidden="true" />

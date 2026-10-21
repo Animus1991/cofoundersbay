@@ -88,7 +88,7 @@ const ELENA = { id: DEMO_PROJECT_ELENA_ID, name: 'Elena Papadopoulos', role: 'fo
 const ALEX = { id: DEMO_PROJECTS_ME_ID, name: 'Alex Demo', role: 'founder' } as const;
 
 /**
- * Harbor catalogue aligned with Idea Core, the GTM board, and the $750K seed.
+ * Harbor catalogue aligned with Idea Core, the GTM board, and the €750K seed.
  * Fast Refresh plus leftover sessionStorage can keep EcoTrack / Fortune 500.
  */
 export const DEMO_PROJECTS_SEED: DemoProject[] = [
@@ -98,9 +98,9 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
     tagline: 'Graph + readiness + builder for complementary cofounders',
     taglineEl: 'Γράφος + ετοιμότητα + builder για συμπληρωματικούς συνιδρυτές',
     description:
-      'Harbor OS for early-stage founders. Elena Papadopoulos is Founder & CEO. The job is a complementary cofounder — technical + commercial.\n\nProblem: founders waste weeks stitching matching, messaging, and fundraising tools. Product: one workspace with a product graph, readiness, and builder.\n\nSeed: $375K committed of a $750K target. Lead: Athens Tech Angels.',
+      'Harbor OS for early-stage founders. Elena Papadopoulos is Founder & CEO. The job is a complementary cofounder — technical + commercial.\n\nProblem: founders waste weeks stitching matching, messaging, and fundraising tools. Product: one workspace with a product graph, readiness, and builder.\n\nSeed: €375K committed of a €750K target. Lead: Athens Tech Angels.',
     descriptionEl:
-      'Harbor OS για ιδρυτές πρώιμου σταδίου. Η Elena Papadopoulos είναι ιδρύτρια και CEO. Η εργασία είναι συμπληρωματικός συνιδρυτής — τεχνικό + εμπορικό ζεύγος.\n\nΠρόβλημα: οι ιδρυτές χάνουν εβδομάδες ράβοντας εργαλεία matching, μηνυμάτων και fundraising. Προϊόν: ένας χώρος με γράφο προϊόντος, ετοιμότητα και builder.\n\nΓύρος: $375K δεσμευμένα από στόχο $750K. Lead: Athens Tech Angels.',
+      'Harbor OS για ιδρυτές πρώιμου σταδίου. Η Elena Papadopoulos είναι ιδρύτρια και CEO. Η εργασία είναι συμπληρωματικός συνιδρυτής — τεχνικό + εμπορικό ζεύγος.\n\nΠρόβλημα: οι ιδρυτές χάνουν εβδομάδες ράβοντας εργαλεία matching, μηνυμάτων και fundraising. Προϊόν: ένας χώρος με γράφο προϊόντος, ετοιμότητα και builder.\n\nΓύρος: €375K δεσμευμένα από στόχο €750K. Lead: Athens Tech Angels.',
     status: 'building',
     stage: 'Pre-seed',
     industry: 'B2B SaaS',
@@ -131,22 +131,22 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
     milestones: [
       { id: 'h1', title: 'Idea Core v1 in Builder', titleEl: 'Πυρήνας ιδέας v1 στον Builder', status: 'completed', date: '2026-08-01T00:00:00.000Z' },
       { id: 'h2', title: 'BMC v1 in Builder', titleEl: 'Καμβάς μοντέλου v1 στον Builder', status: 'in_progress', date: '2026-09-30T17:00:00.000Z' },
-      { id: 'h3', title: 'Pitch deck outline for the $750K seed', titleEl: 'Δομή pitch deck για τον γύρο $750K', status: 'completed', date: '2026-08-20T00:00:00.000Z' },
-      { id: 'h4', title: 'Close $750K seed', titleEl: 'Κλείσιμο γύρου $750K', status: 'in_progress', date: '2026-10-15T17:00:00.000Z' },
+      { id: 'h3', title: 'Pitch deck outline for the €750K seed', titleEl: 'Δομή pitch deck για τον γύρο €750K', status: 'completed', date: '2026-08-20T00:00:00.000Z' },
+      { id: 'h4', title: 'Close €750K seed', titleEl: 'Κλείσιμο γύρου €750K', status: 'in_progress', date: '2026-10-15T17:00:00.000Z' },
       { id: 'h5', title: 'Complementary cofounder — technical + commercial pair', titleEl: 'Συμπληρωματικός συνιδρυτής — τεχνικό + εμπορικό ζεύγος', status: 'pending', date: '2026-10-15T17:00:00.000Z' },
     ],
     updates: [
       {
         id: 'hu1',
-        content: '$375K committed of a $750K target. Lead: Athens Tech Angels.',
-        contentEl: '$375K δεσμευμένα από στόχο $750K. Lead: Athens Tech Angels.',
+        content: '€375K committed of a €750K target. Lead: Athens Tech Angels.',
+        contentEl: '€375K δεσμευμένα από στόχο €750K. Lead: Athens Tech Angels.',
         date: '2026-09-01T10:00:00.000Z',
         author: ELENA.name,
       },
       {
         id: 'hu2',
-        content: 'GTM canvas on Research aligned with Idea Core and the $750K seed.',
-        contentEl: 'Καμβάς GTM στους πίνακες έρευνας σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο $750K.',
+        content: 'GTM canvas on Research aligned with Idea Core and the €750K seed.',
+        contentEl: 'Καμβάς GTM στους πίνακες έρευνας σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο €750K.',
         date: '2026-08-29T10:00:00.000Z',
         author: ELENA.name,
       },
@@ -158,9 +158,9 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
     tagline: 'A filled Idea Core and a research board founders can share',
     taglineEl: 'Συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας που μοιράζεται',
     description:
-      'First conversion from the GTM offer: a filled Idea Core and a research board they can share. Elena leads; Alex Demo is on the board as a collaborator.\n\nHarbor GTM notes stay aligned with Idea Core and the $750K seed.',
+      'First conversion from the GTM offer: a filled Idea Core and a research board they can share. Elena leads; Alex Demo is on the board as a collaborator.\n\nHarbor GTM notes stay aligned with Idea Core and the €750K seed.',
     descriptionEl:
-      'Πρώτη μετατροπή από το GTM: συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας που μοιράζεται. Η Elena ηγείται· ο Alex Demo είναι συνεργάτης στον πίνακα.\n\nΟι σημειώσεις GTM του Harbor μένουν σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο $750K.',
+      'Πρώτη μετατροπή από το GTM: συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας που μοιράζεται. Η Elena ηγείται· ο Alex Demo είναι συνεργάτης στον πίνακα.\n\nΟι σημειώσεις GTM του Harbor μένουν σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο €750K.',
     status: 'validating',
     stage: 'Idea',
     industry: 'Marketplace',
@@ -186,8 +186,8 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
     updates: [
       {
         id: 'gu1',
-        content: 'Harbor GTM notes aligned with Idea Core and the $750K seed.',
-        contentEl: 'Σημειώσεις GTM του Harbor σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο $750K.',
+        content: 'Harbor GTM notes aligned with Idea Core and the €750K seed.',
+        contentEl: 'Σημειώσεις GTM του Harbor σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο €750K.',
         date: '2026-08-29T09:00:00.000Z',
         author: ELENA.name,
       },

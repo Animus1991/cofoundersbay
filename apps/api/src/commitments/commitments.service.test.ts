@@ -19,7 +19,7 @@ const SOFIA = { id: 'u-sofia' };
 const CARD = {
   kind: 'cofounder',
   title: 'Technical co-founder for Harbor',
-  exists: 'A working founder workspace with $375K of a $750K seed committed.',
+  exists: 'A working founder workspace with €375K of a €750K seed committed.',
   goal: 'Ship the workspace to the first twenty paying teams this year.',
   missing: 'A technical co-founder who has taken a real-time product to production.',
   offerRole: 'CTO and co-founder',

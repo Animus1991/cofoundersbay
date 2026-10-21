@@ -4,7 +4,8 @@ import { ReactNode } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
+import type { AskPrompt } from '@/lib/page-questions';
 import { BilingualText } from '@/components/common/BilingualText';
 
 type IllustrationType = 'search' | 'connection' | 'message' | 'rocket' | 'profile' | 'calendar' | 'default';
@@ -16,8 +17,8 @@ type EmptyStateProps = {
   className?: string;
   illustration?: IllustrationType;
   size?: 'sm' | 'md' | 'lg';
-  /** Secondary Ask AI action — never replaces the primary `action`. */
-  askAiPrompt?: string;
+  /** Secondary Ask AI action — never replaces the primary `action`. A pair from `lib/page-questions`. */
+  askAiPrompt?: AskPrompt;
 };
 
 export function EmptyState({
@@ -28,7 +29,7 @@ export function EmptyState({
   size = 'md',
   askAiPrompt,
 }: EmptyStateProps) {
-  const popup = usePopupChatOptional();
+  const { ask, hrefFor, inPlace } = useAskAssistant();
   const sizeClasses = { sm: 'p-4', md: 'p-6', lg: 'p-8' };
 
   return (
@@ -49,13 +50,13 @@ export function EmptyState({
         {(action || askAiPrompt) && (
           <div className="flex flex-wrap items-center justify-start gap-2 pt-2" data-actions="">
             {action}
-            {askAiPrompt && (popup ? (
-              <Button variant="outline" size="sm" onClick={() => popup.ask(askAiPrompt)}>
+            {askAiPrompt && (inPlace ? (
+              <Button variant="outline" size="sm" onClick={() => ask(askAiPrompt)}>
                 <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />
               </Button>
             ) : (
               <Button asChild variant="outline" size="sm">
-                <Link href={`/ai?q=${encodeURIComponent(askAiPrompt)}`}>
+                <Link href={hrefFor(askAiPrompt)}>
                   <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />
                 </Link>
               </Button>

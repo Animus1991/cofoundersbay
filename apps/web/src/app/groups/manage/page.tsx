@@ -52,6 +52,7 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { demoMark } from '@/lib/demo/photos';
+import { ASK } from '@/lib/page-questions';
 
 type ManagedGroup = {
   id: string;
@@ -307,7 +308,7 @@ export default function ManageGroupsPage() {
           <SampleDataNotice
             surface="Manage communities"
             detail="You do not run a community yet, so these are samples that show the layout."
-            askAiPrompt="How do I start and run a community on CoFounderBay?"
+            askAiPrompt={ASK.groupsManage}
           />
         )}
         {/* Stats */}

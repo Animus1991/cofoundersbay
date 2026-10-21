@@ -121,7 +121,7 @@ function includesWord(haystack: string, needles: string[]): boolean {
  * έρχονται» all name the area, and naming it is enough to be worth reading.
  */
 const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
-  { keys: ['my profile', 'my bio', 'my headline', 'το προφιλ μου', 'προφιλ μου'], tool: 'get_profile' },
+  { keys: ['my profile', 'my bio', 'my headline', 'founder profile', 'this profile', 'το προφιλ μου', 'προφιλ μου', 'ιδρυτικο προφιλ', 'αυτο το προφιλ'], tool: 'get_profile' },
   {
     keys: ['message', 'inbox', 'unread', 'conversation', 'συνομιλι', 'μηνυματ', 'αδιαβαστ'],
     tool: 'get_messages',
@@ -133,8 +133,9 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     keys: ['connection', 'my network', 'intro request', 'συνδεσ', 'αιτημα συνδεσ', 'αιτηματα γνωριμιας', 'αιτημα γνωριμιας', 'δικτυο μου'],
     tool: 'get_connections',
   },
-  { keys: ['event', 'meetup', 'webinar', 'workshop', 'demo day', 'εκδηλωσ'], tool: 'get_events' },
-  { keys: ['milestone', 'overdue', 'οροσημ', 'εκπροθεσμ'], tool: 'get_milestones' },
+  // "My calendar" is what the Calendar page gathers: events, sessions and milestone dates.
+  { keys: ['event', 'meetup', 'webinar', 'workshop', 'demo day', 'my calendar', 'εκδηλωσ', 'ημερολογιο μου'], tool: 'get_events' },
+  { keys: ['milestone', 'overdue', 'my calendar', 'οροσημ', 'εκπροθεσμ', 'ημερολογιο μου'], tool: 'get_milestones' },
   { keys: ['job', 'open role', 'hiring', 'θεσεις εργασιας', 'αγγελι', 'προσληψ'], tool: 'get_jobs' },
   { keys: ['group', 'communit*', 'κοινοτητ'], tool: 'get_groups' },
   // The Endorsements page is «Συστάσεις», so that is the word a Greek reader
@@ -180,19 +181,19 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     tool: 'get_founder_updates',
   },
   // A mentor's mentees are the people on the other side of the sessions.
-  { keys: ['session', 'mentee*', 'συνεδρι', 'καθοδηγουμεν', 'οσους καθοδηγω'], tool: 'get_mentorship_sessions' },
+  { keys: ['session', 'mentee*', 'my calendar', 'συνεδρι', 'καθοδηγουμεν', 'οσους καθοδηγω', 'ημερολογιο μου'], tool: 'get_mentorship_sessions' },
   {
     keys: ['saved profile', 'my shortlist', 'αποθηκευμενα προφιλ', 'αποθηκευμενους'],
     tool: 'get_shortlist',
   },
   { keys: ['research board', 'πινακες ερευνας', 'πινακα ερευνας'], tool: 'get_research_boards' },
   {
-    keys: ['my workspace', 'my workspaces', 'startup builder', 'builder workspace', 'χωρους εργασιας', 'χωρο εργασιας', 'χωροι εργασιας'],
+    keys: ['my workspace', 'my workspaces', 'this workspace', 'startup builder', 'builder workspace', 'builder section*', 'χωρους εργασιας', 'χωρο εργασιας', 'χωροι εργασιας', 'ενοτητα του builder'],
     tool: 'get_builder_state',
   },
   // The investor's board is one list: watchlist, pipeline and portfolio.
   {
-    keys: ['investor board', 'my pipeline', 'my watchlist', 'my portfolio', 'πινακας επενδυσεων', 'πινακα επενδυσεων', 'pipeline μου', 'χαρτοφυλακιο μου'],
+    keys: ['investor board', 'my pipeline', 'my watchlist', 'my portfolio', 'investor portfolio', 'investment pipeline', 'πινακας επενδυσεων', 'πινακα επενδυσεων', 'pipeline μου', 'χαρτοφυλακιο μου', 'επενδυτικο χαρτοφυλακιο', 'pipeline επενδυσεων'],
     tool: 'get_investor_board',
   },
   // The founder's own round and leads. Narrow: "investors for my round" is a
@@ -212,7 +213,7 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   },
   { keys: ['invite*', 'invitation*', 'referral*', 'προσκλησ', 'προσκαλεσ'], tool: 'get_invites' },
   { keys: ['badge*', 'my level', 'xp', 'reputation', 'streak', 'σηματα', 'εμβληματ', 'επιπεδο μου', 'φημη μου', 'σερι'], tool: 'get_reputation' },
-  { keys: ['readiness score', 'my readiness', 'how ready', 'investor ready', 'ετοιμοτητα'], tool: 'get_readiness' },
+  { keys: ['readiness score', 'my readiness', 'how ready', 'investor ready', 'venture readiness', 'startup readiness', 'readiness gap*', 'lowest dimension', 'weakest dimension', 'ετοιμοτητα'], tool: 'get_readiness' },
   {
     keys: ['profile view*', 'my analytics', 'my stats', 'my statistics', 'my activity', 'προβολες', 'στατιστικα μου', 'αναλυτικα μου', 'δραστηριοτητα μου'],
     tool: 'get_analytics',
@@ -320,6 +321,20 @@ const THIS_PAGE_PHRASES = [
   'τι βλέπω', 'τι βλεπω', 'πού βρίσκομαι', 'που βρισκομαι',
   'τι κάνω εδώ', 'τι κανω εδω', 'τι είναι αυτό', 'τι ειναι αυτο',
 ];
+
+/**
+ * Whether the reader asks why rows are samples, or whether they are real:
+ * "Why does the earnings page show sample transactions?", «Γιατί βλέπω
+ * δείγματα;», "Is this data real?". Every "Sample data" note offers this
+ * question, and the general summary that answered it was about something else.
+ * A statement about samples followed by another question ("These endorsements
+ * are samples. Who should I ask first?") is that other question.
+ */
+export function asksAboutSamples(message: string): boolean {
+  const m = message.toLowerCase();
+  return includesAny(m, ['sample', 'demo data', 'δειγμα', 'δειγματ']) &&
+    (includesWord(m, ['why', 'real']) || includesAny(m, ['γιατι', 'πραγματικ']));
+}
 
 export function asksAboutThisPage(message: string): boolean {
   return includesAny(message.toLowerCase(), THIS_PAGE_PHRASES);
@@ -683,6 +698,18 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const location = detectLocation(message);
   const person = detectPersonName(message);
   const nav = detectNavigateHref(message);
+  // Ends with a question mark (the Greek one is ";").
+  const asksQuestion = /[?;\u037e]\s*$/.test(rawMessage.trim());
+  // Whether the message opens with one of these verbs: "send an intro",
+  // "message her", «στείλε μήνυμα». A change to a person with nobody named is
+  // planned only then, so the reply can ask who; inside a question or a
+  // request for advice ("how should I ask for an intro?", "help me find
+  // people to connect with") it was answered with "I need a specific person
+  // before I can send an intro".
+  const opensWith = (verbs: string[]) => {
+    const head = fold(message).replace(/^(?:please|can you|could you|παρακαλω)\s+/, '');
+    return verbs.some((verb) => head.startsWith(fold(verb)));
+  };
 
   // Area reads are decided first, because two of the older intents need to
   // know about them. "My upcoming mentoring sessions" contains "mentor", which
@@ -711,7 +738,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'επομενο',
   ]);
 
-  const wantsSearch = !(areaReads.length > 0 && !explicitSearch) && includesAny(message, [
+  const searchVerb = includesAny(message, ['find', 'search', 'look for', 'who is', 'βρες', 'ψάξε', 'ψαξε', 'αναζήτη']);
+  const wantsSearchWords = !(areaReads.length > 0 && !explicitSearch) && includesAny(message, [
     'find',
     'search',
     'look for',
@@ -748,6 +776,10 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'προτασ',
   ]);
 
+  // A role named beside matches ("pick two people from my matches to compare
+  // as cofounders") is about the matches; only a search verb searches then.
+  const wantsSearch = wantsSearchWords && (searchVerb || !wantsMatches);
+
   const wantsNotifications = includesAny(message, [
     'notification',
     'alert',
@@ -766,6 +798,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const wantsShortlist =
     !explicitRemove &&
     !(areaReads.includes('get_shortlist') && !explicitSave) &&
+    (Boolean(person) || opensWith(['save', 'bookmark', 'shortlist', 'add ', 'αποθήκευσε', 'πρόσθεσε'])) &&
     includesAny(message, [
       'shortlist',
       'bookmark',
@@ -799,6 +832,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     !asksAboutConnections &&
     !areaReads.includes('get_intros') &&
     !namesCanvasSurface(message) &&
+    (Boolean(person) || opensWith(['connect', 'send an intro', 'send intro', 'send a connection', 'send connection', 'introduce me', 'σύνδεσέ με', 'στείλε αίτημα σύνδεσης', 'στείλε intro'])) &&
     (/\bintro(?!s\b)/.test(message) || includesAny(message, [
     'connect',
     'introduction',
@@ -815,7 +849,9 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   // A bare «γράψε» is "write" - an update, a reply, a card - and was proposing
   // a message beside each of them; writing to someone says to whom («γράψε
   // στην Έλενα») or what («γράψε μήνυμα»), as "message" does in English.
-  const wantsMessage = !asksAboutMessages && (includesAny(message, [
+  const wantsMessage = !asksAboutMessages &&
+    (Boolean(person) || opensWith(['message', 'send a message', 'send message', 'write to', 'dm ', 'chat with', 'στείλε μήνυμα', 'γράψε μήνυμα', 'γράψε στ'])) &&
+    (includesAny(message, [
     'message',
     'chat with',
     'γράψε στ',
@@ -857,27 +893,25 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'φτιαξε χωρο',
   ]);
 
+  // The criterion is named, or readiness is ticked: "what should I complete
+  // next" about readiness is a question, and "mark" was matching inside
+  // "go-to-market", so asking which expert review to request proposed a tick.
+  const criterionVerbs = ['tick', 'check off', 'mark', 'complete', 'done', 'τσέκαρε', 'τσεκαρε', 'σημείωσε', 'σημειωσε', 'ολοκλήρωσ', 'ολοκληρωσ'];
   const wantsCriterion =
-    includesAny(message, ['readiness', 'criteri', 'ετοιμότητ', 'ετοιμοτητ', 'κριτήρι', 'κριτηρι']) &&
-    includesAny(message, [
-      'tick',
-      'check off',
-      'mark',
-      'complete',
-      'done',
-      'τσέκαρε',
-      'τσεκαρε',
-      'σημείωσε',
-      'σημειωσε',
-      'ολοκλήρωσ',
-      'ολοκληρωσ',
-    ]);
+    (includesAny(message, ['criteri', 'κριτήρι', 'κριτηρι']) ||
+      (includesAny(message, ['readiness', 'ετοιμότητ', 'ετοιμοτητ']) && includesWord(message, ['tick', 'check off', 'τσέκαρε', 'τσεκαρε']))) &&
+    includesWord(message, criterionVerbs);
 
   if (wantsGraph) add('get_graph');
 
   if (wantsSearch) {
     const args: Record<string, string> = {};
-    const q = searchQueryFromMessage(rawMessage);
+    // A keyword search is a few words ("fintech", "React Thessaloniki"). More
+    // left over means the message was a sentence about something else, and
+    // the sentence as a query found nobody ("Discover returned nobody Suggest
+    // filters prompt technical"); the role, place and stage filters remain.
+    const words = searchQueryFromMessage(rawMessage);
+    const q = words.split(' ').length <= 3 ? words : '';
     if (person) args.q = person;
     else if (q) args.q = q;
     if (location) args.location = location;
@@ -955,7 +989,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   // Wave C writes. Each needs its verb and its noun, like the intents above,
   // and each replaces the read of the same area it would otherwise trigger:
   // "join the Athens Founders group" is not also a question about groups.
-  const joinVerb = includesAny(message, ['join', 'μπες ', 'γίνε μέλος', 'γινε μελος', 'γράψε με', 'γραψε με']);
+  // "join" as a word: "I have not joined any groups" is not a request.
+  const joinVerb = includesWord(message, ['join']) || includesAny(message, ['μπες ', 'γίνε μέλος', 'γινε μελος', 'γράψε με', 'γραψε με']);
   const leaveVerb = includesAny(message, ['leave', 'exit', 'αποχώρησ', 'αποχωρησ', 'βγες από', 'βγες απο', 'βγάλε με από', 'βγαλε με απο']);
   const wantsJoinGroup = joinVerb && !leaveVerb && includesAny(message, GROUP_NOUNS);
   const wantsLeaveGroup = leaveVerb && includesAny(message, GROUP_NOUNS);
@@ -968,13 +1003,17 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const declineVerb = includesAny(message, ['decline', 'reject', 'turn down', 'απόρριψε', 'απορριψε']);
   const wantsMentorAnswer = (acceptVerb || declineVerb) && includesAny(message, MENTOR_REQUEST_NOUNS);
 
+  // "Which communities should I join?" and "which programme should I apply
+  // to?" ask for advice: with nothing named they read the area instead.
   if (wantsJoinGroup || wantsLeaveGroup) {
     const groupName = detectGroupName(rawMessage);
-    add(wantsLeaveGroup ? 'leave_group' : 'join_group', groupName ? { groupName } : {});
+    if (groupName || !asksQuestion) add(wantsLeaveGroup ? 'leave_group' : 'join_group', groupName ? { groupName } : {});
+    else add('get_groups');
   }
   if (wantsApply) {
     const programTitle = detectProgramTitle(rawMessage);
-    add('apply_to_program', programTitle ? { programTitle } : {});
+    if (programTitle || !asksQuestion) add('apply_to_program', programTitle ? { programTitle } : {});
+    else add('get_programs');
   }
   if (wantsInvite && email) add('send_invite', { email });
   if (wantsMentorAnswer) {
@@ -984,13 +1023,12 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   // Wave D drafts: "draft a milestone …", «ετοίμασε εκδήλωση …». A draft only
   // opens a filled form, so it never competes with a write; it replaces the
   // read of its own area, as the writes above do.
-  const draftVerb = includesAny(message, ['draft', 'prepare', 'fill in', 'fill out', 'ετοίμασε', 'ετοιμασε', 'πρόχειρ', 'προχειρ', 'συμπλήρωσε', 'συμπληρωσε', 'σύνταξ', 'συνταξ', 'συντάξ']);
+  const draftVerb = includesAny(message, ['draft', 'prepare', 'fill in', 'fill out', 'ετοίμασε', 'ετοιμασε', 'ετοιμάσω', 'ετοιμασω', 'πρόχειρ', 'προχειρ', 'συμπλήρωσε', 'συμπληρωσε', 'σύνταξ', 'συνταξ', 'συντάξ']);
   const quoted = detectQuotedName(rawMessage);
   // A need card is asked for with "write" or "make" as often as "draft".
   const needCardNoun = includesAny(message, ['need card', 'need-card', 'κάρτα ανάγκης', 'καρτα αναγκης', 'κάρτας ανάγκης', 'καρτας αναγκης']);
   // "new" asks for one only when it is not a question: "Any new founder
   // updates?" reads the feed, "New founder update: September" drafts one.
-  const asksQuestion = /[?;\u037e]\s*$/.test(rawMessage.trim());
   const needCardVerb =
     draftVerb ||
     includesAny(message, ['write', 'create', 'make', 'γράψε', 'γραψε', 'φτιάξε', 'φτιαξε', 'δημιούργησε', 'δημιουργησε']) ||
@@ -1007,6 +1045,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const providerListingNoun = includesAny(message, [
     'provider listing', 'provider profile', 'service listing', 'services listing',
     'καταχώριση παρόχου', 'καταχωριση παροχου', 'προφίλ παρόχου', 'προφιλ παροχου', 'καταχώριση υπηρεσιών', 'καταχωριση υπηρεσιων',
+    'καταχώριση υπηρεσίας', 'καταχωριση υπηρεσιας',
   ]);
   const draftKind = needCardNoun && needCardVerb
     ? 'draft_need_card'

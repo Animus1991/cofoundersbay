@@ -26,7 +26,8 @@ import { useModalA11y } from '@/hooks/useModalA11y';
 import { useHydrated } from '@/components/common/RelativeTime';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
-import { usePopupChat } from '@/contexts/PopupChatContext';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
+import type { AskText } from '@/lib/page-questions';
 import { useToast } from '@/components/ui/toast';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -93,10 +94,14 @@ const DOC_GLYPH: Record<DocStatus, CfbGlyphName> = {
   shared: 'discover',
 };
 
-const HARBOR_ASK =
-  "Propose who to contact next on Harbor's $750K seed (Athens Tech Angels committed $375K; remaining $375K; warm intro from Athens founder networks). Use Idea Core, the pitch deck, Research, and data-room gaps.";
-const GENERIC_ASK =
-  'Help me pick who to contact next from Builder artefacts and data-room gaps.';
+const HARBOR_ASK = {
+  en: "Propose who to contact next on Harbor's €750K seed (Athens Tech Angels committed €375K; remaining €375K; warm intro from Athens founder networks). Use Idea Core, the pitch deck, Research, and data-room gaps.",
+  el: 'Πρότεινε σε ποιον να απευθυνθώ μετά για τον γύρο €750K του Harbor (οι Athens Tech Angels δεσμεύτηκαν €375K· μένουν €375K· ζεστή γνωριμία μέσω δικτύων ιδρυτών στην Αθήνα). Χρησιμοποίησε τον Πυρήνα ιδέας, το pitch deck, την Έρευνα και τα κενά του data room.',
+};
+const GENERIC_ASK = {
+  en: 'How is my fundraising going, and who should I contact next given my data-room gaps?',
+  el: 'Πώς πάει η χρηματοδότησή μου, και σε ποιον να απευθυνθώ μετά με βάση τα κενά του data room;',
+};
 
 function statusLabel(status: InvestorStatus) {
   const key = INVESTOR_STATUS_KEYS[status];
@@ -109,16 +114,24 @@ function statusLabel(status: InvestorStatus) {
  * The ask behind a lead's message and details buttons.
  *
  * It used to state Harbor's round for every lead: "Draft a next-step note for
- * {lead} on Harbor's $750K seed (Athens Tech Angels, $375K committed)". Outside
+ * {lead} on Harbor's €750K seed (Athens Tech Angels, €375K committed)". Outside
  * the showcase a founder adds their own contacts here, so the assistant was
  * briefed with another company's raise and asked to write to a real investor
  * about it. The round facts belong to the showcase only, exactly as the page's
  * own `askAi` already gates them on `harborLive`.
  */
-function leadAskPrompt(lead: InvestorLead, harborLive: boolean) {
+function leadAskPrompt(lead: InvestorLead, harborLive: boolean): AskText {
+  const name = lead.name;
+  const nameEl = lead.nameEl ?? lead.name;
   return harborLive
-    ? `Draft a next-step note for ${lead.name} on Harbor's $750K seed (Athens Tech Angels, $375K committed).`
-    : `Draft a next-step note for ${lead.name}. Use only my saved round details, pitch deck and data room; ask me for anything missing rather than inventing amounts or commitments.`;
+    ? {
+        en: `Draft a next-step note for ${name} on Harbor's €750K seed (Athens Tech Angels, €375K committed).`,
+        el: `Ετοίμασε ένα σημείωμα επόμενου βήματος για ${nameEl} στον γύρο €750K του Harbor (Athens Tech Angels, €375K δεσμευμένα).`,
+      }
+    : {
+        en: `Draft a next-step note for ${name}. Use only my saved round details, pitch deck and data room; ask me for anything missing rather than inventing amounts or commitments.`,
+        el: `Ετοίμασε ένα σημείωμα επόμενου βήματος για ${nameEl}. Χρησιμοποίησε μόνο τα αποθηκευμένα στοιχεία του γύρου, το pitch deck και το data room μου· ρώτα με για ό,τι λείπει αντί να επινοείς ποσά ή δεσμεύσεις.`,
+      };
 }
 
 function LeadName({ lead, className, as: Tag = 'p' }: { lead: InvestorLead; className?: string; as?: 'p' | 'span' }) {
@@ -152,7 +165,7 @@ function AddLeadModal({
   const [firm, setFirm] = useState('');
   const [type, setType] = useState<string>('Angel');
   const [stage, setStage] = useState('Pre-Seed / Seed');
-  const [checkSize, setCheckSize] = useState('$25K–$150K');
+  const [checkSize, setCheckSize] = useState('€25K–€150K');
   const [status, setStatus] = useState<InvestorStatus>(defaultStatus);
   const [notes, setNotes] = useState('');
 
@@ -295,7 +308,7 @@ function RoundCard({
   onAdd: () => void;
 }) {
   const { primary } = useLanguagePreference();
-  const { ask } = usePopupChat();
+  const { ask } = useAskAssistant();
   // The page is prerendered, so "days left" computed during render is frozen
   // at build time — the client hydrates with a different day count (#418).
   // Until the browser has its own clock the tile shows the fixed closing
@@ -315,7 +328,7 @@ function RoundCard({
 
   // The round's name is the card's title and everything inside reads under
   // it: the figures sit on the body step, their labels on the caption step.
-  // They used to match or outrank the name ("$375K raised", "Athens Tech
+  // They used to match or outrank the name ("€375K raised", "Athens Tech
   // Angels" at the title's size and weight).
   return (
     <Card>
@@ -367,7 +380,9 @@ function RoundCard({
                       ? /^\d+$/.test(s.value)
                         // One text node with the count inside, so a locale can
                         // put the number where its grammar wants it.
-                        ? s.value === '1'
+                        ? s.value === '0'
+                          ? <BilingualText en={fundraisingEn('closes_today')} el={fundraisingEl('closes_today')} compact />
+                          : s.value === '1'
                           ? <BilingualText en={fundraisingEn('days_left_one')} el={fundraisingEl('days_left_one')} compact />
                           : <BilingualText
                               en={fundraisingEn('days_left').replace('{count}', s.value)}
@@ -394,7 +409,7 @@ function RoundCard({
               size="sm"
               variant="outline"
               className="h-7 rounded-full px-2.5 text-xs"
-              onClick={() => ask(primary === 'el' ? template.promptEl : template.promptEn)}
+              onClick={() => ask({ en: template.promptEn, el: template.promptEl })}
             >
               <BilingualText en={template.en} el={template.el} compact />
             </Button>
@@ -684,7 +699,7 @@ function InvestorListView({
   harborLive: boolean;
 }) {
   const { primary } = useLanguagePreference();
-  const { ask } = usePopupChat();
+  const { ask } = useAskAssistant();
   const router = useRouter();
 
   if (leads.length === 0) return null;
@@ -776,7 +791,7 @@ function InvestorListView({
 
 export default function FundraisingPage() {
   const { showDemoData } = useDemoData();
-  const { ask } = usePopupChat();
+  const { ask } = useAskAssistant();
   const [tick, setTick] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [addStatus, setAddStatus] = useState<InvestorStatus>('prospect');

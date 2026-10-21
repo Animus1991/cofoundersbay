@@ -71,6 +71,7 @@ import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { Counter } from '@/components/ui/counter';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { ASK } from '@/lib/page-questions';
 
 interface Mentor {
   id: string;
@@ -762,7 +763,7 @@ export default function MentoringPage() {
   ];
 
   return (
-    <AppShell showHelp rail={rail} askAi="Help me pick a mentor and prepare the first session.">
+    <AppShell showHelp rail={rail} askAi={ASK.mentoring}>
       <div className="pb-10">
       <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as typeof mainTab)} className="space-y-4">
         <TabsList>
@@ -869,7 +870,7 @@ export default function MentoringPage() {
                         ? <BilingualText en="Try a different name or area of expertise." el="Δοκιμάστε άλλο όνομα ή τομέα εξειδίκευσης." />
                         : <BilingualText en="No mentor profiles have been created yet. Mentors who register and complete their profile will appear here." el="Δεν υπάρχουν ακόμα προφίλ μεντόρων. Οι μέντορες που εγγράφονται και ολοκληρώνουν το προφίλ τους θα εμφανιστούν εδώ." />
                   }
-                  askAiPrompt="No mentors are listed. What kind of mentor should a first-time founder look for, and how do I book a session?"
+                  askAiPrompt={ASK.mentorsEmpty}
                   action={
                     activeFilters > 0 ? (
                       <Button variant="secondary" onClick={() => openRailSection('filters')}>
@@ -921,7 +922,7 @@ export default function MentoringPage() {
                         ? <BilingualText en="Browse mentors and request a session to get started." el="Δείτε τους μέντορες και ζητήστε μια συνεδρία για να ξεκινήσετε." />
                         : <BilingualText en="Your completed sessions will appear here." el="Οι ολοκληρωμένες συνεδρίες σας θα εμφανίζονται εδώ." />
                     }
-                    askAiPrompt="I have no mentoring sessions. Recommend who to book and what to ask in the first call."
+                    askAiPrompt={ASK.sessionsEmpty}
                     action={
                       t === 'upcoming' ? (
                         <Button variant="secondary" className="gap-2" onClick={() => setMainTab('find')}>

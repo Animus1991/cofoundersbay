@@ -59,7 +59,7 @@ describe('application editing and assistant outcomes', () => {
     fireEvent.click(screen.getByRole('button', { name: /AI Generate/i }));
     const prompt = mocks.ask.mock.calls[0]?.[0];
     expect(prompt).toContain('Y Combinator');
-    expect(prompt).not.toMatch(/Harbor|Athens Tech Angels|\$750K|\$375K/);
+    expect(prompt).not.toMatch(/Harbor|Athens Tech Angels|€750K|€375K/);
     expect(prompt).toMatch(/active workspace/i);
   });
 

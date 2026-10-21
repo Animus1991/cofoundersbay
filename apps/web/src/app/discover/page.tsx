@@ -50,6 +50,7 @@ import { queryKeys, qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, ROW_GONE, type PageControlRunResult } from '@/lib/page-controls';
 import { StatusText, statusEl } from '@/components/common/StatusText';
 import { namedFilters, namedQuery, type NamedFilter } from '@/components/common/EmptyStates';
+import { ASK } from '@/lib/page-questions';
 
 const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
@@ -376,7 +377,10 @@ export default function DiscoverPage() {
   // Paid placement sits in its own labelled slot; the organic list keeps its order.
   const { promoted: promotedHits, organic: filteredHits } = splitPromoted(roleHits, activeTab === 'search' ? promotedIds : []);
 
-  const askAi = `Discover (${activeTab === 'suggestions' ? 'For You' : activeTab === 'matches' ? 'Top Matches' : 'Search'}): ${roleHits.length} search results${roleFilter !== 'all' ? `, role filter ${roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} recommendations. Who should I shortlist or message next, and which filters would find a complementary technical cofounder?`;
+  const askAi = {
+    en: `Discover (${activeTab === 'suggestions' ? 'For You' : activeTab === 'matches' ? 'Top Matches' : 'Search'}): ${roleHits.length} search results${roleFilter !== 'all' ? `, role filter ${roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} recommendations. Who should I shortlist or message next, and which filters would find a complementary technical cofounder?`,
+    el: `Ανακάλυψη (${activeTab === 'suggestions' ? 'Για εσάς' : activeTab === 'matches' ? 'Κορυφαίες αντιστοιχίσεις' : 'Αναζήτηση'}): ${roleHits.length} αποτελέσματα αναζήτησης${roleFilter !== 'all' ? `, φίλτρο ρόλου ${statusEl(roleFilter) ?? roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} προτάσεις. Ποιον να κρατήσω ή σε ποιον να γράψω μετά, και ποια φίλτρα θα έβρισκαν συμπληρωματικό τεχνικό συνιδρυτή;`,
+  };
 
 
   // Offered to the assistant: the tab, role, sort, layout and reset, and
@@ -634,7 +638,7 @@ export default function DiscoverPage() {
               })()}
               illustration="search"
               className="py-12"
-              askAiPrompt="Discover search returned nobody. Suggest filters and a prompt to find a technical cofounder."
+              askAiPrompt={ASK.discoverNobody}
               action={
                 <Button onClick={() => setFilters(defaultFilters)}>
                   <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
@@ -739,7 +743,7 @@ export default function DiscoverPage() {
             <EmptyState
               title={<BilingualText en="No suggestions yet" el="Καμία πρόταση ακόμη" compact wrap />}
               illustration="rocket"
-              askAiPrompt="I have no Discover suggestions. What should I add to my profile so recommendations appear?"
+              askAiPrompt={ASK.discoverNoSuggestions}
               action={
                 <Button className="gap-2" asChild>
                   <Link href="/profile/edit">
@@ -816,7 +820,7 @@ export default function DiscoverPage() {
             <EmptyState
               title={<BilingualText en="No matches yet" el="Καμία αντιστοίχιση ακόμη" compact wrap />}
               illustration="connection"
-              askAiPrompt="Discover matches tab is empty. Help me find complementary people from the network."
+              askAiPrompt={ASK.discoverMatchesEmpty}
               action={
                 <Button onClick={() => setActiveTab('search')}>
                   <BilingualText en="Explore profiles" el="Εξερεύνηση προφίλ" compact />

@@ -17,11 +17,11 @@ type Milestone = {
 type MilestoneList = { milestones?: Milestone[] };
 
 describe('preview milestones', () => {
-  it('keeps Harbor goals aligned with Idea Core and the $750K seed', () => {
+  it('keeps Harbor goals aligned with Idea Core and the €750K seed', () => {
     const listed = resolvePreviewApi('/api/milestones') as MilestoneList;
     const seed = listed.milestones?.find((m) => m.id === 'ms-4');
-    expect(seed?.title).toBe('Close $750K seed');
-    expect(seed?.description ?? '').toContain('$750K');
+    expect(seed?.title).toBe('Close €750K seed');
+    expect(seed?.description ?? '').toContain('€750K');
     expect(seed?.description ?? '').toContain('Athens Tech Angels');
     expect(seed?.collaborator?.displayName).toBe('Elena Papadopoulos');
     expect(listed.milestones?.some((m) => m.title === 'Launch beta to first 20 users')).toBe(false);
@@ -64,7 +64,7 @@ describe('preview milestones', () => {
 
     const listed = resolvePreviewApi('/api/milestones') as MilestoneList;
     expect(listed.milestones?.some((m) => m.id === created.id)).toBe(true);
-    expect(listed.milestones?.some((m) => m.id === 'ms-4' && m.title === 'Close $750K seed')).toBe(true);
+    expect(listed.milestones?.some((m) => m.id === 'ms-4' && m.title === 'Close €750K seed')).toBe(true);
 
     const completed = resolvePreviewApi(`/api/milestones/${created.id}`, {
       method: 'PATCH',

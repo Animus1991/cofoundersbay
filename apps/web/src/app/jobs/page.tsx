@@ -51,6 +51,7 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { ASK } from '@/lib/page-questions';
 
 const ROLE_FILTERS = [
   { value: 'all',         labelKey: 'role_all' as const,         icon: Briefcase },
@@ -463,8 +464,11 @@ export default function JobsPage() {
           }
           askAiPrompt={
             search
-              ? `No jobs matched "${search}". Suggest better keywords or people I should reach instead of a job post.`
-              : 'Help me write a cofounder or early-hire job post based on my profile gaps.'
+              ? {
+                  en: `No jobs matched "${search}". Suggest better keywords or people I should reach instead of a job post.`,
+                  el: `Καμία θέση δεν ταίριαξε με «${search}». Πρότεινε καλύτερες λέξεις-κλειδιά ή ανθρώπους να προσεγγίσω αντί για αγγελία.`,
+                }
+              : ASK.jobsNone
           }
           action={
             search ? (

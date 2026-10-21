@@ -43,6 +43,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { statusEl } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { ASK } from '@/lib/page-questions';
 
 type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
 
@@ -231,7 +232,7 @@ export default function GroupsModerationPage() {
           <SampleDataNotice
             surface="Community moderation"
             detail="These reports are samples - reports filed against people are handled in the platform moderation queue (Admin -> Reports), and group-level reports have no store yet."
-            askAiPrompt="Where do I handle reports about a member of my community?"
+            askAiPrompt={ASK.groupsModeration}
           />
         )}
         {/* Alert Banner */}

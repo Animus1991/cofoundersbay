@@ -59,6 +59,7 @@ import { RailStats } from '@/components/layout/RailParts';
 import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { FactLine } from '@/components/common/FactLine';
 import { demoMark } from '@/lib/demo/photos';
+import { ASK } from '@/lib/page-questions';
 
 /**
  * The page's own row from a group.
@@ -478,7 +479,7 @@ export default function AdminCommunitiesPage() {
           <SampleDataNotice
             surface="Communities"
             detail="There are no communities yet, so these rows are samples that show the layout. A community you create is saved for real."
-            askAiPrompt="The communities list is showing sample rows. What live group-management actions can you take here?"
+            askAiPrompt={ASK.adminCommunitiesSample}
           />
         )}
 

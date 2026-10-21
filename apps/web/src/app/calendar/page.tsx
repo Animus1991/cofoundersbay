@@ -50,6 +50,7 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useHydrated } from '@/components/common/RelativeTime';
 import { useI18n } from '@/components/common/I18nProvider';
+import { ASK } from '@/lib/page-questions';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -669,7 +670,7 @@ export default function CalendarPage() {
 
   if (!hydrated) {
     return (
-      <AppShell showHelp rail={rail} askAi="What is coming up on my calendar this week, and what should I prepare first?">
+      <AppShell showHelp rail={rail} askAi={ASK.calendar}>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]" aria-busy="true">
           <div className="h-80 animate-pulse rounded-xl bg-muted/40" />
           <div className="h-[32rem] animate-pulse rounded-xl bg-muted/40" />
@@ -682,7 +683,7 @@ export default function CalendarPage() {
     <AppShell
       showHelp
       rail={rail}
-      askAi="What is coming up on my calendar this week, and what should I prepare first?"
+      askAi={ASK.calendar}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center overflow-hidden rounded-xl border">
@@ -721,7 +722,7 @@ export default function CalendarPage() {
           <SampleDataNotice
             surface="Calendar"
             detail="You have no milestone due dates, upcoming sessions or events you are going to yet. These items are samples so you can learn the layout."
-            askAiPrompt="What should I put on my calendar first: milestones, a mentoring session, or an event?"
+            askAiPrompt={ASK.calendarEmpty}
           />
         )}
 

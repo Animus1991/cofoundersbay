@@ -58,15 +58,24 @@ export const MENTOR_DEMO_REVIEWS = [
 const DAY = 86_400_000;
 
 /** Earnings this calendar month, from the same rows /mentor/earnings lists. */
-export function mentorDemoMonthEarnings(now = Date.now()): { amount: number; minutes: number; sessions: number } {
+/**
+ * This month's rows, as /mentor/earnings counts them: `amount` is what was
+ * paid, `paidMinutes` the time behind it, `pending` the sessions still to be
+ * paid. The dashboard showed the paid amount beside the hours of every
+ * session, paid or not ($270 over 3.3h, when $270 was earned in 2.3h).
+ */
+export function mentorDemoMonthEarnings(now = Date.now()): { amount: number; minutes: number; paidMinutes: number; sessions: number; pending: number } {
   const start = new Date(now);
   start.setUTCDate(1);
   start.setUTCHours(0, 0, 0, 0);
   const rows = MENTOR_DEMO_EARNINGS.filter((r) => now - r.ago * DAY >= start.getTime());
+  const paid = rows.filter((r) => r.status === 'paid');
   return {
-    amount: rows.filter((r) => r.status === 'paid').reduce((s, r) => s + r.amount, 0),
+    amount: paid.reduce((s, r) => s + r.amount, 0),
     minutes: rows.reduce((s, r) => s + r.duration, 0),
+    paidMinutes: paid.reduce((s, r) => s + r.duration, 0),
     sessions: rows.length,
+    pending: rows.length - paid.length,
   };
 }
 

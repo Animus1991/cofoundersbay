@@ -1,9 +1,9 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 import { ArrowRight } from 'lucide-react';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
+import type { AskPrompt } from '@/lib/page-questions';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { cn } from '@/lib/utils';
@@ -20,29 +20,27 @@ import { cn } from '@/lib/utils';
  * The frame is a field edge (the neutral --input), and it takes the theme's
  * link tone only while the question is being typed. The placeholder says
  * the question is about this page; the control's name stays "Ask AI".
+ *
+ * Sent empty, it asks the page's ready question, in the reader's language
+ * (`lib/page-questions`). The send button's tooltip says which question that
+ * is: the field gave no hint that pressing it asked anything in particular.
  */
 export function AIComposer({
   prompt,
   className,
 }: {
-  prompt: string;
+  prompt: AskPrompt;
   className?: string;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const popup = usePopupChatOptional();
+  const { ask, textOf } = useAskAssistant();
   const sayOne = useBilingualString();
   const [value, setValue] = useState('');
+  const ready = textOf(prompt);
 
   function submit(event?: FormEvent) {
     event?.preventDefault();
-    const q = value.trim() || prompt;
-    if (popup && !pathname?.startsWith('/ai')) {
-      popup.ask(q);
-      setValue('');
-      return;
-    }
-    router.push(`/ai?q=${encodeURIComponent(q)}`);
+    ask(value.trim() || prompt);
+    setValue('');
   }
 
   return (
@@ -67,6 +65,7 @@ export function AIComposer({
       <button
         type="submit"
         aria-label={bilingualAria('Ask AI', 'Ρωτήστε το AI')}
+        title={value.trim() ? undefined : sayOne(`Empty, it asks: ${ready}`, `Κενό, ρωτά: ${ready}`)}
         className="tap-target-phone -mr-1.5 inline-flex shrink-0 items-center justify-center rounded-md p-1 text-foreground outline-none hover:bg-secondary focus-visible:outline-none focus-visible:ring-0"
       >
         <ArrowRight className="icon-sm" aria-hidden="true" />

@@ -42,6 +42,7 @@ import { useHydrated } from '@/components/common/RelativeTime';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { termDisplay } from '@/lib/i18n/terms';
 import { placeEl } from '@/lib/i18n/places';
+import { ASK } from '@/lib/page-questions';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -569,7 +570,7 @@ export default function InvestorsPage() {
           <SampleDataNotice
             surface="Investors"
             detail="The directory lists people whose role is investor. The six cards with a firm, check size and track record are samples that show what a complete investor profile looks like."
-            askAiPrompt="Some investors here are samples. Which kind of investor fits my stage and industry, and how should I ask for an intro?"
+            askAiPrompt={ASK.investorsSample}
           />
         )}
 

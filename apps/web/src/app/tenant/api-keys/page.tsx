@@ -31,6 +31,7 @@ import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { UnavailableButton } from '@/components/common/UnavailableButton';
 import { BilingualText } from '@/components/common/BilingualText';
 import { usePageList } from '@/lib/page-controls';
+import { ASK } from '@/lib/page-questions';
 
 type ApiKey = {
   id: string;
@@ -161,7 +162,7 @@ export default function TenantApiKeysPage() {
           <SampleDataNotice
             surface="API keys"
             detail="These keys are illustrative - no key-issuing service exists yet, so none of them authenticate anything."
-            askAiPrompt="Why does the API keys page show sample keys?"
+            askAiPrompt={ASK.apiKeysSample}
           />
         )}
         <Card className="border-status-warning-border bg-status-warning-bg">

@@ -156,7 +156,10 @@ function PitchDeckPageContent() {
     <AppShell
       showHelp
       contentClassName="builder-copy overflow-x-clip"
-      askAi={`Help me complete the investor pitch deck for ${workspaceName || 'this startup'}. Draft only empty slides and empty fields; keep the company name and the ask if they are already written.`}
+      askAi={{
+        en: `Help me complete the investor pitch deck for ${workspaceName || 'this startup'}. Draft only empty slides and empty fields; keep the company name and the ask if they are already written.`,
+        el: `Βοήθησέ με να ολοκληρώσω το pitch deck για επενδυτές ${workspaceName ? `της «${workspaceName}»` : 'αυτής της startup'}. Συμπλήρωσε μόνο τις κενές διαφάνειες και τα κενά πεδία· κράτα το όνομα της εταιρείας και το ποσό που ζητάμε, αν έχουν ήδη γραφτεί.`,
+      }}
     >
       <div className="builder-type builder-copy min-w-0 space-y-6 overflow-x-clip">
         {error && (

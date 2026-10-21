@@ -29,6 +29,7 @@ import {
   MILESTONE_CATEGORY_KEYS,
   MILESTONE_PRIORITY_KEYS,
 } from '@/lib/i18n/strings-milestones';
+import { ASK } from '@/lib/page-questions';
 
 const CATEGORIES = ['product', 'fundraising', 'hiring', 'partnerships', 'growth', 'other'] as const;
 const PRIORITIES: { value: MilestonePriority; color: string }[] = [
@@ -92,7 +93,7 @@ export default function NewMilestonePage() {
   return (
     <AppShell
       showHelp
-      askAi="Propose the next Harbor milestone from Idea Core, the GTM board, or the $750K seed (Athens Tech Angels, $375K committed)."
+      askAi={ASK.milestoneNew}
       actions={
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => openAskAi()}>

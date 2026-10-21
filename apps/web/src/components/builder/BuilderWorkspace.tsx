@@ -907,7 +907,10 @@ export function BuilderWorkspace({
           </div>
           <AIInsightButton
             className="h-8 w-full sm:ml-auto sm:w-auto"
-            prompt={`Startup Builder is ${overallCompletion}% complete and ${overallReadiness}% ready. Documents: ${documents.map((d) => `${d.title} ${d.completionPercent}%`).join(', ') || 'none yet'}. Recommend the next artifact (Idea Core, BMC, interviews, pitch, MVP, financials) and draft the first section.`}
+            prompt={{
+              en: `Startup Builder is ${overallCompletion}% complete and ${overallReadiness}% ready. Documents: ${documents.map((d) => `${d.title} ${d.completionPercent}%`).join(', ') || 'none yet'}. Recommend the next artifact (Idea Core, BMC, interviews, pitch, MVP, financials) and draft the first section.`,
+              el: `Ο Startup Builder είναι ${overallCompletion}% ολοκληρωμένος και ${overallReadiness}% έτοιμος. Έγγραφα: ${documents.map((d) => `${d.title} ${d.completionPercent}%`).join(', ') || 'κανένα ακόμη'}. Πρότεινε το επόμενο στοιχείο (Πυρήνας ιδέας, BMC, συνεντεύξεις, pitch, MVP, οικονομικά) και ετοίμασε την πρώτη ενότητα.`,
+            }}
           />
         </CardHeader>
         {/* Two columns keep each percentage beside its name instead of a

@@ -56,7 +56,7 @@ describe('contact details in a protected conversation', () => {
   });
 
   it.each([
-    'We raised $375K of a $750K seed and need 10–15% for a CTO.',
+    'We raised €375K of a €750K seed and need 10–15% for a CTO.',
     'Vesting over 48 months with a 12-month cliff, 40 hours a week.',
     'Pilots ran from 2024-2026 with 3 terminals in Piraeus.',
     'I spent four years as an engineer at Facebook and Telegram.',
@@ -102,7 +102,7 @@ describe('promise language', () => {
 const READY: NeedCardInput = {
   kind: 'cofounder',
   title: 'Technical co-founder for Harbor',
-  exists: 'A working founder workspace with $375K of a $750K seed committed.',
+  exists: 'A working founder workspace with €375K of a €750K seed committed.',
   goal: 'Ship the workspace to the first twenty paying teams this year.',
   missing: 'A technical co-founder who has taken a real-time product to production.',
   offerRole: 'CTO and co-founder',

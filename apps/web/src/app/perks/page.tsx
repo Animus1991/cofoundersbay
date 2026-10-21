@@ -35,12 +35,13 @@ import { ROW_GONE, choiceControl, rowOptions, settle, usePageControls, usePageLi
 import { qk } from '@/lib/query-keys';
 import { initialsOf } from '@/lib/utils';
 import { AddPerkDialog } from '@/components/perks/AddPerkDialog';
+import { ASK } from '@/lib/page-questions';
+import { calendarDaysUntil } from '@/lib/calendar-days';
 
 type Tab = 'offers' | 'claimed' | 'manage';
 type CategoryFilter = 'all' | PerkCategory;
 type StageFilter = 'any' | PerkStage;
 
-const DAY = 86_400_000;
 /** An offer ending within this many days says so on its card. */
 const ENDING_SOON_DAYS = 14;
 
@@ -54,7 +55,7 @@ const STAGE_COPY: Record<PerkStage, { en: string; el: string }> = {
 
 function daysLeft(perk: PerkView, now: number | null): number | null {
   if (!perk.expiresAt || now === null) return null;
-  return Math.max(0, Math.ceil((new Date(perk.expiresAt).getTime() - now) / DAY));
+  return Math.max(0, calendarDaysUntil(perk.expiresAt, now) ?? 0);
 }
 
 function PerkCard({
@@ -132,7 +133,9 @@ function PerkCard({
               ) : null}
               {left !== null && left <= ENDING_SOON_DAYS && perk.active ? (
                 <Badge variant="outline" className="border-status-warning-border bg-status-warning-bg text-status-warning">
-                  <BilingualText en={`Ends in ${left} ${left === 1 ? 'day' : 'days'}`} el={`Λήγει σε ${left} ${left === 1 ? 'ημέρα' : 'ημέρες'}`} compact />
+                  {left === 0
+                    ? <BilingualText en="Ends today" el="Λήγει σήμερα" compact />
+                    : <BilingualText en={`Ends in ${left} ${left === 1 ? 'day' : 'days'}`} el={`Λήγει σε ${left} ${left === 1 ? 'ημέρα' : 'ημέρες'}`} compact />}
                 </Badge>
               ) : null}
             </>
@@ -426,7 +429,7 @@ export default function PerksPage() {
   const busy = claim.isPending || toggle.isPending;
 
   return (
-    <AppShell showHelp rail={rail} askAi="Which of these perks fit my startup's stage, and what do I need to redeem them?">
+    <AppShell showHelp rail={rail} askAi={ASK.perks}>
       <div className="space-y-6">
         <Tabs value={tab} onValueChange={(v) => setTab(v === 'claimed' || v === 'manage' ? v : 'offers')} className="space-y-4">
           <TabsList>

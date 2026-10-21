@@ -44,8 +44,8 @@ import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PROGRAMS_STRINGS, programsEn, programsEl } from '@/lib/i18n/strings-programs';
 import type { BilingualPair } from '@/lib/i18n/types';
-import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
-import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { PROGRAMS_QUESTION } from '@/lib/page-questions';
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
@@ -65,6 +65,7 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { Counter } from '@/components/ui/counter';
+import { calendarDaysUntil } from '@/lib/calendar-days';
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const PROGRAM_STATUS_TONE: Record<string, StatusTone> = {
   open: 'success',
@@ -109,10 +110,9 @@ function badgeType(programType: string): BilingualPair {
 
 const PROGRAM_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
+/** Calendar days to the deadline: "Today!" on its day, not once it had passed. */
 function daysUntil(d: string | null): number | null {
-  if (!d) return null;
-  const diff = new Date(d).getTime() - Date.now();
-  return Math.ceil(diff / 86400000);
+  return calendarDaysUntil(d);
 }
 
 // ── Apply Modal ───────────────────────────────────────────────────────────────
@@ -384,14 +384,8 @@ function ProgramSkeleton() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ProgramsPage() {
-  const sayOne = useBilingualString();
-  const popup = usePopupChatOptional();
-  const askRouter = useRouter();
   // The in-page assistant where there is one, the full page otherwise.
-  const askAssistant = (question: string) => {
-    if (popup) popup.ask(question);
-    else askRouter.push(`/ai?q=${encodeURIComponent(question)}`);
-  };
+  const { ask: askAssistant } = useAskAssistant();
   const { success, error: toastError } = useToast();
   const qc = useQueryClient();
   const router = useRouter();
@@ -761,7 +755,7 @@ export default function ProgramsPage() {
               wrap
             />
           </p>
-          <Button variant="outline" size="sm" className="shrink-0 self-start sm:self-auto" onClick={() => askAssistant(sayOne(PROGRAMS_QUESTION.en, PROGRAMS_QUESTION.el))}>
+          <Button variant="outline" size="sm" className="shrink-0 self-start sm:self-auto" onClick={() => askAssistant(PROGRAMS_QUESTION)}>
             <BilingualText en="Find with the assistant" el="Βρείτε με τον βοηθό" compact />
           </Button>
         </div>

@@ -73,6 +73,7 @@ import Link from 'next/link';
 import { qk } from '@/lib/query-keys';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { Counter } from '@/components/ui/counter';
+import { ASK } from '@/lib/page-questions';
 
 // Types
 interface Participant {
@@ -467,7 +468,10 @@ export default function CohortDetailPage() {
       title={cohort.name}
       description={`${cohort.program} • ${formatDate(cohort.startDate)} - ${formatDate(cohort.endDate)}`}
       showHelp
-      askAi={`Summarise the "${cohort.name}" cohort — which startups are behind on progress, which have no mentor sessions yet, and what should the program team do this week?`}
+      askAi={{
+        en: `Summarise the "${cohort.name}" cohort — which startups are behind on progress, which have no mentor sessions yet, and what should the program team do this week?`,
+        el: `Σύνοψε τον κύκλο «${cohort.name}» — ποιες startups μένουν πίσω, ποιες δεν έχουν ακόμη συνεδρίες με μέντορα, και τι να κάνει η ομάδα του προγράμματος αυτή την εβδομάδα;`,
+      }}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           {/* All three had no handler. Share copies this page; Export is
@@ -518,7 +522,7 @@ export default function CohortDetailPage() {
         <SampleDataNotice
           surface="Cohort"
           detail="This is a sample cohort from the demo organisation, shown because sample data is on and your organisation's cohort did not load."
-          askAiPrompt="Why am I seeing a sample cohort?"
+          askAiPrompt={ASK.cohortSample}
         />
       )}
       <Tabs value={activeTab} onValueChange={setActiveTab}>

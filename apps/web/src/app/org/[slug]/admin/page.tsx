@@ -69,6 +69,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { ASK } from '@/lib/page-questions';
 
 type OrgMember = {
   id: string;
@@ -588,7 +589,7 @@ export default function OrgAdminPage() {
           <SampleDataNotice
             surface="Organization admin"
             detail="This organisation and its members are illustrative until the directory responds; member actions are disabled on them."
-            askAiPrompt="Why does the organisation admin page show sample members?"
+            askAiPrompt={ASK.orgAdminSample}
           />
         )}
 

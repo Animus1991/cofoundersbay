@@ -17,8 +17,8 @@ export const MILESTONE_STRINGS: Record<string, BilingualPair> = {
     el: 'Προτείνει τα επόμενα τρία από τον Builder, το pitch deck και ό,τι είναι εκπρόθεσμο.',
   },
   ask_ai_hint_harbor: {
-    en: 'It proposes the next three from Idea Core, the GTM board, the $750K seed (Athens Tech Angels, $375K committed), and anything overdue.',
-    el: 'Προτείνει τα επόμενα τρία από τον Πυρήνα ιδέας, τον πίνακα GTM, τον γύρο $750K (Athens Tech Angels, $375K δεσμευμένα) και ό,τι είναι εκπρόθεσμο.',
+    en: 'It proposes the next three from Idea Core, the GTM board, the €750K seed (Athens Tech Angels, €375K committed), and anything overdue.',
+    el: 'Προτείνει τα επόμενα τρία από τον Πυρήνα ιδέας, τον πίνακα GTM, τον γύρο €750K (Athens Tech Angels, €375K δεσμευμένα) και ό,τι είναι εκπρόθεσμο.',
   },
   lead: {
     en: 'Each milestone is one goal with an owner and a date. Completing them feeds Readiness and investor updates. Ask AI to propose the next three from Builder artefacts.',
@@ -196,9 +196,9 @@ export const PREVIEW_MILESTONE_EL: Record<string, { title: string; description?:
     title: 'Κατοχύρωση σήματος Harbor',
     description: 'Προαιρετικό νομικό βήμα.',
   },
-  'Close $750K seed': {
-    title: 'Κλείσιμο γύρου $750K',
-    description: '$375K δεσμευμένα από στόχο $750K. Lead: Athens Tech Angels.',
+  'Close €750K seed': {
+    title: 'Κλείσιμο γύρου €750K',
+    description: '€375K δεσμευμένα από στόχο €750K. Lead: Athens Tech Angels.',
   },
   'Shareable Idea Core and GTM board': {
     title: 'Πυρήνας ιδέας και πίνακας GTM που μοιράζονται',
@@ -217,14 +217,14 @@ export const PREVIEW_MILESTONE_EL: Record<string, { title: string; description?:
     title: 'Καμβάς μοντέλου v1 στον Builder',
     description: 'Επόμενα η πρόταση αξίας και τα κανάλια· ένα από τα εννέα μπλοκ είναι συμπληρωμένο.',
   },
-  'Pitch deck outline for the $750K seed': {
-    title: 'Δομή pitch deck για τον γύρο $750K',
+  'Pitch deck outline for the €750K seed': {
+    title: 'Δομή pitch deck για τον γύρο €750K',
     description: 'Ίδιο ask με την παρουσίαση επενδυτών του Harbor.',
   },
   'Readiness score above 40': { title: 'Βαθμός ετοιμότητας πάνω από 40' },
   'GTM canvas on Research': {
     title: 'Καμβάς GTM στους πίνακες έρευνας',
-    description: 'Σημειώσεις GTM του Harbor σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο $750K.',
+    description: 'Σημειώσεις GTM του Harbor σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο €750K.',
   },
 };
 

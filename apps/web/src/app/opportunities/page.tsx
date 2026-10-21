@@ -61,7 +61,7 @@ import { opportunitiesEn, opportunitiesEl } from '@/lib/i18n/strings-opportuniti
 import { bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
-import { usePopupChat } from '@/contexts/PopupChatContext';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { SaveItemButton, useSavedItems, useSaveToggle } from '@/components/common/SaveItemButton';
 import { MessageButton } from '@/components/common/PersonActions';
@@ -70,6 +70,8 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { ASK, type AskText } from '@/lib/page-questions';
+import { calendarDaysUntil } from '@/lib/calendar-days';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -138,9 +140,26 @@ const OPP_TYPE_DISPLAY: Record<OpportunityType, { labelKey: `type_${OpportunityT
   other: { labelKey: 'type_other', className: 'bg-muted text-muted-foreground border-border', icon: FileText },
 };
 
+/** What "Draft an approach" asks, in both languages (the card and the assistant's command). */
+function approachPrompt(opportunity: OpportunityItem): AskText {
+  const cfg = OPP_TYPE_DISPLAY[opportunity.type] ?? OPP_TYPE_DISPLAY.other;
+  return {
+    en: `Draft my approach for this opportunity: "${opportunity.title}"${opportunity.company ? ` at ${opportunity.company}` : ''}. Type: ${opportunitiesEn(cfg.labelKey)}. ${opportunity.description ?? ''}`,
+    el: `Ετοίμασε την προσέγγισή μου για αυτή την ευκαιρία: «${opportunity.title}»${opportunity.company ? ` στην ${opportunity.company}` : ''}. Είδος: ${opportunitiesEl(cfg.labelKey)}. ${opportunity.description ?? ''}`,
+  };
+}
+
+/** What "Draft application" asks, in both languages. */
+function applicationPrompt(job: JobPostingView): AskText {
+  return {
+    en: `Draft an application for the role "${job.title}" posted by ${job.creator.displayName}. Use my profile and tell me what is missing before I send it.`,
+    el: `Ετοίμασε μια αίτηση για τη θέση «${job.title}» (δημοσίευση: ${job.creator.displayName}). Χρησιμοποίησε το προφίλ μου και πες μου τι λείπει πριν τη στείλω.`,
+  };
+}
+
 function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
   const fmtDate = useDateFormat();
-  const { ask } = usePopupChat();
+  const { ask } = useAskAssistant();
   const cfg = OPP_TYPE_DISPLAY[opportunity.type] ?? OPP_TYPE_DISPLAY.other;
   const initials = (opportunity.company ?? opportunity.title).slice(0, 2).toUpperCase();
   const postedAgo = fmtDate(opportunity.createdAt, { day: 'numeric', month: 'short' });
@@ -189,8 +208,9 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
           items={[
             opportunity.location,
             deadline && opportunity.deadline ? (() => {
-              const daysLeft = Math.ceil((new Date(opportunity.deadline as string).getTime() - Date.now()) / 86400000);
-              const key = daysLeft <= 0 ? 'expired' : daysLeft <= 3 ? 'days_left' : 'deadline';
+              // Calendar days: closing today is not "Expired".
+              const daysLeft = calendarDaysUntil(opportunity.deadline) ?? 0;
+              const key = daysLeft < 0 ? 'expired' : daysLeft === 0 ? 'closes_today' : daysLeft <= 3 ? 'days_left' : 'deadline';
               const fill = (t: string) => t.replace('{n}', String(daysLeft)).replace('{date}', deadline);
               return (
                 <span key="deadline" className={daysLeft <= 3 ? 'font-medium text-status-danger' : 'text-status-warning'}>
@@ -218,11 +238,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
               size="sm"
               variant="outline"
               className="gap-1.5 text-xs"
-              onClick={() => ask(
-                `Draft my approach for this opportunity: "${opportunity.title}"` +
-                  `${opportunity.company ? ` at ${opportunity.company}` : ''}. ` +
-                  `Type: ${opportunitiesEn(cfg.labelKey)}. ${opportunity.description ?? ''}`,
-              )}
+              onClick={() => ask(approachPrompt(opportunity))}
             >
               <BilingualText en="Draft an approach" el="Σύνταξη προσέγγισης" compact />
               <ArrowRight className="icon-sm" />
@@ -238,7 +254,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
 }
 
 function JobCard({ job }: { job: JobPostingView }) {
-  const { ask } = usePopupChat();
+  const { ask } = useAskAssistant();
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
       <CardContent className="space-y-3">
@@ -273,10 +289,7 @@ function JobCard({ job }: { job: JobPostingView }) {
           <Button
             size="sm"
             className="gap-1.5 text-xs"
-            onClick={() => ask(
-              `Draft an application for the role "${job.title}" posted by ${job.creator.displayName}. ` +
-                'Use my profile and tell me what is missing before I send it.',
-            )}
+            onClick={() => ask(applicationPrompt(job))}
           >
             <BilingualText en="Draft application" el="Σύνταξη αίτησης" compact />
             <ArrowRight className="icon-sm" />
@@ -494,7 +507,7 @@ export default function OpportunitiesPage() {
   useScrollToHash();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { ask } = usePopupChat();
+  const { ask } = useAskAssistant();
   const { success } = useToast();
   const [activeTab, setActiveTab] = useState<'listings' | 'jobs' | 'applications' | 'proposals'>('listings');
   const [search, setSearch] = useState('');
@@ -711,12 +724,7 @@ export default function OpportunitiesPage() {
       run: (v) => {
         const opportunity = opportunities.find((o) => o.id === v);
         if (!opportunity) return;
-        const cfg = OPP_TYPE_DISPLAY[opportunity.type] ?? OPP_TYPE_DISPLAY.other;
-        ask(
-          `Draft my approach for this opportunity: "${opportunity.title}"` +
-            `${opportunity.company ? ` at ${opportunity.company}` : ''}. ` +
-            `Type: ${opportunitiesEn(cfg.labelKey)}. ${opportunity.description ?? ''}`,
-        );
+        ask(approachPrompt(opportunity));
       },
     },
     {
@@ -730,10 +738,7 @@ export default function OpportunitiesPage() {
       run: (v) => {
         const job = listingJobs.find((j) => j.id === v);
         if (!job) return;
-        ask(
-          `Draft an application for the role "${job.title}" posted by ${job.creator.displayName}. ` +
-            'Use my profile and tell me what is missing before I send it.',
-        );
+        ask(applicationPrompt(job));
       },
     },
   ]);
@@ -1060,7 +1065,7 @@ export default function OpportunitiesPage() {
             {showDemoData && <SampleDataNotice
               surface="Proposals"
               detail="Incoming collaboration proposals are not a live API yet. These two cards show the layout so you can learn Accept and Decline."
-              askAiPrompt="These collaboration proposals are samples. How should I evaluate a real co-founder or investment proposal when one arrives?"
+              askAiPrompt={ASK.opportunitiesSample}
             />}
             {proposals.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">

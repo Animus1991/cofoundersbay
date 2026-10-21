@@ -31,7 +31,7 @@ describe('fundraising catalogue lockstep', () => {
     expect(round.target).toBe(750_000);
     expect(Math.round((round.raised / round.target) * 100)).toBe(50);
     expect(round.leadInvestor).toBe('Athens Tech Angels');
-    expect(round.name).toBe('Harbor $750K seed');
+    expect(round.name).toBe('Harbor €750K seed');
     expect(round.valuation).toBeUndefined();
     expect(FUNDRAISING_SEED_LEADS.find((l) => l.status === 'committed')?.checkSize).toContain('200K');
   });

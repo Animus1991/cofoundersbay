@@ -250,7 +250,8 @@ export default function MentorDashboard() {
     completedMentorships: stats?.completedMentorships ?? relationships.filter((r) => r.status === 'completed').length,
     upcomingSessions: upcomingAll.length,
     avgRating: averageRating == null ? '\u2014' : averageRating.toFixed(1),
-    hoursThisMonth: month ? Math.round((month.minutes / 60) * 10) / 10 : null,
+    hoursThisMonth: month ? Math.round((month.paidMinutes / 60) * 10) / 10 : null,
+    pendingThisMonth: month?.pending ?? 0,
     earningsThisMonth: month ? `$${month.amount.toLocaleString('en-US')}` : null,
   };
 
@@ -374,8 +375,8 @@ export default function MentorDashboard() {
             label="Earnings this month"
             labelEl="Έσοδα μήνα"
             value={mentorStats.earningsThisMonth ?? '\u2014'}
-            caption={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth}h of sessions` : 'Paid sessions appear on Earnings'}
-            captionEl={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth} ώρες συνεδριών` : 'Οι πληρωμένες συνεδρίες εμφανίζονται στα Έσοδα'}
+            caption={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth}h paid${mentorStats.pendingThisMonth ? ` · ${mentorStats.pendingThisMonth} pending` : ''}` : 'Paid sessions appear on Earnings'}
+            captionEl={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth} ώρες πληρωμένες${mentorStats.pendingThisMonth ? ` · ${mentorStats.pendingThisMonth} σε εκκρεμότητα` : ''}` : 'Οι πληρωμένες συνεδρίες εμφανίζονται στα Έσοδα'}
             href="/mentor/earnings"
           />
           <MetricTile

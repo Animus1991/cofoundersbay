@@ -2,14 +2,14 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { cn } from '@/lib/utils';
-import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
+import type { AskPrompt } from '@/lib/page-questions';
 import {
   resolveBilingualPair,
   useLanguagePreference,
@@ -20,17 +20,9 @@ export function useBuilderPrimaryText() {
   return (en: string, el: string) => resolveBilingualPair(en, el, primary, showSecondary).primaryText;
 }
 
-/** Ask in place when the popup exists; `/ai?q=` only without it. */
+/** Ask in place when the popup exists; `/ai?q=` only without it (`useAskAssistant`). */
 export function useAskInPlace() {
-  const popup = usePopupChatOptional();
-  const router = useRouter();
-  return (prompt: string) => {
-    if (popup) {
-      popup.ask(prompt);
-      return;
-    }
-    router.push(`/ai?q=${encodeURIComponent(prompt)}`);
-  };
+  return useAskAssistant().ask;
 }
 
 export function BuilderAskAiButton({
@@ -42,23 +34,23 @@ export function BuilderAskAiButton({
 }: {
   labelEn?: string;
   labelEl?: string;
-  prompt?: string;
+  prompt?: AskPrompt;
   variant?: 'outline' | 'ghost' | 'secondary';
   className?: string;
 }) {
-  const popup = usePopupChatOptional();
+  const { ask, hrefFor, inPlace } = useAskAssistant();
   const buttonClass = cn('h-8 gap-1.5 text-xs', className);
   const label = (
     <BilingualText en={labelEn ?? builderEn('ask_ai')} el={labelEl ?? builderEl('ask_ai')} compact />
   );
-  if (popup && prompt) {
+  if (inPlace && prompt) {
     return (
-      <Button type="button" variant={variant} size="sm" className={buttonClass} onClick={() => popup.ask(prompt)}>
+      <Button type="button" variant={variant} size="sm" className={buttonClass} onClick={() => ask(prompt)}>
         {label}
       </Button>
     );
   }
-  const href = prompt ? `/ai?q=${encodeURIComponent(prompt)}` : '/ai';
+  const href = hrefFor(prompt);
   return (
     <Button asChild variant={variant} size="sm" className={buttonClass}>
       <Link href={href}>
@@ -96,11 +88,12 @@ export function BuilderStageHeader({
   /** When the AppShell already shows the page title (dedicated routes). */
   hideTitle?: boolean;
   showAskAi?: boolean;
-  askPrompt?: string;
+  askPrompt?: AskPrompt;
 }) {
-  const prompt =
-    askPrompt ??
-    `Help me complete the "${titleEn}" section of my Startup Builder. What should I write or improve first?`;
+  const prompt: AskPrompt = askPrompt ?? {
+    en: `Help me complete the "${titleEn}" section of my Startup Builder. What should I write or improve first?`,
+    el: `Βοήθησέ με να συμπληρώσω την ενότητα «${titleEl}» του Startup Builder μου. Τι να γράψω ή να βελτιώσω πρώτα;`,
+  };
   return (
     // Wraps as whole blocks: the actions sit beside the title while they fit on one line, else below it.
     <div className="flex flex-wrap items-start justify-between gap-3">

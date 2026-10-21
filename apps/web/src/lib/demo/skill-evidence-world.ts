@@ -18,7 +18,7 @@ const DAY = 86_400_000;
 
 const CANDIDATES: Array<{ kind: LinkableEvidenceKind; refId: string; label: string; ageDays: number }> = [
   { kind: 'milestone', refId: 'ms-12', label: 'GTM canvas on Research', ageDays: 46 },
-  { kind: 'milestone', refId: 'ms-10', label: 'Pitch deck outline for the $750K seed', ageDays: 69 },
+  { kind: 'milestone', refId: 'ms-10', label: 'Pitch deck outline for the €750K seed', ageDays: 69 },
   { kind: 'milestone', refId: 'ms-7', label: 'Idea Core v1 in Builder', ageDays: 111 },
   { kind: 'builder_document', refId: 'preview-doc-idea', label: 'Idea Core', ageDays: 20 },
   { kind: 'builder_document', refId: 'preview-doc-bmc', label: 'Business Model Canvas', ageDays: 25 },

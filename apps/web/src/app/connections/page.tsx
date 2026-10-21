@@ -50,6 +50,8 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { PeopleYouMayKnow } from '@/components/network/PeopleYouMayKnow';
 import { Counter } from '@/components/ui/counter';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { ASK } from '@/lib/page-questions';
+import { statusEl } from '@/components/common/StatusText';
 
 const CollaborationStarter = dynamic(
   () => import('@/components/collaboration/CollaborationStarter').then((m) => ({ default: m.CollaborationStarter })),
@@ -82,7 +84,10 @@ function ConnectionCard({
   const actions = isAccepted ? (
     <>
       <AIInsightButton
-        prompt={`Analyze collaboration potential with ${other.displayName}, a ${other.role}${other.headline ? ` — ${other.headline}` : ''}. What working dynamic would we likely have?`}
+        prompt={{
+          en: `Analyze collaboration potential with ${other.displayName}, a ${other.role}${other.headline ? ` — ${other.headline}` : ''}. What working dynamic would we likely have?`,
+          el: `Ανάλυσε τη δυνατότητα συνεργασίας με ${other.displayName} (${statusEl(other.role) ?? other.role})${other.headline ? ` — ${other.headline}` : ''}. Τι δυναμική συνεργασίας θα είχαμε μάλλον;`,
+        }}
         agentId="matching"
         cacheKey={`conn-match-${connection.id}`}
         variant="icon"
@@ -492,7 +497,7 @@ export default function ConnectionsPage() {
               illustration="default"
               title={<BilingualText en={connectionsEn('no_intro_requests')} el={connectionsEl('no_intro_requests')} />}
               description={<BilingualText en={connectionsEn('no_intro_desc')} el={connectionsEl('no_intro_desc')} />}
-              askAiPrompt="I have no intro requests. Help me find people to connect with and draft a first intro."
+              askAiPrompt={ASK.introsEmpty}
               action={
                 <Button variant="secondary" className="gap-2" asChild>
                   <Link href="/discover">
@@ -550,7 +555,7 @@ export default function ConnectionsPage() {
                     />
                   ) : undefined
                 }
-                askAiPrompt="My connections list is empty. Who should I reach out to first from my matches?"
+                askAiPrompt={ASK.connectionsEmpty}
                 action={
                   t !== 'received' ? (
                     <Button variant="secondary" className="gap-2" asChild>

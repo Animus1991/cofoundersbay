@@ -71,7 +71,7 @@ function T({ p, wrap, compact = true }: { p: Pair; wrap?: boolean; compact?: boo
 const SAMPLE_NEED_CARD: NeedCardView = {
   kind: 'cofounder',
   title: 'Commercial co-founder for Harbor',
-  exists: 'Harbor runs a working founder workspace (graph, readiness, builder) with $375K of a $750K seed committed.',
+  exists: 'Harbor runs a working founder workspace (graph, readiness, builder) with €375K of a €750K seed committed.',
   goal: 'Reach twenty paying founder teams in Athens and close the seed by spring.',
   missing: 'A commercial co-founder who has sold software to founders, studios or programmes.',
   offer: {

@@ -64,6 +64,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { formatDate } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
+import { ASK } from '@/lib/page-questions';
 
 const PROGRAM_STATUS_FILTERS: { value: 'all' | 'current' | Program['status']; en: string; el: string }[] = [
   { value: 'current', en: 'Not archived', el: 'Μη αρχειοθετημένα' },
@@ -488,7 +489,7 @@ export default function TenantProgramsPage() {
           <SampleDataNotice
             surface="Programs"
             detail="These programs are illustrative until your organisation's program list loads."
-            askAiPrompt="Why does the programs page show sample programs?"
+            askAiPrompt={ASK.tenantProgramsSample}
           />
         )}
 

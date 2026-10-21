@@ -2816,7 +2816,7 @@ h3.page-section.page-section--compact,
      caption 12.24   2xs, stat labels, the bilingual floor
      meta    12.87   xs, tabs, small buttons, chips
      body    13.86   sm, copy, rail card titles
-     figure  14.66   in-card figures ($375K)
+     figure  14.66   in-card figures (€375K)
      section 15.83   card and section titles, base, lg
      title   16.77   h1, stat figures, xl and above (ceiling below)
 
@@ -3001,7 +3001,7 @@ h3.page-section.page-section--compact,
 }
 
 /* Chrome roles beat the ceiling (`#main-content .text-xl` is 1,1,0;
-   `#main-content p.page-figure` is 1,1,1). Without this, $375K and
+   `#main-content p.page-figure` is 1,1,1). Without this, €375K and
    leftover `text-xl` on figures snapped to the 18px cap. */
 #main-content h1.page-title,
 #main-content h1.founder-dash-h1,
@@ -4164,7 +4164,7 @@ input[data-search-field][class~="border-input"]:focus-visible {
      meta            facts, dates, kinds (text-xs) 12.663    12.87
 
    The body sits a notch under the subtitle and the title, so a thesis never
-   reads as loud as the byline and a figure inside a round card ("$375K
+   reads as loud as the byline and a figure inside a round card ("€375K
    raised", "Athens Tech Angels") never outranks the round's name. A stat
    card whose only content is a figure and its label keeps its figure step.
    Rem against the 16px root, restated against the 82% desktop root, and px
@@ -4444,7 +4444,7 @@ html[data-theme="minimal"] [data-own-message] {
 
 /* A status chip that lost its wash and has no edge is a word, so its
    letters, not its padding, sit on the card's axis: under the subtitle on
-   a phone, "Active" started 10px in from "Harbor $750K seed" (card_audit,
+   a phone, "Active" started 10px in from "Harbor €750K seed" (card_audit,
    /fundraising, /programs, /projects, 2026-10-11). */
 #main-content .badge:is(
   [class*='bg-status-success-bg'],

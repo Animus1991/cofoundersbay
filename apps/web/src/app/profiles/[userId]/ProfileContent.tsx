@@ -417,7 +417,10 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                 ) : null}
                 {viewerId ? (
                   <AIInsightButton
-                    prompt={`Analyze this ${profile.role} profile for collaboration potential:\n${profile.displayName} — ${profile.headline ?? 'No headline'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}\nBio: ${profile.bio ?? 'No bio'}`}
+                    prompt={{
+                      en: `Analyze this ${profile.role} profile for collaboration potential:\n${profile.displayName} — ${profile.headline ?? 'No headline'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}\nBio: ${profile.bio ?? 'No bio'}`,
+                      el: `Ανάλυσε αυτό το προφίλ (${statusEl(profile.role) ?? profile.role}) για δυνατότητα συνεργασίας:\n${profile.displayName} — ${profile.headline ?? 'Χωρίς τίτλο'}\nΔεξιότητες: ${profile.skills?.map((s) => s.skillName).join(', ') || 'Καμία'}\nΒιογραφικό: ${profile.bio ?? 'Κανένα'}`,
+                    }}
                     agentId="matching"
                     cacheKey={`profile-match-${userId}`}
                     variant="outline"

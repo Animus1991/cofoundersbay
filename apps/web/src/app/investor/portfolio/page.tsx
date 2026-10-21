@@ -38,6 +38,7 @@ import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/p
 import { BilingualText } from '@/components/common/BilingualText';
 import { formatCompactMoney } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
+import { ASK } from '@/lib/page-questions';
 
 const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
 const PortfolioValueChart = dynamic(
@@ -373,7 +374,7 @@ export default function InvestorPortfolioPage() {
           illustration="default"
           title="No portfolio companies yet"
           description="Start investing through your deal pipeline to build your portfolio."
-          askAiPrompt="My investor portfolio is empty. What should I review in the pipeline before marking a company as invested?"
+          askAiPrompt={ASK.portfolioEmpty}
           action={<Button asChild><Link href="/investor/pipeline"><TrendingUp className="mr-2 icon-sm" /><BilingualText en="View Pipeline" el="Προβολή pipeline" compact /></Link></Button>}
         />
       </AppShell>

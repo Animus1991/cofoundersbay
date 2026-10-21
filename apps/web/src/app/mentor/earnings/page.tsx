@@ -31,6 +31,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { MENTOR_DEMO_EARNINGS } from '@/lib/demo/mentor-world';
 import { demoPortrait } from '@/lib/demo/photos';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
+import { ASK } from '@/lib/page-questions';
 
 // ── Mock data (replace with real API calls) ──────────────────────────────────
 
@@ -265,7 +266,7 @@ export default function MentorEarningsPage() {
           <SampleDataNotice
             surface="Earnings"
             detail="Transactions and monthly totals are illustrative - there is no mentor earnings ledger yet."
-            askAiPrompt="Why does the earnings page show sample transactions?"
+            askAiPrompt={ASK.earningsSample}
           />
         )}
 

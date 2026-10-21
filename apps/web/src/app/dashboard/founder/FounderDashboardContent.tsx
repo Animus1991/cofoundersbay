@@ -15,14 +15,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
+import { ASK, type AskPrompt } from '@/lib/page-questions';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { queryKeys, qk } from '@/lib/query-keys';
 import {
-  getDashboardStats,
   getMeProfile,
   getRecommendations,
   listConnectionRequests,
@@ -117,13 +117,13 @@ function AskAiButton({
 }: {
   labelEn?: string;
   labelEl?: string;
-  /** Sent to the in-page assistant, which keeps this page's context; `/ai?q=` without the popup. */
-  prompt?: string;
+  /** Sent to the in-page assistant, which keeps this page's context; `/ai?q=` without the popup. A pair from `lib/page-questions`. */
+  prompt?: AskPrompt;
   className?: string;
   variant?: 'outline' | 'ghost' | 'secondary';
   size?: 'sm' | 'md';
 }) {
-  const popup = usePopupChatOptional();
+  const { ask, hrefFor, inPlace } = useAskAssistant();
   const buttonClass = cn('h-auto min-h-9 gap-1.5 py-1.5 leading-snug', className);
   const label = (
     <>
@@ -131,14 +131,14 @@ function AskAiButton({
       <BilingualText en={labelEn ?? dashboardEn('ask_ai')} el={labelEl ?? dashboardEl('ask_ai')} compact wrap />
     </>
   );
-  if (popup && prompt) {
+  if (inPlace && prompt) {
     return (
-      <Button type="button" variant={variant} size={size} className={buttonClass} onClick={() => popup.ask(prompt)}>
+      <Button type="button" variant={variant} size={size} className={buttonClass} onClick={() => ask(prompt)}>
         {label}
       </Button>
     );
   }
-  const href = prompt ? `/ai?q=${encodeURIComponent(prompt)}` : '/ai';
+  const href = hrefFor(prompt);
   return (
     <Button asChild variant={variant} size={size} className={buttonClass}>
       <Link href={href}>
@@ -405,11 +405,21 @@ export default function FounderDashboardContent() {
     enabled: hasSession && mounted,
   });
 
-  const { data: stats } = useQuery({
-    queryKey: qk('dashboard', 'stats', 'founder'),
-    queryFn: getDashboardStats,
+  /*
+   * The Top Matches tile counts what /matches lists, on that page's own query
+   * key, so the two cannot disagree. It read `matchesThisWeek` from the
+   * platform stats: accepted connection requests across the whole platform
+   * this week (12 in the demo), under "Suggestions this week", beside a
+   * Matches page listing four people.
+   */
+  const { data: matchList } = useQuery({
+    queryKey: qk('recommendations', 'matches', { limit: 50 }),
+    queryFn: () => getRecommendations({ limit: 50 }),
+    staleTime: 3 * 60_000,
     enabled: hasSession && mounted,
   });
+  const matchCount = matchList?.suggestions?.length;
+  const excellentMatches = (matchList?.suggestions ?? []).filter((s) => (s.matchScore ?? 0) >= 80).length;
 
   /*
    * The same metrics /analytics charts, on the same 7-day period.
@@ -667,7 +677,7 @@ export default function FounderDashboardContent() {
       'Founder progress': `${founderProgress}%`,
       'Pending intros': pendingRequests,
       'Unread messages': unreadMessages,
-      'Recommended matches': recommendations?.suggestions?.length ?? 0,
+      'Recommended matches': matchCount ?? recommendations?.suggestions?.length ?? 0,
       'Milestones complete': `${completedMilestoneCount}/${milestones.length}`,
       'Next milestone': nextOpenMilestone?.titleEn ?? 'none',
       'Round progress': `${fundingPct}%`,
@@ -837,7 +847,7 @@ export default function FounderDashboardContent() {
                   <AskAiButton
                     variant="ghost"
                     className="w-full"
-                    prompt="Review this fundraising round against my readiness and tell me the next investor action."
+                    prompt={ASK.dashFundraising}
                     labelEn={dashboardEn('ask_ai_fundraising')}
                     labelEl={dashboardEl('ask_ai_fundraising')}
                   />
@@ -873,7 +883,7 @@ export default function FounderDashboardContent() {
                 <AskAiButton
                   variant="ghost"
                   className="w-full"
-                  prompt="How can I improve these matches and who should I reach out to first?"
+                  prompt={ASK.dashMatches}
                   labelEn={dashboardEn('ask_ai_matches')}
                   labelEl={dashboardEl('ask_ai_matches')}
                 />
@@ -898,7 +908,7 @@ export default function FounderDashboardContent() {
                     </Button>
                     <AskAiButton
                       variant="ghost"
-                      prompt="How can I start receiving better matches from this profile?"
+                      prompt={ASK.dashBetterMatches}
                       labelEn={dashboardEn('ask_ai_matches')}
                       labelEl={dashboardEl('ask_ai_matches')}
                     />
@@ -972,7 +982,7 @@ export default function FounderDashboardContent() {
                 <AskAiButton
                   variant="ghost"
                   className="w-full"
-                  prompt="How do I hit these milestone dates, and what should I sequence first?"
+                  prompt={ASK.dashMilestones}
                   labelEn={dashboardEn('ask_ai_milestones')}
                   labelEl={dashboardEl('ask_ai_milestones')}
                 />
@@ -1040,7 +1050,7 @@ export default function FounderDashboardContent() {
                 <AskAiButton
                   variant="ghost"
                   className="w-full"
-                  prompt="Review my founder profile and suggest what would make it stronger for investors and co-founders."
+                  prompt={ASK.dashProfile}
                   labelEn={dashboardEn('ask_ai_profile')}
                   labelEl={dashboardEl('ask_ai_profile')}
                 />
@@ -1264,7 +1274,7 @@ export default function FounderDashboardContent() {
             onLater={() => setFirstMoveLater(true)}
             assist={
               <AskAiButton
-                prompt="Help me draft my first need card: ask me who my startup needs, then open the filled guide so I can review and publish it."
+                prompt={ASK.dashNeedCard}
                 labelEn="Draft it with the assistant"
                 labelEl="Σύνταξη με τον βοηθό"
               />
@@ -1329,9 +1339,9 @@ export default function FounderDashboardContent() {
               align="center"
               glyph="matches"
               label={dashboardEn('top_matches')} labelEl={dashboardEl('top_matches')}
-              value={stats?.matchesThisWeek ?? '—'}
-              caption="Suggestions this week. Opens matches"
-              captionEl="Προτάσεις αυτής της εβδομάδας. Ανοίγει τις αντιστοιχίσεις"
+              value={matchCount ?? '—'}
+              caption={matchCount ? `${excellentMatches} excellent (80%+). Opens matches` : 'Suggestions for you. Opens matches'}
+              captionEl={matchCount ? `${excellentMatches} εξαιρετικές (80%+). Ανοίγει τις αντιστοιχίσεις` : 'Προτάσεις για εσάς. Ανοίγει τις αντιστοιχίσεις'}
               href="/matches"
             />
             <MetricTile
@@ -1388,7 +1398,7 @@ export default function FounderDashboardContent() {
                       <AskAiButton
                         variant="ghost"
                         className="w-full"
-                        prompt="What should I improve next on venture readiness, given the lowest dimension on this dashboard?"
+                        prompt={ASK.dashReadiness}
                         labelEn={dashboardEn('ask_ai_readiness')}
                         labelEl={dashboardEl('ask_ai_readiness')}
                       />

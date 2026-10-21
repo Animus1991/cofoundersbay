@@ -30,6 +30,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { REFERRALS_STRINGS, referralsEn, referralsEl } from '@/lib/i18n/strings-referrals';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { ASK } from '@/lib/page-questions';
 
 type ReferralStatus = 'pending' | 'signed_up' | 'active' | 'rewarded' | 'expired';
 
@@ -459,13 +460,13 @@ export default function ReferralsPage() {
   ];
 
   return (
-    <AppShell rail={rail} askAi="Who have I invited to CoFounderBay, and which invitations are still pending?">
+    <AppShell rail={rail} askAi={ASK.referrals}>
       <div className="space-y-6 pb-10">
         {isSample && (
           <SampleDataNotice
             surface="Referrals"
             detail="You have not invited anyone yet. These invitations are samples so you can see the layout."
-            askAiPrompt="How do I invite a co-founder to CoFounderBay?"
+            askAiPrompt={ASK.referralsEmpty}
           />
         )}
 

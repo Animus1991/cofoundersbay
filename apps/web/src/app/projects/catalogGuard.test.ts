@@ -23,10 +23,10 @@ describe('projects catalogue lockstep', () => {
     expect(stats.industries).toBe(3);
   });
 
-  it('keeps Harbor aligned with Idea Core and the $750K seed', () => {
+  it('keeps Harbor aligned with Idea Core and the €750K seed', () => {
     expect(getDemoProject('1')?.name).toBe('Harbor');
     expect(getDemoProject('1')?.founder.id).toBe(DEMO_PROJECT_ELENA_ID);
-    expect(getDemoProject('1')?.description ?? '').toContain('$750K');
+    expect(getDemoProject('1')?.description ?? '').toContain('€750K');
     expect(getDemoProject('1')?.description ?? '').toContain('Athens Tech Angels');
     expect(getDemoProject('2')?.name).toBe('Harbor GTM board');
     expect(getDemoProject('3')?.name).toBe('First founder-network path in Athens');

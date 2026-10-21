@@ -4,7 +4,6 @@ import { WRITE_TOOLS } from './copilotEval.fixture';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { HOME_ASK, nowStartingPoints, type HomeAskAction } from './home-ask';
-import { PAGE_QUESTIONS } from './page-questions';
 
 const APP = join(__dirname, '..', 'app');
 
@@ -29,8 +28,8 @@ function chips(actions: HomeAskAction[]): HomeAskAction[] {
 const all = [
   ...Object.entries(HOME_ASK).flatMap(([role, config]) => chips(config.actions).map((chip) => ({ where: `${role} ${chip.id}`, chip }))),
   ...nowStartingPoints({ messages: 2, intros: 1, notifications: 3 }).map((chip) => ({ where: `now ${chip.id}`, chip })),
-  // The questions pages hand over from their own body (lib/page-questions).
-  ...Object.entries(PAGE_QUESTIONS).map(([page, q]) => ({ where: `page ${page}`, chip: { id: page, en: page, el: page, glyph: 'spark', prompt: { en: q.en, el: q.el }, tool: q.tool } as HomeAskAction })),
+  // The questions pages hand over from their own body are held to the same
+  // rules in pageAsks.test.ts.
 ];
 
 describe('the home chips', () => {

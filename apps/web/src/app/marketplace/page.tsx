@@ -40,6 +40,7 @@ import { durationEl } from '@/lib/i18n/units';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { DEMO_PROVIDERS, type DemoProvider } from '@/lib/demo/marketplace-world';
 import { placeEl } from '@/lib/i18n/places';
+import { ASK } from '@/lib/page-questions';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -428,7 +429,7 @@ export default function MarketplacePage() {
           <SampleDataNotice
             surface="Marketplace"
             detail="No provider has listed a service yet, so these cards are sample experts that show the layout."
-            askAiPrompt="The marketplace is showing sample providers. How should I evaluate legal, finance, and coaching help for an early-stage startup?"
+            askAiPrompt={ASK.marketplaceSample}
           />
         )}
         {/* Banner CTA for providers */}

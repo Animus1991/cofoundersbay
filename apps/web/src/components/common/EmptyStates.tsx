@@ -31,7 +31,8 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { BilingualText } from '@/components/common/BilingualText';
-import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
+import { ASK, type AskPrompt } from '@/lib/page-questions';
 
 interface EmptyStateProps {
   className?: string;
@@ -250,19 +251,19 @@ function PrimaryAction({
   return null;
 }
 
-function AskAiLink({ prompt }: { prompt: string }) {
-  const popup = usePopupChatOptional();
+function AskAiLink({ prompt }: { prompt: AskPrompt }) {
+  const { ask, hrefFor, inPlace } = useAskAssistant();
   const label = <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />;
-  if (popup) {
+  if (inPlace) {
     return (
-      <Button variant="outline" onClick={() => popup.ask(prompt)}>
+      <Button variant="outline" onClick={() => ask(prompt)}>
         {label}
       </Button>
     );
   }
   return (
     <Button asChild variant="outline">
-      <Link href={`/ai?q=${encodeURIComponent(prompt)}`}>
+      <Link href={hrefFor(prompt)}>
         {label}
       </Link>
     </Button>
@@ -286,7 +287,7 @@ export function EmptyConnections({ className }: EmptyStateProps) {
             <BilingualText en="Discover people" el="Ανακαλύψτε άτομα" compact />
           </Link>
         </Button>
-        <AskAiLink prompt="I have no connections yet. Help me find a complementary cofounder and send a first intro." />
+        <AskAiLink prompt={ASK.connectionsNone} />
       </div>
     </div>
   );
@@ -309,7 +310,7 @@ export function EmptyMessages({ className }: EmptyStateProps) {
             <BilingualText en="View connections" el="Προβολή συνδέσεων" compact />
           </Link>
         </Button>
-        <AskAiLink prompt="My inbox is empty. Who should I message first from my matches or connections?" />
+        <AskAiLink prompt={ASK.inboxEmpty} />
       </div>
     </div>
   );
@@ -332,7 +333,7 @@ export function EmptyEvents({ className }: EmptyStateProps) {
             <BilingualText en="Create event" el="Δημιουργία εκδήλωσης" compact />
           </Link>
         </Button>
-        <AskAiLink prompt="There are no upcoming events. Suggest how I should use Events and Calendar to meet cofounders." />
+        <AskAiLink prompt={ASK.eventsNone} />
       </div>
     </div>
   );
@@ -353,7 +354,7 @@ export function EmptyJobs({ className, actionHref, onAction }: EmptyStateProps &
           <Briefcase className="icon-sm" />
           <BilingualText en="Post a job" el="Δημοσίευση θέσης" compact />
         </PrimaryAction>
-        <AskAiLink prompt="Help me write a cofounder or early-hire job post based on my profile gaps." />
+        <AskAiLink prompt={ASK.jobsNone} />
       </div>
     </div>
   );
@@ -376,7 +377,7 @@ export function EmptyGroups({ className }: EmptyStateProps) {
             <BilingualText en="Browse groups" el="Περιήγηση κοινοτήτων" compact />
           </Link>
         </Button>
-        <AskAiLink prompt="I have not joined any groups. Which communities fit a founder looking for a technical cofounder?" />
+        <AskAiLink prompt={ASK.groupsNone} />
       </div>
     </div>
   );
@@ -392,7 +393,7 @@ export function EmptyNotifications({ className }: EmptyStateProps) {
       <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="You have no new notifications. We&apos;ll let you know when something happens." el="Δεν έχετε νέες ειδοποιήσεις. Θα σας ενημερώσουμε όταν συμβεί κάτι." wrap />
       </p>
-      <AskAiLink prompt="I am all caught up on notifications. What should I do next on CoFounderBay?" />
+      <AskAiLink prompt={ASK.notificationsNone} />
     </div>
   );
 }
@@ -435,7 +436,7 @@ export function EmptyLearning({ className }: EmptyStateProps) {
       <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Learning resources will appear here. Check back soon for new content." el="Οι πόροι μάθησης θα εμφανίζονται εδώ. Ελέγξτε σύντομα για νέο περιεχόμενο." wrap />
       </p>
-      <AskAiLink prompt="There are no learning resources yet. What should I study next given my venture readiness?" />
+      <AskAiLink prompt={ASK.learningNone} />
     </div>
   );
 }
@@ -455,7 +456,7 @@ export function EmptyMarketplace({ className, actionHref, onAction }: EmptyState
           <ShoppingBag className="icon-sm" />
           <BilingualText en="List a service" el="Καταχώριση υπηρεσίας" compact />
         </PrimaryAction>
-        <AskAiLink prompt="The marketplace is empty. Help me decide whether to list a service or find an expert instead." />
+        <AskAiLink prompt={ASK.marketplaceNone} />
       </div>
     </div>
   );
@@ -478,7 +479,7 @@ export function EmptyMentoringSessions({ className }: EmptyStateProps) {
             <BilingualText en="Find mentors" el="Βρείτε μέντορες" compact />
           </Link>
         </Button>
-        <AskAiLink prompt="I have no mentoring sessions. Recommend a mentor type for a first-time founder and how to book." />
+        <AskAiLink prompt={ASK.sessionsNone} />
       </div>
     </div>
   );

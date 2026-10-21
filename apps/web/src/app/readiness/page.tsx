@@ -16,7 +16,8 @@ import {
   Info,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
+import { ASK, type AskPrompt } from '@/lib/page-questions';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
@@ -296,11 +297,11 @@ function AskAiButton({
 }: {
   labelEn?: string;
   labelEl?: string;
-  prompt?: string;
+  prompt?: AskPrompt;
   variant?: 'outline' | 'ghost' | 'secondary';
   className?: string;
 }) {
-  const popup = usePopupChatOptional();
+  const { ask, hrefFor, inPlace } = useAskAssistant();
   const buttonClass = cn('h-auto min-h-9 gap-1.5 py-1.5 leading-snug', className);
   const label = (
     <>
@@ -309,14 +310,14 @@ function AskAiButton({
     </>
   );
   // Asks in place, like the header's Ask AI: /ai?q= would leave the page and its context behind.
-  if (popup && prompt) {
+  if (inPlace && prompt) {
     return (
-      <Button type="button" variant={variant} size="sm" className={buttonClass} onClick={() => popup.ask(prompt)}>
+      <Button type="button" variant={variant} size="sm" className={buttonClass} onClick={() => ask(prompt)}>
         {label}
       </Button>
     );
   }
-  const href = prompt ? `/ai?q=${encodeURIComponent(prompt)}` : '/ai';
+  const href = hrefFor(prompt);
   return (
     <Button asChild variant={variant} size="sm" className={buttonClass}>
       <Link href={href}>{label}</Link>
@@ -476,8 +477,14 @@ function DimensionCard({
     .filter((criterion) => !criterion.completed)
     .sort((a, b) => b.weight - a.weight);
   const recPrompt = dim.recommendations[0]
-    ? `Help me improve ${readinessOf(dim.labelEn)} (${pct}%). Next step: ${dim.recommendations[0].en}`
-    : `Help me improve ${readinessOf(dim.labelEn)} (${pct}%). What should I do next?`;
+    ? {
+        en: `Help me improve ${readinessOf(dim.labelEn)} (${pct}%). Next step: ${dim.recommendations[0].en}`,
+        el: `Βοήθησέ με να βελτιώσω: ${readinessOfEl(dim.labelEl)} (${pct}%). Επόμενο βήμα: ${dim.recommendations[0].el}`,
+      }
+    : {
+        en: `Help me improve ${readinessOf(dim.labelEn)} (${pct}%). What should I do next?`,
+        el: `Βοήθησέ με να βελτιώσω: ${readinessOfEl(dim.labelEl)} (${pct}%). Τι να κάνω μετά;`,
+      };
 
   return (
     <Card id={`dim-${dim.key}`} className="min-w-0 scroll-mt-24 transition-colors hover:border-border">
@@ -943,7 +950,7 @@ export default function ReadinessPage() {
             <Button asChild><Link href="/builder"><BilingualText en="Open Startup Builder" el="Άνοιγμα Startup Builder" /></Link></Button>
             <AskAiButton
               variant="ghost"
-              prompt="I have no workspace yet. How do I start a readiness assessment in Builder?"
+              prompt={ASK.readinessNoWorkspace}
               labelEn={readinessEn('ask_ai_plan')}
               labelEl={readinessEl('ask_ai_plan')}
             />
@@ -976,7 +983,11 @@ export default function ReadinessPage() {
       .filter((c) => !c.completed)
       .map((c) => ({ ...c, dimKey: d.key, dimLabelEn: d.labelEn, dimLabelEl: d.labelEl })))
     .sort((a, b) => b.weight - a.weight)[0];
-  const askPrompt = `My overall startup readiness is ${overallScore}%. Weakest dimensions: ${weakDims.map((d) => `${d.labelEn} ${Math.round((d.score / d.maxScore) * 100)}% — ${d.recommendations[0]?.en ?? 'needs work'}`).join('; ') || 'none'}. What should I do next in Builder, interviews, or fundraising?`;
+  const askPrompt = {
+    en: `My overall startup readiness is ${overallScore}%. Weakest dimensions: ${weakDims.map((d) => `${d.labelEn} ${Math.round((d.score / d.maxScore) * 100)}% — ${d.recommendations[0]?.en ?? 'needs work'}`).join('; ') || 'none'}. What should I do next in Builder, interviews, or fundraising?`,
+    // Joined with a middle dot: in Greek the semicolon is the question mark.
+    el: `Η συνολική ετοιμότητα της startup μου είναι ${overallScore}%. Πιο αδύναμες διαστάσεις: ${weakDims.map((d) => `${d.labelEl} ${Math.round((d.score / d.maxScore) * 100)}% — ${d.recommendations[0]?.el ?? 'θέλει δουλειά'}`).join(' · ') || 'καμία'}. Τι να κάνω μετά: στον Builder, σε συνεντεύξεις ή στη χρηματοδότηση;`,
+  };
 
   /*
    * What sits around the answer rather than being it.
@@ -1074,7 +1085,7 @@ export default function ReadinessPage() {
         </CardTitle>
         <AIInsightButton
         className="h-8"
-        prompt={`${askPrompt} Draft a 7-day plan.`}
+        prompt={{ en: `${askPrompt.en} Draft a 7-day plan.`, el: `${askPrompt.el} Φτιάξε ένα πλάνο 7 ημερών.` }}
         />
         </div>
         </CardHeader>
@@ -1128,7 +1139,10 @@ export default function ReadinessPage() {
         </Button>
         <AIInsightButton
         className="h-8"
-        prompt={`Help me improve ${readinessOf(item.labelEn)} (${item.pct}%). Next step: ${item.rec.en}`}
+        prompt={{
+          en: `Help me improve ${readinessOf(item.labelEn)} (${item.pct}%). Next step: ${item.rec.en}`,
+          el: `Βοήθησέ με να βελτιώσω: ${readinessOfEl(item.labelEl)} (${item.pct}%). Επόμενο βήμα: ${item.rec.el}`,
+        }}
         />
         </div>
         </div>

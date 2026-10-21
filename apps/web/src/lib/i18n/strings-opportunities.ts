@@ -44,6 +44,7 @@ export const OPPORTUNITIES_STRINGS: Record<string, BilingualPair> = {
   saved: { en: 'Saved', el: 'Αποθηκεύτηκε' },
   saved_body: { en: '{title} saved on this device.', el: 'Το «{title}» αποθηκεύτηκε σε αυτή τη συσκευή.' },
   expired: { en: 'Expired', el: 'Έληξε' },
+  closes_today: { en: 'Closes today', el: 'Κλείνει σήμερα' },
   days_left: { en: '{n}d left', el: 'Απομένουν {n}η' },
   deadline: { en: 'Deadline: {date}', el: 'Προθεσμία: {date}' },
   count_one: { en: '1 opportunity', el: '1 ευκαιρία' },

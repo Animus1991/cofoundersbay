@@ -47,7 +47,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
-import { usePopupChat } from '@/contexts/PopupChatContext';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -74,6 +74,7 @@ import {
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { ASK } from '@/lib/page-questions';
 
 type ViewMode = 'list' | 'grid';
 type SortBy = 'saved_newest' | 'saved_oldest' | 'name_az' | 'match_score';
@@ -344,7 +345,7 @@ export default function ShortlistPage() {
   const [compareMode, setCompareMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { openRailSection } = usePageRail();
-  const { ask } = usePopupChat();
+  const { ask } = useAskAssistant();
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: qk('shortlist'),
@@ -540,7 +541,7 @@ export default function ShortlistPage() {
     <AppShell
       showHelp
       rail={rail}
-      askAi="I have saved profiles. Who should I reach out to first, and what should I write?"
+      askAi={ASK.shortlist}
       title={shortlistEn('page_title')}
       titleEl={shortlistEl('page_title')}
       description={shortlistEn('page_description')}
@@ -670,7 +671,7 @@ export default function ShortlistPage() {
                 <Button size="sm" className="gap-1.5" asChild>
                   <Link href="/matches"><BilingualText en={shortlistEn('browse_matches')} el={shortlistEl('browse_matches')} compact /></Link>
                 </Button>
-                <Button size="sm" variant="outline" className="gap-1.5" type="button" onClick={() => ask('I have no saved profiles. Who from my matches should I shortlist first?')}>
+                <Button size="sm" variant="outline" className="gap-1.5" type="button" onClick={() => ask(ASK.shortlistEmpty)}>
                   <Sparkles className="h-3.5 w-3.5 text-status-accent" aria-hidden="true" />
                   <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />
                 </Button>

@@ -78,6 +78,7 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { ASK } from '@/lib/page-questions';
 
 // Types
 interface Document {
@@ -510,7 +511,7 @@ export default function DataRoomPage() {
           <SampleDataNotice
             surface="Data room"
             detail="Documents, investors and the access log are illustrative — the data room has no backend storage yet."
-            askAiPrompt="Why does the data room show sample documents?"
+            askAiPrompt={ASK.dataRoomSample}
           />
 
           {/* The storage meter and the folder tree live in the page rail; the

@@ -12,12 +12,12 @@ type BoardDetail = {
 };
 
 describe('preview research boards', () => {
-  it('keeps Harbor GTM aligned with Idea Core and the $750K seed', () => {
+  it('keeps Harbor GTM aligned with Idea Core and the €750K seed', () => {
     const board = resolvePreviewApi('/api/research/boards/board-gtm') as BoardDetail;
     expect(board.board?.id).toBe('board-gtm');
     const metrics = board.board?.nodes?.find((n) => n.id === 'n-gtm-metrics')?.content ?? '';
     const problem = board.board?.nodes?.find((n) => n.id === 'n-gtm-problem')?.content ?? '';
-    expect(metrics).toContain('$750K');
+    expect(metrics).toContain('€750K');
     expect(metrics).toContain('Athens Tech Angels');
     expect(problem).toContain('stitching matching, messaging, and fundraising');
   });

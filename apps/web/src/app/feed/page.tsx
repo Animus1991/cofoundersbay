@@ -58,6 +58,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { useStoredUser } from '@/hooks/useStoredUser';
+import { ASK } from '@/lib/page-questions';
 
 type PostType = 'update' | 'milestone' | 'question' | 'announcement' | 'achievement';
 
@@ -853,7 +854,7 @@ export default function FeedPage() {
             className="mb-6"
             surface="Feed"
             detail="Your network has not posted yet, so these posts are samples that show how the feed reads."
-            askAiPrompt="The feed is showing sample posts. What should I do next on Discover, Matches, or Messages instead?"
+            askAiPrompt={ASK.feedSample}
           />
         )}
         {/* The reading column owns the feed; trending, suggested people and

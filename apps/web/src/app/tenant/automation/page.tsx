@@ -35,6 +35,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { statusEl } from '@/components/common/StatusText';
+import { ASK } from '@/lib/page-questions';
 
 const TRIGGER_LABELS: Record<string, { en: string; el: string }> = {
   user_signup: { en: 'User Signup', el: 'Εγγραφή χρήστη' },
@@ -391,7 +392,7 @@ export default function TenantAutomationPage() {
           title={<BilingualText en="No organization selected" el="Δεν έχει επιλεγεί οργανισμός" wrap />}
           description={<BilingualText en="Automations run inside an organization — they react to events like a new member joining or an application being submitted. Pick or create an organization to set them up." el="Οι αυτοματισμοί λειτουργούν μέσα σε έναν οργανισμό — αντιδρούν σε συμβάντα όπως η ένταξη νέου μέλους ή η υποβολή μιας αίτησης. Επιλέξτε ή δημιουργήστε έναν οργανισμό για να τους ρυθμίσετε." wrap />}
           illustration="rocket"
-          askAiPrompt="I opened organization automations without an organization selected. Help me pick or create one and explain what automation rules I should turn on first."
+          askAiPrompt={ASK.automationNoOrg}
           action={
             <>
               <Button asChild>

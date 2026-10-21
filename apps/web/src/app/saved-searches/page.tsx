@@ -55,6 +55,7 @@ import { qk } from '@/lib/query-keys';
 import { CANCELLED, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { savedFiltersToParams } from '@/lib/need-card-wall';
 import { FactLine } from '@/components/common/FactLine';
+import { ASK } from '@/lib/page-questions';
 
 function SearchCard({
   search,
@@ -480,7 +481,7 @@ export default function SavedSearchesPage() {
                like the rest of the page rather than in one language. */
             title={<BilingualText en={savedSearchesEn('empty_title')} el={savedSearchesEl('empty_title')} compact wrap />}
             description={<BilingualText en={savedSearchesEn('empty_description')} el={savedSearchesEl('empty_description')} />}
-            askAiPrompt="I have no saved searches. Suggest a search I should save for a technical cofounder in my city."
+            askAiPrompt={ASK.savedSearchesEmpty}
             action={
               <Button onClick={handleCreateNew}>
                 <Plus className="icon-sm mr-2 shrink-0" aria-hidden="true" />

@@ -5,7 +5,7 @@ import { AvatarVerifiedMark, OwnOpenToPill, VerificationPanel, useMyTrust } from
 import { VerifiedBadge } from '@/components/commitments/VerifiedBadge';
 import { ProfileHero } from '@/components/profile/ProfileHero';
 import { ProfileActivity, ProfileExperience, SimilarProfiles } from '@/components/profile/ProfileSections';
-import { StatusText } from '@/components/common/StatusText';
+import { StatusText, statusEl } from '@/components/common/StatusText';
 import { cn } from '@/lib/utils';
 
 import { calculateProfileCompletion } from '@/components/common/ProfileCompletion';
@@ -639,7 +639,10 @@ export default function ProfilePage() {
                     <BilingualText en={profileEn('about')} el={profileEl('about')} />
                   </CardTitle>
                   <AIInsightButton
-                    prompt={`Review my profile as a ${profile.role} and give me 3 specific tips to improve my positioning and appeal to the right collaborators:\nHeadline: ${profile.headline || 'Not set'}\nBio: ${profile.bio || 'Not set'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}`}
+                    prompt={{
+                      en: `Review my profile as a ${profile.role} and give me 3 specific tips to improve my positioning and appeal to the right collaborators:\nHeadline: ${profile.headline || 'Not set'}\nBio: ${profile.bio || 'Not set'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}`,
+                      el: `Δες το προφίλ μου (${statusEl(profile.role) ?? profile.role}) και δώσε μου 3 συγκεκριμένες συμβουλές για να τοποθετηθώ καλύτερα και να με προσέξουν οι σωστοί συνεργάτες:\nΤίτλος: ${profile.headline || 'Δεν έχει οριστεί'}\nΒιογραφικό: ${profile.bio || 'Δεν έχει οριστεί'}\nΔεξιότητες: ${profile.skills?.map((s) => s.skillName).join(', ') || 'Καμία'}`,
+                    }}
                     agentId="pitch-coach"
                     cacheKey={`own-profile-coach-${profile.userId}`}
                     variant="icon"

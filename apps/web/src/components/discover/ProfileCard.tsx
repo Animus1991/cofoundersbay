@@ -32,7 +32,7 @@ import { useToast } from '@/components/ui/toast';
 import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
-import { StatusText } from '@/components/common/StatusText';
+import { StatusText, statusEl } from '@/components/common/StatusText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 
@@ -253,7 +253,10 @@ function ProfileCardInner({
           {/* AI Insight: an outlined control, so its box sits on the axis. */}
           {profile.matchScore && profile.matchScore > 0 && (
             <AIInsightButton
-              prompt={`Analyze why ${profile.displayName} would be a good match. Their role is ${profile.role}, skills: ${profile.skills.slice(0, 5).join(', ')}. ${profile.headline || ''} ${profile.lookingFor ? `Looking for: ${profile.lookingFor}` : ''}`}
+              prompt={{
+                en: `Analyze why ${profile.displayName} would be a good match. Their role is ${profile.role}, skills: ${profile.skills.slice(0, 5).join(', ')}. ${profile.headline || ''} ${profile.lookingFor ? `Looking for: ${profile.lookingFor}` : ''}`,
+                el: `Ανάλυσε γιατί ταιριάζω με ${profile.displayName}. Ρόλος: ${statusEl(profile.role) ?? profile.role}, δεξιότητες: ${profile.skills.slice(0, 5).join(', ')}. ${profile.headline || ''} ${profile.lookingFor ? `Αναζητά: ${profile.lookingFor}` : ''}`,
+              }}
               agentId="matching"
               context={{
                 matchScore: profile.matchScore,
@@ -372,7 +375,10 @@ function ProfileCardInner({
         {/* AI Insight for matches: outlined, so its box sits on the axis. */}
         {profile.matchScore && profile.matchScore >= 60 && (
           <AIInsightButton
-            prompt={`Why is ${profile.displayName} (${profile.role}) a ${profile.matchScore}% match? Skills: ${profile.skills.slice(0, 4).join(', ')}`}
+            prompt={{
+              en: `Why is ${profile.displayName} (${profile.role}) a ${profile.matchScore}% match? Skills: ${profile.skills.slice(0, 4).join(', ')}`,
+              el: `Γιατί ταιριάζω ${profile.matchScore}% με ${profile.displayName} (${statusEl(profile.role) ?? profile.role}); Δεξιότητες: ${profile.skills.slice(0, 4).join(', ')}`,
+            }}
             agentId="matching"
             context={{ matchScore: profile.matchScore, targetName: profile.displayName, role: profile.role, skills: profile.skills }}
             label="AI match analysis"

@@ -47,6 +47,8 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { priceEl } from '@/lib/i18n/units';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { ASK } from '@/lib/page-questions';
+import { PageFacts } from '@/components/common/PageFacts';
 
 type Service = {
   id: string;
@@ -100,7 +102,7 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
                   rides with the name; from sm the label beside the switch
                   says it once. */}
               <Badge variant={isActive ? 'default' : 'secondary'} className="sm:hidden">
-                {isActive ? <BilingualText en="Active" el="Ενεργή" compact /> : <BilingualText en="Inactive" el="Ανενεργή" compact />}
+                {isActive ? <BilingualText en="Live" el="Ενεργή" compact /> : <BilingualText en="Hidden" el="Κρυφή" compact />}
               </Badge>
             </span>
           )}
@@ -109,12 +111,12 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
           aside={(
             <>
               <span className="hidden text-xs text-muted-foreground sm:inline" aria-hidden="true">
-                {isActive ? <BilingualText en="Active" el="Ενεργή" compact /> : <BilingualText en="Inactive" el="Ανενεργή" compact />}
+                {isActive ? <BilingualText en="Live" el="Ενεργή" compact /> : <BilingualText en="Hidden" el="Κρυφή" compact />}
               </span>
-              <Switch checked={isActive} onCheckedChange={toggleActive} aria-label={bilingualAria(`Active: ${service.name}`, `Ενεργή: ${service.name}`)} />
+              <Switch checked={isActive} onCheckedChange={toggleActive} aria-label={bilingualAria(`Live: ${service.name}`, `Ενεργή: ${service.name}`)} />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${service.name}`}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria(`Open actions for ${service.name}`, `Ενέργειες για ${service.name}`)}>
                     <MoreVertical className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -401,7 +403,7 @@ export default function ProviderServicesPage() {
             illustration="default"
             title="No services listed"
             description="Create your first service offering to start receiving bookings."
-            askAiPrompt="I have not listed any services. Help me describe a first offering based on a typical service provider on CoFounderBay."
+            askAiPrompt={ASK.servicesEmpty}
             action={<Button size="sm" onClick={openCreate}><Plus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Add Service" el="Προσθήκη υπηρεσίας" compact /></Button>}
           />
         )}
@@ -418,31 +420,18 @@ export default function ProviderServicesPage() {
           />
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Total Services" el="Σύνολο υπηρεσιών" compact /></p>
-              <p className="page-stat text-xl font-bold">{services.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργά" compact /></p>
-              <p className="page-stat text-xl font-bold text-status-success">
-                {services.filter((s) => s.isActive).length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Total Bookings" el="Σύνολο κρατήσεων" compact /></p>
-              <p className="page-stat text-xl font-bold">
-                {services.reduce((acc, s) => acc + s.bookings, 0)}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* The figures, one line before the list (docs §64.5, PageFacts): three
+            tiles stood between the header and the first listing, and called
+            "Active" what the listings and the home call live. */}
+        <PageFacts
+          labelEn="Your listings in figures"
+          labelEl="Οι καταχωρίσεις σας σε αριθμούς"
+          facts={[
+            { id: 'services', value: services.length, en: services.length === 1 ? 'service' : 'services', el: services.length === 1 ? 'υπηρεσία' : 'υπηρεσίες' },
+            { id: 'live', value: services.filter((s) => s.isActive).length, en: 'live', el: 'ενεργές' },
+            { id: 'bookings', value: services.reduce((acc, s) => acc + s.bookings, 0), en: 'bookings', el: 'κρατήσεις' },
+          ]}
+        />
 
         {/* Services List */}
         <div className="space-y-3">

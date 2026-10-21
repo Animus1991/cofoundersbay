@@ -49,6 +49,7 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { PageFacts } from '@/components/common/PageFacts';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { ASK } from '@/lib/page-questions';
 
 const MATCHES_TOUR: TourStep[] = [
   {
@@ -754,8 +755,14 @@ export default function MatchesPage() {
     (availFilter.size > 0 ? 1 : 0);
 
   const askAi = hasToken && visible.length > 0
-    ? `Matches: ${counts.all} total, ${counts.excellent} excellent (≥80%), average ${avgScore}%, top ${topScore}%. ${filtered.length !== counts.all ? `${filtered.length} showing with current filters. ` : ''}Recommend who I should connect with first and draft a short intro.`
-    : 'I am on Matches. Explain how compatibility scoring works and what to complete on my profile so I get better cofounder suggestions.';
+    ? {
+        en: `Matches: ${counts.all} total, ${counts.excellent} excellent (≥80%), average ${avgScore}%, top ${topScore}%. ${filtered.length !== counts.all ? `${filtered.length} showing with current filters. ` : ''}Recommend who I should connect with first and draft a short intro.`,
+        el: `Αντιστοιχίσεις: ${counts.all} συνολικά, ${counts.excellent} εξαιρετικές (≥80%), μέσος όρος ${avgScore}%, κορυφαία ${topScore}%. ${filtered.length !== counts.all ? `${filtered.length} εμφανίζονται με τα τρέχοντα φίλτρα. ` : ''}Πρότεινε με ποιον να συνδεθώ πρώτα και ετοίμασε μια σύντομη γνωριμία.`,
+      }
+    : {
+        en: 'I am on Matches. Explain how compatibility scoring works and what to complete on my profile so I get better cofounder suggestions.',
+        el: 'Είμαι στις Αντιστοιχίσεις. Εξήγησε πώς βγαίνει η συμβατότητα και τι να συμπληρώσω στο προφίλ μου για να παίρνω καλύτερες προτάσεις συνιδρυτών.',
+      };
 
   /*
    * The filter column, as a rail.
@@ -1044,7 +1051,7 @@ export default function MatchesPage() {
             title={<BilingualText en={matchesEn('sign_in_to_see')} el={matchesEl('sign_in_to_see')} />}
             description={<BilingualText en={matchesEn('sign_in_desc')} el={matchesEl('sign_in_desc')} />}
             illustration="connection"
-            askAiPrompt="I am not signed in. Explain how matching works on CoFounderBay and what I should complete after login."
+            askAiPrompt={ASK.matchesSignedOut}
             action={
               <Button className="gap-2" asChild>
                 <Link href="/login">
@@ -1110,7 +1117,7 @@ export default function MatchesPage() {
             title={<BilingualText en={matchesEn('no_matches_yet')} el={matchesEl('no_matches_yet')} />}
             description={<BilingualText en={matchesEn('no_matches_desc')} el={matchesEl('no_matches_desc')} />}
             illustration="rocket"
-            askAiPrompt="I have no matches yet. Tell me which profile fields to complete so I get better cofounder suggestions."
+            askAiPrompt={ASK.matchesEmpty}
             action={
               <Button className="gap-2" asChild>
                 <Link href="/profile/edit">

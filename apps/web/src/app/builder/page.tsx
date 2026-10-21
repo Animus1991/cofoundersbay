@@ -32,6 +32,7 @@ import type { BuilderDocumentType } from '@/lib/builder-api';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { initialsOf } from '@/lib/utils';
+import { ASK } from '@/lib/page-questions';
 
 const BUILDER_TOUR: TourStep[] = [
   {
@@ -313,7 +314,7 @@ function BuilderPageContent() {
     <AppShell
       showHelp
       rail={SELF_RAIL_TABS.has(activeTab) ? undefined : rail}
-      askAi="Summarize this startup workspace and tell me the next Builder section to complete — Idea Core, BMC, Market, or Pitch."
+      askAi={ASK.builder}
       contentClassName="builder-copy overflow-x-clip"
     >
       <div className="builder-type builder-copy min-w-0 space-y-6 overflow-x-clip">

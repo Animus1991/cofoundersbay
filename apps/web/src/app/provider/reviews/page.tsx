@@ -30,6 +30,7 @@ import { usePageList } from '@/lib/page-controls';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { ASK } from '@/lib/page-questions';
 
 type Review = {
   id: string;
@@ -229,7 +230,7 @@ export default function ProviderReviewsPage() {
           illustration="default"
           title="No client reviews yet"
           description="Reviews will appear here once clients rate your completed service engagements."
-          askAiPrompt="I have no client reviews yet. What should I do in inquiries and projects so reviews start appearing?"
+          askAiPrompt={ASK.providerReviewsEmpty}
         />
       </AppShell>
     );

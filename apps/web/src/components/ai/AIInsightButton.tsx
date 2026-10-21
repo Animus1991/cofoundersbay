@@ -1,22 +1,16 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
-
-function useSafeRouter() {
-  try {
-    return useRouter();
-  } catch {
-    return null;
-  }
-}
+import { useAskAssistant } from '@/hooks/useAskAssistant';
+import type { AskPrompt } from '@/lib/page-questions';
 
 interface AIInsightButtonProps {
-  prompt: string;
+  /** Asked in place, in the reader's language when a pair is given. */
+  prompt: AskPrompt;
   agentId?: string;
   cacheKey?: string;
   context?: Record<string, unknown>;
@@ -35,7 +29,7 @@ export function AIInsightButton({
   label,
   labelEl,
 }: AIInsightButtonProps) {
-  const router = useSafeRouter();
+  const { ask } = useAskAssistant();
   const { primary } = useLanguagePreference();
   // One language, no wrap: BilingualText+compact inside a 36px-tall outline
   // button stacked "Ask" over "AI" on Greek-primary pages, and the English
@@ -45,15 +39,8 @@ export function AIInsightButton({
     : (primary === 'el' ? 'Ρωτήστε το AI' : 'Ask AI');
   const ariaLabel = label ? bilingualAria(label, labelEl) : bilingualAria('Ask AI', 'Ρωτήστε το AI');
 
-  const openAssistant = () => {
-    const params = new URLSearchParams({ q: prompt });
-    const url = `/ai?${params.toString()}`;
-    if (router) {
-      router.push(url);
-    } else if (typeof window !== 'undefined') {
-      window.location.href = url;
-    }
-  };
+  // In place, like every other Ask: /ai would leave the page and its context behind.
+  const openAssistant = () => ask(prompt);
 
   if (variant === 'icon') {
     return (

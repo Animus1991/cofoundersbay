@@ -56,6 +56,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { StatusText } from '@/components/common/StatusText';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { Counter } from '@/components/ui/counter';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
 
 const STATUS_COLOR: Record<ProjectStatus, string> = {
   idea: 'bg-status-accent-bg text-status-accent border-status-accent-border',
@@ -69,7 +70,8 @@ export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { primary } = useLanguagePreference();
-  const { open: openAskAi, ask } = usePopupChat();
+  const { open: openAskAi } = usePopupChat();
+  const { ask: askInPlace } = useAskAssistant();
   const { success } = useToast();
   const confirm = useConfirm();
   const projectId = String(params?.projectId ?? '');
@@ -158,8 +160,14 @@ export default function ProjectDetailPage() {
       showHelp
       askAi={
         current.name.includes('Harbor') || current.id === '1'
-          ? 'Help with this Harbor project from Idea Core, the GTM board, and the $750K seed (Athens Tech Angels, $375K committed).'
-          : 'Help me decide whether to join or start from Builder artefacts.'
+          ? {
+              en: 'Help with this Harbor project from Idea Core, the GTM board, and the €750K seed (Athens Tech Angels, €375K committed).',
+              el: 'Βοήθησέ με σε αυτό το project του Harbor από τον Πυρήνα ιδέας, τον πίνακα GTM και τον γύρο €750K (Athens Tech Angels, €375K δεσμευμένα).',
+            }
+          : {
+              en: 'Help me decide whether to join or start from Builder artefacts.',
+              el: 'Βοήθησέ με να αποφασίσω αν θα συμμετάσχω ή θα ξεκινήσω από τα στοιχεία του Builder.',
+            }
       }
       contentClassName="builder-copy overflow-x-clip"
       actions={
@@ -189,10 +197,16 @@ export default function ProjectDetailPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="rounded-xl">
-              <DropdownMenuItem onClick={() => ask(
+              <DropdownMenuItem onClick={() => askInPlace(
                 current.name.includes('Harbor') || current.id === '1'
-                  ? 'Draft an edit to this Harbor project from Idea Core, the GTM board, and the $750K seed (Athens Tech Angels, $375K committed).'
-                  : 'Draft an edit to this project from Builder artefacts.',
+                  ? {
+                      en: 'Draft an edit to this Harbor project from Idea Core, the GTM board, and the €750K seed (Athens Tech Angels, €375K committed).',
+                      el: 'Ετοίμασε μια αλλαγή σε αυτό το project του Harbor από τον Πυρήνα ιδέας, τον πίνακα GTM και τον γύρο €750K (Athens Tech Angels, €375K δεσμευμένα).',
+                    }
+                  : {
+                      en: 'Draft an edit to this project from Builder artefacts.',
+                      el: 'Ετοίμασε μια αλλαγή σε αυτό το project από τα στοιχεία του Builder.',
+                    },
               )}>
                 <Edit className="icon-sm mr-2" />
                 <BilingualText en={projectEn('edit')} el={projectEl('edit')} compact />

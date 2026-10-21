@@ -476,7 +476,7 @@ export function PitchDeckBuilder({
   /*
    * The ask follows the round the same way the company name follows the
    * workspace. /fundraising and the dashboard both say the showcase is raising
-   * a $750K seed; this deck said "—" beside "Funding ask" on the same account,
+   * a €750K seed; this deck said "—" beside "Funding ask" on the same account,
    * which is the kind of contradiction between adjacent pages the product is
    * meant not to have. Demo only: the round model is the demo's, and seeding a
    * real founder's deck with a sample figure would be inventing their ask.

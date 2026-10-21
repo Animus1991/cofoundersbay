@@ -22,6 +22,7 @@ import { assessReadiness, pickReadinessDimensions, updateReadinessCriterion, typ
 import { useToast } from '@/components/ui/toast';
 
 import { pressableProps } from '@/lib/pressable';
+import { ASK } from '@/lib/page-questions';
 interface ReadinessDimension {
   id: string;
   name: string;
@@ -401,7 +402,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
         titleEl={builderEl('ready_title')}
         subtitleEn={builderEn('ready_sub')}
         subtitleEl={builderEl('ready_sub')}
-        askPrompt="Score my Startup Builder readiness. Which dimension is weakest, and what should I complete next in Idea Core, BMC, Market, or Pitch?"
+        askPrompt={ASK.builderReadiness}
         extraActions={
           <>
             <Button asChild variant="outline" size="sm" className={BUILDER_BTN}>

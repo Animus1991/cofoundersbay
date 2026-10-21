@@ -52,6 +52,7 @@ import { choiceControl, rowOptions, settle, usePageControls, usePageList, type P
 import { publicCardUrl } from '@/lib/commitments-links';
 import { nextAction } from '@/lib/commitments-next';
 import { statusEl } from '@/components/common/StatusText';
+import { ASK } from '@/lib/page-questions';
 
 type Tab = 'mine' | 'responses' | 'history';
 type OutcomeFilter = 'all' | CommitmentOutcome;
@@ -415,7 +416,7 @@ export default function CommitmentsPage() {
     <AppShell
       showHelp
       rail={rail}
-      askAi="Which of my commitments needs me next, and what should I say?"
+      askAi={ASK.commitments}
       actions={
         <Button className="gap-2" asChild>
           <Link href="/commitments/new">

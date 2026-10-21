@@ -42,6 +42,7 @@ import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
 import { isOwnedProject, readProjectsOverlay, resolveDemoProjects, type DemoProject, type ProjectStatus } from '@/lib/projects-demo';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
+import { ASK } from '@/lib/page-questions';
 
 const CATEGORIES = [
   'AI/ML', 'B2B SaaS', 'CleanTech', 'Community', 'Consumer', 'Developer Tools', 'E-commerce',
@@ -250,7 +251,7 @@ function PostingGuide() {
   };
 
   return (
-    <AppShell showHelp title={editId ? CMT.guide_edit_title.en : undefined} titleEl={editId ? CMT.guide_edit_title.el : undefined} askAi="Draft my need card from my workspace: what exists, the outcome, who is missing and what I offer.">
+    <AppShell showHelp title={editId ? CMT.guide_edit_title.en : undefined} titleEl={editId ? CMT.guide_edit_title.el : undefined} askAi={ASK.needCardNew}>
       <div className="space-y-6">
         <p className="max-w-2xl text-sm text-muted-foreground">
           <BilingualText en={CMT.guide_intro.en} el={CMT.guide_intro.el} wrap />

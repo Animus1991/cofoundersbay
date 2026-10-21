@@ -145,7 +145,10 @@ export default function ProgramDetailPage() {
     <AppShell
       title={program.title}
       description={program.organization?.name}
-      askAi={`Is the programme "${program.title}" a good fit for my startup?`}
+      askAi={{
+        en: `Is the programme "${program.title}" a good fit for my startup?`,
+        el: `Ταιριάζει το πρόγραμμα «${program.title}» στη startup μου;`,
+      }}
     >
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">

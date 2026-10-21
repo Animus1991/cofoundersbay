@@ -36,6 +36,7 @@ import { formatDate } from '@/lib/i18n/format';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { demoPortrait } from '@/lib/demo/photos';
+import { ASK } from '@/lib/page-questions';
 
 type Review = {
   id: string;
@@ -184,7 +185,7 @@ export default function MentorReviewsPage() {
           illustration="default"
           title="No reviews yet"
           description="Reviews will appear here after your mentees complete sessions and leave feedback."
-          askAiPrompt="I have no mentor reviews yet. What should I do in sessions so mentees leave useful feedback?"
+          askAiPrompt={ASK.mentorReviewsEmpty}
         />
       </AppShell>
     );

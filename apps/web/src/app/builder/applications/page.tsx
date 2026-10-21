@@ -17,8 +17,10 @@ import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { ArrowLeft, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 import type { ApplicationTemplate } from '@/components/builder/application-model';
 
-const APPLICATION_ASK =
-  'Draft empty accelerator or grant answers using only verified Builder artefacts from the active workspace. Ask for missing evidence; do not invent funding, traction or company details. Fill only empty fields.';
+const APPLICATION_ASK = {
+  en: 'Draft empty accelerator or grant answers using only verified Builder artefacts from the active workspace. Ask for missing evidence; do not invent funding, traction or company details. Fill only empty fields.',
+  el: 'Συμπλήρωσε τις κενές απαντήσεις αιτήσεων σε επιταχυντές ή επιχορηγήσεις μόνο από επαληθευμένα στοιχεία του Builder στον ενεργό χώρο εργασίας. Ζήτα ό,τι λείπει· μην επινοείς χρηματοδότηση, traction ή στοιχεία εταιρείας. Συμπλήρωσε μόνο τα κενά πεδία.',
+};
 
 function ApplicationsPageContent() {
   const {

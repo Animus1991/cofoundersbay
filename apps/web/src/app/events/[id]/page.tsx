@@ -197,7 +197,10 @@ export default function EventDetailPage() {
     <AppShell
       title={event.title}
       description={event.eventType.replaceAll('_', ' ')}
-      askAi={`Help me prepare for the event "${event.title}".`}
+      askAi={{
+        en: `Help me prepare for the event "${event.title}".`,
+        el: `Βοήθησέ με να προετοιμαστώ για την εκδήλωση «${event.title}».`,
+      }}
       actions={
         <>
           <Button variant="outline" size="sm" className="gap-2" onClick={() => downloadEventIcs(event)}>

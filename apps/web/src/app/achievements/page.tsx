@@ -43,6 +43,7 @@ import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { LEVEL_LABEL_EL } from '@/lib/i18n/strings-reputation';
+import { ASK } from '@/lib/page-questions';
 
 const ACHIEVEMENTS_TOUR: TourStep[] = [
   {
@@ -661,7 +662,7 @@ export default function AchievementsPage() {
       descriptionEl={achievementsEl('page_description')}
       rail={rail}
       showHelp
-      askAi="What achievements should I work toward next, and which unlocked badges are most useful to show investors?"
+      askAi={ASK.achievements}
     >
       <FirstRunTour tourId="achievements" steps={ACHIEVEMENTS_TOUR} ready={!isLoading} />
       <div className="space-y-6 pb-10">

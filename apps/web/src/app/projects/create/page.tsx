@@ -42,6 +42,7 @@ import {
   PROJECT_STATUS_GLYPH,
   type ProjectStatus,
 } from '@/lib/projects-demo';
+import { ASK } from '@/lib/page-questions';
 
 const STATUS_OPTIONS: { value: ProjectStatus; hintKey: 'stage_idea_hint' | 'stage_validating_hint' | 'stage_building_hint' | 'stage_launched_hint' | 'stage_scaling_hint' }[] = [
   { value: 'idea', hintKey: 'stage_idea_hint' },
@@ -173,7 +174,7 @@ export default function CreateProjectPage() {
   return (
     <AppShell
       showHelp
-      askAi="Draft the next Harbor project from Idea Core, the GTM board, or the complementary-cofounder role."
+      askAi={ASK.projectNew}
       contentClassName="builder-copy overflow-x-clip"
     >
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,44rem)_22rem]">

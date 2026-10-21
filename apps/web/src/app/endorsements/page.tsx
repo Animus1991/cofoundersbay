@@ -46,6 +46,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { Counter } from '@/components/ui/counter';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { DEMO_ENDORSEMENTS, DEMO_MEMBER_ID, type DemoEndorsement } from '@/lib/demo/endorsements-world';
+import { ASK } from '@/lib/page-questions';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -599,7 +600,7 @@ export default function EndorsementsPage() {
           <SampleDataNotice
             surface="Endorsements"
             detail="These endorsements are samples written by the demo's own people. Approve and Decline change this screen only."
-            askAiPrompt="These endorsements are samples. Who should I ask for an endorsement first, and what should it say?"
+            askAiPrompt={ASK.endorsementsSample}
           />
         )}
 

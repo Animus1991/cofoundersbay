@@ -62,7 +62,7 @@ describe('page registry coverage', () => {
     for (const path of ['/builder/applications', '/fundraising', '/ai']) {
       const page = getPageMeta(path);
       expect(page).toBeTruthy();
-      expect(`${page?.description} ${page?.descriptionEl}`).not.toMatch(/Harbor|Athens Tech Angels|\$750K|\$375K/);
+      expect(`${page?.description} ${page?.descriptionEl}`).not.toMatch(/Harbor|Athens Tech Angels|€750K|€375K/);
     }
   });
 

@@ -148,10 +148,13 @@ export default function AdminDashboardPage() {
     .sort((a, b) => b[1] - a[1])
     .map(([role, n]) => ({ role, n, share: total ? Math.round((n / total) * 100) : 0 }));
   // Totals of unlike things (messages, groups, jobs) are figures, not bars on
-  // one axis.
-  const activity = [
-    { id: 'messages', en: 'Messages', el: 'Μηνύματα', value: stats?.totalMessages, href: '/messages' },
-    { id: 'connections', en: 'Connections', el: 'Συνδέσεις', value: stats?.totalConnections, href: '/connections' },
+  // one axis. Messages and connections are the platform's; they linked to the
+  // admin's own inbox and network, where the number on the tile appears
+  // nowhere, so they are figures without a link. Events, communities and jobs
+  // open the lists those totals count.
+  const activity: Array<{ id: string; en: string; el: string; value: number | undefined; href?: string }> = [
+    { id: 'messages', en: 'Messages', el: 'Μηνύματα', value: stats?.totalMessages },
+    { id: 'connections', en: 'Connections', el: 'Συνδέσεις', value: stats?.totalConnections },
     { id: 'events', en: 'Events', el: 'Εκδηλώσεις', value: stats?.totalEvents, href: '/events' },
     { id: 'groups', en: 'Groups', el: 'Κοινότητες', value: stats?.totalGroups, href: '/admin/communities' },
     { id: 'jobs', en: 'Jobs', el: 'Αγγελίες', value: stats?.totalJobs, href: '/jobs' },
@@ -341,20 +344,31 @@ export default function AdminDashboardPage() {
 
             <SectionCard title="Activity to date" titleEl="Δραστηριότητα έως σήμερα" icon={Activity}>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
-                {activity.map((a) => (
-                  <Link
-                    key={a.id}
-                    href={a.href}
-                    className="rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring"
-                  >
-                    <p className="page-stat text-xl font-semibold tabular-nums tracking-tight">
-                      {statsLoading || a.value == null ? dash : a.value.toLocaleString('en-GB')}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      <BilingualText en={a.en} el={a.el} stacked wrap />
-                    </p>
-                  </Link>
-                ))}
+                {activity.map((a) => {
+                  const body = (
+                    <>
+                      <p className="page-stat text-xl font-semibold tabular-nums tracking-tight">
+                        {statsLoading || a.value == null ? dash : a.value.toLocaleString('en-GB')}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        <BilingualText en={a.en} el={a.el} stacked wrap />
+                      </p>
+                    </>
+                  );
+                  return a.href ? (
+                    <Link
+                      key={a.id}
+                      href={a.href}
+                      className="rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring"
+                    >
+                      {body}
+                    </Link>
+                  ) : (
+                    <div key={a.id} className="rounded-lg border border-border p-3">
+                      {body}
+                    </div>
+                  );
+                })}
               </div>
             </SectionCard>
 

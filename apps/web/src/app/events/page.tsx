@@ -24,6 +24,7 @@ import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk } from '@/lib/query-keys';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { ASK } from '@/lib/page-questions';
 
 type ViewMode = 'grid' | 'list';
 type EventFilter = 'all' | 'online' | 'in-person' | 'hybrid';
@@ -266,7 +267,7 @@ export default function EventsPage() {
     <AppShell
       rail={rail}
       showHelp
-      askAi="What's coming up in events, and which should I RSVP to or create to meet cofounders?"
+      askAi={ASK.events}
       actions={
         <Button className="gap-2" asChild>
           <Link href="/events/create">
@@ -369,7 +370,7 @@ export default function EventsPage() {
                         : undefined
                 }
                 illustration="calendar"
-                askAiPrompt="I have no events. Suggest how to use Events and Calendar to meet cofounders this month."
+                askAiPrompt={ASK.eventsEmpty}
                 action={
                   tab === 'my-events' && !hasToken ? (
                     <Button asChild>

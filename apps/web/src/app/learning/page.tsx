@@ -32,6 +32,7 @@ import { linkTarget } from '@/lib/web-url';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { durationEl } from '@/lib/i18n/units';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { ASK } from '@/lib/page-questions';
 
 interface Resource {
   id: string;
@@ -558,7 +559,7 @@ export default function LearningPage() {
   ];
 
   return (
-    <AppShell showHelp rail={rail} askAi="Which readiness gap should I study first, and which learning path or resource matches it?">
+    <AppShell showHelp rail={rail} askAi={ASK.learning}>
       <div className="space-y-6 pb-10">
       {/* Learning Paths */}
       {activeTab === 'all' && (

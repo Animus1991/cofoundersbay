@@ -12,6 +12,7 @@ import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { cn } from '@/lib/utils';
 import { appShellMainClasses } from '@/lib/layout-config';
 import { AIComposer } from '@/components/ai/AIComposer';
+import type { AskPrompt } from '@/lib/page-questions';
 import { CommandPaletteHost } from './CommandPaletteHost';
 import { TOP_BANNER_STACK } from './useTopBannerHeight';
 import { PageRail, type PageRailSection } from './PageRail';
@@ -213,10 +214,12 @@ type AppShellProps = {
   /** Extra class on the page H1 — founder overview scales the title locally. */
   titleClassName?: string;
   /**
-   * Contextual Ask AI prompt. Defaults to the page title when omitted.
+   * Contextual Ask AI prompt, sent when the field is empty: a pair from
+   * `lib/page-questions` (sent in the reader's language) or a string built
+   * from the page's data. Defaults to a question about the page title.
    * Pass `false` to hide (AI workspace, pages that already own the CTA).
    */
-  askAi?: string | false;
+  askAi?: AskPrompt | false;
   /**
    * The page's supporting tools, in the right-hand rail.
    *
@@ -261,10 +264,12 @@ export function AppShell({
   const pageDescriptionEl = resolved.descriptionEl;
   const showAskAi = Boolean(pageTitle) && askAi !== false;
   const [metaSlot, setMetaSlot] = useState<HTMLDivElement | null>(null);
-  const askAiPrompt =
-    typeof askAi === 'string'
-      ? askAi
-      : `Help me with ${pageTitle ?? 'this page'}${pageDescription ? `: ${pageDescription}` : ''}. What should I do next?`;
+  const askAiPrompt: AskPrompt = askAi
+    ? askAi
+    : {
+        en: `Help me with ${pageTitle ?? 'this page'}${pageDescription ? `: ${pageDescription}` : ''}. What should I do next?`,
+        el: `Βοήθησέ με με τη σελίδα «${pageTitleEl ?? pageTitle ?? 'αυτή'}»${pageDescriptionEl ? `: ${pageDescriptionEl}` : ''}. Τι να κάνω μετά;`,
+      };
 
   const headerShown = Boolean(pageTitle || pageDescription || actions || showAskAi || showHelp);
 

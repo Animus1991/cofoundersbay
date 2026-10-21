@@ -38,6 +38,7 @@ import {
 } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { ASK } from '@/lib/page-questions';
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
   connection: UserPlus,
@@ -551,7 +552,7 @@ export default function NotificationsPage() {
       description={notificationsEn('page_description')}
       descriptionEl={notificationsEl('page_description')}
       rail={rail}
-      askAi="I am looking at my notifications. What should I act on first — messages, connections, or matches?"
+      askAi={ASK.notifications}
     >
       <div className="">
         {/* Notification list */}
@@ -648,7 +649,7 @@ export default function NotificationsPage() {
                   </Button>
                 )}
                 <AIInsightButton
-                  prompt="I am all caught up on notifications. What should I do next on Discover, Matches, or Messages?"
+                  prompt={ASK.notificationsDone}
                   variant="outline"
                   size="sm"
                 />
