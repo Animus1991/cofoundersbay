@@ -130,6 +130,20 @@ export const EVAL_CASES: EvalCase[] = [
   // The investor board is the watchlist, the pipeline and the portfolio.
   { message: 'Show my investor board', tool: 'get_investor_board', read: true },
   { message: 'Δείξε τον πίνακα επενδύσεων', tool: 'get_investor_board', read: true },
+  // 2026-10-21, from the homes' ready questions (homeAsk.test.ts). "admin"
+  // holds the letters "dm" and proposed a message; a bare «γράψε» proposed one
+  // beside the update it asked for; «συντάξω» was not heard as a draft; the
+  // Connections page calls a pending request an intro request in both languages.
+  { message: 'What is waiting for an admin right now?', tool: 'get_graph', read: true },
+  { message: 'Τι περιμένει διαχειριστή αυτή τη στιγμή;', tool: 'get_graph', read: true },
+  { message: "Draft this month's investor update from what changed.", tool: 'draft_founder_update' },
+  { message: 'Γράψε την ενημέρωση επενδυτών αυτού του μήνα από ό,τι άλλαξε.', tool: 'draft_founder_update' },
+  { message: 'Which intro requests are waiting for me?', tool: 'get_connections', read: true },
+  { message: 'Ποια αιτήματα γνωριμίας με περιμένουν;', tool: 'get_connections', read: true },
+  { message: 'Help me draft my first need card', tool: 'draft_need_card' },
+  { message: 'Βοήθησέ με να συντάξω την πρώτη μου κάρτα ανάγκης', tool: 'draft_need_card' },  // The founder's round and leads were a page the assistant could not read.
+  { message: 'How is my fundraising going?', tool: 'get_fundraising', read: true },
+  { message: 'Πώς πάει η χρηματοδότησή μου;', tool: 'get_fundraising', read: true },
 ];
 
 /** Writes the planner may propose; a question proposing one of these fails. */

@@ -41,6 +41,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   get_shortlist: { en: 'Who is on my shortlist?', el: 'Ποιος είναι στη λίστα μου;' },
   get_research_boards: { en: 'Show my research boards', el: 'Δείξε τους πίνακες έρευνας' },
   get_investor_board: { en: 'What is on my deal board?', el: 'Τι έχω στον πίνακα επενδύσεων;' },
+  get_fundraising: { en: 'How is my fundraising going?', el: 'Πώς πάει η χρηματοδότησή μου;' },
   get_builder_state: { en: 'Show my Startup Builder workspaces', el: 'Δείξε τους χώρους Startup Builder' },
   get_profile: { en: 'Show my profile', el: 'Δείξε το προφίλ μου' },
   get_messages: { en: 'Any unread messages?', el: 'Έχω αδιάβαστα μηνύματα;' },

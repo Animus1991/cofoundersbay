@@ -127,7 +127,10 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     tool: 'get_messages',
   },
   {
-    keys: ['connection', 'my network', 'intro request', 'συνδεσ', 'αιτημα συνδεσ', 'δικτυο μου'],
+    // «Αιτήματα γνωριμίας» is what the Connections page calls a pending
+    // request, as "intro request" is in English; warm introductions are
+    // «συστάσεις γνωριμίας» (get_intros).
+    keys: ['connection', 'my network', 'intro request', 'συνδεσ', 'αιτημα συνδεσ', 'αιτηματα γνωριμιας', 'αιτημα γνωριμιας', 'δικτυο μου'],
     tool: 'get_connections',
   },
   { keys: ['event', 'meetup', 'webinar', 'workshop', 'demo day', 'εκδηλωσ'], tool: 'get_events' },
@@ -173,10 +176,11 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   { keys: ['skill evidence', 'evidence for my skill*', 'backs my skill*', 'evidence behind my skill*', 'τεκμηρια', 'τεκμηριο'], tool: 'get_skill_evidence' },
   // Founder updates: named as the kind of update, or by who wrote them.
   {
-    keys: ['founder update*', 'investor update*', 'updates from', 'people i follow', 'ενημερωσεις ιδρυτ', 'ενημερωση ιδρυτ', 'ενημερωσεις απο', 'οσους ακολουθω'],
+    keys: ['founder update*', 'investor update*', 'updates from', 'people i follow', 'ενημερωσεις ιδρυτ', 'ενημερωση ιδρυτ', 'ενημερωσεις επενδυτ', 'ενημερωση επενδυτ', 'ενημερωσεις απο', 'οσους ακολουθω'],
     tool: 'get_founder_updates',
   },
-  { keys: ['session', 'συνεδρι'], tool: 'get_mentorship_sessions' },
+  // A mentor's mentees are the people on the other side of the sessions.
+  { keys: ['session', 'mentee*', 'συνεδρι', 'καθοδηγουμεν', 'οσους καθοδηγω'], tool: 'get_mentorship_sessions' },
   {
     keys: ['saved profile', 'my shortlist', 'αποθηκευμενα προφιλ', 'αποθηκευμενους'],
     tool: 'get_shortlist',
@@ -190,6 +194,12 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   {
     keys: ['investor board', 'my pipeline', 'my watchlist', 'my portfolio', 'πινακας επενδυσεων', 'πινακα επενδυσεων', 'pipeline μου', 'χαρτοφυλακιο μου'],
     tool: 'get_investor_board',
+  },
+  // The founder's own round and leads. Narrow: "investors for my round" is a
+  // search, and "fundraising" alone is often a topic, as in "mentors for fundraising".
+  {
+    keys: ['my fundraising', 'fundraising round', 'fundraising going', 'fundraising status', 'my raise', 'investor leads', 'data room', 'round going', 'χρηματοδοτηση μου', 'χρηματοδοτησης μου', 'γυρο χρηματοδοτησης', 'γυρος χρηματοδοτησης', 'γυρου χρηματοδοτησης', 'παει ο γυρος', 'επαφες επενδυτων'],
+    tool: 'get_fundraising',
   },
   // Wave B. Each key names the area as a noun, as the ones above do.
   {
@@ -212,7 +222,7 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     tool: 'get_mentors',
   },
   {
-    keys: ['mentoring request*', 'mentorship request*', 'mentor request*', 'αιτηματα mentoring', 'αιτημα mentoring', 'αιτηματα καθοδηγησ'],
+    keys: ['mentoring request*', 'mentorship request*', 'mentor request*', 'αιτηματα mentoring', 'αιτημα mentoring', 'αιτηματα καθοδηγησ', 'αιτημα καθοδηγησ'],
     tool: 'get_mentor_requests',
   },
   { keys: ['booking*', 'booked', 'κρατησ', 'κλεισμεν'], tool: 'get_bookings' },
@@ -221,7 +231,7 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     tool: 'get_availability',
   },
   { keys: ['my service*', 'service offer*', 'my offer*', 'υπηρεσιες μου', 'προσφορες μου'], tool: 'get_services' },
-  { keys: ['inquir*', 'enquir*', 'αιτηματα πελατ', 'ερωτηματα πελατ'], tool: 'get_inquiries' },
+  { keys: ['inquir*', 'enquir*', 'αιτηματα πελατ', 'αιτημα πελατ', 'ερωτηματα πελατ'], tool: 'get_inquiries' },
   { keys: ['learning', 'course', 'tutorial', 'εκπαιδευτικ', 'μαθηματα', 'μαθημα'], tool: 'get_learning' },
   { keys: ['expert review*', 'αξιολογησεις ειδικ', 'αξιολογηση ειδικ', 'αξιολογησεων ειδικ'], tool: 'get_expert_reviews' },
   // The UI says «κύκλος» for a cohort; only the plural, because «κύκλος» alone is also a funding round.
@@ -235,7 +245,7 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     tool: 'get_platform_stats',
   },
   {
-    keys: ['moderation queue', 'open report*', 'pending report*', 'reported user*', 'ουρα ελεγχου', 'αναφορες σε αναμονη', 'ανοιχτες αναφορες'],
+    keys: ['moderation queue', 'open report*', 'pending report*', 'reported user*', 'reports waiting', 'reports to review', 'reports for review', 'ουρα ελεγχου', 'αναφορες σε αναμονη', 'ανοιχτες αναφορες', 'αναφορες για ελεγχο'],
     tool: 'get_moderation_queue',
   },
 ];
@@ -581,12 +591,25 @@ export function detectNavigateHref(message: string): { href: string; label: stri
   return fromRegistry ? { href: fromRegistry.href, label: fromRegistry.label } : undefined;
 }
 
+/**
+ * Words that are never what a person is searched by: possessives, "for",
+ * and the round a founder means when asking for investors ("investors for my
+ * round"). The role and stage are read as filters; left in the query, these
+ * made the search look for people whose profile says "my round".
+ * Compared folded and word by word, because JavaScript's \b does not see
+ * Greek letters, so a Greek word in the pattern above never matched.
+ */
+const SEARCH_FILLERS = new Set(['my', 'me', 'our', 'for', 'round', 'rounds', 'μου', 'μας', 'για', 'γυρο', 'γυρος', 'γυρου', 'τον', 'την', 'το', 'τη', 'να']);
+
 function searchQueryFromMessage(message: string): string {
   const stripped = message
-    .replace(/\b(find|search|look for|show me|βρες|βρες μου|ψάξε|δείξε|co-?founders?|technical|business|mentor|investor|στην|στον|στη|the|a|an|μου|να)\b/gi, ' ')
+    .replace(/\b(find|search|look for|show me|βρες|βρες μου|ψάξε|δείξε|co-?founders?|technical|business|mentors?|investors?|στην|στον|στη|the|a|an|μου|να)\b/gi, ' ')
     .replace(/[?!.]+/g, ' ')
     .replace(/\s+/g, ' ')
-    .trim();
+    .trim()
+    .split(' ')
+    .filter((word) => word && !SEARCH_FILLERS.has(fold(word)))
+    .join(' ');
   return stripped.slice(0, 80);
 }
 
@@ -702,6 +725,11 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'cofounder',
     'mentor',
     'investor',
+    // The same roles in Greek: «δείξε μου επενδυτές» is the request "show me
+    // investors" is, and planned nothing.
+    'συνιδρυτ',
+    'μεντορ',
+    'επενδυτ',
   ]);
 
   // A question about one match ("why do I match with Elena") is that match's
@@ -765,13 +793,14 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const asksAboutConnections = areaReads.includes('get_connections') && !explicitConnect;
   const asksAboutMessages = areaReads.includes('get_messages') && !explicitMessage;
 
+  // "intro" proposes one; "intros", the plural, is a list being asked about
+  // ("the next action among intros, matches, messages").
   const wantsConnect =
     !asksAboutConnections &&
     !areaReads.includes('get_intros') &&
     !namesCanvasSurface(message) &&
-    includesAny(message, [
+    (/\bintro(?!s\b)/.test(message) || includesAny(message, [
     'connect',
-    'intro',
     'introduction',
     'σύνδεσε',
     'συνδεσε',
@@ -779,17 +808,25 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'συνδεση',
     'στείλε intro',
     'στειλε intro',
-  ]);
+  ]));
 
-  const wantsMessage = !asksAboutMessages && includesAny(message, [
+  // "dm" is a word of its own ("dm Elena"), never the letters inside "admin",
+  // which proposed a message to someone on every question about admins.
+  // A bare «γράψε» is "write" - an update, a reply, a card - and was proposing
+  // a message beside each of them; writing to someone says to whom («γράψε
+  // στην Έλενα») or what («γράψε μήνυμα»), as "message" does in English.
+  const wantsMessage = !asksAboutMessages && (includesAny(message, [
     'message',
-    'dm',
     'chat with',
-    'γράψε',
-    'γραψε',
+    'γράψε στ',
+    'γραψε στ',
+    'γράψε μήνυμα',
+    'γραψε μηνυμα',
+    'μήνυμα στ',
+    'μηνυμα στ',
     'στείλε μήνυμα',
     'στειλε μηνυμα',
-  ]);
+  ]) || /\bdms?\b/.test(message));
 
   // "Follow Elena", «ακολούθησε την Έλενα»: the verb and a person. "Follow
   // up" is another request, and "who I follow" is a question the updates
@@ -947,7 +984,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   // Wave D drafts: "draft a milestone …", «ετοίμασε εκδήλωση …». A draft only
   // opens a filled form, so it never competes with a write; it replaces the
   // read of its own area, as the writes above do.
-  const draftVerb = includesAny(message, ['draft', 'prepare', 'fill in', 'fill out', 'ετοίμασε', 'ετοιμασε', 'πρόχειρ', 'προχειρ', 'συμπλήρωσε', 'συμπληρωσε']);
+  const draftVerb = includesAny(message, ['draft', 'prepare', 'fill in', 'fill out', 'ετοίμασε', 'ετοιμασε', 'πρόχειρ', 'προχειρ', 'συμπλήρωσε', 'συμπληρωσε', 'σύνταξ', 'συνταξ', 'συντάξ']);
   const quoted = detectQuotedName(rawMessage);
   // A need card is asked for with "write" or "make" as often as "draft".
   const needCardNoun = includesAny(message, ['need card', 'need-card', 'κάρτα ανάγκης', 'καρτα αναγκης', 'κάρτας ανάγκης', 'καρτας αναγκης']);
@@ -959,7 +996,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     includesAny(message, ['write', 'create', 'make', 'γράψε', 'γραψε', 'φτιάξε', 'φτιαξε', 'δημιούργησε', 'δημιουργησε']) ||
     (!asksQuestion && includesAny(message, ['new ', 'νέα ', 'νεα ']));
   // A founder update, like a need card, is asked for with "write" as often as "draft".
-  const updateNoun = includesAny(message, ['founder update', 'investor update', 'update for my followers', 'ενημέρωση ιδρυτ', 'ενημερωση ιδρυτ', 'ενημέρωση για τους ακολούθους', 'ενημερωση για τους ακολουθους']);
+  const updateNoun = includesAny(message, ['founder update', 'investor update', 'update for my followers', 'ενημέρωση ιδρυτ', 'ενημερωση ιδρυτ', 'ενημέρωση επενδυτ', 'ενημερωση επενδυτ', 'ενημέρωση για τους ακολούθους', 'ενημερωση για τους ακολουθους']);
   const scoutNoun = includesAny(message, ['scout brief', 'brief for the scout', 'σημείωμα ανιχνευτ', 'σημειωμα ανιχνευτ']);
   // The listings other members search: a mentor's and a service provider's.
   // Checked before the personal profile, whose nouns ("headline") they share.

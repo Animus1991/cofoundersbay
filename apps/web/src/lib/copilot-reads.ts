@@ -82,6 +82,15 @@ import { getEvidenceCandidates, getSkillEvidence } from '@/lib/skill-evidence-ap
 import { getScout, scoutReasonEl } from '@/lib/scout-api';
 import { listClaimedPerks, listPerks } from '@/lib/perks-api';
 import { getProfileViewers } from '@/lib/profile-viewers-api';
+import {
+  fmtMoney,
+  fundraisingRoundView,
+  listFundraisingDocs,
+  listFundraisingLeads,
+  readFundraisingOverlay,
+  type InvestorStatus,
+} from '@/lib/fundraising-demo';
+import { readShowSamples } from '@/contexts/DemoDataContext';
 import { statusEl } from '@/components/common/StatusText';
 import { isCardStage, PERK_CATEGORY_COPY } from '@cofounderbay/shared';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
@@ -174,6 +183,15 @@ function formatWhen(iso: string | null | undefined, locale: string | undefined, 
   }
 }
 
+/**
+ * Between the items of an inline list. In Greek the semicolon is the question
+ * mark, so «Οικονομικά από τον Builder; Cap table» read as two questions; Greek
+ * gets the middle dot the replies already use between details.
+ */
+function listSeparator(locale: string | undefined): string {
+  return locale === 'el' ? ' · ' : '; ';
+}
+
 /** A card that takes the reader to the area, so an answer always has a next step. */
 function openArea(t: Translator, href: string, title: string, description: string): CopilotAction {
   return {
@@ -210,6 +228,19 @@ const PIPELINE_STAGE_LABEL: Record<string, string> = {
   invested: 'invested',
   passed: 'passed',
 };
+/** Where a lead stands on the Fundraising board, in words. */
+/** Where a lead stands on the founderss own fundraising board, in words. */
+const LEAD_STAGE: Record<InvestorStatus, string> = {
+  prospect: 'not contacted yet',
+  contacted: 'first contact made',
+  meeting: 'in meetings',
+  dd: 'in due diligence',
+  committed: 'committed to invest',
+  passed: 'passed on it',
+};
+
+/** Furthest along first, so the reply opens with who is closest to a cheque. */
+const LEAD_ORDER: InvestorStatus[] = ['committed', 'dd', 'meeting', 'contacted', 'prospect', 'passed'];
 
 const OPPORTUNITY_TYPE: Record<string, string> = {
   job: 'Job',
@@ -755,7 +786,7 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     const actions = [openArea(t, '/profile', t('Open profile skills'), t('Skills with the work that shows them.'))];
     if (!skills.length) return { section: t('Add skills to your profile first; then link completed work to them.'), citations: [], actions };
     const lines = skills.slice(0, LIMIT * 2).map((s) => {
-      const ev = s.evidence.length ? s.evidence.map((e) => `${say(SKILL_EVIDENCE_COPY[e.kind])}: ${e.label}`).join('; ') : t('no evidence linked yet');
+      const ev = s.evidence.length ? s.evidence.map((e) => `${say(SKILL_EVIDENCE_COPY[e.kind])}: ${e.label}`).join(listSeparator(locale)) : t('no evidence linked yet');
       const ends = s.endorsements ? ` · ${t('{count} endorsements, {verified} from work done together', { count: s.endorsements, verified: s.verifiedEndorsements })}` : '';
       return `• **${s.name}** — ${ev}${ends}`;
     });
@@ -779,7 +810,7 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     if (!proposed.length) return { section: `${head}\n\n${t('Nobody proposed right now. The scout looks again tomorrow.')}`, citations: [], actions };
     const citations: CopilotCitation[] = proposed.map((p) => ({ type: 'person', id: p.person?.id ?? '', label: p.person?.displayName ?? '', href: `/profiles/${encodeURIComponent(p.person?.id ?? '')}` }));
     const reason = (r: { en: string; el: string }, location?: string | null) => (locale === 'el' ? scoutReasonEl(r.el, location, t) : say(r));
-    const lines = proposed.map((p) => `• **${p.person?.displayName ?? ''}** (${p.score}, id ${p.id}) — ${(p.reasons ?? []).map((r) => reason(r, p.person?.location)).join('; ')}`);
+    const lines = proposed.map((p) => `• **${p.person?.displayName ?? ''}** (${p.score}, id ${p.id}) — ${(p.reasons ?? []).map((r) => reason(r, p.person?.location)).join(listSeparator(locale))}`);
     return { section: `${head}\n\n${t('The scout proposes:')}\n${lines.join('\n')}`, citations, actions };
   },
 
@@ -799,7 +830,7 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
       if (open.length > LIMIT) parts.push(t('{count} more on the Perks page.', { count: open.length - LIMIT }));
     }
     if (claimed.length) {
-      parts.push(`${t('You claimed:')} ${claimed.slice(0, LIMIT).map((p) => `${p.partner} (${say(p.title, p.titleEl)})`).join('; ')}. ${t('Their codes are under Claimed on the Perks page.')}`);
+      parts.push(`${t('You claimed:')} ${claimed.slice(0, LIMIT).map((p) => `${p.partner} (${say(p.title, p.titleEl)})`).join(listSeparator(locale))}. ${t('Their codes are under Claimed on the Perks page.')}`);
     }
     return { section: parts.join('\n\n'), citations: [], actions };
   },
@@ -895,6 +926,52 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     });
 
     return { section: `${t('Your research boards:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  /**
+   * The round and the leads exactly as the Fundraising page shows them: the
+   * sample round only while samples are on, otherwise the leads the member
+   * added. The board lives in this browser, so there is nothing to fetch.
+   */
+  async get_fundraising(_args, { t, locale }) {
+    const samples = readShowSamples();
+    const all = listFundraisingLeads();
+    const created = new Set(readFundraisingOverlay().created.map((l) => l.id));
+    const leads = samples ? all : all.filter((l) => created.has(l.id));
+    const round = samples ? fundraisingRoundView(leads, Date.now()) : null;
+    const drafts = samples ? listFundraisingDocs().filter((d) => d.status === 'draft') : [];
+    const actions = [openArea(t, '/fundraising', t('Open fundraising'), t('Your round, the investors you are talking to and the data room.'))];
+    if (!round && !leads.length) {
+      return { section: t('No round and no investor leads yet. The Fundraising page is where you track them.'), citations: [], actions };
+    }
+    const el = locale === 'el';
+    const parts: string[] = [];
+    if (round) {
+      const pct = round.target ? Math.round((round.raised / round.target) * 100) : 0;
+      const line = [
+        `**${el ? round.nameEl ?? round.name : round.name}**: ${t('{raised} of {target} raised ({pct}%).', { raised: fmtMoney(round.raised, round.currency), target: fmtMoney(round.target, round.currency), pct })}`,
+      ];
+      if (round.closingDate) {
+        const days = Math.ceil((Date.parse(round.closingDate) - Date.now()) / 86_400_000);
+        line.push(days < 0 ? t('The closing date has passed.') : days === 0 ? t('Closes today.') : days === 1 ? t('Closes tomorrow.') : t('Closes in {days} days.', { days }));
+      }
+      if (round.leadInvestor) line.push(t('Lead investor: {name}.', { name: round.leadInvestor }));
+      parts.push(line.join(' '));
+    }
+    if (leads.length) {
+      const sorted = [...leads].sort((a, b) => LEAD_ORDER.indexOf(a.status) - LEAD_ORDER.indexOf(b.status));
+      const lines = sorted.slice(0, LIMIT).map((l) => {
+        const name = el ? l.nameEl ?? l.name : l.name;
+        const size = el ? l.checkSizeEl ?? l.checkSize : l.checkSize;
+        return `• **${name}** — ${t(LEAD_STAGE[l.status])}${size ? ` · ${size}` : ''}`;
+      });
+      parts.push(`${t('Investors you are talking to:')}\n${lines.join('\n')}`);
+      if (leads.length > LIMIT) parts.push(t('{count} more on the Fundraising page.', { count: leads.length - LIMIT }));
+    }
+    if (drafts.length) {
+      parts.push(`${t('Data-room documents still in draft:')} ${drafts.slice(0, LIMIT).map((d) => (el ? d.nameEl ?? d.name : d.name)).join(listSeparator(locale))}.`);
+    }
+    return { section: parts.join('\n\n'), citations: [], actions };
   },
 
   async get_builder_state(_args, { t }) {

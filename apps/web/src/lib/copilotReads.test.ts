@@ -261,6 +261,43 @@ describe('reading Startup Builder workspaces', () => {
   });
 });
 
+describe('reading the founder fundraising board', () => {
+  beforeEach(() => {
+    window.localStorage.removeItem('cfb_show_samples');
+    window.sessionStorage.removeItem('cfb:demo-fundraising');
+  });
+
+  it('reads the sample round and its leads, furthest along first, while samples are on', async () => {
+    window.localStorage.setItem('cfb_show_samples', '1');
+    const read = await AREA_READERS.get_fundraising({}, en);
+    expect(read.section).toContain('**Harbor $750K seed**: $375K of $750K raised (50%).');
+    expect(read.section).toMatch(/Closes (in \d+ days|tomorrow|today)\./);
+    expect(read.section).toContain('Lead investor: Athens Tech Angels.');
+    const leads = read.section.split('Investors you are talking to:')[1] ?? '';
+    expect(leads.indexOf('Athens Tech Angels')).toBeLessThan(leads.indexOf('Remaining $375K'));
+    expect(read.section).toContain('committed to invest');
+    expect(read.section).toContain('Data-room documents still in draft:');
+    expect(read.actions).toEqual([expect.objectContaining({ tool: 'navigate', href: '/fundraising' })]);
+  });
+
+  it('answers in Greek with the Greek names', async () => {
+    window.localStorage.setItem('cfb_show_samples', '1');
+    const read = await AREA_READERS.get_fundraising({}, el);
+    expect(read.section).toContain('**Γύρος Harbor $750K**: Έχουν συγκεντρωθεί $375K από $750K (50%).');
+    expect(read.section).toContain('Επενδυτές με τους οποίους μιλάτε:');
+    expect(read.section).toContain('δεσμεύτηκε να επενδύσει');
+    expect(read.section).not.toContain('committed to invest');
+    // In Greek the semicolon is the question mark: a list joined with it reads as questions.
+    expect(read.section).not.toContain(';');
+  });
+
+  it('says there is nothing yet when samples are off and the member added no lead', async () => {
+    const read = await AREA_READERS.get_fundraising({}, en);
+    expect(read.section).toMatch(/^No round and no investor leads yet\./);
+    expect(read.section).not.toContain('Harbor');
+  });
+});
+
 describe('a read the model asks for', () => {
   it('runs through the engine when passed as tools, without planning from the message', async () => {
     vi.mocked(listJobs).mockResolvedValue({

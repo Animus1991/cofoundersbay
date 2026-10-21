@@ -43,6 +43,16 @@ function readPreference(): boolean {
   return isPreviewDemo() ? stored !== '0' : stored === '1';
 }
 
+/**
+ * The same switch, read outside React: the assistant answers about an area
+ * with what that page shows, and the Fundraising page shows its sample round
+ * only while samples are on. Always false on the server.
+ */
+export function readShowSamples(): boolean {
+  if (typeof window === 'undefined') return false;
+  return readPreference();
+}
+
 function writePreference(value: boolean) {
   try {
     window.localStorage.setItem(STORAGE_KEY, value ? '1' : '0');

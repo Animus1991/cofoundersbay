@@ -44,7 +44,9 @@ import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PROGRAMS_STRINGS, programsEn, programsEl } from '@/lib/i18n/strings-programs';
 import type { BilingualPair } from '@/lib/i18n/types';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { PROGRAMS_QUESTION } from '@/lib/page-questions';
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
@@ -382,6 +384,14 @@ function ProgramSkeleton() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ProgramsPage() {
+  const sayOne = useBilingualString();
+  const popup = usePopupChatOptional();
+  const askRouter = useRouter();
+  // The in-page assistant where there is one, the full page otherwise.
+  const askAssistant = (question: string) => {
+    if (popup) popup.ask(question);
+    else askRouter.push(`/ai?q=${encodeURIComponent(question)}`);
+  };
   const { success, error: toastError } = useToast();
   const qc = useQueryClient();
   const router = useRouter();
@@ -735,6 +745,26 @@ export default function ProgramsPage() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* The second way in, after the list (docs §64.5 #3, §62.5 #9): the
+            assistant reads the same programmes (get_programs) and can say
+            which fit, from the reader's own profile. */}
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="min-w-0 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">
+              <BilingualText en="Not sure which fits?" el="Δεν ξέρετε ποιο ταιριάζει;" compact />
+            </span>
+            {' · '}
+            <BilingualText
+              en="The assistant reads the open programmes and tells you which suit your stage and goals."
+              el="Ο βοηθός διαβάζει τα ανοιχτά προγράμματα και σας λέει ποια ταιριάζουν στο στάδιο και τους στόχους σας."
+              wrap
+            />
+          </p>
+          <Button variant="outline" size="sm" className="shrink-0 self-start sm:self-auto" onClick={() => askAssistant(sayOne(PROGRAMS_QUESTION.en, PROGRAMS_QUESTION.el))}>
+            <BilingualText en="Find with the assistant" el="Βρείτε με τον βοηθό" compact />
+          </Button>
+        </div>
       </div>
 
       <ApplyModal

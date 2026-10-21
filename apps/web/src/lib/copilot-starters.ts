@@ -141,6 +141,7 @@ export const PAGE_STARTERS: Record<string, PageStarter[]> = {
   '/readiness': [read('How investor ready is my startup?', 'Πόσο καλή είναι η ετοιμότητα της startup μου;', 'gauge', 'get_readiness')],
   '/mentoring': [read('Which mentors are available for sessions?', 'Ποιοι μέντορες είναι διαθέσιμοι;', 'mentor', 'get_mentors')],
   '/discover': [read('Find a technical cofounder in Athens', 'Βρες τεχνικό συνιδρυτή στην Αθήνα', 'people', 'search_people')],
+  '/fundraising': [read('How is my fundraising going?', 'Πώς πάει η χρηματοδότησή μου;', 'wallet', 'get_fundraising')],
 };
 
 /** The starters for a path: its own entry, or the nearest parent's ("/matches/u1" reads "/matches"). */

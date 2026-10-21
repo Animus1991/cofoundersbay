@@ -367,6 +367,17 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_fundraising',
+    kind: 'read',
+    label: { en: 'Read your fundraising', el: 'Ανάγνωση της χρηματοδότησής σας' },
+    description: {
+      en: 'Read the signed-in founder’s fundraising as the Fundraising page holds it: the round (raised, target, when it closes), the investors at each stage, and the data-room documents still in draft. The page keeps it in this browser for now, so this reads the same thing the page shows.',
+      el: 'Διαβάζει τη χρηματοδότηση του ιδρυτή όπως την κρατά η σελίδα Χρηματοδότηση: τον γύρο (συγκεντρωμένα, στόχος, πότε κλείνει), τους επενδυτές σε κάθε στάδιο και τα έγγραφα του data room που είναι ακόμη πρόχειρα. Η σελίδα τα κρατά προς το παρόν σε αυτόν τον browser, οπότε διαβάζεται ό,τι δείχνει η σελίδα.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     id: 'get_builder_state',
     kind: 'read',
     label: { en: 'Read your Startup Builder workspaces', el: 'Ανάγνωση των χώρων Startup Builder' },

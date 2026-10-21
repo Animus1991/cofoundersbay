@@ -148,7 +148,7 @@ describe('HomeAskHero', () => {
     expect(screen.getByRole('button', { name: /^Unread messages/ }).textContent).toContain('3');
     expect(screen.queryByRole('button', { name: /^Notifications/ })).toBeNull();
     fireEvent.click(intros);
-    expect(state.ask).toHaveBeenCalledWith('Who has asked me for an intro, and how should I answer each one?');
+    expect(state.ask).toHaveBeenCalledWith('Which intro requests are waiting for me, and how should I answer each one?');
   });
 
   it('shows nothing extra when nothing waits', () => {
