@@ -723,7 +723,9 @@ export class MatchingService {
         ? await this.prisma.matchModelVersion.findUnique({ where: { version: modelVersion } })
         : await this.prisma.matchModelVersion.findFirst({ where: { isActive: true } });
       if (model?.weights) return model.weights as typeof DEFAULT_WEIGHTS;
-    } catch {}
+    } catch {
+      // Model lookup is best-effort; invalid or missing weights fall back to defaults.
+    }
     return DEFAULT_WEIGHTS;
   }
 

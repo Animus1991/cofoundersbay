@@ -2,6 +2,7 @@
 
 import { StatusText } from '@/components/common/StatusText';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -186,12 +187,12 @@ export default function SharePage() {
       });
 
       if (result.requiresPassword && !pwd) {
-        setLinkInfo(result as any);
+        setLinkInfo(result as ShareLinkValidation);
         setStep('password');
         return;
       }
 
-      setLinkInfo(result as any);
+      setLinkInfo(result as ShareLinkValidation);
       if (result.document) {
         setDocument(result.document);
         setStep('loaded');
@@ -479,9 +480,9 @@ export default function SharePage() {
       {/* Footer */}
       <footer className="border-t mt-12 py-6 text-center text-xs text-muted-foreground">
         Shared via{' '}
-        <a href="/" className="text-primary-accessible hover:underline font-medium">
+        <Link href="/" className="text-primary-accessible hover:underline font-medium">
           CoFounderBay
-        </a>{' '}
+        </Link>{' '}
         — Startup Builder Platform
       </footer>
     </MainLandmark>

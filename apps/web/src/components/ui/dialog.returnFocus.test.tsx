@@ -17,7 +17,7 @@ function Harness({ autoFocusField = false }: { autoFocusField?: boolean }) {
         <DialogContent>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>Change things</DialogDescription>
-          {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
+          { }
           <input aria-label="Name" autoFocus={autoFocusField} />
         </DialogContent>
       </Dialog>

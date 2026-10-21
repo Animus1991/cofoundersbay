@@ -613,7 +613,7 @@ export default function LearningPage() {
       )}
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-4">
         <TabsList>
           <TabsTrigger value="all">
             <BilingualText en={learningEn('tab_all')} el={learningEl('tab_all')} compact />

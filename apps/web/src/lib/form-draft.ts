@@ -102,7 +102,7 @@ export function useFormDraft(
   const applyRef = useRef(apply);
   applyRef.current = apply;
 
-  const use = useCallback((bundle: { fields: FormDraftFields; prompt?: string } | null) => {
+  const applyBundle = useCallback((bundle: { fields: FormDraftFields; prompt?: string } | null) => {
     if (!bundle || Object.keys(bundle.fields).length === 0) return;
     applyRef.current(bundle.fields);
     setFilled(Object.keys(bundle.fields));
@@ -111,14 +111,14 @@ export function useFormDraft(
 
   useEffect(() => {
     if (!ready) return;
-    use(takeBundle(id, Date.now()));
+    applyBundle(takeBundle(id, Date.now()));
     const onDraft = (event: Event) => {
       const detail = (event as CustomEvent<{ id: FormDraftId }>).detail;
-      if (detail?.id === id) use(takeBundle(id, Date.now()));
+      if (detail?.id === id) applyBundle(takeBundle(id, Date.now()));
     };
     window.addEventListener(EVENT, onDraft);
     return () => window.removeEventListener(EVENT, onDraft);
-  }, [id, ready, use]);
+  }, [id, ready, applyBundle]);
 
   return { filled, prompt, dismiss: () => { setFilled([]); setPrompt(''); } };
 }

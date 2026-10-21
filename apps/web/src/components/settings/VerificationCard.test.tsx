@@ -60,14 +60,15 @@ describe('the ladder’s verification gate (demo world)', () => {
     renderWithQuery(<ThreadWorkspace threadId="thr-harbor-alex" />);
     expect(await screen.findAllByText(/Verify yourself once to propose or accept terms/)).toBeTruthy();
     expect(screen.getByRole('link', { name: /Verify in Settings/ }).getAttribute('href')).toBe('/settings#verification');
-    let error: any;
+    let error: unknown;
     try {
       previewCommitmentsApi('/api/commitments/threads/thr-harbor-alex/terms', '/api/commitments/threads/thr-harbor-alex/terms', 'POST', { role: 'Co-founder', equityPct: 9, vestingMonths: 48, cliffMonths: 12, hoursPerWeek: 40, scope: 'Sales' }, NOW);
     } catch (e) {
       error = e;
     }
-    expect(error?.details?.reason).toBe('verification_required');
-    expect(error?.details?.messageEl).toMatch(/Επαληθευτείτε/);
+    const details = (error as { details?: { reason?: string; messageEl?: string } } | undefined)?.details;
+    expect(details?.reason).toBe('verification_required');
+    expect(details?.messageEl).toMatch(/Επαληθευτείτε/);
   });
 
   it('shows the other side’s verification as a badge', async () => {

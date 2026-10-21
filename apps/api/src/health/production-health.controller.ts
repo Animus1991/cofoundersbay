@@ -1,4 +1,4 @@
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { CacheService } from '../common/cache/cache.service';
@@ -108,7 +108,7 @@ export class ProductionHealthController {
   private async checkSearch() {
     try {
       const start = Date.now();
-      const searchConfig = this.configService.get('app.search');
+
       const responseTime = Date.now() - start;
       return { status: 'healthy', responseTime };
     } catch (error) {
@@ -122,7 +122,7 @@ export class ProductionHealthController {
   private async checkStorage() {
     try {
       const start = Date.now();
-      const storageConfig = this.configService.get('app.storage');
+
       const responseTime = Date.now() - start;
       return { status: 'healthy', responseTime };
     } catch (error) {

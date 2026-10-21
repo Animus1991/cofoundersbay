@@ -58,7 +58,7 @@ export interface BuilderSocketEvents {
     odId: string;
     odName: string;
     sectionKey: string;
-    content: Record<string, any>;
+    content: Record<string, unknown>;
     timestamp: number;
   }) => void;
 
@@ -98,7 +98,7 @@ export interface BuilderSocketEvents {
     action: string;
     entityType: string;
     entityId: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     timestamp: string;
   }) => void;
 }
@@ -276,7 +276,7 @@ export function useBuilderSocket(events?: BuilderSocketEvents) {
   );
 
   const updateSection = useCallback(
-    (documentId: string, sectionKey: string, content: Record<string, any>) => {
+    (documentId: string, sectionKey: string, content: Record<string, unknown>) => {
       socketRef.current?.emit('section:update', { documentId, sectionKey, content, timestamp: Date.now() });
     },
     [],
@@ -318,7 +318,7 @@ export function useBuilderSocket(events?: BuilderSocketEvents) {
       action: string;
       entityType: string;
       entityId: string;
-      metadata?: Record<string, any>;
+      metadata?: Record<string, unknown>;
     }) => {
       socketRef.current?.emit('activity:broadcast', data);
     },

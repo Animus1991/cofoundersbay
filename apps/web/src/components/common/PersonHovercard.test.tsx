@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import Link from 'next/link';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PersonHovercard } from './PersonHovercard';
@@ -18,7 +19,7 @@ function renderCard() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <PersonHovercard userId="user-marcus"><a href="/profiles/user-marcus">Marcus Chen</a></PersonHovercard>
+      <PersonHovercard userId="user-marcus"><Link href="/profiles/user-marcus">Marcus Chen</Link></PersonHovercard>
     </QueryClientProvider>,
   );
 }

@@ -177,7 +177,7 @@ export class AIController {
         ...(review.accepted.length ? { toolCalls: review.accepted } : {}),
         ...(review.rejected.length ? { rejectedToolCalls: review.rejected } : {}),
       };
-    } catch (err: any) {
+    } catch {
       isFallback = true;
       const fallbackMsg = this.getFallbackResponse(dto.message, dto.agentId);
       usedModel = 'fallback';
@@ -296,7 +296,7 @@ export class AIController {
         })}\n\n`,
       );
       res.end();
-    } catch (err: any) {
+    } catch {
       isFallback = true;
       const fallback = this.getFallbackResponse(dto.message, dto.agentId);
       res.write(`data: ${JSON.stringify({ chunk: fallback, done: true, fallback: true })}\n\n`);
@@ -500,7 +500,7 @@ export class AIController {
     }
   }
 
-  private getFallbackResponse(query: string, agentId?: string): string {
+  private getFallbackResponse(query: string, _agentId?: string): string {
     const lower = query.toLowerCase();
     
     if (lower.includes('help') || lower.includes('what can you')) {

@@ -54,7 +54,7 @@ export interface BuilderWorkspace {
   stage?: string;
   targetMarket?: string;
   foundingDate?: string;
-  settings?: Record<string, any>;
+  settings?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
   owner: {
@@ -76,7 +76,7 @@ export interface BuilderDocument {
   type: BuilderDocumentType;
   title: string;
   description?: string;
-  content: Record<string, any>;
+  content: Record<string, unknown>;
   status: BuilderDocumentStatus;
   completionPercent: number;
   aiGenerated: boolean;
@@ -93,11 +93,11 @@ export interface BuilderDocumentSection {
   sectionKey: string;
   sectionTitle: string;
   sortOrder: number;
-  content: Record<string, any>;
+  content: Record<string, unknown>;
   isComplete: boolean;
   confidence?: number;
   aiGenerated: boolean;
-  aiSuggestions?: Record<string, any>;
+  aiSuggestions?: Record<string, unknown>;
 }
 
 export interface BuilderCollaborator {
@@ -225,7 +225,7 @@ export interface ApplicationTemplate {
 }
 
 export interface AIGenerationResult {
-  content: Record<string, any>;
+  content: Record<string, unknown>;
   tokensUsed: number;
   latencyMs: number;
   model: string;
@@ -237,8 +237,8 @@ export interface BuilderActivityLog {
   action: string;
   entityType?: string;
   entityId?: string;
-  changes?: Record<string, any>;
-  metadata?: Record<string, any>;
+  changes?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   user?: {
     id: string;
@@ -270,7 +270,7 @@ export async function createWorkspace(data: {
   stage?: string;
   targetMarket?: string;
   visibility?: BuilderWorkspaceVisibility;
-  settings?: Record<string, any>;
+  settings?: Record<string, unknown>;
 }): Promise<BuilderWorkspace> {
   return api.post('/builder/workspaces', data);
 }
@@ -311,7 +311,7 @@ export async function updateWorkspace(
     stage?: string;
     targetMarket?: string;
     foundingDate?: string;
-    settings?: Record<string, any>;
+    settings?: Record<string, unknown>;
   },
 ): Promise<BuilderWorkspace> {
   return api.put(`/builder/workspaces/${workspaceId}`, data);
@@ -342,7 +342,7 @@ export async function createDocument(data: {
   type: BuilderDocumentType;
   title: string;
   description?: string;
-  content?: Record<string, any>;
+  content?: Record<string, unknown>;
   templateId?: string;
 }): Promise<BuilderDocument> {
   return api.post('/builder/documents', data);
@@ -357,7 +357,7 @@ export async function updateDocument(
   data: {
     title?: string;
     description?: string;
-    content?: Record<string, any>;
+    content?: Record<string, unknown>;
     status?: BuilderDocumentStatus;
     completionPercent?: number;
   },
@@ -370,7 +370,7 @@ export async function updateDocumentSection(
   sectionKey: string,
   data: {
     sectionTitle?: string;
-    content?: Record<string, any>;
+    content?: Record<string, unknown>;
     isComplete?: boolean;
     confidence?: number;
   },
@@ -562,7 +562,7 @@ export async function generateContent(data: {
   workspaceId: string;
   documentType: BuilderDocumentType;
   sectionKey?: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   customPrompt?: string;
   model?: string;
   temperature?: number;
@@ -574,15 +574,15 @@ export async function generateSection(data: {
   workspaceId: string;
   documentType: BuilderDocumentType;
   sectionKey: string;
-  context?: Record<string, any>;
-}): Promise<Record<string, any>> {
+  context?: Record<string, unknown>;
+}): Promise<Record<string, unknown>> {
   return api.post('/builder/ai/generate-section', data);
 }
 
 export async function generateApplicationAnswer(data: {
   workspaceId: string;
   question: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }): Promise<{ answer: string }> {
   return api.post('/builder/ai/generate-application-answer', data);
 }

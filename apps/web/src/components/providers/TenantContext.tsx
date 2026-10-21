@@ -210,7 +210,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
   const domainBranding: TenantBranding | null = useMemo(() => {
     if (domainCtx.type === 'subdomain' && subdomainTenantData) {
-      return (subdomainTenantData as any).branding as TenantBranding | null ?? null;
+      return (subdomainTenantData as { branding?: TenantBranding | null }).branding ?? null;
     }
     if (domainCtx.type === 'custom' && customDomainData?.branding) {
       return customDomainData.branding as unknown as TenantBranding;
@@ -219,7 +219,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   }, [domainCtx.type, subdomainTenantData, customDomainData]);
 
   const activeTenant = domainTenant ?? membershipActiveTenant;
-  const branding: TenantBranding | null = domainBranding ?? ((activeTenant as any)?.branding as TenantBranding | null ?? null);
+  const branding: TenantBranding | null = domainBranding ?? ((activeTenant as { branding?: TenantBranding | null } | null | undefined)?.branding ?? null);
 
   const isLoading = domainCtx.type === 'subdomain'
     ? subdomainLoading

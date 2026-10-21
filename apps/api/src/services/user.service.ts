@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CacheService } from '../common/cache/cache.service';
-import { BusinessErrorException } from '../common/errors/business-error.exception';
+
 import { User, Profile } from '@prisma/client';
 
 export interface CreateUserData {
@@ -34,7 +34,7 @@ export class UserService {
    * Create a new user with optional profile
    */
   async createUser(data: CreateUserData): Promise<User> {
-    const cacheKey = `user:email:${data.email}`;
+
     
     // Check if user already exists
     const existingUser = await this.getUserByEmail(data.email);

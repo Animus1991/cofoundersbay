@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Post, Query, Req, Res, UseGuards, BadRequestException } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { Throttle, SkipThrottle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import { ZodError } from 'zod';
 import { AuthService, TokenPair } from './auth.service';
 import { VerificationService } from './verification.service';
-import { registerSchema, loginSchema, refreshSchema } from '@cofounderbay/shared';
+import { registerSchema, loginSchema } from '@cofounderbay/shared';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { setAuthCookies, clearAuthCookies, COOKIE_NAMES } from './cookie.utils';

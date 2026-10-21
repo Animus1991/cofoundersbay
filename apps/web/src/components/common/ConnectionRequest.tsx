@@ -179,7 +179,7 @@ export function ConnectionRequestDialog({
           <p className="font-medium text-foreground mb-1">Tips for a great intro:</p>
           <ul className="space-y-1 list-disc list-inside">
             <li>Mention specific interests or skills you share</li>
-            <li>Explain why you think you'd be a good match</li>
+            <li>Explain why you think you&apos;d be a good match</li>
             <li>Keep it concise but personal</li>
           </ul>
         </div>

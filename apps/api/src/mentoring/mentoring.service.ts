@@ -295,7 +295,7 @@ export class MentoringService {
     const tz = booking.timezone ?? 'UTC';
     const meetingUrl = booking.meetingUrl ?? 'To be provided';
 
-    const emailHtml = (recipientName: string, otherName: string, role: 'mentor' | 'mentee') => `
+    const emailHtml = (recipientName: string, otherName: string, _role: 'mentor' | 'mentee') => `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #6366f1;">Mentoring Session Confirmed!</h2>
         <p>Hi ${recipientName},</p>

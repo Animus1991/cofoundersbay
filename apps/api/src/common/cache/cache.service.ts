@@ -148,7 +148,7 @@ export class CacheService {
     const cacheKey = this.buildKey(key, options);
     
     // Try to get from cache first
-    let cached = await this.get<T>(cacheKey);
+    const cached = await this.get<T>(cacheKey);
     if (cached !== null) {
       return cached;
     }
@@ -179,7 +179,7 @@ export class CacheService {
     const cacheKey = this.buildKey(key, options);
     
     // Try to get from cache first
-    let cached = await this.get<T>(cacheKey);
+    const cached = await this.get<T>(cacheKey);
     if (cached !== null) {
       return cached;
     }

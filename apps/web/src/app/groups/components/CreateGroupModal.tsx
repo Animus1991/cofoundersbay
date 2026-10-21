@@ -5,7 +5,7 @@ import { Loader2, Globe, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import { cn, errorMessage } from '@/lib/utils';
 import { createGroup, type GroupPrivacy } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -56,8 +56,8 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
       });
       success('Group created!', `"${form.name}" is ready.`);
       onCreated();
-    } catch (err: any) {
-      toastError('Error', err?.message ?? 'Failed to create group.');
+    } catch (err) {
+      toastError('Error', errorMessage(err, 'Failed to create group.'));
     } finally {
       setLoading(false);
     }

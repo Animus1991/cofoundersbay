@@ -2,7 +2,6 @@ import {
   PipeTransform,
   Injectable,
   ArgumentMetadata,
-  BadRequestException,
 } from '@nestjs/common';
 import { ZodSchema } from 'zod';
 import { BusinessError } from '../errors/business-error.exception';
@@ -11,7 +10,7 @@ import { BusinessError } from '../errors/business-error.exception';
 export class ValidationPipe implements PipeTransform {
   constructor(private readonly schema: ZodSchema) {}
 
-  transform(value: unknown, metadata: ArgumentMetadata) {
+  transform(value: unknown, _metadata: ArgumentMetadata) {
     try {
       return this.schema.parse(value);
     } catch (error) {

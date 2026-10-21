@@ -49,7 +49,7 @@ describe('the scout demo', () => {
   });
 
   it('refuses a brief without a role, in both languages', () => {
-    let caught: any;
+    let caught: unknown;
     try {
       scout('/api/scout/brief', 'PUT', { role: '' });
     } catch (err) {

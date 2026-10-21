@@ -1726,7 +1726,7 @@ export default function ResearchBoardPage() {
         else if (file.type.includes('word') || file.type.includes('text')) type = 'document';
 
         await createNodeMutation.mutateAsync({
-          type: type as any, // Cast to satisfy type checking
+          type,
           title: file.name,
           uploadId: upload.id,
           url: upload.url,

@@ -37,7 +37,7 @@ interface Recommendation {
   matchReasons: string[];
   location?: string;
   tags?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export function SmartRecommendations() {

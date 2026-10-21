@@ -945,7 +945,7 @@ export default function ProfileEditPage() {
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"><BilingualText en="Suggested Headline" el="Προτεινόμενος τίτλος" compact /></p>
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                               <p className="text-sm text-foreground flex-1 bg-background/80 rounded-lg px-4 py-2.5 border border-border italic">
-                                "{aiSuggestions.headline}"
+                                &quot;{aiSuggestions.headline}&quot;
                               </p>
                               <Button size="sm" variant="secondary" className="shrink-0 gap-1.5 w-full sm:w-auto"
                                 onClick={() => { updateField('headline', aiSuggestions.headline!); }}>

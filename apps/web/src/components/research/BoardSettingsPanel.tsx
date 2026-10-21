@@ -319,7 +319,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
             <Settings className="icon-sm" />
             Board Settings
           </DialogTitle>
-          <DialogDescription>Manage visibility and collaborators for "{board.title}"</DialogDescription>
+          <DialogDescription>Manage visibility and collaborators for &quot;{board.title}&quot;</DialogDescription>
         </DialogHeader>
 
         {/* Tabs */}

@@ -356,7 +356,7 @@ export class SecurityService {
         .digest('hex');
       
       return timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(computedHash, 'hex'));
-    } catch (error) {
+    } catch {
       return false;
     }
   }

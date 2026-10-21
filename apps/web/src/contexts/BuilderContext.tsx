@@ -10,6 +10,9 @@ import {
   ReadinessAssessment,
   BuilderApplication,
   BuilderDocumentType,
+  BuilderCollaboratorRole,
+  ReadinessDimension,
+  ApplicationTemplateType,
   AIGenerationResult,
 } from '@/lib/builder-api';
 import { useBuilderSocket, CollaboratorPresence } from '@/hooks/useBuilderSocket';
@@ -59,7 +62,7 @@ interface BuilderContextValue extends BuilderState {
   createDocument: (type: BuilderDocumentType, title: string) => Promise<BuilderDocument>;
   selectDocument: (documentId: string) => Promise<void>;
   updateDocument: (documentId: string, data: Partial<BuilderDocument>) => Promise<void>;
-  updateDocumentSection: (documentId: string, sectionKey: string, content: Record<string, any>) => Promise<void>;
+  updateDocumentSection: (documentId: string, sectionKey: string, content: Record<string, unknown>) => Promise<void>;
   deleteDocument: (documentId: string) => Promise<void>;
 
   // Collaborator actions
@@ -82,14 +85,14 @@ interface BuilderContextValue extends BuilderState {
   updateApplication: (applicationId: string, answers: Record<string, string>) => Promise<void>;
 
   // AI actions
-  generateContent: (documentType: BuilderDocumentType, sectionKey?: string, context?: Record<string, any>) => Promise<AIGenerationResult>;
-  generateApplicationAnswer: (question: string, context?: Record<string, any>) => Promise<string>;
+  generateContent: (documentType: BuilderDocumentType, sectionKey?: string, context?: Record<string, unknown>) => Promise<AIGenerationResult>;
+  generateApplicationAnswer: (question: string, context?: Record<string, unknown>) => Promise<string>;
   improveContent: (content: string, documentType: BuilderDocumentType, feedback?: string) => Promise<string>;
 
   // Real-time actions
   startTyping: (sectionKey?: string) => void;
   stopTyping: (sectionKey?: string) => void;
-  broadcastSectionUpdate: (sectionKey: string, content: Record<string, any>) => void;
+  broadcastSectionUpdate: (sectionKey: string, content: Record<string, unknown>) => void;
 
   // Utility
   clearError: () => void;
@@ -399,11 +402,11 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
     }
   }, []);
 
-  const updateDocumentSection = useCallback(async (documentId: string, sectionKey: string, content: Record<string, any>) => {
+  const updateDocumentSection = useCallback(async (documentId: string, sectionKey: string, content: Record<string, unknown>) => {
     try {
       await builderApi.updateDocumentSection(documentId, sectionKey, { content });
       setState((prev) => {
-        const mergeContent = (existing?: Record<string, any>) => ({
+        const mergeContent = (existing?: Record<string, unknown>) => ({
           ...(existing ?? {}),
           [sectionKey]: content,
         });
@@ -479,7 +482,7 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
     try {
       const collaborator = await builderApi.addCollaborator(state.workspace.id, {
         userId,
-        role: role as any,
+        role: role as BuilderCollaboratorRole,
       });
       setState((prev) => ({
         ...prev,
@@ -581,7 +584,7 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
     if (!state.workspace) return;
     try {
       await builderApi.updateReadinessCriterion(state.workspace.id, {
-        dimension: dimension as any,
+        dimension: dimension as ReadinessDimension,
         criterionId,
         completed,
       });
@@ -617,7 +620,7 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
     try {
       const application = await builderApi.createApplication({
         workspaceId: state.workspace.id,
-        templateType: templateType as any,
+        templateType: templateType as ApplicationTemplateType,
         templateName,
       });
       setState((prev) => ({
@@ -653,7 +656,7 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
   // AI Actions
   // ─────────────────────────────────────────────────────────────────────────────
 
-  const generateContent = useCallback(async (documentType: BuilderDocumentType, sectionKey?: string, context?: Record<string, any>) => {
+  const generateContent = useCallback(async (documentType: BuilderDocumentType, sectionKey?: string, context?: Record<string, unknown>) => {
     if (!state.workspace) throw new Error('No workspace selected');
     setState((prev) => ({ ...prev, isGenerating: true, error: null }));
     try {
@@ -679,7 +682,7 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
     }
   }, [state.workspace]);
 
-  const generateApplicationAnswer = useCallback(async (question: string, context?: Record<string, any>) => {
+  const generateApplicationAnswer = useCallback(async (question: string, context?: Record<string, unknown>) => {
     if (!state.workspace) throw new Error('No workspace selected');
     setState((prev) => ({ ...prev, isGenerating: true }));
     try {
@@ -732,7 +735,7 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
     }
   }, [socket, state.activeDocument]);
 
-  const broadcastSectionUpdate = useCallback((sectionKey: string, content: Record<string, any>) => {
+  const broadcastSectionUpdate = useCallback((sectionKey: string, content: Record<string, unknown>) => {
     if (state.activeDocument) {
       socket.updateSection(state.activeDocument.id, sectionKey, content);
     }

@@ -269,7 +269,7 @@ export class ExperimentationService {
     ]);
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 3_600_000);
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 3_600_000);
+
 
     const computeGroupMetrics = async (
       assignments: Record<string, unknown>[],

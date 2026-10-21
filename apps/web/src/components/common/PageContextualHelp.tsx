@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import Link from 'next/link';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { HelpCallout } from '@/components/common/HelpCallout';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -229,23 +230,23 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Use Discover to <strong>browse</strong> with filters; use <a href="/matches">Matches</a> to see{' '}
+          Use Discover to <strong>browse</strong> with filters; use <Link href="/matches">Matches</Link> to see{' '}
           <strong>ranked</strong> suggestions. Combine role + skills + location to find specific profiles.
         </p>
         <p>
-          Bookmark interesting people to <a href="/shortlist">Saved</a> and send a Connect request when ready.
+          Bookmark interesting people to <Link href="/shortlist">Saved</Link> and send a Connect request when ready.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Η Εξερεύνηση είναι για <strong>περιήγηση</strong> με φίλτρα· οι <a href="/matches">Αντιστοιχίσεις</a>{' '}
+          Η Εξερεύνηση είναι για <strong>περιήγηση</strong> με φίλτρα· οι <Link href="/matches">Αντιστοιχίσεις</Link>{' '}
           δίνουν <strong>καταταγμένες</strong> προτάσεις. Συνδυάστε ρόλο, δεξιότητες και τοποθεσία για πιο
           στοχευμένα προφίλ.
         </p>
         <p>
-          Αποθηκεύστε όσους σας ενδιαφέρουν στα <a href="/shortlist">Αποθηκευμένα</a> και στείλτε αίτημα σύνδεσης
+          Αποθηκεύστε όσους σας ενδιαφέρουν στα <Link href="/shortlist">Αποθηκευμένα</Link> και στείλτε αίτημα σύνδεσης
           όταν είστε έτοιμοι.
         </p>
       </>
@@ -318,7 +319,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           message, schedule a call, or remove from the menu.
         </p>
         <p>
-          Saved profiles you have not yet contacted live in <a href="/shortlist">Saved profiles</a>.
+          Saved profiles you have not yet contacted live in <Link href="/shortlist">Saved profiles</Link>.
         </p>
       </>
     ),
@@ -330,7 +331,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Τα προφίλ που αποθηκεύσατε χωρίς να επικοινωνήσετε ακόμη βρίσκονται στα{' '}
-          <a href="/shortlist">Αποθηκευμένα προφίλ</a>.
+          <Link href="/shortlist">Αποθηκευμένα προφίλ</Link>.
         </p>
       </>
     ),
@@ -372,7 +373,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           For privacy-sensitive actions (export data, delete account), see{' '}
-          <a href="/settings/data-export">Data export</a>.
+          <Link href="/settings/data-export">Data export</Link>.
         </p>
       </>
     ),
@@ -384,7 +385,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Για ενέργειες που αφορούν προσωπικά δεδομένα (εξαγωγή δεδομένων, διαγραφή λογαριασμού) δείτε την{' '}
-          <a href="/settings/data-export">Εξαγωγή δεδομένων</a>.
+          <Link href="/settings/data-export">Εξαγωγή δεδομένων</Link>.
         </p>
       </>
     ),
@@ -498,9 +499,9 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           and job postings, and the role distribution chart. Counts here cover every tenant, not one community.
         </p>
         <p>
-          Each card links to the specialised screen — <a href="/admin/user-management">User management</a> for bulk
-          actions and filters, <a href="/admin/content-moderation">Content moderation</a> for the report queue, and{' '}
-          <a href="/admin/security-monitoring">Security monitoring</a> for auth anomalies.
+          Each card links to the specialised screen — <Link href="/admin/user-management">User management</Link> for bulk
+          actions and filters, <Link href="/admin/content-moderation">Content moderation</Link> for the report queue, and{' '}
+          <Link href="/admin/security-monitoring">Security monitoring</Link> for auth anomalies.
         </p>
       </>
     ),
@@ -512,9 +513,9 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           όχι μία κοινότητα.
         </p>
         <p>
-          Κάθε κάρτα οδηγεί στην εξειδικευμένη οθόνη — <a href="/admin/user-management">Διαχείριση χρηστών</a> για
-          μαζικές ενέργειες και φίλτρα, <a href="/admin/content-moderation">Εποπτεία περιεχομένου</a> για την ουρά
-          αναφορών, και <a href="/admin/security-monitoring">Παρακολούθηση ασφάλειας</a> για ανωμαλίες ταυτοποίησης.
+          Κάθε κάρτα οδηγεί στην εξειδικευμένη οθόνη — <Link href="/admin/user-management">Διαχείριση χρηστών</Link> για
+          μαζικές ενέργειες και φίλτρα, <Link href="/admin/content-moderation">Εποπτεία περιεχομένου</Link> για την ουρά
+          αναφορών, και <Link href="/admin/security-monitoring">Παρακολούθηση ασφάλειας</Link> για ανωμαλίες ταυτοποίησης.
         </p>
       </>
     ),
@@ -548,7 +549,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           <strong>commitment</strong> filters timing, and <strong>location</strong> is a small tie-breaker.
         </p>
         <p>
-          You can edit any answer later in <a href="/profile/edit">Edit profile</a>.
+          You can edit any answer later in <Link href="/profile/edit">Edit profile</Link>.
         </p>
       </>
     ),
@@ -562,7 +563,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Μπορείτε να αλλάξετε οποιαδήποτε απάντηση αργότερα στην{' '}
-          <a href="/profile/edit">Επεξεργασία προφίλ</a>.
+          <Link href="/profile/edit">Επεξεργασία προφίλ</Link>.
         </p>
       </>
     ),
@@ -629,7 +630,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           <strong>Pending</strong> mentors need profile and credential review before appearing in{' '}
-          <a href="/mentoring">Mentoring</a>. Session count and rating help identify top contributors vs. inactive
+          <Link href="/mentoring">Mentoring</Link>. Session count and rating help identify top contributors vs. inactive
           listings.
         </p>
       </>
@@ -638,7 +639,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Οι <strong>εκκρεμείς</strong> mentors χρειάζονται έλεγχο προφίλ και πιστοποιήσεων πριν εμφανιστούν στο{' '}
-          <a href="/mentoring">Mentoring</a>. Το πλήθος συνεδριών και η βαθμολογία δείχνουν ποιοι συνεισφέρουν
+          <Link href="/mentoring">Mentoring</Link>. Το πλήθος συνεδριών και η βαθμολογία δείχνουν ποιοι συνεισφέρουν
           ουσιαστικά και ποιες καταχωρίσεις είναι ανενεργές.
         </p>
       </>
@@ -882,7 +883,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         <p>
           Four tabs, one purpose: find work to do with someone. <strong>Co-founder & freelance</strong> is listings from
           the opportunities API. <strong>Jobs</strong> is the same feed as{' '}
-          <a href="/jobs">Jobs & roles</a>. <strong>My applications</strong> tracks what you sent;{' '}
+          <Link href="/jobs">Jobs & roles</Link>. <strong>My applications</strong> tracks what you sent;{' '}
           <strong>Proposals</strong> is what others sent you.
         </p>
         <p>
@@ -896,7 +897,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         <p>
           Τέσσερις καρτέλες, ένας σκοπός: να βρείτε δουλειά μαζί με κάποιον. Το <strong>Συνιδρυτής & freelance</strong>{' '}
           είναι καταχωρίσεις από το API ευκαιριών. Οι <strong>Θέσεις</strong> είναι το ίδιο feed με τις{' '}
-          <a href="/jobs">Θέσεις εργασίας</a>. Οι <strong>αιτήσεις μου</strong> είναι όσα στείλατε· οι{' '}
+          <Link href="/jobs">Θέσεις εργασίας</Link>. Οι <strong>αιτήσεις μου</strong> είναι όσα στείλατε· οι{' '}
           <strong>Προτάσεις</strong> είναι όσα σας έστειλαν.
         </p>
         <p>
@@ -1179,7 +1180,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Connect sends a request. Save writes the same shortlist as{' '}
-          <a href="/shortlist">Saved profiles</a>. <em>Not relevant</em> trains the next batch — it does not notify them.
+          <Link href="/shortlist">Saved profiles</Link>. <em>Not relevant</em> trains the next batch — it does not notify them.
         </p>
       </>
     ),
@@ -1192,7 +1193,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Η Σύνδεση στέλνει αίτημα. Η Αποθήκευση γράφει την ίδια λίστα με τα{' '}
-          <a href="/shortlist">Αποθηκευμένα προφίλ</a>. Το <em>Μη σχετικό</em> εκπαιδεύει την επόμενη παρτίδα — δεν
+          <Link href="/shortlist">Αποθηκευμένα προφίλ</Link>. Το <em>Μη σχετικό</em> εκπαιδεύει την επόμενη παρτίδα — δεν
           ειδοποιεί εκείνον.
         </p>
       </>
@@ -1206,8 +1207,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           results apply only to the open type — they do not hide other categories from a new query.
         </p>
         <p>
-          For ranked co-founder suggestions use <a href="/matches">Matches</a>. For a filtered browse, use{' '}
-          <a href="/discover">Explore</a>.
+          For ranked co-founder suggestions use <Link href="/matches">Matches</Link>. For a filtered browse, use{' '}
+          <Link href="/discover">Explore</Link>.
         </p>
       </>
     ),
@@ -1218,8 +1219,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           Τα φίλτρα στα αποτελέσματα ισχύουν μόνο για τον ανοιχτό τύπο — δεν κρύβουν άλλες κατηγορίες από νέα αναζήτηση.
         </p>
         <p>
-          Για καταταγμένες προτάσεις συνιδρυτή χρησιμοποιήστε τις <a href="/matches">Αντιστοιχίσεις</a>. Για περιήγηση
-          με φίλτρα, την <a href="/discover">Εξερεύνηση</a>.
+          Για καταταγμένες προτάσεις συνιδρυτή χρησιμοποιήστε τις <Link href="/matches">Αντιστοιχίσεις</Link>. Για περιήγηση
+          με φίλτρα, την <Link href="/discover">Εξερεύνηση</Link>.
         </p>
       </>
     ),
@@ -1313,7 +1314,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Reviewers are the platform&rsquo;s vetted mentors, so requesting a review and messaging a reviewer both go through{' '}
-          <a href="/mentoring">Mentoring</a>. A dash in a score means it was not rated yet, not zero.
+          <Link href="/mentoring">Mentoring</Link>. A dash in a score means it was not rated yet, not zero.
         </p>
       </>
     ),
@@ -1327,7 +1328,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Οι αξιολογητές είναι οι ελεγμένοι mentors της πλατφόρμας, οπότε τόσο το αίτημα αξιολόγησης όσο και το μήνυμα
-          σε αξιολογητή περνούν από το <a href="/mentoring">Mentoring</a>. Μια παύλα σε βαθμολογία σημαίνει ότι δεν
+          σε αξιολογητή περνούν από το <Link href="/mentoring">Mentoring</Link>. Μια παύλα σε βαθμολογία σημαίνει ότι δεν
           έχει βαθμολογηθεί ακόμη, όχι μηδέν.
         </p>
       </>
@@ -1341,7 +1342,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           mentees. A dash means the metric was not recorded — not zero.
         </p>
         <p>
-          Open <a href="/mentor/requests">Requests</a> to accept or decline. <a href="/mentor/sessions">Sessions</a>{' '}
+          Open <Link href="/mentor/requests">Requests</Link> to accept or decline. <Link href="/mentor/sessions">Sessions</Link>{' '}
           holds the calendar. Earnings on this home are the month total from completed sessions when the API is up.
         </p>
       </>
@@ -1353,8 +1354,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           ενεργοί καθοδηγούμενοι. Η παύλα σημαίνει ότι η μέτρηση δεν καταγράφηκε — όχι μηδέν.
         </p>
         <p>
-          Ανοίξτε τα <a href="/mentor/requests">Αιτήματα</a> για αποδοχή ή απόρριψη. Οι{' '}
-          <a href="/mentor/sessions">Συνεδρίες</a> είναι το ημερολόγιο. Τα έσοδα σε αυτή την αρχική είναι το σύνολο
+          Ανοίξτε τα <Link href="/mentor/requests">Αιτήματα</Link> για αποδοχή ή απόρριψη. Οι{' '}
+          <Link href="/mentor/sessions">Συνεδρίες</Link> είναι το ημερολόγιο. Τα έσοδα σε αυτή την αρχική είναι το σύνολο
           μήνα από ολοκληρωμένες συνεδρίες όταν το API είναι διαθέσιμο.
         </p>
       </>
@@ -1395,8 +1396,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           decline does not notify them with a message thread.
         </p>
         <p>
-          After you accept, the founder appears on <a href="/mentor/mentees">Mentees</a> and can book against{' '}
-          <a href="/mentor/availability">Availability</a>.
+          After you accept, the founder appears on <Link href="/mentor/mentees">Mentees</Link> and can book against{' '}
+          <Link href="/mentor/availability">Availability</Link>.
         </p>
       </>
     ),
@@ -1407,8 +1408,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           απόρριψη δεν ανοίγει νήμα μηνύματος προς εκείνους.
         </p>
         <p>
-          Μετά την αποδοχή, ο ιδρυτής εμφανίζεται στους <a href="/mentor/mentees">Mentees</a> και μπορεί να κλείσει
-          ώρα από τη <a href="/mentor/availability">Διαθεσιμότητα</a>.
+          Μετά την αποδοχή, ο ιδρυτής εμφανίζεται στους <Link href="/mentor/mentees">Mentees</Link> και μπορεί να κλείσει
+          ώρα από τη <Link href="/mentor/availability">Διαθεσιμότητα</Link>.
         </p>
       </>
     ),
@@ -1418,7 +1419,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           One row per founder you have accepted. Session counts and last activity come from that mentorship — they
-          cannot disagree with <a href="/mentor/sessions">Sessions</a>.
+          cannot disagree with <Link href="/mentor/sessions">Sessions</Link>.
         </p>
         <p>
           Open a row to message or schedule. Ending a mentorship removes them from this list; it does not delete
@@ -1430,7 +1431,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Μία γραμμή ανά ιδρυτή που αποδεχτήκατε. Τα πλήθη συνεδριών και η τελευταία δραστηριότητα έρχονται από
-          εκείνο το mentorship — δεν μπορούν να διαφωνούν με τις <a href="/mentor/sessions">Συνεδρίες</a>.
+          εκείνο το mentorship — δεν μπορούν να διαφωνούν με τις <Link href="/mentor/sessions">Συνεδρίες</Link>.
         </p>
         <p>
           Ανοίξτε γραμμή για μήνυμα ή προγραμματισμό. Το τέλος του mentorship τους αφαιρεί από αυτή τη λίστα· δεν
@@ -1448,7 +1449,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Existing sessions stay on the calendar if you shrink a window; they are not auto-cancelled. Use{' '}
-          <a href="/mentor/sessions">Sessions</a> to move or cancel one.
+          <Link href="/mentor/sessions">Sessions</Link> to move or cancel one.
         </p>
       </>
     ),
@@ -1460,7 +1461,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Οι υπάρχουσες συνεδρίες μένουν στο ημερολόγιο αν μικρύνετε ένα παράθυρο· δεν ακυρώνονται αυτόματα.
-          Χρησιμοποιήστε τις <a href="/mentor/sessions">Συνεδρίες</a> για μετακίνηση ή ακύρωση.
+          Χρησιμοποιήστε τις <Link href="/mentor/sessions">Συνεδρίες</Link> για μετακίνηση ή ακύρωση.
         </p>
       </>
     ),
@@ -1521,24 +1522,24 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          This is what founders see on <a href="/mentoring">Find mentors</a>: expertise, rate, timezone, and who
+          This is what founders see on <Link href="/mentoring">Find mentors</Link>: expertise, rate, timezone, and who
           you want to reach. Empty fields stay empty — they are not filled with sample copy.
         </p>
         <p>
           Saving updates the directory listing. Availability still lives on{' '}
-          <a href="/mentor/availability">Availability</a>; this page does not set bookable hours.
+          <Link href="/mentor/availability">Availability</Link>; this page does not set bookable hours.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Αυτό βλέπουν οι ιδρυτές στην <a href="/mentoring">Εύρεση μεντόρων</a>: εξειδίκευση, χρέωση, ζώνη ώρας και
+          Αυτό βλέπουν οι ιδρυτές στην <Link href="/mentoring">Εύρεση μεντόρων</Link>: εξειδίκευση, χρέωση, ζώνη ώρας και
           ποιους θέλετε να προσεγγίσετε. Τα κενά πεδία μένουν κενά — δεν γεμίζουν με δείγμα.
         </p>
         <p>
           Η αποθήκευση ενημερώνει την καταχώριση στον κατάλογο. Η διαθεσιμότητα μένει στη{' '}
-          <a href="/mentor/availability">Διαθεσιμότητα</a>· αυτή η σελίδα δεν ορίζει ώρες κράτησης.
+          <Link href="/mentor/availability">Διαθεσιμότητα</Link>· αυτή η σελίδα δεν ορίζει ώρες κράτησης.
         </p>
       </>
     ),
@@ -1552,7 +1553,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Mentors set their own hours on Availability. Expert reviews of a pitch or model go through{' '}
-          <a href="/expert-reviews">Expert reviews</a>, not this list.
+          <Link href="/expert-reviews">Expert reviews</Link>, not this list.
         </p>
       </>
     ),
@@ -1564,7 +1565,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Οι μέντορες ορίζουν τις ώρες τους στη Διαθεσιμότητα. Οι αξιολογήσεις pitch ή μοντέλου περνούν από τις{' '}
-          <a href="/expert-reviews">Αξιολογήσεις ειδικών</a>, όχι από αυτή τη λίστα.
+          <Link href="/expert-reviews">Αξιολογήσεις ειδικών</Link>, όχι από αυτή τη λίστα.
         </p>
       </>
     ),
@@ -1573,8 +1574,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          KPIs here count the same deals as <a href="/investor/pipeline">Pipeline</a> and{' '}
-          <a href="/investor/watchlist">Watchlist</a>. A dash means the figure was not recorded.
+          KPIs here count the same deals as <Link href="/investor/pipeline">Pipeline</Link> and{' '}
+          <Link href="/investor/watchlist">Watchlist</Link>. A dash means the figure was not recorded.
         </p>
         <p>
           Scout to find new companies. Moving a card in Pipeline is what changes these totals — this home does not
@@ -1585,8 +1586,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     el: (
       <>
         <p>
-          Τα KPI εδώ μετράνε τις ίδιες συμφωνίες με το <a href="/investor/pipeline">Pipeline</a> και τη{' '}
-          <a href="/investor/watchlist">Λίστα παρακολούθησης</a>. Η παύλα σημαίνει ότι ο αριθμός δεν καταγράφηκε.
+          Τα KPI εδώ μετράνε τις ίδιες συμφωνίες με το <Link href="/investor/pipeline">Pipeline</Link> και τη{' '}
+          <Link href="/investor/watchlist">Λίστα παρακολούθησης</Link>. Η παύλα σημαίνει ότι ο αριθμός δεν καταγράφηκε.
         </p>
         <p>
           Το Scout βρίσκει νέες εταιρείες. Η μετακίνηση κάρτας στο Pipeline είναι αυτό που αλλάζει αυτά τα σύνολα —
@@ -1629,7 +1630,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           The summary counts the full pipeline; filters only change what is on screen.
         </p>
         <p>
-          Move a card to change stage. Invested companies also appear on <a href="/investor/portfolio">Portfolio</a>.
+          Move a card to change stage. Invested companies also appear on <Link href="/investor/portfolio">Portfolio</Link>.
           Passed stays in history — it is not deleted.
         </p>
       </>
@@ -1642,7 +1643,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Μετακινήστε κάρτα για αλλαγή σταδίου. Οι επενδυμένες εταιρείες εμφανίζονται και στο{' '}
-          <a href="/investor/portfolio">Χαρτοφυλάκιο</a>. Η απόρριψη μένει στο ιστορικό — δεν διαγράφεται.
+          <Link href="/investor/portfolio">Χαρτοφυλάκιο</Link>. Η απόρριψη μένει στο ιστορικό — δεν διαγράφεται.
         </p>
       </>
     ),
@@ -1656,7 +1657,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Saving or connecting uses the same shortlist and connection flow as Discover. It does not add them as a
-          deal on <a href="/investor/pipeline">Pipeline</a>.
+          deal on <Link href="/investor/pipeline">Pipeline</Link>.
         </p>
       </>
     ),
@@ -1668,7 +1669,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Η αποθήκευση ή η σύνδεση χρησιμοποιεί την ίδια ροή με την Εξερεύνηση. Δεν τους προσθέτει ως συμφωνία στο{' '}
-          <a href="/investor/pipeline">Pipeline</a>.
+          <Link href="/investor/pipeline">Pipeline</Link>.
         </p>
       </>
     ),
@@ -1707,7 +1708,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           connection request.
         </p>
         <p>
-          Move someone into <a href="/investor/pipeline">Pipeline</a> when you start diligence. Removing them here
+          Move someone into <Link href="/investor/pipeline">Pipeline</Link> when you start diligence. Removing them here
           does not delete a deal that already exists there.
         </p>
       </>
@@ -1719,7 +1720,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           αίτημα σύνδεσης.
         </p>
         <p>
-          Μεταφέρετέ τους στο <a href="/investor/pipeline">Pipeline</a> όταν ξεκινήσετε diligence. Η αφαίρεση εδώ δεν
+          Μεταφέρετέ τους στο <Link href="/investor/pipeline">Pipeline</Link> όταν ξεκινήσετε diligence. Η αφαίρεση εδώ δεν
           διαγράφει συμφωνία που υπάρχει ήδη εκεί.
         </p>
       </>
@@ -1758,7 +1759,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           mentor pool. A figure here is the length of a list one click away.
         </p>
         <p>
-          <a href="/org/dashboard">/org/dashboard</a> redirects here. Upcoming dates come from the programs&rsquo;
+          <Link href="/org/dashboard">/org/dashboard</Link> redirects here. Upcoming dates come from the programs&rsquo;
           own start/end fields — not a separate milestone calendar.
         </p>
       </>
@@ -1770,7 +1771,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           το pool μεντόρων. Ένας αριθμός εδώ είναι το μήκος μιας λίστας ένα κλικ μακριά.
         </p>
         <p>
-          Το <a href="/org/dashboard">/org/dashboard</a> ανακατευθύνει εδώ. Οι επερχόμενες ημερομηνίες έρχονται από
+          Το <Link href="/org/dashboard">/org/dashboard</Link> ανακατευθύνει εδώ. Οι επερχόμενες ημερομηνίες έρχονται από
           τα πεδία έναρξης/λήξης των προγραμμάτων — όχι από ξεχωριστό ημερολόγιο οροσήμων.
         </p>
       </>
@@ -1811,7 +1812,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Filters slice this list only. A dash in a score means it was not rated yet. Accepting places the startup
-          on <a href="/org/startups">Portfolio</a> and the matching cohort.
+          on <Link href="/org/startups">Portfolio</Link> and the matching cohort.
         </p>
       </>
     ),
@@ -1823,7 +1824,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Τα φίλτρα κόβουν μόνο αυτή τη λίστα. Παύλα σε βαθμό σημαίνει ότι δεν βαθμολογήθηκε ακόμη. Η αποδοχή βάζει
-          το startup στο <a href="/org/startups">Χαρτοφυλάκιο</a> και στον αντίστοιχο κύκλο.
+          το startup στο <Link href="/org/startups">Χαρτοφυλάκιο</Link> και στον αντίστοιχο κύκλο.
         </p>
       </>
     ),
@@ -1911,7 +1912,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Mentors available to your cohorts. Invite by email or pull from the public{' '}
-          <a href="/mentoring">Find mentors</a> directory. They are not automatically every mentor on the platform.
+          <Link href="/mentoring">Find mentors</Link> directory. They are not automatically every mentor on the platform.
         </p>
         <p>
           Assigning a mentor to a cohort happens on the cohort detail page. This list is the pool, not the
@@ -1923,7 +1924,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Μέντορες διαθέσιμοι στους κύκλους σας. Προσκαλέστε με email ή από τον δημόσιο κατάλογο{' '}
-          <a href="/mentoring">Εύρεση μεντόρων</a>. Δεν είναι αυτόματα όλοι οι μέντορες της πλατφόρμας.
+          <Link href="/mentoring">Εύρεση μεντόρων</Link>. Δεν είναι αυτόματα όλοι οι μέντορες της πλατφόρμας.
         </p>
         <p>
           Η ανάθεση μέντορα σε κύκλο γίνεται στη σελίδα του κύκλου. Αυτή η λίστα είναι το pool, όχι το ημερολόγιο
@@ -1937,7 +1938,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Demo days, office hours, workshops, and pitch nights for your cohorts. RSVP and dates write to this
-          org&rsquo;s events — not the public <a href="/events">Events</a> catalogue unless you publish them there.
+          org&rsquo;s events — not the public <Link href="/events">Events</Link> catalogue unless you publish them there.
         </p>
         <p>
           Create opens the real composer. A missing location or time is omitted on the card, not filled with
@@ -1949,7 +1950,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Demo days, office hours, workshops και pitch nights για τους κύκλους σας. RSVP και ημερομηνίες γράφουν
-          στις εκδηλώσεις αυτού του οργανισμού — όχι στον δημόσιο κατάλογο <a href="/events">Εκδηλώσεων</a> εκτός αν
+          στις εκδηλώσεις αυτού του οργανισμού — όχι στον δημόσιο κατάλογο <Link href="/events">Εκδηλώσεων</Link> εκτός αν
           τις δημοσιεύσετε εκεί.
         </p>
         <p>
@@ -1967,7 +1968,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           analytics. A dash means the period was not measured.
         </p>
         <p>
-          Application totals must match <a href="/org/applications">Applications</a> for the same range. Member
+          Application totals must match <Link href="/org/applications">Applications</Link> for the same range. Member
           growth is new org memberships, not every login.
         </p>
       </>
@@ -1979,7 +1980,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           της πλατφόρμας. Η παύλα σημαίνει ότι η περίοδος δεν μετρήθηκε.
         </p>
         <p>
-          Τα σύνολα αιτήσεων πρέπει να συμφωνούν με τις <a href="/org/applications">Αιτήσεις</a> για το ίδιο
+          Τα σύνολα αιτήσεων πρέπει να συμφωνούν με τις <Link href="/org/applications">Αιτήσεις</Link> για το ίδιο
           διάστημα. Η ανάπτυξη μελών είναι νέες ιδιότητες μέλους οργανισμού, όχι κάθε σύνδεση.
         </p>
       </>
@@ -1993,7 +1994,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           white-label settings and not the platform admin console.
         </p>
         <p>
-          Publish branding only when this screen says so. Team permissions overlap <a href="/org/members">Members</a>{' '}
+          Publish branding only when this screen says so. Team permissions overlap <Link href="/org/members">Members</Link>{' '}
           — changing a role here is the same membership.
         </p>
       </>
@@ -2006,7 +2007,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Δημοσιεύστε branding μόνο όταν το λέει αυτή η οθόνη. Τα δικαιώματα ομάδας επικαλύπτονται με τα{' '}
-          <a href="/org/members">Μέλη</a> — η αλλαγή ρόλου εδώ είναι η ίδια ιδιότητα μέλους.
+          <Link href="/org/members">Μέλη</Link> — η αλλαγή ρόλου εδώ είναι η ίδια ιδιότητα μέλους.
         </p>
       </>
     ),

@@ -915,7 +915,7 @@ export default function MilestonesPage() {
         <MilestoneFormModal
           open
           onClose={() => setCreateOpen(false)}
-          onSubmit={(data) => createMut.mutate(data as any)}
+          onSubmit={(data) => createMut.mutate(data as Parameters<typeof createMilestone>[0])}
           isSubmitting={createMut.isPending}
           error={createMut.error?.message}
         />
@@ -927,7 +927,7 @@ export default function MilestonesPage() {
           open
           initial={editTarget}
           onClose={() => setEditTarget(null)}
-          onSubmit={(data) => updateMut.mutate({ id: editTarget.id, data: data as any })}
+          onSubmit={(data) => updateMut.mutate({ id: editTarget.id, data: data as Parameters<typeof updateMilestone>[1] })}
           isSubmitting={updateMut.isPending}
           error={updateMut.error?.message}
         />

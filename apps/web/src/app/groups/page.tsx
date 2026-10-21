@@ -39,7 +39,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
-import { cn } from '@/lib/utils';
+import { cn, errorMessage } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
 import { STATUS, categoryChip } from '@/lib/semantic-colors';
 import { ListEmptyState } from '@/components/common/EmptyStates';
@@ -314,9 +314,9 @@ export default function GroupsPage() {
           success('Joined group', 'Welcome to the community!');
         }
         queryClient.invalidateQueries({ queryKey: qk('groups') });
-      } catch (e: any) {
-        toastError(isMember ? 'Could not leave the group' : 'Could not join the group', e?.message ?? 'Something went wrong.');
-        return { error: e?.message || (isMember ? 'You are still a member.' : 'You did not join.') };
+      } catch (e) {
+        toastError(isMember ? 'Could not leave the group' : 'Could not join the group', errorMessage(e, 'Something went wrong.'));
+        return { error: errorMessage(e, isMember ? 'You are still a member.' : 'You did not join.') };
       } finally {
         setLoadingId(null);
       }
@@ -519,7 +519,7 @@ export default function GroupsPage() {
         />
       )}
 
-      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as any); setTypeFilter('all'); }} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); setTypeFilter('all'); }} className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <TabsList>
             <TabsTrigger value="discover"><BilingualText en="Discover" el="Ανακάλυψη" compact /></TabsTrigger>

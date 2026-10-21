@@ -177,7 +177,7 @@ function BreakdownModal({
 }
 
 // Rich feedback dropdown
-const FEEDBACK_OPTIONS: { label: string; value: MatchFeedbackType; icon: any; color?: string }[] = [
+const FEEDBACK_OPTIONS: { label: string; value: MatchFeedbackType; icon: LucideIcon; color?: string }[] = [
   { label: 'Great match!', value: 'accepted', icon: ThumbsUp, color: 'text-status-success' },
   { label: 'Not relevant', value: 'not_relevant', icon: EyeOff },
   { label: 'Not now', value: 'not_now', icon: Clock },

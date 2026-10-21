@@ -2,7 +2,7 @@ import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus, Logger } from '@nest
 import { Response, Request } from 'express';
 import { HttpException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { ErrorCode, StandardErrorResponse, StandardSuccessResponse } from '@cofounderbay/shared';
+import { ErrorCode, StandardErrorResponse } from '@cofounderbay/shared';
 
 type RequestWithId = Request & { reqId?: string };
 

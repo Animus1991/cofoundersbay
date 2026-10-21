@@ -201,7 +201,7 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
         {nextStep?.href && (
           <Button className="w-full gap-2" asChild>
             <Link href={nextStep.href} className="block">
-              Complete "{nextStep.label}"
+              Complete &quot;{nextStep.label}&quot;
               <ArrowRight className="icon-sm" />
             </Link>
           </Button>

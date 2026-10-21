@@ -15,7 +15,7 @@ if (process.env.NODE_ENV !== 'production') {
 // We use a guarded dynamic require so the app still boots if the package is not yet installed.
 if (process.env.SENTRY_DSN) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
     const Sentry: any = require('@sentry/node');
     Sentry.init({
@@ -36,7 +36,7 @@ if (process.env.SENTRY_DSN) {
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigModule } from '@nestjs/config';
+
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { extname, resolve } from 'path';
 import { ValidationPipe } from '@nestjs/common';

@@ -19,18 +19,13 @@ import {
   UpdateCommentDto,
   CreateReviewDto,
   SubmitReviewDto,
-  GenerateContentDto,
   AssessReadinessDto,
   UpdateReadinessCriterionDto,
   CreateApplicationDto,
   UpdateApplicationDto,
   BuilderDocumentType,
-  BuilderCollaboratorRole,
-  BuilderCommentStatus,
-  BuilderReviewStatus,
   ReadinessDimension,
 } from './dto/builder.dto';
-import { createHash } from 'crypto';
 import { CacheService } from '../common/cache/cache.service';
 
 // Short-lived in-memory cache for workspace access checks (avoids redundant DB hits)
@@ -39,7 +34,7 @@ type AccessCacheEntry = { expiresAt: number };
 
 // Redis cache TTLs (seconds)
 const WORKSPACE_CACHE_TTL = 60;
-const DOCUMENT_CACHE_TTL = 60;
+
 
 @Injectable()
 export class BuilderService {

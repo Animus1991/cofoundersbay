@@ -181,8 +181,9 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
   const [name, setName] = useState(rule.name);
   const [description, setDescription] = useState(rule.description ?? '');
   const [triggerType, setTriggerType] = useState(rule.triggerType);
-  const [actionType, setActionType] = useState((rule.actionDef as any)?.type ?? ACTION_TYPES[0]);
-  const [actionParamsRaw, setActionParamsRaw] = useState(JSON.stringify((rule.actionDef as any)?.params ?? {}, null, 2));
+  const actionDef = (rule.actionDef ?? null) as { type?: string; params?: unknown } | null;
+  const [actionType, setActionType] = useState(actionDef?.type ?? ACTION_TYPES[0]);
+  const [actionParamsRaw, setActionParamsRaw] = useState(JSON.stringify(actionDef?.params ?? {}, null, 2));
   const [delaySeconds, setDelaySeconds] = useState(String(rule.delaySeconds ?? 0));
   const [priority, setPriority] = useState(String(rule.priority ?? 100));
 

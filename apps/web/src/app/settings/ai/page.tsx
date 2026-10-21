@@ -496,7 +496,7 @@ export default function AISettingsPage() {
                 {RESPONSE_STYLES.map((style) => (
                   <button
                     key={style.value}
-                    onClick={() => updatePref('responseStyle', style.value as any)}
+                    onClick={() => updatePref('responseStyle', style.value as AIPreferences['responseStyle'])}
                     className={cn(
                       'flex flex-col items-start rounded-lg border-2 p-4 text-left transition-all',
                       prefs.responseStyle === style.value

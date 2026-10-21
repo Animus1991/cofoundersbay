@@ -228,7 +228,7 @@ interface CanvasConnector {
   toNodeId: string;
 }
 
-interface CanvasSnapshot {
+export interface CanvasSnapshot {
   nodes: CanvasNode[];
   connectors?: CanvasConnector[];
 }

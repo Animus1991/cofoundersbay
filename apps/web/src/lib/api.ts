@@ -28,13 +28,20 @@ export class ApiError extends Error {
     this.requestId = requestId;
   }
 
-  static fromStandardError(error: any): ApiError {
+  static fromStandardError(error: unknown): ApiError {
+    const e = (error ?? {}) as {
+      status?: number;
+      message?: string;
+      code?: string;
+      details?: Record<string, unknown>;
+      requestId?: string;
+    };
     return new ApiError(
-      error.status || 500,
-      error.message || 'Unknown error',
-      error.code,
-      error.details,
-      error.requestId,
+      e.status || 500,
+      e.message || 'Unknown error',
+      e.code,
+      e.details,
+      e.requestId,
     );
   }
 }

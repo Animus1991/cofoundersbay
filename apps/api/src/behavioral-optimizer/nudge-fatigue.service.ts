@@ -21,7 +21,7 @@ export class NudgeFatigueService {
 
   private get db(): any { return this.prisma; }
 
-  async canShowNudge(userId: string, nudgeKey: string, surface: string): Promise<NudgeDecision> {
+  async canShowNudge(userId: string, nudgeKey: string, _surface: string): Promise<NudgeDecision> {
     const db = this.db;
 
     if (!db.userBehavioralState || !db.nudgeLog) {

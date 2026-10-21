@@ -49,7 +49,7 @@ export class OAuthService {
         // Create new user
         const googleSlug = `${profile.email.split('@')[0].replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now().toString(36)}`;
         user = await this.prisma.user.create({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           data: {
             email: profile.email,
             slug: googleSlug,
@@ -101,7 +101,7 @@ export class OAuthService {
         // Create new user
         const linkedinSlug = `${profile.email.split('@')[0].replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now().toString(36)}`;
         user = await this.prisma.user.create({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           data: {
             email: profile.email,
             slug: linkedinSlug,

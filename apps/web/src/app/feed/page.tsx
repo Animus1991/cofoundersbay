@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { ReportBlockModal } from '@/components/common/ReportBlockModal';
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery, type InfiniteData } from '@tanstack/react-query';
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal,
   Send, Link2, Smile, TrendingUp,
@@ -593,21 +593,27 @@ export default function FeedPage() {
   // with the server, so the assistant reports the like only once it is kept.
   // A failed write puts the feed back the way the server has it.
   const handleLike = async (postId: string, isCurrentlyLiked: boolean): Promise<PageControlRunResult> => {
-    queryClient.setQueryData(qk('feed', 'personalized', activeTab), (old: any) => {
-      if (!old) return old;
-      return {
-        ...old,
-        posts: old.posts.map((p: FeedPost) =>
-          p.id === postId
-            ? { 
-                ...p, 
-                isLiked: !isCurrentlyLiked, 
-                likes: isCurrentlyLiked ? p.likes - 1 : p.likes + 1 
-              }
-            : p
-        ),
-      };
-    });
+    queryClient.setQueryData(
+      qk('feed', 'personalized', activeTab),
+      (old: InfiniteData<{ posts: FeedPost[]; hasMore: boolean; nextCursor?: string }, number> | undefined) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            posts: page.posts.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    isLiked: !isCurrentlyLiked,
+                    likes: isCurrentlyLiked ? p.likes - 1 : p.likes + 1
+                  }
+                : p
+            ),
+          })),
+        };
+      },
+    );
     // The endpoint toggles: the same 'like' interaction likes and unlikes.
     const result = await settle(() => recordInteractionMutation.mutateAsync({ postId, interaction: 'like' }));
     if (result) void queryClient.invalidateQueries({ queryKey: qk('feed', 'personalized', activeTab) });
@@ -615,14 +621,19 @@ export default function FeedPage() {
   };
 
   const handleBookmark = async (postId: string, isCurrentlyBookmarked: boolean): Promise<PageControlRunResult> => {
-    queryClient.setQueryData(qk('feed', 'personalized', activeTab), (old: any) => {
-      if (!old) return old;
-      return {
-        ...old,
-        posts: old.posts.map((p: FeedPost) =>
-          p.id === postId ? { ...p, isBookmarked: !isCurrentlyBookmarked } : p
-        ),
-      };
+    queryClient.setQueryData(
+      qk('feed', 'personalized', activeTab),
+      (old: InfiniteData<{ posts: FeedPost[]; hasMore: boolean; nextCursor?: string }, number> | undefined) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            posts: page.posts.map((p) =>
+              p.id === postId ? { ...p, isBookmarked: !isCurrentlyBookmarked } : p
+            ),
+          })),
+        };
     });
     // Toggles as well; the toast now waits for the server to agree.
     const result = await settle(() => recordInteractionMutation.mutateAsync({ postId, interaction: 'bookmark' }));

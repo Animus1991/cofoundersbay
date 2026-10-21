@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/api';
+import { apiRequest, type GamificationDimensionDetail } from '@/lib/api';
 import { useHasSession } from '@/hooks/useSession';
 import { qk } from '@/lib/query-keys';
 
@@ -27,7 +27,7 @@ export interface XPEvent {
   eventType: string;
   xpAmount: number;
   entityType: string | null;
-  metadata: any;
+  metadata: unknown;
   createdAt: Date;
 }
 
@@ -54,7 +54,7 @@ export interface ReadinessScore {
   executionReadiness: number;
   validationScore: number;
   artifactCompleteness: number;
-  dimensionBreakdown: Record<string, any>;
+  dimensionBreakdown: Record<string, GamificationDimensionDetail>;
   updatedAt: Date;
 }
 

@@ -1385,7 +1385,6 @@ export class GamificationService {
     const levelInfo = computeLevel(totalXp);
 
     const recentEvents: XPEventExplain[] = events.slice(0, 10).map((e) => {
-      const meta = (e.metadata as Record<string, unknown> | null) ?? {};
       const explainParts: string[] = [`base=${e.baseXp}`];
       if (e.isDiminished) explainParts.push(`DR reduced`);
       if (e.weightMultiplier !== 1.0) explainParts.push(`×${e.weightMultiplier.toFixed(2)}`);

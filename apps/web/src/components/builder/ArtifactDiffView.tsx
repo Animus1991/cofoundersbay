@@ -16,6 +16,7 @@ import {
   type RichTextDiffResult,
   type StructuredDiffResult,
   type CanvasDiffResult,
+  type CanvasSnapshot,
   type StructuredFieldDiff,
 } from '@/lib/diff-engine';
 
@@ -300,7 +301,7 @@ export function ArtifactDiffView({
       case 'rich-text':
         return { kind: 'rich-text' as const, diff: richTextDiff(before as string, after as string) };
       case 'canvas':
-        return { kind: 'canvas' as const, diff: canvasDiff(before as any, after as any) };
+        return { kind: 'canvas' as const, diff: canvasDiff(before as CanvasSnapshot | undefined, after as CanvasSnapshot | undefined) };
       default:
         return {
           kind: 'structured' as const,

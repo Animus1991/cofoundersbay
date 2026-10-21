@@ -49,7 +49,7 @@ function InnerWhiteboard({ height, content, readOnly, onChange, tldraw }: InnerW
       try { editor.loadSnapshot?.(initialSnapshot.current); } catch {}
     }
     if (!onChange) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const unsubscribe = editor.store.listen(() => {
       if (saveRef.current) clearTimeout(saveRef.current);
       saveRef.current = setTimeout(() => {

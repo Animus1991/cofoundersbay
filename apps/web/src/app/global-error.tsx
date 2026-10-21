@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
 import './globals.css';
 
@@ -36,12 +37,12 @@ export default function GlobalError({
               >
                 <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
               </button>
-              <a
+              <Link
                 href="/"
                 className="inline-flex h-9 items-center rounded-xl border border-border bg-secondary px-4 text-sm font-medium"
               >
                 <BilingualText en="Go home" el="Πίσω στην αρχική" compact />
-              </a>
+              </Link>
             </div>
           </div>
         </div>

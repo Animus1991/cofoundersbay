@@ -161,7 +161,7 @@ export function AdvancedAnalyticsDashboard() {
             <BilingualText en="Track your performance and engagement metrics" el="Παρακολουθήστε απόδοση και συμμετοχή" wrap />
           </p>
         </div>
-        <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as any)}>
+        <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as typeof timeRange)}>
           <TabsList>
             <TabsTrigger value="7d">7 Days</TabsTrigger>
             <TabsTrigger value="30d">30 Days</TabsTrigger>

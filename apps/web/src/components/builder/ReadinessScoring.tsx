@@ -53,7 +53,7 @@ interface ReadinessData {
 }
 
 interface ReadinessScoringProps {
-  workspaceData?: any;
+  workspaceData?: unknown;
   /**
    * The workspace whose readiness this is. Without it the component can only
    * show the empty checklist: the scores live on the server, keyed by

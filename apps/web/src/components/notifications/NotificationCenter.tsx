@@ -322,7 +322,7 @@ export function NotificationCenter() {
               <Bell className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
               <h4 className="font-semibold mb-1">No notifications</h4>
               <p className="text-sm text-muted-foreground">
-                You're all caught up!
+                You&apos;re all caught up!
               </p>
             </div>
           ) : (

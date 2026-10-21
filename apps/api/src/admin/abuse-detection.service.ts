@@ -9,7 +9,7 @@ const LOW_QUALITY_WINDOW_HRS = 24;
 const LOW_QUALITY_MAX_EMPTY_RATIO = 0.8; // >80% empty-entity events = suspicious
 const MUTUAL_ENDORSEMENT_WINDOW_DAYS = 7;
 const MUTUAL_ENDORSEMENT_MIN_PAIRS = 3; // min mutual pairs to flag a ring
-const STREAK_MANIPULATION_MIN_DAILY = 1; // must have >1 meaningful event per streak day
+
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

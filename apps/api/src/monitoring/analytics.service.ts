@@ -386,7 +386,7 @@ export class AnalyticsService {
   /**
    * Get performance metrics
    */
-  private async getPerformanceMetrics(since: Date): Promise<AnalyticsMetrics['performance']> {
+  private async getPerformanceMetrics(_since: Date): Promise<AnalyticsMetrics['performance']> {
     const [avgResponseTime, errorRate, uptime, cacheHitRate] = await Promise.all([
       this.getAverageResponseTime(),
       this.getErrorRate(),

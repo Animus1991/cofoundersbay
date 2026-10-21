@@ -9,7 +9,7 @@ import {
 import { IsString, IsNotEmpty } from 'class-validator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { TwoFactorService, TwoFactorSetupResponse } from './two-factor.service';
+import { TwoFactorService } from './two-factor.service';
 
 class VerifyCodeDto {
   @IsString()

@@ -4,20 +4,22 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ReadinessPage from './page';
 import { assessReadiness, updateReadinessCriterion } from '@/lib/api';
 import { writeReadinessOverlay } from '@/lib/readiness-demo';
+import type { ReactNode } from 'react';
+import type { PageRailSection } from '@/components/layout/PageRail';
 
 vi.mock('@/lib/api', () => ({ assessReadiness: vi.fn(), updateReadinessCriterion: vi.fn() }));
 // The score history and the audience readouts live in the page's rail now;
 // the stand-in renders the rail's sections as the open panel would.
 vi.mock('@/components/layout/AppShell', () => ({
-  AppShell: ({ children, actions, rail }: any) => (
+  AppShell: ({ children, actions, rail }: { children: ReactNode; actions?: ReactNode; rail?: PageRailSection[] }) => (
     <main>
       {actions}
       {children}
-      {rail?.map((section: any) => <section key={section.id} aria-label={section.labelEn}>{section.content}</section>)}
+      {rail?.map((section) => <section key={section.id} aria-label={section.labelEn}>{section.content}</section>)}
     </main>
   ),
 }));
-vi.mock('@/components/common/BilingualText', () => ({ BilingualText: ({ en }: any) => <span>{en}</span> }));
+vi.mock('@/components/common/BilingualText', () => ({ BilingualText: ({ en }: { en: string }) => <span>{en}</span> }));
 vi.mock('@/components/ui/toast', () => ({ useToast: () => ({ error: vi.fn() }) }));
 vi.mock('@/contexts/PopupChatContext', () => ({
   usePopupChat: () => ({
@@ -54,7 +56,7 @@ beforeEach(() => {
   document.cookie = 'cfb_preview_demo=; Max-Age=0';
   document.cookie = 'cfb_session=; Max-Age=0';
   vi.mocked(assessReadiness).mockResolvedValue({ assessment });
-  vi.mocked(updateReadinessCriterion).mockResolvedValue({} as any);
+  vi.mocked(updateReadinessCriterion).mockResolvedValue({} as Awaited<ReturnType<typeof updateReadinessCriterion>>);
 });
 
 afterEach(() => {
@@ -107,7 +109,7 @@ describe('live readiness and explicit showcase isolation', () => {
     { assessment: { ...assessment, overallMax: 0 } },
   ])('rejects a missing or invalid canonical assessment instead of showing demo data', async (response) => {
     localStorage.setItem('cfb_default_workspace', workspaceId);
-    vi.mocked(assessReadiness).mockResolvedValue(response as any);
+    vi.mocked(assessReadiness).mockResolvedValue(response as Awaited<ReturnType<typeof assessReadiness>>);
     mount();
     await screen.findByRole('alert');
     expect(screen.queryByText('Co-founder identified')).toBeNull();

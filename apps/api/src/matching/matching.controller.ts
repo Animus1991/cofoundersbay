@@ -23,7 +23,7 @@ export class MatchingController {
   async getRecommendations(
     @CurrentUser() user: { id: string },
     @Query('limit') limit?: string,
-    @Query('role') role?: string,
+    @Query('role') _role?: string,
   ) {
     const matches = await this.matching.getRecommendations(
       user.id,

@@ -261,7 +261,7 @@ export function ShapeLibraryPanel({ onClose, onAddShape }: ShapeLibraryPanelProp
         })}
         {filtered.length === 0 && (
           <div className="flex items-center justify-center py-8 text-2xs text-muted-foreground/50">
-            No shapes match "{search}"
+            No shapes match &quot;{search}&quot;
           </div>
         )}
       </div>

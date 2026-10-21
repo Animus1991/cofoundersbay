@@ -1,4 +1,5 @@
 import type { NextPageContext } from 'next';
+import Link from 'next/link';
 
 type Props = { statusCode: number };
 
@@ -21,7 +22,7 @@ export default function Error({ statusCode }: Props) {
       <p style={{ margin: 0, color: '#94a3b8' }}>
         {statusCode === 404 ? 'Page not found' : 'An error occurred'}
       </p>
-      <a
+      <Link
         href="/"
         style={{
           marginTop: '0.5rem',
@@ -34,7 +35,7 @@ export default function Error({ statusCode }: Props) {
         }}
       >
         Back to home
-      </a>
+      </Link>
     </div>
   );
 }

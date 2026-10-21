@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import { useToast } from '@/components/ui/toast';
 import { analytics } from '@/lib/analytics';
 import Daily, {
+  type DailyCall,
   type DailyEventObjectFatalError,
   type DailyEventObjectParticipant,
   type DailyEventObjectParticipantLeft,
@@ -40,7 +41,7 @@ export function VideoCallProvider({ children }: { children: ReactNode }) {
   const [callStartTime, setCallStartTime] = useState<number | null>(null);
   const { success, error: showError } = useToast();
   
-  const callObjectRef = useRef<any>(null);
+  const callObjectRef = useRef<DailyCall | null>(null);
 
   // Initialize call object
   useEffect(() => {

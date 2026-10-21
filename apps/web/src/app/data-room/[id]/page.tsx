@@ -33,6 +33,7 @@ import {
   FileCode,
   FileJson,
   FileType2,
+  type LucideIcon,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -329,7 +330,7 @@ export default function DataRoomPage() {
   };
 
   const getFileIcon = (type: string) => {
-    const icons: Record<string, any> = {
+    const icons: Record<string, LucideIcon> = {
       pdf: FileText,
       doc: FileText,
       xls: FileSpreadsheet,

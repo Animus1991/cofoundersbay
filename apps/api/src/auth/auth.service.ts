@@ -45,7 +45,7 @@ export class AuthService {
     const baseSlug = input.email.toLowerCase().split('@')[0].replace(/[^a-z0-9]/g, '-');
     const slug = `${baseSlug}-${Date.now().toString(36)}`;
     const user = await this.prisma.user.create({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       data: {
         email: input.email.toLowerCase(),
         slug,
@@ -215,7 +215,7 @@ export class AuthService {
     if (!user) {
       const slug = `demo-user-${Date.now().toString(36)}`;
       user = await this.prisma.user.create({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         data: {
           email: DEMO_EMAIL,
           slug,
@@ -250,7 +250,7 @@ export class AuthService {
   private async issueTokenPair(userId: string, email: string, role: string): Promise<TokenPair> {
     const accessSecret = this.config.get<string>('JWT_ACCESS_SECRET');
     const accessTtl = this.config.get<string>('JWT_ACCESS_TTL', '15m');
-    const refreshSecret = this.config.get<string>('JWT_REFRESH_SECRET');
+
     const refreshTtl = this.config.get<string>('JWT_REFRESH_TTL', '7d');
 
     const accessToken = this.jwt.sign(

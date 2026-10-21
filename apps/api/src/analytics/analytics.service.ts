@@ -251,7 +251,7 @@ export class AnalyticsService {
     return achievements;
   }
 
-  async getWeeklySummary(userId: string): Promise<WeeklySummary> {
+  async getWeeklySummary(_userId: string): Promise<WeeklySummary> {
     // This would need detailed activity tracking in production
     return {
       mostActiveDay: null,

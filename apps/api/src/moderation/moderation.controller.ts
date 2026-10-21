@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
   Get,
   Patch,
   Post,
@@ -29,9 +28,6 @@ const updateReportSchema = z.object({
   moderationStatus: z.nativeEnum(UserModerationStatus).optional(),
 });
 
-const updateUserStatusSchema = z.object({
-  moderationStatus: z.nativeEnum(UserModerationStatus),
-});
 
 @Controller('reports')
 @UseGuards(JwtAuthGuard)

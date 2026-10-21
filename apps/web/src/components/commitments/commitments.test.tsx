@@ -17,9 +17,9 @@ import { NeedCard } from './NeedCard';
 const mocks = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 vi.mock('@/components/ui/toast', () => ({ useToast: () => ({ success: mocks.success, error: mocks.error }) }));
 
-const reportBlockProps = vi.hoisted(() => ({ last: null as Record<string, any> | null }));
+const reportBlockProps = vi.hoisted(() => ({ last: null as Record<string, unknown> | null }));
 vi.mock('@/components/common/ReportBlockModal', () => ({
-  ReportBlockModal: (props: Record<string, any>) => {
+  ReportBlockModal: (props: Record<string, unknown>) => {
     reportBlockProps.last = props;
     return props.open ? <div role="dialog" aria-label="report or block" /> : null;
   },
@@ -56,15 +56,16 @@ describe('the demo world keeps the ladder rules', () => {
   });
 
   it('refuses contact details in the protected conversation with the Greek reason', () => {
-    let error: any;
+    let error: unknown;
     try {
       api('/api/commitments/threads/thr-intros-giorgos/messages', 'POST', { body: 'Πάρε με τηλέφωνο στο 6944123456' });
     } catch (e) {
       error = e;
     }
-    expect(error?.status).toBe(400);
-    expect(error?.details?.kinds).toEqual(['phone', 'messenger']);
-    expect(error?.details?.messageEl).toContain('αριθμό τηλεφώνου');
+    const err = error as { status?: number; details?: { kinds?: string[]; messageEl?: string } } | undefined;
+    expect(err?.status).toBe(400);
+    expect(err?.details?.kinds).toEqual(['phone', 'messenger']);
+    expect(err?.details?.messageEl).toContain('αριθμό τηλεφώνου');
   });
 
   it('stops terms after three revisions', () => {
@@ -122,11 +123,11 @@ describe('ThreadWorkspace', () => {
   it('offers the assistant the same confirm the button runs, with its undo', async () => {
     renderWithQuery(<ThreadWorkspace threadId="thr-intros-giorgos" />);
     await screen.findByText('Giorgos Vlachos');
-    let outcome: any;
+    let outcome!: Awaited<ReturnType<typeof runPageControl>>;
     await act(async () => {
       outcome = await runPageControl('confirm_terms_talk', undefined, true);
     });
-    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) throw new Error(`expected ok outcome, got: ${'error' in outcome ? outcome.error : 'cancelled'}`);
     expect(outcome.undo).toEqual({ control: 'retract_confirmation' });
     await waitFor(() => expect(api('/api/commitments/threads/thr-intros-giorgos').thread.step).toBe('terms'));
   });

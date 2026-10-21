@@ -337,7 +337,7 @@ export default function CohortDetailPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; className: string }> = {
+    const variants: Record<string, { variant: 'default' | 'secondary' | 'outline' | 'success' | 'warning' | 'destructive' | 'info'; className: string }> = {
       active: { variant: 'default', className: 'bg-status-success-bg text-status-success border-status-success-border' },
       inactive: { variant: 'secondary', className: 'bg-muted text-foreground' },
       pending: { variant: 'outline', className: 'bg-status-warning-bg text-status-warning border-status-warning-border' },

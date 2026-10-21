@@ -207,7 +207,7 @@ function BuilderPageContent() {
       if (!doc) {
         doc = await createDocument('application', 'Program applications');
       }
-      await updateDocumentSection(doc.id, 'applications', { applications: data } as Record<string, any>);
+      await updateDocumentSection(doc.id, 'applications', { applications: data } as Record<string, unknown>);
     } catch {
       // BuilderContext already surfaces the error banner.
     }

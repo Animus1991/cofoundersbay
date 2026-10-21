@@ -754,15 +754,15 @@ function TenantEditor({
                       <div key={key} className="space-y-2">
                         <label htmlFor={`tn-branding-${key}`} className="text-sm font-medium">{label}</label>
                         <div className="flex gap-2">
-                          <input type="color" aria-label={`${label} color picker`} value={(branding as any)[key]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="h-10 w-14 rounded border cursor-pointer p-1" />
-                          <Input id={`tn-branding-${key}`} value={(branding as any)[key]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="flex-1 font-mono text-sm" />
+                          <input type="color" aria-label={`${label} color picker`} value={branding[key as keyof typeof branding]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="h-10 w-14 rounded border cursor-pointer p-1" />
+                          <Input id={`tn-branding-${key}`} value={branding[key as keyof typeof branding]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="flex-1 font-mono text-sm" />
                         </div>
                       </div>
                     ))}
                   </div>
                   <div className="p-3 rounded-lg border flex gap-2">
                     {['primaryColor', 'secondaryColor', 'accentColor'].map(k => (
-                      <div key={k} className="flex-1 h-10 rounded-md" style={{ backgroundColor: (branding as any)[k] }} />
+                      <div key={k} className="flex-1 h-10 rounded-md" style={{ backgroundColor: branding[k as keyof typeof branding] }} />
                     ))}
                   </div>
                 </div>

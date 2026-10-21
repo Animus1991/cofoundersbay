@@ -80,7 +80,7 @@ function extractTenantSlugFromHostname(hostname: string): string | null {
   }
 
   // Platform subdomain: athens.cofounderbay.com
-  const subdomainPattern = new RegExp(`^([^.]+)\\.${PLATFORM_DOMAIN.replace('.', '\\.')}$`);
+  const subdomainPattern = new RegExp(`^([^.]+)\\.${PLATFORM_DOMAIN.replace(/\./g, '\\.')}$`);
   const match = host.match(subdomainPattern);
   if (match) {
     const sub = match[1].toLowerCase();
@@ -93,11 +93,26 @@ function extractTenantSlugFromHostname(hostname: string): string | null {
   return null; // Custom domains resolved client-side via resolveTenantFromDomain()
 }
 
+// A forwarded or direct host header is used to build redirect URLs, so it is
+// validated before it is trusted: host[:port] only, first entry of any
+// comma-separated proxy list. A malformed value falls back to the next header
+// and finally to the URL Next itself parsed - never to the bad string.
+const SAFE_HOST = /^[a-zA-Z0-9.-]+(?::\d+)?$/;
+
+function sanitizedHost(value: string | null): string | null {
+  const first = value?.split(',')[0]?.trim();
+  return first && SAFE_HOST.test(first) ? first : null;
+}
+
 function requestPublicOrigin(request: NextRequest): string {
-  const proto = request.headers.get('x-forwarded-proto') ?? request.nextUrl.protocol.replace(':', '') ?? 'https';
+  const forwardedProto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim();
+  const proto =
+    forwardedProto === 'http' || forwardedProto === 'https'
+      ? forwardedProto
+      : request.nextUrl.protocol.replace(':', '') || 'https';
   const host =
-    request.headers.get('x-forwarded-host') ??
-    request.headers.get('host') ??
+    sanitizedHost(request.headers.get('x-forwarded-host')) ??
+    sanitizedHost(request.headers.get('host')) ??
     request.nextUrl.host;
   return `${proto}://${host}`;
 }

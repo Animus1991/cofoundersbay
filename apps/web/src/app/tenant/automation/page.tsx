@@ -150,7 +150,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
             </div>
             <Switch
               aria-label={bilingualAria(label, labelEl)}
-              checked={!!(current as any)[key]}
+              checked={!!current[key as keyof typeof current]}
               disabled={update.isPending || (key !== 'automationsEnabled' && !current.automationsEnabled)}
               onCheckedChange={(val) => update.mutate({ [key]: val })}
             />

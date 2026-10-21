@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import nodemailer from 'nodemailer';
+import nodemailer, { type Transporter } from 'nodemailer';
 
 export type SendEmailParams = {
   to: string;
@@ -56,7 +56,7 @@ export function resolveSmtpSettings(get: (key: string) => string | undefined): S
 @Injectable()
 export class MailerService {
   private readonly logger = new Logger(MailerService.name);
-  private transporter: nodemailer.Transporter | null = null;
+  private transporter: Transporter | null = null;
   private from: string | null = null;
 
   constructor(private readonly config: ConfigService) {

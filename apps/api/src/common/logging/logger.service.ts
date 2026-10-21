@@ -1,5 +1,4 @@
 import { Injectable, LoggerService } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 
 export interface LogContext {
   requestId?: string;

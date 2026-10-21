@@ -52,7 +52,7 @@ import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { useBuilder } from '@/contexts/BuilderContext';
 import { ActivityTimeline } from './ActivityTimeline';
 import { useToast } from '@/components/ui/toast';
-import type { BuilderDocument } from '@/lib/builder-api';
+import type { BuilderDocument, BuilderDocumentType } from '@/lib/builder-api';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PageRail, type PageRailSection } from '@/components/layout/PageRail';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
@@ -507,7 +507,7 @@ export function BuilderWorkspace({
 
   const handleCreateDoc = useCallback(async (type: string, title: string) => {
     try {
-      const doc = await createDocument(type as any, title);
+      const doc = await createDocument(type as BuilderDocumentType, title);
       success(bilingualInline(builderEn('toast_doc_created'), builderEl('toast_doc_created')));
       selectDocument(doc.id);
       const tab = DOC_TO_TAB[type];

@@ -199,7 +199,7 @@ interface OnboardingData {
   languages: string[];
   avatarUrl?: string;
   skills: string[];
-  rolePayload: Record<string, any>;
+  rolePayload: Record<string, unknown>;
   preferences: {
     remote: boolean;
     locationPreference: string;
@@ -556,7 +556,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         </div>
 
         <div className="space-y-4">
-          <h3 className="font-semibold">What you'll get:</h3>
+          <h3 className="font-semibold">What you&apos;ll get:</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
             <div className="flex items-center gap-2">
               <CheckCircle className="icon-sm text-status-success" />
@@ -763,7 +763,7 @@ function SkillsStep({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const filteredSkills = skillsData?.filter((skill: any) => {
+  const filteredSkills = skillsData?.filter((skill: Skill) => {
     const matchesSearch = skill.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || skill.category === selectedCategory;
     return matchesSearch && matchesCategory;
@@ -821,7 +821,7 @@ function SkillsStep({
             <h3 className="font-semibold mb-2"><BilingualText en="Selected skills" el="Επιλεγμένες δεξιότητες" compact /><Counter value={selectedSkills.length} /></h3>
             <div className="flex flex-wrap gap-2">
               {selectedSkills.map(skillId => {
-                const skill = skillsData?.find((s: any) => s.id === skillId);
+                const skill = skillsData?.find((s: Skill) => s.id === skillId);
                 return (
                   <button
                     key={skillId}
@@ -843,7 +843,7 @@ function SkillsStep({
         <div>
           <h3 className="font-semibold mb-2"><BilingualText en="Available Skills" el="Διαθέσιμες δεξιότητες" compact /></h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-            {filteredSkills.map((skill: any) => (
+            {filteredSkills.map((skill: Skill) => (
               <button
                 key={skill.id}
                 onClick={() => onSkillToggle(skill.id)}
