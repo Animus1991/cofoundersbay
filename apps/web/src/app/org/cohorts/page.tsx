@@ -57,6 +57,7 @@ import { useRouter } from 'next/navigation';
 import { formatDate } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { demoMark } from '@/lib/demo/photos';
+import { PageFacts } from '@/components/common/PageFacts';
 
 /**
  * The page's own row from the API row.
@@ -366,24 +367,17 @@ export default function OrgCohortsPage() {
           </Select>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Total Cohorts', labelEl: 'Σύνολο κοορτών', value: cohorts.length },
-            { label: 'Active', labelEl: 'Ενεργές', value: cohorts.filter((c) => c.status === 'active').length },
-            totalMentors == null
-              ? { label: 'Cohort memberships', labelEl: 'Συμμετοχές σε κύκλους', value: totalStartups }
-              : { label: 'Total Startups', labelEl: 'Σύνολο startups', value: totalStartups },
-            { label: 'Total Mentors', labelEl: 'Σύνολο μεντόρων', value: totalMentors ?? '\u2014' },
-          ].map(({ label, labelEl, value }) => (
-            <Card key={label}>
-              <CardContent>
-                <p className="page-stat font-bold tabular-nums">{value}</p>
-                <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* The figures, one line before the list (docs §64.5, PageFacts): four tiles stood between the header and the first row */}
+        <PageFacts
+          labelEn="Cohorts in figures"
+          labelEl="Οι κοόρτεις σε αριθμούς"
+          facts={[
+            { id: 'cohorts', value: cohorts.length, en: cohorts.length === 1 ? 'cohort' : 'cohorts', el: cohorts.length === 1 ? 'κοόρτη' : 'κοόρτεις' },
+            { id: 'active', value: cohorts.filter((c) => c.status === 'active').length, en: 'active', el: 'ενεργές' },
+            totalMentors == null ? { id: 'startups', value: totalStartups, en: 'cohort memberships', el: 'συμμετοχές σε κύκλους' } : { id: 'startups', value: totalStartups, en: 'startups', el: 'startups' },
+            { id: 'mentors', value: totalMentors ?? '\u2014', en: 'mentors', el: 'μέντορες' },
+          ]}
+        />
 
         {/* Cohorts List */}
         <div className="space-y-3">

@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { companyStageLabel, formatRelativeTime } from '@/lib/utils';
+import { companyStageLabel, formatRelativeTime, initialsOf } from '@/lib/utils';
 import { listInvestorDeals, updateInvestorDeal, type InvestorDeal } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
@@ -37,6 +37,7 @@ import { RowHead } from '@/components/dashboard/SectionCard';
 import { bilingualInline } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { PageFacts } from '@/components/common/PageFacts';
 
 type PipelineStage = 'discovered' | 'reviewing' | 'meeting' | 'due_diligence' | 'negotiating' | 'invested' | 'passed';
 
@@ -97,7 +98,7 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
           <Avatar className="h-10 w-10 rounded-xl">
             <AvatarImage src={deal.logoUrl} alt="" />
             <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
-              {deal.name[0]?.toUpperCase()}
+              {initialsOf(deal.name)}
             </AvatarFallback>
           </Avatar>
         )}
@@ -393,22 +394,17 @@ export default function InvestorPipelinePage() {
     >
       <div className="space-y-6">
 
-        {/* Stats Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Total Deals', labelEl: 'Σύνολο ευκαιριών', value: deals.length },
-            { label: 'Pipeline Value', labelEl: 'Αξία ροής', value: pipelineValue },
-            { label: 'Avg Readiness', labelEl: 'Μέση ετοιμότητα', value: avgReadiness == null ? '—' : `${avgReadiness}%` },
-            { label: 'Invested', labelEl: 'Επενδύσεις', value: deals.filter((d) => d.pipelineStage === 'invested').length },
-          ].map(({ label, labelEl, value }) => (
-            <Card key={label}>
-              <CardContent>
-                <p className="page-stat font-bold tabular-nums">{value}</p>
-                <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* The figures, one line before the list (docs §64.5, PageFacts): four tiles stood between the header and the first row */}
+        <PageFacts
+          labelEn="Your pipeline in figures"
+          labelEl="Το pipeline σας σε αριθμούς"
+          facts={[
+            { id: 'deals', value: deals.length, en: deals.length === 1 ? 'deal' : 'deals', el: deals.length === 1 ? 'ευκαιρία' : 'ευκαιρίες' },
+            { id: 'value', value: pipelineValue, en: 'pipeline value', el: 'αξία ροής' },
+            { id: 'readiness', value: avgReadiness == null ? '—' : `${avgReadiness}%`, en: 'average readiness', el: 'μέση ετοιμότητα' },
+            { id: 'invested', value: deals.filter((d) => d.pipelineStage === 'invested').length, en: 'invested', el: 'με επένδυση' },
+          ]}
+        />
 
         {/* Search */}
         <div className="flex gap-3">

@@ -35,6 +35,22 @@ const FORMAT_OPTIONS = [
   { value: 'hybrid', en: 'Hybrid', el: 'Υβριδικές', icon: Calendar },
 ] as const satisfies ReadonlyArray<{ value: EventFilter; en: string; el: string; icon: unknown }>;
 
+/**
+ * What kind of event: the API's `eventType`. Filtered on the loaded list (at
+ * most 48), with how many of each the list holds, as the AI Studio
+ * prototype's categories show theirs (docs §62.5 #7).
+ */
+type EventKind = 'all' | EventItem['eventType'];
+const KIND_OPTIONS: ReadonlyArray<{ value: EventKind; en: string; el: string }> = [
+  { value: 'all', en: 'Any kind', el: 'Οποιοδήποτε είδος' },
+  { value: 'meetup', en: 'Meetups', el: 'Συναντήσεις' },
+  { value: 'workshop', en: 'Workshops', el: 'Εργαστήρια' },
+  { value: 'webinar', en: 'Webinars', el: 'Διαδικτυακά σεμινάρια' },
+  { value: 'networking', en: 'Networking', el: 'Δικτύωση' },
+  { value: 'demo_day', en: 'Demo days', el: 'Demo days' },
+  { value: 'other', en: 'Other', el: 'Άλλα' },
+];
+
 function toEventData(item: EventItem): EventData {
   return {
     id: item.id,
@@ -64,6 +80,7 @@ export default function EventsPage() {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'my-events' | 'past'>('upcoming');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [filter, setFilter] = useState<EventFilter>('all');
+  const [kind, setKind] = useState<EventKind>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const { openRailSection } = usePageRail();
   // Offered to the assistant: the tab, the format filter and the layout,
@@ -77,6 +94,8 @@ export default function EventsPage() {
     ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
     choiceControl('format', 'Event format filter', 'Φίλτρο μορφής εκδήλωσης',
       FORMAT_OPTIONS.map(({ value, en, el }) => ({ value, en, el })), filter, (v) => setFilter(v as EventFilter)),
+    choiceControl('kind', 'Event kind filter', 'Φίλτρο είδους εκδήλωσης',
+      KIND_OPTIONS.map(({ value, en, el }) => ({ value, en, el })), kind, (v) => setKind(v as EventKind)),
     choiceControl('view', 'Events layout', 'Διάταξη εκδηλώσεων', [
       { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
       { value: 'list', en: 'List', el: 'Λίστα' },
@@ -102,7 +121,20 @@ export default function EventsPage() {
   });
 
   const eventsRaw = eventsResult?.events ?? [];
-  const events = useMemo(() => eventsRaw.map(toEventData), [eventsRaw]);
+  // How many of each kind the loaded list holds; a kind with none is not offered.
+  const kindCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const e of eventsRaw) counts.set(e.eventType, (counts.get(e.eventType) ?? 0) + 1);
+    return counts;
+  }, [eventsRaw]);
+  const kindOptions = KIND_OPTIONS
+    .filter((o) => o.value === 'all' || o.value === kind || (kindCounts.get(o.value) ?? 0) > 0)
+    .map((o) => ({ ...o, count: o.value === 'all' ? eventsRaw.length : kindCounts.get(o.value) ?? 0 }));
+  const events = useMemo(
+    () => eventsRaw.filter((e) => kind === 'all' || e.eventType === kind).map(toEventData),
+    [eventsRaw, kind],
+  );
+  const filtersOn = (filter !== 'all' ? 1 : 0) + (kind !== 'all' ? 1 : 0);
   const featured = viewMode === 'grid' ? events[0] : null;
   const rest = viewMode === 'grid' ? events.slice(1) : events;
 
@@ -197,12 +229,15 @@ export default function EventsPage() {
       glyph: 'sliders',
       labelEn: 'Filters',
       labelEl: 'Φίλτρα',
-      badge: filter !== 'all' ? 1 : null,
+      badge: filtersOn || null,
       content: (
         <div className="space-y-4">
           <RailOptions title="Format" titleEl="Μορφή" options={FORMAT_OPTIONS} value={filter} onChange={setFilter} />
-          {filter !== 'all' && (
-            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => setFilter('all')} />
+          {kindOptions.length > 2 || kind !== 'all' ? (
+            <RailOptions title="Kind" titleEl="Είδος" options={kindOptions} value={kind} onChange={setKind} />
+          ) : null}
+          {filtersOn > 0 && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setFilter('all'); setKind('all'); }} />
           )}
         </div>
       ),
@@ -325,12 +360,12 @@ export default function EventsPage() {
                       : <BilingualText en="Sign in to view your event activity." el="Συνδεθείτε για να δείτε τις εκδηλώσεις σας." />
                     : searchQuery.trim()
                       ? <BilingualText
-                          en={`Nothing matched “${searchQuery.trim()}”${filter !== 'all' ? ', with the format filter in the side panel' : ''}.`}
-                          el={`Τίποτα δεν ταιριάζει με «${searchQuery.trim()}»${filter !== 'all' ? ', μαζί με το φίλτρο μορφής στο πλευρικό πάνελ' : ''}.`}
+                          en={`Nothing matched “${searchQuery.trim()}”${filtersOn ? ', with the filters in the side panel' : ''}.`}
+                          el={`Τίποτα δεν ταιριάζει με «${searchQuery.trim()}»${filtersOn ? ', μαζί με τα φίλτρα στο πλευρικό πάνελ' : ''}.`}
                           wrap
                         />
-                      : filter !== 'all'
-                        ? <BilingualText en="The format filter in the side panel may be hiding events." el="Το φίλτρο μορφής στο πλευρικό πάνελ ίσως κρύβει εκδηλώσεις." />
+                      : filtersOn
+                        ? <BilingualText en="The filters in the side panel may be hiding events." el="Τα φίλτρα στο πλευρικό πάνελ ίσως κρύβουν εκδηλώσεις." />
                         : undefined
                 }
                 illustration="calendar"
@@ -340,7 +375,7 @@ export default function EventsPage() {
                     <Button asChild>
                       <Link href="/login"><BilingualText en="Sign in" el="Σύνδεση" compact /></Link>
                     </Button>
-                  ) : filter !== 'all' ? (
+                  ) : filtersOn ? (
                     <Button variant="secondary" onClick={() => openRailSection('filters')}>
                       <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
                     </Button>

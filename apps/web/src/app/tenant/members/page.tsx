@@ -65,6 +65,7 @@ import { statusEl } from '@/components/common/StatusText';
 import { formatDate } from '@/lib/i18n/format';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { PageFacts } from '@/components/common/PageFacts';
 
 /**
  * The page's own row from the tenant membership row.
@@ -447,22 +448,17 @@ export default function TenantMembersPage() {
     >
       <div className="space-y-6">
 
-        {/* Stats strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Total Members', labelEl: 'Σύνολο μελών', value: members.length },
-            { label: 'Online Now', labelEl: 'Συνδεδεμένοι τώρα', value: onlineCount ?? '—' },
-            { label: 'Avg Engagement', labelEl: 'Μέση συμμετοχή', value: avgEngagement == null ? '—' : `${avgEngagement}%` },
-            { label: 'Pending Approval', labelEl: 'Σε αναμονή έγκρισης', value: members.filter((m) => m.status === 'pending').length },
-          ].map(({ label, labelEl, value }) => (
-            <Card key={label}>
-              <CardContent>
-                <p className="page-stat font-bold tabular-nums">{value}</p>
-                <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* The figures, one line before the list (docs §64.5, PageFacts): four tiles stood between the header and the first row */}
+        <PageFacts
+          labelEn="Members in figures"
+          labelEl="Τα μέλη σε αριθμούς"
+          facts={[
+            { id: 'members', value: members.length, en: members.length === 1 ? 'member' : 'members', el: 'μέλη' },
+            { id: 'online', value: onlineCount ?? '—', en: 'online now', el: 'συνδεδεμένοι τώρα' },
+            { id: 'engagement', value: avgEngagement == null ? '—' : `${avgEngagement}%`, en: 'average engagement', el: 'μέση συμμετοχή' },
+            { id: 'pending', value: members.filter((m) => m.status === 'pending').length, en: 'pending approval', el: 'σε αναμονή έγκρισης' },
+          ]}
+        />
 
         {/* Search & Filters */}
         <div className="flex flex-col sm:flex-row gap-3">

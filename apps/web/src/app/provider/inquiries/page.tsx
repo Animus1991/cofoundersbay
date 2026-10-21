@@ -48,6 +48,7 @@ import { StatusText } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { PageFacts } from '@/components/common/PageFacts';
 
 type Inquiry = {
   id: string;
@@ -386,22 +387,17 @@ export default function ProviderInquiriesPage() {
     >
       <div className="space-y-6">
 
-        {/* Stats strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Total Inquiries', labelEl: 'Σύνολο αιτημάτων', value: inquiries.length },
-            { label: 'New', labelEl: 'Νέα', value: counts.new },
-            { label: 'Response Rate', labelEl: 'Ποσοστό απαντήσεων', value: `${responseRate}%` },
-            { label: 'Conversion', labelEl: 'Μετατροπή σε πελάτες', value: `${conversionRate}%` },
-          ].map(({ label, labelEl, value }) => (
-            <Card key={label}>
-              <CardContent>
-                <p className="page-stat font-bold tabular-nums">{value}</p>
-                <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* The figures, one line before the list (docs §64.5, PageFacts): four tiles stood between the header and the first row */}
+        <PageFacts
+          labelEn="Your inquiries in figures"
+          labelEl="Τα αιτήματά σας σε αριθμούς"
+          facts={[
+            { id: 'total', value: inquiries.length, en: inquiries.length === 1 ? 'inquiry' : 'inquiries', el: inquiries.length === 1 ? 'αίτημα' : 'αιτήματα' },
+            { id: 'new', value: counts.new, en: 'new', el: 'νέα' },
+            { id: 'response', value: `${responseRate}%`, en: 'response rate', el: 'ποσοστό απαντήσεων' },
+            { id: 'conversion', value: `${conversionRate}%`, en: 'became clients', el: 'έγιναν πελάτες' },
+          ]}
+        />
 
         {/* Search */}
         <div className="relative max-w-md">

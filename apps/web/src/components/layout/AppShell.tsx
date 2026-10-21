@@ -288,7 +288,17 @@ export function AppShell({
               beside the title, when it asked for 57.5rem. Below sm the actions
               wrap under the title, full width. */}
           <section>
-            <div className="grid min-w-0 grid-cols-1 items-start gap-3 [grid-template-areas:'title'_'actions'_'ask'] sm:grid-cols-[minmax(0,1fr)_auto] sm:[grid-template-areas:'title_actions'_'ask_ask'] [@container(min-width:64rem)]:grid-cols-[minmax(0,1fr)_auto_18rem] [@container(min-width:64rem)]:[grid-template-areas:'title_actions_ask']">
+            {/* Without the field (the homes, which ask in their own box) the
+                row has no third column: an empty 18rem track took that much
+                width from the title on every wide home header. */}
+            <div
+              className={cn(
+                'grid min-w-0 grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto]',
+                showAskAi
+                  ? "[grid-template-areas:'title'_'actions'_'ask'] sm:[grid-template-areas:'title_actions'_'ask_ask'] [@container(min-width:64rem)]:grid-cols-[minmax(0,1fr)_auto_18rem] [@container(min-width:64rem)]:[grid-template-areas:'title_actions_ask']"
+                  : "[grid-template-areas:'title'_'actions'] sm:[grid-template-areas:'title_actions']",
+              )}
+            >
               <div className="min-w-0 [grid-area:title]" data-page-header="">
                 {pageTitle && (
                   <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>

@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Mail, Users, Gift, Copy, Check, Send, X, Clock,
-  UserCheck, Loader2, Link2, Sparkles, Trophy,
+  Mail, Users, Copy, Check, X, Clock,
+  Loader2, Link2, Sparkles, Trophy,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { INVITE_STRINGS, inviteEn, inviteEl } from '@/lib/i18n/strings-invite';
 import { qk } from '@/lib/query-keys';
 import { REFERRAL_REWARD_COPY } from '@cofounderbay/shared';
+import { PageFacts } from '@/components/common/PageFacts';
 
 type InviteKey = keyof typeof INVITE_STRINGS;
 
@@ -38,37 +39,6 @@ const STATUS_CONFIG: Record<InviteItem['status'], { key: InviteKey; color: strin
   expired:   { key: 'status_expired',   color: 'bg-muted text-muted-foreground' },
   cancelled: { key: 'status_cancelled', color: 'bg-muted text-muted-foreground' },
 };
-
-function StatCard({
-  labelKey,
-  value,
-  descriptionKey,
-  accent = false,
-}: {
-  icon: React.ElementType;
-  labelKey: InviteKey;
-  value: number | string;
-  descriptionKey?: InviteKey;
-  accent?: boolean;
-}) {
-  return (
-    <Card className={cn('', accent && 'border-primary-muted bg-primary-subtle')}>
-      <CardContent>
-        <div className="min-w-0">
-          <p className="text-xs font-medium uppercase leading-snug tracking-wide text-muted-foreground">
-            <BilingualText en={inviteEn(labelKey)} el={inviteEl(labelKey)} compact />
-          </p>
-          <p className={cn('mt-1 text-3xl font-bold tabular-nums', accent ? 'text-primary-accessible' : 'text-foreground')}>{value}</p>
-          {descriptionKey && (
-            <p className="mt-1 text-xs leading-snug text-muted-foreground">
-              <BilingualText en={inviteEn(descriptionKey)} el={inviteEl(descriptionKey)} compact wrap />
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 function InviteRow({ invite, onCancel, cancelling }: {
   invite: InviteItem;
@@ -187,21 +157,22 @@ export default function InvitePage() {
   return (
     <AppShell>
       <div className="w-full space-y-6 pb-10">
-        {/* Stats row */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {statsLoading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}><CardContent><Skeleton className="h-12 w-full" /></CardContent></Card>
-            ))
-          ) : (
-            <>
-              <StatCard icon={Send} labelKey="stat_sent" value={stats?.total ?? 0} />
-              <StatCard icon={UserCheck} labelKey="stat_joined" value={stats?.accepted ?? 0} descriptionKey="stat_joined_hint" accent />
-              <StatCard icon={UserCheck} labelKey="stat_active" value={stats?.active ?? 0} descriptionKey="stat_active_hint" />
-              <StatCard icon={Gift} labelKey="stat_remaining" value={stats?.remaining ?? 0} descriptionKey="stat_remaining_hint" />
-            </>
-          )}
-        </div>
+        {/* The figures, one line (docs §64.5, PageFacts): four tiles stood
+            above the form. Each keeps what its tile's second line said. */}
+        {statsLoading ? (
+          <Skeleton className="h-5 w-full max-w-xl" />
+        ) : (
+          <PageFacts
+            labelEn="Your invitations in figures"
+            labelEl="Οι προσκλήσεις σας σε αριθμούς"
+            facts={[
+              { id: 'sent', value: stats?.total ?? 0, en: inviteEn('stat_sent').toLowerCase(), el: inviteEl('stat_sent').toLowerCase() },
+              { id: 'joined', value: stats?.accepted ?? 0, en: `${inviteEn('stat_joined').toLowerCase()} (${inviteEn('stat_joined_hint').toLowerCase()})`, el: `${inviteEl('stat_joined').toLowerCase()} (${inviteEl('stat_joined_hint').toLowerCase()})` },
+              { id: 'active', value: stats?.active ?? 0, en: `${inviteEn('stat_active').toLowerCase()} (${inviteEn('stat_active_hint').toLowerCase()})`, el: `${inviteEl('stat_active').toLowerCase()} (${inviteEl('stat_active_hint').toLowerCase()})` },
+              { id: 'remaining', value: stats?.remaining ?? 0, en: inviteEn('stat_remaining_hint').toLowerCase(), el: inviteEl('stat_remaining_hint').toLowerCase() },
+            ]}
+          />
+        )}
         {/* Why "Active" and not "Joined" is what rewards count. */}
         <p className="text-xs text-muted-foreground">
           <BilingualText en={REFERRAL_REWARD_COPY.en} el={REFERRAL_REWARD_COPY.el} wrap />

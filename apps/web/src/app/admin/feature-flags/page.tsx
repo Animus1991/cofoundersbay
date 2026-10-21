@@ -50,6 +50,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { PageFacts } from '@/components/common/PageFacts';
 
 type FlagStatus = 'enabled' | 'disabled' | 'rollout' | 'experiment';
 type FlagTarget = 'all' | 'beta' | 'admins' | 'specific_tenants' | 'percentage';
@@ -496,22 +497,17 @@ export default function AdminFeatureFlagsPage() {
       }
     >
       <div className="space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Enabled', labelEl: 'Ενεργές', value: stats.enabled },
-            { label: 'In Rollout', labelEl: 'Σε σταδιακή διάθεση', value: stats.rollout },
-            { label: 'Experiments', labelEl: 'Πειράματα', value: stats.experiment },
-            { label: 'Disabled', labelEl: 'Ανενεργές', value: stats.disabled },
-          ].map(({ label, labelEl, value }) => (
-            <Card key={label}>
-              <CardContent>
-                <p className="page-stat font-bold tabular-nums">{value}</p>
-                <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* The figures, one line before the list (docs §64.5, PageFacts): four tiles stood between the header and the first row */}
+        <PageFacts
+          labelEn="Flags in figures"
+          labelEl="Οι σημαίες σε αριθμούς"
+          facts={[
+            { id: 'enabled', value: stats.enabled, en: 'enabled', el: 'ενεργές' },
+            { id: 'rollout', value: stats.rollout, en: 'in rollout', el: 'σε σταδιακή διάθεση' },
+            { id: 'experiments', value: stats.experiment, en: stats.experiment === 1 ? 'experiment' : 'experiments', el: 'πειράματα' },
+            { id: 'disabled', value: stats.disabled, en: 'disabled', el: 'ανενεργές' },
+          ]}
+        />
 
         {/* Search */}
         <div className="relative max-w-md">

@@ -32,8 +32,8 @@ import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import {
   Zap, Play, Pause, Trash2, RefreshCw, ChevronRight,
-  CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle,
-  Activity, Settings, Layers, ListChecks, Plus, X, Pencil,
+  CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle, Settings,
+  Layers, Plus, X, Pencil,
 } from 'lucide-react';
 import { bilingualAria } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -41,6 +41,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 
 import { pressableProps } from '@/lib/pressable';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { PageFacts } from '@/components/common/PageFacts';
 const TRIGGER_TYPES = [
   'user_signup','onboarding_incomplete','profile_incomplete','match_generated','match_not_viewed',
   'connection_request_sent','connection_not_answered','connection_accepted',
@@ -458,23 +459,17 @@ export default function AutomationsPage() {
           />
         )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { icon: ListChecks, label: 'Total Rules', labelEl: 'Σύνολο κανόνων', value: total, color: 'text-foreground' },
-            { icon: Zap, label: 'Active', labelEl: 'Ενεργοί', value: activeCount, color: 'text-status-success' },
-            { icon: Activity, label: 'Executions (recent)', labelEl: 'Εκτελέσεις (πρόσφατες)', value: executions.length, color: 'text-status-info' },
-            { icon: AlertTriangle, label: 'Rules with Failures', labelEl: 'Κανόνες με αποτυχίες', value: failureCount, color: 'text-status-warning' },
-          ].map(stat => (
-            <Card key={stat.label} className="p-4 flex items-center gap-3">
-              <stat.icon className={`icon-md ${stat.color}`} />
-              <div>
-                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
-                <p className="page-stat text-xl font-bold">{stat.value}</p>
-              </div>
-            </Card>
-          ))}
-        </div>
+        {/* The figures, one line before the list (docs §64.5, PageFacts): four tiles stood between the header and the first row */}
+        <PageFacts
+          labelEn="Automations in figures"
+          labelEl="Οι αυτοματισμοί σε αριθμούς"
+          facts={[
+            { id: 'rules', value: total, en: total === 1 ? 'rule' : 'rules', el: total === 1 ? 'κανόνας' : 'κανόνες' },
+            { id: 'active', value: activeCount, en: 'active', el: 'ενεργοί' },
+            { id: 'executions', value: executions.length, en: 'recent executions', el: 'πρόσφατες εκτελέσεις' },
+            { id: 'failures', value: failureCount, en: failureCount === 1 ? 'rule with failures' : 'rules with failures', el: 'με αποτυχίες' },
+          ]}
+        />
 
         {/* Tab toggle */}
         <div className="flex border-b border-border gap-1">
