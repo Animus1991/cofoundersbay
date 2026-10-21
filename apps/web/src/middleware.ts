@@ -16,7 +16,6 @@ const PUBLIC_PATHS = new Set([
   '/privacy',
   '/transparency',
   '/help',
-  '/demo',
   '/api-status',
   '/manifest.json',
   '/site.webmanifest',
