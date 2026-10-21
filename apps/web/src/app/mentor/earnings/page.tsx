@@ -23,13 +23,14 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { getMeProfile } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { MENTOR_DEMO_EARNINGS } from '@/lib/demo/mentor-world';
 import { demoPortrait } from '@/lib/demo/photos';
+import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 
 // ── Mock data (replace with real API calls) ──────────────────────────────────
 
@@ -211,13 +212,14 @@ export default function MentorEarningsPage() {
       labelEl: 'Περίοδος',
       badge: period !== PERIODS[0].value ? 1 : null,
       content: (
-        <div className="space-y-1" role="radiogroup" aria-label={bilingualAria('Period', 'Περίοδος')}>
-          {PERIODS.map((p) => (
+        <div className="space-y-1" role="radiogroup" aria-label={bilingualAria('Period', 'Περίοδος')} onKeyDown={(e) => onRadioGroupKeyDown(e)}>
+          {PERIODS.map((p, i) => (
             <button
               key={p.value}
               type="button"
               role="radio"
               aria-checked={period === p.value}
+              tabIndex={radioTabIndex(period === p.value, i, PERIODS.some((x) => x.value === period))}
               onClick={() => setPeriod(p.value)}
               className={cn(
                 'tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm transition-colors',
@@ -305,7 +307,7 @@ export default function MentorEarningsPage() {
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={tx.mentee?.avatarUrl ?? undefined} alt="" />
                           <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
-                            {tx.mentee?.name?.[0] ?? '?'}
+                            {initialsOf(tx.mentee?.name)}
                           </AvatarFallback>
                         </Avatar>
                       )}

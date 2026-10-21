@@ -799,7 +799,8 @@ export default function FundraisingPage() {
     [hydrated, showDemoData, tick],
   );
   const stats = fundraisingPipelineStats(leads);
-  const round = showDemoData ? fundraisingRoundView(leads) : null;
+  // On the reader's calendar once the browser has its own clock (fundraisingRoundView).
+  const round = showDemoData ? fundraisingRoundView(leads, hydrated ? Date.now() : undefined) : null;
   const harborLive = showDemoData && leads.some((l) => l.id === 'ata');
   const askAi = harborLive ? HARBOR_ASK : GENERIC_ASK;
 

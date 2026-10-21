@@ -63,6 +63,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { formatDate } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 
 const PROGRAM_STATUS_FILTERS: { value: 'all' | 'current' | Program['status']; en: string; el: string }[] = [
   { value: 'current', en: 'Not archived', el: 'Μη αρχειοθετημένα' },
@@ -434,13 +435,14 @@ export default function TenantProgramsPage() {
       labelEl: 'Κατάσταση προγράμματος',
       badge: statusFilterOn ? 1 : null,
       content: (
-        <div className="space-y-1" role="radiogroup" aria-label="Program status">
-          {PROGRAM_STATUS_FILTERS.map((f) => (
+        <div className="space-y-1" role="radiogroup" aria-label={bilingualAria('Program status', 'Κατάσταση προγράμματος')} onKeyDown={(e) => onRadioGroupKeyDown(e)}>
+          {PROGRAM_STATUS_FILTERS.map((f, i) => (
             <button
               key={f.value}
               type="button"
               role="radio"
               aria-checked={statusFilter === f.value}
+              tabIndex={radioTabIndex(statusFilter === f.value, i, PROGRAM_STATUS_FILTERS.some((x) => x.value === statusFilter))}
               onClick={() => setStatusFilter(f.value)}
               className={cn(
                 'tap-target flex min-h-9 w-full items-center justify-between gap-2 rounded-lg px-2.5 text-left text-sm transition-colors',

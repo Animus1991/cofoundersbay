@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { resolvePreviewApi } from './preview-api';
+import { FUNDRAISING_SEED_ROUND } from './fundraising-demo';
+import { DEMO_PROJECTS_SEED } from './projects-demo';
 
 type Milestone = {
   id: string;
@@ -9,6 +11,7 @@ type Milestone = {
   progress: number;
   collaborator?: { id: string; displayName: string } | null;
   collaboratorId?: string | null;
+  dueDate?: string | null;
 };
 
 type MilestoneList = { milestones?: Milestone[] };
@@ -23,6 +26,14 @@ describe('preview milestones', () => {
     expect(seed?.collaborator?.displayName).toBe('Elena Papadopoulos');
     expect(listed.milestones?.some((m) => m.title === 'Launch beta to first 20 users')).toBe(false);
     expect(listed.milestones?.some((m) => m.title === 'Complementary cofounder — technical + commercial pair')).toBe(true);
+  });
+
+  it('is due when the round closes, so the dashboard never calls it overdue beside a round still open', () => {
+    const listed = resolvePreviewApi('/api/milestones') as MilestoneList & { milestones?: Array<Milestone & { dueDate?: string | null }> };
+    const seed = listed.milestones?.find((m) => m.id === 'ms-4');
+    expect(seed?.dueDate).toBe(FUNDRAISING_SEED_ROUND.closingDate);
+    const harbor = DEMO_PROJECTS_SEED.find((p) => p.milestones?.some((m) => m.id === 'h4'));
+    expect(harbor?.milestones?.find((m) => m.id === 'h4')?.date).toBe(FUNDRAISING_SEED_ROUND.closingDate);
   });
 
   it('replaces leftover generic titles with Harbor copy on the next list GET', () => {

@@ -25,10 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useLocalDateFormat } from '@/lib/i18n/useDateFormat';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { buildIcs, downloadIcs } from '@/lib/ics';
 
 type ScheduleCallModalProps = {
   open: boolean;
@@ -168,7 +169,7 @@ export function ScheduleCallModal({
             <Avatar className="h-10 w-10">
               <AvatarImage src={recipientAvatar} />
               <AvatarFallback className="bg-primary/10 text-primary-accessible">
-                {recipientName[0]}
+                {initialsOf(recipientName)}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -407,20 +408,18 @@ export function ScheduleCallModal({
                   const start = new Date(selectedDate);
                   start.setHours((pm ? h + 12 : am12 ? 0 : h) || 0, m || 0, 0, 0);
                   const end = new Date(start.getTime() + Number(duration) * 60_000);
-                  const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-                  const ics = [
-                    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//CoFounderBay//Calls//EN', 'BEGIN:VEVENT',
-                    `UID:${stamp(start)}-${recipientId}@cofounderbay`, `DTSTAMP:${stamp(new Date())}`,
-                    `DTSTART:${stamp(start)}`, `DTEND:${stamp(end)}`,
-                    `SUMMARY:Call with ${recipientName.replace(/[,;\\]/g, ' ')}`,
-                    'END:VEVENT', 'END:VCALENDAR',
-                  ].join('\r\n');
-                  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = 'call.ics';
-                  a.click();
-                  URL.revokeObjectURL(url);
+                  // The shared calendar writer (lib/ics): it escapes the name
+                  // rather than blanking its commas, folds long lines, and
+                  // titles the call in the reader's language.
+                  downloadIcs(
+                    'call.ics',
+                    buildIcs([{
+                      uid: `${start.getTime()}-${recipientId}`,
+                      title: sayOne(`Call with ${recipientName}`, `Κλήση με ${recipientName}`),
+                      start: start.toISOString(),
+                      end: end.toISOString(),
+                    }]),
+                  );
                 }}
               >
                 <BilingualText en="Add to Calendar" el="Προσθήκη στο ημερολόγιο" compact />

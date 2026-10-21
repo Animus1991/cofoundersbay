@@ -66,6 +66,19 @@ describe('conversational onboarding', () => {
     expect(screen.getByText('MVP · Part-time · Co-founder')).toBeTruthy();
   });
 
+  it('keeps the bio when a founder reloads on the goals step', async () => {
+    saveOnboardingProgress('u1', { step: 'bio', form });
+    render(<ConversationalOnboarding />);
+    const box = await screen.findByTestId('onboarding-bio-input', {}, { timeout: 4000 });
+    fireEvent.change(box, { target: { value: 'Building a logistics marketplace for islands' } });
+    fireEvent.click(screen.getByTestId('onboarding-continue-button'));
+    await screen.findByTestId('onboarding-goals', {}, { timeout: 4000 });
+    // The reload happens here: what was saved must be the goals step, bio and all.
+    const saved = loadOnboardingProgress('u1');
+    expect(saved?.step).toBe('goals');
+    expect(saved?.form.bio).toBe('Building a logistics marketplace for islands');
+  });
+
   it('skips the goals step for a mentor', async () => {
     saveOnboardingProgress('u1', { step: 'bio', form: { ...form, role: 'mentor' } });
     render(<ConversationalOnboarding />);

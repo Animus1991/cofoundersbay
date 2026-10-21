@@ -41,6 +41,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
 import { isOwnedProject, readProjectsOverlay, resolveDemoProjects, type DemoProject, type ProjectStatus } from '@/lib/projects-demo';
+import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 
 const CATEGORIES = [
   'AI/ML', 'B2B SaaS', 'CleanTech', 'Community', 'Consumer', 'Developer Tools', 'E-commerce',
@@ -266,8 +267,8 @@ function PostingGuide() {
                 <CardTitle><BilingualText en={CMT.kind.en} el={CMT.kind.el} compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div role="radiogroup" aria-label={bilingualAria(CMT.kind.en, CMT.kind.el)} className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                  {COMMITMENT_KINDS.map((k) => {
+                <div role="radiogroup" aria-label={bilingualAria(CMT.kind.en, CMT.kind.el)} className="grid grid-cols-1 gap-2 sm:grid-cols-3" onKeyDown={(e) => onRadioGroupKeyDown(e)}>
+                  {COMMITMENT_KINDS.map((k, i) => {
                     const on = form.kind === k;
                     const copy = kindCopy(k);
                     return (
@@ -276,6 +277,7 @@ function PostingGuide() {
                         type="button"
                         role="radio"
                         aria-checked={on}
+                        tabIndex={radioTabIndex(on, i, COMMITMENT_KINDS.includes(form.kind as (typeof COMMITMENT_KINDS)[number]))}
                         disabled={Boolean(editId)}
                         onClick={() => set('kind')(k)}
                         className={cn(

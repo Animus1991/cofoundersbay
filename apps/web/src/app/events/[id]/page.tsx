@@ -19,6 +19,8 @@ import { qk } from '@/lib/query-keys';
 import { usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { buildIcs, downloadIcs, icsFileName } from '@/lib/ics';
+import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
+import { bilingualAria } from '@/lib/i18n/format';
 
 type Rsvp = 'going' | 'interested' | 'not_going';
 
@@ -271,12 +273,14 @@ export default function EventDetailPage() {
               {ended ? (
                 <Badge variant="secondary"><BilingualText en="This event has ended" el="Η εκδήλωση ολοκληρώθηκε" compact /></Badge>
               ) : (
-                <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label="RSVP">
-                  {RSVP_OPTIONS.map((o) => (
+                // The arrows move without answering: an RSVP is sent the moment it is chosen.
+                <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label={bilingualAria('RSVP', 'Συμμετοχή')} onKeyDown={(e) => onRadioGroupKeyDown(e, { select: false })}>
+                  {RSVP_OPTIONS.map((o, i) => (
                     <Button
                       key={o.value}
                       role="radio"
                       aria-checked={event.viewerRsvp === o.value}
+                      tabIndex={radioTabIndex(event.viewerRsvp === o.value, i, RSVP_OPTIONS.some((x) => x.value === event.viewerRsvp))}
                       variant={event.viewerRsvp === o.value ? 'default' : 'outline'}
                       size="sm"
                       disabled={o.value === 'going' && full}

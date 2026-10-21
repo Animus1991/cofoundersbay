@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildIcs, icsFileName, icsText } from './ics';
+import { buildIcs, foldIcsLine, icsFileName, icsText } from './ics';
 
 const now = new Date('2026-10-20T08:00:00.000Z');
 
@@ -31,6 +31,17 @@ describe('calendar files', () => {
   it('gives an entry without an end one hour', () => {
     const ics = buildIcs([{ uid: 'e', title: 'Call', start: '2026-10-22T09:30:00.000Z' }], { now });
     expect(ics).toContain('DTEND:20261022T103000Z');
+  });
+
+  it('folds a long line at 75 octets without splitting a Greek letter', () => {
+    const title = 'Εργαστήριο παρουσίασης για ιδρυτές και επενδυτές στην Αθήνα, με σημειώσεις';
+    const ics = buildIcs([{ uid: 'w', title, start: '2026-10-22T09:30:00.000Z' }], { now });
+    const physical = ics.split('\r\n');
+    for (const line of physical) expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);
+    // Unfolding (a line break followed by one space is removed) gives the line back.
+    const unfolded = ics.replace(/\r\n /g, '').split('\r\n');
+    expect(unfolded).toContain(`SUMMARY:${icsText(title)}`);
+    expect(foldIcsLine('SUMMARY:Short')).toBe('SUMMARY:Short');
   });
 
   it('names the file after the title', () => {

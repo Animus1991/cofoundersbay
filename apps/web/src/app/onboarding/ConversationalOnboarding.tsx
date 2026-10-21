@@ -17,6 +17,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { COMMITMENT_LEVELS, LOOKING_FOR_OPTIONS, STARTUP_STAGES, founderGoalsPayload } from '@/lib/founder-options';
+import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 
 type Role = 'founder' | 'mentor' | 'investor' | 'org';
 
@@ -282,7 +283,10 @@ export function ConversationalOnboarding() {
 
   const advanceTo = useCallback(async (nextStep: Step, userMsg?: string) => {
     if (userMsg) addUserMessage(userMsg);
-    if ((INPUT_STEPS as Step[]).includes(nextStep)) {
+    // Every answer step is a checkpoint, a founder's Goals included: it was
+    // missing from the list, so a reload there went back to Bio with the bio
+    // that had just been typed gone (FOUNDER_STEPS holds every step there is).
+    if ((FOUNDER_STEPS as Step[]).includes(nextStep)) {
       saveOnboardingProgress(readStoredUser()?.id, { step: nextStep as InputStep, form: { ...form.current, skillIds: [...form.current.skillIds] } });
     }
     await addBotMessage(say(BOT_QUESTIONS[nextStep]), 700);
@@ -633,8 +637,8 @@ export function ConversationalOnboarding() {
                   <p className="text-xs font-medium text-muted-foreground" id={`ob-${group.key}`}>
                     <BilingualText en={group.en} el={group.el} compact />
                   </p>
-                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby={`ob-${group.key}`}>
-                    {group.options.map((o) => {
+                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby={`ob-${group.key}`} onKeyDown={(e) => onRadioGroupKeyDown(e)}>
+                    {group.options.map((o, i) => {
                       const on = goals[group.key] === o.value;
                       return (
                         <button
@@ -642,6 +646,7 @@ export function ConversationalOnboarding() {
                           type="button"
                           role="radio"
                           aria-checked={on}
+                          tabIndex={radioTabIndex(on, i, group.options.some((x) => x.value === goals[group.key]))}
                           onClick={() => setGoals((g) => ({ ...g, [group.key]: on ? '' : o.value }))}
                           className={cn(
                             'rounded-full border px-3 py-1 text-xs font-medium transition-colors',

@@ -64,6 +64,7 @@ import { NOTIFICATION_CATEGORIES, categoryChannelOn, channelsOf, setChannel, use
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { messagePolicy, type MessagePolicy } from '@cofounderbay/shared';
+import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 
 /*
  * The quick notification switches here are the in-app channel of each
@@ -591,8 +592,9 @@ function PrivacyCard() {
               <BilingualText en="Conversations already open carry on whatever you choose." el="Όσες συνομιλίες υπάρχουν ήδη συνεχίζουν, ό,τι κι αν επιλέξετε." wrap />
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="radiogroup" aria-labelledby="message-policy-label">
-            {MESSAGE_POLICY_OPTIONS.map((o) => {
+          {/* The arrows move without saving: each choice here is saved the moment it is made. */}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="radiogroup" aria-labelledby="message-policy-label" onKeyDown={(e) => onRadioGroupKeyDown(e, { select: false })}>
+            {MESSAGE_POLICY_OPTIONS.map((o, i) => {
               const on = messages === o.value;
               return (
                 <button
@@ -600,6 +602,7 @@ function PrivacyCard() {
                   type="button"
                   role="radio"
                   aria-checked={on}
+                  tabIndex={radioTabIndex(on, i, true)}
                   disabled={!me.data?.profile || save.isPending}
                   onClick={() => { if (!on) void setMessages(o.value); }}
                   className={cn(

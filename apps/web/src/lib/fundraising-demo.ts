@@ -1,4 +1,5 @@
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { previewClockOffsetMs } from '@/lib/preview-api';
 
 export type RoundStatus = 'planning' | 'active' | 'closing' | 'closed';
 export type InvestorStatus = 'prospect' | 'contacted' | 'meeting' | 'dd' | 'committed' | 'passed';
@@ -264,10 +265,20 @@ export function fundraisingPipelineStats(leads: InvestorLead[]) {
   };
 }
 
-/** Round.investors is the committed count — never a hardcoded 4 that disagrees with the pipeline. */
-export function fundraisingRoundView(leads: InvestorLead[] = FUNDRAISING_SEED_LEADS): FundRound & { investors: number } {
+/**
+ * Round.investors is the committed count — never a hardcoded 4 that disagrees with the pipeline.
+ *
+ * With `now` (the browser's clock, after hydration) the closing date is moved
+ * to the reader's week, as every payload of the demo API is
+ * (`previewClockOffsetMs`): written on the demo's calendar it was 15 October,
+ * so from the 16th the demo's flagship round read "Overdue" and stayed so.
+ * Without `now` (server render, tests) it stays on the demo's calendar.
+ */
+export function fundraisingRoundView(leads: InvestorLead[] = FUNDRAISING_SEED_LEADS, now?: number): FundRound & { investors: number } {
   const stats = fundraisingPipelineStats(leads);
-  return { ...FUNDRAISING_SEED_ROUND, investors: stats.committed };
+  const round = { ...FUNDRAISING_SEED_ROUND, investors: stats.committed };
+  if (now == null || !round.closingDate) return round;
+  return { ...round, closingDate: new Date(Date.parse(round.closingDate) + previewClockOffsetMs(now)).toISOString() };
 }
 
 export function addFundraisingLead(input: Omit<InvestorLead, 'id' | 'isVerified'> & { isVerified?: boolean }): InvestorLead {

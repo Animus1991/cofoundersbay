@@ -36,6 +36,18 @@ describe('fundraising catalogue lockstep', () => {
     expect(FUNDRAISING_SEED_LEADS.find((l) => l.status === 'committed')?.checkSize).toContain('200K');
   });
 
+  it('closes the demo round ahead of the reader, whatever the date', () => {
+    // On the demo's own calendar the round closed on 15 October 2026; moved to
+    // the reader's week it is always still ahead, never "Overdue".
+    for (const today of ['2026-09-04T10:00:00Z', '2026-10-21T10:00:00Z', '2027-03-02T10:00:00Z']) {
+      const now = Date.parse(today);
+      const closes = Date.parse(fundraisingRoundView(FUNDRAISING_SEED_LEADS, now).closingDate ?? '');
+      expect(closes, today).toBeGreaterThan(now);
+    }
+    // Without a clock (the server render) it stays on the demo calendar.
+    expect(fundraisingRoundView(FUNDRAISING_SEED_LEADS).closingDate).toBe(FUNDRAISING_SEED_ROUND.closingDate);
+  });
+
   it('keeps the data room list at 10 documents for the Data Room tab badge', () => {
     expect(FUNDRAISING_SEED_DOCS).toHaveLength(10);
     expect(FUNDRAISING_SEED_DOCS.filter((d) => d.isRequired)).toHaveLength(5);

@@ -25,6 +25,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { getAnalyticsOverview } from '@/lib/api';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
+import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 
 // ── Mock analytics data ───────────────────────────────────────────────────────
 
@@ -248,13 +249,14 @@ export default function ProviderAnalyticsPage() {
       badge: period !== DEFAULT_PERIOD ? 1 : null,
       content: (
         <div className="space-y-3">
-          <div className="space-y-1" role="radiogroup" aria-label={bilingualAria('Period', 'Περίοδος')}>
-            {PERIODS.map((p) => (
+          <div className="space-y-1" role="radiogroup" aria-label={bilingualAria('Period', 'Περίοδος')} onKeyDown={(e) => onRadioGroupKeyDown(e)}>
+            {PERIODS.map((p, i) => (
               <button
                 key={p.value}
                 type="button"
                 role="radio"
                 aria-checked={period === p.value}
+                tabIndex={radioTabIndex(period === p.value, i, PERIODS.some((x) => x.value === period))}
                 onClick={() => setPeriod(p.value)}
                 className={cn(
                   'tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm transition-colors',

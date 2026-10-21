@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 
 export interface UpdateDraft {
   title: string;
@@ -80,8 +81,8 @@ export function UpdateComposer({ initial, busy, onSend }: { initial?: Partial<Up
       </fieldset>
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium"><BilingualText en="Who sees it" el="Ποιοι τη βλέπουν" compact /></legend>
-        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Who sees it · Ποιοι τη βλέπουν">
-          {(['followers', 'public'] as const).map((v) => (
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Who sees it · Ποιοι τη βλέπουν" onKeyDown={(e) => onRadioGroupKeyDown(e)}>
+          {(['followers', 'public'] as const).map((v, i) => (
             <Button
               key={v}
               type="button"
@@ -89,6 +90,7 @@ export function UpdateComposer({ initial, busy, onSend }: { initial?: Partial<Up
               variant={draft.visibility === v ? 'default' : 'outline'}
               role="radio"
               aria-checked={draft.visibility === v}
+              tabIndex={radioTabIndex(draft.visibility === v, i, true)}
               onClick={() => setDraft({ ...draft, visibility: v })}
             >
               <BilingualText en={v === 'public' ? 'Public link' : 'My followers'} el={v === 'public' ? 'Δημόσιος σύνδεσμος' : 'Οι ακόλουθοί μου'} compact />

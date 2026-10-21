@@ -25,6 +25,35 @@ export function icsText(value: string): string {
   return value.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
 }
 
+/**
+ * A content line folded as RFC 5545 §3.1 asks: no line longer than 75 octets,
+ * each continuation starting with one space. Counted in UTF-8 octets, never
+ * splitting a character, so a Greek title (two octets a letter) folds at
+ * about 37 letters instead of running on: strict clients and validators
+ * reject the long line, lenient ones only happen to accept it.
+ */
+export function foldIcsLine(line: string): string {
+  const encoder = new TextEncoder();
+  if (encoder.encode(line).length <= 75) return line;
+  const parts: string[] = [];
+  let current = '';
+  let octets = 0;
+  for (const char of line) {
+    const size = encoder.encode(char).length;
+    // The first line holds 75 octets; a continuation 74, after its space.
+    const limit = parts.length === 0 ? 75 : 74;
+    if (octets + size > limit) {
+      parts.push(current);
+      current = '';
+      octets = 0;
+    }
+    current += char;
+    octets += size;
+  }
+  parts.push(current);
+  return parts.join('\r\n ');
+}
+
 /** UTC date-time in the basic format: 20261021T180000Z. */
 export function icsStamp(iso: string | Date): string {
   return new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
@@ -61,7 +90,7 @@ export function buildIcs(entries: IcsEntry[], options: { name?: string; now?: Da
   if (options.name) lines.push(`X-WR-CALNAME:${icsText(options.name)}`);
   for (const entry of entries) lines.push(...eventLines(entry, now));
   lines.push('END:VCALENDAR');
-  return lines.join('\r\n');
+  return lines.map(foldIcsLine).join('\r\n');
 }
 
 /** A file name from a title: "Demo Day Q2" → "demo-day-q2.ics". */
@@ -76,5 +105,7 @@ export function downloadIcs(fileName: string, ics: string): void {
   a.href = href;
   a.download = fileName;
   a.click();
-  URL.revokeObjectURL(href);
+  // Released after the click has been handled: revoked in the same task, some
+  // browsers cancel the download before it starts.
+  setTimeout(() => URL.revokeObjectURL(href), 0);
 }

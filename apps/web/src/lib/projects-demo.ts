@@ -132,7 +132,7 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
       { id: 'h1', title: 'Idea Core v1 in Builder', titleEl: 'Πυρήνας ιδέας v1 στον Builder', status: 'completed', date: '2026-08-01T00:00:00.000Z' },
       { id: 'h2', title: 'BMC v1 in Builder', titleEl: 'Καμβάς μοντέλου v1 στον Builder', status: 'in_progress', date: '2026-09-30T17:00:00.000Z' },
       { id: 'h3', title: 'Pitch deck outline for the $750K seed', titleEl: 'Δομή pitch deck για τον γύρο $750K', status: 'completed', date: '2026-08-20T00:00:00.000Z' },
-      { id: 'h4', title: 'Close $750K seed', titleEl: 'Κλείσιμο γύρου $750K', status: 'in_progress', date: '2026-08-20T17:00:00.000Z' },
+      { id: 'h4', title: 'Close $750K seed', titleEl: 'Κλείσιμο γύρου $750K', status: 'in_progress', date: '2026-10-15T17:00:00.000Z' },
       { id: 'h5', title: 'Complementary cofounder — technical + commercial pair', titleEl: 'Συμπληρωματικός συνιδρυτής — τεχνικό + εμπορικό ζεύγος', status: 'pending', date: '2026-10-15T17:00:00.000Z' },
     ],
     updates: [
