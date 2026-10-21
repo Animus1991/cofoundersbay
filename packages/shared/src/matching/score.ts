@@ -78,7 +78,9 @@ export function computeMatchScore(viewer: ProfileSnapshot, candidate: ProfileSna
   const candidateSkills = new Set(candidate.skillNames.map(norm).filter(Boolean));
   const j = jaccard(viewerSkills, candidateSkills);
   const skillsOverlap = Math.round(j * WEIGHTS.skillsOverlap);
-  if (skillsOverlap > 0) reasons.push('Skills overlap');
+  // Two empty lists score as a full overlap (jaccard is 1); the score is left
+  // as it is, but the reason is only said when a skill is actually shared.
+  if (skillsOverlap > 0 && [...viewerSkills].some((s) => candidateSkills.has(s))) reasons.push('Skills overlap');
 
   const viewerStage = (viewer.rolePayload?.stage as string) ?? '';
   const candidateStage = (candidate.rolePayload?.stage as string) ?? '';

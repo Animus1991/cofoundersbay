@@ -2,7 +2,7 @@
 
 
 import { PROMOTED_COPY, readNaturalSearch, splitPromoted, type NaturalFilter } from '@cofounderbay/shared';
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import Link from 'next/link';
@@ -25,8 +25,11 @@ import {
   X as XIcon,
 } from 'lucide-react';
 import {
-  searchProfiles, getRecommendations, getDashboardStats, sendConnectionRequest, saveToShortlist, createSavedSearch, type SearchHit
+  searchProfiles, getRecommendations, getDashboardStats, getMeProfile, recordMatchFeedback, restoreMatchFeedback, sendConnectionRequest, saveToShortlist, createSavedSearch, type SearchHit
 } from '@/lib/api';
+import { createPassLedger } from '@/lib/match-pass';
+import { explainMatch, viewerFacts } from '@/lib/match-explain';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
@@ -191,6 +194,45 @@ export default function DiscoverPage() {
     enabled: hasToken,
   });
   const suggestions: SearchHit[] = (recommendationsData?.suggestions ?? []) as SearchHit[];
+
+  // The matches tab explains each person as /matches does (lib/match-explain),
+  // from the reader's own profile, on the key the dashboards share.
+  const { data: meData } = useQuery({
+    queryKey: queryKeys.me.profile(),
+    queryFn: getMeProfile,
+    enabled: hasToken,
+    staleTime: 5 * 60_000,
+  });
+  const viewer = useMemo(() => viewerFacts(meData?.profile ?? null), [meData]);
+  const [nowMs] = useState(() => Date.now());
+
+  // Passing on a match here is passing on /matches: the card leaves, the
+  // engine hears it, and the toast's Undo puts both back (lib/match-pass).
+  // The button did nothing, and the heart beside it said "Liked!" without
+  // sending anything; it opens the connection request now.
+  const sayOne = useBilingualString();
+  const [passedMatchIds, setPassedMatchIds] = useState<Set<string>>(() => new Set());
+  const [passLedger] = useState(() => createPassLedger({
+    record: (userId) => recordMatchFeedback({ targetUserId: userId, feedback: 'declined' }),
+    restore: (r) => restoreMatchFeedback({ targetUserId: r.userId, previous: r.previous, signalId: r.signalId }),
+  }));
+  const passMatch = (hit: SearchHit) => {
+    setPassedMatchIds((prev) => new Set(prev).add(hit.id));
+    passLedger.pass(hit.id, hit.userId);
+    success(sayOne('Passed', 'Παραλείφθηκε'), hit.displayName, {
+      action: {
+        label: sayOne('Undo', 'Αναίρεση'),
+        onClick: () => {
+          setPassedMatchIds((prev) => {
+            const next = new Set(prev);
+            next.delete(hit.id);
+            return next;
+          });
+          void passLedger.takeBack(hit.id);
+        },
+      },
+    });
+  };
 
   const { data: platformStats } = useQuery({
     queryKey: qk('dashboard', 'stats', 'discover-header'),
@@ -835,9 +877,8 @@ export default function DiscoverPage() {
               staggerDelay={100}
               className="grid grid-cols-1 gap-6 md:grid-cols-2"
             >
-              {suggestions.slice(0, 6).map((hit) => {
+              {suggestions.filter((hit) => !passedMatchIds.has(hit.id)).slice(0, 6).map((hit) => {
                 const profile = hitToProfile(hit);
-                const score = hit.matchScore ?? 50;
                 const matchReasons = (hit.matchReasons ?? [])
                   .map((text) => ({ type: 'skills' as MatchReasonType, text, score: 0 }));
                 return (
@@ -851,10 +892,11 @@ export default function DiscoverPage() {
                     role={hit.role}
                     location={hit.location}
                     skills={hit.skillNames || []}
-                    compatibilityScore={score}
+                    compatibilityScore={typeof hit.matchScore === 'number' ? hit.matchScore : null}
                     matchReasons={matchReasons}
-                    onLike={() => success('Liked!', `You liked ${hit.displayName}`)}
-                    onPass={() => {}}
+                    reasons={explainMatch(hit, viewer, { nowMs })}
+                    onLike={() => handleConnect(profile)}
+                    onPass={() => passMatch(hit)}
                     onMessage={() => handleMessage(profile)}
                     onBookmark={() => handleBookmark(profile)}
                   />

@@ -7,9 +7,12 @@ import type { BilingualPair } from './types';
 export const MATCHES_STRINGS: Record<string, BilingualPair> = {
   // ── Page header ──
   page_title: { en: 'Matches', el: 'Αντιστοιχίσεις' },
+  // The order comes from rules over the two profiles (role, skills, stage,
+  // commitment, place, recent activity), not from a model: "AI-ranked" said
+  // otherwise.
   page_description: {
-    en: 'AI-ranked co-founder and team matches based on your profile compatibility',
-    el: 'Αντιστοιχίσεις συνιδρυτών και ομάδων με βάση τη συμβατότητα του προφίλ σας, κατάταξη AI',
+    en: 'Co-founders, mentors and investors, in order of how well their profiles fit yours',
+    el: 'Συνιδρυτές, μέντορες και επενδυτές, με σειρά βάσει του πόσο ταιριάζουν τα προφίλ τους με το δικό σας',
   },
 
   // ── Actions ──

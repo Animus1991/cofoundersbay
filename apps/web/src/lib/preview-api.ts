@@ -20,6 +20,7 @@ import { previewSkillEvidenceApi } from './demo/skill-evidence-world';
 import { previewEndorsementsApi } from './demo/endorsements-world';
 import { previewNotificationPrefsApi } from './demo/notification-prefs-world';
 import { demoNotifications, previewNotificationsApi } from './demo/notifications-world';
+import { demoConnections, previewConnectionsApi } from './demo/connections-world';
 import { previewLearningApi } from './demo/learning-world';
 import { previewTransparencyApi } from './demo/transparency-world';
 import { previewScoutApi } from './demo/scout-world';
@@ -28,6 +29,8 @@ import { messageSnippet, textMatches } from '@cofounderbay/shared';
 import { PREVIEW_MESSAGE_EL } from './i18n/strings-messages';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis, placeVariants } from '@cofounderbay/shared';
+import { industryFit, locationFit, matchFrictions, matchStrengths, roleFit, seekerWants, skillsFit } from '@cofounderbay/shared';
+import { roleFamily } from './role-family';
 import type { FeedPost } from './api';
 import { ORG, ORG_FOUNDERS, ORG_INVESTORS, ORG_MENTORS, ORG_SLUG, ORG_STAFF, orgPerson } from './demo/org-world';
 import { demoInvestorPerson } from './demo/investors-world';
@@ -1093,8 +1096,12 @@ const PEOPLE = [
     skillNames: ['Product', 'Growth', 'Fundraising'],
     skills: ['Product', 'Growth'],
     industries: ['SaaS'],
+    // Harbor is raising its seed (the milestones' €750K round): traction.
+    stage: 'traction',
     matchScore: 92,
-    matchReasons: ['Complementary skills', 'Same stage'],
+    // What the shared engine says for these two profiles. "Same stage" was
+    // here, about a company two stages ahead of the visitor's idea.
+    matchReasons: ['Cofounder match', 'Skills overlap', 'Same or nearby location'],
     lookingFor: 'technical cofounder',
     availability: 'full-time',
     lastSeenSecondsAgo: 120,
@@ -1112,8 +1119,11 @@ const PEOPLE = [
     skillNames: ['TypeScript', 'Next.js', 'AI'],
     skills: ['TypeScript', 'AI'],
     industries: ['Developer tools'],
+    // Taverna OS has a working product, not traction yet.
+    stage: 'mvp',
     matchScore: 88,
-    matchReasons: ['Skills overlap', 'Active this week'],
+    // "Skills overlap" was here: he shares no skill with the visitor.
+    matchReasons: ['Cofounder match', 'Similar stage', 'Active this week'],
     lookingFor: 'business cofounder',
     availability: 'full-time',
     lastSeenSecondsAgo: 240,
@@ -1291,6 +1301,32 @@ const CONNECTIONS = [
       avatarUrl: null,
       role: 'mentor',
       headline: 'Startup mentor · Former product lead',
+    },
+  },
+  // A request the visitor sent and nobody has answered yet: what the
+  // Sent tab lists (the API's "sent" is pending only; Sarah's accepted
+  // request used to stand there).
+  {
+    id: 'conn-nikos',
+    requesterId: ME_ID,
+    receiverId: 'user-nikos',
+    status: 'pending',
+    message: 'Would you have 15 minutes for our pre-seed plan?',
+    createdAt: '2026-09-02T15:30:00.000Z',
+    updatedAt: '2026-09-02T15:30:00.000Z',
+    requester: {
+      id: ME_ID,
+      displayName: 'Alex Demo',
+      avatarUrl: null,
+      role: 'founder',
+      headline: 'Founder exploring CoFounderBay',
+    },
+    receiver: {
+      id: 'user-nikos',
+      displayName: 'Nikos Andreou',
+      avatarUrl: null,
+      role: 'investor',
+      headline: 'Angel investor · Seed',
     },
   },
 ];
@@ -2607,7 +2643,7 @@ function kitchenSink() {
     posts: FEED_POSTS,
     notifications: NOTIFICATIONS,
     conversations: CONVERSATIONS,
-    connections: CONNECTIONS,
+    connections: demoConnections(CONNECTIONS),
     boards: listPreviewResearchBoardSummaries(false),
     events: [],
     members: [],
@@ -2681,7 +2717,23 @@ function shiftIso(value: string, offsetMs: number): string {
   return value;
 }
 
-/** Moves every ISO date in a payload by `offsetMs`. Pure; returns a copy. */
+/*
+ * Timestamps that travel as numbers (the directory's and the matches'
+ * `lastSeenAt` and `createdAt`, in epoch seconds) move with the ISO dates.
+ * They did not: a member seen two minutes ago on the seed's calendar read as
+ * six weeks ago on the reader's, so /members counted "2 online" over a list
+ * where no dot was lit, and no match was ever "active today". Only these
+ * keys, and only values in an epoch range (seconds or milliseconds).
+ */
+const EPOCH_KEYS = new Set(['lastSeenAt', 'createdAt', 'updatedAt']);
+
+function shiftEpoch(value: number, offsetMs: number): number {
+  if (value >= 1e9 && value < 1e11) return value + Math.round(offsetMs / 1000);
+  if (value >= 1e12 && value < 1e14) return value + offsetMs;
+  return value;
+}
+
+/** Moves every ISO date, and every epoch timestamp under a timestamp key, in a payload by `offsetMs`. Pure; returns a copy. */
 export function shiftPreviewDates<T>(payload: T, offsetMs: number): T {
   if (!offsetMs) return payload;
   const walk = (v: unknown): unknown => {
@@ -2689,7 +2741,9 @@ export function shiftPreviewDates<T>(payload: T, offsetMs: number): T {
     if (Array.isArray(v)) return v.map(walk);
     if (v && typeof v === 'object') {
       const out: Record<string, unknown> = {};
-      for (const [k, x] of Object.entries(v as Record<string, unknown>)) out[k] = walk(x);
+      for (const [k, x] of Object.entries(v as Record<string, unknown>)) {
+        out[k] = typeof x === 'number' && EPOCH_KEYS.has(k) ? shiftEpoch(x, offsetMs) : walk(x);
+      }
       return out;
     }
     return v;
@@ -2793,6 +2847,27 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     new Date(previewNowMs()).toISOString(),
   );
   if (notificationsAnswer !== undefined) return notificationsAnswer;
+  // Connection requests: sent, accepted, declined and withdrawn hold for the
+  // tab, with the API's rules; a member's status is read from the rows.
+  const connectionsAnswer = previewConnectionsApi(
+    pathname,
+    new URLSearchParams(path.split('?')[1] ?? ''),
+    method,
+    (body ?? {}) as Record<string, unknown>,
+    {
+      seed: CONNECTIONS,
+      me: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null, role: 'founder', headline: 'Founder exploring CoFounderBay' },
+      personById: (id) => {
+        const person = demoPersonById(id);
+        return person
+          ? { id: person.userId, displayName: person.displayName, avatarUrl: person.avatarUrl ?? null, role: person.role, headline: person.headline ?? null }
+          : undefined;
+      },
+      nowIso: new Date(previewNowMs()).toISOString(),
+      newId: () => `conn-${previewNowMs().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+    },
+  );
+  if (connectionsAnswer !== undefined) return connectionsAnswer;
   // The learning library, read from the same six resources the /learning page
   // shows (its writes are answered further down, unstored).
   const learningAnswer = previewLearningApi(pathname, new URLSearchParams(path.split('?')[1] ?? ''), method, previewNowMs());
@@ -2821,7 +2896,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     return {
       members: memberIds.size,
       mentors: mentorIds.size,
-      connections: CONNECTIONS.filter((c) => c.status === 'accepted').length,
+      connections: demoConnections(CONNECTIONS).filter((c) => c.status === 'accepted').length,
       events: PREVIEW_EVENTS.length,
       organizations: 1,
       measuredAt: new Date(previewNowMs()).toISOString(),
@@ -3017,46 +3092,87 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
       },
     };
   }
-  // The match detail page (/matches/[userId]) reads this one, and it has to come
-  // before the generic /api/recommendations branch below or it never matches.
-  // Without it the page fell through to the generic fallback, whose object has no
-  // `overall`, and every match rendered "Could not load compatibility data."
-  // Shape must match MatchVsResult in lib/api.ts.
-  if (/^\/api\/recommendations\/vs\//.test(pathname)) {
-    const targetId = pathname.split('/').pop() ?? '';
-    const target = PEOPLE.find((p) => p.userId === targetId) ?? PEOPLE[0];
-    const score = target.matchScore ?? 80;
+  /*
+   * The comparison the compatibility dialog and /matches/[userId] read.
+   *
+   * It used to answer twice. The first branch nudged one score by fixed
+   * amounts into five axes (+5 for "Skills", -18 for "Location"), said
+   * "Different time zones" about two people in Athens and "96% confidence"
+   * about nothing, and it shadowed a second branch that computed from the
+   * profiles but still carried invented constants (82 for any SaaS company,
+   * 85 for "activity"). One answer now, from the two sample profiles, with
+   * the API's own rules (`@cofounderbay/shared` matching/vs and `roleFit`).
+   * An axis the sample has no data for (shared goals, platform behaviour) is
+   * left out rather than filled in, and the overall score is the card's, so
+   * the card, the dialog and the detail page show one number.
+   */
+  const vsMatch = pathname.match(/^\/api\/recommendations\/vs\/([^/]+)$/);
+  if (vsMatch) {
+    const targetId = decodeURIComponent(vsMatch[1]);
+    const target = PEOPLE.find((p) => p.userId === targetId || p.id === targetId);
+    if (!target) throw new DemoRefusal(404, 'Profile not found', { messageEl: 'Το προφίλ δεν βρέθηκε.' });
+    const me = ME_PROFILE.profile;
+    const mySkills = me.skills.map((sk) => sk.skillName);
+    const theirSkills = target.skillNames;
+    const slug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const theirPayload = { stage: target.stage, commitment: target.availability };
+    const role = roleFit(me.role, roleFamily(target.role) ?? target.role, seekerWants(me.rolePayload.lookingFor, me.role));
+    const skills = skillsFit({
+      userKeys: mySkills.map(slug),
+      candidateKeys: theirSkills.map(slug),
+      userNames: mySkills.map((n) => n.toLowerCase()),
+      candidateNames: theirSkills.map((n) => n.toLowerCase()),
+    });
+    const location = locationFit(me.location, target.location);
+    // Industry and stage: only when the two profiles give one to compare.
+    const industry = me.rolePayload.stage && target.stage ? industryFit(me.rolePayload, theirPayload) : null;
+    const axes = [
+      { key: 'role', label: 'Role Complementarity', score: Math.round(role * 100), color: 'hsl(var(--primary))' },
+      { key: 'skills', label: 'Skills & Expertise', score: Math.round(skills * 100), color: 'hsl(var(--chart-2))' },
+      ...(industry === null ? [] : [{ key: 'industry', label: 'Industry Alignment', score: Math.round(industry * 100), color: 'hsl(var(--chart-3))' }]),
+      { key: 'location', label: 'Location Fit', score: Math.round(location * 100), color: 'hsl(var(--chart-5))' },
+    ];
+    // The API's confidence counts how filled-in both profiles are (two 15s
+    // for a complete profile, two 10s for a written bio, from 50 to 95).
+    const complete = (p: { skills: number; location?: string | null; headline?: string | null }) => p.skills > 0 && Boolean(p.location) && Boolean(p.headline);
+    const wrote = (bio?: string | null) => (bio ?? '').trim().split(/\s+/).length >= 6;
+    const confidence = Math.min(95,
+      50
+      + (complete({ skills: mySkills.length, location: me.location, headline: me.headline }) ? 15 : 0)
+      + (complete({ skills: theirSkills.length, location: target.location, headline: target.headline }) ? 15 : 0)
+      + (wrote(me.bio) ? 10 : 0)
+      + (wrote(target.bio) ? 10 : 0));
+    const badges = [
+      ...(role > 0.8 ? ['Strong Role Complement'] : []),
+      ...(skills > 0.7 ? ['Execution Match'] : []),
+      ...(location > 0.8 ? ['Same Ecosystem'] : []),
+      ...(industry !== null && industry > 0.75 ? ['Industry Fit'] : []),
+    ];
+    const shared = theirSkills.filter((n) => mySkills.some((m) => m.toLowerCase() === n.toLowerCase()));
     return {
-      overall: { score, confidence: Math.min(99, score + 4) },
-      breakdown: [
-        { key: 'skills', label: 'Skills', score: Math.min(100, score + 5), color: 'hsl(var(--status-success-mark))' },
-        { key: 'stage', label: 'Stage', score: Math.max(0, score - 7), color: 'hsl(var(--status-info-mark))' },
-        { key: 'industry', label: 'Industry', score: Math.min(100, score + 2), color: 'hsl(var(--status-accent-mark))' },
-        { key: 'location', label: 'Location', score: Math.max(0, score - 18), color: 'hsl(var(--status-warning-mark))' },
-        { key: 'values', label: 'Values', score: Math.max(0, score - 3), color: 'hsl(var(--status-success-mark))' },
-      ],
-      badges: ['Complementary skills', 'Same stage'],
-      sharedStrengths: [
-        { icon: 'target', label: 'Both focused on early-stage traction' },
-        { icon: 'spark', label: 'Overlapping product instincts' },
-      ],
-      frictionPoints: [
-        {
-          icon: 'clock',
-          title: 'Different time zones',
-          description: 'Plan a fixed weekly overlap so decisions do not wait a day.',
-        },
-      ],
+      overall: { score: target.matchScore, confidence },
+      breakdown: axes,
+      badges: badges.length ? badges.slice(0, 3) : ['Potential Match'],
+      sharedStrengths: matchStrengths(shared, []),
+      frictionPoints: matchFrictions({
+        sourceLocation: me.location,
+        targetLocation: target.location,
+        locationScore: location,
+        sourcePayload: me.rolePayload,
+        targetPayload: theirPayload,
+        sourceSkills: mySkills,
+        targetSkills: theirSkills,
+      }).slice(0, 3),
       // The same comparison /compatibility/with answers: agreement only.
       compatibility: demoCompatibilityWith(target.userId),
-      reasons: target.matchReasons ?? ['Complementary skills'],
+      reasons: target.matchReasons,
       sourceProfile: {
         id: ME_ID,
-        role: 'founder',
-        displayName: 'Alex Demo',
-        headline: 'Founder — building CoFounderBay',
+        role: me.role,
+        displayName: me.displayName,
+        headline: me.headline,
         avatarUrl: undefined,
-        location: 'Athens, Greece',
+        location: me.location,
       },
       targetProfile: {
         id: target.userId,
@@ -3068,58 +3184,18 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
       },
     };
   }
-  /*
-   * The compatibility modal reads the engine's per-dimension breakdown. In the
-   * demo there is no engine, so the axes are computed here from the very
-   * fields the two profiles show — skills held in common, industry, city — and
-   * never from the overall score. A breakdown derived from its own summary is
-   * the thing this endpoint exists to replace.
-   */
-  const vsMatch = pathname.match(/^\/api\/recommendations\/vs\/([^/]+)$/);
-  if (vsMatch) {
-    const target = PEOPLE.find((p) => p.userId === vsMatch[1] || p.id === vsMatch[1]);
-    if (!target) return { error: 'Not found' };
-    const mySkills = ME_PROFILE.profile.skills.map((sk) => sk.skillName.toLowerCase());
-    const theirSkills = target.skillNames.map((n) => n.toLowerCase());
-    const shared = theirSkills.filter((n) => mySkills.includes(n));
-    const pct = (part: number, whole: number) => (whole === 0 ? 0 : Math.round((part / whole) * 100));
-    const sameCity = target.location.split(',')[0]?.trim() === ME_PROFILE.profile.location.split(',')[0]?.trim();
-    const sameCountry = target.location.split(',').pop()?.trim() === ME_PROFILE.profile.location.split(',').pop()?.trim();
-    // A co-founder search rewards complement, not similarity: the skills axis
-    // reads what they bring that the viewer does not.
-    const complement = pct(theirSkills.length - shared.length, Math.max(theirSkills.length, 1));
-    // Six categorical axes -> the six chart slots. These strings resolve in
-    // the DOM (FactorRow paints them as inline `background`), so they follow
-    // the active theme instead of a fixed Tailwind palette.
-    const axes = [
-      { key: 'role', label: 'Role Complementarity', score: target.role === ME_PROFILE.profile.role ? 45 : 88, color: 'hsl(var(--primary))' },
-      { key: 'skills', label: 'Skills & Expertise', score: complement, color: 'hsl(var(--chart-2))' },
-      { key: 'semantic', label: 'Vision & Goals', score: target.matchScore ?? 50, color: 'hsl(var(--chart-4))' },
-      { key: 'industry', label: 'Industry Alignment', score: target.industries.includes('SaaS') ? 82 : 40, color: 'hsl(var(--chart-3))' },
-      { key: 'location', label: 'Location Fit', score: sameCity ? 100 : sameCountry ? 70 : 35, color: 'hsl(var(--chart-5))' },
-      { key: 'behavioral', label: 'Platform Activity', score: target.lastSeenSecondsAgo == null ? 30 : 85, color: 'hsl(var(--chart-6))' },
-    ];
-    return {
-      overall: {
-        score: Math.round(axes.reduce((sum, ax) => sum + ax.score, 0) / axes.length),
-        confidence: Math.min(95, 40 + theirSkills.length * 10),
-      },
-      breakdown: axes,
-      badges: axes.filter((ax) => ax.score >= 80).map((ax) => ax.label).slice(0, 3),
-      sharedStrengths: shared.length
-        ? [`Both of you work on ${shared.join(' and ')}.`]
-        : [],
-      frictionPoints: sameCity ? [] : [`Different cities — ${target.location} and ${ME_PROFILE.profile.location}.`],
-      reasons: target.matchReasons,
-    };
-  }
   // Feedback is a write: the demo keeps no outcome, so there is nothing a
   // pass replaced and nothing for its Undo to put back. These answered with
   // the people list before, a read's answer to a write.
   if (method === 'POST' && pathname === '/api/recommendations/feedback') return { ok: true, previous: null, signalId: null };
   if (method === 'POST' && (pathname === '/api/recommendations/feedback/restore' || pathname === '/api/recommendations/signal')) return { ok: true };
   if (pathname.startsWith('/api/recommendations') || pathname.startsWith('/api/matching/recommendations')) {
-    return { suggestions: PEOPLE };
+    // Last seen as the directory says it (epoch seconds), so "Active today"
+    // on a match card agrees with the directory's online dot.
+    const nowSeconds = Math.floor(previewNowMs() / 1000);
+    return {
+      suggestions: PEOPLE.map((p) => ({ ...p, lastSeenAt: p.lastSeenSecondsAgo == null ? null : nowSeconds - p.lastSeenSecondsAgo })),
+    };
   }
 
   // Conversations: the seed threads plus what the visitor starts and writes
@@ -3213,7 +3289,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     }
     if (sections.includes('connections')) {
       data.connections = {
-        items: CONNECTIONS.filter((c) => c.requesterId === ME_ID || c.receiverId === ME_ID).map((c) => ({
+        items: demoConnections(CONNECTIONS).filter((c) => c.requesterId === ME_ID || c.receiverId === ME_ID).map((c) => ({
           id: c.id,
           direction: c.requesterId === ME_ID ? 'sent' : 'received',
           otherUserId: c.requesterId === ME_ID ? c.receiverId : c.requesterId,
@@ -3236,59 +3312,6 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     return { format: 'cofounderbay-export-v1', exportedAt: new Date(previewNowMs()).toISOString(), userId: ME_ID, sections, unavailable: [], data };
   }
 
-  if (pathname.startsWith('/api/connections')) {
-    // Withdrawing a request the demo user sent. The showcase keeps no server
-    // state, so it answers the shape the caller reads and nothing more.
-    if (method === 'DELETE') {
-      return { ok: true, connectionId: pathname.split('/')[3] ?? '' };
-    }
-    if (pathname.includes('/status/')) {
-      return { status: 'pending', connectionId: 'conn-elena', direction: 'received' };
-    }
-    if (method === 'GET') {
-      const type = new URLSearchParams(path.split('?')[1] ?? '').get('type');
-      const connections =
-        type === 'sent'
-          ? CONNECTIONS.filter((c) => c.requesterId === ME_ID)
-          : type === 'accepted'
-            ? CONNECTIONS.filter((c) => c.status === 'accepted')
-            : type === 'received'
-              ? CONNECTIONS.filter((c) => c.receiverId === ME_ID && c.status === 'pending')
-              : CONNECTIONS;
-      return { connections };
-    }
-    if (method === 'POST') {
-      const receiverId = String(body.receiverId ?? 'user-marcus');
-      const person = PEOPLE.find((p) => p.userId === receiverId) ?? PEOPLE[1];
-      const created = {
-        id: `conn-${Date.now()}`,
-        requesterId: ME_ID,
-        receiverId: person.userId,
-        status: 'pending',
-        message: String(body.message ?? ''),
-        createdAt: NOW,
-        updatedAt: NOW,
-        requester: {
-          id: ME_ID,
-          displayName: 'Alex Demo',
-          avatarUrl: null,
-          role: 'founder',
-          headline: 'Founder exploring CoFounderBay',
-        },
-        receiver: {
-          id: person.userId,
-          displayName: person.displayName,
-          avatarUrl: null,
-          role: person.role,
-          headline: person.headline,
-        },
-      };
-      CONNECTIONS.unshift(created);
-      return { connection: created, ok: true };
-    }
-    return { connection: CONNECTIONS[0], ok: true };
-  }
-
   if (pathname === '/api/dashboard/stats') {
     return {
       activeProfiles: 1840,
@@ -3305,7 +3328,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
       // header agrees with the directory and the groups list below it.
       founders: PEOPLE.filter((p) => p.role === 'founder').length,
       mentors: PEOPLE.filter((p) => p.role === 'mentor').length,
-      successfulMatches: CONNECTIONS.length,
+      successfulMatches: demoConnections(CONNECTIONS).length,
       communities: PREVIEW_GROUPS.length,
     };
   }
@@ -3939,7 +3962,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     const id = decodeURIComponent(pathname.split('/').pop() ?? '');
     const found = demoPersonById(id);
     if (!found) throw new DemoRefusal(404, 'Profile not found', { messageEl: 'Το προφίλ δεν βρέθηκε.' });
-    const person = found as typeof found & { lookingFor?: string; availability?: string };
+    const person = found as typeof found & { lookingFor?: string; availability?: string; stage?: string; investmentStages?: string[] };
     const slug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     return {
       id: person.id,
@@ -3955,6 +3978,9 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
         lookingFor: person.lookingFor ? [person.lookingFor] : [],
         availability: person.availability,
         industries: person.industries,
+        // The same stage and rounds the match cards explain with.
+        ...(person.stage ? { stage: person.stage } : {}),
+        ...(person.investmentStages?.length ? { stages: person.investmentStages } : {}),
         ...(DEMO_HISTORY[person.userId] ?? {}),
       },
       visibilityRules: null,
@@ -5113,7 +5139,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
         activeUsersToday: since(1, 'lastSeenAt'),
         activeUsersThisWeek: since(7, 'lastSeenAt'),
         activeUsersThisMonth: since(30, 'lastSeenAt'),
-        totalConnections: CONNECTIONS.length,
+        totalConnections: demoConnections(CONNECTIONS).length,
         totalMessages: CONVERSATIONS.length,
         totalEvents: PREVIEW_EVENTS.length,
         totalGroups: PREVIEW_GROUPS.length,

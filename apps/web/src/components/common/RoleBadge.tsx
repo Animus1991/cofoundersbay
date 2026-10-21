@@ -4,8 +4,9 @@ import { Rocket, GraduationCap, TrendingUp, Building2 } from 'lucide-react';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { BilingualText } from '@/components/common/BilingualText';
 import { cn } from '@/lib/utils';
+import { roleFamily, type RoleFamily } from '@/lib/role-family';
 
-type RoleType = 'founder' | 'mentor' | 'investor' | 'org';
+type RoleType = RoleFamily;
 
 const roleConfig: Record<RoleType, { label: string; labelEl: string; icon: React.ComponentType<{ className?: string }> }> = {
   founder: { label: 'Founder', labelEl: 'Ιδρυτής', icon: Rocket },
@@ -22,20 +23,6 @@ type RoleBadgeProps = {
   animated?: boolean;
 };
 
-function normalizeRole(raw: string): RoleType | null {
-  const key = raw.toLowerCase().replace(/[\s-]+/g, '_');
-  if (key === 'founder' || key === 'mentor' || key === 'investor' || key === 'org') return key;
-  if (key === 'cofounder' || key === 'co_founder' || key === 'technical_talent' || key === 'operator') {
-    return 'founder';
-  }
-  if (key === 'advisor' || key === 'coach') return 'mentor';
-  if (key === 'angel' || key === 'angel_investor' || key === 'vc' || key === 'vc_analyst' || key === 'vc_scout') {
-    return 'investor';
-  }
-  if (key === 'organization' || key === 'admin' || key === 'community_manager') return 'org';
-  return null;
-}
-
 export function RoleBadge({ 
   role, 
   showIcon = true, 
@@ -47,7 +34,7 @@ export function RoleBadge({
     return null;
   }
 
-  const roleKey = normalizeRole(role);
+  const roleKey = roleFamily(role);
   const config = roleKey ? roleConfig[roleKey] : undefined;
   
   if (!config || !roleKey) {

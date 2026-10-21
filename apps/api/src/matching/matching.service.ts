@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { OPEN_TO_COPY, candidateRoleFor, compareCompatAnswers, openToBoost, openToShownTo, roleFit, seekerWants, isHiddenFromSearch } from '@cofounderbay/shared';
+import { OPEN_TO_COPY, candidateRoleFor, compareCompatAnswers, industryFit, locationFit, matchFrictions, matchStrengths, openToBoost, openToShownTo, roleFit, seekerWants, skillsFit, isHiddenFromSearch } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { CacheService } from '../common/cache/cache.service';
 import { OpenToService } from '../open-to/open-to.service';
@@ -330,8 +330,11 @@ export class MatchingService {
       this.getBehavioralMap(sourceUserId),
     ]);
 
+    // Not `remote: true`: that answers 0.85 for every pair, so the location
+    // axis was the same for Athens–Athens and Athens–Berlin and the
+    // "different places" point below could never be raised.
     const matchScore = await this.calculateMatchScore(
-      source, sourceVec, target, { userId: sourceUserId, remote: true },
+      source, sourceVec, target, { userId: sourceUserId, remote: false },
       weights, outcomeMap, behavioralMap,
     );
 
@@ -350,11 +353,7 @@ export class MatchingService {
     ]);
     const sharedKeywords = [...sourceKws].filter(k => targetKws.has(k)).slice(0, 6);
 
-    const strengthsFromSkills = sharedSkills.slice(0, 4).map((name: string) => ({ icon: 'terminal', label: name }));
-    const strengthsFromKws = sharedKeywords.slice(0, 4 - strengthsFromSkills.length).map((kw: string) => ({
-      icon: 'lightbulb', label: kw.charAt(0).toUpperCase() + kw.slice(1),
-    }));
-    const sharedStrengths = [...strengthsFromSkills, ...strengthsFromKws];
+    const sharedStrengths = matchStrengths(sharedSkills, sharedKeywords);
 
     // ── Compatibility badges ─────────────────────────────────────────────────
     const badges: string[] = [];
@@ -367,41 +366,15 @@ export class MatchingService {
     if (badges.length === 0) badges.push('Potential Match');
 
     // ── Friction points ──────────────────────────────────────────────────────
-    const frictionPoints: Array<{ icon: string; title: string; description: string }> = [];
-    const sourceLoc = source.profile?.location;
-    const targetLoc = target.profile?.location;
-    if (sourceLoc && targetLoc && sourceLoc !== targetLoc && matchScore.breakdown.location < 0.6) {
-      frictionPoints.push({
-        icon: 'schedule',
-        title: 'Location Difference',
-        description: `${sourceLoc} vs ${targetLoc}. Remote coordination may require structured async communication.`,
-      });
-    }
-    const sP = (source.profile?.rolePayload as any);
-    const tP = (target.profile?.rolePayload as any);
-    if (sP?.stage && tP?.stage && sP.stage !== tP.stage) {
-      frictionPoints.push({
-        icon: 'trending_up',
-        title: 'Stage Expectation Gap',
-        description: `One party is at ${sP.stage} stage, the other at ${tP.stage}. Align on milestone priorities early.`,
-      });
-    }
-    const sourceTech = sourceSkillNames.some((n: string) => ['technical', 'engineering', 'developer', 'software'].some(t => n.toLowerCase().includes(t)));
-    const targetTech = targetSkillNames.some((n: string) => ['technical', 'engineering', 'developer', 'software'].some(t => n.toLowerCase().includes(t)));
-    if (sourceTech && targetTech) {
-      frictionPoints.push({
-        icon: 'warning_amber',
-        title: 'Technical Role Overlap',
-        description: 'Both profiles are primarily technical. Consider how business, sales, and growth responsibilities will be covered.',
-      });
-    }
-    if (sP?.commitment && tP?.commitment && sP.commitment !== tP.commitment) {
-      frictionPoints.push({
-        icon: 'hourglass_empty',
-        title: 'Commitment Difference',
-        description: `Availability mismatch (${sP.commitment} vs ${tP.commitment}). Establish shared expectations on hours and milestones.`,
-      });
-    }
+    const frictionPoints = matchFrictions({
+      sourceLocation: source.profile?.location,
+      targetLocation: target.profile?.location,
+      locationScore: matchScore.breakdown.location,
+      sourcePayload: source.profile?.rolePayload,
+      targetPayload: target.profile?.rolePayload,
+      sourceSkills: sourceSkillNames,
+      targetSkills: targetSkillNames,
+    });
 
     // ── How you would work together ─────────────────────────────────────────
     // Asked, not guessed: the five-axis chart that stood here read a risk
@@ -813,59 +786,21 @@ export class MatchingService {
   }
 
   private calculateSkillsCompatibility(userSkills: any[], candidateSkills: any[]): number {
-    if (!userSkills.length || !candidateSkills.length) return 0.4;
-    const uIds = new Set(userSkills.map(s => s.skillId));
-    const cIds = new Set(candidateSkills.map(s => s.skillId));
-    const intersection = [...uIds].filter(id => cIds.has(id)).length;
-    const union = new Set([...uIds, ...cIds]).size;
-    const jaccard = intersection / union;
-
-    const uNames = userSkills.map(s => (s.skill?.name ?? '').toLowerCase());
-    const cNames = candidateSkills.map(s => (s.skill?.name ?? '').toLowerCase());
-    const complementary = this.calcComplementarySkills(uNames, cNames);
-
-    return Math.min(1, jaccard * 0.7 + complementary * 0.3);
-  }
-
-  private calcComplementarySkills(uNames: string[], cNames: string[]): number {
-    const pairs = [
-      ['technical', 'business'], ['marketing', 'product'],
-      ['design', 'development'], ['sales', 'engineering'], ['finance', 'operations'],
-    ];
-    let count = 0;
-    for (const [a, b] of pairs) {
-      const uA = uNames.some(n => n.includes(a)), cB = cNames.some(n => n.includes(b));
-      const cA = cNames.some(n => n.includes(a)), uB = uNames.some(n => n.includes(b));
-      if ((uA && cB) || (cA && uB)) count++;
-    }
-    return Math.min(1, count / pairs.length);
+    return skillsFit({
+      userKeys: userSkills.map((s) => s.skillId),
+      candidateKeys: candidateSkills.map((s) => s.skillId),
+      userNames: userSkills.map((s) => (s.skill?.name ?? '').toLowerCase()),
+      candidateNames: candidateSkills.map((s) => (s.skill?.name ?? '').toLowerCase()),
+    });
   }
 
   private calculateLocationCompatibility(uLoc?: string, cLoc?: string, remote = false): number {
     if (remote) return 0.85;
-    if (!uLoc || !cLoc) return 0.5;
-    if (uLoc.toLowerCase() === cLoc.toLowerCase()) return 1.0;
-    const uParts = uLoc.toLowerCase().split(',');
-    const cParts = cLoc.toLowerCase().split(',');
-    if (uParts.at(-1)?.trim() === cParts.at(-1)?.trim()) return 0.7;
-    return 0.3;
+    return locationFit(uLoc, cLoc);
   }
 
   private calculateIndustryCompatibility(uProfile: any, cProfile: any): number {
-    const uP = uProfile?.rolePayload as any;
-    const cP = cProfile?.rolePayload as any;
-    if (!uP || !cP) return 0.5;
-    let score = 0.5;
-    if (uP.industry && cP.industry && uP.industry === cP.industry) score += 0.3;
-    if (uP.stage && cP.stage) {
-      const stageDiff = Math.abs(this.stageNum(uP.stage) - this.stageNum(cP.stage));
-      score += Math.max(0, 0.2 - stageDiff * 0.07);
-    }
-    return Math.min(1, score);
-  }
-
-  private stageNum(stage: string): number {
-    return ({ idea: 0, mvp: 1, traction: 2, scaling: 3 }[stage] ?? 1);
+    return industryFit(uProfile?.rolePayload, cProfile?.rolePayload);
   }
 
   /** The role recommendations are drawn from; a founder's pool is everyone (see `candidateRoleFor`). */

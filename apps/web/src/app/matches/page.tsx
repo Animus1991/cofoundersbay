@@ -8,10 +8,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Sparkles, ArrowRight, UserPlus, ArrowUpDown, RefreshCw, BarChart3, Award, Zap,
   X, LayoutGrid, List, Search, MapPin, Briefcase, GraduationCap, DollarSign, Users,
-  Bookmark, BookmarkCheck, MessageCircle, Heart, RotateCcw, SlidersHorizontal, Clock,
+  Bookmark, BookmarkCheck, MessageCircle, RotateCcw, SlidersHorizontal, Clock,
   TrendingUp, Star, CheckCircle2, CheckSquare,
 } from 'lucide-react';
-import { getRecommendations, getMatchBreakdown, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, restoreMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
+import { getRecommendations, getMatchBreakdown, getMeProfile, listConnectionRequests, respondToConnectionRequest, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, restoreMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { createPassLedger } from '@/lib/match-pass';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -23,10 +23,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/common/EmptyState';
-import { MatchCard } from '@/components/common/MatchCard';
+import { MatchCard, matchPrimary, type MatchConnection } from '@/components/common/MatchCard';
 import type { CommitmentStep } from '@cofounderbay/shared';
-import { StepChip } from '@/components/commitments/OutcomeChip';
 import { listCommitmentThreads } from '@/lib/commitments-api';
+import { threadLine } from '@/lib/commitments-next';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { StatusText } from '@/components/common/StatusText';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -39,16 +39,18 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import type { ProfileCardData } from '@/components/discover/ProfileCard';
-import { qk } from '@/lib/query-keys';
+import { qk, queryKeys } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { FactLine } from '@/components/common/FactLine';
-import { matchReasonCopy } from '@/lib/match-reason';
+import { explainMatch, viewerFacts, type ExplainedReason } from '@/lib/match-explain';
+import { axisCopy, compatSummary, completenessCopy, frictionCopy, strengthTerms } from '@/lib/match-vs-copy';
+import { ensureExtraCatalog } from '@/lib/i18n/translate';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { PageFacts } from '@/components/common/PageFacts';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
-import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
 
 const MATCHES_TOUR: TourStep[] = [
@@ -88,7 +90,13 @@ const MatchCompatibilityChart = dynamic(
   { ssr: false, loading: () => <Skeleton className="h-[200px] w-full rounded-lg" /> }
 );
 
-type MatchReason = { type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values'; text: string; score: number };
+/** Where a commitment with someone stands: the board's link and the line that says it. */
+type CommitmentLink = { step: CommitmentStep; href: string; line: { en: string; el: string; yourTurn: boolean } };
+
+/** The engine's score, or null when it gave none: never a made-up 50. */
+function scoreOf(hit: SearchHit): number | null {
+  return typeof hit.matchScore === 'number' && Number.isFinite(hit.matchScore) ? hit.matchScore : null;
+}
 
 /*
  * The five axes on this radar used to be one score nudged by fixed percentages
@@ -97,9 +105,30 @@ type MatchReason = { type: 'skills' | 'location' | 'stage' | 'industry' | 'avail
  * already scores six real dimensions (`GET /api/recommendations/vs/:id`, the
  * same computation that ranks these very cards), so the chart reads those. If
  * the breakdown cannot be fetched the chart is absent, not invented.
+ *
+ * The dialog's one number is the card's. The comparison endpoint computes an
+ * overall score of its own, with a different model, and the two disagreed
+ * about the same pair (92 on the card, 96 here, with "96% confidence" under
+ * it that read as a second score). How much the comparison stands on is said
+ * in words; the axes, the points worth discussing and the shared strengths
+ * are said in the reader's language (lib/match-vs-copy), where the endpoint
+ * wrote English; and the reasons are the card's own, all of them.
  */
 
-function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; open: boolean; onClose: () => void }) {
+function CompatibilityModal({
+  hit,
+  reasons,
+  viewerSkills,
+  open,
+  onClose,
+}: {
+  hit: SearchHit | null;
+  reasons: ExplainedReason[];
+  viewerSkills: string[];
+  open: boolean;
+  onClose: () => void;
+}) {
+  const sayOne = useBilingualString();
   const { data: detail, isLoading: detailLoading } = useQuery({
     queryKey: qk('matching', 'breakdown', hit?.userId),
     queryFn: () => getMatchBreakdown(hit!.userId),
@@ -110,18 +139,20 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
 
   if (!hit) return null;
 
-  // The engine's own overall score when it answered; the list score otherwise.
-  const score = detail?.overall.score ?? hit.matchScore ?? 50;
-  const confidence = detail?.overall.confidence ?? null;
-  const dims = detail?.breakdown.map((axis) => ({
-    subject: axis.label,
-    value: axis.score,
-    fullMark: 100,
-  })) ?? null;
-  const reasonTexts = detail?.reasons?.length ? detail.reasons : (hit.matchReasons ?? []);
-  const reasons: MatchReason[] = reasonTexts.map((t) => ({ type: 'skills' as const, text: t, score: 0 }));
-  const strengths = detail?.sharedStrengths ?? [];
-  const frictions = detail?.frictionPoints ?? [];
+  const score = scoreOf(hit);
+  const completeness = completenessCopy(detail?.overall.confidence);
+  // Recharts draws a tick from a plain string: the reader's language only.
+  const dims = detail?.breakdown?.length
+    ? detail.breakdown.map((axis) => {
+        const name = axisCopy(axis.key, axis.label);
+        return { subject: sayOne(name.en, name.el), value: axis.score, fullMark: 100 };
+      })
+    : null;
+  const frictions = (detail?.frictionItems ?? []).map(frictionCopy).filter((f): f is { en: string; el: string } => f !== null);
+  // A skill both list is already in «Κοινές δεξιότητες» above: one fact, one place.
+  const sharedSkills = (hit.skillNames ?? []).filter((n) => viewerSkills.some((m) => m.toLowerCase() === n.toLowerCase()));
+  const strengths = strengthTerms(detail?.strengthItems, sharedSkills);
+  const compat = detail && 'compatibility' in detail ? compatSummary(detail.compatibility) : null;
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -131,23 +162,63 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
             <BarChart3 className="icon-md text-muted-foreground" />
             <BilingualText en={`${matchesEn('compatibility_with')} ${hit.displayName}`} el={`${matchesEl('compatibility_with')} ${hit.displayName}`} />
           </DialogTitle>
-          <DialogDescription className="sr-only"><BilingualText en="Compatibility score, dimensions and reasons for this match." el="Βαθμός συμβατότητας, διαστάσεις και λόγοι για αυτή την αντιστοίχιση." /></DialogDescription>
+          <DialogDescription className="sr-only"><BilingualText en="Compatibility score, reasons, points worth discussing and dimensions for this match." el="Βαθμός συμβατότητας, λόγοι, σημεία για συζήτηση και διαστάσεις για αυτή την αντιστοίχιση." /></DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center justify-center gap-3 rounded-xl bg-primary/8 p-4">
           <div className="text-center">
-            <p className="text-2xl font-bold tabular-nums text-primary-accessible">{score}%</p>
+            {score !== null ? (
+              <p className="text-2xl font-bold tabular-nums text-primary-accessible">{score}%</p>
+            ) : (
+              <p className="text-sm text-muted-foreground"><BilingualText en="No score yet" el="Χωρίς βαθμολογία ακόμη" compact /></p>
+            )}
             <p className="text-xs text-muted-foreground mt-0.5">
               <BilingualText en={matchesEn('overall_match')} el={matchesEl('overall_match')} />
             </p>
-            {confidence != null && (
-              <p className="mt-1 text-2xs tabular-nums text-muted-foreground/80">
-                {confidence}%{' '}
-                <BilingualText en={matchesEn('match_confidence')} el={matchesEl('match_confidence')} compact />
+            {completeness && (
+              <p className="mt-1 text-2xs text-muted-foreground/80">
+                <BilingualText en={completeness.en} el={completeness.el} compact wrap />
               </p>
             )}
           </div>
         </div>
+
+        {reasons.length > 0 && (
+          <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <BilingualText en={matchesEn('why_you_match')} el={matchesEl('why_you_match')} />
+            </p>
+            {reasons.map((r, i) => (
+              <div key={`${r.en}-${i}`} className="flex items-start gap-2 text-sm">
+                <Zap className="icon-sm text-muted-foreground mt-0.5 flex-shrink-0" />
+                <span className="text-foreground"><BilingualText en={r.en} el={r.el} compact wrap /></span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {frictions.length > 0 && (
+          <div className="rounded-lg border border-border bg-status-warning-bg/40 p-3 space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <BilingualText en={matchesEn('watch_outs')} el={matchesEl('watch_outs')} />
+            </p>
+            {frictions.map((f) => (
+              <p key={f.en} className="text-sm text-foreground"><BilingualText en={f.en} el={f.el} compact wrap /></p>
+            ))}
+          </div>
+        )}
+
+        {compat && (
+          <div className="space-y-1 text-xs text-muted-foreground">
+            <p><BilingualText en={compat.text.en} el={compat.text.el} wrap /></p>
+            {!compat.enough && (
+              <Link href="/settings#how-you-work" className="tap-target-y inline-flex items-center gap-1 font-medium text-primary-accessible underline-offset-4 hover:underline">
+                <BilingualText en="Answer the working-style questions" el="Απαντήστε στις ερωτήσεις συνεργασίας" compact />
+                <ArrowRight className="icon-sm" aria-hidden="true" />
+              </Link>
+            )}
+          </div>
+        )}
 
         {dims ? (
           <MatchCompatibilityChart dims={dims} />
@@ -165,37 +236,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <BilingualText en={matchesEn('shared_strengths')} el={matchesEl('shared_strengths')} />
             </p>
-            {strengths.map((t) => (
-              <p key={t} className="text-sm text-foreground">{t}</p>
-            ))}
-          </div>
-        )}
-
-        {frictions.length > 0 && (
-          <div className="rounded-lg border border-border bg-status-warning-bg/40 p-3 space-y-1.5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              <BilingualText en={matchesEn('watch_outs')} el={matchesEl('watch_outs')} />
-            </p>
-            {frictions.map((t) => (
-              <p key={t} className="text-sm text-foreground">{t}</p>
-            ))}
-          </div>
-        )}
-
-        {reasons.length > 0 && (
-          <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-1.5">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              <BilingualText en={matchesEn('why_you_match')} el={matchesEl('why_you_match')} />
-            </p>
-            {reasons.map((r, i) => {
-              const copy = matchReasonCopy(r.text);
-              return (
-                <div key={i} className="flex items-start gap-2 text-sm">
-                  <Zap className="icon-sm text-muted-foreground mt-0.5 flex-shrink-0" />
-                  <span className="text-foreground"><BilingualText en={copy.en} el={copy.el} compact wrap /></span>
-                </div>
-              );
-            })}
+            <FactLine className="text-sm text-foreground" items={strengths.map((t) => <BilingualText key={t.en} en={t.en} el={t.el} compact />)} />
           </div>
         )}
       </DialogContent>
@@ -270,12 +311,58 @@ function roleMatchesFilter(role: string, filter: RoleFilter): boolean {
   return true;
 }
 
+/** The one primary action, or the sent request said; the same rule as the card's (`matchPrimary`). */
+function PrimaryAction({
+  hit,
+  connection,
+  onConnect,
+  onAccept,
+  onMessage,
+  className,
+}: {
+  hit: SearchHit;
+  connection: MatchConnection;
+  onConnect: () => void;
+  onAccept: () => void;
+  onMessage: () => void;
+  className?: string;
+}) {
+  const primary = matchPrimary(connection, hit.displayName, { onConnect, onAccept, onMessage });
+  if (primary) {
+    return (
+      <Button size="sm" onClick={primary.onClick} className={cn('gap-1.5', className)} aria-label={primary.aria}>
+        <primary.Icon className="icon-sm" /> <BilingualText en={primary.en} el={primary.el} compact />
+      </Button>
+    );
+  }
+  return (
+    <span className={cn('inline-flex min-h-9 items-center justify-center gap-1.5 text-xs text-muted-foreground', className)}>
+      <Clock className="icon-sm" aria-hidden="true" />
+      <BilingualText en="Request sent" el="Το αίτημα στάλθηκε" compact />
+    </span>
+  );
+}
+
+/** Where a commitment stands, as a link to its board: the reader's turn reads in the accent. */
+function CommitmentLine({ commitment }: { commitment: CommitmentLink }) {
+  return (
+    <Link
+      href={commitment.href}
+      className={cn('inline rounded-sm underline-offset-4 hover:underline', commitment.line.yourTurn ? 'font-medium text-primary-accessible' : 'text-muted-foreground')}
+    >
+      <BilingualText en={commitment.line.en} el={commitment.line.el} compact wrap />
+    </Link>
+  );
+}
+
 /* ── List-view row component ─────────────────────────────────────────────── */
 function MatchListRow({
   hit,
-  matchReasons,
+  reasons,
   isSaved,
+  connection,
   onConnect,
+  onAccept,
   onMessage,
   onPass,
   onSave,
@@ -283,21 +370,24 @@ function MatchListRow({
   commitment,
 }: {
   hit: SearchHit;
-  matchReasons: MatchReason[];
+  reasons: ExplainedReason[];
   isSaved: boolean;
-  commitment?: { step: CommitmentStep; href: string } | null;
+  connection: MatchConnection;
+  commitment?: CommitmentLink | null;
   onConnect: () => void;
+  onAccept: () => void;
   onMessage: () => void;
   onPass: () => void;
   onSave: () => void;
   onBreakdown: () => void;
 }) {
-  const score = hit.matchScore ?? 50;
-  const tier = getTier(score);
-  const colors = tierStyle(tier);
-  const stroke = TIER_STROKE[tier];
+  const score = scoreOf(hit);
+  const tier = score === null ? null : getTier(score);
+  const colors = tier ? tierStyle(tier) : STATUS.neutral;
+  const stroke = tier ? TIER_STROKE[tier] : 'hsl(var(--border))';
   const initials = hit.displayName.slice(0, 2).toUpperCase();
   const circ = 2 * Math.PI * 23;
+  const primaryIsMessage = matchPrimary(connection, hit.displayName, { onConnect, onAccept, onMessage })?.key === 'message';
 
   // The Connections card in a row: the score ring around the person's circle
   // is the mark (2.5rem, as every card's), the name and headline beside it,
@@ -311,7 +401,7 @@ function MatchListRow({
               <svg viewBox="0 0 52 52" className="absolute inset-0 h-10 w-10" aria-hidden="true">
                 <circle cx={26} cy={26} r={23} fill="none" stroke="hsl(var(--border))" strokeWidth={3} />
                 <circle cx={26} cy={26} r={23} fill="none" stroke={stroke} strokeWidth={3}
-                  strokeDasharray={`${(score / 100) * circ} ${circ}`}
+                  strokeDasharray={`${((score ?? 0) / 100) * circ} ${circ}`}
                   strokeDashoffset={circ * 0.25}
                   strokeLinecap="round" />
               </svg>
@@ -332,46 +422,47 @@ function MatchListRow({
           meta={(hit.location || commitment) ? (
             <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
               {hit.location ? <span>{hit.location}</span> : null}
-              {commitment ? (
-                <Link href={commitment.href} className="inline-flex rounded-full"><StepChip step={commitment.step} /></Link>
-              ) : null}
+              {commitment ? <CommitmentLine commitment={commitment} /> : null}
             </span>
           ) : undefined}
-          aside={(
+          aside={tier && score !== null ? (
             <Badge variant="outline" className={cn('border text-xs tabular-nums', colors.chip)}>
               <BilingualText en={`${matchesEn(`tier_${tier}` as const)} · ${score}%`} el={`${matchesEl(`tier_${tier}` as const)} · ${score}%`} compact />
             </Badge>
+          ) : (
+            <span className="text-xs text-muted-foreground"><BilingualText en="No score yet" el="Χωρίς βαθμολογία ακόμη" compact /></span>
           )}
         />
 
-        {/* Skills and reasons: facts on the ring's edge. */}
-        {((hit.skillNames ?? []).length > 0 || matchReasons.length > 0) && (
+        {/* Skills and the two most telling reasons: facts on the ring's edge. */}
+        {((hit.skillNames ?? []).length > 0 || reasons.length > 0) && (
           <div className="space-y-1">
             <FactLine
               items={[...(hit.skillNames ?? []).slice(0, 5), (hit.skillNames ?? []).length > 5 ? `+${(hit.skillNames ?? []).length - 5}` : null]}
             />
             <FactLine
               label={bilingualAria('Why you match', 'Γιατί ταιριάζετε')}
-              items={matchReasons.slice(0, 3).map((r) => {
-                const copy = matchReasonCopy(r.text);
-                return <BilingualText key={copy.en} en={copy.en} el={copy.el} compact />;
-              })}
+              items={reasons.slice(0, 2).map((r) => <BilingualText key={r.en} en={r.en} el={r.el} compact />)}
             />
           </div>
         )}
 
-        {/* Foot: pass and save at the left, the next steps at the right. */}
+        {/* Foot: pass and save at the left, the next steps at the right.
+            Round icons on a phone; from 640px they carry their word, so the
+            width is auto - with `!`, because the global rule that squares
+            every h-10 w-10 button on a desktop outranks sm:w-auto, and the
+            words spilled over the circles. */}
         <CardFoot
           meta={(
             <div className="flex items-center gap-1.5">
               <button onClick={onPass}
-                className="flex h-10 w-10 items-center justify-center gap-1.5 rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible sm:w-auto sm:px-3"
+                className="flex h-10 w-10 items-center justify-center gap-1.5 rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible sm:!w-auto sm:px-3"
                 aria-label={bilingualAria(`Pass on ${hit.displayName}`, `Παράλειψη: ${hit.displayName}`)}>
                 <X className="icon-sm" />
                 <span className="hidden sm:inline text-xs"><BilingualText en="Pass" el="Παράλειψη" compact /></span>
               </button>
               <button onClick={onSave}
-                className={cn('flex h-10 w-10 items-center justify-center gap-1.5 rounded-full border border-border transition-colors sm:w-auto sm:px-3', isSaved ? STATUS.warning.icon : 'text-muted-foreground hover:text-status-warning')}
+                className={cn('flex h-10 w-10 items-center justify-center gap-1.5 rounded-full border border-border transition-colors sm:!w-auto sm:px-3', isSaved ? STATUS.warning.icon : 'text-muted-foreground hover:text-status-warning')}
                 aria-pressed={isSaved}
                 aria-label={isSaved
                   ? bilingualAria(`${hit.displayName} is on your shortlist`, `${hit.displayName}: στη λίστα σας`)
@@ -383,14 +474,14 @@ function MatchListRow({
           )}
         >
           <Button size="sm" variant="ghost" onClick={onBreakdown} className="gap-1.5 text-muted-foreground hover:text-primary-accessible">
-            <BarChart3 className="icon-sm" /> <BilingualText en="Breakdown" el="Ανάλυση" compact />
+            <BarChart3 className="icon-sm" /> <BilingualText en="Compatibility" el="Συμβατότητα" compact />
           </Button>
-          <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
-            <MessageCircle className="icon-sm" /> <BilingualText en="Message" el="Μήνυμα" compact />
-          </Button>
-          <Button size="sm" onClick={onConnect} className="gap-1.5">
-            <Heart className="icon-sm" /> <BilingualText en="Connect" el="Σύνδεση" compact />
-          </Button>
+          {!primaryIsMessage && (
+            <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
+              <MessageCircle className="icon-sm" /> <BilingualText en="Message" el="Μήνυμα" compact />
+            </Button>
+          )}
+          <PrimaryAction hit={hit} connection={connection} onConnect={onConnect} onAccept={onAccept} onMessage={onMessage} />
         </CardFoot>
       </CardContent>
     </Card>
@@ -399,22 +490,26 @@ function MatchListRow({
 
 /* ── Match Preview Panel ─────────────────────────────────────────────────── */
 function MatchPreviewPanel({
-  hit, matchReasons, savedIds, onClose, onConnect, onMessage, onSave, onPass, onBreakdown,
+  hit, reasons, savedIds, connection, commitment, onClose, onConnect, onAccept, onMessage, onSave, onPass, onBreakdown,
 }: {
   hit: SearchHit;
-  matchReasons: MatchReason[];
+  reasons: ExplainedReason[];
   savedIds: Set<string>;
+  connection: MatchConnection;
+  commitment?: CommitmentLink | null;
   onClose: () => void;
   onConnect: () => void;
+  onAccept: () => void;
   onMessage: () => void;
   onSave: () => void;
   onPass: () => void;
   onBreakdown: () => void;
 }) {
-  const score = hit.matchScore ?? 50;
-  const tier = getTier(score);
-  const colors = tierStyle(tier);
+  const score = scoreOf(hit);
+  const tier = score === null ? null : getTier(score);
+  const colors = tier ? tierStyle(tier) : STATUS.neutral;
   const isSaved = savedIds.has(hit.userId);
+  const primaryIsMessage = matchPrimary(connection, hit.displayName, { onConnect, onAccept, onMessage })?.key === 'message';
 
   return (
     <>
@@ -426,7 +521,7 @@ function MatchPreviewPanel({
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border bg-card/95 backdrop-blur-sm">
           <p className="text-sm font-semibold"><BilingualText en="Profile Preview" el="Προεπισκόπηση προφίλ" compact /></p>
-          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground" aria-label="Close preview">
+          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground" aria-label={bilingualAria('Close preview', 'Κλείσιμο προεπισκόπησης')}>
             <X className="icon-sm" />
           </button>
         </div>
@@ -450,14 +545,17 @@ function MatchPreviewPanel({
               </span>
             )}
             subtitle={hit.headline ? <span className="line-clamp-3">{hit.headline}</span> : undefined}
+            meta={commitment ? <CommitmentLine commitment={commitment} /> : undefined}
             asideStays
-            aside={(
+            aside={tier && score !== null ? (
               <span className="flex flex-col items-end">
                 <span className={cn('card-body font-semibold tabular-nums', colors.icon)}>{score}%</span>
                 <span className={cn('text-xs font-medium', colors.icon)}>
                   <BilingualText en={matchesEn(`tier_${tier}` as const)} el={matchesEl(`tier_${tier}` as const)} compact />
                 </span>
               </span>
+            ) : (
+              <span className="text-xs text-muted-foreground"><BilingualText en="No score yet" el="Χωρίς βαθμολογία ακόμη" compact /></span>
             )}
           />
 
@@ -472,30 +570,31 @@ function MatchPreviewPanel({
             </div>
           )}
 
-          {/* Match reasons */}
-          {matchReasons.length > 0 && (
+          {/* Why you match: every reason, in the reader's language (they
+              were printed as the engine wrote them, in English). */}
+          {reasons.length > 0 && (
             <div>
               <p className="mb-1 text-xs font-medium text-muted-foreground"><BilingualText en="Why you match" el="Γιατί ταιριάζετε" compact /></p>
               <ul className="space-y-1">
-                {matchReasons.map((r, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs text-foreground">
-                    <span className={cn('mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full', TIER_DOT[tier])} aria-hidden="true" />
-                    <span className="min-w-0 first-letter:uppercase">{r.text}</span>
+                {reasons.map((r, i) => (
+                  <li key={`${r.en}-${i}`} className="flex items-start gap-2 text-xs text-foreground">
+                    <span className={cn('mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full', tier ? TIER_DOT[tier] : 'bg-border')} aria-hidden="true" />
+                    <span className="min-w-0"><BilingualText en={r.en} el={r.el} compact wrap /></span>
                   </li>
                 ))}
               </ul>
             </div>
           )}
 
-          {/* Actions */}
+          {/* Actions: the one primary first, as on the card. */}
           <div className="space-y-2 pt-2 border-t border-border">
             <div className="flex gap-2">
-              <Button className="flex-1 gap-1.5" size="sm" onClick={onConnect}>
-                <UserPlus className="icon-sm" /> <BilingualText en="Connect" el="Σύνδεση" compact />
-              </Button>
-              <Button variant="outline" className="flex-1 gap-1.5" size="sm" onClick={onMessage}>
-                <MessageCircle className="icon-sm" /> <BilingualText en="Message" el="Μήνυμα" compact />
-              </Button>
+              <PrimaryAction hit={hit} connection={connection} onConnect={onConnect} onAccept={onAccept} onMessage={onMessage} className="flex-1" />
+              {!primaryIsMessage && (
+                <Button variant="outline" className="flex-1 gap-1.5" size="sm" onClick={onMessage}>
+                  <MessageCircle className="icon-sm" /> <BilingualText en="Message" el="Μήνυμα" compact />
+                </Button>
+              )}
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={onSave}>
@@ -507,7 +606,7 @@ function MatchPreviewPanel({
               </Button>
             </div>
             <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" onClick={onBreakdown}>
-              <BarChart3 className="icon-sm" /> <BilingualText en="View breakdown" el="Προβολή ανάλυσης" compact />
+              <BarChart3 className="icon-sm" /> <BilingualText en="Compatibility" el="Συμβατότητα" compact />
             </Button>
             <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" asChild>
               <Link href={`/profiles/${hit.userId}`}>
@@ -548,22 +647,74 @@ export default function MatchesPage() {
 
   const hasToken = useIsAuthenticated();
 
-  // Where a commitment with each person stands, shown beside their score:
-  // the latest live thread from either side wins over a closed one.
+  // Where a commitment with each person stands, shown under their headline:
+  // the latest live thread from either side wins over a closed one, said as
+  // a line (whose turn, and what the card is for) instead of the bare step.
   const { data: commitmentThreads } = useQuery({
     queryKey: qk('commitments', 'threads', 'all'),
     queryFn: () => listCommitmentThreads('all'),
     staleTime: 60_000,
   });
   const commitmentWith = useMemo(() => {
-    const map = new Map<string, { step: CommitmentStep; href: string }>();
+    const map = new Map<string, CommitmentLink>();
     for (const t of commitmentThreads ?? []) {
       const current = map.get(t.counterpart.id);
       if (current && current.step !== 'closed') continue;
-      map.set(t.counterpart.id, { step: t.step, href: `/commitments/${encodeURIComponent(t.cardId)}?thread=${encodeURIComponent(t.id)}` });
+      map.set(t.counterpart.id, {
+        step: t.step,
+        href: `/commitments/${encodeURIComponent(t.cardId)}?thread=${encodeURIComponent(t.id)}`,
+        line: threadLine(t),
+      });
     }
     return map;
   }, [commitmentThreads]);
+
+  // The reader's own profile: each match's reasons compare it with theirs.
+  // The same key the dashboards and /profile read, so it is usually cached.
+  const { data: meData } = useQuery({
+    queryKey: queryKeys.me.profile(),
+    queryFn: getMeProfile,
+    enabled: hasToken,
+    staleTime: 5 * 60_000,
+  });
+  const viewer = useMemo(() => viewerFacts(meData?.profile ?? null), [meData]);
+
+  // Skill names in the reasons are translated from the Greek catalog, which
+  // loads on demand; the reasons are worked out again once it has.
+  const { primary: primaryLanguage, showSecondary } = useLanguagePreference();
+  const needsGreek = primaryLanguage === 'el' || showSecondary;
+  const [catalogTick, setCatalogTick] = useState(0);
+  useEffect(() => {
+    if (!needsGreek) return;
+    let live = true;
+    ensureExtraCatalog('el')
+      .then(() => { if (live) setCatalogTick((n) => n + 1); })
+      .catch(() => { /* English terms stay; the sentences are still Greek. */ });
+    return () => { live = false; };
+  }, [needsGreek]);
+  const [nowMs] = useState(() => Date.now());
+
+  // Where a connection with each person stands, so the one primary action
+  // is the right one: Connect, Accept their request, or Message. The same
+  // keys and reads as /connections, so an answer there shows here.
+  const receivedRequests = useQuery({ queryKey: qk('connections', 'received'), queryFn: () => listConnectionRequests({ type: 'received' }), enabled: hasToken, staleTime: 60_000 });
+  const sentRequests = useQuery({ queryKey: qk('connections', 'sent'), queryFn: () => listConnectionRequests({ type: 'sent' }), enabled: hasToken, staleTime: 60_000 });
+  const acceptedConnections = useQuery({ queryKey: qk('connections', 'accepted'), queryFn: () => listConnectionRequests({ type: 'accepted' }), enabled: hasToken, staleTime: 60_000 });
+  const connectionWith = useMemo(() => {
+    const myId = meData?.profile?.userId;
+    const map = new Map<string, { state: MatchConnection; id: string }>();
+    for (const c of acceptedConnections.data?.connections ?? []) {
+      map.set(c.requesterId === myId ? c.receiverId : c.requesterId, { state: 'connected', id: c.id });
+    }
+    for (const c of receivedRequests.data?.connections ?? []) {
+      if (!map.has(c.requesterId)) map.set(c.requesterId, { state: 'received', id: c.id });
+    }
+    for (const c of sentRequests.data?.connections ?? []) {
+      if (!map.has(c.receiverId)) map.set(c.receiverId, { state: 'sent', id: c.id });
+    }
+    return map;
+  }, [acceptedConnections.data, receivedRequests.data, sentRequests.data, meData]);
+  const connectionOf = useCallback((userId: string): MatchConnection => connectionWith.get(userId)?.state ?? 'none', [connectionWith]);
   const { data: shortlistIdsData } = useQuery({
     queryKey: qk('shortlist', 'ids'),
     queryFn: getShortlistIds,
@@ -584,29 +735,48 @@ export default function MatchesPage() {
     enabled: hasToken,
   });
 
-  const suggestions: SearchHit[] = data?.suggestions ?? [];
+  const suggestions: SearchHit[] = useMemo(() => data?.suggestions ?? [], [data]);
   const visible = useMemo(() => suggestions.filter(s => !passedIds.has(s.id)), [suggestions, passedIds]);
 
-  const counts = useMemo(() => ({
-    all:       visible.length,
-    excellent: visible.filter(s => (s.matchScore ?? 0) >= 80).length,
-    strong:    visible.filter(s => { const sc = s.matchScore ?? 0; return sc >= 65 && sc < 80; }).length,
-    good:      visible.filter(s => { const sc = s.matchScore ?? 0; return sc >= 45 && sc < 65; }).length,
-    potential: visible.filter(s => (s.matchScore ?? 0) < 45).length,
-  }), [visible]);
+  // Why each person matches, from both profiles (lib/match-explain): the
+  // card, the list row, the preview and the dialog all read this one list.
+  const reasonsByHit = useMemo(() => {
+    // `catalogTick` is in the options so the reasons are worked out again
+    // when the Greek catalog arrives (explainMatch reads only nowMs).
+    const options = { nowMs, catalogTick };
+    const map = new Map<string, ExplainedReason[]>();
+    for (const hit of suggestions) map.set(hit.id, explainMatch(hit, viewer, options));
+    return map;
+  }, [suggestions, viewer, nowMs, catalogTick]);
+  const reasonsOf = useCallback((hit: SearchHit) => reasonsByHit.get(hit.id) ?? [], [reasonsByHit]);
 
-  const avgScore = useMemo(() => {
-    if (!visible.length) return 0;
-    return Math.round(visible.reduce((sum, s) => sum + (s.matchScore ?? 0), 0) / visible.length);
+  // A person without a score is in "All" only: no tier, no average.
+  const counts = useMemo(() => {
+    const scored = visible.map(scoreOf).filter((sc): sc is number => sc !== null);
+    return {
+      all:       visible.length,
+      excellent: scored.filter(sc => sc >= 80).length,
+      strong:    scored.filter(sc => sc >= 65 && sc < 80).length,
+      good:      scored.filter(sc => sc >= 45 && sc < 65).length,
+      potential: scored.filter(sc => sc < 45).length,
+    };
   }, [visible]);
 
-  const topScore = useMemo(() =>
-    visible.reduce((max, s) => Math.max(max, s.matchScore ?? 0), 0), [visible]);
+  const avgScore = useMemo(() => {
+    const scored = visible.map(scoreOf).filter((sc): sc is number => sc !== null);
+    if (!scored.length) return null;
+    return Math.round(scored.reduce((sum, sc) => sum + sc, 0) / scored.length);
+  }, [visible]);
+
+  const topScore = useMemo(() => {
+    const scored = visible.map(scoreOf).filter((sc): sc is number => sc !== null);
+    return scored.length ? Math.max(...scored) : null;
+  }, [visible]);
 
   const filtered = useMemo(() => {
     let list = [...visible];
     if (activeFilter !== 'all') {
-      list = list.filter(s => getTier(s.matchScore ?? 0) === activeFilter);
+      list = list.filter(s => { const sc = scoreOf(s); return sc !== null && getTier(sc) === activeFilter; });
     }
     if (roleFilter !== 'all') {
       list = list.filter(s => roleMatchesFilter(s.role, roleFilter));
@@ -629,7 +799,7 @@ export default function MatchesPage() {
         return [...availFilter].some(f => av.includes(f.replace('_', ' ').replace('_', '-')));
       });
     }
-    if (sortBy === 'score') list.sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0));
+    if (sortBy === 'score') list.sort((a, b) => (scoreOf(b) ?? -1) - (scoreOf(a) ?? -1));
     else if (sortBy === 'name') list.sort((a, b) => a.displayName.localeCompare(b.displayName));
     // 'recent': preserve original API order — no-op
     return list;
@@ -644,15 +814,32 @@ export default function MatchesPage() {
     if (!connectionTarget) return;
     try {
       await sendConnectionRequest({ receiverId: connectionTarget.userId, message: message || undefined });
-      success('Connection request sent!', `Your request to ${connectionTarget.displayName} has been sent.`);
+      success(
+        sayOne('Connection request sent', 'Το αίτημα σύνδεσης στάλθηκε'),
+        sayOne(`Your request to ${connectionTarget.displayName} has been sent.`, `Το αίτημά σας προς ${connectionTarget.displayName} στάλθηκε.`),
+      );
       setShowConnectionDialog(false);
       setConnectionTarget(null);
       queryClient.invalidateQueries({ queryKey: qk('recommendations') });
       queryClient.invalidateQueries({ queryKey: qk('connections') });
     } catch (err) {
-      showError('Could not send request', err instanceof Error ? err.message : 'Please try again');
+      showError(sayOne('Could not send the request', 'Το αίτημα δεν στάλθηκε'), err instanceof Error ? err.message : sayOne('Please try again.', 'Δοκιμάστε ξανά.'));
     }
   };
+
+  // Their request to the reader, accepted from the match itself: the card
+  // then offers Message, and /connections shows the same.
+  const handleAccept = useCallback(async (hit: SearchHit) => {
+    const link = connectionWith.get(hit.userId);
+    if (!link || link.state !== 'received') return;
+    try {
+      await respondToConnectionRequest(link.id, 'accepted');
+      success(sayOne('Connected', 'Η σύνδεση έγινε'), sayOne(`You are now connected with ${hit.displayName}.`, `Είστε πλέον σε σύνδεση με ${hit.displayName}.`));
+      await queryClient.invalidateQueries({ queryKey: qk('connections') });
+    } catch (err) {
+      showError(sayOne('Could not accept the request', 'Το αίτημα δεν έγινε αποδεκτό'), err instanceof Error ? err.message : undefined);
+    }
+  }, [connectionWith, queryClient, success, showError, sayOne]);
 
   const handleMessage = useCallback((profile: ProfileCardData) => {
     router.push(`/messages?to=${profile.userId}`);
@@ -684,7 +871,7 @@ export default function MatchesPage() {
     setPassedIds(prev => new Set(prev).add(id));
     setLastPassed(id);
     passLedger.pass(id, userId);
-    success('Passed', name, {
+    success(sayOne('Passed', 'Παραλείφθηκε'), name, {
       action: {
         label: sayOne('Undo', 'Αναίρεση'),
         onClick: () => unpass([id]),
@@ -713,13 +900,16 @@ export default function MatchesPage() {
     flip(!wasSaved);
     try {
       await (wasSaved ? removeFromShortlist(userId) : saveToShortlist(userId));
-      if (!wasSaved) success('Saved to shortlist', `${name} added to your saved profiles`);
+      if (!wasSaved) success(sayOne('Saved to shortlist', 'Αποθηκεύτηκε στη λίστα'), sayOne(`${name} added to your saved profiles.`, `${name}: προστέθηκε στα αποθηκευμένα προφίλ.`));
     } catch (err) {
       flip(wasSaved);
-      showError(wasSaved ? 'Could not remove from shortlist' : 'Could not save to shortlist', err instanceof Error ? err.message : undefined);
+      showError(
+        wasSaved ? sayOne('Could not remove from shortlist', 'Η αφαίρεση από τη λίστα απέτυχε') : sayOne('Could not save to shortlist', 'Η αποθήκευση στη λίστα απέτυχε'),
+        err instanceof Error ? err.message : undefined,
+      );
       return { error: err instanceof Error && err.message ? err.message : 'Your saved profiles did not change.' };
     }
-  }, [savedIds, success, showError]);
+  }, [savedIds, success, showError, sayOne]);
 
   const TIER_TABS: { key: FilterKey; labelEn: string; labelEl: string; tier?: MatchTier }[] = [
     { key: 'all',       labelEn: matchesEn('tier_all'),       labelEl: matchesEl('tier_all') },
@@ -756,8 +946,8 @@ export default function MatchesPage() {
 
   const askAi = hasToken && visible.length > 0
     ? {
-        en: `Matches: ${counts.all} total, ${counts.excellent} excellent (≥80%), average ${avgScore}%, top ${topScore}%. ${filtered.length !== counts.all ? `${filtered.length} showing with current filters. ` : ''}Recommend who I should connect with first and draft a short intro.`,
-        el: `Αντιστοιχίσεις: ${counts.all} συνολικά, ${counts.excellent} εξαιρετικές (≥80%), μέσος όρος ${avgScore}%, κορυφαία ${topScore}%. ${filtered.length !== counts.all ? `${filtered.length} εμφανίζονται με τα τρέχοντα φίλτρα. ` : ''}Πρότεινε με ποιον να συνδεθώ πρώτα και ετοίμασε μια σύντομη γνωριμία.`,
+        en: `Matches: ${counts.all} total, ${counts.excellent} excellent (≥80%), average ${avgScore ?? '—'}%, top ${topScore ?? '—'}%. ${filtered.length !== counts.all ? `${filtered.length} showing with current filters. ` : ''}Recommend who I should connect with first and draft a short intro.`,
+        el: `Αντιστοιχίσεις: ${counts.all} συνολικά, ${counts.excellent} εξαιρετικές (≥80%), μέσος όρος ${avgScore ?? '—'}%, κορυφαία ${topScore ?? '—'}%. ${filtered.length !== counts.all ? `${filtered.length} εμφανίζονται με τα τρέχοντα φίλτρα. ` : ''}Πρότεινε με ποιον να συνδεθώ πρώτα και ετοίμασε μια σύντομη γνωριμία.`,
       }
     : {
         en: 'I am on Matches. Explain how compatibility scoring works and what to complete on my profile so I get better cofounder suggestions.',
@@ -785,9 +975,16 @@ export default function MatchesPage() {
       id: 'matches',
       labelEn: 'Matches',
       labelEl: 'Αντιστοιχίσεις',
-      rows: !hasToken || isLoading ? undefined : filtered.map((s) =>
-        `${s.displayName} · ${s.role ?? 'member'} · match ${s.matchScore ?? '—'}%${s.headline ? ` · ${s.headline}` : ''}${s.location ? ` · ${s.location}` : ''}${savedIds.has(s.userId) ? ' · shortlisted' : ''}`,
-      ),
+      // The two most telling reasons go with each row, so the assistant can
+      // say why someone matches as the card does, in either language.
+      rows: !hasToken || isLoading ? undefined : filtered.map((s) => {
+        const why = reasonsOf(s).slice(0, 2).map((r) => r.en).join('; ');
+        return `${s.displayName} · ${s.role ?? 'member'} · match ${s.matchScore ?? '—'}%${s.headline ? ` · ${s.headline}` : ''}${s.location ? ` · ${s.location}` : ''}${savedIds.has(s.userId) ? ' · shortlisted' : ''}${why ? ` · why: ${why}` : ''}`;
+      }),
+      rowsEl: !hasToken || isLoading ? undefined : filtered.map((s) => {
+        const why = reasonsOf(s).slice(0, 2).map((r) => r.el).join('· ');
+        return `${s.displayName} · αντιστοίχιση ${s.matchScore ?? '—'}%${s.headline ? ` · ${s.headline}` : ''}${s.location ? ` · ${s.location}` : ''}${savedIds.has(s.userId) ? ' · στη λίστα' : ''}${why ? ` · γιατί: ${why}` : ''}`;
+      }),
       total: visible.length,
     },
   ]);
@@ -1100,13 +1297,15 @@ export default function MatchesPage() {
               {
                 id: 'excellent',
                 value: counts.excellent > 0 ? counts.excellent : null,
-                en: counts.excellent === 1 ? 'excellent (80%+), ready to connect' : 'excellent (80%+), ready to connect',
-                el: counts.excellent === 1 ? 'εξαιρετική (80%+), έτοιμη για σύνδεση' : 'εξαιρετικές (80%+), έτοιμες για σύνδεση',
+                // "Ready to connect" was not measured (two of the three were
+                // already connected or asked): the figure says what it counts.
+                en: 'excellent (80%+)',
+                el: counts.excellent === 1 ? 'εξαιρετική (80%+)' : 'εξαιρετικές (80%+)',
                 onSelect: () => setActiveFilter(activeFilter === 'excellent' ? 'all' : 'excellent'),
                 selected: activeFilter === 'excellent',
               },
-              { id: 'avg', value: `${avgScore}%`, en: 'average', el: 'μέσος βαθμός' },
-              { id: 'top', value: `${topScore}%`, en: 'top score', el: 'υψηλότερος' },
+              { id: 'avg', value: avgScore === null ? null : `${avgScore}%`, en: 'average', el: 'μέσος βαθμός' },
+              { id: 'top', value: topScore === null ? null : `${topScore}%`, en: 'top score', el: 'υψηλότερος' },
             ]}
           />
         )}
@@ -1267,10 +1466,6 @@ export default function MatchesPage() {
                   data-tour="matches-grid">
                   {filtered.map((hit) => {
                     const profile = hitToProfile(hit);
-                    const score = hit.matchScore ?? 50;
-                    const matchReasons: MatchReason[] = hit.matchReasons?.length
-                      ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-                      : [];
                     return (
                       <MatchCard
                         key={hit.id}
@@ -1282,8 +1477,11 @@ export default function MatchesPage() {
                         role={hit.role}
                         location={hit.location}
                         skills={hit.skillNames ?? []}
-                        compatibilityScore={score}
-                        matchReasons={matchReasons}
+                        compatibilityScore={scoreOf(hit)}
+                        matchReasons={[]}
+                        reasons={reasonsOf(hit)}
+                        connection={connectionOf(hit.userId)}
+                        onAccept={() => void handleAccept(hit)}
                         isBookmarked={savedIds.has(hit.userId)}
                         commitment={commitmentWith.get(hit.userId) ?? null}
                         onLike={() => handleConnect(profile)}
@@ -1309,18 +1507,16 @@ export default function MatchesPage() {
                 <div className="space-y-3">
                   {filtered.map((hit) => {
                     const profile = hitToProfile(hit);
-                    const score = hit.matchScore ?? 50;
-                    const matchReasons: MatchReason[] = hit.matchReasons?.length
-                      ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-                      : [];
                     return (
                       <MatchListRow
                         key={hit.id}
                         hit={hit}
-                        matchReasons={matchReasons}
+                        reasons={reasonsOf(hit)}
                         isSaved={savedIds.has(hit.userId)}
+                        connection={connectionOf(hit.userId)}
                         commitment={commitmentWith.get(hit.userId) ?? null}
                         onConnect={() => handleConnect(profile)}
+                        onAccept={() => void handleAccept(hit)}
                         onMessage={() => handleMessage(profile)}
                         onPass={() => handlePass(hit.id, hit.displayName, hit.userId)}
                         onSave={() => void handleSave(hit.userId, hit.displayName)}
@@ -1360,18 +1556,17 @@ export default function MatchesPage() {
 
       {/* ── Quick-preview slide panel (b3) ── */}
       {previewTarget && (() => {
-        const score = previewTarget.matchScore ?? 50;
-        const previewReasons: MatchReason[] = previewTarget.matchReasons?.length
-          ? previewTarget.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-          : [];
         const previewProfile = hitToProfile(previewTarget);
         return (
           <MatchPreviewPanel
             hit={previewTarget}
-            matchReasons={previewReasons}
+            reasons={reasonsOf(previewTarget)}
             savedIds={savedIds}
+            connection={connectionOf(previewTarget.userId)}
+            commitment={commitmentWith.get(previewTarget.userId) ?? null}
             onClose={() => setPreviewTarget(null)}
             onConnect={() => { handleConnect(previewProfile); setPreviewTarget(null); }}
+            onAccept={() => void handleAccept(previewTarget)}
             onMessage={() => { handleMessage(previewProfile); setPreviewTarget(null); }}
             onSave={() => void handleSave(previewTarget.userId, previewTarget.displayName)}
             onPass={() => { handlePass(previewTarget.id, previewTarget.displayName, previewTarget.userId); setPreviewTarget(null); }}
@@ -1411,6 +1606,8 @@ export default function MatchesPage() {
 
       <CompatibilityModal
         hit={breakdownTarget}
+        reasons={breakdownTarget ? reasonsOf(breakdownTarget) : []}
+        viewerSkills={viewer?.skills ?? []}
         open={!!breakdownTarget}
         onClose={() => setBreakdownTarget(null)}
       />

@@ -32,6 +32,31 @@ describe('the demo clock', () => {
     expect(out.label).toBe('Friday');
   });
 
+  it('moves epoch timestamps under a timestamp key with the ISO dates, and no other number', () => {
+    const seconds = Date.parse('2026-09-04T09:58:00Z') / 1000;
+    const out = shiftPreviewDates({ lastSeenAt: seconds, createdAt: seconds * 1000, updatedAt: null, count: seconds, nested: [{ lastSeenAt: seconds }] }, 3 * WEEK);
+    expect(out.lastSeenAt).toBe(seconds + (3 * WEEK) / 1000);
+    expect(out.createdAt).toBe(seconds * 1000 + 3 * WEEK);
+    expect(out.updatedAt).toBeNull();
+    expect(out.count).toBe(seconds);
+    expect(out.nested[0].lastSeenAt).toBe(seconds + (3 * WEEK) / 1000);
+    expect(shiftPreviewDates(out, -3 * WEEK)).toEqual({ lastSeenAt: seconds, createdAt: seconds * 1000, updatedAt: null, count: seconds, nested: [{ lastSeenAt: seconds }] });
+  });
+
+  it('shows the directory’s online members as online, and today’s matches as active, weeks after the seed', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-20T09:00:00Z'));
+    const nowSeconds = Date.now() / 1000;
+    const { hits, stats } = resolvePreviewApiNow('/api/search/profiles') as { hits: Array<{ userId: string; lastSeenAt: number | null }>; stats: { onlineNow: number } };
+    const online = hits.filter((h) => h.lastSeenAt != null && nowSeconds - h.lastSeenAt <= 300).length;
+    expect(online).toBeGreaterThan(0);
+    // The header's count is the dots' count.
+    expect(online).toBe(stats.onlineNow);
+    const { suggestions } = resolvePreviewApiNow('/api/recommendations?limit=50') as { suggestions: Array<{ userId: string; lastSeenAt: number | null }> };
+    const marcus = suggestions.find((s) => s.userId === 'user-marcus');
+    expect(nowSeconds - (marcus?.lastSeenAt ?? 0)).toBeLessThan(86_400);
+  });
+
   it('round-trips exactly', () => {
     const payload = { events: [{ startAt: '2026-09-24T07:30:00.000Z', nested: { due: '2026-10-01' } }] };
     expect(shiftPreviewDates(shiftPreviewDates(payload, 5 * WEEK), -5 * WEEK)).toEqual(payload);

@@ -25,7 +25,7 @@ import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { STATUS } from '@/lib/semantic-colors';
 import { cn, initialsOf } from '@/lib/utils';
-import { matchReasonCopy } from '@/lib/match-reason';
+import { explainMatch, type ViewerFacts } from '@/lib/match-explain';
 import { calendarDaysUntil } from '@/lib/calendar-days';
 
 type PhoneActivity = {
@@ -109,6 +109,7 @@ function seenToday(lastSeenAt?: number | null): boolean {
 export function FounderPhoneHome({
   showResume,
   matches,
+  viewer,
   activity,
   milestone,
   demoEvents,
@@ -116,6 +117,8 @@ export function FounderPhoneHome({
 }: {
   showResume: boolean;
   matches: SearchHit[];
+  /** The reader's side of each match's reasons; without it, the engine's own words. */
+  viewer?: ViewerFacts | null;
   activity: PhoneActivity[];
   milestone: PhoneMilestone | null;
   demoEvents: DemoEvent[];
@@ -163,7 +166,8 @@ export function FounderPhoneHome({
       : [];
 
   const days = milestone?.dueDate ? daysUntil(milestone.dueDate) : null;
-  const firstReason = first?.matchReasons?.[0] ? matchReasonCopy(first.matchReasons[0]) : null;
+  // The most telling reason, as the person's card on /matches puts it first.
+  const firstReason = first ? explainMatch(first, viewer ?? null, { nowMs: Date.now() })[0] ?? null : null;
   const resumeIsMilestone = showResume && !boards.isLoading && !latestBoard && !!milestone;
 
   const hasResume = Boolean(

@@ -608,6 +608,14 @@ export type SearchHit = {
   matchReasons?: string[];
   lookingFor?: string | null;
   availability?: string | null;
+  /** A founder's company stage (idea, mvp, traction, scaling), on recommendation hits. */
+  stage?: string | null;
+  /** What they look for, as profile edit saves it ("Co-founder", "CTO"…), on recommendation hits. */
+  rolesSought?: string[];
+  /** The rounds an investor backs (pre-seed, seed…), on recommendation hits. */
+  investmentStages?: string[];
+  /** When their profile last changed (ISO), on recommendation hits. */
+  profileUpdatedAt?: string | null;
   /** Profile creation, epoch seconds. Present on directory search hits. */
   createdAt?: number;
   /**
@@ -3892,6 +3900,16 @@ export type MatchBreakdown = {
   badges?: string[];
   sharedStrengths?: string[];
   frictionPoints?: string[];
+  /**
+   * The same two lists as the endpoint sent them: strengths with a `kind`,
+   * frictions with a `key` and both sides' `values`, so a page can say them
+   * in the reader's language (`lib/match-vs-copy.ts`). The flattened strings
+   * above stay for the screens that print them.
+   */
+  strengthItems?: unknown[];
+  frictionItems?: unknown[];
+  /** Agreement on the working-style questions, both people's answers never shown. */
+  compatibility?: CompatComparison | null;
   reasons?: string[];
 };
 
@@ -3919,6 +3937,8 @@ export async function getMatchBreakdown(targetUserId: string): Promise<MatchBrea
     ...res,
     sharedStrengths: (res?.sharedStrengths ?? []).map(breakdownText).filter((t): t is string => Boolean(t)),
     frictionPoints: (res?.frictionPoints ?? []).map(breakdownText).filter((t): t is string => Boolean(t)),
+    strengthItems: res?.sharedStrengths ?? [],
+    frictionItems: res?.frictionPoints ?? [],
   };
 }
 

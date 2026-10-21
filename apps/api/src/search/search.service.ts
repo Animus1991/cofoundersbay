@@ -5,6 +5,67 @@ import { computeMatchScore, isHiddenFromSearch, placeVariants, planPromotes, PRO
 import { PrismaService } from '../prisma/prisma.service';
 import { MeilisearchService } from './meilisearch.service';
 
+type RecommendationRow = {
+  id: string;
+  userId: string;
+  displayName: string;
+  headline: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  location: string | null;
+  rolePayload: unknown;
+  updatedAt: Date;
+  user: { role: string; lastSeenAt?: Date | null };
+  skills: { skill: { name: string } }[];
+};
+
+function strings(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((x): x is string => typeof x === 'string' && x.trim() !== '') : [];
+}
+
+function text(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+/**
+ * One recommendation as the Matches page reads it.
+ *
+ * The score and the engine's reasons say *that* two people match; the page
+ * says *why* in facts ("Shared skills: Product, Growth", "Same stage: MVP"),
+ * and for that it needs the fields the score was computed from: the stage,
+ * the rounds an investor backs, what the person is looking for, when the
+ * profile last changed and when they were last seen (the same presence the
+ * directory shows). `lookingFor` was read from a key profile edit never
+ * writes (it saves `rolesSought`), so it was always null for edited profiles.
+ */
+export function recommendationHit(p: RecommendationRow, score: number, reasons: string[]) {
+  const rp = (p.rolePayload ?? null) as Record<string, unknown> | null;
+  const rolesSought = strings(rp?.rolesSought);
+  const lookingFor = text(rp?.lookingFor) ?? (strings(rp?.lookingFor).length ? strings(rp?.lookingFor) : rolesSought).join(', ');
+  const industries = strings(rp?.industries);
+  return {
+    id: p.id,
+    userId: p.userId,
+    displayName: p.displayName,
+    headline: p.headline,
+    bio: p.bio,
+    avatarUrl: p.avatarUrl ?? null,
+    location: p.location,
+    role: p.user.role,
+    skillNames: p.skills.map((s) => s.skill.name),
+    matchScore: score,
+    matchReasons: reasons,
+    lookingFor: lookingFor || null,
+    availability: text(rp?.availability) ?? text(rp?.commitment),
+    stage: text(rp?.stage),
+    industries: industries.length ? industries : text(rp?.industry) ? [text(rp?.industry) as string] : [],
+    rolesSought,
+    investmentStages: strings(rp?.stages),
+    profileUpdatedAt: p.updatedAt.toISOString(),
+    lastSeenAt: p.user.lastSeenAt ? Math.floor(p.user.lastSeenAt.getTime() / 1000) : null,
+  };
+}
+
 @Injectable()
 export class SearchService {
   constructor(
@@ -466,7 +527,7 @@ export class SearchService {
         user: { role: { in: targetRoles } },
       },
       include: {
-        user: { select: { id: true, role: true } },
+        user: { select: { id: true, role: true, lastSeenAt: true } },
         skills: { include: { skill: true } },
       },
       orderBy: { updatedAt: 'desc' },
@@ -477,22 +538,7 @@ export class SearchService {
     const scored = candidates.filter((p) => !isHiddenFromSearch(p.visibilityRules)).map((p) => {
       const candidateSnapshot = this.toProfileSnapshot(p);
       const { score, breakdown } = computeMatchScore(viewerSnapshot, candidateSnapshot);
-      const rp = p.rolePayload as Record<string, unknown> | null;
-      return {
-        id: p.id,
-        userId: p.userId,
-        displayName: p.displayName,
-        headline: p.headline,
-        bio: p.bio,
-        avatarUrl: p.avatarUrl ?? null,
-        location: p.location,
-        role: p.user.role,
-        skillNames: p.skills.map((s: { skill: { name: string } }) => s.skill.name),
-        matchScore: score,
-        matchReasons: breakdown.reasons,
-        lookingFor: (rp?.lookingFor as string | undefined) ?? null,
-        availability: (rp?.availability as string | undefined) ?? (rp?.commitment as string | undefined) ?? null,
-      };
+      return recommendationHit(p, score, breakdown.reasons);
     });
 
     scored.sort((a, b) => b.matchScore - a.matchScore);

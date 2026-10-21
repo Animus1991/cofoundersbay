@@ -72,7 +72,7 @@ import { PREVIEW_MILESTONE_EL } from '@/lib/i18n/strings-milestones';
 import { activityTimeAgoPair, activityTitleEl } from '@/lib/i18n/activity-titles';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
-import { matchReasonCopy } from '@/lib/match-reason';
+import { explainMatch, viewerFacts, type ViewerFacts } from '@/lib/match-explain';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
@@ -293,10 +293,11 @@ function AttentionChips({
  * without a frame of its own (a bordered box per match drew a card inside
  * the card).
  */
-function MatchPreviewRow({ match }: { match: SearchHit }) {
+function MatchPreviewRow({ match, viewer }: { match: SearchHit; viewer: ViewerFacts | null }) {
   const score = match.matchScore ?? 0;
   const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? 'text-primary-accessible' : STATUS.warning.icon;
-  const reason = match.matchReasons?.[0] ? matchReasonCopy(match.matchReasons[0]) : null;
+  // The most telling reason, as the person's card on /matches puts it first.
+  const reason = explainMatch(match, viewer, { nowMs: Date.now() })[0] ?? null;
   return (
     <Link href={`/matches/${match.userId}`} className="axis-row group block rounded-md transition-colors hover:bg-accent focus-ring">
       <RowHead
@@ -404,6 +405,8 @@ export default function FounderDashboardContent() {
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
+  // The reader's side of each match's reasons (lib/match-explain).
+  const viewer = useMemo(() => viewerFacts(profile?.profile ?? null), [profile]);
 
   /*
    * The Top Matches tile counts what /matches lists, on that page's own query
@@ -875,7 +878,7 @@ export default function FounderDashboardContent() {
               {(recommendations?.suggestions?.length ?? 0) > 0 && (
                 <div className="card-rows">
                   {recommendations?.suggestions?.slice(0, 4).map((match: SearchHit) => (
-                    <MatchPreviewRow key={match.userId} match={match} />
+                    <MatchPreviewRow key={match.userId} match={match} viewer={viewer} />
                   ))}
                 </div>
               )}
@@ -1304,6 +1307,7 @@ export default function FounderDashboardContent() {
         <FounderPhoneHome
           showResume={!showFirstMove}
           matches={recommendations?.suggestions ?? []}
+          viewer={viewer}
           activity={activityItems}
           milestone={nextOpenMilestone ?? null}
           demoEvents={DEMO_EVENTS}

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { UserPlus, X, MessageCircle, Bookmark, Sparkles, TrendingUp, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { UserPlus, X, MessageCircle, Bookmark, TrendingUp, ChevronDown, ChevronUp, Check, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -17,6 +17,8 @@ import type { CommitmentStep } from '@cofounderbay/shared';
 import { StepChip } from '@/components/commitments/OutcomeChip';
 import { FactLine } from '@/components/common/FactLine';
 import { matchReasonCopy } from '@/lib/match-reason';
+import { splitReasons } from '@/lib/match-explain';
+import { matchesEl, matchesEn } from '@/lib/i18n/strings-matches';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 type MatchReason = {
@@ -24,6 +26,45 @@ type MatchReason = {
   text: string;
   score: number; // 0-100
 };
+
+type ReasonCopy = { en: string; el: string };
+
+/** Where a connection with this person stands; the card's one primary action follows it. */
+export type MatchConnection = 'none' | 'sent' | 'received' | 'connected';
+
+export type MatchPrimary = {
+  key: 'connect' | 'accept' | 'message';
+  Icon: typeof UserPlus;
+  en: string;
+  el: string;
+  /** Names the person too, so a list of "Connect" buttons is not a list of the same name. */
+  aria: string;
+  onClick: () => void;
+};
+
+/**
+ * The one primary action for a match, from where the connection stands:
+ * Connect to someone new, Accept a request they sent, Message once
+ * connected. A request already sent has none (it is said, not offered
+ * again). The card, the list row and the preview panel all ask this.
+ */
+export function matchPrimary(
+  state: MatchConnection,
+  displayName: string,
+  actions: { onConnect?: () => void; onAccept?: () => void; onMessage?: () => void },
+): MatchPrimary | null {
+  const message = actions.onMessage
+    ? { key: 'message' as const, Icon: MessageCircle, en: 'Message', el: 'Μήνυμα', aria: bilingualAria(`Message ${displayName}`, `Μήνυμα προς ${displayName}`), onClick: actions.onMessage }
+    : null;
+  if (state === 'connected' && message) return message;
+  if (state === 'received' && actions.onAccept) {
+    return { key: 'accept', Icon: Check, en: 'Accept', el: 'Αποδοχή', aria: bilingualAria(`Accept ${displayName}'s request`, `Αποδοχή αιτήματος από ${displayName}`), onClick: actions.onAccept };
+  }
+  if (state === 'none' && actions.onConnect) {
+    return { key: 'connect', Icon: UserPlus, en: 'Connect', el: 'Σύνδεση', aria: bilingualAria(`Connect with ${displayName}`, `Σύνδεση με ${displayName}`), onClick: actions.onConnect };
+  }
+  return state === 'sent' ? null : message;
+}
 
 type MatchCardProps = {
   id: string;
@@ -36,8 +77,19 @@ type MatchCardProps = {
   location?: string | null;
   timezone?: string | null;
   skills: string[];
-  compatibilityScore: number; // 0-100
+  /** 0-100, or null when the engine gave none ("No score yet", never a made-up 50). */
+  compatibilityScore: number | null;
   matchReasons: MatchReason[];
+  /**
+   * The reasons as sentences with their facts (`lib/match-explain`), most
+   * telling first. When given they replace `matchReasons`, which are only
+   * translated.
+   */
+  reasons?: readonly ReasonCopy[];
+  /** Where a connection stands. Without it the card offers Connect, as it always has. */
+  connection?: MatchConnection;
+  /** Accept the request they sent (`connection` "received"). */
+  onAccept?: () => void;
   isBookmarked?: boolean;
   onLike?: () => void;
   onPass?: () => void;
@@ -48,8 +100,12 @@ type MatchCardProps = {
   isSelected?: boolean;
   onSelect?: () => void;
   className?: string;
-  /** Where a commitment with this person stands, beside the score: a link to its board. */
-  commitment?: { step: CommitmentStep; href: string } | null;
+  /**
+   * Where a commitment with this person stands, under the headline, as a
+   * link to its board: a sentence when `line` is given (`threadLine`), the
+   * step's chip otherwise.
+   */
+  commitment?: { step: CommitmentStep; href: string; line?: ReasonCopy & { yourTurn?: boolean } } | null;
 };
 
 // ── Score tier helpers ────────────────────────────────────────────────────────
@@ -74,25 +130,32 @@ function tierGlow(stroke: string) {
   return `color-mix(in srgb, ${stroke} 12%, transparent)`;
 }
 
-const TIER_LABEL: Record<MatchTier, { en: string; el: string }> = {
-  excellent: { en: 'Excellent', el: 'Εξαιρετική' },
-  strong: { en: 'Strong', el: 'Ισχυρή' },
-  good: { en: 'Good', el: 'Καλή' },
-  potential: { en: 'Low', el: 'Χαμηλή' },
-};
-
-function getScoreTier(score: number) {
+function getScoreTier(score: number | null) {
+  if (score === null) {
+    const stroke = 'hsl(var(--border))';
+    return { label: null, tier: null, stroke, glow: tierGlow(stroke), colors: STATUS.neutral };
+  }
   let tier: MatchTier = 'potential';
   if (score >= 80) tier = 'excellent';
   else if (score >= 65) tier = 'strong';
   else if (score >= 45) tier = 'good';
   const stroke = TIER_STROKE[tier];
-  return { label: TIER_LABEL[tier], tier, stroke, glow: tierGlow(stroke), colors: STATUS[MATCH_TIER_TONE[tier]] };
+  // The page's tier chips name the lowest tier «Δυνητική»; the card said
+  // «Χαμηλή» for the same people. One word, from the page's strings.
+  const label = { en: matchesEn(`tier_${tier}`), el: matchesEl(`tier_${tier}`) };
+  return { label, tier, stroke, glow: tierGlow(stroke), colors: STATUS[MATCH_TIER_TONE[tier]] };
 }
 
 // ── Score Badge (top-right) ───────────────────────────────────────────────────
 
-function ScoreBadge({ score }: { score: number }) {
+function ScoreBadge({ score }: { score: number | null }) {
+  if (score === null) {
+    return (
+      <span className="text-xs text-muted-foreground">
+        <BilingualText en="No score yet" el="Χωρίς βαθμολογία ακόμη" compact />
+      </span>
+    );
+  }
   const { label } = getScoreTier(score);
   const r = 8, cx = 10, cy = 10;
   const circ = 2 * Math.PI * r;
@@ -112,9 +175,11 @@ function ScoreBadge({ score }: { score: number }) {
           style={{ transformOrigin: '10px 10px', transition: 'stroke-dasharray 1s ease' }} />
       </svg>
       <span className="tabular-nums">{score}%</span>
-      <span className="min-w-0">
-        <BilingualText en={label.en} el={label.el} compact />
-      </span>
+      {label ? (
+        <span className="min-w-0">
+          <BilingualText en={label.en} el={label.el} compact />
+        </span>
+      ) : null}
     </span>
   );
 }
@@ -132,6 +197,9 @@ function MatchCardInner({
   skills,
   compatibilityScore,
   matchReasons,
+  reasons,
+  connection,
+  onAccept,
   isBookmarked = false,
   onLike,
   onPass,
@@ -145,14 +213,25 @@ function MatchCardInner({
   commitment,
 }: MatchCardProps) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
-  const [showReasons, setShowReasons] = useState(false);
+  const [showAllReasons, setShowAllReasons] = useState(false);
   const { stroke, glow, colors } = getScoreTier(compatibilityScore);
-  const reasonCopies = matchReasons.map((reason) => matchReasonCopy(reason.text));
+  const reasonCopies: ReasonCopy[] = reasons ? [...reasons] : matchReasons.map((reason) => matchReasonCopy(reason.text));
+  // Two causes on the card; the rest behind one disclosure that adds them
+  // under the two, instead of a toggle that listed the first one again.
+  const { face, rest } = splitReasons(reasonCopies);
+  const shownReasons = showAllReasons ? reasonCopies : face;
 
   const handleBookmark = () => {
     setBookmarked(!bookmarked);
     onBookmark?.();
   };
+
+  // One primary action, from where the connection stands: Connect to a new
+  // match, Accept a request they sent, Message once connected. A request
+  // already sent is said, not offered again.
+  const state: MatchConnection = connection ?? 'none';
+  const primary = matchPrimary(state, displayName, { onConnect: onLike, onAccept, onMessage });
+  const messageInCluster = Boolean(onMessage) && primary?.key !== 'message';
 
   return (
     <Card
@@ -205,9 +284,22 @@ function MatchCardInner({
           // Where a commitment stands: a state on the title's edge, under
           // the headline, so the head keeps one thing at its right.
           meta={commitment ? (
-            <Link href={commitment.href} onClick={(e) => e.stopPropagation()} className="inline-flex rounded-full" aria-label={bilingualAria(`Commitment with ${displayName}`, `Δέσμευση με ${displayName}`)}>
-              <StepChip step={commitment.step} />
-            </Link>
+            commitment.line ? (
+              <Link
+                href={commitment.href}
+                onClick={(e) => e.stopPropagation()}
+                className={cn(
+                  'inline rounded-sm underline-offset-4 hover:underline',
+                  commitment.line.yourTurn ? 'font-medium text-primary-accessible' : 'text-muted-foreground',
+                )}
+              >
+                <BilingualText en={commitment.line.en} el={commitment.line.el} compact wrap />
+              </Link>
+            ) : (
+              <Link href={commitment.href} onClick={(e) => e.stopPropagation()} className="inline-flex rounded-full" aria-label={bilingualAria(`Commitment with ${displayName}`, `Δέσμευση με ${displayName}`)}>
+                <StepChip step={commitment.step} />
+              </Link>
+            )
           ) : undefined}
           aside={(
             <>
@@ -241,42 +333,35 @@ function MatchCardInner({
           </div>
         )}
 
-        {/* The first cause sits on the card. The rest stay behind the same disclosure. */}
-        {reasonCopies[0] ? (
-          <p className="text-xs text-muted-foreground">
-            <BilingualText en={reasonCopies[0].en} el={reasonCopies[0].el} compact wrap />
-          </p>
-        ) : null}
-
-        {/* Match reasons toggle */}
-        <button
-          onClick={() => setShowReasons(!showReasons)}
-          aria-expanded={showReasons}
-          // tap-target-y: a 16px-tall disclosure is under the 24px target minimum.
-          className={cn('flex tap-target-y items-center gap-1.5 text-xs font-medium transition-colors', colors.text)}
-        >
-          <Sparkles className="icon-sm" />
-          {showReasons
-            ? <BilingualText en="Hide reasons" el="Απόκρυψη λόγων" compact />
-            : <BilingualText en="Why this match?" el="Γιατί ταιριάζετε;" compact />}
-          {showReasons ? <ChevronUp className="icon-sm" /> : <ChevronDown className="icon-sm" />}
-        </button>
-
-        {/* Match reasons (collapsible): rows on the card, not tiles in it. */}
-        {showReasons && (
-          <ul className="space-y-1">
-            {reasonCopies.map((copy, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs text-foreground">
+        {/* Why you match: the two most telling causes, with their facts. */}
+        {shownReasons.length > 0 && (
+          <ul className="space-y-1" aria-label={bilingualAria('Why you match', 'Γιατί ταιριάζετε')}>
+            {shownReasons.map((copy, i) => (
+              <li key={`${copy.en}-${i}`} className="flex items-start gap-2 text-xs text-foreground">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: stroke }} aria-hidden="true" />
                 <span className="min-w-0 flex-1"><BilingualText en={copy.en} el={copy.el} compact wrap /></span>
               </li>
             ))}
           </ul>
         )}
+        {rest.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowAllReasons(!showAllReasons)}
+            aria-expanded={showAllReasons}
+            // tap-target-y: a 16px-tall disclosure is under the 24px target minimum.
+            className={cn('flex tap-target-y items-center gap-1.5 text-xs font-medium transition-colors', colors.text)}
+          >
+            {showAllReasons
+              ? <BilingualText en="Fewer reasons" el="Λιγότεροι λόγοι" compact />
+              : <BilingualText en={`All reasons (${reasonCopies.length})`} el={`Όλοι οι λόγοι (${reasonCopies.length})`} compact />}
+            {showAllReasons ? <ChevronUp className="icon-sm" /> : <ChevronDown className="icon-sm" />}
+          </button>
+        )}
 
         {/* Foot: the quick answers at the left, the next steps at the right. */}
         <CardFoot
-          meta={(onPass || onLike || onBookmark) ? (
+          meta={(onPass || messageInCluster || onBookmark) ? (
             <div className="flex items-center gap-1.5">
               {onPass && (
                 <button
@@ -288,31 +373,33 @@ function MatchCardInner({
                   <X className="icon-sm" />
                 </button>
               )}
-              {onLike && (
+              {messageInCluster && (
                 <button
-                  onClick={onLike}
-                  aria-label={bilingualAria(`Connect with ${displayName}`, `Σύνδεση με ${displayName}`)}
-                  title={bilingualAria(`Connect with ${displayName}`, `Σύνδεση με ${displayName}`)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-status-accent-border/40 hover:text-status-accent"
+                  onClick={onMessage}
+                  aria-label={bilingualAria(`Message ${displayName}`, `Μήνυμα προς ${displayName}`)}
+                  title={bilingualAria(`Message ${displayName}`, `Μήνυμα προς ${displayName}`)}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary-accessible"
                 >
-                  <UserPlus className="icon-sm" />
+                  <MessageCircle className="icon-sm" />
                 </button>
               )}
-              <button
-                onClick={handleBookmark}
-                aria-pressed={bookmarked}
-                aria-label={
-                  bookmarked
-                    ? bilingualAria(`${displayName} is on your shortlist`, `${displayName}: στη λίστα επιλογών`)
-                    : bilingualAria(`Save ${displayName} to shortlist`, `Αποθήκευση ${displayName} στη λίστα`)
-                }
-                className={cn(
-                  'flex h-10 w-10 items-center justify-center rounded-full border border-border transition-colors',
-                  bookmarked ? STATUS.warning.icon : cn('text-muted-foreground', 'hover:text-status-warning')
-                )}
-              >
-                <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
-              </button>
+              {onBookmark && (
+                <button
+                  onClick={handleBookmark}
+                  aria-pressed={bookmarked}
+                  aria-label={
+                    bookmarked
+                      ? bilingualAria(`${displayName} is on your shortlist`, `${displayName}: στη λίστα επιλογών`)
+                      : bilingualAria(`Save ${displayName} to shortlist`, `Αποθήκευση ${displayName} στη λίστα`)
+                  }
+                  className={cn(
+                    'flex h-10 w-10 items-center justify-center rounded-full border border-border transition-colors',
+                    bookmarked ? STATUS.warning.icon : cn('text-muted-foreground', 'hover:text-status-warning')
+                  )}
+                >
+                  <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
+                </button>
+              )}
             </div>
           ) : undefined}
         >
@@ -325,7 +412,7 @@ function MatchCardInner({
               onClick={onBreakdown}
             >
               <TrendingUp className="icon-sm" />
-              <BilingualText en="Breakdown" el="Ανάλυση" compact />
+              <BilingualText en="Compatibility" el="Συμβατότητα" compact />
             </Button>
           ) : (
             <Button size="sm" variant="outline" className={cn('gap-1.5', colors.text)} style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }} asChild>
@@ -336,12 +423,17 @@ function MatchCardInner({
             </Button>
           )}
 
-          {onMessage && (
-            <Button onClick={onMessage} size="sm" className="gap-1.5">
-              <MessageCircle className="icon-sm" />
-              <BilingualText en="Message" el="Μήνυμα" compact />
+          {primary ? (
+            <Button onClick={primary.onClick} size="sm" className="gap-1.5" aria-label={primary.aria}>
+              <primary.Icon className="icon-sm" />
+              <BilingualText en={primary.en} el={primary.el} compact />
             </Button>
-          )}
+          ) : state === 'sent' ? (
+            <span className="inline-flex min-h-9 items-center gap-1.5 text-xs text-muted-foreground">
+              <Clock className="icon-sm" aria-hidden="true" />
+              <BilingualText en="Request sent" el="Το αίτημα στάλθηκε" compact />
+            </span>
+          ) : null}
         </CardFoot>
       </CardContent>
     </Card>

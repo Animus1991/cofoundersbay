@@ -285,12 +285,18 @@ function ProfileCardInner({
               <MessageCircle className="icon-sm" />
               <BilingualText en="Message" el="Μήνυμα" compact />
             </Button>
-            <Button aria-label="Save"
+            <Button
+              aria-label={bookmarked
+                ? bilingualAria(`${profile.displayName} saved`, `Αποθηκεύτηκε: ${profile.displayName}`)
+                : bilingualAria(`Save ${profile.displayName}`, `Αποθήκευση: ${profile.displayName}`)}
               variant="ghost"
               size="icon"
               onClick={handleBookmark}
+              // A round icon on a phone; from 640px it carries its word, so
+              // auto width - with `!`, or the global square for h-10 w-10
+              // buttons keeps it 33px and the word spills out.
               className={cn(
-                'h-10 w-10 gap-1.5 sm:w-auto sm:px-3',
+                'h-10 w-10 gap-1.5 sm:!w-auto sm:px-3',
                 bookmarked ? 'text-status-warning' : 'text-muted-foreground hover:text-status-warning'
               )}
             >
