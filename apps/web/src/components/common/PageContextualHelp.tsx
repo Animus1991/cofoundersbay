@@ -263,7 +263,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Use <em>Ask AI</em> for who to contact next from Idea Core, the pitch deck, Research, and Data Room gaps. The{' '}
-          <strong>Data Room</strong> tab holds documents shared via tokenised links — nothing is public unless you send it.
+          <strong>Data Room</strong> tab lists the documents investors ask for and how ready each one is; share a document
+          from its own page — a link to the whole room is not available yet.
         </p>
       </>
     ),
@@ -277,8 +278,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Με <em>Ρωτήστε το AI</em> δείτε ποιον να προσεγγίσετε μετά από τον Πυρήνα ιδέας, το pitch deck, την Έρευνα και
-          κενά του Data Room. Η καρτέλα <strong>Data Room</strong> κρατά έγγραφα με συνδέσμους token — τίποτα δεν είναι
-          δημόσιο αν δεν τον στείλετε.
+          κενά του Data Room. Η καρτέλα <strong>Data Room</strong> δείχνει τα έγγραφα που ζητούν οι επενδυτές και πόσο έτοιμο
+          είναι το καθένα· κοινοποιήστε ένα έγγραφο από τη σελίδα του — σύνδεσμος για όλο το data room δεν υπάρχει ακόμη.
         </p>
       </>
     ),

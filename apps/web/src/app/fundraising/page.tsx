@@ -25,7 +25,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { useModalA11y } from '@/hooks/useModalA11y';
 import { useHydrated } from '@/components/common/RelativeTime';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
-import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import type { AskText } from '@/lib/page-questions';
 import { useToast } from '@/components/ui/toast';
@@ -88,15 +88,14 @@ const DOC_TONE: Record<DocStatus, StatusTone> = {
   shared: 'info',
 };
 
-const DOC_GLYPH: Record<DocStatus, CfbGlyphName> = {
-  draft: 'book',
-  ready: 'award',
-  shared: 'discover',
-};
-
 const HARBOR_ASK = {
   en: "Propose who to contact next on Harbor's €750K seed (Athens Tech Angels committed €375K; remaining €375K; warm intro from Athens founder networks). Use Idea Core, the pitch deck, Research, and data-room gaps.",
   el: 'Πρότεινε σε ποιον να απευθυνθώ μετά για τον γύρο €750K του Harbor (οι Athens Tech Angels δεσμεύτηκαν €375K· μένουν €375K· ζεστή γνωριμία μέσω δικτύων ιδρυτών στην Αθήνα). Χρησιμοποίησε τον Πυρήνα ιδέας, το pitch deck, την Έρευνα και τα κενά του data room.',
+};
+/** What "Draft a round plan" says it does, asked as such (docs §74). */
+const ROUND_PLAN_ASK = {
+  en: 'Draft a plan for my next funding round: a target amount, an instrument, and a first list of investors to contact, from my Builder artefacts, pitch deck and data room. Ask me for anything missing rather than inventing figures.',
+  el: 'Ετοίμασε ένα σχέδιο για τον επόμενο γύρο χρηματοδότησής μου: ποσό-στόχο, εργαλείο και μια πρώτη λίστα επενδυτών για επαφή, από τον Builder, το pitch deck και το data room μου. Ρώτα με για ό,τι λείπει αντί να επινοείς ποσά.',
 };
 const GENERIC_ASK = {
   en: 'How is my fundraising going, and who should I contact next given my data-room gaps?',
@@ -207,7 +206,10 @@ function AddLeadModal({
       >
         <div className="flex items-center justify-between">
           <h2 id="fundraising-modal-title" className="page-section font-semibold">
-            <BilingualText en={fundraisingEn('modal_new')} el={fundraisingEl('modal_new')} />
+            {/* Opened from the round card it records a commitment, and says so. */}
+            {defaultStatus === 'committed'
+              ? <BilingualText en={fundraisingEn('modal_commit')} el={fundraisingEl('modal_commit')} />
+              : <BilingualText en={fundraisingEn('modal_new')} el={fundraisingEl('modal_new')} />}
           </h2>
           <button type="button" onClick={onClose} className={cn(BUILDER_BTN, 'inline-flex h-11 w-11 items-center justify-center text-muted-foreground hover:bg-muted sm:h-9 sm:w-9')} aria-label={bilingualAria('Close dialog', 'Κλείσιμο παραθύρου')}>
             <X className="icon-sm" />
@@ -319,9 +321,10 @@ function RoundCard({
   const days = hydrated ? daysUntil(round.closingDate) : null;
   const roundKey = ROUND_STATUS_KEYS[round.status];
 
+  // No "Committed €375K": the line over the bar already says "€375K raised",
+  // the same figure (docs §74).
   const figures = [
-    { label: 'stat_investors' as const, value: round.investors.toString() },
-    { label: 'stat_committed_amt' as const, value: fmtMoney(round.raised, round.currency) },
+    { label: round.investors === 1 ? ('stat_investors_one' as const) : ('stat_investors' as const), value: round.investors.toString() },
     { label: 'stat_closing' as const, value: !round.closingDate ? null : days === null ? formatShortDate(round.closingDate, primary) : days < 0 ? 'overdue' : `${days}` },
     { label: 'lead_investor' as const, value: round.leadInvestor ?? '' },
   ];
@@ -365,7 +368,7 @@ function RoundCard({
           </div>
         </div>
 
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border pt-3 sm:grid-cols-4">
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border pt-3 sm:grid-cols-3">
           {figures.map((s) => (
             <div key={s.label} className="min-w-0">
               <dt className="text-xs text-muted-foreground">
@@ -443,12 +446,15 @@ function PipelineView({
 
   return (
     <div className="overflow-x-auto pb-2">
-      <div className="flex min-w-max gap-3">
+      {/* The six stages share the width (11rem at least, then the row
+          scrolls): at w-56 each, "Passed" sat past the edge at 1440 and a
+          card's name was cut to nine letters ("Warm intr...") (docs §74). */}
+      <div className="flex gap-3">
         {PIPELINE_STAGES.map((stage) => {
           const items = byStage[stage];
           const colors = STATUS[INVESTOR_TONE[stage]];
           return (
-            <div key={stage} className="w-56 shrink-0">
+            <div key={stage} className="min-w-[11rem] flex-1">
               <div className={cn('mb-2 flex items-center justify-between rounded-xl border px-2.5 py-1.5', colors.chip)}>
                 <span className="page-stat-label font-semibold">{statusLabel(stage)}</span>
                 <Badge variant="secondary" size="sm" className="rounded-full px-1.5">{items.length}</Badge>
@@ -456,7 +462,7 @@ function PipelineView({
               <div className="space-y-2">
                 {items.map((lead) => (
                   <Card key={lead.id} className="transition-colors hover:border-primary/30">
-                    <CardContent className="space-y-2">
+                    <div className="card-compact space-y-2">
                       <CardHead
                         mark={(
                           <Avatar className="h-8 w-8 rounded-xl">
@@ -467,7 +473,7 @@ function PipelineView({
                           </Avatar>
                         )}
                         titleAs="h4"
-                        title={<LeadName lead={lead} as="span" className="truncate" />}
+                        title={<LeadName lead={lead} as="span" className="break-words" />}
                         subtitle={lead.firm ? <span className="block truncate">{lead.firm}</span> : undefined}
                         aside={lead.isVerified ? <CfbGlyph name="award" className={cn('icon-sm', STATUS.info.icon)} /> : undefined}
                       />
@@ -501,10 +507,20 @@ function PipelineView({
                           </option>
                         ))}
                       </select>
-                    </CardContent>
+                    </div>
                   </Card>
                 ))}
-                <Button variant="ghost" size="sm" className={cn('h-7 w-full border border-dashed border-border text-xs text-muted-foreground', BUILDER_BTN)} onClick={() => onAdd(stage)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn('h-7 w-full border border-dashed border-border text-xs text-muted-foreground', BUILDER_BTN)}
+                  onClick={() => onAdd(stage)}
+                  // "Add" under a column heading: the name says what and where.
+                  aria-label={bilingualAria(
+                    fundraisingEn('add_to_stage_aria').replace('{stage}', fundraisingEn(INVESTOR_STATUS_KEYS[stage])),
+                    fundraisingEl('add_to_stage_aria').replace('{stage}', fundraisingEl(INVESTOR_STATUS_KEYS[stage])),
+                  )}
+                >
                   <Plus className="icon-sm mr-1" />
                   <BilingualText en={fundraisingEn('add_to_stage')} el={fundraisingEl('add_to_stage')} compact />
                 </Button>
@@ -532,6 +548,20 @@ function DataRoomView({
   const required = docs.filter((d) => d.isRequired);
   const requiredReady = required.filter((d) => d.status === 'ready' || d.status === 'shared').length;
 
+  if (docs.length === 0) {
+    return (
+      <Card className="rounded-xl border-dashed">
+        <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+          <p className="page-section font-semibold"><BilingualText en={fundraisingEn('empty_room_title')} el={fundraisingEl('empty_room_title')} /></p>
+          <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_room_hint')} el={fundraisingEl('empty_room_hint')} /></p>
+          <Button size="sm" variant="outline" className={BUILDER_BTN} asChild>
+            <Link href="/builder"><BilingualText en={fundraisingEn('open_builder')} el={fundraisingEl('open_builder')} compact /></Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <Card className="rounded-xl">
@@ -550,18 +580,15 @@ function DataRoomView({
                 <p className="page-stat text-xl font-bold tabular-nums text-primary-accessible">{docs.length ? Math.round((ready / docs.length) * 100) : 0}%</p>
                 <p className="text-2xs text-muted-foreground"><BilingualText en={fundraisingEn('dr_complete')} el={fundraisingEl('dr_complete')} compact /></p>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className={cn('h-8 gap-1.5 text-xs', BUILDER_BTN)}
-                onClick={() => {
-                  void navigator.clipboard?.writeText(`${window.location.origin}/share/data-room-seed`).catch(() => undefined);
-                  success('Data room link copied', 'Tokenised link — nothing is public unless you send it.');
-                }}
-              >
-                <CfbGlyph name="discover" className="icon-sm" />
-                <BilingualText en={fundraisingEn('share_room')} el={fundraisingEl('share_room')} compact />
-              </Button>
+              {/* It copied /share/data-room-seed and said "Tokenised link";
+                  the link opened "Link Unavailable". Share links exist for
+                  Builder documents, not for this room, so it says so
+                  (docs §74). */}
+              <WithDisabledReason reasonEn={fundraisingEn('share_unavailable')} reasonEl={fundraisingEl('share_unavailable')}>
+                <Button size="sm" variant="outline" className={cn('h-8 gap-1.5 text-xs', BUILDER_BTN)} disabled>
+                  <BilingualText en={fundraisingEn('share_room')} el={fundraisingEl('share_room')} compact />
+                </Button>
+              </WithDisabledReason>
             </div>
           </div>
           <Progress value={docs.length ? (ready / docs.length) * 100 : 0} className="mt-3 h-2" />
@@ -592,18 +619,19 @@ function DataRoomView({
           <BilingualText en={fundraisingEn('empty_docs')} el={fundraisingEl('empty_docs')} />
         </p>
       ) : (
-        <div className="space-y-2">
+        // One card of rows, not a card per document: ten 97px tiles made the
+        // room 970px tall for one line of facts each. The book glyph each row
+        // began with was hidden by the page's glyph rule and left a 12px
+        // indent (docs §74).
+        <Card className="rounded-xl">
+          <ul className="divide-y divide-border">
           {filtered.map((doc) => {
             const docKey = DOC_STATUS_KEYS[doc.status];
             const title = doc.nameEl
               ? <BilingualText en={doc.name} el={doc.nameEl} compact />
               : doc.name;
             return (
-              <Card key={doc.id} className="rounded-xl transition-colors hover:border-primary/20">
-                <CardContent className="flex items-center gap-3">
-                  <div className="shrink-0 text-muted-foreground">
-                    <CfbGlyph name="book" className="icon-sm" />
-                  </div>
+              <li key={doc.id} className="card-compact flex items-center gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <p className="truncate text-sm font-medium">
@@ -625,8 +653,7 @@ function DataRoomView({
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
-                    <div className={cn('flex items-center gap-1 text-xs font-medium', STATUS[DOC_TONE[doc.status]].text)}>
-                      <CfbGlyph name={DOC_GLYPH[doc.status]} className="icon-sm" />
+                    <div className={cn('text-xs font-medium', STATUS[DOC_TONE[doc.status]].text)}>
                       {docKey ? <BilingualText en={fundraisingEn(docKey)} el={fundraisingEl(docKey)} compact /> : doc.status}
                     </div>
                     <div className="flex gap-1">
@@ -678,11 +705,11 @@ function DataRoomView({
                       )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+              </li>
             );
           })}
-        </div>
+          </ul>
+        </Card>
       )}
     </div>
   );
@@ -744,7 +771,16 @@ function InvestorListView({
                     : lead.notes}
                 </p>
               )}
-              <CardFoot meta={lead.lastContact ? formatShortDate(lead.lastContact, primary) : undefined}>
+              {/* The date says what it is, as the Kanban card does. */}
+              <CardFoot
+                meta={lead.lastContact ? (
+                  <>
+                    <BilingualText en={fundraisingEn('last_contact')} el={fundraisingEl('last_contact')} compact />
+                    {' '}
+                    {formatShortDate(lead.lastContact, primary)}
+                  </>
+                ) : undefined}
+              >
                 <select
                   className={cn('rounded-full border bg-transparent px-2 py-1', colors.chip)}
                   value={lead.status}
@@ -757,29 +793,32 @@ function InvestorListView({
                     </option>
                   ))}
                 </select>
+                {/* It asks the assistant for a next-step note; "Message" read
+                    as writing to them on /messages (docs §74). */}
                 <Button
                   variant="ghost"
                   size="sm"
                   className={cn('h-7 w-7 gap-1 p-0 sm:w-auto sm:px-2', BUILDER_BTN)}
-                  aria-label={bilingualAria(fundraisingEn('message'), fundraisingEl('message'))}
+                  aria-label={bilingualAria(fundraisingEn('draft_note'), fundraisingEl('draft_note'))}
                   onClick={() => ask(leadAskPrompt(lead, harborLive))}
                 >
-                  <CfbGlyph name="messages" className="icon-sm" />
-                  <span className="hidden sm:inline text-xs"><BilingualText en={fundraisingEn('message')} el={fundraisingEl('message')} compact /></span>
+                  <CfbGlyph name="spark" className="icon-sm" />
+                  <span className="hidden sm:inline text-xs"><BilingualText en={fundraisingEn('draft_note')} el={fundraisingEl('draft_note')} compact /></span>
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn('h-7 w-7 gap-1 p-0 sm:w-auto sm:px-2', BUILDER_BTN)}
-                  aria-label={bilingualAria(fundraisingEn('view_details'), fundraisingEl('view_details'))}
-                  onClick={() => {
-                    if (lead.href) router.push(lead.href);
-                    else ask(leadAskPrompt(lead, harborLive));
-                  }}
-                >
-                  <CfbGlyph name="discover" className="icon-sm" />
-                  <span className="hidden sm:inline text-xs"><BilingualText en={fundraisingEn('view_details')} el={fundraisingEl('view_details')} compact /></span>
-                </Button>
+                {/* Only where there is a page to open: without one it asked
+                    the assistant for the same note as the button beside it. */}
+                {lead.href ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn('h-7 w-7 gap-1 p-0 sm:w-auto sm:px-2', BUILDER_BTN)}
+                    aria-label={bilingualAria(fundraisingEn('view_details'), fundraisingEl('view_details'))}
+                    onClick={() => router.push(lead.href!)}
+                  >
+                    <CfbGlyph name="discover" className="icon-sm" />
+                    <span className="hidden sm:inline text-xs"><BilingualText en={fundraisingEn('view_details')} el={fundraisingEl('view_details')} compact /></span>
+                  </Button>
+                ) : null}
               </CardFoot>
             </CardContent>
           </Card>
@@ -976,11 +1015,13 @@ export default function FundraisingPage() {
       rail={rail}
       askAi={askAi}
       contentClassName="builder-copy overflow-x-clip"
-      actions={
+      // With no contacts the empty pipeline offers Add contact itself, as
+      // the page's one filled button; the header said it again above it.
+      actions={leads.length > 0 ? (
         <Button size="sm" variant="outline" className={cn('gap-1.5', BUILDER_BTN)} onClick={() => openAdd()}>
           <BilingualText en={fundraisingEn('add_lead')} el={fundraisingEl('add_lead')} compact />
         </Button>
-      }
+      ) : undefined}
     >
       <div className="space-y-6">
         {round ? (
@@ -991,8 +1032,12 @@ export default function FundraisingPage() {
               <CfbGlyph name="wallet" className="icon-lg text-muted-foreground/50" />
               <p className="page-section font-semibold"><BilingualText en={fundraisingEn('empty_round_title')} el={fundraisingEl('empty_round_title')} /></p>
               <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_round_hint')} el={fundraisingEl('empty_round_hint')} /></p>
-              <Button size="sm" className={BUILDER_BTN} onClick={() => ask(askAi)}>
-                <BilingualText en={fundraisingEn('ask_ai')} el={fundraisingEl('ask_ai')} compact />
+              {/* It asked "How is my fundraising going?" under a line that
+                  promised a target, an instrument and a first investor list.
+                  Outline: the one filled button on this page is the
+                  pipeline's Add contact (docs §74). */}
+              <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={() => ask(ROUND_PLAN_ASK)}>
+                <BilingualText en={fundraisingEn('round_plan')} el={fundraisingEl('round_plan')} compact />
               </Button>
             </CardContent>
           </Card>

@@ -25,7 +25,10 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
   link_milestones: { en: 'Milestones', el: 'Ορόσημα' },
   link_projects: { en: 'Projects', el: 'Έργα' },
   link_readiness: { en: 'Readiness', el: 'Ετοιμότητα' },
-  add_investor: { en: 'Add investor', el: 'Προσθήκη επενδυτή' },
+  // The round card's add opens the form at Committed; the header's "Add
+  // contact" opens it at Prospect. Both read "add", so the card's says what
+  // it records (docs §74).
+  add_investor: { en: 'Record a commitment', el: 'Καταχώριση δέσμευσης' },
   add_lead: { en: 'Add contact', el: 'Προσθήκη επαφής' },
   add_to_stage: { en: 'Add', el: 'Προσθήκη' },
   find_investors: { en: 'Find investors', el: 'Εύρεση επενδυτών' },
@@ -43,7 +46,10 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
   target: { en: 'target', el: 'στόχος' },
   of_target: { en: 'of target', el: 'του στόχου' },
   remaining: { en: 'remaining', el: 'απομένουν' },
-  stat_investors: { en: 'Investors', el: 'Επενδυτές' },
+  // The committed leads, beside a pipeline that lists every contact: "Investors
+  // 1" over a list of three read as a miscount (docs §74).
+  stat_investors: { en: 'Committed investors', el: 'Δεσμευμένοι επενδυτές' },
+  stat_investors_one: { en: 'Committed investor', el: 'Δεσμευμένος επενδυτής' },
   stat_committed_amt: { en: 'Committed', el: 'Δεσμευμένα' },
   stat_closing: { en: 'Closing', el: 'Κλείσιμο' },
   days_left: { en: '{count} days left', el: '{count} ημέρες ακόμη' },
@@ -74,15 +80,21 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
 
   last_contact: { en: 'Last contact', el: 'Τελευταία επαφή' },
   message: { en: 'Message', el: 'Μήνυμα' },
+  // What the lead's button does: the assistant drafts a next-step note. It
+  // said "Message", the word for writing to someone on /messages (§74).
+  draft_note: { en: 'Draft a note', el: 'Σύνταξη σημειώματος' },
   view_details: { en: 'View details', el: 'Λεπτομέρειες' },
   move_to: { en: 'Move to', el: 'Μετακίνηση σε' },
 
   empty_pipeline_title: { en: 'No contacts in the pipeline', el: 'Δεν υπάρχουν επαφές στο pipeline' },
+  // "Ask AI who fits this round" sat under "No active round yet" (§74).
   empty_pipeline_hint: {
-    en: 'Add a contact or find investors. Ask AI who fits this round.',
-    el: 'Προσθέστε επαφή ή βρείτε επενδυτές. Ρωτήστε το AI ποιος ταιριάζει σε αυτόν τον γύρο.',
+    en: 'Add the investors you are talking to, or find new ones.',
+    el: 'Προσθέστε τους επενδυτές με τους οποίους μιλάτε ή βρείτε νέους.',
   },
+  add_to_stage_aria: { en: 'Add a contact at {stage}', el: 'Προσθήκη επαφής στο στάδιο {stage}' },
   empty_round_title: { en: 'No active round yet', el: 'Δεν υπάρχει ενεργός γύρος' },
+  round_plan: { en: 'Draft a round plan', el: 'Σύνταξη σχεδίου γύρου' },
   empty_round_hint: {
     en: 'Ask AI to draft target, instrument, and a first investor list from Builder artefacts.',
     el: 'Ρωτήστε το AI να συντάξει στόχο, εργαλείο και πρώτη λίστα επενδυτών από τον Builder.',
@@ -93,6 +105,10 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
   dr_total: { en: 'total docs ready', el: 'σύνολο εγγράφων έτοιμα' },
   dr_complete: { en: 'complete', el: 'ολοκληρωμένο' },
   share_room: { en: 'Share room', el: 'Κοινοποίηση data room' },
+  share_unavailable: {
+    en: 'A link to the whole data room is not available yet. Share each document from its own page.',
+    el: 'Σύνδεσμος για όλο το data room δεν υπάρχει ακόμη. Κοινοποιήστε κάθε έγγραφο από τη σελίδα του.',
+  },
   share_done: { en: 'Data room link copied', el: 'Ο σύνδεσμος του data room αντιγράφηκε' },
   share_hint: {
     en: 'Tokenised link — nothing is public unless you send it.',
@@ -118,6 +134,14 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
   upload_done: { en: 'Upload queued', el: 'Η μεταφόρτωση μπήκε στην ουρά' },
   download_done: { en: 'Download started', el: 'Η λήψη ξεκίνησε' },
   empty_docs: { en: 'No documents in this category', el: 'Δεν υπάρχουν έγγραφα σε αυτή την κατηγορία' },
+  // An empty room said "0/0 required docs ready · 0% complete" over eight
+  // category chips and "No documents in this category" (§74).
+  empty_room_title: { en: 'No documents in the data room yet', el: 'Δεν υπάρχουν ακόμη έγγραφα στο data room' },
+  empty_room_hint: {
+    en: 'Investors ask for a pitch deck, financials and a cap table. You make them in the Builder.',
+    el: 'Οι επενδυτές ζητούν pitch deck, οικονομικά και πίνακα μετοχών (cap table). Τα φτιάχνετε στον Builder.',
+  },
+  open_builder: { en: 'Open the Builder', el: 'Άνοιγμα του Builder' },
 
   resources: { en: 'Fundraising resources', el: 'Πόροι χρηματοδότησης' },
   res_playbook: { en: 'Seed fundraising playbook', el: 'Οδηγός seed χρηματοδότησης' },
@@ -130,6 +154,7 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
   res_deck_desc: { en: 'Draft slides from Builder artefacts', el: 'Συντάξτε διαφάνειες από τον Builder' },
 
   modal_new: { en: 'New investor contact', el: 'Νέα επαφή επενδυτή' },
+  modal_commit: { en: 'Record a commitment', el: 'Καταχώριση δέσμευσης' },
   field_name: { en: 'Name', el: 'Όνομα' },
   name_ph: { en: 'e.g. Athens Tech Angels', el: 'π.χ. Athens Tech Angels' },
   field_firm: { en: 'Firm', el: 'Εταιρεία' },

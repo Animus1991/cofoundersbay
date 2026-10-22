@@ -34,7 +34,6 @@ import {
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { messagesEn, messagesEl } from '@/lib/i18n/strings-messages';
-import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 
@@ -143,8 +142,6 @@ export function ConversationValidationMenu({
   className,
 }: ConversationValidationProps) {
   const { success, error: showError } = useToast();
-  // The toasts were English on a Greek page (docs §73).
-  const say = useBilingualString();
   const queryClient = useQueryClient();
   const [showModeDialog, setShowModeDialog] = useState(false);
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
@@ -155,12 +152,11 @@ export function ConversationValidationMenu({
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: qk('conversations') });
       onModeChange?.(data.validationState.mode);
-      const key = MODE_CONFIG[data.validationState.mode].labelKey;
-      success(say('Validation mode updated', 'Η λειτουργία επικύρωσης άλλαξε'), say(messagesEn(key), messagesEl(key)));
+      success('Validation mode updated', messagesEn(MODE_CONFIG[data.validationState.mode].labelKey));
       setShowModeDialog(false);
     },
     onError: () => {
-      showError(say('Could not change the validation mode', 'Η λειτουργία επικύρωσης δεν άλλαξε'), say('Please try again', 'Δοκιμάστε ξανά'));
+      showError('Failed to update', 'Could not change validation mode');
     },
   });
 
@@ -168,11 +164,11 @@ export function ConversationValidationMenu({
     mutationFn: () => acceptConversationValidation(conversationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qk('conversations') });
-      success(say('Validation accepted', 'Η επικύρωση έγινε αποδεκτή'), say('Two-party validation is now active.', 'Η επικύρωση δύο μερών είναι πλέον ενεργή.'));
+      success('Validation accepted', 'Two-party validation is now active');
       setShowAcceptDialog(false);
     },
     onError: () => {
-      showError(say('Could not accept the validation request', 'Το αίτημα επικύρωσης δεν έγινε αποδεκτό'), say('Please try again', 'Δοκιμάστε ξανά'));
+      showError('Failed to accept', 'Could not accept validation request');
     },
   });
 
@@ -180,11 +176,11 @@ export function ConversationValidationMenu({
     mutationFn: () => declineConversationValidation(conversationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qk('conversations') });
-      success(say('Validation declined', 'Η επικύρωση απορρίφθηκε'), say('The conversation stays a casual chat.', 'Η συνομιλία μένει απλή συνομιλία.'));
+      success('Validation declined', 'Conversation remains in casual mode');
       setShowAcceptDialog(false);
     },
     onError: () => {
-      showError(say('Could not decline the validation request', 'Το αίτημα επικύρωσης δεν απορρίφθηκε'), say('Please try again', 'Δοκιμάστε ξανά'));
+      showError('Failed to decline', 'Could not decline validation request');
     },
   });
 
@@ -199,9 +195,9 @@ export function ConversationValidationMenu({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      success(say('Transcript exported', 'Το αντίγραφο εξήχθη'), say(`Downloaded as ${format.toUpperCase()}.`, `Λήψη ως ${format.toUpperCase()}.`));
+      success('Transcript exported', `Downloaded as ${format.toUpperCase()}`);
     } catch {
-      showError(say('Could not download the transcript', 'Η λήψη του αντιγράφου απέτυχε'), say('Please try again', 'Δοκιμάστε ξανά'));
+      showError('Export failed', 'Could not download transcript');
     }
   };
 
@@ -443,7 +439,6 @@ export function TranscriptExportButton({
   validationState: ConversationValidationState;
 }) {
   const { success, error: showError } = useToast();
-  const say = useBilingualString();
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async (format: 'json' | 'txt') => {
@@ -458,9 +453,9 @@ export function TranscriptExportButton({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      success(say('Transcript exported', 'Το αντίγραφο εξήχθη'), say(`Downloaded as ${format.toUpperCase()}.`, `Λήψη ως ${format.toUpperCase()}.`));
+      success('Transcript exported', `Downloaded as ${format.toUpperCase()}`);
     } catch {
-      showError(say('Could not download the transcript', 'Η λήψη του αντιγράφου απέτυχε'), say('Please try again', 'Δοκιμάστε ξανά'));
+      showError('Export failed', 'Could not download transcript');
     } finally {
       setIsExporting(false);
     }
