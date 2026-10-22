@@ -446,7 +446,10 @@ export default function AutomationsPage() {
         </>
       }
     >
-      <div className="max-w-[84rem] mx-auto px-4 sm:px-6 py-8 space-y-6">
+      {/* The shell already gives the column its gutter and top space; a second
+          px-6 py-8 inside a centred 84rem stood the content 68px right of and
+          32px below the page title (docs §69). */}
+      <div className="space-y-6">
         <CreateRuleSlideOver
           open={showCreate}
           onClose={() => setShowCreate(false)}

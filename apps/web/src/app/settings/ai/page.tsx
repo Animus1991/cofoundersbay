@@ -308,7 +308,9 @@ export default function AISettingsPage() {
               </div>
               <div>
                 <p className={cn(
-                  'font-medium',
+                  // The card's headline line, on the UI step: unclassed it
+                  // took the 16.3px body base, larger than the section title.
+                  'text-sm font-medium',
                   isAIAvailable ? 'text-status-success' : 'text-status-warning'
                 )}>
                   {/* The assistant answers from platform data without a model

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { ArrowLeft } from 'lucide-react';
 import { listDeclarations, type ActionDeclaration } from '@cofounderbay/shared';
 import { AppShell } from '@/components/layout/AppShell';
@@ -119,6 +120,9 @@ function reversalLabel(spec: ActionDeclaration): { en: string; el: string } | nu
 
 function CapabilityCard({ spec }: { spec: ActionDeclaration }) {
   const sample = SAMPLE_ASK[spec.id];
+  // The example opens the assistant in the reader's language; it always
+  // sent the English sentence, under a Greek "Δοκίμασε: «…»".
+  const { hrefFor } = useAskAssistant();
   const reversal = reversalLabel(spec);
   const writes = spec.writes;
 
@@ -151,7 +155,7 @@ function CapabilityCard({ spec }: { spec: ActionDeclaration }) {
         )}
         {sample && (
           <Button asChild variant="ghost" size="sm" className={`h-auto min-h-11 w-fit justify-start px-0 py-1.5 text-xs lg:px-0 hover:bg-transparent hover:underline ${BUILDER_BTN}`}>
-            <Link href={`/ai?q=${encodeURIComponent(sample.en)}`}>
+            <Link href={hrefFor(sample)}>
               <BilingualText en={`Try: “${sample.en}”`} el={`Δοκίμασε: «${sample.el}»`} compact wrap />
             </Link>
           </Button>

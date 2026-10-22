@@ -95,6 +95,7 @@ describe('pages ask through the registry and the asker', () => {
       /\b(?:askAi|askAiPrompt|askPrompt)="/, // a literal question on a header, empty state or notice
       /<AskAi\w*\b[^>]*\bprompt="/, // a literal on an Ask button
       /\bask(?:InPlace|Assistant)?\(\s*['"`]/, // a literal sent straight to the assistant
+      /\/ai\?q=\$\{encodeURIComponent\([^)]*\.en\)\}/, // an English half sent whatever the reader's language
     ];
     for (const file of files) {
       readFileSync(file, 'utf8').split('\n').forEach((line, i) => {

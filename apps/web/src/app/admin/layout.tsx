@@ -24,8 +24,12 @@ const ADMIN_NAV = [
 function AdminSubNav() {
   const pathname = usePathname() ?? '/admin';
   return (
-    <div className="border-b border-border bg-card/60 px-4">
-      <nav aria-label={bilingualAria('Admin sections', 'Ενότητες διαχείρισης')} className="flex gap-1 overflow-x-auto w-full min-w-0 max-w-[84rem] mx-auto">
+    // The bar takes the main column's own gutter, and the nav pulls back by a
+    // link's padding, so the first icon stands on the page's left edge. It
+    // was centred in 84rem while the page below has no width cap, which put
+    // the tabs about 57px right of the title at 1440px (docs §69).
+    <div className="border-b border-border bg-card/60 px-3 sm:px-6 lg:px-[1.2rem]">
+      <nav aria-label={bilingualAria('Admin sections', 'Ενότητες διαχείρισης')} className="-mx-3 flex min-w-0 gap-1 overflow-x-auto">
         {ADMIN_NAV.map(({ href, label, labelEl, icon: Icon }) => {
           const active = pathname === href || (href !== '/admin' && pathname.startsWith(href));
           return (

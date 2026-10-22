@@ -94,6 +94,15 @@ import { THEME_ROOT } from '@/lib/themes';
  */
 const THEME_BOOT = `(function(){try{var m=${JSON.stringify(THEME_ROOT)};var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var r=document.documentElement;if(t==='system'){r.classList.add(d?'dark':'light');r.setAttribute('data-theme','system');return;}var e=m[t]||m[d?'dark':'light'];r.classList.add(e.mode);if(e.dataTheme)r.setAttribute('data-theme',e.dataTheme);}catch(_){}})();`;
 
+/*
+ * A picture that fails to load (an image host a network blocks, a photo
+ * since removed) showed the browser's broken-image glyph with its alt text
+ * spilling across the card. Listening from <head>, before any <img> is
+ * parsed, marks it; globals.css ("Pictures that did not load") then lets
+ * the surface behind it show. Its alt text stays for screen readers.
+ */
+const IMAGE_FALLBACK_BOOT = `document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'){t.setAttribute('data-img-failed','');}},true);`;
+
 export const metadata: Metadata = {
   title: {
     default: 'CoFounderBay',
@@ -150,6 +159,7 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+        <script dangerouslySetInnerHTML={{ __html: IMAGE_FALLBACK_BOOT }} />
       </head>
       <body
         suppressHydrationWarning

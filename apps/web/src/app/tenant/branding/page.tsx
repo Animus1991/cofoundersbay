@@ -351,7 +351,9 @@ export default function TenantBrandingPage() {
                           type="button"
                           onClick={() => setField('backgroundStyle', s.value)}
                           aria-pressed={form.backgroundStyle === s.value}
-                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                          // A choice, as tall as a button (it was 37px beside 31px
+                          // buttons; docs §69, reduce only).
+                          className={`px-4 py-1 min-h-[calc(30.458px*var(--button-y))] sm:min-h-[calc(32.997px*var(--button-y))] rounded-lg border text-sm font-medium transition-colors ${
                             form.backgroundStyle === s.value
                               ? 'border-primary bg-primary/10 text-primary-accessible'
                               : 'border-border hover:border-primary/50'

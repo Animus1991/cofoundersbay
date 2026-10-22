@@ -102,9 +102,13 @@ export default function AllianceThemePage() {
           ].map((tab) => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setActiveTab(tab.id)}
+              // The chosen view is announced, not only coloured. Button
+              // height, not 44px pills beside 31px hero buttons (docs §69).
+              aria-pressed={activeTab === tab.id}
               className={cn(
-                'flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium transition-all whitespace-nowrap',
+                'flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap',
                 activeTab === tab.id
                   ? 'bg-primary text-primary-foreground'
                   : 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'

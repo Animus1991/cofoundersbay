@@ -67,8 +67,12 @@ const buttonVariants = cva(
         xs:   'h-7 min-h-7 px-2.5 text-xs lg:h-auto lg:min-h-[calc(28px*var(--chrome-y))] lg:px-[10px]',
         sm:   'h-auto min-h-[calc(30.458px*var(--button-y))] px-3 text-xs sm:min-h-[calc(32.997px*var(--button-y))] lg:px-[12px]',
         md:   'h-auto min-h-[calc(30.458px*var(--button-y))] px-4 sm:min-h-[calc(32.997px*var(--button-y))] lg:px-[16px]',
-        lg:   'h-auto min-h-[calc(30.458px*var(--button-y))] px-6 text-base sm:min-h-[calc(32.997px*var(--button-y))] lg:px-[24px]',
-        xl:   'h-auto min-h-[calc(30.458px*var(--button-y))] px-8 text-base sm:min-h-[calc(32.997px*var(--button-y))] lg:px-[32px]',
+        // lg and xl are wider, not louder: they share md's height, and the
+        // body-size label they carried (16.3px on a 31.35px button, beside
+        // 13.5px fields on the sign-in form) read as cramped. md's step now
+        // (owner, 2026-10-22, docs §69: reduce only).
+        lg:   'h-auto min-h-[calc(30.458px*var(--button-y))] px-6 text-sm sm:min-h-[calc(32.997px*var(--button-y))] lg:px-[24px]',
+        xl:   'h-auto min-h-[calc(30.458px*var(--button-y))] px-8 text-sm sm:min-h-[calc(32.997px*var(--button-y))] lg:px-[32px]',
         // An icon button has no text to outgrow its box, so it stays a fixed
         // square — the same height as the other buttons.
         icon: 'h-[calc(30.458px*var(--button-y))] w-[calc(30.458px*var(--button-y))] min-h-[calc(30.458px*var(--button-y))] min-w-[calc(30.458px*var(--button-y))] sm:h-[calc(32.997px*var(--button-y))] sm:w-[calc(32.997px*var(--button-y))] sm:min-h-[calc(32.997px*var(--button-y))] sm:min-w-[calc(32.997px*var(--button-y))]',

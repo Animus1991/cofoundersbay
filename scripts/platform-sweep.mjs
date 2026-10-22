@@ -71,7 +71,8 @@ for (const route of routes) {
     const words = txt.split(/\s+/).filter(Boolean).length;
     const unnamed = [...main.querySelectorAll('button,a[href],[role=button]')].filter((el) => {
       const s = getComputedStyle(el); if (s.display === 'none' || s.visibility === 'hidden') return false;
-      const name = (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.getAttribute('title') || el.textContent || '').trim();
+      // An image link is named by its picture's alt (the tenant logo on /login).
+      const name = (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.getAttribute('title') || el.textContent || el.querySelector('img[alt]')?.getAttribute('alt') || '').trim();
       return !name || /^\d+$/.test(name);
     }).length;
     const askAI = !!main.querySelector('[aria-label*="Ask AI" i],[aria-label*="Ρωτήστε" i],a[href^="/ai"],button[data-ask-ai]') || /Ask AI|Ρωτήστε το AI/.test(txt);

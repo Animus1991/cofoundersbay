@@ -114,7 +114,9 @@ export default function TenantDashboardPage() {
   const recentMembers = members
     .slice()
     .sort((a, b) => b.joinedAt.localeCompare(a.joinedAt))
-    .slice(0, 3)
+    // Five, not three: the card stands beside Programs (three rows of about
+    // 74px each), and three members left a 104px empty band at its foot.
+    .slice(0, 5)
     .map((m) => ({
       id: m.id,
       name: m.user.profile?.displayName ?? m.user.email,

@@ -2559,6 +2559,108 @@ html {
   min-height: calc(2.75rem * var(--chrome-y) * var(--button-y));
 }
 
+/* Pictures that did not load (layout.tsx IMAGE_FALLBACK_BOOT marks them):
+   transparent rather than the broken-image glyph and its alt text over the
+   card; the element keeps its box, so nothing moves, and screen readers
+   still read the alt. */
+img[data-img-failed] {
+  opacity: 0;
+}
+
+/* One height for a row of controls (owner, 2026-10-22, docs §69).
+   From 640px a field, a select, the header's Ask field, a tab strip and a
+   segmented group stand exactly as tall as the buttons beside them
+   (--control-h, the 32.997px x --button-y above). Measured on 149 routes
+   at 1440px: fields were 35.7px, select triggers 36.8, tab strips 37.1 and
+   segmented groups about 36, beside 31.35px buttons, so one toolbar read
+   as four heights. Every value here is a reduction; nothing grows. Below
+   640px the touch floors stay as they are (fields and native selects
+   44px, phoneTouchFloor.test.ts). Text sizes are untouched. */
+@media (min-width: 640px) {
+  :root { --control-h: calc(32.997px * var(--button-y)); }
+  /* html:root outranks the rules that sized them (h-11, the search-bar
+     rule, the py-2 restatement). */
+  html:root input.input-clean,
+  html:root select:not([multiple]):not([size]),
+  html:root button[role='combobox'],
+  html:root form[data-ask-ai] {
+    height: var(--control-h);
+    min-height: var(--control-h);
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  /* The search-bar rule further down (2.75rem) carries four :not()s, so
+     it is restated here with the same list under html:root. A select
+     beside a search field stretches to the row, so it follows. */
+  html:root input:is(
+    [type='search'],
+    [placeholder*='Search'],
+    [placeholder*='search'],
+    [placeholder*='Αναζήτηση'],
+    [placeholder*='αναζήτηση'],
+    [aria-label*='Search'],
+    [aria-label*='search'],
+    [aria-label*='Αναζήτηση'],
+    [aria-label*='αναζήτηση']
+  ):not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']) {
+    height: var(--control-h);
+    min-height: var(--control-h);
+  }
+  /* An icon button laid inside a field (show password, clear search) is
+     the field's height, not a 44px box hanging over its edges. */
+  html:root button.absolute.tap-target[class~='top-1/2'] {
+    height: var(--control-h);
+    min-height: var(--control-h);
+  }
+  /* .tap-target (44px) is a phone floor. From 640px every other icon
+     button is the control height (473 of them on the 149 routes, against
+     22 tap-targets at 44px: card Save toggles, row deletes, info marks),
+     so a tap-target is that height too; a hover background no longer
+     shows a box half again as tall as its neighbours. A call site that
+     sets its own min-h-* or min-w-* keeps it. */
+  html:root .tap-target:not([class*='min-h-']) {
+    min-height: var(--control-h);
+  }
+  html:root .tap-target:not([class*='min-w-']) {
+    min-width: var(--control-h);
+  }
+  /* A tab strip's outer edge is the control height; its tabs sit inside
+     its 0.125rem padding. */
+  #main-content [role='tablist'].tab-strip {
+    min-height: var(--control-h);
+  }
+  #main-content [role='tablist'].tab-strip > [role='tab'] {
+    min-height: calc(var(--control-h) - 0.25rem);
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  /* A segmented group (a bordered row of buttons, p-0.5): the group, not
+     each button, is the control height. */
+  #main-content :is(div, span, [role='group'], [role='radiogroup']).border.p-0\.5 > :is(button, a) {
+    height: calc(var(--control-h) - 0.25rem - 2px);
+    min-height: calc(var(--control-h) - 0.25rem - 2px);
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  /* The same with p-1, for the pressed-state toggles that use it (grid or
+     list on /events). */
+  #main-content :is(div, span, [role='group'], [role='radiogroup']).border.p-1 > :is(button, a):is([aria-pressed], [role='radio']) {
+    height: calc(var(--control-h) - 0.5rem - 2px);
+    min-height: calc(var(--control-h) - 0.5rem - 2px);
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  #main-content :is(div, span, [role='group'], [role='radiogroup']).border.p-1 > :is(button, a):is([aria-pressed], [role='radio']):is([class~='w-8'], [class~='w-9'], [class~='w-10'], [class~='w-11']) {
+    width: calc(var(--control-h) - 0.5rem - 2px);
+    min-width: calc(var(--control-h) - 0.5rem - 2px);
+  }
+  /* A square icon button in such a group stays square. */
+  #main-content :is(div, span, [role='group'], [role='radiogroup']).border.p-0\.5 > :is(button, a):is([class~='w-8'], [class~='w-9'], [class~='w-10'], [class~='w-11']) {
+    width: calc(var(--control-h) - 0.25rem - 2px);
+    min-width: calc(var(--control-h) - 0.25rem - 2px);
+  }
+}
+
 
 
 

@@ -40,11 +40,40 @@ describe('button height', () => {
     expect(CSS).toContain('min-height: calc(44px * var(--button-y));');
   });
 
+  it('gives a row of controls one height from 640px, and keeps the phone floors', () => {
+    // docs §69: fields, native selects, select triggers, search bars, the
+    // header's Ask field and tap-targets are --control-h from 640px.
+    const start = CSS.indexOf('One height for a row of controls');
+    expect(start).toBeGreaterThan(0);
+    const block = CSS.slice(start, CSS.indexOf('\n}\n', start));
+    expect(block).toContain('@media (min-width: 640px)');
+    expect(block).toContain('--control-h: calc(32.997px * var(--button-y));');
+    for (const selector of [
+      'html:root input.input-clean',
+      'html:root select:not([multiple]):not([size])',
+      "html:root button[role='combobox']",
+      'html:root form[data-ask-ai]',
+      "html:root .tap-target:not([class*='min-h-'])",
+      "html:root button.absolute.tap-target[class~='top-1/2']",
+    ]) {
+      expect(block, selector).toContain(selector);
+    }
+    // Below 640px the 44px tap-target stays.
+    expect(CSS).toMatch(/\.tap-target\s*\{\s*min-width:\s*44px;\s*min-height:\s*44px;\s*\}/);
+  });
+
   it('never touches type', () => {
     const readers = [...CSS.matchAll(/([\w-]+)\s*:[^;{}]*var\(--button-y\)/g)].map((m) => m[1]);
     expect(readers.length).toBeGreaterThan(10);
     for (const property of readers) {
-      expect(property).toMatch(/^(min-)?(height|width)$|^padding-(top|bottom)$|^top$/);
+      // --control-h (one height for a row of controls, §69) carries the same
+      // factor; its own readers are held to the same rule below.
+      expect(property).toMatch(/^(min-)?(height|width)$|^padding-(top|bottom)$|^top$|^--control-h$/);
+    }
+    const controlReaders = [...CSS.matchAll(/([\w-]+)\s*:[^;{}]*var\(--control-h\)/g)].map((m) => m[1]);
+    expect(controlReaders.length).toBeGreaterThan(3);
+    for (const property of controlReaders) {
+      expect(property).toMatch(/^(min-)?(height|width)$/);
     }
   });
 });

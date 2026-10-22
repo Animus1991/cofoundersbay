@@ -162,7 +162,8 @@ export default function TermsPage() {
       {/* Hero */}
       <section className="border-b border-border bg-muted/30">
         <div className="mx-auto max-w-4xl px-4 py-12 text-left">
-          <h1 className="text-3xl font-semibold text-foreground mb-2"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h1>
+          {/* The platform's page-title size (it was 26px against 16.8px on every other page; docs §69, reduce only). */}
+          <h1 className="page-title font-semibold text-foreground mb-2"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h1>
           <p className="text-sm text-muted-foreground">
             <BilingualText en={`Last updated: ${LAST_UPDATED}`} el={`Τελευταία ενημέρωση: ${LAST_UPDATED_EL}`} compact />
           </p>

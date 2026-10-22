@@ -261,7 +261,8 @@ function FAQAccordion({ faq, isOpen, onToggle }: { faq: FAQItem; isOpen: boolean
         aria-expanded={isOpen}
         onClick={onToggle}
         className={cn(
-          'flex w-full items-center justify-between py-4 text-left transition-colors focus-ring rounded-md',
+          // py-3: a question row matches the other list rows (44px, it was 52).
+          'flex w-full items-center justify-between py-3 text-left transition-colors focus-ring rounded-md',
           isOpen ? 'text-primary-accessible' : 'hover:text-primary-accessible text-foreground',
         )}
       >
@@ -275,7 +276,7 @@ function FAQAccordion({ faq, isOpen, onToggle }: { faq: FAQItem; isOpen: boolean
         />
       </button>
       {isOpen && (
-        <div className="pb-4 pr-8 animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="pb-3 pr-8 animate-in fade-in slide-in-from-top-1 duration-150">
           <p className="card-body text-muted-foreground"><BilingualText en={faq.answer} el={HELP_FAQ_EL[faq.question]?.a} wrap /></p>
         </div>
       )}
