@@ -1,12 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +25,7 @@ import {
   getMeProfile,
   getRecommendations,
   listConnectionRequests,
+  respondToConnectionRequest,
   getVentureReadiness,
   type SearchHit,
   getAnalyticsMetrics,
@@ -66,7 +66,7 @@ import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
 import { XPProgressWidget } from '@/components/gamification/XPProgressWidget';
 import { BadgesWidget } from '@/components/gamification/BadgesWidget';
 import { BilingualText } from '@/components/common/BilingualText';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
 import { PREVIEW_MILESTONE_EL } from '@/lib/i18n/strings-milestones';
 import { activityTimeAgoPair, activityTitleEl } from '@/lib/i18n/activity-titles';
@@ -74,6 +74,9 @@ import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { explainMatch, viewerFacts, type ViewerFacts } from '@/lib/match-explain';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
+import { useApiAvailability } from '@/hooks/useApiAvailability';
+import { useConnectionWith } from '@/hooks/useConnectionWith';
+import { useToast } from '@/components/ui/toast';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 const FOUNDER_TOUR: TourStep[] = [
@@ -81,8 +84,8 @@ const FOUNDER_TOUR: TourStep[] = [
     target: 'founder-stats',
     titleEn: 'Your live counts, not a second score',
     titleEl: 'Ζωντανά πλήθη, όχι δεύτερη βαθμολογία',
-    bodyEn: 'Profile views, matches this week, unread messages, and milestone completion. A dash means the metric was not recorded — it is not zero. Each tile opens the page that owns that number.',
-    bodyEl: 'Προβολές προφίλ, αντιστοιχίσεις της εβδομάδας, μη αναγνωσμένα μηνύματα και ολοκλήρωση οροσήμων. Η παύλα σημαίνει ότι η μέτρηση δεν καταγράφηκε — όχι μηδέν. Κάθε πλακίδιο ανοίγει τη σελίδα που κατέχει αυτόν τον αριθμό.',
+    bodyEn: 'Profile views, unread messages and milestone completion; your matches are counted on the card of faces above. A dash means the metric was not recorded — it is not zero. Each tile opens the page that owns that number.',
+    bodyEl: 'Προβολές προφίλ, μη αναγνωσμένα μηνύματα και ολοκλήρωση οροσήμων· οι αντιστοιχίσεις μετριούνται στην κάρτα με τα πρόσωπα από πάνω. Η παύλα σημαίνει ότι η μέτρηση δεν καταγράφηκε — όχι μηδέν. Κάθε πλακίδιο ανοίγει τη σελίδα που κατέχει αυτόν τον αριθμό.',
   },
   {
     target: 'founder-checklist',
@@ -95,8 +98,8 @@ const FOUNDER_TOUR: TourStep[] = [
     target: 'founder-attention',
     titleEn: 'Attention chips are the short list',
     titleEl: 'Τα chips προσοχής είναι η σύντομη λίστα',
-    bodyEn: 'Each chip is one thing that needs a click this week — pending intros, unread threads, or a weak readiness dimension. They disappear when the underlying count is zero.',
-    bodyEl: 'Κάθε chip είναι ένα πράγμα που θέλει κλικ αυτή την εβδομάδα — εκκρεμείς γνωριμίες, μη αναγνωσμένα νήματα ή αδύναμη διάσταση ετοιμότητας. Εξαφανίζονται όταν το πλήθος είναι μηδέν.',
+    bodyEn: 'What no tile or card above already says: the next milestone, or the one that is overdue. Intro requests and unread messages lead the row under the question box; the weakest readiness dimension is named in the card below.',
+    bodyEl: 'Ό,τι δεν λέει ήδη κάποιο πλακίδιο ή κάρτα: το επόμενο ορόσημο ή όποιο έχει καθυστερήσει. Τα αιτήματα γνωριμίας και τα αδιάβαστα μηνύματα είναι στην αρχή της σειράς κάτω από το πλαίσιο ερωτήσεων· η πιο αδύναμη διάσταση ετοιμότητας ονομάζεται στην κάρτα από κάτω.',
   },
   {
     target: 'founder-readiness',
@@ -260,7 +263,15 @@ function RailListLink({ href, en, el }: { href: string; en: string; el: string }
   );
 }
 
-type AttentionItem = { href: string; glyph: CfbGlyphName; en: string; el: string; urgent?: boolean };
+type AttentionItem = {
+  href: string;
+  glyph: CfbGlyphName;
+  en: string;
+  el: string;
+  urgent?: boolean;
+  /** Said by a card of its own below 640px (the phone home's next milestone). */
+  phoneHidden?: boolean;
+};
 
 function AttentionChips({
   items,
@@ -268,10 +279,11 @@ function AttentionChips({
   items: AttentionItem[];
 }) {
   if (items.length === 0) return null;
+  const phoneEmpty = items.every((item) => item.phoneHidden);
   return (
-    <ul className="flex min-w-0 flex-wrap gap-2" data-tour="founder-attention">
+    <ul className={cn('min-w-0 flex-wrap gap-2', phoneEmpty ? 'hidden sm:flex' : 'flex')} data-tour="founder-attention">
       {items.map((item) => (
-        <li key={`${item.href}:${item.en}`} className="min-w-0">
+        <li key={`${item.href}:${item.en}`} className={cn('min-w-0', item.phoneHidden && 'hidden sm:block')}>
           <Link
             href={item.href}
             className="inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/50 sm:min-h-0"
@@ -401,6 +413,7 @@ export default function FounderDashboardContent() {
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
   const { primary } = useLanguagePreference();
+  const sayOne = useBilingualString();
   const { messages: unreadMessages } = useUnreadCounts();
 
   const { data: profile } = useQuery({
@@ -410,6 +423,23 @@ export default function FounderDashboardContent() {
   });
   // The reader's side of each match's reasons (lib/match-explain).
   const viewer = useMemo(() => viewerFacts(profile?.profile ?? null), [profile]);
+  const apiAvailable = useApiAvailability();
+  const queryClient = useQueryClient();
+  const { success, error: showError } = useToast();
+  // Where each match's connection stands, on /matches' keys: the first match
+  // is offered Accept when their request waits, never a second Connect.
+  const { connectionWith, connectionOf } = useConnectionWith(hasSession && mounted, profile?.profile?.userId);
+  const acceptRequest = useCallback(async (userId: string, name: string) => {
+    const link = connectionWith.get(userId);
+    if (!link || link.state !== 'received') return;
+    try {
+      await respondToConnectionRequest(link.id, 'accepted');
+      success(sayOne('Connected', 'Η σύνδεση έγινε'), sayOne(`You are now connected with ${name}.`, `Είστε πλέον σε σύνδεση με ${name}.`));
+      await queryClient.invalidateQueries({ queryKey: qk('connections') });
+    } catch (err) {
+      showError(sayOne('Could not accept the request', 'Το αίτημα δεν έγινε αποδεκτό'), err instanceof Error ? err.message : undefined);
+    }
+  }, [connectionWith, queryClient, sayOne, showError, success]);
 
   /*
    * The Top Matches tile counts what /matches lists, on that page's own query
@@ -459,7 +489,7 @@ export default function FounderDashboardContent() {
     };
   })();
 
-  const { data: recommendations } = useQuery({
+  const { data: recommendations, isFetched: recommendationsFetched } = useQuery({
     queryKey: queryKeys.recommendations,
     queryFn: () => getRecommendations({ limit: 5 }),
     enabled: hasSession && mounted,
@@ -516,7 +546,7 @@ export default function FounderDashboardContent() {
    * query keys - so the tile, the list under it and that page cannot disagree,
    * and marking one done on either surface refreshes the other.
    */
-  const { data: milestoneData, isLoading: milestonesLoading } = useQuery({
+  const { data: milestoneData, isLoading: milestonesLoading, isError: milestonesFailed } = useQuery({
     queryKey: qk('milestones', 'all', 'all'),
     queryFn: () => listMilestones({ limit: 100 }),
     enabled: hasSession && mounted,
@@ -635,17 +665,12 @@ export default function FounderDashboardContent() {
         more: waitingThreads.length - 1,
       }
     : null;
-  // Unread messages have their own tile directly above these chips, linking to
-  // the same inbox; a chip saying "1 unread message" under "Unread messages 1"
-  // was the same fact twice. The chips carry what no tile says.
-  if (pendingRequests > 0) {
-    attentionItems.push({
-      href: '/connections?tab=requests',
-      glyph: 'people',
-      en: pendingRequests === 1 ? '1 intro waiting' : `${pendingRequests} intros waiting`,
-      el: pendingRequests === 1 ? '1 γνωριμία σε αναμονή' : `${pendingRequests} γνωριμίες σε αναμονή`,
-    });
-  }
+  // The chips carry what nothing else on the page says (docs §70). Unread
+  // messages have their tile; intro requests lead the row under the question
+  // box ("Intro requests 1", which asks the assistant to go through them) and
+  // keep their badge on Connections; the weakest readiness dimension is the
+  // "Lowest:" link in the progress card below. Each was a second chip for
+  // the same fact, one row away.
   if (nextOpenMilestone) {
     attentionItems.push({
       href: '/milestones',
@@ -653,17 +678,8 @@ export default function FounderDashboardContent() {
       en: `${nextIsOverdue ? 'Overdue' : 'Next'}: ${nextOpenMilestone.titleEn}`,
       el: `${nextIsOverdue ? 'Εκπρόθεσμο' : 'Επόμενο'}: ${nextOpenMilestone.titleEl}`,
       urgent: nextIsOverdue,
-    });
-  }
-  if (vrs?.lowestDimension?.href && typeof vrs.lowestDimension.score === 'number' && vrs.lowestDimension.score < 55) {
-    attentionItems.push({
-      href: vrs.lowestDimension.href,
-      glyph: 'chart',
-      // "Ανύψωση" was a literal rendering of "Lift" that means physically
-      // raising something. The colon form also matches the milestone chip
-      // beside it ("Επόμενο: …") and sidesteps declining the dimension name.
-      en: `Lift ${vrs.lowestDimension.label} (${vrs.lowestDimension.score}%)`,
-      el: `Βελτιώστε: ${ventureDimensionEl(vrs.lowestDimension.key, vrs.lowestDimension.label)} (${vrs.lowestDimension.score}%)`,
+      // Below 640px the phone home names this milestone in a card of its own.
+      phoneHidden: true,
     });
   }
 
@@ -1248,21 +1264,22 @@ export default function FounderDashboardContent() {
       // brief prompt is the hero's "My week" chip. The chat bubble still opens
       // the assistant without a prompt.
       askAi={false}
+      // No "Founder" badge beside "Founder dashboard": the title says it
+      // (docs §70).
       actions={
-        <>
-          <Badge variant="outline" className="gap-1.5">
-            <CfbGlyph name="builder" className="icon-sm" /> <BilingualText en="Founder" el="Ιδρυτής" compact />
-          </Badge>
-          {/* Jumps to the founder progress card below. It opened /readiness,
-              whose score is a different measure (the company's readiness for
-              investors), so "Progress: 52%" led to a page that said 61. */}
+        vrs ? (
+          /* Jumps to the founder progress card below. It opened /readiness,
+             whose score is a different measure (the company's readiness for
+             investors), so "Progress: 52%" led to a page that said 61. Shown
+             once the score is read: "0%" while the API was down was a figure
+             nobody measured. */
           <Button variant="outline" size="sm" className="gap-1.5" asChild>
             <a href="#founder-progress">
               <CfbGlyph name="chart" className="icon-sm" />
               <BilingualText en={`Founder progress: ${founderProgress}%`} el={`Πρόοδος ιδρυτή: ${founderProgress}%`} compact />
             </a>
           </Button>
-        </>
+        ) : undefined
       }
     >
       {/* The tour points at the figures, checklist and readiness: it waits for
@@ -1273,7 +1290,7 @@ export default function FounderDashboardContent() {
         {/* GitHub's home: a greeting over one question box and the jobs to
             start from. The weekly brief the header's field used to send is
             the "My week" chip. */}
-        <HomeAskHero role="founder" name={displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
+        <HomeAskHero role="founder" name={own?.displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
 
         {showFirstMove && (
           <FounderFirstMove
@@ -1310,6 +1327,11 @@ export default function FounderDashboardContent() {
         <FounderPhoneHome
           showResume={!showFirstMove}
           matches={recommendations?.suggestions ?? []}
+          matchesSettled={recommendationsFetched}
+          matchCount={matchCount}
+          excellentMatches={excellentMatches}
+          connectionOf={connectionOf}
+          onAccept={acceptRequest}
           viewer={viewer}
           activity={activityItems}
           milestone={nextOpenMilestone ?? null}
@@ -1328,8 +1350,13 @@ export default function FounderDashboardContent() {
         )}
 
         <div id="founder-dashboard-rest" hidden={restFolded} className="min-w-0 space-y-6">
-          {/* Stats */}
-          <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" data-tour="founder-stats">
+          {/* Three figures. The matches count lives on the card of faces
+              above (FounderPhoneHome), with its "3 excellent" and View all: a
+              "Top Matches 4" tile one row under "Top Matches" and its four
+              faces was the same list twice (docs §70). A read that failed
+              is a dash, never 0 ("Inbox is clear", "0/0" while the API was
+              down). */}
+          <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3" data-tour="founder-stats">
             <MetricTile
               align="center"
               glyph="profile"
@@ -1340,35 +1367,26 @@ export default function FounderDashboardContent() {
               captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
               href="/analytics"
             />
-            {/* No endpoint reports a week-over-week change for matches, so this
-                tile carried a literal 3 as its arrow. It shows the count alone. */}
-            <MetricTile
-              align="center"
-              glyph="matches"
-              label={dashboardEn('top_matches')} labelEl={dashboardEl('top_matches')}
-              value={matchCount ?? '—'}
-              caption={matchCount ? `${excellentMatches} excellent (80%+). Opens matches` : 'Suggestions for you. Opens matches'}
-              captionEl={matchCount ? `${excellentMatches} εξαιρετικές (80%+). Ανοίγει τις αντιστοιχίσεις` : 'Προτάσεις για εσάς. Ανοίγει τις αντιστοιχίσεις'}
-              href="/matches"
-            />
             <MetricTile
               align="center"
               glyph="messages"
               label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
-              value={unreadMessages}
+              value={apiAvailable ? unreadMessages : '—'}
               href="/messages"
-              caption={messageCaption.en}
-              captionEl={messageCaption.el}
+              caption={apiAvailable ? messageCaption.en : 'Not read: the server is unavailable. Opens messages'}
+              captionEl={apiAvailable ? messageCaption.el : 'Δεν διαβάστηκε: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα μηνύματα'}
             />
-            <MetricTile
-              align="center"
-              glyph="flag"
-              label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
-              value={`${completedMilestoneCount}/${milestones.length}`}
-              href="/milestones"
-              caption={milestoneCaption.en}
-              captionEl={milestoneCaption.el}
-            />
+            <div className="col-span-2 min-w-0 lg:col-span-1">
+              <MetricTile
+                align="center"
+                glyph="flag"
+                label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
+                value={milestonesFailed && milestones.length === 0 ? '—' : `${completedMilestoneCount}/${milestones.length}`}
+                href="/milestones"
+                caption={milestonesFailed && milestones.length === 0 ? 'Not read: the server is unavailable. Opens milestones' : milestoneCaption.en}
+                captionEl={milestonesFailed && milestones.length === 0 ? 'Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα ορόσημα' : milestoneCaption.el}
+              />
+            </div>
           </div>
 
           <AttentionChips items={attentionItems} />
@@ -1382,13 +1400,11 @@ export default function FounderDashboardContent() {
                   data={vrs}
                   footer={
                     <div className="space-y-2.5">
-                      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-                        <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
-                          <Link href="/readiness" className="w-full">
-                            <CfbGlyph name="chart" className="icon-sm" />
-                            <BilingualText en="Startup readiness" el="Ετοιμότητα startup" compact wrap />
-                          </Link>
-                        </Button>
+                      {/* /readiness is the card's own line, "Investor and
+                          accelerator readiness is scored separately"; a
+                          "Startup readiness" button under it opened the same
+                          page under a third name (docs §70). */}
+                      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                         <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                           <Link href="/builder" className="w-full">
                             <CfbGlyph name="builder" className="icon-sm" />
@@ -1435,7 +1451,7 @@ export default function FounderDashboardContent() {
 
           {/* Beside readiness: whether the people the startup needs are coming -
               each need card's outcome and the steps waiting on the founder. */}
-          <CommitmentOutcomes />
+          <CommitmentOutcomes waitingShownAbove={!!waitingNext} />
 
           {/* What the October round added, each with the place to try it. */}
           <WhatsNewPanel audience="founder" />

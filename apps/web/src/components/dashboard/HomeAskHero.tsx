@@ -57,7 +57,7 @@ export function partOfDay(hour: number): Part {
  *   narrowed as you type (Copilot Chat's slash commands): arrows move, Enter
  *   runs the highlighted one, Escape clears.
  */
-export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string; lead?: Part }) {
+export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: string | null; lead?: Part }) {
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
   const popup = usePopupChatOptional();
@@ -136,9 +136,12 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name: string
       {/* The greeting as it was before the box arrived: one quiet line at
           body size, not a heading (the page title is the heading). */}
       <p id={`${boxId}-title`} className="text-sm text-muted-foreground">
+        {/* Without a name the greeting is just the greeting: the homes used
+            to fill in their role word, so a Greek reader met "Καλημέρα,
+            Founder." (docs §70). */}
         <BilingualText
-          en={`${hello.en}, ${name}.${lead ? ` ${lead.en}` : ''}`}
-          el={`${hello.el}, ${name}.${lead ? ` ${lead.el}` : ''}`}
+          en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.${lead ? ` ${lead.en}` : ''}`}
+          el={`${hello.el}${name?.trim() ? `, ${name.trim()}` : ''}.${lead ? ` ${lead.el}` : ''}`}
           stacked
           wrap
           secondaryFrom="lg"

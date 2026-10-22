@@ -97,7 +97,6 @@ export default function IncubatorDashboard() {
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
-  const displayName = profile?.profile?.displayName || 'Admin';
 
   const { data: programData, isLoading: programsLoading } = useQuery({
     queryKey: qk('programs', 'organization', organizationId),
@@ -210,7 +209,7 @@ export default function IncubatorDashboard() {
       }
     >
       <div className="space-y-6">
-        <HomeAskHero role="incubator" name={displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
+        <HomeAskHero role="incubator" name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
 
         {!loading && nextApplication ? (
           <HomeNextStep

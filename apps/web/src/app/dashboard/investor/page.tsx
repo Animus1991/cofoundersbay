@@ -5,7 +5,6 @@ import {
   BarChart3,
   Briefcase,
   Building2,
-  DollarSign,
   Eye,
   LineChart,
   PieChart,
@@ -169,7 +168,6 @@ export default function InvestorDashboard() {
     retry: 0,
   });
 
-  const displayName = profile?.profile?.displayName || 'Investor';
   const deals = dealsPage?.deals ?? [];
   const discovered = deals.filter((d) => d.pipelineStage === 'discovered').slice(0, 4);
   const active = deals.filter((d) => ACTIVE_STAGES.includes(d.pipelineStage));
@@ -213,15 +211,9 @@ export default function InvestorDashboard() {
     <AppShell askAi={false} showHelp
       description="Pipeline health, deal flow, and portfolio performance — in one view."
       descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
-      actions={
-        <Badge variant="outline" className="gap-1.5">
-          <DollarSign className="icon-sm" aria-hidden="true" />
-          <BilingualText en="Investor" el="Επενδυτής" compact />
-        </Badge>
-      }
     >
       <div className="space-y-6">
-        <HomeAskHero role="investor" name={displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
+        <HomeAskHero role="investor" name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
 
         {!dealsLoading && active[0] ? (
           <HomeNextStep

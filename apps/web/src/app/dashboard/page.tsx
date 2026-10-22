@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRole } from '@/contexts/RoleContext';
 import { Loader2 } from 'lucide-react';
+import { BilingualText } from '@/components/common/BilingualText';
 
 export default function DashboardRouter() {
   const router = useRouter();
@@ -46,7 +47,9 @@ export default function DashboardRouter() {
     <div className="flex h-screen items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="icon-xl animate-spin text-primary-accessible" />
-        <p className="text-sm text-muted-foreground">Loading your dashboard...</p>
+        <p className="text-sm text-muted-foreground">
+          <BilingualText en="Opening your dashboard…" el="Άνοιγμα του πίνακά σας…" compact />
+        </p>
       </div>
     </div>
   );

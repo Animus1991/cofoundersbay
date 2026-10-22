@@ -21,7 +21,12 @@ import { OutcomeChip } from './OutcomeChip';
  * reader, and a link to the list. Settled items older than thirty days are
  * history and are not counted here.
  */
-export function CommitmentOutcomes() {
+/**
+ * `waitingShownAbove`: the page already leads with the step that waits on the
+ * reader ("Waiting on you · 1 more on Commitments"), so "2 steps wait on you"
+ * here was the same count a screen later (founder home, docs §70).
+ */
+export function CommitmentOutcomes({ waitingShownAbove = false }: { waitingShownAbove?: boolean } = {}) {
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => setNow(Date.now()), []);
   const cardsQ = useQuery({ queryKey: qk('commitments', 'cards', 'mine'), queryFn: () => listCommitmentCards({ mine: true }) });
@@ -38,6 +43,12 @@ export function CommitmentOutcomes() {
       <CardContent className="space-y-3">
         {cardsQ.isLoading || now === null ? (
           <p className="text-sm text-muted-foreground">…</p>
+        ) : cardsQ.isError ? (
+          // A failed read is not "no cards": "Write your first card" showed
+          // while the server was down, to someone who has cards.
+          <p className="card-body text-muted-foreground">
+            <BilingualText en="Your need cards could not be read just now." el="Οι κάρτες σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+          </p>
         ) : cards.length === 0 ? (
           <div className="space-y-3">
             <p className="card-body text-muted-foreground"><BilingualText en={CMT.empty_mine.en} el={CMT.empty_mine.el} wrap /></p>
@@ -58,13 +69,15 @@ export function CommitmentOutcomes() {
             })}
           </ul>
         )}
-        {waiting > 0 ? (
+        {waiting > 0 && !waitingShownAbove ? (
           <p className="card-body text-foreground">
             <BilingualText en={`${waiting} ${waiting === 1 ? 'step waits' : 'steps wait'} on you`} el={`${waiting} ${waiting === 1 ? 'βήμα περιμένει' : 'βήματα περιμένουν'} από εσάς`} wrap />
           </p>
         ) : null}
+        {/* Says where it goes: a bare "Commitments" under a card titled
+            "Commitments" read as a second heading. */}
         <Link href="/commitments" className="inline-block text-sm font-medium text-primary-accessible underline-offset-4 hover:underline">
-          <BilingualText en={CMT.area.en} el={CMT.area.el} compact />
+          <BilingualText en="Open Commitments" el="Άνοιγμα δεσμεύσεων" compact />
         </Link>
       </CardContent>
     </Card>

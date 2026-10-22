@@ -6,12 +6,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  Sparkles, ArrowRight, UserPlus, ArrowUpDown, RefreshCw, BarChart3, Award, Zap,
+  ArrowRight, UserPlus, ArrowUpDown, RefreshCw, BarChart3, Zap,
   X, LayoutGrid, List, Search, MapPin, Briefcase, GraduationCap, DollarSign, Users,
   Bookmark, BookmarkCheck, MessageCircle, RotateCcw, SlidersHorizontal, Clock,
-  TrendingUp, Star, CheckCircle2, CheckSquare,
+  CheckSquare,
 } from 'lucide-react';
-import { getRecommendations, getMatchBreakdown, getMeProfile, listConnectionRequests, respondToConnectionRequest, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, restoreMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
+import { getRecommendations, getMatchBreakdown, getMeProfile, respondToConnectionRequest, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, restoreMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { createPassLedger } from '@/lib/match-pass';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -32,6 +32,7 @@ import { StatusText } from '@/components/common/StatusText';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/toast';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
+import { useConnectionWith } from '@/hooks/useConnectionWith';
 import { ProfileCardSkeleton } from '@/components/discover/ProfileCard';
 import { BilingualText } from '@/components/common/BilingualText';
 import { matchesEn, matchesEl } from '@/lib/i18n/strings-matches';
@@ -40,7 +41,6 @@ import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import type { ProfileCardData } from '@/components/discover/ProfileCard';
 import { qk, queryKeys } from '@/lib/query-keys';
-import { bilingualInline } from '@/lib/i18n/format';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { FactLine } from '@/components/common/FactLine';
@@ -696,25 +696,9 @@ export default function MatchesPage() {
 
   // Where a connection with each person stands, so the one primary action
   // is the right one: Connect, Accept their request, or Message. The same
-  // keys and reads as /connections, so an answer there shows here.
-  const receivedRequests = useQuery({ queryKey: qk('connections', 'received'), queryFn: () => listConnectionRequests({ type: 'received' }), enabled: hasToken, staleTime: 60_000 });
-  const sentRequests = useQuery({ queryKey: qk('connections', 'sent'), queryFn: () => listConnectionRequests({ type: 'sent' }), enabled: hasToken, staleTime: 60_000 });
-  const acceptedConnections = useQuery({ queryKey: qk('connections', 'accepted'), queryFn: () => listConnectionRequests({ type: 'accepted' }), enabled: hasToken, staleTime: 60_000 });
-  const connectionWith = useMemo(() => {
-    const myId = meData?.profile?.userId;
-    const map = new Map<string, { state: MatchConnection; id: string }>();
-    for (const c of acceptedConnections.data?.connections ?? []) {
-      map.set(c.requesterId === myId ? c.receiverId : c.requesterId, { state: 'connected', id: c.id });
-    }
-    for (const c of receivedRequests.data?.connections ?? []) {
-      if (!map.has(c.requesterId)) map.set(c.requesterId, { state: 'received', id: c.id });
-    }
-    for (const c of sentRequests.data?.connections ?? []) {
-      if (!map.has(c.receiverId)) map.set(c.receiverId, { state: 'sent', id: c.id });
-    }
-    return map;
-  }, [acceptedConnections.data, receivedRequests.data, sentRequests.data, meData]);
-  const connectionOf = useCallback((userId: string): MatchConnection => connectionWith.get(userId)?.state ?? 'none', [connectionWith]);
+  // keys and reads as /connections and the founder home (useConnectionWith),
+  // so an answer on any of them shows on the others.
+  const { connectionWith, connectionOf } = useConnectionWith(hasToken, meData?.profile?.userId);
   const { data: shortlistIdsData } = useQuery({
     queryKey: qk('shortlist', 'ids'),
     queryFn: getShortlistIds,

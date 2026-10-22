@@ -26,6 +26,7 @@ import { isPreviewDemo } from '@/lib/preview-demo';
 import { STATUS } from '@/lib/semantic-colors';
 import { cn, initialsOf } from '@/lib/utils';
 import { explainMatch, type ViewerFacts } from '@/lib/match-explain';
+import type { MatchConnection } from '@/components/common/MatchCard';
 import { calendarDaysUntil } from '@/lib/calendar-days';
 
 type PhoneActivity = {
@@ -109,6 +110,11 @@ function seenToday(lastSeenAt?: number | null): boolean {
 export function FounderPhoneHome({
   showResume,
   matches,
+  matchesSettled = true,
+  matchCount,
+  excellentMatches = 0,
+  connectionOf,
+  onAccept,
   viewer,
   activity,
   milestone,
@@ -117,6 +123,15 @@ export function FounderPhoneHome({
 }: {
   showResume: boolean;
   matches: SearchHit[];
+  /** The list has answered (or failed): an empty card may say so. */
+  matchesSettled?: boolean;
+  /** How many /matches lists (its own query), said on the card's line. */
+  matchCount?: number;
+  excellentMatches?: number;
+  /** Where the connection with a person stands (useConnectionWith). */
+  connectionOf?: (userId: string) => MatchConnection;
+  /** Accept that person's waiting request. */
+  onAccept?: (userId: string, name: string) => void;
   /** The reader's side of each match's reasons; without it, the engine's own words. */
   viewer?: ViewerFacts | null;
   activity: PhoneActivity[];
@@ -168,12 +183,15 @@ export function FounderPhoneHome({
   const days = milestone?.dueDate ? daysUntil(milestone.dueDate) : null;
   // The most telling reason, as the person's card on /matches puts it first.
   const firstReason = first ? explainMatch(first, viewer ?? null, { nowMs: Date.now() })[0] ?? null : null;
+  const firstState: MatchConnection = first && connectionOf ? connectionOf(first.userId) : 'none';
   const resumeIsMilestone = showResume && !boards.isLoading && !latestBoard && !!milestone;
 
   const hasResume = Boolean(
     (showResume && latestBoard) || (showResume && !latestBoard && !boards.isLoading && milestone),
   );
-  const hasLead = hasResume || people.length > 0;
+  const showMatches = people.length > 0 || matchesSettled;
+  const hasLead = hasResume || showMatches;
+  const listed = matchCount ?? people.length;
 
   return (
     <>
@@ -203,15 +221,51 @@ export function FounderPhoneHome({
         />
       ) : null}
 
-      {people.length > 0 ? (
+      {showMatches ? (
         <Card>
+          {/* The card is the matches figure too: how many, how many are
+              excellent, and the way to the list (it was a separate "Top
+              Matches 4" tile one row below; docs §70). */}
           <CardHeader className="pb-3">
-            <CardTitle>
-              <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} compact wrap />
-            </CardTitle>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1 space-y-1">
+                <CardTitle>
+                  <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} compact wrap />
+                </CardTitle>
+                {people.length > 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    <BilingualText
+                      en={`${listed} ${listed === 1 ? 'suggestion' : 'suggestions'} · ${excellentMatches} excellent (80%+)`}
+                      el={`${listed} ${listed === 1 ? 'πρόταση' : 'προτάσεις'} · ${excellentMatches} ${excellentMatches === 1 ? 'εξαιρετική' : 'εξαιρετικές'} (80%+)`}
+                      compact
+                      wrap
+                    />
+                  </p>
+                ) : null}
+              </div>
+              {people.length > 0 ? (
+                <Button variant="ghost" size="sm" className="-mr-2 shrink-0 gap-1" asChild>
+                  <Link href="/matches">
+                    <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
+                  </Link>
+                </Button>
+              ) : null}
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="flex min-w-0 gap-3 overflow-x-auto pb-1">
+            {people.length === 0 ? (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en={dashboardEn('complete_profile_for_matches')} el={dashboardEl('complete_profile_for_matches')} wrap />
+                </p>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/profile/edit">
+                    <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
+                  </Link>
+                </Button>
+              </div>
+            ) : null}
+            <div className={cn('flex min-w-0 gap-3 overflow-x-auto pb-1', people.length === 0 && 'hidden')}>
               {people.map((person) => (
                 <Link
                   key={person.userId}
@@ -247,7 +301,9 @@ export function FounderPhoneHome({
                   <BilingualText en="Log an update" el="Καταχώριση ενημέρωσης" compact />
                 </Link>
               </Button>
-              <Button asChild size="sm">
+              {/* Outline like its neighbour: the flashes above already hold
+                  the screen's one filled action. */}
+              <Button asChild variant="outline" size="sm">
                 <Link href="/feed">
                   <BilingualText en="Write a post" el="Νέα δημοσίευση" compact />
                 </Link>
@@ -309,22 +365,44 @@ export function FounderPhoneHome({
               </div>
             </div>
             <div className="flex gap-2" data-actions="">
-              <Button
-                type="button"
-                size="sm"
-                className="min-w-0 flex-1"
-                disabled={sample || sentTo === first.userId || connect.isPending}
-                title={sample ? SAMPLE_CONNECT : undefined}
-                onClick={() => {
-                  if (!sample && first.userId) connect.mutate(first.userId);
-                }}
-              >
-                <BilingualText
-                  en={sentTo === first.userId ? 'Request sent' : 'Connect'}
-                  el={sentTo === first.userId ? 'Το αίτημα εστάλη' : 'Σύνδεση'}
-                  compact
-                />
-              </Button>
+              {/* The one action follows where the connection stands, as on
+                  /matches: Accept their waiting request, Message once
+                  connected, Connect otherwise. It offered Connect to someone
+                  whose request the activity card above announced (docs §70). */}
+              {firstState === 'received' && onAccept ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  className="min-w-0 flex-1"
+                  aria-label={bilingualAria(`Accept ${first.displayName}'s request`, `Αποδοχή αιτήματος από ${first.displayName}`)}
+                  onClick={() => onAccept(first.userId, first.displayName ?? '')}
+                >
+                  <BilingualText en="Accept" el="Αποδοχή" compact />
+                </Button>
+              ) : firstState === 'connected' ? (
+                <Button asChild size="sm" className="min-w-0 flex-1">
+                  <Link href={`/messages?to=${encodeURIComponent(first.userId)}`}>
+                    <BilingualText en="Message" el="Μήνυμα" compact />
+                  </Link>
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  className="min-w-0 flex-1"
+                  disabled={sample || firstState === 'sent' || sentTo === first.userId || connect.isPending}
+                  title={sample ? SAMPLE_CONNECT : undefined}
+                  onClick={() => {
+                    if (!sample && first.userId) connect.mutate(first.userId);
+                  }}
+                >
+                  <BilingualText
+                    en={firstState === 'sent' || sentTo === first.userId ? 'Request sent' : 'Connect'}
+                    el={firstState === 'sent' || sentTo === first.userId ? 'Το αίτημα εστάλη' : 'Σύνδεση'}
+                    compact
+                  />
+                </Button>
+              )}
               <Button asChild variant="outline" size="sm" className="min-w-0 flex-1">
                 <Link href={`/profiles/${first.userId}`}>
                   <BilingualText en="See profile" el="Δείτε το προφίλ" compact />
@@ -428,9 +506,11 @@ export function FounderPhoneHome({
               <BilingualText en="No events this week" el="Δεν υπάρχουν εκδηλώσεις αυτή την εβδομάδα" wrap />
             </p>
           ) : null}
+          {/* It opens /events, so it says events ("Full calendar" promised
+              /calendar). */}
           <Button asChild variant="outline" size="sm" className="w-full">
             <Link href="/events">
-              <BilingualText en="Full calendar" el="Πλήρες ημερολόγιο" compact />
+              <BilingualText en="All events" el="Όλες οι εκδηλώσεις" compact />
             </Link>
           </Button>
         </CardContent>

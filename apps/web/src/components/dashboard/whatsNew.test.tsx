@@ -44,6 +44,19 @@ describe('what is new', () => {
     render(<WhatsNewPanel audience="founder" />);
     expect(screen.queryByRole('heading', { name: /What’s new/ })).toBeNull();
   });
+
+  // docs §70: twenty rows were the longest block on every home.
+  it('shows the four newest, and all of them on request', () => {
+    const total = whatsNewItems('founder').length;
+    render(<WhatsNewPanel audience="founder" />);
+    const list = document.getElementById('whats-new-founder')!;
+    expect(list.querySelectorAll(':scope > li')).toHaveLength(4);
+    const toggle = screen.getByRole('button', { name: new RegExp(`Show all ${total}`) });
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(toggle);
+    expect(list.querySelectorAll(':scope > li')).toHaveLength(total);
+    expect(screen.getByRole('button', { name: /four newest/ }).getAttribute('aria-expanded')).toBe('true');
+  });
 });
 
 describe('where the panel sits', () => {

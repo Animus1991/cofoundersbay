@@ -53,9 +53,12 @@ export function whatsNewItems(audience: WhatsNewAudience): Item[] {
 }
 
 /** A dismissible card of what is new for this audience, remembered per member in this browser. */
+const FIRST_ROWS = 4;
+
 export function WhatsNewPanel({ audience }: { audience: WhatsNewAudience }) {
   const me = useStoredUser();
   const [hidden, setHidden] = useState(true);
+  const [showAll, setShowAll] = useState(false);
   const key = `cfb.whatsnew.${ROUND}.${me?.id ?? 'guest'}`;
   useEffect(() => {
     try {
@@ -66,6 +69,11 @@ export function WhatsNewPanel({ audience }: { audience: WhatsNewAudience }) {
   }, [key]);
   if (hidden) return null;
   const items = whatsNewItems(audience);
+  // The four newest, then the rest on request: twenty rows were the longest
+  // block on every home (about 800px at 1440, 1,800 on a phone), at the foot
+  // of a page that is meant as a glance. The rail keeps the whole list
+  // (WhatsNewRail), and nothing is dropped here either (docs §70).
+  const shown = showAll ? items : items.slice(0, FIRST_ROWS);
   const hide = () => {
     setHidden(true);
     try {
@@ -94,8 +102,8 @@ export function WhatsNewPanel({ audience }: { audience: WhatsNewAudience }) {
         </div>
       </CardHeader>
       <CardContent>
-        <ul className="grid grid-cols-1 gap-x-6 gap-y-1 md:grid-cols-2">
-          {items.map((item) => (
+        <ul id={`whats-new-${audience}`} className="grid grid-cols-1 gap-x-6 gap-y-1 md:grid-cols-2">
+          {shown.map((item) => (
             <li key={item.en /* a title: several entries can open the same page */} className="min-w-0">
               <Link href={item.href} className="axis-row block rounded-md py-2 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <span className="block text-sm font-medium text-foreground"><BilingualText en={item.en} el={item.el} compact /></span>
@@ -104,6 +112,23 @@ export function WhatsNewPanel({ audience }: { audience: WhatsNewAudience }) {
             </li>
           ))}
         </ul>
+        {items.length > FIRST_ROWS ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="mt-2 -ml-2"
+            aria-expanded={showAll}
+            aria-controls={`whats-new-${audience}`}
+            onClick={() => setShowAll((open) => !open)}
+          >
+            {showAll ? (
+              <BilingualText en="Show the four newest" el="Μόνο τα τέσσερα νεότερα" compact />
+            ) : (
+              <BilingualText en={`Show all ${items.length}`} el={`Όλα τα ${items.length}`} compact />
+            )}
+          </Button>
+        ) : null}
       </CardContent>
     </Card>
   );

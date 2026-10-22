@@ -36,6 +36,7 @@ import { adminGetAbuseStats, getAdminHealth, getAdminStats, type AdminHealth } f
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { cn, formatRelativeTime } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { useStoredUser } from '@/hooks/useStoredUser';
 
@@ -98,11 +99,10 @@ type Attention = {
 
 export default function AdminDashboardPage() {
   const me = useStoredUser();
-  const adminName = me?.displayName ?? 'Admin';
   const [period, setPeriod] = useState<Period>('week');
   const { apiAvailable, pollInterval } = usePollingGuards();
 
-  const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useQuery({
+  const { data: statsData, isLoading: statsLoading, isError: statsFailed, refetch: refetchStats } = useQuery({
     queryKey: qk('admin', 'stats'),
     queryFn: getAdminStats,
     staleTime: 30_000,
@@ -131,6 +131,10 @@ export default function AdminDashboardPage() {
   };
 
   const stats = statsData?.stats;
+  // A read that failed is unknown, not zero: "Users 0", "The queue is clear"
+  // and "Nothing waits on an admin" all showed while the API was down
+  // (docs §70). Figures read from stats are dashes until stats arrive.
+  const statsUnknown = statsLoading || (statsFailed && !stats);
   const byRole = stats?.usersByRole ?? {};
   const total = stats?.totalUsers ?? 0;
   const newUsers = period === 'today' ? stats?.newUsersToday : period === 'week' ? stats?.newUsersThisWeek : stats?.newUsersThisMonth;
@@ -222,7 +226,7 @@ export default function AdminDashboardPage() {
       descriptionEl="Ποιοι χρησιμοποιούν την πλατφόρμα, τι περιμένει διαχειριστή και πώς λειτουργεί το API."
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          <div role="group" aria-label="Period" className="inline-flex items-center gap-0.5 rounded-xl border border-border bg-muted/40 p-0.5">
+          <div role="group" aria-label={bilingualAria('Period', 'Περίοδος')} className="inline-flex items-center gap-0.5 rounded-xl border border-border bg-muted/40 p-0.5">
             {PERIODS.map((p) => (
               <button
                 key={p.value}
@@ -246,7 +250,7 @@ export default function AdminDashboardPage() {
       }
     >
       <div className="space-y-6">
-        <HomeAskHero role="admin" name={adminName} lead={{ en: 'What is waiting on you, and how the platform is doing.', el: 'Τι εκκρεμεί για εσάς και πώς πάει η πλατφόρμα.' }} />
+        <HomeAskHero role="admin" name={me?.displayName} lead={{ en: 'What is waiting on you, and how the platform is doing.', el: 'Τι εκκρεμεί για εσάς και πώς πάει η πλατφόρμα.' }} />
         {attention[0] ? (
           <HomeNextStep
             tone="waiting"
@@ -265,7 +269,7 @@ export default function AdminDashboardPage() {
             icon={Users}
             label="Users"
             labelEl="Χρήστες"
-            value={statsLoading ? dash : total.toLocaleString('en-GB')}
+            value={statsUnknown ? dash : total.toLocaleString('en-GB')}
             caption={newUsers != null ? `${newUsers} new · ${periodLabel.en.toLowerCase()}` : undefined}
             captionEl={newUsers != null ? `${newUsers} νέοι · ${periodLabel.el.toLowerCase()}` : undefined}
             href="/admin/users"
@@ -274,7 +278,7 @@ export default function AdminDashboardPage() {
             icon={UserCheck}
             label="Active users"
             labelEl="Ενεργοί χρήστες"
-            value={statsLoading || activeUsers == null ? dash : activeUsers.toLocaleString('en-GB')}
+            value={statsUnknown || activeUsers == null ? dash : activeUsers.toLocaleString('en-GB')}
             caption={activeShare != null ? `${activeShare}% of all users · ${periodLabel.en.toLowerCase()}` : undefined}
             captionEl={activeShare != null ? `${activeShare}% του συνόλου · ${periodLabel.el.toLowerCase()}` : undefined}
           />
@@ -282,9 +286,9 @@ export default function AdminDashboardPage() {
             icon={Flag}
             label="Reports to review"
             labelEl="Αναφορές προς έλεγχο"
-            value={statsLoading ? dash : pendingReports}
-            caption={pendingReports ? 'Open the moderation queue' : 'The queue is clear'}
-            captionEl={pendingReports ? 'Άνοιγμα ουράς ελέγχου' : 'Η ουρά είναι άδεια'}
+            value={statsUnknown ? dash : pendingReports}
+            caption={statsUnknown ? 'Opens the moderation queue' : pendingReports ? 'Open the moderation queue' : 'The queue is clear'}
+            captionEl={statsUnknown ? 'Ανοίγει την ουρά ελέγχου' : pendingReports ? 'Άνοιγμα ουράς ελέγχου' : 'Η ουρά είναι άδεια'}
             href="/admin"
           />
           <MetricTile
@@ -300,9 +304,22 @@ export default function AdminDashboardPage() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="min-w-0 space-y-6 lg:col-span-2">
-            <SectionCard title="Needs attention" titleEl="Χρειάζεται προσοχή" icon={AlertTriangle}>
+            {/* The flash above names the first thing that waits; this card
+                lists the rest under its own name. It repeated the first row
+                under the flash's own heading, so "2 reports wait for review"
+                read twice in a row with "Needs attention" over both (and a
+                third time on the Reports tile; docs §70). */}
+            {statsLoading || statsUnknown || attention.length !== 1 ? (
+            <SectionCard
+              title={attention.length > 1 ? 'Also waiting' : 'Needs attention'}
+              titleEl={attention.length > 1 ? 'Επίσης σε αναμονή' : 'Χρειάζεται προσοχή'}
+              icon={AlertTriangle}
+            >
               {statsLoading && <Skeleton className="h-14" />}
-              {attention.map((a) => (
+              {statsFailed && !stats && !statsLoading && (
+                <EmptyLine en="The figures could not be read, so what waits is not known yet. Refresh when the API answers." el="Τα στοιχεία δεν διαβάστηκαν, άρα δεν είναι γνωστό τι περιμένει. Ανανεώστε όταν απαντήσει το API." />
+              )}
+              {(attention.length > 1 ? attention.slice(1) : []).map((a) => (
                 <Link
                   key={a.id}
                   href={a.href}
@@ -337,10 +354,11 @@ export default function AdminDashboardPage() {
                   <ChevronRight className="icon-sm shrink-0 text-muted-foreground/60 group-hover:text-foreground" aria-hidden="true" />
                 </Link>
               ))}
-              {!statsLoading && attention.length === 0 && (
+              {!statsUnknown && attention.length === 0 && (
                 <EmptyLine en="Nothing waits on an admin: no open reports, no unresolved flags." el="Τίποτα δεν περιμένει διαχειριστή: καμία ανοιχτή αναφορά ή σήμανση." />
               )}
             </SectionCard>
+            ) : null}
 
             <SectionCard title="Activity to date" titleEl="Δραστηριότητα έως σήμερα" icon={Activity}>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
@@ -348,7 +366,7 @@ export default function AdminDashboardPage() {
                   const body = (
                     <>
                       <p className="page-stat text-xl font-semibold tabular-nums tracking-tight">
-                        {statsLoading || a.value == null ? dash : a.value.toLocaleString('en-GB')}
+                        {statsUnknown || a.value == null ? dash : a.value.toLocaleString('en-GB')}
                       </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
                         <BilingualText en={a.en} el={a.el} stacked wrap />
@@ -380,7 +398,11 @@ export default function AdminDashboardPage() {
             >
               {statsLoading && <Skeleton className="h-32" />}
               {!statsLoading && roleRows.length === 0 && (
-                <EmptyLine en="No users counted yet." el="Δεν έχουν καταμετρηθεί χρήστες ακόμα." />
+                statsUnknown ? (
+                  <EmptyLine en="Not read: the API did not answer." el="Δεν διαβάστηκε: το API δεν απάντησε." />
+                ) : (
+                  <EmptyLine en="No users counted yet." el="Δεν έχουν καταμετρηθεί χρήστες ακόμα." />
+                )
               )}
               {roleRows.length > 0 && (
                 <ul className="space-y-3">

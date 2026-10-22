@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import Link from 'next/link';
 import {
   BarChart3,
-  Briefcase,
   Clock,
   FolderKanban,
   MessageSquare,
@@ -196,7 +195,6 @@ export default function ProviderDashboard() {
     retry: 0,
   });
 
-  const displayName = profile?.profile?.displayName || 'Provider';
   const liveInquiries = useMemo(() => (inquiryPage?.inquiries ?? []).map(toInquiry), [inquiryPage]);
   const liveProjects = useMemo(() => (projectPage?.inquiries ?? []).map(toProject), [projectPage]);
   const liveReviews = useMemo(() => (reviewPage?.inquiries ?? []).map(toReview), [reviewPage]);
@@ -239,10 +237,6 @@ export default function ProviderDashboard() {
       descriptionEl="Αιτήματα, ενεργά έργα, υπηρεσίες και αξιολογήσεις — σε μία προβολή."
       actions={
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="gap-1.5">
-            <Briefcase className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Service Provider" el="Πάροχος υπηρεσιών" compact />
-          </Badge>
           <Button variant="outline" size="sm" asChild>
             <Link href="/provider/services">
               <Store className="mr-2 icon-sm" aria-hidden="true" />
@@ -253,7 +247,7 @@ export default function ProviderDashboard() {
       }
     >
       <div className="space-y-6">
-        <HomeAskHero role="provider" name={displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
+        <HomeAskHero role="provider" name={profile?.profile?.displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
 
         {!inquiriesLoading && waiting[0] ? (
           <HomeNextStep

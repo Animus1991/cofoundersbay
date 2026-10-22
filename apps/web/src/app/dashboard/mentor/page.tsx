@@ -5,7 +5,6 @@ import {
   Calendar,
   Clock,
   DollarSign,
-  GraduationCap,
   MessageCircle,
   Star,
   TrendingUp,
@@ -157,7 +156,6 @@ export default function MentorDashboard() {
     enabled: hasSession && mounted,
   });
 
-  const displayName = profile?.profile?.displayName || 'Mentor';
 
   /*
    * Read from the mentorship endpoints the mentor pages use. The figures
@@ -299,15 +297,9 @@ export default function MentorDashboard() {
     <AppShell askAi={false} showHelp
       description="Sessions, mentee requests, reviews, and earnings at a glance."
       descriptionEl="Συνεδρίες, αιτήματα καθοδηγούμενων, αξιολογήσεις και έσοδα με μια ματιά."
-      actions={
-        <Badge variant="outline" className="gap-1.5">
-          <GraduationCap className="icon-sm" aria-hidden="true" />
-          <BilingualText en="Mentor" el="Μέντορας" compact />
-        </Badge>
-      }
     >
       <div className="space-y-6">
-        <HomeAskHero role="mentor" name={displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
+        <HomeAskHero role="mentor" name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
 
         {/* One next step, before everything else. Within the hour it stays the
             status line; otherwise the next session, or the first request. */}
