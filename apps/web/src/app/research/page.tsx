@@ -46,6 +46,8 @@ import {
   researchEl,
   useResearchPrimaryText,
   RESEARCH_TAG_EL,
+  researchTagEn,
+  PREVIEW_BOARD_TITLE_EL,
 } from '@/lib/i18n/strings-research';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import {
@@ -126,10 +128,6 @@ function getBoardGlyph(iconValue: string | null): CfbGlyphName {
 const PREVIEW_BOARD_DESC_EL: Record<string, string> = {
   'Harbor GTM notes aligned with Idea Core and the €750K seed.':
     'Σημειώσεις GTM του Harbor σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο €750K.',
-};
-
-const PREVIEW_BOARD_TITLE_EL: Record<string, string> = {
-  'Go-to-market canvas': 'Καμβάς εισόδου στην αγορά',
 };
 
 type BoardFilter = 'all' | 'pinned' | 'empty' | 'archived';
@@ -667,12 +665,15 @@ export default function ResearchBoardsPage() {
         </div>
       )}
       {!bootLoad && error && (
+        // Said like the other failed reads (docs §73): the text, then Try
+        // again in outline; a filled Retry sat beside the header's filled
+        // "New board" (docs §82).
         <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
-          <AlertCircle className="icon-lg mb-3 text-destructive-accessible" />
-          <p className="mb-4 text-destructive-accessible">
+          <AlertCircle className="icon-lg mb-3 text-muted-foreground" />
+          <p role="alert" className="mb-4 text-sm">
             <BilingualText en={researchEn('load_fail')} el={researchEl('load_fail')} />
           </p>
-          <Button type="button" size="sm" className={BUILDER_BTN} onClick={() => queryClient.invalidateQueries({ queryKey: qk('research-boards') })}>
+          <Button type="button" variant="outline" size="sm" className={BUILDER_BTN} onClick={() => queryClient.invalidateQueries({ queryKey: qk('research-boards') })}>
             <BilingualText en={researchEn('retry')} el={researchEl('retry')} compact />
           </Button>
         </div>
@@ -1085,7 +1086,7 @@ function BoardCard({
           </p>
         )}
         {board.tags.length > 0 && (
-          <FactLine items={board.tags.map((tag) => <BilingualText key={tag} en={tag} el={RESEARCH_TAG_EL[tag] ?? tag} compact />)} />
+          <FactLine items={board.tags.map((tag) => <BilingualText key={tag} en={researchTagEn(tag)} el={RESEARCH_TAG_EL[tag] ?? researchTagEn(tag)} compact />)} />
         )}
         <CardFoot className="mt-auto" meta={<FactLine items={[count, <span key="updated">{updated}</span>]} />} />
       </CardContent>

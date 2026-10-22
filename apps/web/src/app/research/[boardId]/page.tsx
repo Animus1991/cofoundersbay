@@ -64,6 +64,7 @@ import {
   deleteResearchConnector,
   type ResearchNode,
   type ResearchBoardFull,
+  ApiError,
 } from '@/lib/api';
 import { ResearchNodeCard } from '@/components/research/ResearchNodeCard';
 import { ResearchNodeViewer } from '@/components/research/ResearchNodeViewer';
@@ -146,6 +147,7 @@ import {
   useResearchPrimaryText,
   RESEARCH_NODE_CATEGORY_EL,
   RESEARCH_NODE_LABEL_EL,
+  PREVIEW_BOARD_TITLE_EL,
 } from '@/lib/i18n/strings-research';
 
 type Tool = DrawTool;
@@ -505,7 +507,7 @@ export default function ResearchBoardPage() {
   // File upload ref
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: qk('research-boards', 'board', boardId),
     queryFn: () => getResearchBoard(boardId),
   });
@@ -2334,13 +2336,32 @@ export default function ResearchBoardPage() {
 
         {/* Error state — only after mount to avoid hydration mismatch */}
         {!showLoading && (error || !board) && (
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <p className="mb-4 text-destructive-accessible">
-              <BilingualText en={researchEn('canvas_fail')} el={researchEl('canvas_fail')} />
-            </p>
-            <Button className="rounded-xl" onClick={() => router.push('/research')}>
-              <BilingualText en={researchEn('canvas_back')} el={researchEl('canvas_back')} compact />
-            </Button>
+          // "Failed to load board" in red answered both a board that is gone
+          // and an API that is down; only a 404/403 means "not found" (docs §82).
+          <div className="flex flex-1 flex-col items-center justify-center px-4 text-center">
+            {(() => {
+              const missing = !error || (error instanceof ApiError && (error.status === 404 || error.status === 403));
+              return (
+                <>
+                  <p role="alert" className="mb-4 max-w-md text-sm">
+                    <BilingualText
+                      en={researchEn(missing ? 'canvas_missing' : 'canvas_fail')}
+                      el={researchEl(missing ? 'canvas_missing' : 'canvas_fail')}
+                    />
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {!missing && (
+                      <Button variant="outline" size="sm" disabled={isRefetching} onClick={() => void refetch()}>
+                        <BilingualText en={researchEn('retry')} el={researchEl('retry')} compact />
+                      </Button>
+                    )}
+                    <Button variant={missing ? 'outline' : 'ghost'} size="sm" onClick={() => router.push('/research')}>
+                      <BilingualText en={researchEn('canvas_back')} el={researchEl('canvas_back')} compact />
+                    </Button>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         )}
 
@@ -2357,8 +2378,13 @@ export default function ResearchBoardPage() {
           <div className="flex items-center gap-2 min-w-0">
             <Link href="/research" className="flex items-center gap-2 transition-opacity hover:opacity-80" aria-label={bilingualAria(researchEn('canvas_back'), researchEl('canvas_back'))}>
               <CfbGlyph name="research" className="icon-md text-muted-foreground shrink-0" />
-              <span className="hidden text-sm font-semibold text-foreground sm:inline">
-                <BilingualText en={researchEn('canvas_title')} el={researchEl('canvas_title')} compact />
+              {/* The board's own name, not the tool's: every board read
+                  "Research canvas", so nothing on screen said which one was
+                  open (docs §82). The link still goes back to the boards. */}
+              <span className="hidden max-w-[16rem] truncate text-sm font-semibold text-foreground sm:inline">
+                {PREVIEW_BOARD_TITLE_EL[board.title]
+                  ? <BilingualText en={board.title} el={PREVIEW_BOARD_TITLE_EL[board.title]} compact />
+                  : board.title || <BilingualText en={researchEn('canvas_title')} el={researchEl('canvas_title')} compact />}
               </span>
             </Link>
             <span className="shrink-0 rounded-full bg-secondary/80 px-2 py-0.5 text-2xs tabular-nums text-muted-foreground">

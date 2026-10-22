@@ -35,8 +35,9 @@ export const RESEARCH_STRINGS: Record<string, BilingualPair> = {
   },
   empty_cta: { en: 'Create your first board', el: 'Δημιουργία πρώτου πίνακα' },
   no_match: { en: 'No boards match your search', el: 'Κανένας πίνακας δεν ταιριάζει στην αναζήτηση' },
-  load_fail: { en: 'Failed to load research boards', el: 'Αποτυχία φόρτωσης πινάκων έρευνας' },
-  retry: { en: 'Retry', el: 'Επανάληψη' },
+  // A failed read is said as one (docs §73, §82).
+  load_fail: { en: 'Your research boards could not be read just now.', el: 'Οι πίνακες έρευνάς σας δεν διαβάστηκαν αυτή τη στιγμή.' },
+  retry: { en: 'Try again', el: 'Δοκιμάστε ξανά' },
   loading: { en: 'Loading boards…', el: 'Φόρτωση πινάκων…' },
   create_title: { en: 'Create research board', el: 'Δημιουργία πίνακα έρευνας' },
   create_desc: {
@@ -87,7 +88,9 @@ export const RESEARCH_STRINGS: Record<string, BilingualPair> = {
 
   canvas_title: { en: 'Research canvas', el: 'Καμβάς έρευνας' },
   canvas_back: { en: 'Back to boards', el: 'Πίσω στους πίνακες' },
-  canvas_fail: { en: 'Failed to load board', el: 'Αποτυχία φόρτωσης πίνακα' },
+  // Not read and not there are different answers (docs §73, §75, §82).
+  canvas_fail: { en: 'This board could not be read just now. Nothing on it is lost.', el: 'Ο πίνακας δεν διαβάστηκε αυτή τη στιγμή. Τίποτα από όσα έχει δεν χάθηκε.' },
+  canvas_missing: { en: 'This board was not found. It may have been deleted, or it is not shared with you.', el: 'Ο πίνακας δεν βρέθηκε. Ίσως διαγράφηκε ή δεν είναι κοινόχρηστος μαζί σας.' },
   canvas_loading: { en: 'Loading canvas…', el: 'Φόρτωση καμβά…' },
   nodes: { en: 'nodes', el: 'κόμβοι' },
   node: { en: 'node', el: 'κόμβος' },
@@ -346,6 +349,24 @@ export const RESEARCH_TEMPLATE_I18N: Record<string, { name: BilingualPair; descr
       el: 'Ολοκληρωμένη λίστα ελέγχου δέουσας επιμέλειας',
     },
   },
+};
+
+/**
+ * Tags are stored as slugs ("market-analysis", "gtm"); English read them raw,
+ * and the facts line capitalised "gtm" into "Gtm" (docs §82).
+ */
+const RESEARCH_TAG_EN: Record<string, string> = {
+  gtm: 'go-to-market',
+  cofounder: 'co-founder',
+};
+
+export function researchTagEn(tag: string): string {
+  return RESEARCH_TAG_EN[tag] ?? tag.replace(/-/g, ' ');
+}
+
+/** Greek for the preview board's title (lib/preview-api.ts); user boards show what was written. */
+export const PREVIEW_BOARD_TITLE_EL: Record<string, string> = {
+  'Go-to-market canvas': 'Καμβάς εισόδου στην αγορά',
 };
 
 export const RESEARCH_TAG_EL: Record<string, string> = {

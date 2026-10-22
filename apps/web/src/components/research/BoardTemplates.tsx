@@ -1,8 +1,8 @@
 'use client';
 
 import {
-  Lightbulb, Users, TrendingUp, Target, Briefcase,
-  GraduationCap, Building2, Rocket, FileSearch, BarChart3,
+  Lightbulb, Users, TrendingUp, Target,
+  GraduationCap, FileSearch,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +14,8 @@ import {
 } from '@/components/ui/dialog';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BilingualText } from '@/components/common/BilingualText';
-import { RESEARCH_TEMPLATE_I18N, RESEARCH_TAG_EL, researchEn, researchEl } from '@/lib/i18n/strings-research';
+import { RESEARCH_TEMPLATE_I18N, RESEARCH_TAG_EL, researchEn, researchEl, researchTagEn } from '@/lib/i18n/strings-research';
+import { FactLine } from '@/components/common/FactLine';
 import { cn } from '@/lib/utils';
 
 export interface BoardTemplate {
@@ -427,18 +428,21 @@ export function ResearchTemplateTile({
             template.description
           )}
         </div>
-        {/* Pills, so three tags and a count do not read as one phrase. */}
-        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-2xs text-muted-foreground">
-          {template.tags.map((tag) => (
-            <span key={tag}>
-              <BilingualText en={tag} el={RESEARCH_TAG_EL[tag] ?? tag} compact />
-            </span>
-          ))}
-          <span className="px-0.5 tabular-nums">
-            {template.initialNodes.length}{' '}
-            <BilingualText en={researchEn('tpl_nodes')} el={researchEl('tpl_nodes')} compact />
-          </span>
-        </div>
+        {/* One dotted facts line: three bare tags and a count, side by side,
+            read as one phrase ("validation research startup 5 starter
+            nodes"), and the slugs were shown as stored (docs §82). */}
+        <FactLine
+          className="mt-2"
+          items={[
+            ...template.tags.map((tag) => (
+              <BilingualText key={tag} en={researchTagEn(tag)} el={RESEARCH_TAG_EL[tag] ?? researchTagEn(tag)} compact />
+            )),
+            <span key="nodes" className="tabular-nums">
+              {template.initialNodes.length}{' '}
+              <BilingualText en={researchEn('tpl_nodes')} el={researchEl('tpl_nodes')} compact />
+            </span>,
+          ]}
+        />
       </div>
     </button>
   );
