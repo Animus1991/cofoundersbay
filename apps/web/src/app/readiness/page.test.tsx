@@ -67,7 +67,7 @@ afterEach(() => {
 describe('live readiness and explicit showcase isolation', () => {
   it('shows an actionable missing-workspace state without any fabricated criteria or request', async () => {
     mount();
-    await screen.findByText('Create or select a workspace to assess readiness.');
+    await screen.findByText('Readiness is scored for one startup workspace, and none is open yet. Create yours or choose it in the Startup Builder.');
     expect(screen.getByRole('link', { name: 'Open Startup Builder' }).getAttribute('href')).toBe('/builder');
     expect(screen.queryByText('Co-founder identified')).toBeNull();
     expect(assessReadiness).not.toHaveBeenCalled();
@@ -85,7 +85,7 @@ describe('live readiness and explicit showcase isolation', () => {
     // section states the gap rather than drawing a trend, which is the thing
     // this test is actually for - the chart and the weekly points exist only
     // for the demo showcase.
-    expect(screen.getByRole('button', { name: /History/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Score history/ })).toBeTruthy();
     const history = screen.getByRole('region', { name: 'Score history' });
     expect(history.textContent).toContain('Historical assessments are not available.');
     expect(screen.queryByText(/\+\d+\s*pts/)).toBeNull();
@@ -98,7 +98,8 @@ describe('live readiness and explicit showcase isolation', () => {
     mount();
     await screen.findByRole('alert');
     expect(screen.queryByText('Co-founder identified')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(screen.getByRole('alert').textContent).toContain('could not be read just now');
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     await screen.findByRole('button', { name: /Real criterion/ });
     expect(assessReadiness).toHaveBeenCalledTimes(2);
   });
@@ -185,6 +186,28 @@ describe('live readiness and explicit showcase isolation', () => {
     expect(updateReadinessCriterion).not.toHaveBeenCalled();
   });
 
+  // docs §79: the criteria are switches whose state mark was hidden as
+  // decoration; "+2 show more", three uncaptioned dimension names and a greyed
+  // Reassess each left a reader guessing.
+  it('says what each readiness control is and does', async () => {
+    localStorage.setItem('cfb_demo_data', '1');
+    mount();
+    const met = await screen.findByRole('button', { name: /Co-founder identified/ });
+    expect(met.closest('[data-keep-icon]')).toBe(met);
+    expect(screen.getByText(/The % beside it is its share/)).toBeTruthy();
+    const more = screen.getAllByRole('button', { name: 'Show 2 more criteria' })[0];
+    expect(more.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(more);
+    expect(more.getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getByText('Dimensions under 60%')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Ask AI: Team readiness/ })).toBeTruthy();
+    expect(screen.getByText('In the side panel:')).toBeTruthy();
+    const reassess = screen.getByRole('button', { name: /Reassess/i });
+    expect(reassess.getAttribute('title')).toMatch(/The demo recalculates as you tick/);
+    // Described by the banner already on screen, not by a second printed line.
+    expect(document.getElementById(reassess.getAttribute('aria-describedby') ?? '')?.textContent).toMatch(/Demo showcase/);
+  });
+
   it('lets a live account explicitly view sample readiness without a workspace mutation', async () => {
     mount();
     fireEvent.click(await screen.findByRole('button', { name: 'View demo showcase' }));
@@ -193,6 +216,6 @@ describe('live readiness and explicit showcase isolation', () => {
     expect(updateReadinessCriterion).not.toHaveBeenCalled();
     expect(assessReadiness).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'View live readiness' }));
-    await screen.findByText('Create or select a workspace to assess readiness.');
+    await screen.findByText('Readiness is scored for one startup workspace, and none is open yet. Create yours or choose it in the Startup Builder.');
   });
 });

@@ -19,6 +19,13 @@ interface AIInsightButtonProps {
   size?: 'sm' | 'lg' | 'icon';
   label?: string;
   labelEl?: string;
+  /**
+   * What this ask is about, when a page shows several: six cards each with
+   * "Ask AI" read as six identical buttons to a screen reader. Appended to
+   * the visible label, which stays first (SC 2.5.3).
+   */
+  aboutEn?: string;
+  aboutEl?: string;
 }
 
 export function AIInsightButton({
@@ -28,6 +35,8 @@ export function AIInsightButton({
   size = 'sm',
   label,
   labelEl,
+  aboutEn,
+  aboutEl,
 }: AIInsightButtonProps) {
   const { ask } = useAskAssistant();
   const { primary } = useLanguagePreference();
@@ -70,7 +79,7 @@ export function AIInsightButton({
       // identical (SC 2.5.3) and covers the `icon` size this `size` can carry.
       // `size` is a forwarded union that may name an icon size, so the
       // compile guard asks for a name even though this branch renders text.
-      aria-label={visibleLabel}
+      aria-label={aboutEn ? `${visibleLabel}: ${primary === 'el' && aboutEl ? aboutEl : aboutEn}` : visibleLabel}
       className={cn('h-auto min-h-9 gap-1.5 whitespace-nowrap px-2.5', className)}
     >
       {visibleLabel}

@@ -550,12 +550,16 @@ function DimensionCard({
             {/* `mb-4` here, not `mt-4` on the box below: that box carries
                 `mt-auto` so it settles at the foot of the card, and an
                 explicit top margin would cancel it. */}
-            <div className="mt-4 mb-4 space-y-1.5">
+            <div id={`dim-${dim.key}-criteria`} className="mt-4 mb-4 space-y-1.5">
               {(expanded ? dim.criteria : dim.criteria.slice(0, 3)).map((c) => (
                 <button
                   key={c.id}
                   type="button"
                   aria-pressed={c.completed}
+                  // The check and the open circle are the row's state, not
+                  // decoration: the decorative-icon CSS hid both, and a met
+                  // criterion read only as greyer text (docs §79).
+                  data-keep-icon=""
                   disabled={!canToggle || isMutating}
                   onClick={() => canToggle && onToggle(dim.key, c.id, c.completed)}
                   className={cn(
@@ -576,13 +580,15 @@ function DimensionCard({
               {dim.criteria.length > 3 && (
                 <button
                   type="button"
+                  aria-expanded={expanded}
+                  aria-controls={`dim-${dim.key}-criteria`}
                   onClick={() => setExpanded((e) => !e)}
                   className="flex min-h-11 w-full items-center rounded-lg py-2.5 text-left text-xs text-primary-accessible transition-colors hover:bg-secondary/60"
                 >
                   <span className="min-w-0 flex-1">
                     {expanded
                       ? <BilingualText en={readinessEn('show_less')} el={readinessEl('show_less')} compact />
-                      : <BilingualText en={`+${hiddenCount} ${readinessEn('show_n_more').toLowerCase()}`} el={`+${hiddenCount} ${readinessEl('show_n_more').toLowerCase()}`} compact />}
+                      : <BilingualText en={readinessEn('show_more_criteria').replace('{n}', String(hiddenCount))} el={readinessEl('show_more_criteria').replace('{n}', String(hiddenCount))} compact />}
                   </span>
                 </button>
               )}
@@ -623,7 +629,7 @@ function DimensionCard({
                     />
                   </p>
                 )}
-                <AIInsightButton prompt={recPrompt} className="h-8" />
+                <AIInsightButton prompt={recPrompt} className="h-8" aboutEn={readinessOf(dim.labelEn)} aboutEl={readinessOfEl(dim.labelEl)} />
               </div>
             )}
 
@@ -646,7 +652,7 @@ function DimensionCard({
                     {` · ${remaining[0].weight}%`}
                   </p>
                 )}
-                <AIInsightButton prompt={recPrompt} className="h-8" />
+                <AIInsightButton prompt={recPrompt} className="h-8" aboutEn={readinessOf(dim.labelEn)} aboutEl={readinessOfEl(dim.labelEl)} />
               </div>
             )}
         </div>
@@ -913,6 +919,29 @@ export default function ReadinessPage() {
     ], mode ?? 'live', (v) => setMode(v as 'live' | 'demo')),
   ]);
 
+  // A greyed Reassess said nothing about why (docs §79). The reason is already
+  // on screen - the demo banner, or the no-workspace card - so the button names
+  // it as its description and tooltip rather than printing it a second time
+  // (on a phone a printed reason pushed the header onto three lines). The
+  // passing states (loading, a tick in flight) keep the plain disabled button.
+  const reassessReason = mode === 'demo'
+    ? { id: 'readiness-demo-note', en: 'The demo recalculates as you tick.', el: 'Η επίδειξη επανυπολογίζεται καθώς σημειώνετε.' }
+    : mode === 'live' && !workspaceId
+      ? { id: 'readiness-no-workspace', en: 'Choose a workspace first.', el: 'Επιλέξτε πρώτα χώρο εργασίας.' }
+      : null;
+  const reassessButton = (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={() => { if (workspaceId && mode === 'live') void refetch(); }}
+      disabled={!workspaceId || mode !== 'live' || isLoading || isRefetching || toggleMutation.isPending}
+      title={reassessReason ? bilingualAria(reassessReason.en, reassessReason.el) : undefined}
+      aria-describedby={reassessReason?.id}
+    >
+      {isRefetching ? <Loader2 className="icon-sm mr-1.5 animate-spin" /> : <RefreshCw className="icon-sm mr-1.5" />}
+      <BilingualText en={readinessEn('reassess')} el={readinessEl('reassess')} compact />
+    </Button>
+  );
   const reassessAction = (
     <div className="flex flex-wrap gap-2.5">
       {/* No Ask AI here: AppShell renders one from `askAi`, and that one carries
@@ -921,15 +950,7 @@ export default function ReadinessPage() {
       <Button variant="outline" size="sm" disabled={!mode || toggleMutation.isPending} onClick={() => setMode(isDemo ? 'live' : 'demo')}>
         <BilingualText en={isDemo ? 'View live readiness' : 'View demo showcase'} el={isDemo ? readinessEl('view_live_readiness') : readinessEl('view_demo_showcase')} compact />
       </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => { if (workspaceId && mode === 'live') void refetch(); }}
-        disabled={!workspaceId || mode !== 'live' || isLoading || isRefetching || toggleMutation.isPending}
-      >
-        {isRefetching ? <Loader2 className="icon-sm mr-1.5 animate-spin" /> : <RefreshCw className="icon-sm mr-1.5" />}
-        <BilingualText en={readinessEn('reassess')} el={readinessEl('reassess')} compact />
-      </Button>
+      {reassessButton}
     </div>
   );
 
@@ -945,7 +966,7 @@ export default function ReadinessPage() {
     return (
       <AppShell actions={reassessAction} showHelp>
         <Card><CardContent className="space-y-4">
-          <p className="text-sm"><BilingualText en="Create or select a workspace to assess readiness." el="Δημιουργήστε ή επιλέξτε χώρο εργασίας για να αξιολογήσετε την ετοιμότητα." /></p>
+          <p id="readiness-no-workspace" className="text-sm"><BilingualText en="Readiness is scored for one startup workspace, and none is open yet. Create yours or choose it in the Startup Builder." el="Η ετοιμότητα βαθμολογείται για έναν χώρο εργασίας startup και δεν έχει ανοίξει κανένας ακόμη. Δημιουργήστε ή επιλέξτε τον δικό σας στο Startup Builder." /></p>
           <div className="flex flex-wrap gap-2">
             <Button asChild><Link href="/builder"><BilingualText en="Open Startup Builder" el="Άνοιγμα Startup Builder" /></Link></Button>
             <AskAiButton
@@ -964,8 +985,9 @@ export default function ReadinessPage() {
     return (
       <AppShell actions={reassessAction} showHelp>
         <Card><CardContent className="space-y-4">
-          <p role="alert" className="text-sm"><BilingualText en="Readiness is unavailable. Your saved data has not been replaced with sample scores." el="Η ετοιμότητα δεν είναι διαθέσιμη. Τα αποθηκευμένα δεδομένα σας δεν αντικαταστάθηκαν με ενδεικτικές βαθμολογίες." /></p>
-          <Button onClick={() => void refetch()} disabled={isRefetching}><BilingualText en="Retry" el="Επανάληψη" /></Button>
+          {/* Said like every other failed read (docs §73): not read just now, nothing lost. */}
+          <p role="alert" className="text-sm"><BilingualText en="Your readiness could not be read just now. Your saved criteria are unchanged and no sample scores are shown in their place." el="Η ετοιμότητά σας δεν διαβάστηκε αυτή τη στιγμή. Τα αποθηκευμένα κριτήρια δεν άλλαξαν και δεν εμφανίζονται ενδεικτικές βαθμολογίες στη θέση τους." /></p>
+          <Button onClick={() => void refetch()} disabled={isRefetching}><BilingualText en="Try again" el="Δοκιμάστε ξανά" /></Button>
         </CardContent></Card>
       </AppShell>
     );
@@ -1073,10 +1095,14 @@ export default function ReadinessPage() {
     {
       id: 'plan',
       glyph: 'spark',
-      labelEn: 'AI plan',
-      labelEl: 'Πλάνο AI',
+      // Named like the column's opener, which said "Priority actions" while
+      // this strip said "AI plan" (docs §79).
+      labelEn: 'Priority actions',
+      labelEl: 'Ενέργειες προτεραιότητας',
       content: <div className="space-y-3">
-        <Card className="border-primary-muted bg-primary-subtle">
+        {/* Flat like the rail's other sections: a tinted frame inside the
+            rail marked nothing the heading does not. */}
+        <Card>
         <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
         <CardTitle className="flex items-center gap-2">
@@ -1086,6 +1112,8 @@ export default function ReadinessPage() {
         <AIInsightButton
         className="h-8"
         prompt={{ en: `${askPrompt.en} Draft a 7-day plan.`, el: `${askPrompt.el} Φτιάξε ένα πλάνο 7 ημερών.` }}
+        aboutEn="a 7-day plan"
+        aboutEl="πλάνο 7 ημερών"
         />
         </div>
         </CardHeader>
@@ -1139,6 +1167,8 @@ export default function ReadinessPage() {
         </Button>
         <AIInsightButton
         className="h-8"
+        aboutEn={readinessOf(item.labelEn)}
+        aboutEl={readinessOfEl(item.labelEl)}
         prompt={{
           en: `Help me improve ${readinessOf(item.labelEn)} (${item.pct}%). Next step: ${item.rec.en}`,
           el: `Βοήθησέ με να βελτιώσω: ${readinessOfEl(item.labelEl)} (${item.pct}%). Επόμενο βήμα: ${item.rec.el}`,
@@ -1258,10 +1288,12 @@ export default function ReadinessPage() {
         )}
         {isDemo && (
           <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-status-info-border bg-status-info-bg p-4 text-sm text-status-info">
-            <BilingualText
-              en="Demo showcase — tick criteria freely; scores recalculate and nothing is kept."
-              el="Επίδειξη — σημειώστε ελεύθερα κριτήρια· οι βαθμολογίες επανυπολογίζονται και τίποτα δεν αποθηκεύεται."
-            />
+            <span id="readiness-demo-note" className="min-w-0">
+              <BilingualText
+                en="Demo showcase — tick criteria freely; scores recalculate and nothing is kept."
+                el="Επίδειξη — σημειώστε ελεύθερα κριτήρια· οι βαθμολογίες επανυπολογίζονται και τίποτα δεν αποθηκεύεται."
+              />
+            </span>
             {!overlayIsEmpty(demoOverlay) && (
               <Button variant="outline" size="sm" onClick={() => setDemoOverlay(resetReadinessOverlay())}>
                 <BilingualText en="Reset the demo" el="Επαναφορά επίδειξης" compact />
@@ -1319,22 +1351,38 @@ export default function ReadinessPage() {
                   <p className="text-xs text-muted-foreground">
                     <BilingualText en={readinessEn('next_open')} el={readinessEl('next_open')} wrap />
                   </p>
+                  {/* "· 25%" did not say of what: the criterion is the heaviest
+                      open one across all six, so it names its dimension and
+                      what ticking it adds there (docs §79). */}
                   <p className="mt-0.5 text-sm font-medium">
                     <BilingualText en={nextOpen.name} el={nextOpen.nameEl ?? nextOpen.name} wrap />
-                    <span className="ml-1 text-muted-foreground">· {nextOpen.weight}%</span>
+                    {/* A real space: a margin is no word break to a screen reader. */}
+                    {' '}
+                    <span className="font-normal text-muted-foreground">
+                      · <BilingualText en={`${nextOpen.dimLabelEn} +${nextOpen.weight}%`} el={`${nextOpen.dimLabelEl} +${nextOpen.weight}%`} compact />
+                    </span>
                   </p>
                 </Link>
               )}
-              <div className="flex flex-wrap gap-2">
-                {weakDims.slice(0, 3).map((d) => (
-                  <Link key={d.key} href={`#dim-${d.key}`}>
-                    <Badge variant="outline" className="gap-1.5 text-xs">
-                      <AlertCircle className="size-[1.08em] shrink-0" />
-                      <BilingualText en={d.labelEn} el={d.labelEl} compact />
-                    </Badge>
-                  </Link>
-                ))}
-              </div>
+              {/* Three bare words under the emblem, their badges' edge and
+                  icon hidden by the calm-surface CSS: they needed their
+                  caption and their figures to read as anything (docs §79). */}
+              {weakDims.length > 0 && (
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">
+                    <BilingualText en={readinessEn('dims_under_60')} el={readinessEl('dims_under_60')} wrap />
+                  </p>
+                  <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                    {weakDims.slice().sort((a, b) => a.score / a.maxScore - b.score / b.maxScore).map((d) => (
+                      <Link key={d.key} href={`#dim-${d.key}`} className="rounded-sm font-medium underline-offset-2 hover:underline focus-ring">
+                        <BilingualText en={d.labelEn} el={d.labelEl} compact />
+                        {' '}
+                        <span className="font-normal tabular-nums text-muted-foreground">{Math.round((d.score / d.maxScore) * 100)}%</span>
+                      </Link>
+                    ))}
+                  </p>
+                </div>
+              )}
               </div>
               </div>
             </CardContent>
@@ -1359,12 +1407,21 @@ export default function ReadinessPage() {
             <TabsTrigger value="dimensions" className="px-3 sm:px-4"><BilingualText en={readinessEn('tab_all_dimensions')} el={readinessEl('tab_all_dimensions')} compact /></TabsTrigger>
             <TabsTrigger value="benchmarks" className="px-3 sm:px-4"><BilingualText en={readinessEn('tab_benchmarks')} el={readinessEl('tab_benchmarks')} compact /></TabsTrigger>
           </TabsList>
-          <Button type="button" variant="ghost" size="sm" className="min-h-10" onClick={() => openRailSection('plan')}>
-            <BilingualText en={readinessEn('tab_priority_actions')} el={readinessEl('tab_priority_actions')} compact />
-          </Button>
-          <Button type="button" variant="ghost" size="sm" className="min-h-10" onClick={() => openRailSection('history')}>
-            <BilingualText en={readinessEn('tab_history')} el={readinessEl('tab_history')} compact />
-          </Button>
+          {/* Two openers, not tabs: they sat in the tab row looking like
+              two more tabs and opened the side panel instead. The caption
+              says where they lead and they carry the names the panel's
+              sections have (docs §79). */}
+          <div className="flex min-w-0 flex-wrap items-center gap-x-1 sm:ml-auto">
+            <span className="pr-1 text-xs text-muted-foreground">
+              <BilingualText en={readinessEn('in_side_panel')} el={readinessEl('in_side_panel')} compact />
+            </span>
+            <Button type="button" variant="ghost" size="sm" className="min-h-10" onClick={() => openRailSection('plan')}>
+              <BilingualText en={readinessEn('tab_priority_actions')} el={readinessEl('tab_priority_actions')} compact />
+            </Button>
+            <Button type="button" variant="ghost" size="sm" className="min-h-10" onClick={() => openRailSection('history')}>
+              <BilingualText en={readinessEn('tab_history')} el={readinessEl('tab_history')} compact />
+            </Button>
+          </div>
           </div>
 
           <TabsContent value="dimensions" className="mt-5">
@@ -1385,6 +1442,11 @@ export default function ReadinessPage() {
                 </div>
               </div>
             )}
+            {/* The rows are switches and the % beside each is its weight;
+                neither showed. Said once here rather than in six cards. */}
+            <p className="mb-4 text-xs text-muted-foreground">
+              <BilingualText en={readinessEn('criteria_hint')} el={readinessEl('criteria_hint')} wrap />
+            </p>
             <div className="grid grid-cols-1 min-w-0 gap-5 md:grid-cols-2">
               {dimensions.map((dim) => (
                 <DimensionCard
@@ -1483,8 +1545,10 @@ export default function ReadinessPage() {
                           asideStays
                           aside={(
                             <span className="space-y-0.5 text-right">
-                              <span className={cn('block font-medium tabular-nums', STATUS.accent.text)}>+{accelContrib} <span className="font-normal text-muted-foreground"><BilingualText en={readinessEn('accel_short')} el={readinessEl('accel_short')} compact /></span></span>
-                              <span className={cn('block font-medium tabular-nums', STATUS.success.text)}>+{investContrib} <span className="font-normal text-muted-foreground"><BilingualText en={readinessEn('invest_short')} el={readinessEl('invest_short')} compact /></span></span>
+                              {/* The card is called "weights" and showed none: each
+                                  line is now what the dimension adds of what it can (docs §79). */}
+                              <span className={cn('block font-medium tabular-nums', STATUS.accent.text)}>{accelContrib}/{d.acceleratorWeight} <span className="font-normal text-muted-foreground"><BilingualText en={readinessEn('accel_short')} el={readinessEl('accel_short')} compact /></span></span>
+                              <span className={cn('block font-medium tabular-nums', STATUS.success.text)}>{investContrib}/{d.investorWeight} <span className="font-normal text-muted-foreground"><BilingualText en={readinessEn('invest_short')} el={readinessEl('invest_short')} compact /></span></span>
                             </span>
                           )}
                         />

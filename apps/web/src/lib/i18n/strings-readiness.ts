@@ -151,9 +151,12 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
 
   // ── Tabs ──
   tab_all_dimensions: { en: 'All Dimensions', el: 'Όλες οι διαστάσεις' },
-  tab_priority_actions: { en: 'Priority Actions', el: 'Ενέργειες προτεραιότητας' },
+  // The two openers beside the tabs open the rail's sections of the same
+  // name (docs §79), so they carry those names.
+  tab_priority_actions: { en: 'Priority actions', el: 'Ενέργειες προτεραιότητας' },
   tab_benchmarks: { en: 'Benchmarks', el: 'Σημεία αναφοράς' },
-  tab_history: { en: 'History', el: 'Ιστορικό' },
+  tab_history: { en: 'Score history', el: 'Ιστορικό βαθμολογίας' },
+  in_side_panel: { en: 'In the side panel:', el: 'Στο πλαϊνό πάνελ:' },
 
   // ── Workspace warning ──
   // Natural Greek negation — the word-for-word "Κανένας χώρος εργασίας
@@ -208,6 +211,13 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
   expert_review: { en: 'Expert review', el: 'Αξιολόγηση ειδικού' },
   expert_review_hint: { en: 'Get a specialist to score this', el: 'Αξιολόγηση από ειδικό' },
   show_n_more: { en: 'Show more', el: 'Περισσότερα' },
+  // "+2 show more" said neither what nor how many in words (docs §79).
+  show_more_criteria: { en: 'Show {n} more criteria', el: 'Εμφάνιση {n} ακόμη κριτηρίων' },
+  criteria_hint: {
+    en: 'Tick a criterion once it is true. The % beside it is its share of that dimension’s score.',
+    el: 'Σημειώστε ένα κριτήριο μόλις ισχύει. Το % δίπλα του είναι το μερίδιό του στη βαθμολογία της διάστασης.',
+  },
+  dims_under_60: { en: 'Dimensions under 60%', el: 'Διαστάσεις κάτω από 60%' },
   last_assessed_prefix: { en: 'Last saved assessment', el: 'Τελευταία αποθηκευμένη αξιολόγηση' },
   reassess_reloads: {
     en: 'Reassess reloads saved scores.',

@@ -158,4 +158,5 @@
 - A page's Back goes back only when `hasInAppPrevious()` (`lib/in-app-history.ts`, counted by `AppShellFrame` per tab) says one of our pages came before; otherwise to the section's list. `document.referrer` does not change on client navigation.
 - Someone else's profile reads the connection like the homes (`useConnectionWith`): their waiting request is answered with Accept there too. Its skills are one card (`SkillEvidencePanel declared={…}`), and it uses the own profile's two-column container layout (docs §75).
 - A cover image goes through `useCoverFailed` (`hooks/useCoverFailed.ts`): a cover that fails leaves no band or column (events, programmes; docs §77). `/events/create?date=YYYY-MM-DD` opens the form on that day at 18:00 (the calendar's empty day; docs §78).
-
+- A row that is a switch keeps its state mark: `data-keep-icon` on the button, or the decorative-icon CSS hides the check and the open circle and a met criterion reads only as grey text (/readiness, docs §79). Several "Ask AI" buttons on one page name their subject through `AIInsightButton aboutEn/aboutEl` ("Ask AI: Team readiness"); the visible label stays.
+- A disabled control whose reason is already on screen points at it (`title` + `aria-describedby`) instead of printing it again under the button (/readiness Reassess, docs §79).
