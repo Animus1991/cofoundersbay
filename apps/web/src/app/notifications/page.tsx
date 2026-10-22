@@ -145,7 +145,7 @@ const NotificationRow = memo(function NotificationRow({
   return (
     <div
       className={cn(
-        'group flex items-start gap-3 px-4 py-4 transition-colors hover:bg-muted/30 sm:px-6',
+        'group relative flex items-start gap-3 px-4 py-4 transition-colors hover:bg-muted/30 sm:px-6',
         'border-b border-border last:border-0',
         isUnread && 'bg-primary/[0.03]',
         selected && 'bg-primary/5',
@@ -158,7 +158,7 @@ const NotificationRow = memo(function NotificationRow({
           aria-checked={!!selected}
           aria-label={bilingualAria(`Select: ${item.title}`, `Επιλογή: ${item.title}`)}
           onClick={() => onSelect?.(item.id)}
-          className="mt-3 shrink-0 text-muted-foreground hover:text-primary-accessible transition-colors"
+          className="relative z-10 mt-3 shrink-0 text-muted-foreground hover:text-primary-accessible transition-colors"
         >
           {selected ? <SquareCheck className="icon-sm text-muted-foreground" aria-hidden="true" /> : <Square className="icon-sm" aria-hidden="true" />}
         </button>
@@ -184,10 +184,14 @@ const NotificationRow = memo(function NotificationRow({
           // the row read. The separate "View" link that said the same thing
           // is gone; a row without a destination keeps a plain title.
           title={item.link ? (
+            // Stretched over the row, so the whole row opens it, as the
+            // page's line says ("Click a card to jump straight to context");
+            // only the words of the title did (docs §76). Mark read and
+            // Delete sit above it.
             <Link
               href={item.link}
               onClick={() => onRead(item.id)}
-              className={cn('block first-letter:uppercase hover:underline', !isUnread && 'text-foreground/80')}
+              className={cn("block first-letter:uppercase after:absolute after:inset-0 after:content-[''] hover:underline", !isUnread && 'text-foreground/80')}
             >
               {item.title}
             </Link>
@@ -205,7 +209,7 @@ const NotificationRow = memo(function NotificationRow({
         {/* Always shown: at opacity-0 until hover the three actions were
             invisible on touch screens yet still took taps, and on a desktop
             they left an empty band under every row. */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <div className="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-1">
           {/* tap-target-y on the row actions: they were 16px tall, under the
               24px target minimum, and they sit close enough together that the
               SC 2.5.8 spacing exception does not rescue them either. */}
@@ -679,16 +683,9 @@ export default function NotificationsPage() {
           )}
         </Card>
 
-        {notifications.length > 0 && (
-          <p className="mt-3 text-center text-xs text-muted-foreground">
-            <BilingualText
-              en={`Showing ${notifications.length} notification${notifications.length !== 1 ? 's' : ''}${unreadCount > 0 ? ` · ${unreadCount} unread` : ''}${bulkMode && selectedIds.size > 0 ? ` · ${selectedIds.size} selected` : ''}`}
-              el={`${notifications.length} ${notifications.length !== 1 ? 'ειδοποιήσεις' : 'ειδοποίηση'}${unreadCount > 0 ? ` · ${unreadCount} ${unreadCount !== 1 ? 'αδιάβαστες' : 'αδιάβαστη'}` : ''}${bulkMode && selectedIds.size > 0 ? ` · ${selectedIds.size} επιλεγμένες` : ''}`}
-              compact
-              wrap
-            />
-          </p>
-        )}
+        {/* No count line under the list: "Showing 3 notifications · 2
+            unread" repeated the rows on screen and the Unread counter above
+            them, and the selection count is on the rail's buttons (§76). */}
       </div>
     </AppShell>
   );
