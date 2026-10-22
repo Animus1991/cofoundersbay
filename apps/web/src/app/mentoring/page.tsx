@@ -7,19 +7,14 @@ import { useQueries, useQuery, useMutation, useQueryClient } from '@tanstack/rea
 import {
   GraduationCap,
   Calendar,
-  Clock,
   Users,
   Loader2,
-  Plus,
   BookOpen,
   Star,
-  MapPin,
-  DollarSign,
   Search,
   Award,
   TrendingUp,
   BadgeCheck,
-  Globe,
   X,
   MessageCircle,
   CalendarDays,
@@ -72,6 +67,7 @@ import { Counter } from '@/components/ui/counter';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
+import { expertiseFacets, withExpertise } from '@/lib/mentoring/expertise';
 
 interface Mentor {
   id: string;
@@ -125,16 +121,15 @@ const PRICE_OPTIONS = [
   { value: 'Paid', en: 'Paid', el: 'Επί πληρωμή' },
 ] as const satisfies ReadonlyArray<{ value: PriceFilter; en: string; el: string }>;
 
-const EXPERTISE_FILTERS = [
-  'All',
-  'Product Strategy',
-  'Fundraising',
-  'Growth Marketing',
-  'Tech Architecture',
-  'B2B Sales',
-  'User Research',
-];
-/** Greek for the expertise filters; the rail showed them in English only. */
+/**
+ * The expertise chips are the areas the listed mentors name, most common
+ * first, each with how many mentors it shows (docs §70). They were a fixed
+ * list of six, five of which matched none of the mentors on screen: a click
+ * on "Fundraising" or "Product Strategy" emptied the page. The filter runs
+ * on the areas the cards print, so a chip finds exactly the cards that say it.
+ */
+const MAX_EXPERTISE_CHIPS = 8;
+/** Greek for areas that come in English; the rail showed them in English only. */
 const EXPERTISE_EL: Record<string, string> = {
   All: 'Όλοι οι τομείς',
   'Product Strategy': 'Στρατηγική προϊόντος',
@@ -250,6 +245,11 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
   );
 }
 
+function localIsoDate(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function BookingModal({
   mentor,
   open,
@@ -311,7 +311,9 @@ function BookingModal({
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
-                min={new Date().toISOString().split('T')[0]}
+                // The reader's today: the UTC date let an Athens reader book
+                // yesterday between midnight and 03:00 (docs §70).
+                min={localIsoDate()}
               />
             </div>
 
@@ -449,9 +451,9 @@ function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelatio
               <Badge variant="outline" className="text-xs">
                 <StatusText value={u.status} />
               </Badge>
-              <Badge variant="secondary" className="text-xs">
-                <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
-              </Badge>
+              <span className="text-xs text-muted-foreground">
+                · <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
+              </span>
             </>
           )}
         />
@@ -516,14 +518,12 @@ export default function MentoringPage() {
 
   // Load real mentors from search API
   const { isLoading: mentorsQueryLoading, isError: mentorsError } = useQuery({
-    queryKey: qk('mentors', searchQuery, selectedExpertise),
+    queryKey: qk('mentors', searchQuery),
     queryFn: async () => {
-      const expertise = selectedExpertise !== 'All' ? [selectedExpertise] : undefined;
       const res = await searchProfiles({
         q: searchQuery.trim() || undefined,
         roles: ['mentor'],
-        skills: expertise,
-        limit: 24,
+        limit: 50,
       });
       setMentorHits(res.hits.map(hitToMentor));
       return res;
@@ -589,11 +589,14 @@ export default function MentoringPage() {
     onError: (err) => showError(bilingualInline('Action failed', 'Η ενέργεια απέτυχε'), err instanceof Error ? err.message : bilingualInline('Please try again', 'Δοκιμάστε ξανά')),
   });
 
-  const filteredMentors = mentorHits.filter((m) => {
+  const pricedMentors = mentorHits.filter((m) => {
     if (priceFilter === 'Free') return !m.hourlyRate;
     if (priceFilter === 'Paid') return !!m.hourlyRate;
     return true;
   });
+  // The areas the mentors on screen name, most common first, with counts.
+  const facets = expertiseFacets(pricedMentors, selectedExpertise, MAX_EXPERTISE_CHIPS);
+  const filteredMentors = withExpertise(pricedMentors, selectedExpertise);
 
   // Counted from the mentors on screen, not asserted. A directory that has not
   // been rated yet says so rather than borrowing a plausible-looking 4.8.
@@ -637,6 +640,12 @@ export default function MentoringPage() {
     : unifiedSessions;
 
   const upcomingCount = upcomingSessions.length;
+  // Requests that wait on the reader's answer, as the mentor. The list is a
+  // schedule, so it stays in date order; the line above it says what waits
+  // and takes the reader there (a request sat sixth of seven; docs §70).
+  const awaitingMe = upcomingSessions.filter(
+    (u) => u.source === 'booking' && u.status === 'requested' && u.mentorId === userId,
+  );
   const sessionsLoading = isLoading || mentorshipSessionsLoading;
 
   const handleBookMentor = (mentor: Mentor) => {
@@ -666,7 +675,10 @@ export default function MentoringPage() {
       { value: 'all', en: 'All', el: 'Όλες' },
     ], sessionsTab, (v) => setSessionsTab(v as typeof sessionsTab)),
     choiceControl('mentor_price', 'Mentor price', 'Τιμή μέντορα', [...PRICE_OPTIONS], priceFilter, (v) => setPriceFilter(v as PriceFilter)),
-    choiceControl('mentor_expertise', 'Mentor expertise', 'Εξειδίκευση μέντορα', EXPERTISE_FILTERS.map((e) => ({ value: e, en: e === 'All' ? 'All areas' : e, el: EXPERTISE_EL[e] ?? e })), selectedExpertise, setSelectedExpertise),
+    choiceControl('mentor_expertise', 'Mentor expertise', 'Εξειδίκευση μέντορα', [
+      { value: 'All', en: 'All areas', el: 'Όλοι οι τομείς' },
+      ...facets.map((f) => ({ value: f.label, en: f.label, el: EXPERTISE_EL[f.label] ?? f.label })),
+    ], selectedExpertise, setSelectedExpertise),
     {
       id: 'open_booking',
       labelEn: 'Open the booking form for mentor',
@@ -793,20 +805,21 @@ export default function MentoringPage() {
               />
             </div>
             <div className="flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label={bilingualInline('Expertise', 'Εξειδίκευση')}>
-              {EXPERTISE_FILTERS.map((e) => {
-                const on = selectedExpertise === e;
+              {[{ label: 'All', n: pricedMentors.length }, ...facets].map(({ label, n }) => {
+                const on = selectedExpertise.toLocaleLowerCase() === label.toLocaleLowerCase();
                 return (
                   <button
-                    key={e}
+                    key={label}
                     type="button"
                     aria-pressed={on}
-                    onClick={() => setSelectedExpertise(e)}
+                    onClick={() => setSelectedExpertise(label)}
                     className={cn(
-                      'tap-target-y shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                      'tap-target-y inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
                       on ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
                     )}
                   >
-                    <BilingualText en={e === 'All' ? 'All areas' : e} el={EXPERTISE_EL[e] ?? e} compact />
+                    <BilingualText en={label === 'All' ? 'All areas' : label} el={label === 'All' ? 'Όλοι οι τομείς' : EXPERTISE_EL[label] ?? label} compact />
+                    {!mentorsQueryLoading ? <span className="tabular-nums opacity-70">{n}</span> : null}
                   </button>
                 );
               })}
@@ -864,15 +877,23 @@ export default function MentoringPage() {
                   illustration="search"
                   title={<BilingualText en="No mentors found" el="Δεν βρέθηκαν μέντορες" />}
                   description={
-                    activeFilters > 0
-                      ? <BilingualText en="The price or expertise filter in the side panel may be hiding mentors." el="Το φίλτρο τιμής ή εξειδίκευσης στο πλευρικό πάνελ ίσως κρύβει μέντορες." />
+                    // Expertise is the chips above; only price is in the side
+                    // panel. The line sent people to the panel for both.
+                    selectedExpertise !== 'All'
+                      ? <BilingualText en={`No mentor here names “${selectedExpertise}”. Show all areas, or search for it.`} el={`Κανένας μέντορας εδώ δεν αναφέρει «${EXPERTISE_EL[selectedExpertise] ?? selectedExpertise}». Δείτε όλους τους τομείς ή αναζητήστε το.`} />
+                      : activeFilters > 0
+                      ? <BilingualText en="The price filter in the side panel may be hiding mentors." el="Το φίλτρο τιμής στο πλευρικό πάνελ ίσως κρύβει μέντορες." />
                       : searchQuery.trim()
                         ? <BilingualText en="Try a different name or area of expertise." el="Δοκιμάστε άλλο όνομα ή τομέα εξειδίκευσης." />
                         : <BilingualText en="No mentor profiles have been created yet. Mentors who register and complete their profile will appear here." el="Δεν υπάρχουν ακόμα προφίλ μεντόρων. Οι μέντορες που εγγράφονται και ολοκληρώνουν το προφίλ τους θα εμφανιστούν εδώ." />
                   }
                   askAiPrompt={ASK.mentorsEmpty}
                   action={
-                    activeFilters > 0 ? (
+                    selectedExpertise !== 'All' ? (
+                      <Button variant="secondary" onClick={() => setSelectedExpertise('All')}>
+                        <BilingualText en="Show all areas" el="Όλοι οι τομείς" compact />
+                      </Button>
+                    ) : activeFilters > 0 ? (
                       <Button variant="secondary" onClick={() => openRailSection('filters')}>
                         <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
                       </Button>
@@ -907,6 +928,24 @@ export default function MentoringPage() {
 
             {(['upcoming', 'past', 'all'] as const).map((t) => (
               <TabsContent key={t} value={t} className="mt-4 space-y-3">
+                {t !== 'past' && !sessionsLoading && awaitingMe.length > 0 ? (
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-status-warning-border bg-status-warning-bg px-4 py-3">
+                    <p className="text-sm text-foreground">
+                      <BilingualText
+                        en={awaitingMe.length === 1 ? '1 booking request waits for your answer' : `${awaitingMe.length} booking requests wait for your answer`}
+                        el={awaitingMe.length === 1 ? '1 αίτημα κράτησης περιμένει την απάντησή σας' : `${awaitingMe.length} αιτήματα κράτησης περιμένουν την απάντησή σας`}
+                        wrap
+                      />
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => document.getElementById(`session-${awaitingMe[0].key}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                    >
+                      <BilingualText en="Show it" el="Εμφάνιση" compact />
+                    </Button>
+                  </div>
+                ) : null}
                 {sessionsLoading ? (
                   Array.from({ length: 3 }).map((_, i) => <BookingSkeleton key={i} />)
                 ) : filteredSessions.length === 0 ? (
@@ -934,8 +973,8 @@ export default function MentoringPage() {
                   />
                 ) : (
                   filteredSessions.map((u) => u.source === 'booking' && u.booking ? (
+                    <div key={u.key} id={`session-${u.key}`} className="scroll-mt-24">
                     <BookingCard
-                      key={u.key}
                       booking={u.booking}
                       userId={userId}
                       showSource
@@ -944,6 +983,7 @@ export default function MentoringPage() {
                       onDecline={() => updateMutation.mutate({ bookingId: u.id, status: 'cancelled' })}
                       onCancel={() => updateMutation.mutate({ bookingId: u.id, status: 'cancelled' })}
                     />
+                    </div>
                   ) : u.session && u.relationship ? (
                     <MentorshipSessionRow key={u.key} rel={u.relationship} session={u.session} userId={userId} />
                   ) : null)

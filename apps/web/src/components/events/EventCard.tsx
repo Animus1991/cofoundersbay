@@ -1,13 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
-  Calendar,
   MapPin,
-  Users,
   Video,
-  ExternalLink,
   Share2,
   Bookmark,
   CheckCircle,
@@ -88,6 +85,23 @@ function EventTypeIcon({ type }: { type: EventData['type'] }) {
   }
 }
 
+/**
+ * Whether a cover image failed to load. A blocked or deleted cover left an
+ * empty band of 112-192px over the card (the image is painted transparent,
+ * layout.tsx); now the default card drops the band and the featured one keeps
+ * a short tint for its date and kind (docs §70). An image that failed before
+ * hydration fired no React onError, so mount reads `complete` too.
+ */
+function useCoverFailed(src: string | undefined) {
+  const ref = useRef<HTMLImageElement>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    const img = ref.current;
+    setFailed(Boolean(img && img.complete && img.naturalWidth === 0));
+  }, [src]);
+  return { ref, failed, onError: () => setFailed(true) };
+}
+
 export function EventCard({
   event,
   variant = 'default',
@@ -98,6 +112,7 @@ export function EventCard({
   className,
 }: EventCardProps) {
   const fmtDate = useDateFormat();
+  const cover = useCoverFailed(event.coverImage);
   const [rsvped, setRsvped] = useState(event.isRsvped || false);
   const [bookmarked, setBookmarked] = useState(isBookmarked);
 
@@ -176,14 +191,20 @@ export function EventCard({
       <Card className={cn('group overflow-hidden', className)}>
         {/* Cover image */}
         {event.coverImage && (
-          <div className="relative h-48 overflow-hidden">
-            <img
-              src={event.coverImage}
-              alt={event.title}
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover transition-transform group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+          <div className={cn('relative overflow-hidden', cover.failed ? 'h-24 bg-muted/60' : 'h-48')}>
+            {cover.failed ? null : (
+              <>
+                <img
+                  ref={cover.ref}
+                  onError={cover.onError}
+                  src={event.coverImage}
+                  alt={event.title}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+              </>
+            )}
             {/* Date badge */}
             <div className="absolute top-4 left-4">
               <div className="rounded-lg bg-background/90 backdrop-blur-sm px-3 py-2 text-center">
@@ -298,8 +319,8 @@ export function EventCard({
   // on the mark's edge; the actions on the axis.
   return (
     <Card className={cn('group overflow-hidden hover:border-primary/30 transition-colors', className)}>
-      {event.coverImage ? (
-        <img src={event.coverImage} alt="" referrerPolicy="no-referrer" className="h-28 w-full object-cover" />
+      {event.coverImage && !cover.failed ? (
+        <img ref={cover.ref} onError={cover.onError} src={event.coverImage} alt="" referrerPolicy="no-referrer" className="h-28 w-full object-cover" />
       ) : null}
       <CardContent className="space-y-3">
         <CardHead

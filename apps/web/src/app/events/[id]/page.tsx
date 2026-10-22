@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -21,6 +22,8 @@ import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { buildIcs, downloadIcs, icsFileName } from '@/lib/ics';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 import { bilingualAria } from '@/lib/i18n/format';
+import { StatusText, statusEl, statusEn } from '@/components/common/StatusText';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 
 type Rsvp = 'going' | 'interested' | 'not_going';
 
@@ -71,6 +74,14 @@ export default function EventDetailPage() {
     retry: 0,
   });
   const event = data?.event ?? null;
+  const { primary } = useLanguagePreference();
+  const coverRef = useRef<HTMLImageElement>(null);
+  const [coverFailed, setCoverFailed] = useState(false);
+  // An image that failed before hydration fired no onError.
+  useEffect(() => {
+    const img = coverRef.current;
+    if (img && img.complete && img.naturalWidth === 0) setCoverFailed(true);
+  }, [event?.coverImageUrl]);
 
   const respond = async (status: Rsvp): Promise<PageControlRunResult> => {
     if (!event) return { error: 'The event has not loaded.' };
@@ -187,8 +198,11 @@ export default function EventDetailPage() {
   }
 
   const tz = event.timezone || undefined;
-  const when = new Intl.DateTimeFormat('en-GB', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: tz, timeZoneName: 'short',
+  // In the reader's language: a Greek reader met "Wednesday 21 October 2026"
+  // (docs §70).
+  const dateLocale = primary === 'el' ? 'el-GR' : 'en-GB';
+  const when = new Intl.DateTimeFormat(dateLocale, {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: tz, timeZoneName: 'short',
   });
   const ended = new Date(event.endAt || event.startAt).getTime() < Date.now();
   const full = event.capacity != null && event.attendeesCount >= event.capacity && event.viewerRsvp !== 'going';
@@ -196,17 +210,22 @@ export default function EventDetailPage() {
   return (
     <AppShell
       title={event.title}
-      description={event.eventType.replaceAll('_', ' ')}
+      // The kind as a word in the reader's language ("webinar" printed raw).
+      description={statusEn(event.eventType)}
+      descriptionEl={statusEl(event.eventType)}
       askAi={{
         en: `Help me prepare for the event "${event.title}".`,
         el: `Βοήθησέ με να προετοιμαστώ για την εκδήλωση «${event.title}».`,
       }}
       actions={
         <>
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => downloadEventIcs(event)}>
-            <CalendarPlus className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Add to calendar" el="Προσθήκη στο ημερολόγιο" compact />
-          </Button>
+          {/* Not for an event that is over: the RSVP card already says so. */}
+          {ended ? null : (
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => downloadEventIcs(event)}>
+              <CalendarPlus className="icon-sm" aria-hidden="true" />
+              <BilingualText en="Add to calendar" el="Προσθήκη στο ημερολόγιο" compact />
+            </Button>
+          )}
           <Button variant="outline" size="sm" className="gap-2" onClick={() => void share()}>
             <Share2 className="icon-sm" aria-hidden="true" />
             <BilingualText en="Share" el="Κοινοποίηση" compact />
@@ -216,8 +235,16 @@ export default function EventDetailPage() {
     >
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
-          {event.coverImageUrl && (
-            <img src={event.coverImageUrl} alt="" className="aspect-[3/1] w-full rounded-2xl object-cover" />
+          {/* A cover that does not load leaves no empty band (it was a third
+              of the column, blank, above the facts). */}
+          {event.coverImageUrl && !coverFailed && (
+            <img
+              ref={coverRef}
+              onError={() => setCoverFailed(true)}
+              src={event.coverImageUrl}
+              alt=""
+              className="aspect-[3/1] w-full rounded-2xl object-cover"
+            />
           )}
           <Card>
             <CardContent className="space-y-3">
@@ -225,7 +252,7 @@ export default function EventDetailPage() {
                 <Clock className="mt-0.5 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                 <span>
                   {when.format(new Date(event.startAt))}
-                  {event.endAt && <> – {new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: tz }).format(new Date(event.endAt))}</>}
+                  {event.endAt && <> – {new Intl.DateTimeFormat(dateLocale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: tz }).format(new Date(event.endAt))}</>}
                 </span>
               </p>
               <p className="flex items-start gap-2 text-sm">
@@ -234,7 +261,7 @@ export default function EventDetailPage() {
                 ) : (
                   <MapPin className="mt-0.5 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                 )}
-                <span className="capitalize">{event.mode.replace('-', ' ')}</span>
+                <StatusText value={event.mode} />
                 {event.location && <span className="text-muted-foreground">· {event.location}</span>}
               </p>
               {event.meetingUrl && event.viewerRsvp === 'going' && (
@@ -316,7 +343,9 @@ export default function EventDetailPage() {
                 ) : (
                   <span>{event.host?.displayName || '—'}</span>
                 )}
-                subtitle={<BilingualText en="Hosted by" el="Διοργανωτής" compact />}
+                // A role under the name, as on every card: "Hosted by" under it
+                // read backwards.
+                subtitle={<BilingualText en="Host" el="Διοργανωτής" compact />}
               />
             </CardContent>
           </Card>

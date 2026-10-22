@@ -169,6 +169,11 @@ function sentenceCase(value: string): string {
   return spaced ? spaced[0].toUpperCase() + spaced.slice(1) : spaced;
 }
 
+/** The English side of a status value, in sentence case ("demo_day" → "Demo day"). */
+export function statusEn(value: string | null | undefined): string {
+  return value ? sentenceCase(value) : '';
+}
+
 export function statusEl(value: string | null | undefined): string | undefined {
   if (!value) return undefined;
   const lower = value.toLowerCase();

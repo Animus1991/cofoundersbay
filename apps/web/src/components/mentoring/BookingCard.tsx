@@ -6,12 +6,10 @@ import {
   CheckCircle,
   ChevronDown,
   ChevronUp,
-  Clock,
   ExternalLink,
   FileText,
   Loader2,
   Sparkles,
-  Video,
   XCircle,
 } from 'lucide-react';
 import { summarizeMeetingNotes, type MeetingNotesSummary, type MentorBookingItem } from '@/lib/api';
@@ -80,7 +78,7 @@ export function BookingCard({
   const [sessionNotes, setSessionNotes] = useState('');
   const [aiSummary, setAISummary] = useState<MeetingNotesSummary | null>(null);
   const [summarizing, setSummarizing] = useState(false);
-  const { success: _ns, error: notifyError } = useToast();
+  const { error: notifyError } = useToast();
 
   const handleSummarize = async () => {
     if (!sessionNotes.trim()) return;
@@ -127,10 +125,12 @@ export function BookingCard({
               >
                 <StatusText value={booking.status} />
               </Badge>
+              {/* Where the session lives, after a dot: two pills side by side
+                  read as one phrase ("Confirmed Booking"; docs §70). */}
               {showSource && (
-                <Badge variant="secondary" className="text-xs">
-                  <BilingualText en="Booking" el="Κράτηση" compact />
-                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  · <BilingualText en="Booking" el="Κράτηση" compact />
+                </span>
               )}
             </>
           )}

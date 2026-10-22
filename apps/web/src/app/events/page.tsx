@@ -73,6 +73,13 @@ function toEventData(item: EventItem): EventData {
   };
 }
 
+/**
+ * Cards at least 24rem wide, as many as fit: three in the full column, two
+ * beside a pinned page rail. The fixed lg:grid-cols-3 kept three 275px cards
+ * beside the rail, cutting titles and places to an ellipsis (docs §70).
+ */
+const EVENT_GRID = 'grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))]';
+
 export default function EventsPage() {
   const sayOne = useBilingualString();
   const router = useRouter();
@@ -121,7 +128,7 @@ export default function EventsPage() {
     retry: 1,
   });
 
-  const eventsRaw = eventsResult?.events ?? [];
+  const eventsRaw = useMemo(() => eventsResult?.events ?? [], [eventsResult]);
   // How many of each kind the loaded list holds; a kind with none is not offered.
   const kindCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -344,7 +351,7 @@ export default function EventsPage() {
             ) : loading ? (
               // Three columns at most: at four, each card kept ~170px beside
               // its date box and the host collided with the attendee count.
-              <div className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
+              <div className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && EVENT_GRID)}>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <EventCardSkeleton key={i} variant={viewMode === 'list' ? 'compact' : 'default'} />
                 ))}
@@ -413,10 +420,7 @@ export default function EventsPage() {
                 <AnimatedList
                   animation="fade-in-up"
                   staggerDelay={50}
-                  className={cn(
-                    'grid grid-cols-1 gap-4',
-                    viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1',
-                  )}
+                  className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && EVENT_GRID)}
                 >
                   {rest.map((event) => (
                     <EventCard
