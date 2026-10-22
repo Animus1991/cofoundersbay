@@ -487,6 +487,12 @@ export default function CreateProjectPage() {
           </Card>
         )}
 
+        {/* Said before the project is made, not after it is lost (docs §83). */}
+        {step === 4 && (
+          <p role="note" className="text-xs text-muted-foreground">
+            <BilingualText en={projectEn('kept_in_tab')} el={projectEl('kept_in_tab')} wrap />
+          </p>
+        )}
         <div className="flex items-center justify-between">
           <Button type="button" variant="outline" className={BUILDER_BTN} onClick={() => setStep(step - 1)} disabled={step === 1}>
             <ArrowLeft className="icon-sm mr-2" />

@@ -54,6 +54,7 @@ import {
   toggleDemoStar,
   isOwnedProject,
   isJoinedProject,
+  isExampleProject,
   demoProjectStats,
   PROJECT_STATUS_GLYPH,
   type DemoProject,
@@ -141,10 +142,17 @@ function ProjectCard({
       {project.isStarred && <Star className="icon-sm shrink-0 fill-status-warning text-status-warning" />}
     </span>
   );
+  // "Building In discussion" read as one phrase: the second chip is the
+  // project's need card, so it says so (docs §83).
   const pills = (
     <>
       <StageBadge status={project.status} />
-      {outcome ? <OutcomeChip outcome={outcome.outcome} reason={outcome.reason} /> : null}
+      {outcome ? (
+        <span className="inline-flex items-center gap-1 text-2xs text-muted-foreground">
+          <BilingualText en={projectEn('need_card_caption')} el={projectEl('need_card_caption')} compact />
+          <OutcomeChip outcome={outcome.outcome} reason={outcome.reason} />
+        </span>
+      ) : null}
     </>
   );
   const team = (
@@ -203,7 +211,7 @@ function ProjectCard({
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 shrink-0 rounded-md text-muted-foreground hover:text-foreground"
-                  aria-label={bilingualAria(projectEn('more'), projectEl('more'))}
+                  aria-label={bilingualAria(`${projectEn('more')}: ${project.name}`, `${projectEl('more')}: ${project.name}`)}
                 >
                   <MoreVertical className="icon-sm" />
                 </Button>
@@ -269,7 +277,7 @@ function ProjectCard({
                 items={[
                   team,
                   (project.messageCount ?? 0) > 0 ? (
-                    <BilingualText key="msgs" en={`${project.messageCount} messages`} el={`${project.messageCount} μηνύματα`} compact />
+                    <BilingualText key="msgs" en={`${project.messageCount} ${project.messageCount === 1 ? 'message' : 'messages'}`} el={`${project.messageCount} ${project.messageCount === 1 ? 'μήνυμα' : 'μηνύματα'}`} compact />
                   ) : null,
                 ]}
               />
@@ -277,7 +285,8 @@ function ProjectCard({
           )}
         >
           <Button variant="outline" size="sm" className={`max-w-full ${BUILDER_BTN}`} asChild>
-            <Link href={`/projects/${project.id}`}>
+            {/* Three "View project" links named alike to a screen reader. */}
+            <Link href={`/projects/${project.id}`} aria-label={bilingualAria(`${projectEn('view_project')}: ${project.name}`, `${projectEl('view_project')}: ${project.name}`)}>
               <BilingualText en={projectEn('view_project')} el={projectEl('view_project')} compact wrap />
               <ChevronRight className="icon-sm ml-1 shrink-0" aria-hidden="true" />
             </Link>
@@ -635,6 +644,13 @@ export default function ProjectsPage() {
       actions={createCta}
     >
       <div className="space-y-6">
+        <p role="note" className="text-xs text-muted-foreground">
+          <BilingualText
+            en={`${projectEn('kept_in_tab')}${projects.some(isExampleProject) ? ` ${projectEn('kept_in_tab_examples')}` : ''}`}
+            el={`${projectEl('kept_in_tab')}${projects.some(isExampleProject) ? ` ${projectEl('kept_in_tab_examples')}` : ''}`}
+            wrap
+          />
+        </p>
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="space-y-4">
           <TabsList className="rounded-xl">
             {([
@@ -692,7 +708,9 @@ export default function ProjectsPage() {
             })}
           </div>
 
-          {byTab[tab].length > 0 && (
+          {/* The count repeated the tab's own figure; it says something only
+              once a search or a filter narrows the list (docs §83). */}
+          {hasActiveFilters && byTab[tab].length > 0 && (
             <p className="text-2xs text-muted-foreground">
               {byTab[tab].length === 1
                 ? <BilingualText en={`1 ${projectEn('found_one')}`} el={`1 ${projectEl('found_one')}`} compact />

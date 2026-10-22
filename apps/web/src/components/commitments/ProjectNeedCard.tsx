@@ -39,7 +39,7 @@ export function ProjectNeedCard({ projectId, owned }: { projectId: string; owned
           />
           <Button size="sm" asChild>
             <Link href={`/commitments/new?project=${encodeURIComponent(projectId)}`}>
-              <BilingualText en={CMT.two_minutes.en} el={CMT.two_minutes.el} compact />
+              <BilingualText en={CMT.write_card_time.en} el={CMT.write_card_time.el} compact />
             </Link>
           </Button>
         </CardContent>
@@ -60,11 +60,14 @@ export function ProjectNeedCard({ projectId, owned }: { projectId: string; owned
           compact
           showOwner={!card.isMine}
           actions={
-            <Button size="sm" asChild>
+            // Outline: the project page's one filled button is "Request to
+            // join" (or, on one's own project, nothing competes). "Open"
+            // alone did not say what it opened (docs §83).
+            <Button size="sm" variant="outline" asChild>
               <Link href={`/commitments/${encodeURIComponent(card.id)}`}>
                 <BilingualText
-                  en={card.isMine ? `${CMT.responses.en} · ${card.interestCount ?? 0}` : card.myThreadId ? CMT.open_board.en : CMT.interest_title.en}
-                  el={card.isMine ? `${CMT.responses.el} · ${card.interestCount ?? 0}` : card.myThreadId ? CMT.open_board.el : CMT.interest_title.el}
+                  en={card.isMine ? `${CMT.responses.en} · ${card.interestCount ?? 0}` : card.myThreadId ? CMT.open_card_cta.en : CMT.interest_title.en}
+                  el={card.isMine ? `${CMT.responses.el} · ${card.interestCount ?? 0}` : card.myThreadId ? CMT.open_card_cta.el : CMT.interest_title.el}
                   compact
                 />
               </Link>

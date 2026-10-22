@@ -305,7 +305,10 @@ export default function ProjectDetailPage() {
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle><BilingualText en={projectEn('open_roles')} el={projectEl('open_roles')} compact /></CardTitle>
                     <Badge variant="outline" className="rounded-full">
-                      {project.rolesNeeded.length} <BilingualText en={projectEn('positions')} el={projectEl('positions')} compact />
+                      {project.rolesNeeded.length}{' '}
+                      {project.rolesNeeded.length === 1
+                        ? <BilingualText en={projectEn('position_one')} el={projectEl('position_one')} compact />
+                        : <BilingualText en={projectEn('positions')} el={projectEl('positions')} compact />}
                     </Badge>
                   </CardHeader>
                   <CardContent className="card-rows">
@@ -329,8 +332,10 @@ export default function ProjectDetailPage() {
                             />
                           )}
                           aside={!owned ? (
+                            // Outline: "Request to join" beside is the page's one filled button (docs §83).
                             <Button
                               size="sm"
+                              variant="outline"
                               className={BUILDER_BTN}
                               disabled={appliedRoles.includes(role.title)}
                               onClick={() => handleApply(role.title)}

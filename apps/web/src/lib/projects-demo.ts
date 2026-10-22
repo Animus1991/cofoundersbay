@@ -305,6 +305,11 @@ export function writeProjectsOverlay(overlay: ProjectsOverlay) {
 
 const SEED_IDS = new Set(DEMO_PROJECTS_SEED.map((p) => p.id));
 
+/** One of the catalogue's example projects, not one a member created in this tab. */
+export function isExampleProject(project: Pick<DemoProject, 'id'>): boolean {
+  return SEED_IDS.has(project.id);
+}
+
 export function resolveDemoProjects(overlay: Partial<ProjectsOverlay> = emptyProjectsOverlay()): DemoProject[] {
   const resolved = coerceOverlay(overlay);
   // The demo's projects carry a picture of what they build and faces for

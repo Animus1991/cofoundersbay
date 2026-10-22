@@ -52,6 +52,14 @@ export const PROJECT_STRINGS: Record<string, BilingualPair> = {
   stat_roles: { en: 'Open roles', el: 'Ανοιχτοί ρόλοι' },
   stat_industries: { en: 'Industries', el: 'Κλάδοι' },
   found: { en: 'projects found', el: 'έργα βρέθηκαν' },
+  // Projects have no API yet: they live in sessionStorage. Nothing said so,
+  // and a project created here was gone when the tab closed (docs §83).
+  kept_in_tab: {
+    en: 'For now, projects live only in this browser tab: the ones you create are not saved to your account and are gone when the tab closes.',
+    el: 'Προς το παρόν, τα έργα ζουν μόνο σε αυτή την καρτέλα του browser: όσα δημιουργείτε δεν αποθηκεύονται στον λογαριασμό σας και χάνονται όταν κλείσει η καρτέλα.',
+  },
+  kept_in_tab_examples: { en: 'The others are examples.', el: 'Τα υπόλοιπα είναι παραδείγματα.' },
+  need_card_caption: { en: 'Need card', el: 'Κάρτα ανάγκης' },
   found_one: { en: 'project found', el: 'έργο βρέθηκε' },
   progress: { en: 'Progress', el: 'Πρόοδος' },
   members: { en: 'members', el: 'μέλη' },
@@ -144,6 +152,7 @@ export const PROJECT_STRINGS: Record<string, BilingualPair> = {
   about: { en: 'About', el: 'Σχετικά' },
   open_roles: { en: 'Open roles', el: 'Ανοιχτοί ρόλοι' },
   positions: { en: 'positions', el: 'θέσεις' },
+  position_one: { en: 'position', el: 'θέση' },
   apply: { en: 'Apply', el: 'Αίτηση' },
   applied: { en: 'Application noted', el: 'Η αίτηση καταχωρήθηκε' },
   applied_hint: { en: 'The team will see it next to this role.', el: 'Η ομάδα θα τη δει δίπλα σε αυτόν τον ρόλο.' },
