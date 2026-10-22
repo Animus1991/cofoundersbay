@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import { useCoverFailed } from '@/hooks/useCoverFailed';
 import {
   MapPin,
   Video,
@@ -83,23 +84,6 @@ function EventTypeIcon({ type }: { type: EventData['type'] }) {
         </div>
       );
   }
-}
-
-/**
- * Whether a cover image failed to load. A blocked or deleted cover left an
- * empty band of 112-192px over the card (the image is painted transparent,
- * layout.tsx); now the default card drops the band and the featured one keeps
- * a short tint for its date and kind (docs §70). An image that failed before
- * hydration fired no React onError, so mount reads `complete` too.
- */
-function useCoverFailed(src: string | undefined) {
-  const ref = useRef<HTMLImageElement>(null);
-  const [failed, setFailed] = useState(false);
-  useEffect(() => {
-    const img = ref.current;
-    setFailed(Boolean(img && img.complete && img.naturalWidth === 0));
-  }, [src]);
-  return { ref, failed, onError: () => setFailed(true) };
 }
 
 export function EventCard({

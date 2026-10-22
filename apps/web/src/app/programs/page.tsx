@@ -8,7 +8,6 @@ import {
   Search,
   Award,
   Users,
-  ChevronRight,
   Building2,
   Rocket,
   GraduationCap,
@@ -16,11 +15,9 @@ import {
   RefreshCw,
   CheckCircle2,
   Globe,
-  Bookmark,
   BookmarkCheck,
   ArrowRight,
   Zap,
-  Filter,
   X,
   Handshake,
   Briefcase,
@@ -33,7 +30,7 @@ import { usePageRail } from '@/components/layout/PageRailContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -66,6 +63,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { Counter } from '@/components/ui/counter';
 import { calendarDaysUntil } from '@/lib/calendar-days';
+import { useCoverFailed } from '@/hooks/useCoverFailed';
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const PROGRAM_STATUS_TONE: Record<string, StatusTone> = {
   open: 'success',
@@ -242,6 +240,9 @@ function ProgramCard({
   const status = badgeStatus(program.status);
   const type = badgeType(program.programType);
   const benefits = ((program.benefits as string[] | undefined) ?? []).slice(0, 3);
+  const cover = useCoverFailed(program.coverImageUrl);
+  const showCover = Boolean(program.coverImageUrl) && !cover.failed;
+  const accepting = acceptsApplications(program);
 
   // The Opportunities card, copied: mark and title with the organiser and
   // kind under it, the state at the right, then the sentence, the facts and
@@ -250,9 +251,11 @@ function ProgramCard({
     // From lg the cover sits at the card's left, the full height of it, as
     // the AI Studio prototype lists programmes: the picture stays, and the
     // list reads as rows instead of a stack of banners.
-    <Card className={cn('card-interactive overflow-hidden transition-all hover:border-primary/30 group', program.coverImageUrl && 'lg:flex', isEnrolled && 'border-primary/40')}>
-      {program.coverImageUrl ? (
-        <img src={program.coverImageUrl} alt="" referrerPolicy="no-referrer" className="h-28 w-full object-cover lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch" />
+    // A cover that fails to load leaves no column: it was a blank 224px
+    // beside every programme (docs §77).
+    <Card className={cn('card-interactive overflow-hidden transition-all hover:border-primary/30 group', showCover && 'lg:flex', isEnrolled && 'border-primary/40')}>
+      {showCover ? (
+        <img ref={cover.ref} onError={cover.onError} src={program.coverImageUrl ?? undefined} alt="" referrerPolicy="no-referrer" className="h-28 w-full object-cover lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch" />
       ) : null}
       <CardContent className="min-w-0 space-y-3 lg:flex-1">
         <CardHead
@@ -275,12 +278,9 @@ function ProgramCard({
               ]}
             />
           )}
-          aside={isEnrolled ? (
-            <Badge variant="outline" className="gap-1 border-primary/30 bg-primary/10 text-xs text-primary-accessible">
-              <CheckCircle2 className="icon-sm" aria-hidden="true" />
-              <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
-            </Badge>
-          ) : (
+          // The programme's own state, on every card. On one you applied to
+          // it said "Applied", which the button under the card says too.
+          aside={(
             <Badge variant="outline" className={cn('border text-xs', STATUS[PROGRAM_STATUS_TONE[program.status] ?? 'neutral'].chip)}>
               <BilingualText en={status.en} el={status.el} compact />
             </Badge>
@@ -291,7 +291,14 @@ function ProgramCard({
           <p className="card-body line-clamp-2 text-muted-foreground">{program.description}</p>
         )}
 
-        <FactLine items={(program.industries ?? []).slice(0, 5)} />
+        {/* "Any" stood alone on its line: any what (docs §77). */}
+        <FactLine
+          items={(program.industries ?? []).slice(0, 5).map((industry) =>
+            /^any$/i.test(industry.trim())
+              ? <BilingualText key="any" en="Any industry" el="Κάθε κλάδος" compact />
+              : industry,
+          )}
+        />
 
         <FactLine
           label={bilingualAria('When and where', 'Πότε και πού')}
@@ -335,7 +342,7 @@ function ProgramCard({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2 pt-1">
-          {acceptsApplications(program) && !isEnrolled && !isFull && (
+          {accepting && !isEnrolled && !isFull && (
             <Button size="sm" className="gap-1.5" onClick={(e) => { e.preventDefault(); onApply(program); }}>
               <BilingualText en={programsEn('apply_now')} el={programsEl('apply_now')} compact />
               <ArrowRight className="icon-sm" aria-hidden="true" />
@@ -356,6 +363,13 @@ function ProgramCard({
               <BilingualText en="View details" el="Λεπτομέρειες" compact />
             </Link>
           </Button>
+          {/* Why there is no Apply: "2 spots left" sat over a card with
+              nothing to press (docs §77). */}
+          {!accepting && !isEnrolled ? (
+            <span className="text-xs text-muted-foreground">
+              <BilingualText en="Not taking applications" el="Δεν δέχεται αιτήσεις" compact />
+            </span>
+          ) : null}
         </div>
       </CardContent>
     </Card>
@@ -400,7 +414,7 @@ export default function ProgramsPage() {
   const [status, setStatus] = useState('all');
   const [applyTarget, setApplyTarget] = useState<ProgramItem | null>(null);
 
-  const { data, isLoading, refetch, isRefetching } = useQuery({
+  const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     // The public list is every upcoming and running program; the endpoint
     // takes no status, so "open now" and "closed" are decided below from
     // the same rule the API applies to an application.
@@ -657,14 +671,27 @@ export default function ProgramsPage() {
               <div className="space-y-3">
                 {[...Array(4)].map((_, i) => <ProgramSkeleton key={i} />)}
               </div>
+            ) : isError && !data ? (
+              // A failed read said "No programs found · Try adjusting your
+              // filters" with no filter set (docs §77).
+              <Card>
+                <CardContent className="py-8">
+                  <p role="alert" className="font-medium">
+                    <BilingualText en="Programmes could not be read just now." el="Τα προγράμματα δεν διαβάστηκαν αυτή τη στιγμή." compact wrap />
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-4" onClick={() => void refetch()} disabled={isRefetching}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                </CardContent>
+              </Card>
             ) : filtered.length === 0 ? (
               <Card>
                 <CardContent className="py-8">
                   <p className="font-medium"><BilingualText en={programsEn('none_found')} el={programsEl('none_found')} compact /></p>
                   <p className="mt-1 max-w-prose text-sm text-muted-foreground">
                     <BilingualText
-                      en={activeFilterLine?.en ?? programsEn('none_found_hint')}
-                      el={activeFilterLine?.el ?? programsEl('none_found_hint')}
+                      en={activeFilterLine?.en ?? (search ? programsEn('none_found_hint') : 'No programme is listed right now. Organisations publish them here; ask the assistant what fits your stage meanwhile.')}
+                      el={activeFilterLine?.el ?? (search ? programsEl('none_found_hint') : 'Δεν υπάρχει πρόγραμμα αυτή τη στιγμή. Οι οργανισμοί τα δημοσιεύουν εδώ· στο μεταξύ ρωτήστε τον βοηθό τι ταιριάζει στο στάδιό σας.')}
                       wrap
                     />
                   </p>
@@ -686,14 +713,8 @@ export default function ProgramsPage() {
                 </CardContent>
               </Card>
             ) : (
+              // No "3 programs found": the tab above counts the same list.
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  <BilingualText
-                    en={`${filtered.length} program${filtered.length !== 1 ? 's' : ''} found`}
-                    el={`${filtered.length} ${filtered.length !== 1 ? 'προγράμματα βρέθηκαν' : 'πρόγραμμα βρέθηκε'}`}
-                    compact
-                  />
-                </p>
                 {filtered.map((p) => (
                   <ProgramCard key={p.id} program={p} isEnrolled={enrolledIds.has(p.id)} onApply={setApplyTarget} />
                 ))}

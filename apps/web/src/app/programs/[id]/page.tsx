@@ -13,7 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
-import { acceptsApplications, applyToProgram, getMyPrograms, getProgram } from '@/lib/api';
+import { ApiError, acceptsApplications, applyToProgram, getMyPrograms, getProgram } from '@/lib/api';
+import { useCoverFailed } from '@/hooks/useCoverFailed';
 import { programsEl, programsEn } from '@/lib/i18n/strings-programs';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { qk } from '@/lib/query-keys';
@@ -56,13 +57,14 @@ export default function ProgramDetailPage() {
   const { primary } = useLanguagePreference();
   const placeholder = primary === 'el' ? programsEl('fit_placeholder') : programsEn('fit_placeholder');
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error: readError, refetch, isFetching } = useQuery({
     queryKey: qk('programs', 'detail', id),
     queryFn: () => getProgram(id),
     enabled: Boolean(id),
     staleTime: 60_000,
     retry: 0,
   });
+  const cover = useCoverFailed(data?.program?.coverImageUrl);
   const { data: mine } = useQuery({
     queryKey: qk('programs', 'mine'),
     queryFn: getMyPrograms,
@@ -105,6 +107,33 @@ export default function ProgramDetailPage() {
           <Skeleton className="h-8 w-2/3" />
           <Skeleton className="h-40 w-full" />
         </div>
+      </AppShell>
+    );
+  }
+
+  // "Not found" only when the answer says so; a read that failed (the API
+  // unreachable) said the programme "does not exist" (docs §77).
+  if (isError && !(readError instanceof ApiError && (readError.status === 404 || readError.status === 403))) {
+    return (
+      <AppShell title="Program" titleEl="Πρόγραμμα">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p role="alert" className="text-sm text-muted-foreground">
+              <BilingualText en="This programme could not be read just now." el="Το πρόγραμμα δεν διαβάστηκε αυτή τη στιγμή." compact wrap />
+            </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}>
+                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+              </Button>
+              <Button variant="ghost" className="gap-2" asChild>
+                <Link href="/programs">
+                  <ArrowLeft className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="All programs" el="Όλα τα προγράμματα" compact />
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </AppShell>
     );
   }
@@ -156,8 +185,10 @@ export default function ProgramDetailPage() {
               Lab · Accelerator · Active · Athens" with nothing saying which
               was the organiser, the type, the status or the place. */}
           <Card className="overflow-hidden">
-            {program.coverImageUrl ? (
-              <img src={program.coverImageUrl} alt="" referrerPolicy="no-referrer" className="aspect-video w-full object-cover" />
+            {/* A cover that fails to load leaves no band: it was a blank
+                16:9 area, 480px at 1440, over the facts (docs §77). */}
+            {program.coverImageUrl && !cover.failed ? (
+              <img ref={cover.ref} onError={cover.onError} src={program.coverImageUrl} alt="" referrerPolicy="no-referrer" className="aspect-video w-full object-cover" />
             ) : null}
             <CardContent>
               <dl className="grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
@@ -197,19 +228,26 @@ export default function ProgramDetailPage() {
               </dl>
             </CardContent>
           </Card>
-          {program.description && (
+          {/* The sentence and the industries in one card: the industries
+              stood between two cards with no card of their own (docs §77). */}
+          {program.description || (program.industries?.length ?? 0) > 0 ? (
             <Card>
-              <CardContent>
-                <p className="card-body whitespace-pre-line">{program.description}</p>
+              <CardContent className="space-y-4">
+                {program.description ? <p className="card-body whitespace-pre-line">{program.description}</p> : null}
+                {(program.industries?.length ?? 0) > 0 && (
+                  <section aria-labelledby="program-industries" className="space-y-1">
+                    <h2 id="program-industries" className="text-xs font-medium text-muted-foreground"><BilingualText en="Industries" el="Κλάδοι" compact /></h2>
+                    <FactLine
+                      className="text-foreground sm:text-sm"
+                      items={program.industries.map((industry) =>
+                        /^any$/i.test(industry.trim()) ? <BilingualText key="any" en="Any industry" el="Κάθε κλάδος" compact /> : industry,
+                      )}
+                    />
+                  </section>
+                )}
               </CardContent>
             </Card>
-          )}
-          {(program.industries?.length ?? 0) > 0 && (
-            <section aria-labelledby="program-industries" className="space-y-2">
-              <h2 id="program-industries" className="text-xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Industries" el="Κλάδοι" compact /></h2>
-              <FactLine className="text-foreground sm:text-sm" items={program.industries} />
-            </section>
-          )}
+          ) : null}
           {(program.benefits?.length ?? 0) > 0 && (
             <Card>
               <CardContent className="space-y-3">
@@ -230,8 +268,16 @@ export default function ProgramDetailPage() {
         <aside>
           <Card>
             <CardContent className="space-y-3">
+              {/* The heading says what the card holds: "Apply to …" stood
+                  over "Applied" and over "Applications have closed". */}
               <h2 className="card-title">
-                <BilingualText en={`${programsEn('apply_to')} ${program.title}`} el={`${programsEl('apply_to')} ${program.title}`} compact wrap />
+                {enrolled ? (
+                  <BilingualText en="Your application" el="Η αίτησή σας" compact wrap />
+                ) : closed ? (
+                  <BilingualText en="Applications" el="Αιτήσεις" compact wrap />
+                ) : (
+                  <BilingualText en={`${programsEn('apply_to')} ${program.title}`} el={`${programsEl('apply_to')} ${program.title}`} compact wrap />
+                )}
               </h2>
               {enrolled ? (
                 <Badge className="gap-1.5" variant="secondary">
