@@ -41,10 +41,19 @@ export const ANALYTICS_STRINGS: Record<string, BilingualPair> = {
   engagements: { en: 'engagements', el: 'αλληλεπιδράσεις' },
   achievements: { en: 'Achievements', el: 'Επιτεύγματα' },
   unlocked: { en: 'Unlocked', el: 'Ξεκλειδωμένο' },
-  no_engagement: { en: 'No engagement data available yet.', el: 'Δεν υπάρχουν ακόμα δεδομένα αφοσίωσης.' },
-  no_views: { en: 'Not enough profile-view data yet.', el: 'Δεν υπάρχουν ακόμα αρκετά δεδομένα προβολών.' },
-  load_failed: { en: 'Failed to load analytics data.', el: 'Αποτυχία φόρτωσης αναλυτικών δεδομένων.' },
-  try_again: { en: 'Try again', el: 'Επανάληψη' },
+  // Each empty state says what fills it (docs §79).
+  no_engagement: {
+    en: 'None of your posts or comments drew engagement in this window. What you share on the Feed is counted here.',
+    el: 'Καμία ανάρτηση ή σχόλιό σας δεν είχε αλληλεπίδραση σε αυτό το διάστημα. Ό,τι μοιράζεστε στη Ροή μετριέται εδώ.',
+  },
+  open_feed: { en: 'Open the Feed', el: 'Άνοιγμα Ροής' },
+  no_views: {
+    en: 'No profile views were recorded in this window. A complete profile turns up in more searches.',
+    el: 'Δεν καταγράφηκαν προβολές προφίλ σε αυτό το διάστημα. Ένα πλήρες προφίλ εμφανίζεται σε περισσότερες αναζητήσεις.',
+  },
+  // A failed read is said as one (docs §73): not read just now, with Try again.
+  load_failed: { en: 'Your analytics could not be read just now.', el: 'Τα αναλυτικά σας δεν διαβάστηκαν αυτή τη στιγμή.' },
+  try_again: { en: 'Try again', el: 'Δοκιμάστε ξανά' },
   tab_overview: { en: 'Overview', el: 'Επισκόπηση' },
   tab_engagement: { en: 'Engagement', el: 'Αφοσίωση' },
   tab_growth: { en: 'Growth', el: 'Ανάπτυξη' },
@@ -73,6 +82,12 @@ export const ANALYTICS_STRINGS: Record<string, BilingualPair> = {
   reply_faster: { en: 'Reply in Messages', el: 'Απαντήστε στα Μηνύματα' },
   window_highlights: { en: 'This window', el: 'Αυτό το διάστημα' },
   export_csv: { en: 'CSV', el: 'CSV' },
+  // "Export" and "CSV" read as two unrelated buttons; the first saved JSON.
+  export_label: { en: 'Export:', el: 'Εξαγωγή:' },
+  export_json: { en: 'JSON', el: 'JSON' },
+  series_legend_unique: { en: 'Unique visitors', el: 'Μοναδικοί επισκέπτες' },
+  changes_against: { en: 'Changes compare with the previous {p}.', el: 'Οι μεταβολές συγκρίνονται με τις προηγούμενες {p}.' },
+  where_next: { en: 'Where to go next', el: 'Πού να πάτε μετά' },
   series_views: { en: 'Views', el: 'Προβολές' },
   series_unique: { en: 'Unique', el: 'Μοναδικές' },
   open_achievements: { en: 'Open achievements', el: 'Άνοιγμα επιτευγμάτων' },

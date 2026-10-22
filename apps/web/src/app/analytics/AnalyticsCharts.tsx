@@ -12,7 +12,12 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { Download } from 'lucide-react';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { analyticsEn, analyticsEl } from '@/lib/i18n/strings-analytics';
+import { formatShortDate } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import type { AnalyticsEngagement, AnalyticsProfileView } from '@/lib/api';
+
+/** One language for an accessible name, the reader's. */
+const bilingualAriaLabel = (en: string, el: string, lang: 'en' | 'el') => (lang === 'el' ? el : en);
 
 const DEMO_AREA_DATA = [
   { date: 'Mon', views: 12, unique: 8 },
@@ -50,8 +55,17 @@ function SampleNotice() {
   return <p className="mb-3 text-xs text-muted-foreground"><BilingualText en="Sample data — demonstration only." el="Ενδεικτικά δεδομένα — μόνο για επίδειξη." /></p>;
 }
 
+/** "2026-10-16" → "16 Oct" / "16 Οκτ"; a weekday label from the sample passes through. */
+function dayLabel(value: string, lang: 'en' | 'el'): string {
+  return /^\d{4}-\d{2}-\d{2}/.test(value) ? formatShortDate(value, lang) || value : value;
+}
+
 export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
   const { showDemoData } = useDemoData();
+  const { primary } = useLanguagePreference();
+  const lang: 'en' | 'el' = primary === 'el' ? 'el' : 'en';
+  const seriesViews = lang === 'el' ? analyticsEl('series_views') : analyticsEn('series_views');
+  const seriesUnique = lang === 'el' ? analyticsEl('series_legend_unique') : analyticsEn('series_legend_unique');
   const id = useId().replace(/:/g, '');
   const isSample = data.length === 0 && showDemoData;
   const chartData = data.length ? data.map((d) => ({ date: d.date, views: d.views, unique: d.uniqueVisitors }))
@@ -84,11 +98,14 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
           <CardTitle className="flex min-w-0 items-center gap-2 font-semibold">
             <CfbGlyph name="chart" className="icon-sm shrink-0 text-muted-foreground" /><BilingualText en="Profile Views Trend" el="Τάση προβολών προφίλ" compact />
           </CardTitle>
-          <div className="flex shrink-0 flex-wrap gap-1">
-            <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs" onClick={() => exportData('json')} disabled={!chartData.length}>
-              <Download className="icon-sm" aria-hidden="true" /><BilingualText en="Export" el="Εξαγωγή" compact />
+          {/* "Export" (which saved JSON) and "CSV" read as two unrelated
+              buttons: one caption, the two formats after it (docs §79). */}
+          <div className="flex shrink-0 flex-wrap items-center gap-1">
+            <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('export_label')} el={analyticsEl('export_label')} compact /></span>
+            <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs" onClick={() => exportData('json')} disabled={!chartData.length} aria-label={bilingualAriaLabel('Export JSON', 'Εξαγωγή JSON', lang)}>
+              <Download className="icon-sm" aria-hidden="true" /><BilingualText en={analyticsEn('export_json')} el={analyticsEl('export_json')} compact />
             </Button>
-            <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs" onClick={() => exportData('csv')} disabled={!chartData.length}>
+            <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs" onClick={() => exportData('csv')} disabled={!chartData.length} aria-label={bilingualAriaLabel('Export CSV', 'Εξαγωγή CSV', lang)}>
               <Download className="icon-sm" aria-hidden="true" /><BilingualText en={analyticsEn('export_csv')} el={analyticsEl('export_csv')} compact />
             </Button>
           </div>
@@ -110,18 +127,25 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
-              <XAxis dataKey="date" tick={{ fontSize: 12.2412 }} className="text-muted-foreground" />
+              {/* Days as the rest of the product writes them, not ISO (docs §79). */}
+              <XAxis dataKey="date" tick={{ fontSize: 12.2412 }} className="text-muted-foreground" tickFormatter={(value: string) => dayLabel(value, lang)} />
               <YAxis tick={{ fontSize: 12.2412 }} className="text-muted-foreground" />
-              <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Area type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} fill={`url(#${id}-views)`} name={analyticsEn('series_views')} />
-              <Area type="monotone" dataKey="unique" stroke="hsl(var(--status-info-mark))" strokeWidth={2} fill={`url(#${id}-unique)`} name={analyticsEn('series_unique')} connectNulls={false} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={(value) => dayLabel(String(value), lang)} />
+              <Area type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} fill={`url(#${id}-views)`} name={seriesViews} />
+              <Area type="monotone" dataKey="unique" stroke="hsl(var(--status-info-mark))" strokeWidth={2} fill={`url(#${id}-unique)`} name={seriesUnique} connectNulls={false} />
             </AreaChart>
           </ResponsiveContainer>
+          {/* Two lines and no key: the second was unique visitors. */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-primary" aria-hidden="true" />{seriesViews}</span>
+            <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-status-info-mark" aria-hidden="true" />{seriesUnique}</span>
+          </div>
           <details className="mt-3 text-xs text-muted-foreground">
             {/* No disclosure triangle in front: it put the label 14px off the
                 card's axis. The label reads as a link instead. */}
             <summary className="inline-flex cursor-pointer list-none rounded-md text-primary-accessible hover:underline focus-ring [&::-webkit-details-marker]:hidden"><BilingualText en="View recorded values" el="Προβολή καταγεγραμμένων τιμών" compact /></summary>
-            <ul className="mt-3 space-y-1.5">{chartData.map((point) => <li key={point.date}>{point.date}: {point.views} / {point.unique ?? '—'}</li>)}</ul>
+            {/* "2026-10-16: 31 / 18" named neither figure. */}
+            <ul className="mt-3 space-y-1.5">{chartData.map((point) => <li key={point.date} className="tabular-nums">{dayLabel(point.date, lang)}: {point.views} {seriesViews.toLowerCase()} · {point.unique ?? '—'} {seriesUnique.toLowerCase()}</li>)}</ul>
           </details>
         </> : <Unavailable />}
       </CardContent>
@@ -131,14 +155,16 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
 
 export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEngagement }) {
   const { showDemoData } = useDemoData();
+  const { primary } = useLanguagePreference();
   const isSample = engagement === undefined && showDemoData;
   const labels = [
     ['Connections', 'Συνδέσεις', 'connections'], ['Messages', 'Μηνύματα', 'messages'],
     ['Likes', 'Μου αρέσει', 'likes'], ['Comments', 'Σχόλια', 'comments'], ['Shares', 'Κοινοποιήσεις', 'shares'],
   ] as const;
   const values = labels.map(([name, el, key], index) => ({ name, el, value: isSample ? DEMO_BAR_DATA[index].value : engagement?.[key] }));
+  // The axis, the tooltip and the legend name each type in the reader's language.
   const barData = values.filter((item) => typeof item.value === 'number' && Number.isFinite(item.value))
-    .map((item) => ({ name: item.name, value: item.value as number }));
+    .map((item) => ({ name: primary === 'el' ? item.el : item.name, value: item.value as number }));
   const pieData = barData.filter((item) => item.value > 0);
 
   return (
@@ -171,7 +197,9 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
           {pieData.length ? <ResponsiveContainer width="100%" height={180}>
             <RechartsPie><Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={3} dataKey="value">
               {pieData.map((item, index) => <Cell key={item.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-            </Pie><Tooltip contentStyle={TOOLTIP_STYLE} /><Legend iconSize={8} wrapperStyle={{ fontSize: 12.2412 }} /></RechartsPie>
+            {/* The legend's words were drawn in each slice's pastel, under 3:1;
+                the dot carries the colour and the word stays ink. */}
+            </Pie><Tooltip contentStyle={TOOLTIP_STYLE} /><Legend iconSize={8} wrapperStyle={{ fontSize: 12.2412 }} formatter={(value) => <span className="text-foreground">{value}</span>} /></RechartsPie>
           </ResponsiveContainer> : <p className="py-8 text-sm text-muted-foreground"><BilingualText en={barData.length ? 'No recorded engagement to distribute in this period.' : 'Engagement distribution unavailable.'} el={barData.length ? 'Δεν υπάρχει καταγεγραμμένη αλληλεπίδραση για κατανομή σε αυτή την περίοδο.' : 'Η κατανομή αλληλεπίδρασης δεν είναι διαθέσιμη.'} /></p>}
         </CardContent>
       </Card>

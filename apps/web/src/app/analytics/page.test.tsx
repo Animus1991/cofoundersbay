@@ -133,6 +133,33 @@ describe('analytics clarity and controls', () => {
     expect(screen.getByRole('button', { name: '7 days' }).getAttribute('aria-pressed')).toBe('false');
   });
 
+  // docs §79: a tile's change carried no sign once its arrow was hidden, the
+  // "down" callout said "Open Discover" and opened the side panel, and a
+  // failed read said "Failed to load".
+  it('signs each change, says against what, and opens the page of what fell', async () => {
+    vi.mocked(getAnalyticsOverview).mockResolvedValue({
+      ...overview,
+      metrics: { ...overview.metrics, profileViews: 248, profileViewsChange: 12, messagesSent: 63, messagesSentChange: -8 },
+    });
+    mount();
+    await screen.findAllByText('248');
+    expect(screen.getAllByText('+12%').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('−8%').length).toBeGreaterThan(0);
+    expect(screen.getByText(/^Changes compare with the previous 7 days\. Recorded account activity/)).toBeTruthy();
+    expect(screen.getByText('Messages Sent −8%')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Open messages' }).getAttribute('href')).toBe('/messages');
+    expect(screen.queryByRole('button', { name: 'Open Discover' })).toBeNull();
+    expect(screen.getAllByRole('link', { name: /248/ })[0].getAttribute('title')).toMatch(/Open profile/);
+  });
+
+  it('says a failed read was not read, with Try again', async () => {
+    vi.mocked(getAnalyticsOverview).mockRejectedValue(new Error('offline'));
+    mount();
+    const alert = await screen.findByRole('alert', {}, { timeout: 4000 });
+    expect(alert.textContent).toBe('Your analytics could not be read just now.');
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeTruthy();
+  });
+
   it('ignores a window it does not recognise instead of asking the API for it', async () => {
     url.search = 'period=all-time';
     mount();

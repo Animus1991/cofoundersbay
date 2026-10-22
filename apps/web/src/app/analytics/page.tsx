@@ -27,7 +27,7 @@ import { isPreviewDemo } from '@/lib/preview-demo';
 import { TREND } from '@/lib/semantic-colors';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { analyticsEn, analyticsEl } from '@/lib/i18n/strings-analytics';
-import { formatShortDate } from '@/lib/i18n/format';
+import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { metricsToDisplay, type AnalyticsMetric } from './metrics';
 import { BadgesWidget } from '@/components/gamification/BadgesWidget';
 import { RowHead } from '@/components/dashboard/SectionCard';
@@ -76,6 +76,21 @@ function metricHref(label: string): string | null {
   if (label === 'Messages Sent') return '/messages';
   if (label === 'Search Appearances') return '/discover';
   return null;
+}
+
+/** What a tile or the "down" callout opens, named as the button says it. */
+const DESTINATION: Record<string, { en: string; el: string }> = {
+  '/profile': { en: analyticsEn('open_profile'), el: analyticsEl('open_profile') },
+  '/connections': { en: analyticsEn('open_connections'), el: analyticsEl('open_connections') },
+  '/messages': { en: analyticsEn('open_messages'), el: analyticsEl('open_messages') },
+  '/discover': { en: analyticsEn('open_discover'), el: analyticsEl('open_discover') },
+};
+
+/** "+12%", "−8%", "0%": the arrow beside it is hidden as decoration, so the sign carries the direction. */
+function signedChange(metric: Pick<AnalyticsMetric, 'change' | 'changeType'>): string {
+  if (metric.change === null) return '—';
+  const sign = metric.changeType === 'increase' ? '+' : metric.changeType === 'decrease' ? '−' : '';
+  return `${sign}${Math.abs(metric.change)}%`;
 }
 
 function analyticsHref(period: Period, tab: AnalyticsTab): string {
@@ -134,7 +149,7 @@ function MetricCard({
             )}
           >
             <ChangeIcon className="size-[1.08em] shrink-0" />
-            {metric.change === null ? '—' : `${Math.abs(metric.change)}%`}
+            {signedChange(metric)}
           </span>
         </div>
         <h3 className="page-stat mb-1 text-center font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
@@ -145,16 +160,20 @@ function MetricCard({
     </Card>
   );
 
+  // Four tiles open another page and two switch this page's tab; nothing said
+  // which. The tooltip names where each goes (docs §79).
   if (href) {
+    const to = DESTINATION[href];
     return (
-      <Link href={href} className="block h-full min-w-0 rounded-2xl focus-ring">
+      <Link href={href} title={to ? bilingualAria(to.en, to.el) : undefined} className="block h-full min-w-0 rounded-2xl focus-ring">
         {body}
       </Link>
     );
   }
   if (tab && onOpenTab) {
+    const key = tab === 'engagement' ? 'view_engagement' : 'view_growth';
     return (
-      <button type="button" className="block h-full min-w-0 rounded-2xl text-center focus-ring" onClick={() => onOpenTab(tab)}>
+      <button type="button" title={bilingualAria(analyticsEn(key), analyticsEl(key))} className="block h-full min-w-0 rounded-2xl text-center focus-ring" onClick={() => onOpenTab(tab)}>
         {body}
       </button>
     );
@@ -236,7 +255,9 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
     glyph: m.glyph,
   }));
   return (
-    <Card className="flex min-w-0 flex-col border-primary-muted bg-primary-subtle">
+    // Flat like the rail's other groups (docs §79): the tinted frame inside
+    // the rail marked nothing.
+    <Card className="flex min-w-0 flex-col">
       <CardContent className="flex flex-1 flex-col">
         {/* The period badge sits under the title: bilingual "vs prev period"
             is metadata about the rows, not a peer of the heading. */}
@@ -253,7 +274,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
         </div>
         {/* Stacked only: this card now lives in the period rail, where three
             columns would be ~90px and wrap every Greek label. */}
-        <div className="flex flex-1 flex-col divide-y divide-primary/10">
+        <div className="flex flex-1 flex-col divide-y divide-border">
           {items.map((item) => {
             const href = metricHref(item.label);
             const inner = (
@@ -267,7 +288,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
                 : item.changeType === 'decrease' ? TREND.down
                 : TREND.flat
               )}>
-                {item.change === null ? '—' : `${item.changeType === 'increase' ? '+' : item.changeType === 'decrease' ? '-' : ''}${Math.abs(item.change)}%`}
+                {signedChange(item)}
               </p>
               </>
             );
@@ -421,7 +442,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-        <p className="text-sm text-muted-foreground">
+        <p role="alert" className="text-sm text-muted-foreground">
           <BilingualText en={analyticsEn('load_failed')} el={analyticsEl('load_failed')} />
         </p>
         <Button variant="secondary" size="sm" onClick={onRetry}>
@@ -546,6 +567,8 @@ export default function AnalyticsPage() {
   const periodLabel = period === '7d' ? '7 days' : period === '14d' ? '14 days' : period === '30d' ? '30 days' : '90 days';
   const periodLabelEl = period === '7d' ? '7 ημέρες' : period === '14d' ? '14 ημέρες' : period === '30d' ? '30 ημέρες' : '90 ημέρες';
   const declining = metrics.filter((m) => m.changeType === 'decrease' && m.change !== null);
+  const declineHref = declining.map((m) => metricHref(m.label)).find((href): href is string => !!href && !!DESTINATION[href]);
+  const declineTo = declineHref ? { href: declineHref, ...DESTINATION[declineHref] } : null;
   const askPrompt = waiting
     ? {
         en: 'Summarize my profile analytics and tell me the next action on Discover, Messages, or my profile.',
@@ -729,7 +752,12 @@ export default function AnalyticsPage() {
                   <CfbGlyph name="calendar" className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                   <BilingualText en={PERIOD_LABEL[period].en} el={PERIOD_LABEL[period].el} compact />
                 </span>
-                <span className="min-w-0"><BilingualText en={isPreviewDemo() ? 'Demo showcase — sample metrics, not account activity.' : 'Recorded account activity. A dash means unavailable, not zero; trends require a comparable previous period.'} el={isPreviewDemo() ? 'Επίδειξη — ενδεικτικές μετρήσεις, όχι δραστηριότητα λογαριασμού.' : 'Καταγεγραμμένη δραστηριότητα λογαριασμού. Η παύλα σημαίνει μη διαθέσιμο, όχι μηδέν· οι τάσεις απαιτούν συγκρίσιμη προηγούμενη περίοδο.'} /></span>
+                {/* The signed figure on each tile is a change; the first sentence says
+                    against what (docs §79). One text, so it runs on as one line. */}
+                <span className="min-w-0"><BilingualText
+                  en={`${analyticsEn('changes_against').replace('{p}', PERIOD_LABEL[period].en)} ${isPreviewDemo() ? 'Demo showcase — sample metrics, not account activity.' : 'Recorded account activity. A dash means unavailable, not zero; trends require a comparable previous period.'}`}
+                  el={`${analyticsEl('changes_against').replace('{p}', PERIOD_LABEL[period].el)} ${isPreviewDemo() ? 'Επίδειξη — ενδεικτικές μετρήσεις, όχι δραστηριότητα λογαριασμού.' : 'Καταγεγραμμένη δραστηριότητα λογαριασμού. Η παύλα σημαίνει μη διαθέσιμο, όχι μηδέν· οι τάσεις απαιτούν συγκρίσιμη προηγούμενη περίοδο.'}`}
+                /></span>
               </p>
 
               <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
@@ -752,18 +780,29 @@ export default function AnalyticsPage() {
                         <span key={m.label}>
                           {i > 0 ? ' · ' : ''}
                           <BilingualText
-                            en={`${m.label} ${Math.abs(m.change ?? 0)}%`}
-                            el={`${m.labelEl} ${Math.abs(m.change ?? 0)}%`}
+                            en={`${m.label} ${signedChange(m)}`}
+                            el={`${m.labelEl} ${signedChange(m)}`}
                             wrap
                           />
                         </span>
                       ))}
                     </p>
                   </div>
+                  {/* It said "Open Discover" and opened the side panel. It now
+                      opens the page of the first figure that fell, named as
+                      such, or says that it opens the side panel (docs §79). */}
                   <div className="flex flex-wrap gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => openRailSection('next')}>
-                      <BilingualText en={analyticsEn('open_discover')} el={analyticsEl('open_discover')} compact wrap />
-                    </Button>
+                    {declineTo ? (
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={declineTo.href}>
+                          <BilingualText en={declineTo.en} el={declineTo.el} compact wrap />
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button type="button" variant="outline" size="sm" onClick={() => openRailSection('next')}>
+                        <BilingualText en={analyticsEn('where_next')} el={analyticsEl('where_next')} compact wrap />
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}
@@ -826,8 +865,11 @@ export default function AnalyticsPage() {
                 <TopContentList content={topContent} />
               ) : (
                 <Card className="min-w-0">
-                  <CardContent className="py-12 text-center text-sm text-muted-foreground">
+                  <CardContent className="flex flex-col items-center gap-3 py-12 text-center text-sm text-muted-foreground">
                     <p><BilingualText en={analyticsEn('no_engagement')} el={analyticsEl('no_engagement')} /></p>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href="/feed"><BilingualText en={analyticsEn('open_feed')} el={analyticsEl('open_feed')} compact /></Link>
+                    </Button>
                   </CardContent>
                 </Card>
               )}
@@ -846,8 +888,11 @@ export default function AnalyticsPage() {
                 <ProfileViewsChart data={profileViews} />
               ) : (
                 <Card>
-                  <CardContent className="py-16 text-center text-sm text-muted-foreground">
+                  <CardContent className="flex flex-col items-center gap-3 py-16 text-center text-sm text-muted-foreground">
                     <p><BilingualText en={analyticsEn('no_views')} el={analyticsEl('no_views')} /></p>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href="/profile"><BilingualText en={analyticsEn('open_profile')} el={analyticsEl('open_profile')} compact /></Link>
+                    </Button>
                   </CardContent>
                 </Card>
               )}
