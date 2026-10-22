@@ -153,6 +153,8 @@
 - Conversation times go through `lib/thread-time.ts`: 24-hour in both languages, the reader's day for the list and the dividers, calendar days. A role written as plain text reads `ROLE_FAMILY_LABEL` (`lib/role-family.ts`) so it agrees with `RoleBadge`.
 - `TabsContent` hides an inactive panel with `data-[state=inactive]:hidden`: a display utility on a panel outranks Radix's `hidden` attribute. A full-height frame (`AppShellFrame fullHeight`) is `h-full` under the banners' padding and sets `--topbar-top: 0px` for the phone top bar.
 - An overlay hides decorative `CfbGlyph`s, so a menu item that needs an icon uses a lucide one; a menu of glyphs and lucide icons leaves some labels out of line.
-- Toast titles and descriptions are written in English and translated by `toastEl` (`lib/i18n/strings-toasts.ts`), which also gives the pair in bilingual display; add the Greek to that catalogue rather than passing an already translated string (docs §74).
 - An action that cannot run here yet stays visible and says why (`WithDisabledReason`, with `disabled` on the button in source, which `deadControls.test.ts` reads); it never copies a link or shows a success toast for something that does not exist (/fundraising "Share room", docs §74).
+- Only a 401 sends a page to sign-in; any other failed read says it was not read, with Try again (`/profile` once logged people out when the API was down). "Not found" needs a 404/403 (docs §75).
+- A page's Back goes back only when `hasInAppPrevious()` (`lib/in-app-history.ts`, counted by `AppShellFrame` per tab) says one of our pages came before; otherwise to the section's list. `document.referrer` does not change on client navigation.
+- Someone else's profile reads the connection like the homes (`useConnectionWith`): their waiting request is answered with Accept there too. Its skills are one card (`SkillEvidencePanel declared={…}`), and it uses the own profile's two-column container layout (docs §75).
 

@@ -18,6 +18,7 @@ import { TOP_BANNER_STACK } from './useTopBannerHeight';
 import { PageRail, type PageRailSection } from './PageRail';
 import { usePageRail } from './PageRailContext';
 import { PageHeaderSlot } from './PageHeaderSlot';
+import { recordInAppView } from '@/lib/in-app-history';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -116,6 +117,12 @@ export function AppShellFrame({
   const { pinned: railPinned, hasRail } = usePageRail();
   const mainRef = useRef<HTMLElement>(null);
   useLandmarkMain(mainRef);
+  // Counts the pages seen in this tab, so a page's Back knows whether there
+  // is one of ours to go back to (lib/in-app-history).
+  const framePath = usePathname();
+  useEffect(() => {
+    recordInAppView();
+  }, [framePath]);
 
   return (
     <InAppShellFrame.Provider value={true}>

@@ -318,7 +318,11 @@ const DYNAMIC_PATTERNS: Array<{ pattern: RegExp; meta: Omit<PageMeta, 'path'> & 
     pattern: /^\/profiles\/[^/]+$/,
     meta: {
       title: 'Member profile',
-      description: 'Public profile — connect, message, or save to shortlist.',
+      titleEl: 'Προφίλ μέλους',
+      // It promised "save to shortlist"; this page has no such action (the
+      // match page does). It names what the page offers (docs §75).
+      description: 'Connect, message, follow, or ask for an introduction.',
+      descriptionEl: 'Σύνδεση, μήνυμα, παρακολούθηση ή αίτημα σύστασης.',
       section: 'Explore',
       status: 'complete',
     },

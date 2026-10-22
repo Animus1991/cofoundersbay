@@ -21,7 +21,20 @@ import { getEvidenceCandidates, getSkillEvidence, linkSkillEvidence, unlinkSkill
  * relationship the platform can see. On one's own profile each skill can be
  * linked to one's own completed work; the server checks the link.
  */
-export function SkillEvidencePanel({ userId, editable = false }: { userId: string; editable?: boolean }) {
+export function SkillEvidencePanel({
+  userId,
+  editable = false,
+  declared,
+}: {
+  userId: string;
+  editable?: boolean;
+  /**
+   * The skills the profile lists. Given, the panel is the profile's one
+   * skills card: someone's profile showed "Skills" (a line of names) and,
+   * under it, "Skills with evidence" naming the same skills again (docs §75).
+   */
+  declared?: readonly string[];
+}) {
   const queryClient = useQueryClient();
   const { error: showError } = useToast();
   const { primary } = useLanguagePreference();
@@ -50,7 +63,16 @@ export function SkillEvidencePanel({ userId, editable = false }: { userId: strin
   });
   const unlink = useMutation({ mutationFn: (id: string) => unlinkSkillEvidence(id), onSuccess: () => void refresh(), onError: () => showError('Could not remove it') });
 
-  const list = (skills.data ?? []).filter((s) => editable || s.evidence.length > 0 || s.endorsements > 0);
+  const shown = (skills.data ?? []).filter((s) => editable || s.evidence.length > 0 || s.endorsements > 0);
+  // The declared skills first, in the profile's order, each with whatever
+  // backs it; then any skill that only others' endorsements name.
+  const list: SkillWithEvidence[] = declared
+    ? [
+        ...declared.map((name) => shown.find((s) => s.name.toLowerCase() === name.toLowerCase()) ?? { name, evidence: [], endorsements: 0, verifiedEndorsements: 0 }),
+        ...shown.filter((s) => !declared.some((name) => name.toLowerCase() === s.name.toLowerCase())),
+      ]
+    : shown;
+  const anyBacked = list.some((s) => s.evidence.length > 0 || s.endorsements > 0);
   if (!skills.isLoading && !list.length && !editable) return null;
 
   const summary = (s: SkillWithEvidence) => {
@@ -67,14 +89,20 @@ export function SkillEvidencePanel({ userId, editable = false }: { userId: strin
   return (
     <Card>
       <CardHeader>
-        <CardTitle><BilingualText en="Skills with evidence" el="Δεξιότητες με τεκμήρια" compact /></CardTitle>
-        <CardDescription>
-          <BilingualText
-            en={editable ? 'Show where each skill was applied here. Only your own completed work can be linked.' : 'Where each skill was applied on CoFounderBay.'}
-            el={editable ? 'Δείξτε πού εφαρμόστηκε κάθε δεξιότητα εδώ. Συνδέεται μόνο δική σας ολοκληρωμένη δουλειά.' : 'Πού εφαρμόστηκε κάθε δεξιότητα στο CoFounderBay.'}
-            wrap
-          />
-        </CardDescription>
+        <CardTitle>
+          {declared
+            ? <BilingualText en="Skills" el="Δεξιότητες" compact />
+            : <BilingualText en="Skills with evidence" el="Δεξιότητες με τεκμήρια" compact />}
+        </CardTitle>
+        {editable || !declared || anyBacked ? (
+          <CardDescription>
+            <BilingualText
+              en={editable ? 'Show where each skill was applied here. Only your own completed work can be linked.' : 'Where each skill was applied on CoFounderBay.'}
+              el={editable ? 'Δείξτε πού εφαρμόστηκε κάθε δεξιότητα εδώ. Συνδέεται μόνο δική σας ολοκληρωμένη δουλειά.' : 'Πού εφαρμόστηκε κάθε δεξιότητα στο CoFounderBay.'}
+              wrap
+            />
+          </CardDescription>
+        ) : null}
       </CardHeader>
       <CardContent className="space-y-4">
         {!list.length ? (
@@ -111,8 +139,6 @@ export function SkillEvidencePanel({ userId, editable = false }: { userId: strin
                       </li>
                     ))}
                   </ul>
-                ) : editable ? (
-                  <p className="text-xs text-muted-foreground"><BilingualText en="No evidence linked yet." el="Δεν έχει συνδεθεί τεκμήριο ακόμη." compact /></p>
                 ) : null}
                 {editable && s.evidence.length < SKILL_EVIDENCE_LIMITS.perSkill ? (
                   adding === s.name ? (
@@ -140,10 +166,20 @@ export function SkillEvidencePanel({ userId, editable = false }: { userId: strin
                       </div>
                     </form>
                   ) : (
-                    <Button type="button" size="sm" variant="outline" onClick={() => { setAdding(s.name); setChoice(''); setProblem(null); }}>
-                      <BilingualText en="Add evidence" el="Προσθήκη τεκμηρίου" compact />
-                    </Button>
+                    // "No evidence linked yet" and the way to link some, on one
+                    // line: five skills drew five outline buttons, each on a
+                    // line of its own under a line of its own (docs §75).
+                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                      {s.evidence.length ? <span /> : (
+                        <p className="text-xs text-muted-foreground"><BilingualText en="No evidence linked yet." el="Δεν έχει συνδεθεί τεκμήριο ακόμη." compact /></p>
+                      )}
+                      <Button type="button" size="sm" variant="ghost" className="text-primary-accessible" onClick={() => { setAdding(s.name); setChoice(''); setProblem(null); }}>
+                        <BilingualText en="Add evidence" el="Προσθήκη τεκμηρίου" compact />
+                      </Button>
+                    </div>
                   )
+                ) : editable && !s.evidence.length ? (
+                  <p className="text-xs text-muted-foreground"><BilingualText en="No evidence linked yet." el="Δεν έχει συνδεθεί τεκμήριο ακόμη." compact /></p>
                 ) : null}
               </li>
             ))}

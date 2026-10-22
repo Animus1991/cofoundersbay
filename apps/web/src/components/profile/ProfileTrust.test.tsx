@@ -78,7 +78,10 @@ describe('no constant trust claims', () => {
   it('the own profile draws no fixed "Verified member" or "Open to work"', () => {
     const page = read('app/profile/page.tsx');
     expect(page).not.toMatch(/profileEn\('verified_member'\)|profileEn\('open_to_work'\)/);
-    expect(page).toContain('<AvatarVerifiedMark');
+    // One mark for being verified, read from the signal, beside the name as
+    // on everyone else's profile; the photo carried a second (docs §75).
+    expect(page).toContain('<VerifiedBadge methods={trust.methods}');
+    expect(page).not.toContain('<AvatarVerifiedMark');
     expect(page).toContain('<OwnOpenToPill');
   });
 

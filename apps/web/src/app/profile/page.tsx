@@ -1,7 +1,8 @@
 'use client';
 
 import { SkillEvidencePanel } from '@/components/profile/SkillEvidencePanel';
-import { AvatarVerifiedMark, OwnOpenToPill, VerificationPanel, useMyTrust } from '@/components/profile/ProfileTrust';
+import { OwnOpenToPill, VerificationPanel, useMyTrust } from '@/components/profile/ProfileTrust';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { VerifiedBadge } from '@/components/commitments/VerifiedBadge';
 import { ProfileHero } from '@/components/profile/ProfileHero';
 import { ProfileActivity, ProfileExperience, SimilarProfiles } from '@/components/profile/ProfileSections';
@@ -43,7 +44,7 @@ import {
   User,
   Settings as SettingsIcon,
 } from 'lucide-react';
-import { getMeProfile, getDashboardActivity, listConnectionRequests, getEndorsementsForUser } from '@/lib/api';
+import { ApiError, getMeProfile, getDashboardActivity, listConnectionRequests, getEndorsementsForUser } from '@/lib/api';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { AppShell } from '@/components/layout/AppShell';
@@ -326,11 +327,15 @@ export default function ProfilePage() {
     return Array.from(counts, ([date, count]) => ({ date, count }));
   }, [activityPage]);
 
+  // Only a signed-out answer goes to sign-in. Any failed read did: with the
+  // API unreachable, opening one's profile landed on the login page, as if
+  // the session had ended (docs §75). Other failures say so below.
+  const signedOut = error instanceof ApiError && error.status === 401;
   React.useEffect(() => {
     if (isPreviewDemo()) return;
-    if (error) { router.replace('/login'); return; }
+    if (signedOut) { router.replace('/login'); return; }
     if (meData && !meData.hasCompletedOnboarding) { router.replace('/onboarding'); }
-  }, [meData, error, router]);
+  }, [meData, signedOut, router]);
 
   const profile = meData?.profile ?? null;
   const meId = profile?.userId;
@@ -430,26 +435,37 @@ export default function ProfilePage() {
     return (
       <div className="flex min-h-screen items-center justify-center px-6">
         <div className="w-full max-w-sm space-y-4 text-center">
-          <p className="text-sm text-muted-foreground">
+          {/* A failed read offers Try again only: the edit form reads the
+              same profile and would fail the same way. With an answer that
+              holds no profile, the way on is to fill it in (docs §75). */}
+          <p role={!isFetching && error ? 'alert' : undefined} className="text-sm text-muted-foreground">
             {isFetching ? (
               <BilingualText en={profileEn('preparing_profile')} el={profileEl('preparing_profile')} />
+            ) : error ? (
+              <BilingualText
+                en="Your profile could not be read just now."
+                el="Το προφίλ σας δεν διαβάστηκε αυτή τη στιγμή."
+              />
             ) : (
               <BilingualText
-                en="We could not load your profile."
-                el="Δεν μπορέσαμε να φορτώσουμε το προφίλ σας."
+                en="Your profile has not been filled in yet."
+                el="Το προφίλ σας δεν έχει συμπληρωθεί ακόμη."
               />
             )}
           </p>
           {!isFetching && (
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-              <Button variant="outline" size="sm" onClick={() => refetch()}>
-                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-              </Button>
-              <Button asChild size="sm">
-                <Link href="/profile/edit">
-                  <BilingualText en="Complete your profile" el="Ολοκληρώστε το προφίλ σας" compact />
-                </Link>
-              </Button>
+              {error ? (
+                <Button variant="outline" size="sm" onClick={() => refetch()}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+              ) : (
+                <Button asChild size="sm">
+                  <Link href="/profile/edit">
+                    <BilingualText en="Complete your profile" el="Ολοκληρώστε το προφίλ σας" compact />
+                  </Link>
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -547,7 +563,8 @@ export default function ProfilePage() {
         <ProfileHero
           name={profile.displayName}
           avatarUrl={profile.avatarUrl}
-          avatarMark={<AvatarVerifiedMark methods={trust.methods} />}
+          // One mark for being verified, as on everyone else's profile: the
+          // badge beside the name. A check on the photo said it again.
           nameBadge={<VerifiedBadge methods={trust.methods} />}
           headline={
             profile.headline ? (
@@ -688,11 +705,6 @@ export default function ProfilePage() {
                   <FolderOpen className="icon-md text-muted-foreground" aria-hidden="true" />
                   <BilingualText en={profileEn('portfolio_showcase')} el={profileEl('portfolio_showcase')} />
                 </CardTitle>
-                <Button asChild variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible">
-                  <Link href="/profile/edit">
-                    <Plus className="icon-sm" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
-                  </Link>
-                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -708,11 +720,17 @@ export default function ProfilePage() {
                     <BilingualText en={profileEn('showcase_desc')} el={profileEl('showcase_desc')} />
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="gap-1.5" asChild>
-                  <Link href="/profile/edit">
-                    <Plus className="icon-sm" /> <BilingualText en={profileEn('add_first_item')} el={profileEl('add_first_item')} />
-                  </Link>
-                </Button>
+                {/* "Add" in the head and "Add First Item" here both opened the
+                    profile form, whose Portfolio tab says "Coming soon". One
+                    button, unavailable, saying so (docs §75). */}
+                <WithDisabledReason
+                  reasonEn="Portfolio items cannot be added yet. The portfolio editor is coming."
+                  reasonEl="Στοιχεία χαρτοφυλακίου δεν προστίθενται ακόμη. Ο επεξεργαστής χαρτοφυλακίου έρχεται."
+                >
+                  <Button variant="outline" size="sm" className="gap-1.5" disabled>
+                    <BilingualText en={profileEn('add_first_item')} el={profileEl('add_first_item')} />
+                  </Button>
+                </WithDisabledReason>
               </div>
             </CardContent>
           </Card>

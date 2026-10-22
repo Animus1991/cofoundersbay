@@ -36,16 +36,18 @@ import {
   Loader2,
 } from 'lucide-react';
 import {
+  ApiError,
   getPublicProfile,
   sendConnectionRequest,
   getConnectionStatus,
   getOrCreateDirectConversation,
-  type ConnectionStatus,
+  respondToConnectionRequest,
 } from '@/lib/api';
+import { useConnectionWith } from '@/hooks/useConnectionWith';
+import { hasInAppPrevious } from '@/lib/in-app-history';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { StatusText, statusEl } from '@/components/common/StatusText';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -56,8 +58,7 @@ import { qk } from '@/lib/query-keys';
 import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import { FactLine } from '@/components/common/FactLine';
-
-type PublicProfile = Awaited<ReturnType<typeof getPublicProfile>>;
+import { cn } from '@/lib/utils';
 
 function SocialLinkButton({
   href,
@@ -141,7 +142,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   const viewerId = useStoredUser()?.id ?? null;
   const hasToken = useIsAuthenticated();
 
-  const { data: profile, isLoading, isError } = useQuery({
+  const { data: profile, isLoading, isError, error: readError, refetch, isFetching } = useQuery({
     queryKey: qk('public-profile', userId),
     queryFn: () => getPublicProfile(userId),
     staleTime: 2 * 60_000,
@@ -151,6 +152,15 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
 
   // One view counted per visit, never the owner's (who viewed: Analytics).
   useRecordProfileView(userId, Boolean(profile), true);
+
+  // "Back" goes back: to the page the reader came from inside the product,
+  // or to Explore when they arrived from outside. It always went to
+  // /discover, so a profile opened from Messages "went back" to Explore
+  // (docs §75).
+  const goBack = () => {
+    if (hasInAppPrevious()) router.back();
+    else router.push('/discover');
+  };
 
   const { data: connStatus } = useQuery({
     queryKey: qk('connection-status', userId),
@@ -170,6 +180,31 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     } catch (err) {
       showError('Could not connect', err instanceof Error ? err.message : 'Please try again');
       return { error: err instanceof Error && err.message ? err.message : 'The connection request was not sent.' };
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  // Where the connection stands, read from the /connections lists as the
+  // founder home and /matches read it (useConnectionWith). The status
+  // endpoint has no "they asked you" answer the page used, so a person whose
+  // request was waiting was offered Connect here and Accept everywhere else
+  // (docs §75).
+  const { connectionWith } = useConnectionWith(Boolean(viewerId) && viewerId !== userId, viewerId);
+  const linkToThem = connectionWith.get(userId);
+  const waitingOnMe = linkToThem?.state === 'received' || (connStatus?.status === 'pending' && connStatus.direction === 'received');
+  const waitingRequestId = linkToThem?.state === 'received' ? linkToThem.id : connStatus?.direction === 'received' ? connStatus.connectionId : null;
+  const handleAccept = async (): Promise<PageControlRunResult> => {
+    if (!waitingRequestId) return { error: 'The request could not be found.' };
+    setConnecting(true);
+    try {
+      await respondToConnectionRequest(waitingRequestId, 'accepted');
+      queryClient.setQueryData(qk('connection-status', userId), { status: 'accepted', connectionId: waitingRequestId, direction: 'received' });
+      await queryClient.invalidateQueries({ queryKey: qk('connections') });
+      success('Request accepted', 'You are now connected.');
+    } catch (err) {
+      showError('Could not accept the request', err instanceof Error ? err.message : 'Please try again');
+      return { error: err instanceof Error && err.message ? err.message : 'The request was not accepted.' };
     } finally {
       setConnecting(false);
     }
@@ -211,9 +246,18 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       labelEn: 'Send a connection request',
       labelEl: 'Αποστολή αιτήματος σύνδεσης',
       writes: true,
-      unavailableEn: noActor ?? (connected ? 'You are already connected.' : pending ? 'A request is already pending.' : undefined),
-      unavailableEl: noActorEl ?? (connected ? 'Είστε ήδη συνδεδεμένοι.' : pending ? 'Υπάρχει ήδη εκκρεμές αίτημα.' : undefined),
+      unavailableEn: noActor ?? (connected ? 'You are already connected.' : waitingOnMe ? 'They asked to connect: accept their request instead.' : pending ? 'A request is already pending.' : undefined),
+      unavailableEl: noActorEl ?? (connected ? 'Είστε ήδη συνδεδεμένοι.' : waitingOnMe ? 'Σας ζήτησαν σύνδεση: αποδεχτείτε το αίτημά τους.' : pending ? 'Υπάρχει ήδη εκκρεμές αίτημα.' : undefined),
       run: handleConnect,
+    },
+    {
+      id: 'accept_connection_from_person',
+      labelEn: 'Accept their connection request',
+      labelEl: 'Αποδοχή του αιτήματος σύνδεσης',
+      writes: true,
+      unavailableEn: noActor ?? (waitingOnMe ? undefined : 'There is no request from them to accept.'),
+      unavailableEl: noActorEl ?? (waitingOnMe ? undefined : 'Δεν υπάρχει αίτημά τους για αποδοχή.'),
+      run: handleAccept,
     },
     {
       id: 'message_person',
@@ -228,39 +272,63 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     { id: 'copy_profile_link', labelEn: 'Copy the profile link', labelEl: 'Αντιγραφή συνδέσμου προφίλ', writes: false, run: handleShare },
   ]);
 
+  // The skeleton has the page's own shape: the top card, then the story
+  // beside the facts.
   if (isLoading)
     return (
       <AppShell>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
-          <div className="space-y-4">
-            <Skeleton className="h-64 w-full rounded-2xl" />
-            <Skeleton className="h-32 w-full rounded-2xl" />
-            <Skeleton className="h-24 w-full rounded-2xl" />
-          </div>
-          <div className="space-y-4">
-            <Skeleton className="h-40 w-full rounded-2xl" />
-            <Skeleton className="h-56 w-full rounded-2xl" />
+        <div className="space-y-6">
+          <Skeleton className="h-64 w-full rounded-2xl" />
+          <div className="[container-type:inline-size]">
+            <div className="grid grid-cols-1 gap-6 [@container(min-width:72rem)]:grid-cols-3">
+              <div className="space-y-6 [@container(min-width:72rem)]:col-span-2">
+                <Skeleton className="h-32 w-full rounded-2xl" />
+                <Skeleton className="h-56 w-full rounded-2xl" />
+              </div>
+              <Skeleton className="h-40 w-full rounded-2xl" />
+            </div>
           </div>
         </div>
       </AppShell>
     );
 
+  // "Profile not found" only when the answer says so. A read that failed
+  // (the API unreachable) said the person "may have been removed" (§75).
+  const notFound = !profile && (!isError || (readError instanceof ApiError && (readError.status === 404 || readError.status === 403)));
   if (isError || !profile)
     return (
       <AppShell>
         <div className="flex flex-col items-center gap-4 py-24 text-center">
-          <p className="text-lg font-semibold text-foreground">
-            <BilingualText en="Profile not found" el="Το προφίλ δεν βρέθηκε" />
-          </p>
-          <p className="text-sm text-muted-foreground">
-            <BilingualText
-              en="This profile may have been removed or is not publicly visible."
-              el="Αυτό το προφίλ μπορεί να έχει αφαιρεθεί ή να μην είναι δημόσια ορατό."
-            />
-          </p>
-          <button onClick={() => router.back()} className="text-sm text-primary-accessible hover:underline">
-            <BilingualText en="Go back" el="Επιστροφή" compact />
-          </button>
+          {notFound ? (
+            <>
+              <p className="text-lg font-semibold text-foreground">
+                <BilingualText en="Profile not found" el="Το προφίλ δεν βρέθηκε" />
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <BilingualText
+                  en="This profile may have been removed or is not publicly visible."
+                  el="Αυτό το προφίλ μπορεί να έχει αφαιρεθεί ή να μην είναι δημόσια ορατό."
+                />
+              </p>
+              <Button variant="outline" size="sm" onClick={goBack}>
+                <BilingualText en="Go back" el="Επιστροφή" compact />
+              </Button>
+            </>
+          ) : (
+            <>
+              <p role="alert" className="text-lg font-semibold text-foreground">
+                <BilingualText en="This profile could not be read just now." el="Το προφίλ δεν διαβάστηκε αυτή τη στιγμή." wrap />
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={goBack}>
+                  <BilingualText en="Go back" el="Επιστροφή" compact />
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </AppShell>
     );
@@ -277,19 +345,24 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       return acc;
     }, []);
 
+  const hasDetails = Object.keys(rolePayload).filter((k) => k !== 'experience' && k !== 'education').length > 0;
+  const skillNames = (profile.skills ?? []).map((sk) => sk.skillName).filter((n): n is string => typeof n === 'string' && n.trim() !== '');
+
   const connLabel: [string, string] =
     connStatus?.status === 'blocked'
       ? ['Blocked', 'Αποκλεισμένο']
-      : connStatus?.status === 'accepted'
+      : connStatus?.status === 'accepted' || linkToThem?.state === 'connected'
       ? ['Connected', 'Συνδεδεμένοι']
-      : connStatus?.status === 'pending' && connStatus.direction === 'sent'
-        ? ['Request sent', 'Το αίτημα στάλθηκε']
-        : ['Connect', 'Σύνδεση'];
+      : waitingOnMe
+        ? ['Accept', 'Αποδοχή']
+        : (connStatus?.status === 'pending' && connStatus.direction === 'sent') || linkToThem?.state === 'sent'
+          ? ['Request sent', 'Το αίτημα στάλθηκε']
+          : ['Connect', 'Σύνδεση'];
   const connButtonLabel = <BilingualText en={connLabel[0]} el={connLabel[1]} compact />;
 
   const isBlocked = connStatus?.status === 'blocked';
-  const isConnected = connStatus?.status === 'accepted';
-  const isPendingSent = connStatus?.status === 'pending' && connStatus.direction === 'sent';
+  const isConnected = connStatus?.status === 'accepted' || linkToThem?.state === 'connected';
+  const isPendingSent = !waitingOnMe && ((connStatus?.status === 'pending' && connStatus.direction === 'sent') || linkToThem?.state === 'sent');
 
   /*
    * Rail: what supports reading this person, never a copy of a control. Similar
@@ -331,11 +404,9 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       // professional profile. Passing them here printed both twice.
       rail={rail}
       actions={
-        <Button variant="secondary" size="sm" className="gap-2" asChild>
-          <Link href="/discover">
-            <ArrowLeft className="icon-sm" />
-            <BilingualText en="Back" el="Πίσω" compact />
-          </Link>
+        <Button variant="secondary" size="sm" className="gap-2" onClick={goBack}>
+          <ArrowLeft className="icon-sm" />
+          <BilingualText en="Back" el="Πίσω" compact />
         </Button>
       }
     >
@@ -374,7 +445,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                   <>
                     <Button
                       className="gap-2"
-                      onClick={() => void handleConnect()}
+                      onClick={() => void (waitingOnMe ? handleAccept() : handleConnect())}
                       disabled={connecting || isConnected || isPendingSent || isBlocked}
                       variant={isConnected || isBlocked ? 'secondary' : 'default'}
                     >
@@ -443,6 +514,13 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
           }
         />
 
+        {/* Two columns once the content is 72rem wide, as one's own profile
+            reads: the story on the left, the facts a visitor scans (what
+            they are looking for, availability, stage) beside it. They sat at
+            the foot of a 2,276px column (docs §75). */}
+        <div className="[container-type:inline-size]">
+        <div className={cn('grid grid-cols-1 gap-6', hasDetails && '[@container(min-width:72rem)]:grid-cols-3 [@container(min-width:72rem)]:items-start')}>
+        <div className={cn('min-w-0 space-y-6', hasDetails && '[@container(min-width:72rem)]:col-span-2')}>
         {profile.bio && (
           <Card>
             <CardHeader>
@@ -460,7 +538,13 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
 
         <ProfileExperience payload={rolePayload as Record<string, unknown>} own={isOwnProfile} />
 
-        {profile.skills?.length ? (
+        {/* One skills card. Signed in, the evidence panel lists the profile's
+            skills with what backs each one; it followed a "Skills" card that
+            named the same skills (docs §75). Signed out there is no evidence
+            to read, so the names stand alone. */}
+        {viewerId ? (
+          <SkillEvidencePanel userId={userId} declared={skillNames} />
+        ) : skillNames.length ? (
           <Card>
             <CardHeader>
               <CardTitle>
@@ -468,13 +552,14 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <FactLine className="text-sm text-foreground" items={profile.skills.map((s) => s.skillName)} />
+              <FactLine className="text-sm text-foreground" items={skillNames} />
             </CardContent>
           </Card>
         ) : null}
-        {viewerId ? <SkillEvidencePanel userId={userId} /> : null}
+        </div>
 
-        {Object.keys(rolePayload).filter((k) => k !== 'experience' && k !== 'education').length > 0 && (
+        {hasDetails && (
+          <div className="min-w-0 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -520,7 +605,10 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               )}
             </CardContent>
           </Card>
+          </div>
         )}
+        </div>
+        </div>
       </div>
     </AppShell>
   );

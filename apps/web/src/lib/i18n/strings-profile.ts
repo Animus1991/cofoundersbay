@@ -60,7 +60,9 @@ export const PROFILE_STRINGS: Record<string, BilingualPair> = {
   joined: { en: 'Joined', el: 'Εγγραφή' },
 
   // ── Role details section ──
-  details_suffix: { en: 'Details', el: 'Λεπτομέρειες' },
+  // "Founder details" on one's own profile, as on everyone else's: it read
+  // "Founder Details" / "Ιδρυτής — Λεπτομέρειες" here only (docs §75).
+  details_suffix: { en: 'details', el: 'λεπτομέρειες' },
   startup_stage: { en: 'Startup stage', el: 'Στάδιο startup' },
   commitment: { en: 'Commitment', el: 'Δέσμευση' },
   looking_for: { en: 'Looking for', el: 'Αναζήτηση' },
