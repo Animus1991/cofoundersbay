@@ -157,4 +157,5 @@
 - Only a 401 sends a page to sign-in; any other failed read says it was not read, with Try again (`/profile` once logged people out when the API was down). "Not found" needs a 404/403 (docs §75).
 - A page's Back goes back only when `hasInAppPrevious()` (`lib/in-app-history.ts`, counted by `AppShellFrame` per tab) says one of our pages came before; otherwise to the section's list. `document.referrer` does not change on client navigation.
 - Someone else's profile reads the connection like the homes (`useConnectionWith`): their waiting request is answered with Accept there too. Its skills are one card (`SkillEvidencePanel declared={…}`), and it uses the own profile's two-column container layout (docs §75).
+- A cover image goes through `useCoverFailed` (`hooks/useCoverFailed.ts`): a cover that fails leaves no band or column (events, programmes; docs §77). `/events/create?date=YYYY-MM-DD` opens the form on that day at 18:00 (the calendar's empty day; docs §78).
 

@@ -123,6 +123,14 @@ export default function CreateEventPage() {
     });
   });
 
+  // From the calendar's empty day ("Schedule on this day"): the date comes
+  // filled in, at 18:00, unless a draft already set a time (docs §78).
+  useEffect(() => {
+    const day = new URLSearchParams(window.location.search).get('date');
+    if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return;
+    setForm((prev) => (prev.startAt ? prev : { ...prev, startAt: `${day}T18:00` }));
+  }, []);
+
   useEffect(() => {
     const kind = new URLSearchParams(window.location.search).get('kind');
     if (!isPitchPractice(kind)) return;

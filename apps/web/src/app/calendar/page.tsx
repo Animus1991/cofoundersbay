@@ -14,18 +14,14 @@ import {
   Flag,
   Users,
   Video,
-  MapPin,
   Plus,
-  Filter,
   LayoutGrid,
   List,
   CalendarRange,
   CalendarDays,
   Sparkles,
   MessageCircle,
-  Target,
   GraduationCap,
-  Briefcase,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
@@ -39,7 +35,6 @@ import { Badge } from '@/components/ui/badge';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { RowHead } from '@/components/dashboard/SectionCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { getUpcomingMentorshipSessions, listEvents, listMilestones, type EventItem, type Milestone, type MentorshipSessionItem } from '@/lib/api';
@@ -513,25 +508,33 @@ export default function CalendarPage() {
   };
 
   const { showDemoData } = useDemoData();
-  const { data: milestoneData, isLoading: milestonesLoading } = useQuery({
+  const { data: milestoneData, isLoading: milestonesLoading, isError: milestonesFailed, refetch: refetchMilestones } = useQuery({
     queryKey: qk('milestones', 'all', 'all'),
     queryFn: () => listMilestones({ limit: 100 }),
     staleTime: 30_000,
     retry: 0,
   });
-  const { data: sessionData, isLoading: sessionsLoading } = useQuery({
+  const { data: sessionData, isLoading: sessionsLoading, isError: sessionsFailed, refetch: refetchSessions } = useQuery({
     queryKey: qk('mentorships', 'sessions-upcoming'),
     queryFn: getUpcomingMentorshipSessions,
     staleTime: 30_000,
     retry: 0,
   });
-  const { data: eventData, isLoading: eventsLoading } = useQuery({
+  const { data: eventData, isLoading: eventsLoading, isError: eventsFailed, refetch: refetchEvents } = useQuery({
     queryKey: qk('events', 'calendar'),
     queryFn: () => listEvents({ scope: 'upcoming', limit: 100 }),
     staleTime: 60_000,
     retry: 0,
   });
   const loading = milestonesLoading || sessionsLoading || eventsLoading;
+  // Which of the three reads failed. With the API down the page said "No
+  // events on this day" over an Upcoming card with nothing in it (docs §78).
+  const failedParts = [
+    milestonesFailed ? { en: 'milestones', el: 'ορόσημα' } : null,
+    sessionsFailed ? { en: 'sessions', el: 'συνεδρίες' } : null,
+    eventsFailed ? { en: 'events', el: 'εκδηλώσεις' } : null,
+  ].filter((x): x is { en: string; el: string } => x !== null);
+  const retryReads = () => { void refetchMilestones(); void refetchSessions(); void refetchEvents(); };
   const liveEvents = useMemo<CalendarEvent[]>(() => [
     ...(milestoneData?.milestones ?? []).map(fromMilestone).filter((e): e is CalendarEvent => e != null),
     ...(sessionData?.sessions ?? []).filter((x) => x.status === 'scheduled').map(fromSession),
@@ -756,12 +759,32 @@ export default function CalendarPage() {
 
             {/* Right: Selected day events + upcoming */}
             <div className="space-y-6">
+              {failedParts.length > 0 && !isSample ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-status-warning-border bg-status-warning-bg px-4 py-3">
+                  <p role="alert" className="text-sm text-foreground">
+                    {failedParts.length === 3 ? (
+                      <BilingualText en="Your calendar could not be read just now." el="Το ημερολόγιό σας δεν διαβάστηκε αυτή τη στιγμή." wrap />
+                    ) : (
+                      <BilingualText
+                        en={`Some of your calendar could not be read just now: ${failedParts.map((p) => p.en).join(', ')}.`}
+                        el={`Μέρος του ημερολογίου σας δεν διαβάστηκε αυτή τη στιγμή: ${failedParts.map((p) => p.el).join(', ')}.`}
+                        wrap
+                      />
+                    )}
+                  </p>
+                  <Button variant="outline" size="sm" onClick={retryReads}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                </div>
+              ) : null}
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2">
                     <CalendarDays className="icon-sm text-muted-foreground" />
+                    {/* en-GB, as every other date on the page ("23 Oct"):
+                        it read "Thursday, October 22, 2026". */}
                     <BilingualText
-                      en={selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                      en={selectedDate.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                       el={selectedDate.toLocaleDateString('el-GR', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                       wrap
                     />
@@ -775,9 +798,15 @@ export default function CalendarPage() {
                   ) : (
                     <div className="py-2">
                       <CalendarIcon className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                      <p className="text-sm text-muted-foreground"><BilingualText en="No events on this day" el="Καμία εκδήλωση αυτή την ημέρα" /></p>
+                      <p className="text-sm text-muted-foreground">
+                        {failedParts.length && !isSample
+                          ? <BilingualText en="Nothing on this day in what could be read." el="Τίποτα αυτή την ημέρα σε όσα διαβάστηκαν." />
+                          : <BilingualText en="No events on this day" el="Καμία εκδήλωση αυτή την ημέρα" />}
+                      </p>
+                      {/* This day, filled in: "Schedule something" opened the
+                          same empty form as the header's Add Event (§78). */}
                       <Button asChild variant="outline" size="sm" className="mt-3 gap-1">
-                        <Link href="/events/create"><Plus className="icon-sm" /> <BilingualText en="Schedule something" el="Προγραμματισμός" compact /></Link>
+                        <Link href={`/events/create?date=${selectedDate.toISOString().slice(0, 10)}`}><Plus className="icon-sm" /> <BilingualText en="Schedule on this day" el="Προγραμματισμός αυτή την ημέρα" compact /></Link>
                       </Button>
                     </div>
                   )}
@@ -791,6 +820,25 @@ export default function CalendarPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
+                  {/* An empty Upcoming card had a title and nothing under it. */}
+                  {upcomingEvents.length === 0 && !loading ? (
+                    <p className="text-sm text-muted-foreground">
+                      {failedParts.length && !isSample ? (
+                        <BilingualText en="Nothing ahead in what could be read." el="Τίποτα στη συνέχεια σε όσα διαβάστηκαν." />
+                      ) : (
+                        <>
+                          <BilingualText en="Nothing ahead yet." el="Τίποτα στη συνέχεια ακόμη." />{' '}
+                          <Link href="/events" className="font-medium text-primary-accessible underline-offset-4 hover:underline">
+                            <BilingualText en="Find an event" el="Βρείτε μια εκδήλωση" compact />
+                          </Link>
+                          {' · '}
+                          <Link href="/mentoring" className="font-medium text-primary-accessible underline-offset-4 hover:underline">
+                            <BilingualText en="Book a mentor" el="Κλείστε μέντορα" compact />
+                          </Link>
+                        </>
+                      )}
+                    </p>
+                  ) : null}
                   <div className="space-y-2">
                     {upcomingEvents.map((e) => (
                       <div key={e.id} className="flex min-w-0 items-center gap-3 overflow-hidden text-sm">
