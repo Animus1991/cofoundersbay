@@ -1000,6 +1000,10 @@ export function PitchDeckBuilder({
                 <BilingualText en={builderEn('pitch_unsaved')} el={builderEl('pitch_unsaved')} compact />
               </span>
             )}
+            {/* With no slides the outline card below offers the same call as
+                "Generate Full Deck"; two names for one action side by side
+                (docs §79). It is here again once there are slides to fill. */}
+            {data.slides.length > 0 && (
             <Button
               type="button"
               variant="outline"
@@ -1019,13 +1023,17 @@ export function PitchDeckBuilder({
                 compact
               />
             </Button>
+            )}
             <Button type="button" variant="outline" size="sm" className={BUILDER_BTN} onClick={handleExport}>
               <Download className="icon-sm mr-1.5" />
               <BilingualText en={builderEn('pitch_export')} el={builderEl('pitch_export')} compact />
             </Button>
+            {/* One filled button: Save once there is a deck, "Generate Full
+                Deck" while there is none. */}
             <Button
               type="button"
               size="sm"
+              variant={data.slides.length === 0 ? 'outline' : 'default'}
               className={BUILDER_BTN}
               onClick={() => void handleSave()}
               disabled={isSaving || isGenerating}

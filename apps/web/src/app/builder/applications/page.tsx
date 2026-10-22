@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
+import { NoWorkspaceNotice } from '@/components/builder/NoWorkspaceNotice';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { ApplicationGenerator } from '@/components/builder/ApplicationGenerator';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
@@ -26,6 +27,7 @@ function ApplicationsPageContent() {
   const {
     workspace,
     isLoadingWorkspaces,
+    workspacesRead,
     documents,
     activeDocument,
     error,
@@ -75,7 +77,8 @@ function ApplicationsPageContent() {
     }
   };
 
-  if (isLoadingWorkspaces) {
+  // `idle` too: before the first read starts this drew an empty application for a frame.
+  if (isLoadingWorkspaces || workspacesRead === 'idle') {
     return (
       <AppShell showHelp>
         <div className="flex h-64 flex-col items-center justify-center gap-3">
@@ -84,6 +87,20 @@ function ApplicationsPageContent() {
             <BilingualText en={builderEn('loading_apps')} el={builderEl('loading_apps')} compact />
           </p>
         </div>
+      </AppShell>
+    );
+  }
+
+  // docs §79: a failed read drew an empty YC application with Save All.
+  if (!workspace && (workspacesRead === 'failed' || workspacesRead === 'ready')) {
+    return (
+      <AppShell showHelp askAi={askAi}>
+        <NoWorkspaceNotice
+          state={workspacesRead === 'failed' ? 'failed' : 'none'}
+          onRetry={() => { clearError(); void loadWorkspaces(true); }}
+          noneEn="Your applications are kept in your startup’s workspace, and you have none yet. Create it in the Startup Builder; answers are drafted from what it holds."
+          noneEl="Οι αιτήσεις σας φυλάσσονται στον χώρο εργασίας του startup σας, και δεν έχετε ακόμη. Δημιουργήστε τον στο Startup Builder· οι απαντήσεις συντάσσονται από ό,τι περιέχει."
+        />
       </AppShell>
     );
   }

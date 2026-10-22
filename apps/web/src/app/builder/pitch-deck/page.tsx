@@ -10,6 +10,7 @@ import { CollabToolbar } from '@/components/builder/CollabToolbar';
 import { VersionHistoryDrawer } from '@/components/builder/VersionHistoryDrawer';
 import { PitchPublication } from '@/components/builder/PitchPublication';
 import { Button } from '@/components/ui/button';
+import { NoWorkspaceNotice } from '@/components/builder/NoWorkspaceNotice';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -23,6 +24,7 @@ function PitchDeckPageContent() {
     documents,
     activeDocument,
     isLoadingWorkspaces,
+    workspacesRead,
     error,
     loadWorkspaces,
     updateDocumentSection,
@@ -139,7 +141,8 @@ function PitchDeckPageContent() {
     }
   };
 
-  if (isLoadingWorkspaces) {
+  // `idle` too: before the first read starts this drew an empty deck for a frame.
+  if (isLoadingWorkspaces || workspacesRead === 'idle') {
     return (
       <AppShell showHelp rail={rail}>
         <div className="flex h-64 flex-col items-center justify-center gap-3">
@@ -148,6 +151,23 @@ function PitchDeckPageContent() {
             <BilingualText en={builderEn('loading_pitch')} el={builderEl('loading_pitch')} compact />
           </p>
         </div>
+      </AppShell>
+    );
+  }
+
+  // docs §79: with the API down this drew an empty deck under the raw
+  // "Unable to reach the API server." and offered Save and Generate, neither
+  // of which could work. Not read is said as such; no workspace sends the
+  // reader to the Builder, which now creates one.
+  if (!workspace && (workspacesRead === 'failed' || workspacesRead === 'ready')) {
+    return (
+      <AppShell showHelp>
+        <NoWorkspaceNotice
+          state={workspacesRead === 'failed' ? 'failed' : 'none'}
+          onRetry={() => { clearError(); void loadWorkspaces(true); }}
+          noneEn="Your pitch deck is kept in your startup’s workspace, and you have none yet. Create it in the Startup Builder; the deck starts from its Idea Core."
+          noneEl="Το pitch deck φυλάσσεται στον χώρο εργασίας του startup σας, και δεν έχετε ακόμη. Δημιουργήστε τον στο Startup Builder· το deck ξεκινά από τον Πυρήνα ιδέας του."
+        />
       </AppShell>
     );
   }

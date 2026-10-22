@@ -22,6 +22,12 @@ interface BuilderState {
   workspace: BuilderWorkspace | null;
   workspaces: BuilderWorkspace[];
   isLoadingWorkspaces: boolean;
+  /**
+   * Whether the list of workspaces was read. A failed read is not "no
+   * workspace": the page said "No documents yet" and offered to create one
+   * while the API was down (docs §79).
+   */
+  workspacesRead: 'idle' | 'failed' | 'ready';
 
   // Documents
   documents: BuilderDocument[];
@@ -117,6 +123,7 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
     workspace: null,
     workspaces: [],
     isLoadingWorkspaces: false,
+    workspacesRead: 'idle',
     documents: [],
     activeDocument: null,
     isLoadingDocuments: false,
@@ -236,6 +243,7 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
           documents: fullWorkspace.documents || [],
           collaborators: fullWorkspace.collaborators || [],
           isLoadingWorkspaces: false,
+          workspacesRead: 'ready',
           isLoadingDocuments: false,
         }));
       } else {
@@ -243,6 +251,7 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
           ...prev,
           workspaces: list,
           isLoadingWorkspaces: false,
+          workspacesRead: 'ready',
         }));
       }
     } catch (err) {
@@ -250,6 +259,7 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
         ...prev,
         error: err instanceof Error ? err.message : 'Failed to load workspaces',
         isLoadingWorkspaces: false,
+        workspacesRead: 'failed',
       }));
     }
   }, []);

@@ -471,7 +471,10 @@ export function ApplicationGenerator({
                         variant="ghost"
                         size="sm"
                         className={BUILDER_BTN}
-                        aria-label={bilingualAria(builderEn('app_ask_fill'), builderEl('app_ask_fill'))}
+                        // Twelve icons named alike told a screen reader nothing of
+                        // which answer each drafts, and a mouse got no tooltip (docs §79).
+                        aria-label={bilingualAria(`${builderEn('app_ask_fill')} (${index + 1})`, `${builderEl('app_ask_fill')} (${index + 1})`)}
+                        title={bilingualAria(builderEn('app_ask_fill'), builderEl('app_ask_fill'))}
                         disabled={generatingQuestionId != null || isGenerating || isSaving}
                         onClick={() => void generateOneAnswer(question.id, prompt.en)}
                       >
@@ -489,7 +492,7 @@ export function ApplicationGenerator({
                           onClick={() => copyToClipboard(question.answer, question.id)}
                           aria-label={copiedId === question.id
                             ? bilingualAria('Answer copied', 'Η απάντηση αντιγράφηκε')
-                            : bilingualAria('Copy this answer', 'Αντιγραφή απάντησης')}
+                            : bilingualAria(`Copy this answer (${index + 1})`, `Αντιγραφή απάντησης (${index + 1})`)}
                           title={copiedId === question.id
                             ? bilingualAria('Answer copied', 'Η απάντηση αντιγράφηκε')
                             : bilingualAria('Copy this answer', 'Αντιγραφή απάντησης')}

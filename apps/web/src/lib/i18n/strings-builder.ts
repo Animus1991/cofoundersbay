@@ -8,6 +8,22 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   },
   loading: { en: 'Loading workspace…', el: 'Φόρτωση χώρου εργασίας…' },
   dismiss: { en: 'Dismiss', el: 'Απόρριψη' },
+  // docs §79: a failed read and "no workspace yet" each said "No documents
+  // yet" and offered a document that could not be created.
+  ws_read_failed: {
+    en: 'Your Startup Builder workspace could not be read just now. Nothing you saved is lost.',
+    el: 'Ο χώρος εργασίας του Startup Builder δεν διαβάστηκε αυτή τη στιγμή. Ό,τι έχετε αποθηκεύσει δεν χάθηκε.',
+  },
+  try_again: { en: 'Try again', el: 'Δοκιμάστε ξανά' },
+  ws_none_title: { en: 'Start your startup’s workspace', el: 'Ξεκινήστε τον χώρο εργασίας του startup σας' },
+  ws_none_body: {
+    // No promise of renaming: nothing on the page renames a workspace yet.
+    en: 'Idea Core, Business Model, Market, Pitch Deck and your applications are kept in one workspace, and you have none yet. Name it to start, usually after your startup.',
+    el: 'Ο Πυρήνας ιδέας, το Επιχειρηματικό μοντέλο, η Αγορά, το Pitch Deck και οι αιτήσεις σας φυλάσσονται σε έναν χώρο εργασίας, και δεν έχετε ακόμη. Δώστε του όνομα για να ξεκινήσετε, συνήθως αυτό του startup σας.',
+  },
+  ws_name_label: { en: 'Startup or workspace name', el: 'Όνομα startup ή χώρου εργασίας' },
+  ws_create: { en: 'Create workspace', el: 'Δημιουργία χώρου εργασίας' },
+  open_builder_cta: { en: 'Open the Startup Builder', el: 'Άνοιγμα Startup Builder' },
   ask_ai: { en: 'Ask AI', el: 'Ρωτήστε το AI' },
   ask_ai_plan: {
     en: 'Ask AI what to build next',

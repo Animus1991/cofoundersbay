@@ -23,7 +23,11 @@ import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
 import { VersionHistoryDrawer } from '@/components/builder/VersionHistoryDrawer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { isPreviewDemo } from '@/lib/preview-demo';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -137,6 +141,8 @@ function BuilderPageContent() {
     onlineCollaborators,
     error,
     isGenerating,
+    workspacesRead,
+    createWorkspace,
     loadWorkspaces,
     updateDocumentSection,
     updateDocument,
@@ -163,6 +169,40 @@ function BuilderPageContent() {
   useEffect(() => {
     loadWorkspaces(true);
   }, [loadWorkspaces]);
+
+  // /readiness scores the workspace named by this key and nothing set it but
+  // the assistant, so a founder with a workspace open here was told on
+  // /readiness that none was open (docs §79). The workspace open here is the
+  // one chosen; the demo keeps its own showcase and writes nothing.
+  useEffect(() => {
+    if (!workspace?.id || isPreviewDemo()) return;
+    try {
+      if (localStorage.getItem('cfb_default_workspace') !== workspace.id) {
+        localStorage.setItem('cfb_default_workspace', workspace.id);
+      }
+    } catch {
+      /* storage blocked: /readiness keeps asking, as before */
+    }
+  }, [workspace?.id]);
+
+  const [newWorkspaceName, setNewWorkspaceName] = useState('');
+  const [creatingWorkspace, setCreatingWorkspace] = useState(false);
+  const [createWorkspaceFailed, setCreateWorkspaceFailed] = useState(false);
+  const submitNewWorkspace = async () => {
+    const name = newWorkspaceName.trim();
+    if (!name || creatingWorkspace) return;
+    setCreatingWorkspace(true);
+    setCreateWorkspaceFailed(false);
+    try {
+      await createWorkspace({ name, startupName: name });
+      clearError();
+    } catch {
+      clearError();
+      setCreateWorkspaceFailed(true);
+    } finally {
+      setCreatingWorkspace(false);
+    }
+  };
 
   useEffect(() => {
     const type = TAB_TO_DOC[activeTab];
@@ -297,7 +337,8 @@ function BuilderPageContent() {
     },
   ];
 
-  if (isLoadingWorkspaces) {
+  // `idle` too: before the first read starts, the page drew "No documents yet" for a frame.
+  if (isLoadingWorkspaces || workspacesRead === 'idle') {
     return (
       <AppShell showHelp rail={rail}>
         <div className="flex h-64 flex-col items-center justify-center gap-3">
@@ -306,6 +347,60 @@ function BuilderPageContent() {
             <BilingualText en={builderEn('loading')} el={builderEl('loading')} compact />
           </p>
         </div>
+      </AppShell>
+    );
+  }
+
+  // Not read is not empty (docs §73, §79): the overview said "No documents
+  // yet" and offered a document while the API was down. The stages need a
+  // workspace to save into, so they return with it.
+  if (!workspace && workspacesRead === 'failed') {
+    return (
+      <AppShell showHelp askAi={ASK.builder}>
+        <Card><CardContent className="space-y-4">
+          <p role="alert" className="text-sm"><BilingualText en={builderEn('ws_read_failed')} el={builderEl('ws_read_failed')} /></p>
+          <Button variant="outline" size="sm" onClick={() => { clearError(); void loadWorkspaces(true); }}>
+            <BilingualText en={builderEn('try_again')} el={builderEl('try_again')} compact />
+          </Button>
+        </CardContent></Card>
+      </AppShell>
+    );
+  }
+
+  // Read, and there is none: "Create First Document" could not work without
+  // one, and nothing on the page made one (only the assistant could).
+  if (!workspace && workspacesRead === 'ready') {
+    return (
+      <AppShell showHelp askAi={ASK.builder}>
+        <Card><CardContent>
+          <form
+            className="max-w-xl space-y-4"
+            onSubmit={(event) => { event.preventDefault(); void submitNewWorkspace(); }}
+          >
+            <div className="space-y-1">
+              <h2 className="card-title"><BilingualText en={builderEn('ws_none_title')} el={builderEl('ws_none_title')} /></h2>
+              <p className="card-body text-muted-foreground"><BilingualText en={builderEn('ws_none_body')} el={builderEl('ws_none_body')} /></p>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="builder-new-workspace"><BilingualText en={builderEn('ws_name_label')} el={builderEl('ws_name_label')} compact /></Label>
+              <Input
+                id="builder-new-workspace"
+                value={newWorkspaceName}
+                onChange={(event) => setNewWorkspaceName(event.target.value)}
+                maxLength={120}
+                autoComplete="organization"
+              />
+            </div>
+            {createWorkspaceFailed && (
+              <p role="alert" className="text-sm text-destructive-accessible">
+                <BilingualText en="The workspace was not created. Try again in a moment." el="Ο χώρος εργασίας δεν δημιουργήθηκε. Δοκιμάστε ξανά σε λίγο." />
+              </p>
+            )}
+            <Button type="submit" size="sm" disabled={!newWorkspaceName.trim() || creatingWorkspace} loading={creatingWorkspace}>
+              <BilingualText en={builderEn('ws_create')} el={builderEl('ws_create')} compact />
+            </Button>
+          </form>
+        </CardContent></Card>
       </AppShell>
     );
   }
