@@ -100,10 +100,13 @@ export function CopilotEmptyState({
           <StarterColumn kind="write" items={writes} onAsk={onAsk} className={isPage ? 'md:pl-8 lg:pl-10' : undefined} />
         ) : null}
       </div>
+      {/* On /ai from lg the threads column beside this keeps "What I can do",
+          which opens the same page; one link to it in view, not two (docs §85).
+          Below lg that column is folded, so this one stays. */}
       <p
         className={cn(
           'type-support text-muted-foreground',
-          isPage ? 'mt-auto pt-6' : 'mt-1',
+          isPage ? 'mt-auto pt-6 lg:hidden' : 'mt-1',
         )}
       >
         <button

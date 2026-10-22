@@ -359,6 +359,10 @@ export function CopilotWorkspace({
               size="sm"
               variant="ghost"
               className="type-ui min-h-11 gap-1.5"
+              // The phone bar says "New question"; here the word fits only
+              // as "New", so its name says the rest (docs §85).
+              title={bilingualAria('New question', 'Νέα ερώτηση')}
+              aria-label={bilingualAria('New question', 'Νέα ερώτηση')}
               onClick={() => {
                 chat.clearMessages();
                 inputRef.current?.focus();
