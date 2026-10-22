@@ -310,14 +310,17 @@ function MatchPreviewRow({ match, viewer }: { match: SearchHit; viewer: ViewerFa
           </Avatar>
         )}
         title={<span className="block truncate">{match.displayName}</span>}
+        // Both lines wrap inside two lines. A compact (one-line) BilingualText
+        // inside line-clamp ran past the rail's edge and was cut mid-word,
+        // with no ellipsis ("Full-stc", "a co-four"; docs §69).
         subtitle={match.headline ? (
           <span className="line-clamp-2">
             {PREVIEW_HEADLINE_EL[match.headline]
-              ? <BilingualText en={match.headline} el={PREVIEW_HEADLINE_EL[match.headline]} compact />
+              ? <BilingualText en={match.headline} el={PREVIEW_HEADLINE_EL[match.headline]} compact wrap />
               : match.headline}
           </span>
         ) : undefined}
-        meta={reason ? <BilingualText en={reason.en} el={reason.el} compact /> : undefined}
+        meta={reason ? <span className="line-clamp-2"><BilingualText en={reason.en} el={reason.el} compact wrap /></span> : undefined}
         asideStays
         aside={(
           <span className={cn('flex items-center gap-0.5 text-sm font-semibold tabular-nums', scoreColor)}>

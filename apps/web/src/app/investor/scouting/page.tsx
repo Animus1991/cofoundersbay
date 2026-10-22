@@ -461,7 +461,7 @@ export default function InvestorScoutingPage() {
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger aria-label="Sort by" className="w-full sm:w-[130px]"><ArrowUpDown className="mr-1.5 icon-sm" /><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label={bilingualAria('Sort by', 'Ταξινόμηση')} className="w-full sm:w-[130px]"><ArrowUpDown className="mr-1.5 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" /><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="match"><BilingualText en="Best Match" el="Καλύτερο ταίριασμα" compact /></SelectItem>
                 <SelectItem value="readiness"><BilingualText en="Readiness" el="Ετοιμότητα" compact /></SelectItem>

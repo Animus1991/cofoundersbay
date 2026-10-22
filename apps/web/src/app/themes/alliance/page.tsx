@@ -17,8 +17,6 @@ import {
   Share2,
   ChevronRight,
   Star,
-  MapPin,
-  Building,
   Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';

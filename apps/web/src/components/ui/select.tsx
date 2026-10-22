@@ -39,6 +39,9 @@ type SelectTriggerName =
 type SelectTriggerProps = React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> &
   SelectTriggerName
 
+// The chosen value ends in an ellipsis when it is longer than the trigger.
+// line-clamp alone cut it mid-letter ("Best Matc" on /investor/scouting),
+// because the one-language label inside it does not wrap (docs §69).
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   SelectTriggerProps
@@ -46,7 +49,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex min-h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm transition-colors hover:border-foreground/15 focus:outline-none focus:shadow-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex min-h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm transition-colors hover:border-foreground/15 focus:outline-none focus:shadow-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 [&>span]:min-w-0 [&>span]:text-ellipsis [&>span]:whitespace-nowrap",
       className
     )}
     {...props}
