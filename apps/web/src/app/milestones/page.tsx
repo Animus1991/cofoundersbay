@@ -45,6 +45,9 @@ import {
 } from '@/lib/api';
 import { MilestoneFormModal } from './MilestoneFormModal';
 import { qk } from '@/lib/query-keys';
+import { isMilestoneDueSoon, isMilestoneOverdue, orderMilestones } from '@/lib/milestone-order';
+import { useApiAvailability } from '@/hooks/useApiAvailability';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 // ── Status config ────────────────────────────────────────────────────────────
 // Not the calendar glyph for "in progress": the due date beside it already uses it.
@@ -69,16 +72,6 @@ function formatMilestoneDate(iso: string | null, lang: 'en' | 'el'): string {
   return formatShortDate(iso, lang) || '—';
 }
 
-function isDueSoon(iso: string | null): boolean {
-  if (!iso) return false;
-  const diff = new Date(iso).getTime() - Date.now();
-  return diff > 0 && diff < 7 * 24 * 60 * 60 * 1000;
-}
-
-function isOverdue(iso: string | null, status: MilestoneStatus): boolean {
-  if (!iso || status === 'completed' || status === 'cancelled') return false;
-  return new Date(iso).getTime() < Date.now();
-}
 
 // ── Skeleton ─────────────────────────────────────────────────────────────────
 function MilestoneSkeleton() {
@@ -117,19 +110,12 @@ function MilestoneCard({
   inBoard?: boolean;
 }) {
   const { primary } = useLanguagePreference();
-  const [menuOpen, setMenuOpen] = useState(false);
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [menuOpen]);
   const status = STATUS_CONFIG[item.status];
   const priority = PRIORITY_CONFIG[item.priority];
-  const overdue = isOverdue(item.dueDate, item.status);
-  const dueSoon = isDueSoon(item.dueDate);
+  // Calendar days where the reader is (lib/milestone-order): "Overdue" on
+  // the due day from 03:00, and "Due soon" on finished ones, were both wrong.
+  const overdue = isMilestoneOverdue(item);
+  const dueSoon = !overdue && isMilestoneDueSoon(item);
   const catKey = item.category ? MILESTONE_CATEGORY_KEYS[item.category] : null;
   const previewEl = PREVIEW_MILESTONE_EL[item.title];
 
@@ -230,75 +216,53 @@ function MilestoneCard({
               </span>
             </div>
           )}
-              <div className="relative shrink-0">
-                {/* Hover reveals it; a touch screen has no hover, so it stays visible there. */}
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen((v) => !v)}
-                  className={cn(
-                    'rounded-md p-1 text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100',
-                    menuOpen && 'opacity-100',
+              {/* Always visible, quietly: the menu holds Mark complete, the
+                  page's main action on a row, and hover hid it from anyone
+                  who had not found it (docs §72). A Radix menu takes focus,
+                  moves on the arrows and closes on Escape. */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    aria-label={bilingualAria(milestoneEn('more'), milestoneEl('more'))}
+                  >
+                    <MoreVertical className="icon-sm" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onSelect={() => onEdit(item)} className="gap-2">
+                    <Edit2 className="icon-sm text-muted-foreground" />
+                    <BilingualText en={milestoneEn('edit')} el={milestoneEl('edit')} compact />
+                  </DropdownMenuItem>
+                  {item.status !== 'completed' && (
+                    <DropdownMenuItem onSelect={() => onStatusChange(item.id, 'completed')} className="gap-2">
+                      <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
+                      <BilingualText en={milestoneEn('mark_complete')} el={milestoneEl('mark_complete')} compact />
+                    </DropdownMenuItem>
                   )}
-                  aria-label={bilingualAria(milestoneEn('more'), milestoneEl('more'))}
-                  aria-expanded={menuOpen}
-                >
-                  <MoreVertical className="icon-sm" />
-                </button>
-                {menuOpen && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                    <div className="absolute bottom-full right-0 z-20 mb-1 w-44 overflow-hidden rounded-xl border border-border bg-popover shadow-lg">
-                      <button
-                        type="button"
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                        onClick={() => { setMenuOpen(false); onEdit(item); }}
-                      >
-                        <Edit2 className="icon-sm text-muted-foreground" />
-                        <BilingualText en={milestoneEn('edit')} el={milestoneEl('edit')} compact />
-                      </button>
-                      {item.status !== 'completed' && (
-                        <button
-                          type="button"
-                          className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                          onClick={() => { setMenuOpen(false); onStatusChange(item.id, 'completed'); }}
-                        >
-                          <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
-                          <BilingualText en={milestoneEn('mark_complete')} el={milestoneEl('mark_complete')} compact />
-                        </button>
-                      )}
-                      {item.status === 'completed' && (
-                        <button
-                          type="button"
-                          className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                          onClick={() => { setMenuOpen(false); onStatusChange(item.id, 'in_progress'); }}
-                        >
-                          <Clock className={cn('icon-sm', STATUS.info.icon)} />
-                          <BilingualText en={milestoneEn('reopen')} el={milestoneEl('reopen')} compact />
-                        </button>
-                      )}
-                      {item.status === 'completed' && (
-                        // Build in public: the composer opens with the milestone as its title.
-                        <Link
-                          href={`/updates?title=${encodeURIComponent(`${primary === 'el' ? 'Ορόσημο που πετύχαμε' : 'Milestone reached'}: ${item.title}`)}&milestone=${encodeURIComponent(item.id)}`}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                        >
-                          <Share2 className="icon-sm text-muted-foreground" />
-                          <BilingualText en="Share as an update" el="Κοινοποίηση ως ενημέρωση" compact />
-                        </Link>
-                      )}
-                      <div className="my-1 border-t border-border" />
-                      <button
-                        type="button"
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive-accessible hover:bg-destructive/10"
-                        onClick={() => { setMenuOpen(false); onDelete(item.id); }}
-                      >
-                        <Trash2 className="icon-sm" />
-                        <BilingualText en={milestoneEn('delete')} el={milestoneEl('delete')} compact />
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+                  {item.status === 'completed' && (
+                    <DropdownMenuItem onSelect={() => onStatusChange(item.id, 'in_progress')} className="gap-2">
+                      <Clock className={cn('icon-sm', STATUS.info.icon)} />
+                      <BilingualText en={milestoneEn('reopen')} el={milestoneEl('reopen')} compact />
+                    </DropdownMenuItem>
+                  )}
+                  {item.status === 'completed' && (
+                    // Build in public: the composer opens with the milestone as its title.
+                    <DropdownMenuItem asChild className="gap-2">
+                      <Link href={`/updates?title=${encodeURIComponent(`${primary === 'el' ? 'Ορόσημο που πετύχαμε' : 'Milestone reached'}: ${item.title}`)}&milestone=${encodeURIComponent(item.id)}`}>
+                        <Share2 className="icon-sm text-muted-foreground" />
+                        <BilingualText en="Share as an update" el="Κοινοποίηση ως ενημέρωση" compact />
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={() => onDelete(item.id)} className="gap-2 text-destructive-accessible focus:bg-destructive/10">
+                    <Trash2 className="icon-sm" />
+                    <BilingualText en={milestoneEn('delete')} el={milestoneEl('delete')} compact />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
         </CardFoot>
       </CardContent>
     </Card>
@@ -458,9 +422,14 @@ export default function MilestonesPage() {
   });
 
   const waiting = !mounted || isLoading;
+  // With no session to read with (the API down, or signed out) the list was
+  // never asked for, and the page said "No milestones yet · Add your first"
+  // to someone who has twelve (docs §72). That is a read that failed.
+  const apiAvailable = useApiAvailability();
+  const unread = mounted && !isChecking && !isAuthenticated;
 
   const allMilestones = data?.milestones ?? [];
-  const milestones = allMilestones.filter((m) => {
+  const milestones = orderMilestones(allMilestones).filter((m) => {
     if (categoryFilter !== 'all' && m.category !== categoryFilter) return false;
     const q = searchQuery.trim().toLowerCase();
     if (!q) return true;
@@ -838,13 +807,26 @@ export default function MilestonesPage() {
         </div>
 
         {/* List */}
-        {isError ? (
+        {isError || unread ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
             <CfbGlyph name="target" className="icon-lg text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground"><BilingualText en={milestoneEn('load_fail')} el={milestoneEl('load_fail')} /></p>
-            <Button variant="secondary" size="sm" className={BUILDER_BTN} type="button" onClick={() => refetch()}>
-              <BilingualText en={milestoneEn('retry')} el={milestoneEl('retry')} compact />
-            </Button>
+            {unread && apiAvailable ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en="Sign in to see your milestones." el="Συνδεθείτε για να δείτε τα ορόσημά σας." />
+                </p>
+                <Button asChild variant="secondary" size="sm" className={BUILDER_BTN}>
+                  <Link href="/login?redirect=/milestones"><BilingualText en="Sign in" el="Σύνδεση" compact /></Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground"><BilingualText en={milestoneEn('load_fail')} el={milestoneEl('load_fail')} /></p>
+                <Button variant="secondary" size="sm" className={BUILDER_BTN} type="button" onClick={() => refetch()}>
+                  <BilingualText en={milestoneEn('retry')} el={milestoneEl('retry')} compact />
+                </Button>
+              </>
+            )}
           </div>
         ) : waiting ? (
           <div className="space-y-3">

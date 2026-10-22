@@ -17,8 +17,6 @@ import { createMilestone, type MilestoneStatus, type MilestonePriority } from '@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
-import { usePopupChat } from '@/contexts/PopupChatContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { qk } from '@/lib/query-keys';
@@ -44,7 +42,6 @@ export default function NewMilestonePage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const t = useMilestonePrimaryText();
-  const { open: openAskAi } = usePopupChat();
 
   const collaboratorId = searchParams?.get('with') ?? searchParams?.get('collaborator') ?? '';
 
@@ -96,10 +93,9 @@ export default function NewMilestonePage() {
       askAi={ASK.milestoneNew}
       actions={
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => openAskAi()}>
-            <CfbGlyph name="spark" className="icon-sm" />
-            <BilingualText en={milestoneEn('ask_ai')} el={milestoneEl('ask_ai')} compact />
-          </Button>
+          {/* No separate "Ask AI": it opened the same assistant as the
+              header's field beside it, which also asks this page's ready
+              question when sent empty (docs §72). */}
           <Button variant="ghost" size="sm" className={`gap-2 ${BUILDER_BTN}`} aria-label={bilingualAria(milestoneEn('back'), milestoneEl('back'))} asChild>
             <Link href="/milestones">
               <ArrowLeft className="icon-sm" />
@@ -111,9 +107,6 @@ export default function NewMilestonePage() {
       contentClassName="builder-copy overflow-x-clip"
     >
       <div className="max-w-2xl space-y-6">
-        <p className="text-sm text-muted-foreground">
-          <BilingualText en={milestoneEn('page_new_lead')} el={milestoneEl('page_new_lead')} />
-        </p>
         <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         <Card>
           <CardHeader>

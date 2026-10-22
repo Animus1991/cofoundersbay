@@ -76,6 +76,7 @@ import { explainMatch, viewerFacts, type ViewerFacts } from '@/lib/match-explain
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { useApiAvailability } from '@/hooks/useApiAvailability';
 import { useConnectionWith } from '@/hooks/useConnectionWith';
+import { isMilestoneOverdue } from '@/lib/milestone-order';
 import { useToast } from '@/components/ui/toast';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
@@ -346,7 +347,7 @@ function MatchPreviewRow({ match, viewer }: { match: SearchHit; viewer: ViewerFa
 
 function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
   const isComplete = milestone.status === 'completed';
-  const isOverdue = !!milestone.dueDate && new Date(milestone.dueDate) < new Date() && !isComplete;
+  const isOverdue = isMilestoneOverdue({ status: milestone.status, dueDate: milestone.dueDate || null });
   const stateLabel = isComplete
     ? bilingualAria('Completed', 'Ολοκληρωμένο')
     : isOverdue
@@ -620,7 +621,9 @@ export default function FounderDashboardContent() {
   // The card answers "what is due next"; the full list, done ones included, is /milestones.
   const upcomingMilestones = openMilestonesByDue.slice(0, 5);
   const moreOpenMilestoneCount = openMilestones.length - upcomingMilestones.length;
-  const isPastDue = (m: DemoMilestone) => !!m.dueDate && new Date(m.dueDate).getTime() < Date.now();
+  // The same calendar-day rule as /milestones (lib/milestone-order), so the
+  // home and the page agree on "Overdue" on the due day itself.
+  const isPastDue = (m: DemoMilestone) => isMilestoneOverdue({ status: m.status, dueDate: m.dueDate || null });
   const overdueMilestoneCount = openMilestones.filter(isPastDue).length;
   const nextIsOverdue = !!nextOpenMilestone && isPastDue(nextOpenMilestone);
   const messageCaption = unreadMessages === 0

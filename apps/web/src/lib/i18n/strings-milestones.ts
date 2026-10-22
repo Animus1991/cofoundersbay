@@ -109,14 +109,12 @@ export const MILESTONE_STRINGS: Record<string, BilingualPair> = {
   saving: { en: 'Saving…', el: 'Αποθήκευση…' },
   save_changes: { en: 'Save changes', el: 'Αποθήκευση αλλαγών' },
   create: { en: 'Create milestone', el: 'Δημιουργία ορόσημου' },
-  page_new_lead: {
-    en: 'One goal, one owner, one date. Shared milestones also appear on your collaborator’s tracker.',
-    el: 'Ένας στόχος, ένας υπεύθυνος, μία ημερομηνία. Τα κοινά ορόσημα εμφανίζονται και στον πίνακα του συνεργάτη.',
-  },
   back: { en: 'Back to milestones', el: 'Πίσω στα ορόσημα' },
   create_title: { en: 'Create milestone', el: 'Δημιουργία ορόσημου' },
   create_shared: { en: 'Define a shared goal with your collaborator', el: 'Ορίστε κοινό στόχο με τον συνεργάτη σας' },
-  create_solo: { en: 'Define a goal and start tracking progress', el: 'Ορίστε στόχο και παρακολουθήστε την πρόοδο' },
+  // Says what the page title and its line do not (docs §72): the old line
+  // and a lead paragraph above the card restated the description.
+  create_solo: { en: 'Shared with a collaborator, a milestone also appears on their tracker.', el: 'Όταν το μοιράζεστε με συνεργάτη, το ορόσημο εμφανίζεται και στον δικό του πίνακα.' },
   created: { en: 'Milestone created', el: 'Το ορόσημο δημιουργήθηκε' },
   created_hint: { en: 'Added to your tracker.', el: 'Προστέθηκε στον πίνακα.' },
   fail_create: { en: 'Failed to create milestone', el: 'Αποτυχία δημιουργίας ορόσημου' },
