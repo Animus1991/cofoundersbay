@@ -9,13 +9,13 @@ The app ships light, dark, system, alliance, cofounder, minimal and four role pa
 Role classes apply *alongside* light or dark. axe sees only one combination at
 a time; this reads globals.css and checks every pair in every composed context.
 
-Run: python3 scripts/check-theme-contrast.py   (exits non-zero on a failure)
+Run: python3 apps/web/scripts/check-theme-contrast.py   (exits non-zero on a failure)
 """
 
 import os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-css = open(os.path.join(ROOT, 'src/app/globals.css')).read()
+css = open(os.path.join(ROOT, 'src/app/globals.css'), encoding='utf-8').read()
 
 def hsl_to_rgb(h, s, l):
     h, s, l = h / 360.0, s / 100.0, l / 100.0
