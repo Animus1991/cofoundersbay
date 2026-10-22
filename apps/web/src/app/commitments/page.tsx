@@ -348,6 +348,8 @@ export default function CommitmentsPage() {
             );
           })}
         </ul>
+      ) : threadsQ.isError ? (
+        <p className="px-2.5 text-sm text-muted-foreground"><BilingualText en={CMT.waiting_failed.en} el={CMT.waiting_failed.el} wrap /></p>
       ) : (
         <p className="px-2.5 text-sm text-muted-foreground"><BilingualText en={CMT.nothing_waiting.en} el={CMT.nothing_waiting.el} wrap /></p>
       ),
@@ -403,6 +405,15 @@ export default function CommitmentsPage() {
 
   const loading = cardsQ.isLoading || threadsQ.isLoading || now === null;
 
+  const readFailed = (en: string, el: string, retry: () => void) => (
+    <div className="space-y-3 rounded-xl border border-dashed border-border p-6 text-center">
+      <p role="alert" className="text-sm text-muted-foreground"><BilingualText en={en} el={el} wrap /></p>
+      <Button size="sm" variant="outline" onClick={retry}>
+        <BilingualText en={CMT.try_again.en} el={CMT.try_again.el} compact />
+      </Button>
+    </div>
+  );
+
   const emptyFiltered = (
     <div className="space-y-2 rounded-xl border border-dashed border-border p-6 text-center">
       <p className="text-sm text-muted-foreground"><BilingualText en={CMT.empty_filtered.en} el={CMT.empty_filtered.el} wrap /></p>
@@ -445,11 +456,15 @@ export default function CommitmentsPage() {
         <TabsContent value="mine" className="space-y-4">
           {loading ? (
             <Skeleton className="h-48 w-full rounded-2xl" />
+          ) : cardsQ.isError && liveCards.length === 0 ? (
+            readFailed(CMT.cards_failed.en, CMT.cards_failed.el, () => void cardsQ.refetch())
           ) : liveCards.length === 0 ? (
             <div className="space-y-3 rounded-xl border border-dashed border-border p-6 text-center">
               <p className="text-sm text-muted-foreground"><BilingualText en={CMT.empty_mine.en} el={CMT.empty_mine.el} wrap /></p>
-              <Button size="sm" asChild>
-                <Link href="/commitments/new"><BilingualText en={CMT.two_minutes.en} el={CMT.two_minutes.el} compact /></Link>
+              {/* Outline: the header's "Write a need card" is the page's filled
+                  button; this one says what it does and how long it takes. */}
+              <Button size="sm" variant="outline" asChild>
+                <Link href="/commitments/new"><BilingualText en={CMT.write_card_time.en} el={CMT.write_card_time.el} compact /></Link>
               </Button>
             </div>
           ) : shownCards.length === 0 ? (
@@ -465,7 +480,8 @@ export default function CommitmentsPage() {
                     footer={<HistoryNote settled={card.settledAt} now={at} />}
                     actions={
                       <>
-                        <Button size="sm" asChild>
+                        {/* Outline: one filled button per page, the header's (docs §83). */}
+                        <Button size="sm" variant="outline" asChild>
                           <Link href={`/commitments/${encodeURIComponent(card.id)}`}>
                             <BilingualText
                               en={`${CMT.responses.en} · ${interestsFor(card.id)}`}
@@ -523,6 +539,8 @@ export default function CommitmentsPage() {
         <TabsContent value="responses" className="space-y-4">
           {loading ? (
             <Skeleton className="h-40 w-full rounded-2xl" />
+          ) : threadsQ.isError && liveResponses.length === 0 ? (
+            readFailed(CMT.threads_failed.en, CMT.threads_failed.el, () => void threadsQ.refetch())
           ) : liveResponses.length === 0 ? (
             <div className="space-y-3 rounded-xl border border-dashed border-border p-6 text-center">
               <p className="text-sm text-muted-foreground"><BilingualText en={CMT.empty_responses.en} el={CMT.empty_responses.el} wrap /></p>
@@ -540,6 +558,12 @@ export default function CommitmentsPage() {
         <TabsContent value="history" className="space-y-4">
           {loading ? (
             <Skeleton className="h-32 w-full rounded-2xl" />
+          ) : (cardsQ.isError || threadsQ.isError) && historyCards.length + historyResponses.length === 0 ? (
+            readFailed(
+              cardsQ.isError ? CMT.cards_failed.en : CMT.threads_failed.en,
+              cardsQ.isError ? CMT.cards_failed.el : CMT.threads_failed.el,
+              () => { void cardsQ.refetch(); void threadsQ.refetch(); },
+            )
           ) : historyCards.length + historyResponses.length === 0 ? (
             <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
               <BilingualText en={CMT.empty_history.en} el={CMT.empty_history.el} wrap />

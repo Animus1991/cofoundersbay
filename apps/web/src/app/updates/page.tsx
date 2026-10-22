@@ -7,6 +7,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailStats } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -186,11 +187,14 @@ function UpdatesContent() {
           <div className="space-y-3">
             <RailStats
               items={[
-                { key: 'followers', label: 'Follow you', labelEl: 'Σας ακολουθούν', value: audience.data?.followers ?? 0 },
-                { key: 'following', label: 'You follow', labelEl: 'Ακολουθείτε', value: people.length },
+                // A read that failed is "—", not 0 (docs §84).
+                { key: 'followers', label: 'Follow you', labelEl: 'Σας ακολουθούν', value: audience.isError ? '—' : audience.data?.followers ?? 0 },
+                { key: 'following', label: 'You follow', labelEl: 'Ακολουθείτε', value: following.isError ? '—' : people.length },
               ]}
             />
-            {people.length ? (
+            {following.isError ? (
+              <p className="text-xs text-muted-foreground"><BilingualText en="Who you follow could not be read just now." el="Όσοι ακολουθείτε δεν διαβάστηκαν αυτή τη στιγμή." wrap /></p>
+            ) : people.length ? (
               <ul className="space-y-1 text-sm">
                 {people.slice(0, 8).map((p) => (
                   <li key={p.id} className="truncate">
@@ -218,7 +222,7 @@ function UpdatesContent() {
         ),
       },
     ],
-    [audience.data?.followers, people],
+    [audience.data?.followers, audience.isError, following.isError, people],
   );
 
   return (
@@ -233,6 +237,15 @@ function UpdatesContent() {
           <TabsContent value="following" className="space-y-4">
             {feed.isLoading ? (
               <Skeleton className="h-40 w-full rounded-2xl" />
+            ) : feed.isError && feedRows.length === 0 ? (
+              // Not read is not empty (docs §73, §84): it said "No updates
+              // yet from the people you follow" with the API down.
+              <Card>
+                <CardContent className="space-y-3 text-sm text-muted-foreground">
+                  <p role="alert"><BilingualText en="Updates from the people you follow could not be read just now." el="Οι ενημερώσεις από όσους ακολουθείτε δεν διαβάστηκαν αυτή τη στιγμή." wrap /></p>
+                  <Button size="sm" variant="outline" disabled={feed.isRefetching} onClick={() => void feed.refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
+                </CardContent>
+              </Card>
             ) : feedRows.length === 0 ? (
               <Card>
                 <CardContent className="space-y-3 text-sm text-muted-foreground">
@@ -251,6 +264,12 @@ function UpdatesContent() {
                 <UpdateComposer initial={prefill} busy={send.isPending} onSend={async (d) => !!(await send.mutateAsync(d).catch(() => null))} />
               </CardContent>
             </Card>
+            {mine.isError && myRows.length === 0 ? (
+              <div className="flex flex-wrap items-center gap-3">
+                <p role="alert" className="text-sm text-muted-foreground"><BilingualText en="The updates you have sent could not be read just now." el="Οι ενημερώσεις που έχετε στείλει δεν διαβάστηκαν αυτή τη στιγμή." wrap /></p>
+                <Button size="sm" variant="outline" disabled={mine.isRefetching} onClick={() => void mine.refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
+              </div>
+            ) : null}
             {mine.isLoading ? null : myRows.map((u) => (
               <UpdateCard
                 key={u.id}
@@ -260,16 +279,18 @@ function UpdatesContent() {
                   <>
                     {u.publicToken ? (
                       <>
-                        <Button size="sm" variant="outline" onClick={() => copyLink(u)}><BilingualText en="Copy link" el="Αντιγραφή συνδέσμου" compact /></Button>
+                        <Button size="sm" variant="outline" aria-label={bilingualAria(`Copy the link to “${u.title}”`, `Αντιγραφή συνδέσμου: «${u.title}»`)} onClick={() => copyLink(u)}><BilingualText en="Copy link" el="Αντιγραφή συνδέσμου" compact /></Button>
                         <Button size="sm" variant="outline" asChild>
-                          <a href={linkedInShareUrl(publicUpdateUrl(u.publicToken))} target="_blank" rel="noopener noreferrer" onClick={() => suggested.copy(founderUpdatePost(u, publicUpdateUrl(u.publicToken as string), suggested.lang))}><BilingualText en="Share on LinkedIn" el="Κοινοποίηση στο LinkedIn" compact /></a>
+                          <a aria-label={bilingualAria(`Share “${u.title}” on LinkedIn`, `Κοινοποίηση στο LinkedIn: «${u.title}»`)} href={linkedInShareUrl(publicUpdateUrl(u.publicToken))} target="_blank" rel="noopener noreferrer" onClick={() => suggested.copy(founderUpdatePost(u, publicUpdateUrl(u.publicToken as string), suggested.lang))}><BilingualText en="Share on LinkedIn" el="Κοινοποίηση στο LinkedIn" compact /></a>
                         </Button>
                       </>
                     ) : null}
+                    {/* A verb: "Followers only" on the button read as the state
+                        the card's own label already shows (docs §84). */}
                     <Button size="sm" variant="outline" disabled={visibility.isPending} onClick={() => void toggleVisibility(u)}>
-                      <BilingualText en={u.visibility === 'public' ? 'Followers only' : 'Make public'} el={u.visibility === 'public' ? 'Μόνο ακόλουθοι' : 'Δημόσια'} compact />
+                      <BilingualText en={u.visibility === 'public' ? 'Make followers-only' : 'Make public'} el={u.visibility === 'public' ? 'Κάντε τη μόνο για ακολούθους' : 'Κάντε τη δημόσια'} compact />
                     </Button>
-                    <Button size="sm" variant="ghost" className="text-destructive-accessible" disabled={remove.isPending} onClick={() => void confirmDelete(u)}>
+                    <Button size="sm" variant="ghost" className="text-destructive-accessible" aria-label={bilingualAria(`Delete “${u.title}”`, `Διαγραφή: «${u.title}»`)} disabled={remove.isPending} onClick={() => void confirmDelete(u)}>
                       <BilingualText en="Delete" el="Διαγραφή" compact />
                     </Button>
                   </>

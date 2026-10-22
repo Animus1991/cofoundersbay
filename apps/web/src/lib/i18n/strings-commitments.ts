@@ -15,6 +15,15 @@ export const CMT = {
   },
   write_card: { en: 'Write a need card', el: 'Νέα κάρτα ανάγκης' },
   two_minutes: { en: 'About two minutes', el: 'Περίπου δύο λεπτά' },
+  // As a button "About two minutes" said how long, not what it does (docs §83).
+  write_card_time: { en: 'Write it · about two minutes', el: 'Γράψτε την · περίπου δύο λεπτά' },
+  // Not read is not empty (docs §73, §83): with the API down this page said
+  // "No need cards yet" and "Nothing is waiting on you".
+  cards_failed: { en: 'Your need cards could not be read just now.', el: 'Οι κάρτες ανάγκης σας δεν διαβάστηκαν αυτή τη στιγμή.' },
+  threads_failed: { en: 'Your responses could not be read just now.', el: 'Οι απαντήσεις σας δεν διαβάστηκαν αυτή τη στιγμή.' },
+  waiting_failed: { en: 'What waits on you could not be read just now.', el: 'Όσα περιμένουν από εσάς δεν διαβάστηκαν αυτή τη στιγμή.' },
+  try_again: { en: 'Try again', el: 'Δοκιμάστε ξανά' },
+  open_card_cta: { en: 'Open the card', el: 'Άνοιγμα της κάρτας' },
 
   // Card kinds
   kind_cofounder: { en: 'Co-founder seat', el: 'Θέση συνιδρυτή' },

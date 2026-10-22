@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { INTRO_LIMITS, INTRO_RELATION_COPY, type IntroRelation } from '@cofounderbay/shared';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -34,7 +35,8 @@ export function AskIntroButton({ targetId, targetName, className }: { targetId: 
   if (!me?.id || me.id === targetId) return null;
   return (
     <>
-      <Button size="sm" variant="outline" className={className} onClick={() => setOpen(true)}>
+      {/* Named for whom: a list of people showed the same name on every row (docs §84). */}
+      <Button size="sm" variant="outline" className={className} onClick={() => setOpen(true)} aria-label={bilingualAria(`Ask for an introduction to ${targetName}`, `Ζητήστε σύσταση προς ${targetName}`)}>
         <BilingualText en="Ask for an introduction" el="Ζητήστε σύσταση" compact />
       </Button>
       {open ? <AskIntroDialog open={open} onOpenChange={setOpen} targetId={targetId} targetName={targetName} /> : null}

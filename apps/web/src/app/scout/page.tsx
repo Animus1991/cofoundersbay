@@ -83,8 +83,10 @@ function ProposalCard({ p, actions }: { p: ScoutProposal; actions: React.ReactNo
           meta={p.person?.location ?? undefined}
           asideStays
           aside={(
-            <span className="rounded-md border border-primary-muted bg-primary-subtle px-2 py-0.5 text-xs font-bold tabular-nums text-foreground" title="Fit with your brief · Ταίριασμα με το σημείωμα">
-              {p.score}
+            // "90" alone said nothing; the word says what it measures (docs §84).
+            <span className="rounded-md border border-primary-muted bg-primary-subtle px-2 py-0.5 text-xs tabular-nums text-foreground" title="Fit with your brief · Ταίριασμα με το σημείωμα">
+              <span className="text-muted-foreground"><BilingualText en="Fit" el="Ταίριασμα" compact /></span>{' '}
+              <span className="font-bold">{p.score}</span>
             </span>
           )}
         />
@@ -99,7 +101,7 @@ function ProposalCard({ p, actions }: { p: ScoutProposal; actions: React.ReactNo
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-medium text-muted-foreground"><BilingualText en="A first note you could send yourself" el="Ένα πρώτο σημείωμα που μπορείτε να στείλετε εσείς" compact /></p>
             {p.draftNoteEl ? (
-              <div role="group" aria-label={bilingualAria('Language of the note', 'Γλώσσα του σημειώματος')} className="flex gap-1">
+              <div role="group" aria-label={bilingualAria(`Language of the note to ${p.person.displayName}`, `Γλώσσα του σημειώματος προς ${p.person.displayName}`)} className="flex gap-1">
                 {NOTE_LANGUAGES.map((l) => (
                   <Button
                     key={l.value}
@@ -122,6 +124,7 @@ function ProposalCard({ p, actions }: { p: ScoutProposal; actions: React.ReactNo
             type="button"
             size="sm"
             variant="outline"
+            aria-label={bilingualAria(`Copy the note to ${p.person.displayName}`, `Αντιγραφή του σημειώματος προς ${p.person.displayName}`)}
             onClick={() => void navigator.clipboard?.writeText(note).then(() => success('Note copied'), () => showError('Could not copy'))}
           >
             <BilingualText en="Copy note" el="Αντιγραφή σημειώματος" compact />
@@ -129,7 +132,7 @@ function ProposalCard({ p, actions }: { p: ScoutProposal; actions: React.ReactNo
         </div>
         <CardFoot meta={<><BilingualText en="Proposed" el="Προτάθηκε" compact /> <RelativeTime date={p.createdAt} /></>}>
           <Button asChild size="sm" variant="outline">
-            <Link href={`/profiles/${encodeURIComponent(p.person.id)}`}><BilingualText en="Open profile" el="Άνοιγμα προφίλ" compact /></Link>
+            <Link href={`/profiles/${encodeURIComponent(p.person.id)}`} aria-label={bilingualAria(`Open ${p.person.displayName}'s profile`, `Άνοιγμα προφίλ: ${p.person.displayName}`)}><BilingualText en="Open profile" el="Άνοιγμα προφίλ" compact /></Link>
           </Button>
           <AskIntroButton targetId={p.person.id} targetName={p.person.displayName} />
           {actions}
@@ -314,6 +317,16 @@ function ScoutContent() {
             <CardDescription><BilingualText en="Who you are looking for. The scout reads the member base against it." el="Ποιον ψάχνετε. Ο ανιχνευτής διαβάζει τα μέλη με βάση αυτό." wrap /></CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Not read is not empty (docs §73, §84): the form showed blank
+                and the list asked to write a brief while the API was down. */}
+            {scout.isError ? (
+              <div className="mb-4 flex flex-wrap items-center gap-3">
+                <p role="alert" className="text-sm"><BilingualText en="Your brief and the people proposed for it could not be read just now." el="Το σημείωμά σας και τα πρόσωπα που προτάθηκαν δεν διαβάστηκαν αυτή τη στιγμή." wrap /></p>
+                <Button type="button" size="sm" variant="outline" disabled={scout.isRefetching} onClick={() => void scout.refetch()}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+              </div>
+            ) : null}
             <form
               className="grid grid-cols-1 gap-4 sm:grid-cols-2"
               onSubmit={(e) => {
@@ -379,6 +392,12 @@ function ScoutContent() {
           <TabsContent value="proposed" className="space-y-4">
             {scout.isLoading ? (
               <Skeleton className="h-40 w-full rounded-2xl" />
+            ) : scout.isError ? (
+              <Card>
+                <CardContent className="text-sm text-muted-foreground">
+                  <BilingualText en="The people proposed for your brief could not be read just now." el="Τα πρόσωπα που προτάθηκαν για το σημείωμά σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                </CardContent>
+              </Card>
             ) : !proposed.length ? (
               <Card>
                 <CardContent className="text-sm text-muted-foreground">
@@ -396,8 +415,8 @@ function ScoutContent() {
                   p={p}
                   actions={
                     <>
-                      <Button size="sm" variant="outline" disabled={busy} onClick={() => void actOn('save', p)}><BilingualText en="Save to shortlist" el="Αποθήκευση στη λίστα" compact /></Button>
-                      <Button size="sm" variant="ghost" disabled={busy} onClick={() => void actOn('dismiss', p)}><BilingualText en="Dismiss" el="Απόρριψη" compact /></Button>
+                      <Button size="sm" variant="outline" disabled={busy} aria-label={bilingualAria(`Save ${p.person.displayName} to shortlist`, `Αποθήκευση: ${p.person.displayName} στη λίστα`)} onClick={() => void actOn('save', p)}><BilingualText en="Save to shortlist" el="Αποθήκευση στη λίστα" compact /></Button>
+                      <Button size="sm" variant="ghost" disabled={busy} aria-label={bilingualAria(`Dismiss ${p.person.displayName}`, `Απόρριψη: ${p.person.displayName}`)} onClick={() => void actOn('dismiss', p)}><BilingualText en="Dismiss" el="Απόρριψη" compact /></Button>
                     </>
                   }
                 />
@@ -405,7 +424,9 @@ function ScoutContent() {
             )}
           </TabsContent>
           <TabsContent value="saved" className="space-y-4">
-            {!saved.length ? (
+            {scout.isError ? (
+              <Card><CardContent className="text-sm text-muted-foreground"><BilingualText en="The people you saved from the scout could not be read just now." el="Όσοι αποθηκεύσατε από τον ανιχνευτή δεν διαβάστηκαν αυτή τη στιγμή." wrap /></CardContent></Card>
+            ) : !saved.length ? (
               <Card><CardContent className="text-sm text-muted-foreground"><BilingualText en="People you save from the scout appear here and on your shortlist." el="Όσους αποθηκεύετε από τον ανιχνευτή εμφανίζονται εδώ και στη λίστα σας." wrap /></CardContent></Card>
             ) : (
               saved.map((p) => (
