@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, createContext, useContext, memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type CSSProperties, ReactNode, createContext, useContext, memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
@@ -134,9 +134,18 @@ export function AppShellFrame({
           // Named group, so anything inside can lay itself out for the width
           // the rail actually leaves rather than for the viewport.
           data-rail={hasRail ? (railPinned ? 'pinned' : 'strip') : 'none'}
+          // A full-height column is its own scrollport, so the phone top bar's
+          // sticky offset (the height of any banner above the page) was taken
+          // inside it: under the "API server is unavailable" banner the bar
+          // sat 47px down, over the inbox's title. The frame already holds
+          // the banner's height in its padding (docs §73).
+          style={fullHeight ? ({ '--topbar-top': '0px' } as CSSProperties) : undefined}
           className={cn(
             'group/shell flex min-w-0 flex-col',
-            fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]',
+            // h-full, not 100dvh: the frame's padding holds the banners, and a
+            // 100dvh column under them lost its last 47px - the bottom of the
+            // inbox card, the composer of an open thread.
+            fullHeight ? 'h-full overflow-hidden' : 'min-h-[100dvh]',
             'transition-[margin-left] duration-200 ease-out',
             // Rail from `sm` (68px), drawer from `lg`. Below `sm` the nav is the
             // bottom bar and the column takes the full width.

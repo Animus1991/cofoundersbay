@@ -22,3 +22,16 @@ export function roleFamily(raw: string | null | undefined): RoleFamily | null {
   if (key === 'organization' || key === 'admin' || key === 'community_manager') return 'org';
   return null;
 }
+
+/**
+ * The family's name, as the role badge writes it. A list that names someone's
+ * role without the badge's chrome reads it from here, so the inbox row and
+ * the thread's header beside it call the same person the same thing: the row
+ * said "Cofounder" and the header "Founder" (docs §73).
+ */
+export const ROLE_FAMILY_LABEL: Record<RoleFamily, { en: string; el: string }> = {
+  founder: { en: 'Founder', el: 'Ιδρυτής' },
+  mentor: { en: 'Mentor', el: 'Μέντορας' },
+  investor: { en: 'Investor', el: 'Επενδυτής' },
+  org: { en: 'Organization', el: 'Οργανισμός' },
+};

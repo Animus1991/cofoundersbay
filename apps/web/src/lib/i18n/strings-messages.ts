@@ -138,7 +138,8 @@ export const MESSAGES_STRINGS: Record<string, BilingualPair> = {
   typing: { en: 'typing…', el: 'γράφει…' },
 
   message_sent: { en: 'Message sent', el: 'Το μήνυμα στάλθηκε' },
-  connection_accepted: { en: 'Connection accepted', el: 'Η σύνδεση αποδέχτηκε' },
+  // «αποδέχτηκε» is the active voice ("it accepted"); the request was accepted.
+  connection_accepted: { en: 'Connection accepted', el: 'Η σύνδεση έγινε αποδεκτή' },
   connection_accepted_hint: { en: 'You can now message this person.', el: 'Μπορείτε πλέον να στείλετε μήνυμα.' },
   request_declined: { en: 'Request declined', el: 'Το αίτημα απορρίφθηκε' },
   could_not_load: { en: 'Could not load messages', el: 'Αδυναμία φόρτωσης μηνυμάτων' },
@@ -157,6 +158,31 @@ export const MESSAGES_STRINGS: Record<string, BilingualPair> = {
   attach_fail: { en: 'Some attachments failed', el: 'Ορισμένα συνημμένα απέτυχαν' },
   attach_fail_hint: { en: 'Message will be sent with uploaded files only', el: 'Το μήνυμα θα σταλεί μόνο με τα αρχεία που ανέβηκαν' },
   init_fail: { en: 'Failed to initialize messages', el: 'Αποτυχία αρχικοποίησης μηνυμάτων' },
+
+  // A failed read is said where the list would be, with the way to try
+  // again; it is not an empty inbox, and not a toast that goes away (§73).
+  retry: { en: 'Try again', el: 'Δοκιμάστε ξανά' },
+  inbox_failed: {
+    en: 'Your conversations could not be read just now.',
+    el: 'Οι συνομιλίες σας δεν διαβάστηκαν αυτή τη στιγμή.',
+  },
+  intros_failed: {
+    en: 'Your intro requests could not be read just now.',
+    el: 'Τα αιτήματα γνωριμίας σας δεν διαβάστηκαν αυτή τη στιγμή.',
+  },
+  thread_failed: {
+    en: 'This conversation could not be read just now.',
+    el: 'Η συνομιλία δεν διαβάστηκε αυτή τη στιγμή.',
+  },
+  connections_failed: {
+    en: 'Your connections could not be read just now.',
+    el: 'Οι συνδέσεις σας δεν διαβάστηκαν αυτή τη στιγμή.',
+  },
+  loading_conversations: { en: 'Loading your conversations…', el: 'Φόρτωση των συνομιλιών σας…' },
+  write_to_connection: {
+    en: 'Choose New message to write to one of your connections.',
+    el: 'Επιλέξτε «Νέο μήνυμα» για να γράψετε σε μια σύνδεσή σας.',
+  },
 
   search_conversations: { en: 'Search conversations…', el: 'Αναζήτηση συνομιλιών…' },
 

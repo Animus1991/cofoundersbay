@@ -52,3 +52,25 @@ describe('one main landmark, even across a route transition', () => {
     expect(mains()[0].textContent).toContain('Incoming page');
   });
 });
+
+// docs §73: a full-height column (Messages, the assistant) is its own
+// scrollport. Under the "API server is unavailable" banner it was 100dvh tall
+// below the frame's banner padding, so its last 47px were cut off, and the
+// phone top bar took its banner offset inside it, 47px down over the inbox
+// title.
+describe('a full-height frame under a banner', () => {
+  it('fills the space the banners leave and tells the top bar it is not under one', () => {
+    render(<AppShellFrame fullHeight><p>Inbox</p></AppShellFrame>);
+    const column = document.querySelector('main#main-content')!.parentElement as HTMLElement;
+    expect(column.className.split(/\s+/)).toContain('h-full');
+    expect(column.className).not.toContain('h-[100dvh]');
+    expect(column.style.getPropertyValue('--topbar-top')).toBe('0px');
+  });
+
+  it('leaves a scrolling page as it was', () => {
+    render(<AppShellFrame><p>Page</p></AppShellFrame>);
+    const column = document.querySelector('main#main-content')!.parentElement as HTMLElement;
+    expect(column.className).toContain('min-h-[100dvh]');
+    expect(column.style.getPropertyValue('--topbar-top')).toBe('');
+  });
+});

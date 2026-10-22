@@ -148,7 +148,12 @@ const TabsContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.Content
     ref={ref}
-    className={cn('mt-4 focus-visible:outline-none', className)}
+    // Radix keeps an inactive panel in the document with the `hidden`
+    // attribute, and a display utility on the panel (`flex`, `grid`) outranks
+    // that attribute. On /messages the empty Chats panel stayed in the column
+    // as a flex-1 block and pushed the Intros list down to its middle
+    // (docs §73). The inactive state says hidden in the panel's own terms.
+    className={cn('mt-4 focus-visible:outline-none data-[state=inactive]:hidden', className)}
     {...props}
   />
 ));

@@ -65,11 +65,18 @@ export function ComposeMessageDialog({
   onOpenChange,
   candidates,
   onPick,
+  connectionsFailed = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   candidates: ComposeCandidate[];
   onPick: (userId: string) => void;
+  /**
+   * The connections could not be read. With none to list, the dialog said
+   * "You have no connections to message yet" to someone who has them
+   * (docs §73).
+   */
+  connectionsFailed?: boolean;
 }) {
   const t = useMessagesPrimaryText();
   const [query, setQuery] = useState('');
@@ -116,7 +123,9 @@ export function ComposeMessageDialog({
             <div className="flex flex-col items-center gap-3 px-4 py-8 text-center">
               <CfbGlyph name="people" className="icon-lg text-muted-foreground/50" />
               <p className="text-sm text-muted-foreground">
-                {candidates.length === 0 ? (
+                {candidates.length === 0 && connectionsFailed ? (
+                  <BilingualText en={messagesEn('connections_failed')} el={messagesEl('connections_failed')} />
+                ) : candidates.length === 0 ? (
                   <BilingualText en={messagesEn('compose_none')} el={messagesEl('compose_none')} />
                 ) : (
                   <BilingualText en={messagesEn('compose_empty')} el={messagesEl('compose_empty')} />

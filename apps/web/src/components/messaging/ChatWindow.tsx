@@ -8,7 +8,6 @@ import {
   Smile,
   MoreVertical,
   SlidersHorizontal,
-  Info,
   Check,
   CheckCheck,
   Flag,
@@ -22,6 +21,9 @@ import {
   ChevronUp,
   ChevronDown,
   ListFilter,
+  UserRound,
+  Users,
+  CalendarPlus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -48,6 +50,7 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import type { AskText } from '@/lib/page-questions';
 import { highlightParts, stepMatch, threadMatches } from '@/lib/thread-search';
+import { clockTime, dayDividerLabel, type ThreadLang } from '@/lib/thread-time';
 import {
   messagesEn,
   messagesEl,
@@ -98,6 +101,14 @@ type ChatWindowProps = {
   initialDraft?: string;
   /** Words to open the thread's search with (the assistant's message search links here). */
   initialSearch?: string;
+  /**
+   * Whether this thread's messages have been read. Until they have, no
+   * messages is not an empty thread: "Say hello" was offered under a thread
+   * that failed to load, and the last thread's messages stayed under the
+   * next one's name while it loaded (docs §73).
+   */
+  threadState?: 'loading' | 'failed' | 'ready';
+  onRetryThread?: () => void;
 };
 
 function firstName(full: string): string {
@@ -126,25 +137,6 @@ function toggleReactionList(
   return list;
 }
 
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
-function formatDate(date: Date, today: string, yesterday: string, lang: 'en' | 'el'): string {
-  const now = new Date();
-  const yest = new Date(now);
-  yest.setDate(yest.getDate() - 1);
-
-  if (date.toDateString() === now.toDateString()) return today;
-  if (date.toDateString() === yest.toDateString()) return yesterday;
-  return date.toLocaleDateString(lang === 'el' ? 'el-GR' : 'en-GB', {
-    timeZone: 'UTC',
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 function MessageBubble({
   message,
   isOwn,
@@ -155,7 +147,9 @@ function MessageBubble({
   onReact,
   highlight,
   hit = 'none',
+  lang,
 }: {
+  lang: ThreadLang;
   message: Message;
   isOwn: boolean;
   showAvatar: boolean;
@@ -334,7 +328,7 @@ function MessageBubble({
         </div>
 
         <div className={cn('flex items-center gap-1 mt-1', isOwn ? 'justify-end' : 'justify-start')}>
-          <span className="text-2xs text-muted-foreground">{formatTime(message.timestamp)}</span>
+          <span className="text-2xs tabular-nums text-muted-foreground">{clockTime(message.timestamp, lang)}</span>
           {isOwn && (
             <span className="text-muted-foreground">
               {message.status === 'sending' && <span className="text-2xs" title="Sending">•</span>}
@@ -355,7 +349,7 @@ function DateDivider({ date }: { date: Date }) {
   return (
     <div className="my-3 flex justify-center">
       <span className="px-1 text-2xs font-medium text-muted-foreground">
-        {formatDate(date, t(messagesEn('today'), messagesEl('today')), t(messagesEn('yesterday'), messagesEl('yesterday')), primary)}
+        {dayDividerLabel(date, primary, { today: t(messagesEn('today'), messagesEl('today')), yesterday: t(messagesEn('yesterday'), messagesEl('yesterday')) })}
       </span>
     </div>
   );
@@ -395,8 +389,11 @@ export function ChatWindow({
   onAskAi,
   initialDraft,
   initialSearch,
+  threadState = 'ready',
+  onRetryThread,
 }: ChatWindowProps) {
   const t = useMessagesPrimaryText();
+  const { primary: lang } = useLanguagePreference();
   const { ask, inPlace } = useAskAssistant();
   // The draft sits on the composer, where the reply is written.
   // It opens the assistant on this page and asks for wording only, in the
@@ -596,7 +593,7 @@ export function ChatWindow({
                     : conversation.recipientHeadline
                       ? conversation.recipientHeadline
                       : conversation.lastSeen
-                        ? `${t(messagesEn('last_seen'), messagesEl('last_seen'))} ${formatTime(conversation.lastSeen)}`
+                        ? `${t(messagesEn('last_seen'), messagesEl('last_seen'))} ${clockTime(conversation.lastSeen, lang)}`
                         : t(messagesEn('offline'), messagesEl('offline'))}
                 </p>
               </div>
@@ -623,17 +620,16 @@ export function ChatWindow({
             <Button variant="ghost" size="icon" className="hidden h-9 w-9 rounded-xl sm:inline-flex" title={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))} aria-label={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))} onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
               <Search className="icon-sm" />
             </Button>
-            <Button asChild variant="ghost" size="icon" className="hidden h-9 w-9 rounded-xl sm:inline-flex" title={bilingualAria(messagesEn('open_calendar'), messagesEl('open_calendar'))} aria-label={bilingualAria(messagesEn('open_calendar'), messagesEl('open_calendar'))}>
-              <Link href={`/calendar?with=${encodeURIComponent(conversation.recipientId)}`}>
-                <CfbGlyph name="calendar" className="icon-sm" />
-              </Link>
-            </Button>
+            {/* No calendar icon: "Schedule" under the name goes to the same
+                place. Ask AI only between sm and md, where the thread takes
+                the screen; from md the inbox's Ask AI sits beside it and
+                does the same thing (docs §73). */}
             {onAskAi ? (
-              <Button variant="ghost" size="icon" className="hidden h-9 w-9 rounded-xl sm:inline-flex" title={bilingualAria(messagesEn('ask_ai_about'), messagesEl('ask_ai_about'))} aria-label={bilingualAria(messagesEn('ask_ai_about'), messagesEl('ask_ai_about'))} onClick={onAskAi}>
+              <Button variant="ghost" size="icon" className="hidden h-9 w-9 rounded-xl sm:inline-flex md:hidden" title={bilingualAria(messagesEn('ask_ai_about'), messagesEl('ask_ai_about'))} aria-label={bilingualAria(messagesEn('ask_ai_about'), messagesEl('ask_ai_about'))} onClick={onAskAi}>
                 <CfbGlyph name="spark" className="icon-sm" />
               </Button>
             ) : (
-              <Button asChild variant="ghost" size="icon" className="hidden h-9 w-9 rounded-xl sm:inline-flex" title={bilingualAria(messagesEn('open_ai_page'), messagesEl('open_ai_page'))} aria-label={bilingualAria(messagesEn('open_ai_page'), messagesEl('open_ai_page'))}>
+              <Button asChild variant="ghost" size="icon" className="hidden h-9 w-9 rounded-xl sm:inline-flex md:hidden" title={bilingualAria(messagesEn('open_ai_page'), messagesEl('open_ai_page'))} aria-label={bilingualAria(messagesEn('open_ai_page'), messagesEl('open_ai_page'))}>
                 <Link href="/ai">
                   <CfbGlyph name="spark" className="icon-sm" />
                 </Link>
@@ -646,29 +642,34 @@ export function ChatWindow({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="rounded-xl">
-                <DropdownMenuItem onClick={() => { setSearchOpen(true); setSearchQuery(''); }}>
+                {/* Search, the profile, the match and Schedule are in the
+                    header from sm; the menu carries them only on a phone,
+                    where the header has no room for them (docs §73). Lucide
+                    icons: an overlay hides a decorative CfbGlyph, so two of
+                    these four lost theirs and their words sat out of line. */}
+                <DropdownMenuItem className="sm:hidden" onClick={() => { setSearchOpen(true); setSearchQuery(''); }}>
                   <Search className="icon-sm mr-2" />
                   <BilingualText en={messagesEn('search_messages')} el={messagesEl('search_messages')} compact />
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="sm:hidden">
                   <Link href={`/profiles/${conversation.recipientId}`}>
-                    <Info className="icon-sm mr-2" />
+                    <UserRound className="icon-sm mr-2" />
                     <BilingualText en={messagesEn('view_profile')} el={messagesEl('view_profile')} compact />
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="sm:hidden">
                   <Link href={`/matches/${conversation.recipientId}`}>
-                    <CfbGlyph name="matches" className="icon-sm mr-2" />
+                    <Users className="icon-sm mr-2" />
                     <BilingualText en={messagesEn('view_match')} el={messagesEl('view_match')} compact />
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="sm:hidden">
                   <Link href={`/calendar?with=${encodeURIComponent(conversation.recipientId)}`}>
-                    <CfbGlyph name="calendar" className="icon-sm mr-2" />
+                    <CalendarPlus className="icon-sm mr-2" />
                     <BilingualText en={messagesEn('schedule_meet')} el={messagesEl('schedule_meet')} compact />
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="sm:hidden" />
                 <DropdownMenuItem onClick={onReport}>
                   <Flag className="icon-sm mr-2" />
                   <BilingualText en={messagesEn('report')} el={messagesEl('report')} compact />
@@ -809,7 +810,27 @@ export function ChatWindow({
             </Button>
           </div>
         )}
-        {messages.length === 0 && !searchQuery && (
+        {threadState === 'loading' && messages.length === 0 && (
+          <div aria-busy="true" className="mb-6 space-y-3">
+            <span className="sr-only">{t(messagesEn('loading'), messagesEl('loading'))}</span>
+            {['w-2/5', 'ml-auto w-1/3', 'w-1/2'].map((w) => (
+              <div key={w} aria-hidden className={cn('h-10 animate-pulse rounded-2xl bg-secondary', w)} />
+            ))}
+          </div>
+        )}
+        {threadState === 'failed' && messages.length === 0 && (
+          <div className="mb-6 flex flex-col items-center gap-3 px-4 py-8 text-center">
+            <p role="alert" className="max-w-sm text-sm font-medium text-foreground">
+              <BilingualText en={messagesEn('thread_failed')} el={messagesEl('thread_failed')} wrap />
+            </p>
+            {onRetryThread && (
+              <Button type="button" size="sm" variant="outline" onClick={onRetryThread}>
+                <BilingualText en={messagesEn('retry')} el={messagesEl('retry')} compact />
+              </Button>
+            )}
+          </div>
+        )}
+        {threadState === 'ready' && messages.length === 0 && !searchQuery && (
           <div className="mb-6 flex flex-col items-center gap-3 px-4 py-8 text-center">
             <ThreadAvatar
               name={conversation.recipientName}
@@ -858,6 +879,7 @@ export function ChatWindow({
               return (
                 <div key={msg.id} className="mb-1.5" data-message-id={msg.id}>
                   <MessageBubble
+                    lang={lang}
                     message={msg}
                     highlight={searching ? searchQuery : undefined}
                     hit={!searching || !hitIds.includes(msg.id) ? 'none' : msg.id === activeHitId ? 'active' : 'hit'}
@@ -1023,43 +1045,87 @@ export function ChatWindow({
   );
 }
 
-// Empty state when no conversation is selected
+/**
+ * The pane beside the inbox when no thread is open (docs §73).
+ *
+ * It said "Pick a conversation — select someone from the list" over an
+ * empty list, and over a list that had failed to load; and it repeated the
+ * inbox beside it: New message, the recent threads, Ask AI under another
+ * name ("Open full AI assistant" opened the same panel). Now it says what
+ * is true of the list, once, from md where the list sits beside it:
+ * - loading: nothing yet;
+ * - failed: that the conversations could not be read, and Try again;
+ * - empty: that there are none, and where to find people;
+ * - pick: choose one. On a phone it shows only when the list is out of
+ *   view, so there it carries the recent threads, New message and Ask AI.
+ */
+export type NoChatState = 'loading' | 'failed' | 'empty' | 'pick';
+
 export function NoChatSelected({
+  state = 'pick',
+  hasConnections = false,
+  onRetry,
   onNewMessage,
   onAskAi,
   recent,
   onSelectRecent,
 }: {
+  state?: NoChatState;
+  /** Whether the reader has someone to write to (the empty inbox says how). */
+  hasConnections?: boolean;
+  onRetry?: () => void;
   onNewMessage?: () => void;
   onAskAi?: () => void;
   recent?: { id: string; name: string; avatarUrl?: string | null; userId: string }[];
   onSelectRecent?: (id: string) => void;
 }) {
+  const backdrop = (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12),transparent_58%)]"
+    />
+  );
+  if (state === 'loading') {
+    return (
+      <div aria-busy="true" className="relative flex h-full flex-col overflow-hidden">
+        {backdrop}
+      </div>
+    );
+  }
+  const title =
+    state === 'failed' ? 'inbox_failed' : state === 'empty' ? 'no_conversations' : 'empty_inbox_title';
+  const hint =
+    state === 'failed'
+      ? null
+      : state === 'empty'
+        ? hasConnections ? 'write_to_connection' : 'connect_to_chat'
+        : 'empty_inbox_hint';
   return (
     <div className="relative flex h-full flex-col items-center justify-center overflow-hidden p-8 text-center">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12),transparent_58%)]"
-      />
+      {backdrop}
+      {/* No glyph: the page hides decorative glyphs and their wells, and
+          this one left its ring behind, an empty grey circle over the
+          words (docs §73). The state reads by its words. */}
       <div className="relative flex max-w-md flex-col items-center gap-5">
-        <div className="relative">
-          <div className="absolute -inset-6 rounded-full border border-primary/15 bg-primary/[0.04]" />
-          <div className="relative flex h-24 w-24 items-center justify-center rounded-3xl bg-primary/[0.06]">
-            <CfbGlyph name="messages" className="h-10 w-10 text-primary-accessible" />
-          </div>
-        </div>
-        <div className="space-y-1.5">
+        <div role={state === 'failed' ? 'alert' : undefined} className="space-y-1.5">
           {/* A step under the inbox's own h1 (text-lg, text-xl on a
               desktop), and the hint a step under this title on a phone too. */}
           <h3 className="text-lg font-semibold tracking-tight text-foreground">
-            <BilingualText en={messagesEn('empty_inbox_title')} el={messagesEl('empty_inbox_title')} />
+            <BilingualText en={messagesEn(title)} el={messagesEl(title)} wrap />
           </h3>
-          <p className="card-body text-muted-foreground">
-            <BilingualText en={messagesEn('empty_inbox_hint')} el={messagesEl('empty_inbox_hint')} />
-          </p>
+          {hint && (
+            <p className="card-body text-muted-foreground">
+              <BilingualText en={messagesEn(hint)} el={messagesEl(hint)} />
+            </p>
+          )}
         </div>
-        {recent && recent.length > 0 && onSelectRecent && (
-          <div className="w-full space-y-2">
+        {state === 'failed' && onRetry && (
+          <Button type="button" variant="outline" className="rounded-full px-5" onClick={onRetry}>
+            <BilingualText en={messagesEn('retry')} el={messagesEl('retry')} compact />
+          </Button>
+        )}
+        {state === 'pick' && recent && recent.length > 0 && onSelectRecent && (
+          <div className="w-full space-y-2 md:hidden">
             <p className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               <BilingualText en={messagesEn('recent_conversations')} el={messagesEl('recent_conversations')} compact />
             </p>
@@ -1078,8 +1144,8 @@ export function NoChatSelected({
             </div>
           </div>
         )}
-        {onNewMessage && (
-          <Button type="button" className="h-11 rounded-full px-6 shadow-sm" onClick={onNewMessage}>
+        {state === 'pick' && onNewMessage && (
+          <Button type="button" className="h-11 rounded-full px-6 shadow-sm md:hidden" onClick={onNewMessage}>
             <CfbGlyph name="messages" className="icon-sm mr-2" />
             <BilingualText
               en={messagesEn('new_message')}
@@ -1089,31 +1155,37 @@ export function NoChatSelected({
             />
           </Button>
         )}
-        <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm">
-          <Link href="/matches" className="font-medium text-primary-accessible underline-offset-4 hover:underline">
-            <BilingualText en={messagesEn('browse_matches')} el={messagesEl('browse_matches')} compact />
-          </Link>
-          <span className="text-muted-foreground">
-            <BilingualText en={messagesEn('empty_or')} el={messagesEl('empty_or')} compact />
-          </span>
-          <Link href="/discover" className="font-medium text-primary-accessible underline-offset-4 hover:underline">
-            <BilingualText en={messagesEn('find_people_message')} el={messagesEl('find_people_message')} compact />
-          </Link>
-          <span className="text-muted-foreground">
-            <BilingualText en={messagesEn('empty_or')} el={messagesEl('empty_or')} compact />
-          </span>
-          <Link href="/connections" className="font-medium text-primary-accessible underline-offset-4 hover:underline">
-            <BilingualText en={messagesEn('view_connections')} el={messagesEl('view_connections')} compact />
-          </Link>
-        </p>
-        {onAskAi && (
+        {state === 'empty' && (
+          <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm">
+            <Link href="/matches" className="font-medium text-primary-accessible underline-offset-4 hover:underline">
+              <BilingualText en={messagesEn('browse_matches')} el={messagesEl('browse_matches')} compact />
+            </Link>
+            <span className="text-muted-foreground">
+              <BilingualText en={messagesEn('empty_or')} el={messagesEl('empty_or')} compact />
+            </span>
+            <Link href="/discover" className="font-medium text-primary-accessible underline-offset-4 hover:underline">
+              <BilingualText en={messagesEn('find_people_message')} el={messagesEl('find_people_message')} compact />
+            </Link>
+            {hasConnections && (
+              <>
+                <span className="text-muted-foreground">
+                  <BilingualText en={messagesEn('empty_or')} el={messagesEl('empty_or')} compact />
+                </span>
+                <Link href="/connections" className="font-medium text-primary-accessible underline-offset-4 hover:underline">
+                  <BilingualText en={messagesEn('view_connections')} el={messagesEl('view_connections')} compact />
+                </Link>
+              </>
+            )}
+          </p>
+        )}
+        {state === 'pick' && onAskAi && (
           <button
             type="button"
             onClick={onAskAi}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-accessible underline-offset-4 hover:underline"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-accessible underline-offset-4 hover:underline md:hidden"
           >
             <CfbGlyph name="spark" className="icon-sm" />
-            <BilingualText en={messagesEn('open_ai_page')} el={messagesEl('open_ai_page')} compact />
+            <BilingualText en={messagesEn('ask_ai')} el={messagesEl('ask_ai')} compact />
           </button>
         )}
       </div>

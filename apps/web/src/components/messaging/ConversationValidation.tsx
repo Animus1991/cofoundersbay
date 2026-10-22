@@ -34,6 +34,7 @@ import {
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { messagesEn, messagesEl } from '@/lib/i18n/strings-messages';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 
@@ -142,6 +143,8 @@ export function ConversationValidationMenu({
   className,
 }: ConversationValidationProps) {
   const { success, error: showError } = useToast();
+  // The toasts were English on a Greek page (docs §73).
+  const say = useBilingualString();
   const queryClient = useQueryClient();
   const [showModeDialog, setShowModeDialog] = useState(false);
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
@@ -152,11 +155,12 @@ export function ConversationValidationMenu({
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: qk('conversations') });
       onModeChange?.(data.validationState.mode);
-      success('Validation mode updated', messagesEn(MODE_CONFIG[data.validationState.mode].labelKey));
+      const key = MODE_CONFIG[data.validationState.mode].labelKey;
+      success(say('Validation mode updated', 'Η λειτουργία επικύρωσης άλλαξε'), say(messagesEn(key), messagesEl(key)));
       setShowModeDialog(false);
     },
     onError: () => {
-      showError('Failed to update', 'Could not change validation mode');
+      showError(say('Could not change the validation mode', 'Η λειτουργία επικύρωσης δεν άλλαξε'), say('Please try again', 'Δοκιμάστε ξανά'));
     },
   });
 
@@ -164,11 +168,11 @@ export function ConversationValidationMenu({
     mutationFn: () => acceptConversationValidation(conversationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qk('conversations') });
-      success('Validation accepted', 'Two-party validation is now active');
+      success(say('Validation accepted', 'Η επικύρωση έγινε αποδεκτή'), say('Two-party validation is now active.', 'Η επικύρωση δύο μερών είναι πλέον ενεργή.'));
       setShowAcceptDialog(false);
     },
     onError: () => {
-      showError('Failed to accept', 'Could not accept validation request');
+      showError(say('Could not accept the validation request', 'Το αίτημα επικύρωσης δεν έγινε αποδεκτό'), say('Please try again', 'Δοκιμάστε ξανά'));
     },
   });
 
@@ -176,11 +180,11 @@ export function ConversationValidationMenu({
     mutationFn: () => declineConversationValidation(conversationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qk('conversations') });
-      success('Validation declined', 'Conversation remains in casual mode');
+      success(say('Validation declined', 'Η επικύρωση απορρίφθηκε'), say('The conversation stays a casual chat.', 'Η συνομιλία μένει απλή συνομιλία.'));
       setShowAcceptDialog(false);
     },
     onError: () => {
-      showError('Failed to decline', 'Could not decline validation request');
+      showError(say('Could not decline the validation request', 'Το αίτημα επικύρωσης δεν απορρίφθηκε'), say('Please try again', 'Δοκιμάστε ξανά'));
     },
   });
 
@@ -195,9 +199,9 @@ export function ConversationValidationMenu({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      success('Transcript exported', `Downloaded as ${format.toUpperCase()}`);
+      success(say('Transcript exported', 'Το αντίγραφο εξήχθη'), say(`Downloaded as ${format.toUpperCase()}.`, `Λήψη ως ${format.toUpperCase()}.`));
     } catch {
-      showError('Export failed', 'Could not download transcript');
+      showError(say('Could not download the transcript', 'Η λήψη του αντιγράφου απέτυχε'), say('Please try again', 'Δοκιμάστε ξανά'));
     }
   };
 
@@ -246,18 +250,29 @@ export function ConversationValidationMenu({
             )}
           </Button>
         </DropdownMenuTrigger>
+        {/* Each line whole: at w-56 the mode's description and "Change
+            validation mode" were cut to "Standard private messaging" and
+            "Change validation ..." (docs §73). The description wraps; the
+            action says "Change mode" under the menu's own title, and fits. */}
         <DropdownMenuContent align="end" className="w-56">
           <div className="px-2 py-1.5">
-            <p className="text-xs font-medium text-foreground"><BilingualText en="Conversation Validation" el="Επικύρωση συνομιλίας" compact /></p>
+            <p className="text-xs font-medium text-foreground">
+              <BilingualText en="Conversation validation" el="Επικύρωση συνομιλίας" wrap />
+            </p>
+            {/* The mode the lock icon stands for, named, then what it means. */}
             <p className="text-xs text-muted-foreground">
-              <BilingualText en={messagesEn(config.descKey)} el={messagesEl(config.descKey)} compact />
+              <BilingualText
+                en={`${messagesEn(config.labelKey)}: ${messagesEn(config.descKey).replace(/^./, (c) => c.toLowerCase())}.`}
+                el={`${messagesEl(config.labelKey)}: ${messagesEl(config.descKey).replace(/^./, (c) => c.toLowerCase())}.`}
+                wrap
+              />
             </p>
           </div>
           <DropdownMenuSeparator />
           
           <DropdownMenuItem onClick={() => setShowModeDialog(true)}>
-            <Shield className="mr-2 icon-sm" />
-            <BilingualText en="Change validation mode" el="Αλλαγή λειτουργίας επικύρωσης" compact />
+            <Shield className="mr-2 icon-sm shrink-0" />
+            <BilingualText en="Change mode" el="Αλλαγή λειτουργίας" compact wrap />
           </DropdownMenuItem>
           
           {validationState.transcriptAvailable && (
@@ -343,7 +358,7 @@ export function ConversationValidationMenu({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="icon-md text-muted-foreground" />
-              <BilingualText en="Conversation Validation Mode" el="Λειτουργία επικύρωσης συνομιλίας" compact />
+              <BilingualText en="Conversation validation mode" el="Λειτουργία επικύρωσης συνομιλίας" compact />
             </DialogTitle>
             <DialogDescription>
               <BilingualText en="Choose how this conversation should be validated" el="Επιλέξτε πώς θα επικυρώνεται η συνομιλία" wrap />
@@ -428,6 +443,7 @@ export function TranscriptExportButton({
   validationState: ConversationValidationState;
 }) {
   const { success, error: showError } = useToast();
+  const say = useBilingualString();
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async (format: 'json' | 'txt') => {
@@ -442,9 +458,9 @@ export function TranscriptExportButton({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      success('Transcript exported', `Downloaded as ${format.toUpperCase()}`);
+      success(say('Transcript exported', 'Το αντίγραφο εξήχθη'), say(`Downloaded as ${format.toUpperCase()}.`, `Λήψη ως ${format.toUpperCase()}.`));
     } catch {
-      showError('Export failed', 'Could not download transcript');
+      showError(say('Could not download the transcript', 'Η λήψη του αντιγράφου απέτυχε'), say('Please try again', 'Δοκιμάστε ξανά'));
     } finally {
       setIsExporting(false);
     }
@@ -497,7 +513,7 @@ export function ValidationHashDisplay({ hash }: { hash: string | null }) {
       <code className="flex-1 text-xs font-mono text-muted-foreground truncate">
         {hash}
       </code>
-      <Button aria-label="Confirm"
+      <Button aria-label={bilingualAria('Copy validation hash', 'Αντιγραφή hash επικύρωσης')}
         variant="ghost"
         size="icon"
         className="h-6 w-6 shrink-0"

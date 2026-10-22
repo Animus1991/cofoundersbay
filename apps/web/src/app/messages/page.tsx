@@ -4,8 +4,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Check, X } from 'lucide-react';
-import { ConversationList, type Conversation } from '@/components/messaging/ConversationList';
-import { ChatWindow, NoChatSelected, type Message } from '@/components/messaging/ChatWindow';
+import { ConversationList, type Conversation, type InboxReadState } from '@/components/messaging/ConversationList';
+import { ChatWindow, NoChatSelected, type Message, type NoChatState } from '@/components/messaging/ChatWindow';
 import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -49,7 +49,7 @@ import { createMessagingSocket, type ServerToClientEvents } from '@/lib/messagin
 import { useSession } from '@/hooks/useSession';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useMessaging } from '@/contexts/MessagingContext';
-import { queryKeys } from '@/lib/query-keys';
+import { qk, queryKeys } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ConversationValidationState } from '@/components/messaging/ConversationValidation';
@@ -92,6 +92,8 @@ function mapMessage(m: MessageItem, currentUserId: string): Message {
 
 function IntroDetailPane({
   request,
+  readState,
+  onRetry,
   responding,
   onAccept,
   onDecline,
@@ -99,12 +101,33 @@ function IntroDetailPane({
   onBack,
 }: {
   request: ConnectionRequestItem | null;
+  /** Until the requests are read, no request is not "No pending requests" (§73). */
+  readState: InboxReadState;
+  onRetry: () => void;
   responding: boolean;
   onAccept: () => void;
   onDecline: () => void;
   locale: 'en' | 'el';
   onBack?: () => void;
 }) {
+  if (!request && readState === 'loading') {
+    return <div aria-busy="true" className="h-full" />;
+  }
+  if (!request && readState === 'failed') {
+    return (
+      <div className="relative flex h-full flex-col items-center justify-center overflow-hidden p-8 text-center">
+        <div className="relative flex max-w-sm flex-col items-center gap-4">
+          <CfbGlyph name="people" className="h-10 w-10 text-muted-foreground/50" />
+          <p role="alert" className="text-sm font-medium text-foreground">
+            <BilingualText en={messagesEn('intros_failed')} el={messagesEl('intros_failed')} wrap />
+          </p>
+          <Button type="button" size="sm" variant="outline" className="rounded-full" onClick={onRetry}>
+            <BilingualText en={messagesEn('retry')} el={messagesEl('retry')} compact />
+          </Button>
+        </div>
+      </div>
+    );
+  }
   if (!request) {
     return (
       <div className="relative flex h-full flex-col items-center justify-center overflow-hidden p-8 text-center">
@@ -221,7 +244,10 @@ function IntroDetailPane({
           </Button>
         </div>
         {/* Outline, not ghost: a ghost button that starts the row put its
-            padding in front of its letters, off the pane's left edge. */}
+            padding in front of its letters, off the pane's left edge. The
+            person's profile and match only: "Discover" opened the directory,
+            which has nothing to do with this request (the page tools carry
+            it; docs §73). */}
         <div className="flex flex-wrap gap-2 border-t border-border pt-4">
           <Button asChild size="sm" variant="outline">
             <Link href={`/profiles/${request.requester.id}`}>
@@ -233,12 +259,6 @@ function IntroDetailPane({
             <Link href={`/matches/${request.requester.id}`}>
               <CfbGlyph name="matches" className="icon-sm mr-1.5" />
               <BilingualText en={messagesEn('view_match')} el={messagesEl('view_match')} compact />
-            </Link>
-          </Button>
-          <Button asChild size="sm" variant="outline">
-            <Link href="/discover">
-              <CfbGlyph name="discover" className="icon-sm mr-1.5" />
-              <BilingualText en={messagesEn('discover_people')} el={messagesEl('discover_people')} compact />
             </Link>
           </Button>
         </div>
@@ -268,7 +288,16 @@ export default function MessagesPage() {
   const [introRequests, setIntroRequests] = useState<ConnectionRequestItem[]>([]);
   const [acceptedConnections, setAcceptedConnections] = useState<ConnectionRequestItem[]>([]);
   const [composeOpen, setComposeOpen] = useState(false);
-  const [introLoading, setIntroLoading] = useState(false);
+  // Whether each list has been read (docs §73). An unread list is not an
+  // empty one: the inbox said "No conversations yet" while it loaded and
+  // when the read failed, Intros said "No pending requests", and New message
+  // said "You have no connections" to someone whose connections failed to load.
+  const [inboxState, setInboxState] = useState<InboxReadState>('loading');
+  const [inboxReload, setInboxReload] = useState(0);
+  const [introsState, setIntrosState] = useState<InboxReadState>('loading');
+  const [connectionsFailed, setConnectionsFailed] = useState(false);
+  const [threadState, setThreadState] = useState<InboxReadState>('loading');
+  const [threadReload, setThreadReload] = useState(0);
   const [introResponding, setIntroResponding] = useState<Record<string, boolean>>({});
   const [selectedIntroId, setSelectedIntroId] = useState<string | null>(null);
   const [composerDraft, setComposerDraft] = useState<string | undefined>();
@@ -373,6 +402,7 @@ export default function MessagesPage() {
     };
 
     const bootstrap = async () => {
+      setInboxState('loading');
       try {
         const rawUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
         let resolvedUserId = '';
@@ -415,6 +445,7 @@ export default function MessagesPage() {
         queryClient.setQueryData(queryKeys.conversationsList, { conversations: list });
         if (!mounted) return;
         setConversations(list.map(mapConversation));
+        setInboxState('ready');
 
         socket = createMessagingSocket();
         socketRef.current = socket;
@@ -429,16 +460,9 @@ export default function MessagesPage() {
           router.replace('/login');
           return;
         }
-        const previewDemo =
-          typeof document !== 'undefined' &&
-          (document.cookie.includes('cfb_preview_demo=1') ||
-            window.localStorage.getItem('cfb_demo_data') === '1');
-        if (!previewDemo) {
-          showError(
-            t(messagesEn('init_fail'), messagesEl('init_fail')),
-            error instanceof Error ? error.message : t(messagesEn('try_again'), messagesEl('try_again')),
-          );
-        }
+        // Said where the list would be, with Try again; a toast went away
+        // and left "No conversations yet" behind it (docs §73).
+        setInboxState('failed');
       }
     };
 
@@ -454,26 +478,31 @@ export default function MessagesPage() {
       socket?.disconnect();
       socketRef.current = null;
     };
-  }, [hasSession, router, sessionReady, showError]);
+  }, [hasSession, router, sessionReady, queryClient, inboxReload]);
 
-  // Load pending intro (connection) requests
+  // Pending intro (connection) requests, and the accepted connections New
+  // message offers. Each read is its own: a failed one says so.
   const loadIntroRequests = useCallback(async () => {
     if (!canUseMessaging) {
       return;
     }
 
-    setIntroLoading(true);
-    try {
-      const [{ connections: received }, { connections: accepted }] = await Promise.all([
-        listConnectionRequests({ type: 'received', limit: 50 }),
-        listConnectionRequests({ type: 'accepted', limit: 50 }),
-      ]);
-      setIntroRequests(received.filter((c) => c.status === 'pending'));
-      setAcceptedConnections(accepted.filter((c) => c.status === 'accepted'));
-    } catch {
-      // silently fail
-    } finally {
-      setIntroLoading(false);
+    setIntrosState('loading');
+    const [received, accepted] = await Promise.allSettled([
+      listConnectionRequests({ type: 'received', limit: 50 }),
+      listConnectionRequests({ type: 'accepted', limit: 50 }),
+    ]);
+    if (received.status === 'fulfilled') {
+      setIntroRequests(received.value.connections.filter((c) => c.status === 'pending'));
+      setIntrosState('ready');
+    } else {
+      setIntrosState('failed');
+    }
+    if (accepted.status === 'fulfilled') {
+      setAcceptedConnections(accepted.value.connections.filter((c) => c.status === 'accepted'));
+      setConnectionsFailed(false);
+    } else {
+      setConnectionsFailed(true);
     }
   }, [canUseMessaging]);
 
@@ -486,10 +515,16 @@ export default function MessagesPage() {
   }, [canUseMessaging, loadIntroRequests]);
 
   const handleIntroRespond = async (id: string, action: 'accepted' | 'declined') => {
+    // The request in hand names the person: the conversation opens with them
+    // without reading the requests again.
+    const request = introRequests.find((r) => r.id === id);
     setIntroResponding((prev) => ({ ...prev, [id]: true }));
     try {
       await respondToConnectionRequest(id, action);
       setIntroRequests((prev) => prev.filter((r) => r.id !== id));
+      // Every surface that offers Connect / Accept / Message reads these keys
+      // (useConnectionWith): the founder home stops offering Accept.
+      void queryClient.invalidateQueries({ queryKey: qk('connections') });
       success(
         action === 'accepted'
           ? t(messagesEn('connection_accepted'), messagesEl('connection_accepted'))
@@ -498,11 +533,12 @@ export default function MessagesPage() {
           ? t(messagesEn('connection_accepted_hint'), messagesEl('connection_accepted_hint'))
           : undefined,
       );
-      if (action === 'accepted') {
-        const { connections: updated } = await listConnectionRequests({ type: 'received', limit: 50 });
-        const accepted = updated.find((c) => c.id === id);
-        if (accepted) {
-          const { conversationId } = await getOrCreateDirectConversation(accepted.requesterId);
+      if (action === 'accepted' && request) {
+        setAcceptedConnections((prev) => (prev.some((c) => c.id === id) ? prev : [...prev, { ...request, status: 'accepted' }]));
+        // The answer is in; opening the chat is a second step, and its
+        // failure is not "Action failed" on an accepted request.
+        try {
+          const { conversationId } = await getOrCreateDirectConversation(request.requesterId);
           const { conversations: list } = await listMessageConversations();
           queryClient.setQueryData(queryKeys.conversationsList, { conversations: list });
           const mapped = list.map(mapConversation);
@@ -513,6 +549,11 @@ export default function MessagesPage() {
             setSelectedConversation(conv);
             setIsMobileViewingChat(true);
           }
+        } catch (e) {
+          showError(
+            t(messagesEn('start_fail'), messagesEl('start_fail')),
+            e instanceof Error ? e.message : t(messagesEn('try_again'), messagesEl('try_again')),
+          );
         }
       }
     } catch (e) {
@@ -615,28 +656,30 @@ export default function MessagesPage() {
     }
 
     let cancelled = false;
+    // The last thread's messages do not stay under the next one's name
+    // while it loads, or after its read fails (docs §73).
+    setMessages([]);
+    setThreadState('loading');
     const run = async () => {
       try {
         const { messages: list } = await listConversationMessages(selectedConversation.id, 200);
         if (cancelled) return;
         setMessages(list.map((m) => mapMessage(m, currentUserId)));
+        setThreadState('ready');
         setConversations((prev) =>
           prev.map((c) => (c.id === selectedConversation.id ? { ...c, unreadCount: 0 } : c)),
         );
         socketRef.current?.emit('conversation:join', { conversationId: selectedConversation.id });
-      } catch (e) {
+      } catch {
         if (cancelled) return;
-        showError(
-          t(messagesEn('load_fail'), messagesEl('load_fail')),
-          e instanceof Error ? e.message : t(messagesEn('try_again'), messagesEl('try_again')),
-        );
+        setThreadState('failed');
       }
     };
     run();
     return () => {
       cancelled = true;
     };
-  }, [canUseMessaging, selectedConversation, currentUserId, showError]);
+  }, [canUseMessaging, selectedConversation, currentUserId, threadReload]);
 
   // Desktop: open the most relevant thread so the right pane is not an empty void.
   useEffect(() => {
@@ -805,7 +848,12 @@ export default function MessagesPage() {
     try {
       await updateConversationFlags(id, { isArchived: true });
       setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, isArchived: true } : c)));
-      if (selectedConversation?.id === id) setSelectedConversation(null);
+      if (selectedConversation?.id === id) {
+        setSelectedConversation(null);
+        // On a phone the thread was the screen; the inbox comes back rather
+        // than "Pick a conversation" over a list that is out of view.
+        setIsMobileViewingChat(false);
+      }
       success(
         t(messagesEn('archived_toast'), messagesEl('archived_toast')),
         t(messagesEn('archived_hint'), messagesEl('archived_hint')),
@@ -821,6 +869,10 @@ export default function MessagesPage() {
 
 
   const pendingIntrosCount = introRequests.length;
+  const liveCount = conversations.filter((c) => !c.isArchived).length;
+  const paneState: NoChatState =
+    inboxState === 'loading' ? 'loading' : inboxState === 'failed' ? 'failed' : liveCount === 0 ? 'empty' : 'pick';
+  const retryInbox = () => setInboxReload((n) => n + 1);
   const unreadTotal = conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0);
   const composeCandidates = candidatesFromInbox(conversations, acceptedConnections, currentUserId);
   const selectedIntro = introRequests.find((r) => r.id === selectedIntroId) ?? introRequests[0] ?? null;
@@ -1038,6 +1090,8 @@ export default function MessagesPage() {
               <TabsContent value="chats" className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden">
                 <ConversationList
                   conversations={conversations}
+                  state={inboxState}
+                  onRetry={retryInbox}
                   selectedId={selectedConversation?.id}
                   onSelect={(conv) => {
                     setSelectedConversation(conv);
@@ -1051,7 +1105,7 @@ export default function MessagesPage() {
               </TabsContent>
 
               <TabsContent value="intros" className="mt-0 min-h-0 flex-1 overflow-y-auto">
-                {introLoading ? (
+                {introsState === 'loading' ? (
                   <div className="space-y-3 p-4">
                     {[...Array(3)].map((_, i) => (
                       <div key={i} className="animate-pulse rounded-2xl bg-background/60 p-4 ring-1 ring-border/40">
@@ -1066,8 +1120,26 @@ export default function MessagesPage() {
                       </div>
                     ))}
                   </div>
+                ) : introsState === 'failed' ? (
+                  // Below md only, as the empty list below: from md the pane
+                  // beside it says this, with Try again (docs §73).
+                  <div className="flex flex-col items-center justify-center gap-3 p-10 text-center md:hidden">
+                    <CfbGlyph name="people" className="icon-lg text-muted-foreground/50" />
+                    <p role="alert" className="max-w-[16rem] text-sm font-medium text-foreground">
+                      <BilingualText en={messagesEn('intros_failed')} el={messagesEl('intros_failed')} wrap />
+                    </p>
+                    <Button type="button" size="sm" variant="outline" onClick={() => void loadIntroRequests()}>
+                      <BilingualText en={messagesEn('retry')} el={messagesEl('retry')} compact />
+                    </Button>
+                  </div>
                 ) : introRequests.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center gap-3 p-10 text-center">
+                  // Below md only: from md the detail pane beside this one
+                  // says the same, with the same two links. The links were
+                  // already kept to one pane; the words were still said twice
+                  // side by side (docs §73). The detail pane is hidden below
+                  // md until a request is tapped, which cannot happen with an
+                  // empty list - so here is where a phone reads it.
+                  <div className="flex flex-col items-center justify-center gap-3 p-10 text-center md:hidden">
                     <CfbGlyph name="people" className="icon-lg text-muted-foreground/50" />
                     <p className="text-sm font-medium text-foreground">
                       <BilingualText en={messagesEn('no_pending')} el={messagesEl('no_pending')} />
@@ -1075,12 +1147,7 @@ export default function MessagesPage() {
                     <p className="max-w-[16rem] text-xs text-muted-foreground">
                       <BilingualText en={messagesEn('intro_empty_hint')} el={messagesEl('intro_empty_hint')} />
                     </p>
-                    {/* Below md only: the detail pane beside this one shows the
-                        same two links, and above md both panes are on screen,
-                        so the pair was drawn twice. The detail pane is hidden
-                        below md until a request is tapped, which cannot happen
-                        with an empty list - so the recovery lives here there. */}
-                    <div className="flex flex-wrap justify-center gap-2 md:hidden">
+                    <div className="flex flex-wrap justify-center gap-2">
                       <Link
                         href="/matches"
                         className="inline-flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible hover:bg-primary/20"
@@ -1105,25 +1172,28 @@ export default function MessagesPage() {
                       // mark, the name and the headline under it, the date at
                       // the right; the note and the answers start on the
                       // mark's edge. A row, not a tile: the pane is the card.
+                      // The row opens the request with a real button stretched
+                      // over it, as a conversation row does: the row was a
+                      // role="button" holding a link and two buttons
+                      // (nested-interactive), and Enter on it chose the
+                      // request without opening it on a phone (docs §73).
                       <div
                         key={req.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => {
-                          setSelectedIntroId(req.id);
-                          setIsMobileViewingChat(true);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            setSelectedIntroId(req.id);
-                          }
-                        }}
                         className={cn(
-                          'animate-fade-in cursor-pointer space-y-2 rounded-2xl p-3 transition-colors',
+                          'group relative animate-fade-in space-y-2 rounded-2xl p-3 transition-colors',
                           selectedIntro?.id === req.id ? 'bg-muted/50' : 'hover:bg-muted/30',
                         )}
                       >
+                        <button
+                          type="button"
+                          aria-current={selectedIntro?.id === req.id ? 'true' : undefined}
+                          aria-label={bilingualAria(`Open the request from ${req.requester.displayName}`, `Άνοιγμα του αιτήματος από ${req.requester.displayName}`)}
+                          onClick={() => {
+                            setSelectedIntroId(req.id);
+                            setIsMobileViewingChat(true);
+                          }}
+                          className="absolute inset-0 z-0 cursor-pointer rounded-2xl focus-ring"
+                        />
                         <RowHead
                           mark={(
                             <ThreadAvatar
@@ -1137,8 +1207,7 @@ export default function MessagesPage() {
                             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                               <Link
                                 href={`/profiles/${req.requester.id}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="transition-colors hover:text-primary-accessible"
+                                className="relative z-10 transition-colors hover:text-primary-accessible"
                               >
                                 {req.requester.displayName}
                               </Link>
@@ -1160,13 +1229,16 @@ export default function MessagesPage() {
                             )}
                           </p>
                         )}
-                        <div className="flex flex-wrap items-center gap-2">
+                        {/* Below md only: from md the request opens in the pane
+                            beside the list with the same two answers, and
+                            every row repeated them - a column of filled
+                            Accept buttons next to the one in the pane. */}
+                        <div className="relative z-10 flex flex-wrap items-center gap-2 md:hidden">
                           <Button
                             size="sm"
                             className="gap-1"
                             disabled={introResponding[req.id]}
-                            onClick={(e) => {
-                              e.stopPropagation();
+                            onClick={() => {
                               void handleIntroRespond(req.id, 'accepted');
                             }}
                           >
@@ -1178,8 +1250,7 @@ export default function MessagesPage() {
                             variant="outline"
                             className="gap-1"
                             disabled={introResponding[req.id]}
-                            onClick={(e) => {
-                              e.stopPropagation();
+                            onClick={() => {
                               void handleIntroRespond(req.id, 'declined');
                             }}
                           >
@@ -1204,6 +1275,8 @@ export default function MessagesPage() {
             {sidebarTab === 'intros' ? (
               <IntroDetailPane
                 request={selectedIntro}
+                readState={introsState}
+                onRetry={() => void loadIntroRequests()}
                 responding={Boolean(selectedIntro && introResponding[selectedIntro.id])}
                 onAccept={() => {
                   if (selectedIntro) void handleIntroRespond(selectedIntro.id, 'accepted');
@@ -1231,6 +1304,8 @@ export default function MessagesPage() {
                   onAskAi={openInboxAi}
                   initialDraft={composerDraft}
                   initialSearch={selectedConversation?.id === openConversationId ? findParam : undefined}
+                  threadState={threadState}
+                  onRetryThread={() => setThreadReload((n) => n + 1)}
                   onBack={() => {
                     setIsMobileViewingChat(false);
                   }}
@@ -1288,6 +1363,9 @@ export default function MessagesPage() {
               </>
             ) : (
               <NoChatSelected
+                state={paneState}
+                hasConnections={composeCandidates.length > 0}
+                onRetry={retryInbox}
                 onNewMessage={() => setComposeOpen(true)}
                 onAskAi={openInboxAi}
                 recent={recentForEmpty}
@@ -1309,6 +1387,7 @@ export default function MessagesPage() {
         open={composeOpen}
         onOpenChange={setComposeOpen}
         candidates={composeCandidates}
+        connectionsFailed={connectionsFailed}
         onPick={(userId) => void handleComposePick(userId)}
       />
     </AppShell>

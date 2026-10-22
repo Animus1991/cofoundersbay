@@ -15,6 +15,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { StatusText } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
+import { ROLE_FAMILY_LABEL, roleFamily } from '@/lib/role-family';
+import { listTimeLabel } from '@/lib/thread-time';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -42,6 +44,12 @@ export type Conversation = {
   isOnline?: boolean;
 };
 
+/**
+ * Whether the list has been read. Until it has, an empty list is not "no
+ * conversations": it is still loading, or the read failed (docs §73).
+ */
+export type InboxReadState = 'loading' | 'failed' | 'ready';
+
 type ConversationListProps = {
   conversations: Conversation[];
   selectedId?: string;
@@ -49,20 +57,16 @@ type ConversationListProps = {
   onNewMessage?: () => void;
   onArchive?: (id: string) => void;
   onPin?: (id: string) => void;
+  state?: InboxReadState;
+  onRetry?: () => void;
 };
 
-function formatListTime(date: Date, yesterday: string, lang: 'en' | 'el'): string {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / 86400000);
-  const locale = lang === 'el' ? 'el-GR' : 'en-GB';
-
-  if (days === 0) {
-    return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
-  }
-  if (days === 1) return yesterday;
-  if (days < 7) return date.toLocaleDateString(locale, { timeZone: 'UTC', weekday: 'short' });
-  return date.toLocaleDateString(locale, { timeZone: 'UTC', month: 'short', day: 'numeric' });
+/** The role as the badge in the thread's header names it (lib/role-family). */
+function RoleLabel({ role }: { role: string }) {
+  const family = roleFamily(role);
+  if (!family) return <StatusText value={role} />;
+  const label = ROLE_FAMILY_LABEL[family];
+  return <BilingualText en={label.en} el={label.el} compact />;
 }
 
 function ConversationItem({
@@ -145,7 +149,7 @@ function ConversationItem({
               unread ? 'font-medium text-primary-accessible' : 'text-muted-foreground',
             )}
           >
-            {formatListTime(conversation.lastMessageTime, yesterdayLabel, lang)}
+            {listTimeLabel(conversation.lastMessageTime, lang, yesterdayLabel)}
           </span>
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-2">
@@ -154,7 +158,7 @@ function ConversationItem({
               founder's read differently at a glance. */}
           {conversation.recipientRole ? (
             <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-2xs leading-none text-muted-foreground">
-              <StatusText value={conversation.recipientRole} />
+              <RoleLabel role={conversation.recipientRole} />
             </span>
           ) : null}
           <p
@@ -230,6 +234,8 @@ export function ConversationList({
   onSelect,
   onArchive,
   onPin,
+  state = 'ready',
+  onRetry,
 }: ConversationListProps) {
   const t = useMessagesPrimaryText();
   const { primary } = useLanguagePreference();
@@ -237,6 +243,9 @@ export function ConversationList({
   const [unreadOnly, setUnreadOnly] = useState(false);
   const yesterday = t(messagesEn('yesterday'), messagesEl('yesterday'));
   const unreadThreads = conversations.filter((c) => !c.isArchived && c.unreadCount > 0).length;
+  const liveThreads = conversations.filter((c) => !c.isArchived).length;
+  // Nothing to search in a list that failed or holds nothing yet.
+  const showSearch = state === 'loading' || (state === 'ready' && liveThreads > 0);
   // The filter turns itself off when nothing is unread any more, rather than
   // leaving an empty list behind a pressed button.
   const showUnreadOnly = unreadOnly && unreadThreads > 0;
@@ -258,6 +267,7 @@ export function ConversationList({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
+      {showSearch && (
       <div className="shrink-0 px-3 pb-2 pt-2">
         <div className="flex items-center gap-2">
           <div className="relative min-w-0 flex-1">
@@ -286,8 +296,44 @@ export function ConversationList({
           ) : null}
         </div>
       </div>
+      )}
 
       <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
+        {state === 'loading' && (
+          <div aria-busy="true" className="space-y-1 pt-1">
+            <span className="sr-only">
+              <BilingualText en={messagesEn('loading_conversations')} el={messagesEl('loading_conversations')} />
+            </span>
+            {[0, 1, 2].map((i) => (
+              <div key={i} aria-hidden className="flex animate-pulse items-center gap-3 rounded-2xl px-3 py-3 sm:py-2.5">
+                <div className="h-12 w-12 shrink-0 rounded-full bg-secondary" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="h-3 w-2/5 rounded bg-secondary" />
+                  <div className="h-3 w-4/5 rounded bg-secondary" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* From md the pane beside the list says this, larger, with the way
+            on; the list said the same words next to it (docs §73). */}
+        {state === 'failed' && (
+          <div className="flex flex-col items-center justify-center gap-3 px-4 py-14 text-center md:hidden">
+            <CfbGlyph name="messages" className="icon-lg text-muted-foreground/50" />
+            {/* The alert is the words: inside an alert the page keeps a
+                decorative glyph it hides everywhere else. */}
+            <p role="alert" className="max-w-[16rem] text-sm font-medium text-foreground">
+              <BilingualText en={messagesEn('inbox_failed')} el={messagesEl('inbox_failed')} wrap />
+            </p>
+            {onRetry && (
+              <Button type="button" size="sm" variant="outline" onClick={onRetry}>
+                <BilingualText en={messagesEn('retry')} el={messagesEl('retry')} compact />
+              </Button>
+            )}
+          </div>
+        )}
+
         {pinnedConversations.length > 0 && (
           <div className="mb-2">
             <p className="mb-1 px-2 pt-1 text-xs font-medium text-muted-foreground">
@@ -330,8 +376,8 @@ export function ConversationList({
           </div>
         )}
 
-        {filteredConversations.length === 0 && (
-          <div className="flex flex-col items-center justify-center gap-3 px-4 py-14 text-center">
+        {state === 'ready' && filteredConversations.length === 0 && (
+          <div className={cn('flex flex-col items-center justify-center gap-3 px-4 py-14 text-center', !searchQuery && 'md:hidden')}>
             <CfbGlyph name="messages" className="icon-lg text-muted-foreground/50" />
             <p className="text-sm font-medium text-foreground">
               {searchQuery ? (

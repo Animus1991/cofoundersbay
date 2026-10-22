@@ -4,15 +4,15 @@ import { Rocket, GraduationCap, TrendingUp, Building2 } from 'lucide-react';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { BilingualText } from '@/components/common/BilingualText';
 import { cn } from '@/lib/utils';
-import { roleFamily, type RoleFamily } from '@/lib/role-family';
+import { ROLE_FAMILY_LABEL, roleFamily, type RoleFamily } from '@/lib/role-family';
 
 type RoleType = RoleFamily;
 
 const roleConfig: Record<RoleType, { label: string; labelEl: string; icon: React.ComponentType<{ className?: string }> }> = {
-  founder: { label: 'Founder', labelEl: 'Ιδρυτής', icon: Rocket },
-  mentor: { label: 'Mentor', labelEl: 'Μέντορας', icon: GraduationCap },
-  investor: { label: 'Investor', labelEl: 'Επενδυτής', icon: TrendingUp },
-  org: { label: 'Organization', labelEl: 'Οργανισμός', icon: Building2 },
+  founder: { label: ROLE_FAMILY_LABEL.founder.en, labelEl: ROLE_FAMILY_LABEL.founder.el, icon: Rocket },
+  mentor: { label: ROLE_FAMILY_LABEL.mentor.en, labelEl: ROLE_FAMILY_LABEL.mentor.el, icon: GraduationCap },
+  investor: { label: ROLE_FAMILY_LABEL.investor.en, labelEl: ROLE_FAMILY_LABEL.investor.el, icon: TrendingUp },
+  org: { label: ROLE_FAMILY_LABEL.org.en, labelEl: ROLE_FAMILY_LABEL.org.el, icon: Building2 },
 };
 
 type RoleBadgeProps = {

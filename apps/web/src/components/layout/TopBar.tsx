@@ -96,7 +96,9 @@ export function TopBar() {
 
   return (
     <header
-      style={{ top: TOP_BANNER_STACK }}
+      // A full-height frame sets --topbar-top to 0: its column does not
+      // scroll, and the banners sit above it already (AppShellFrame).
+      style={{ top: `var(--topbar-top, ${TOP_BANNER_STACK})` }}
       className="sticky z-30 flex h-12 min-h-12 items-center gap-0.5 border-b border-border bg-background/80 px-2 backdrop-blur-md safe-x sm:hidden"
     >
       <MobileNav />
