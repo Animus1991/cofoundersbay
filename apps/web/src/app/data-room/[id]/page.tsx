@@ -12,27 +12,16 @@ import {
   Lock,
   Unlock,
   Eye,
-  EyeOff,
   MoreVertical,
   Search,
-  Filter,
   Grid,
   List,
-  Clock,
-  Users,
   Trash2,
   Edit,
-  Copy,
-  CheckCircle2,
-  XCircle,
-  AlertCircle,
   File,
   Image,
   FileSpreadsheet,
   Presentation,
-  FileCode,
-  FileJson,
-  FileType2,
   type LucideIcon,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -70,7 +59,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
@@ -80,6 +68,20 @@ import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { ASK } from '@/lib/page-questions';
+import { useDemoData } from '@/contexts/DemoDataContext';
+
+/** Access levels and log actions, in both languages (they printed the raw English value). */
+const ACCESS_LEVEL: Record<string, { en: string; el: string }> = {
+  view: { en: 'View', el: 'Προβολή' },
+  download: { en: 'Download', el: 'Λήψη' },
+  admin: { en: 'Admin', el: 'Διαχειριστής' },
+};
+const LOG_ACTION: Record<string, { en: string; el: string }> = {
+  view: { en: 'View', el: 'Προβολή' },
+  download: { en: 'Download', el: 'Λήψη' },
+  upload: { en: 'Upload', el: 'Μεταφόρτωση' },
+  share: { en: 'Share', el: 'Κοινοποίηση' },
+};
 
 // Types
 interface Document {
@@ -312,10 +314,17 @@ export default function DataRoomPage() {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
-  const documents = DEMO_DOCUMENTS;
-  const folders = DEMO_FOLDERS;
-  const investors = DEMO_INVESTORS;
-  const accessLogs = DEMO_ACCESS_LOGS;
+  /*
+   * The room has no storage behind it, so its rows are the showcase's: they
+   * showed Elena's documents, investors and log to every member, in their
+   * own room. They are the demo's now; a member sees the room empty and why
+   * (AGENTS: sample rows, docs §92).
+   */
+  const { showDemoData } = useDemoData();
+  const documents = showDemoData ? DEMO_DOCUMENTS : [];
+  const folders = showDemoData ? DEMO_FOLDERS : [];
+  const investors = showDemoData ? DEMO_INVESTORS : [];
+  const accessLogs = showDemoData ? DEMO_ACCESS_LOGS : [];
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -360,14 +369,14 @@ export default function DataRoomPage() {
       labelEl: 'Έγγραφα',
       rows: filteredDocuments.map((d) => `${d.name} · ${formatFileSize(d.size)} · ${d.viewCount} views · ${d.status}`),
       total: documents.length,
-      sample: true,
+      sample: showDemoData,
     },
     {
       id: 'investors',
       labelEn: 'Investors with access',
       labelEl: 'Επενδυτές με πρόσβαση',
       rows: investors.map((i) => `${i.name}${i.firm ? ` (${i.firm})` : ''} · ${i.accessLevel} · ${i.documentsViewed} viewed`),
-      sample: true,
+      sample: showDemoData,
     },
   ]);
   usePageControls([
@@ -431,7 +440,12 @@ export default function DataRoomPage() {
           </div>
           <Progress value={storageUsedPercent} className="h-2" />
           <p className="text-xs text-muted-foreground">
-            {documents.length} documents • {storageUsedPercent.toFixed(1)}% used
+            <BilingualText
+              en={`${documents.length} ${documents.length === 1 ? 'document' : 'documents'} · ${storageUsedPercent.toFixed(1)}% used`}
+              el={`${documents.length} ${documents.length === 1 ? 'έγγραφο' : 'έγγραφα'} · ${storageUsedPercent.toFixed(1)}% σε χρήση`}
+              compact
+              wrap
+            />
           </p>
         </div>
       ),
@@ -449,8 +463,10 @@ export default function DataRoomPage() {
             onClick={() => setSelectedFolder(null)}
             className={cn(
               'w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
-              selectedFolder === null ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
+              // Chosen reads as tint and edge, not a filled primary button.
+              selectedFolder === null ? 'bg-primary/10 font-medium text-foreground ring-1 ring-primary/40' : 'hover:bg-muted'
             )}
+            aria-pressed={selectedFolder === null}
           >
             <Folder className="icon-sm" aria-hidden="true" />
             <span className="min-w-0 flex-1 text-left">
@@ -465,8 +481,9 @@ export default function DataRoomPage() {
               onClick={() => setSelectedFolder(folder.id)}
               className={cn(
                 'w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
-                selectedFolder === folder.id ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
+                selectedFolder === folder.id ? 'bg-primary/10 font-medium text-foreground ring-1 ring-primary/40' : 'hover:bg-muted'
               )}
+              aria-pressed={selectedFolder === folder.id}
             >
               <Folder className="icon-sm" aria-hidden="true" />
               <span className="min-w-0 flex-1 truncate text-left">{folder.name}</span>
@@ -509,17 +526,22 @@ export default function DataRoomPage() {
         </TabsList>
 
         <TabsContent value="documents" className="space-y-6">
-          <SampleDataNotice
-            surface="Data room"
-            detail="Documents, investors and the access log are illustrative — the data room has no backend storage yet."
-            askAiPrompt={ASK.dataRoomSample}
-          />
+          {showDemoData ? (
+            <SampleDataNotice
+              surface="Data room"
+              detail="Documents, investors and the access log are illustrative — the data room has no backend storage yet."
+              askAiPrompt={ASK.dataRoomSample}
+            />
+          ) : null}
 
           {/* The storage meter and the folder tree live in the page rail; the
               column is the document list alone. */}
           <div>
             {/* Documents List */}
             <Card>
+              {/* Search and the list/grid switch have nothing to act on in an
+                  empty room. */}
+              {documents.length > 0 ? (
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <div className="flex items-center gap-4">
                   <div className="relative">
@@ -549,8 +571,19 @@ export default function DataRoomPage() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                {viewMode === 'list' ? (
+              ) : null}
+              <CardContent className={documents.length === 0 ? 'pt-6' : undefined}>
+                {documents.length === 0 ? (
+                  // A member's room: no rows to invent, and the reason nothing
+                  // can be added yet.
+                  <p className="card-body text-muted-foreground">
+                    <BilingualText
+                      en="No documents yet. The data room has no file storage yet, so documents cannot be uploaded here; when it does, they are listed here with who opened them."
+                      el="Δεν υπάρχουν ακόμη έγγραφα. Το data room δεν έχει ακόμη αποθήκευση αρχείων, οπότε δεν ανεβαίνουν έγγραφα εδώ· όταν αποκτήσει, θα εμφανίζονται εδώ με το ποιος τα άνοιξε."
+                      wrap
+                    />
+                  </p>
+                ) : viewMode === 'list' ? (
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -562,7 +595,7 @@ export default function DataRoomPage() {
                             seven columns wrapped every cell a word a line. */}
                         <TableHead className="hidden md:table-cell"><BilingualText en="Uploaded" el="Μεταφορτώθηκε" compact /></TableHead>
                         <TableHead className="hidden md:table-cell"><BilingualText en="Access" el="Πρόσβαση" compact /></TableHead>
-                        <TableHead className="hidden md:table-cell"><BilingualText en="Views" el="Προβολές" compact /></TableHead>
+                        <TableHead className="hidden md:table-cell"><BilingualText en="Opened" el="Ανοίχτηκε" compact /></TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -578,9 +611,9 @@ export default function DataRoomPage() {
                                   <p className="flex items-center gap-1.5 font-medium">
                                     <span className="break-words">{document.name}</span>
                                     {document.isPublic ? (
-                                      <Unlock className="icon-sm shrink-0 text-status-success md:hidden" aria-label="Public" />
+                                      <Unlock className="icon-sm shrink-0 text-status-success md:hidden" aria-label={bilingualAria('All investors with access', 'Όλοι οι επενδυτές με πρόσβαση')} />
                                     ) : (
-                                      <Lock className="icon-sm shrink-0 text-status-warning md:hidden" aria-label="Private" />
+                                      <Lock className="icon-sm shrink-0 text-status-warning md:hidden" aria-label={bilingualAria('Restricted', 'Περιορισμένο')} />
                                     )}
                                   </p>
                                   {document.description && (
@@ -610,33 +643,37 @@ export default function DataRoomPage() {
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
                               {document.isPublic ? (
+                                // "Public" under a description that says nothing
+                                // here is public: it meant every investor the
+                                // room is shared with (docs §92).
                                 <Badge variant="outline" className="bg-status-success-bg text-status-success border-status-success-border">
                                   <Unlock className="icon-sm mr-1" />
-                                  <BilingualText en="Public" el="Δημόσιο" compact />
+                                  <BilingualText en="All investors" el="Όλοι οι επενδυτές" compact />
                                 </Badge>
                               ) : (
                                 <Badge variant="outline" className="bg-status-warning-bg text-status-warning border-status-warning-border">
                                   <Lock className="icon-sm mr-1" />
-                                  <BilingualText en="Private" el="Ιδιωτικό" compact />
+                                  <BilingualText en="Restricted" el="Περιορισμένο" compact />
                                 </Badge>
                               )}
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                  <Eye className="icon-sm" />
-                                  {document.viewCount}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Download className="icon-sm" />
-                                  {document.downloadCount}
-                                </span>
-                              </div>
+                              {/* "45 12" under "Views": the eye and the download
+                                  glyph that told the two figures apart are
+                                  hidden as decoration, so they say it in words. */}
+                              <span className="text-sm text-muted-foreground tabular-nums">
+                                <BilingualText
+                                  en={`${document.viewCount} views · ${document.downloadCount} downloads`}
+                                  el={`${document.viewCount} προβολές · ${document.downloadCount} λήψεις`}
+                                  compact
+                                  wrap
+                                />
+                              </span>
                             </TableCell>
                             <TableCell>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${document.name}`}>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria(`Open actions for ${document.name}`, `Ενέργειες για ${document.name}`)}>
                                     <MoreVertical className="icon-sm" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -706,11 +743,11 @@ export default function DataRoomPage() {
                               <div className="flex items-center gap-2">
                                 {document.isPublic ? (
                                   <Badge variant="outline" className="text-xs bg-status-success-bg text-status-success border-status-success-border">
-                                    <BilingualText en="Public" el="Δημόσιο" compact />
+                                    <BilingualText en="All investors" el="Όλοι οι επενδυτές" compact />
                                   </Badge>
                                 ) : (
                                   <Badge variant="outline" className="text-xs bg-status-warning-bg text-status-warning border-status-warning-border">
-                                    <BilingualText en="Private" el="Ιδιωτικό" compact />
+                                    <BilingualText en="Restricted" el="Περιορισμένο" compact />
                                   </Badge>
                                 )}
                                 <span className="text-xs text-muted-foreground tabular-nums">
@@ -731,12 +768,15 @@ export default function DataRoomPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle><BilingualText en="Investor Access" el="Πρόσβαση επενδυτών" compact /></CardTitle>
-              <Button size="sm" onClick={() => setIsShareDialogOpen(true)}>
-                <Users className="icon-sm mr-2" aria-hidden="true" />
-                <BilingualText en="Add Investor" el="Προσθήκη επενδυτή" compact />
-              </Button>
+              {/* "Add Investor" opened the dialog "Share Access" above opens,
+                  as a second filled button beside "Upload" (docs §92). */}
             </CardHeader>
             <CardContent>
+              {investors.length === 0 ? (
+                <p className="card-body text-muted-foreground">
+                  <BilingualText en="No investor has access yet. Share Access, above, invites one." el="Κανένας επενδυτής δεν έχει ακόμη πρόσβαση. Η «Κοινοποίηση πρόσβασης», πιο πάνω, προσκαλεί έναν." wrap />
+                </p>
+              ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -777,7 +817,7 @@ export default function DataRoomPage() {
                               : 'bg-muted text-foreground border-border'
                           )}
                         >
-                          {investor.accessLevel.charAt(0).toUpperCase() + investor.accessLevel.slice(1)}
+                          <BilingualText en={ACCESS_LEVEL[investor.accessLevel]?.en ?? investor.accessLevel} el={ACCESS_LEVEL[investor.accessLevel]?.el ?? investor.accessLevel} compact />
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -790,21 +830,19 @@ export default function DataRoomPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Eye className="icon-sm" />
-                            {investor.documentsViewed} viewed
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Download className="icon-sm" />
-                            {investor.documentsDownloaded} downloaded
-                          </span>
-                        </div>
+                        <span className="text-sm text-muted-foreground tabular-nums">
+                          <BilingualText
+                            en={`${investor.documentsViewed} viewed · ${investor.documentsDownloaded} downloaded`}
+                            el={`${investor.documentsViewed} προβολές · ${investor.documentsDownloaded} λήψεις`}
+                            compact
+                            wrap
+                          />
+                        </span>
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${investor.name}`}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria(`Open actions for ${investor.name}`, `Ενέργειες για ${investor.name}`)}>
                               <MoreVertical className="icon-sm" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -821,6 +859,7 @@ export default function DataRoomPage() {
                   ))}
                 </TableBody>
               </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -831,6 +870,11 @@ export default function DataRoomPage() {
               <CardTitle><BilingualText en="Access Log" el="Αρχείο πρόσβασης" compact /></CardTitle>
             </CardHeader>
             <CardContent>
+              {accessLogs.length === 0 ? (
+                <p className="card-body text-muted-foreground">
+                  <BilingualText en="Nothing opened yet. Each view and download by an investor is logged here." el="Δεν έχει ανοιχτεί τίποτα ακόμη. Κάθε προβολή και λήψη από επενδυτή καταγράφεται εδώ." wrap />
+                </p>
+              ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -856,7 +900,7 @@ export default function DataRoomPage() {
                               : 'bg-muted text-foreground border-border'
                           )}
                         >
-                          {log.action.charAt(0).toUpperCase() + log.action.slice(1)}
+                          <BilingualText en={LOG_ACTION[log.action]?.en ?? log.action} el={LOG_ACTION[log.action]?.el ?? log.action} compact />
                         </Badge>
                       </TableCell>
                       <TableCell>{log.documentName}</TableCell>
@@ -866,6 +910,7 @@ export default function DataRoomPage() {
                   ))}
                 </TableBody>
               </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -928,14 +973,20 @@ export default function DataRoomPage() {
                   <p className="text-sm font-medium"><BilingualText en="Room ID" el="Αναγνωριστικό χώρου" compact /></p>
                   <p className="text-sm text-muted-foreground">{roomId}</p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium"><BilingualText en="Created" el="Δημιουργήθηκε" compact /></p>
-                  <p className="text-sm text-muted-foreground">March 1, 2026</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium"><BilingualText en="Owner" el="Κάτοχος" compact /></p>
-                  <p className="text-sm text-muted-foreground">Elena Papadopoulos</p>
-                </div>
+                {/* The showcase's date and owner, written in: every member's
+                    room said "Elena Papadopoulos". Only with the samples. */}
+                {showDemoData ? (
+                  <>
+                    <div>
+                      <p className="text-sm font-medium"><BilingualText en="Created" el="Δημιουργήθηκε" compact /></p>
+                      <p className="text-sm text-muted-foreground"><BilingualText en="1 Mar 2026" el="1 Μαρ 2026" compact /></p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium"><BilingualText en="Owner" el="Κάτοχος" compact /></p>
+                      <p className="text-sm text-muted-foreground">Elena Papadopoulos</p>
+                    </div>
+                  </>
+                ) : null}
                 <div className="pt-4 border-t">
                   <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
                     <Button variant="destructive" size="sm" disabled>
@@ -956,14 +1007,16 @@ export default function DataRoomPage() {
           <DialogHeader>
             <DialogTitle><BilingualText en="Upload Documents" el="Μεταφόρτωση εγγράφων" compact /></DialogTitle>
             <DialogDescription>
-              <BilingualText en="Drag and drop files or click to browse" el="Σύρετε αρχεία ή πατήστε για αναζήτηση" wrap />
+              {/* "click to browse" over a box that opens nothing: the room has
+                  no storage, and the dialog says so before the form. */}
+              <BilingualText en="Uploading opens once the data room has file storage; the form below shows what it will ask." el="Η μεταφόρτωση ανοίγει μόλις το data room αποκτήσει αποθήκευση αρχείων· η φόρμα δείχνει τι θα ζητά." wrap />
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 gap-4 py-4">
             <div className="border-2 border-dashed rounded-lg p-8 text-center">
               <Upload className="icon-xl mx-auto mb-2 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                <BilingualText en="Drop files here or click to browse" el="Αφήστε αρχεία εδώ ή πατήστε για αναζήτηση" wrap />
+                <BilingualText en="Files will drop here" el="Τα αρχεία θα αφήνονται εδώ" wrap />
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 <BilingualText en="PDF, DOC, XLS, PPT up to 100MB" el="PDF, DOC, XLS, PPT έως 100MB" compact wrap />
@@ -983,7 +1036,7 @@ export default function DataRoomPage() {
             <div className="flex items-center gap-2">
               <input type="checkbox" id="public" className="rounded" />
               <label htmlFor="public" className="text-sm">
-                <BilingualText en="Make documents public to all investors" el="Δημόσια έγγραφα για όλους τους επενδυτές" wrap />
+                <BilingualText en="Open to all investors with access" el="Ανοιχτά σε όλους τους επενδυτές με πρόσβαση" wrap />
               </label>
             </div>
           </div>

@@ -14,6 +14,9 @@ import { joinToRespondHref, signInToRespondHref } from '@/lib/commitments-links'
 import { CMT } from '@/lib/i18n/strings-commitments';
 import { qk } from '@/lib/query-keys';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { TOP_BANNER_STACK } from '@/components/layout/useTopBannerHeight';
+import { useStoredUser } from '@/hooks/useStoredUser';
+import { isNotFound } from '@/lib/read-status';
 
 /**
  * A need card as its author shared it, for people without an account.
@@ -33,18 +36,30 @@ export default function PublicNeedCardPage() {
     retry: false,
   });
   const card = query.data;
+  // A member who follows a shared link answers from inside, where the card's
+  // ladder is; "Join to respond" and "I have an account" are for visitors.
+  const member = Boolean(useStoredUser()?.id);
+  const found = Boolean(card && card.id);
+  // Only the server saying "no" makes a link invalid; the API down did too.
+  const failed = query.isError && !isNotFound(query.error);
+  const takesInterest = card?.outcome === 'open' || card?.outcome === 'in_discussion';
 
   return (
-    <div className="min-h-screen bg-background">
+    // Its own page, outside the app frame: it holds the height of a banner
+    // ("API server is unavailable") that otherwise covered its header.
+    <div className="min-h-screen bg-background" style={{ paddingTop: TOP_BANNER_STACK }}>
       <header className="mx-auto flex w-full max-w-2xl items-center justify-between px-4 py-4">
         <Link href="/" aria-label="CoFounderBay">
           <Logo size="sm" />
         </Link>
-        <Button size="sm" variant="ghost" asChild>
-          <Link href={card ? signInToRespondHref(card.id) : '/login'}>
-            <BilingualText en={CMT.public_sign_in.en} el={CMT.public_sign_in.el} compact />
-          </Link>
-        </Button>
+        {/* Said once: the card below offers it beside "Join to respond". */}
+        {member || (found && takesInterest) ? null : (
+          <Button size="sm" variant="ghost" asChild>
+            <Link href={card ? signInToRespondHref(card.id) : '/login'}>
+              <BilingualText en={CMT.public_sign_in.en} el={CMT.public_sign_in.el} compact />
+            </Link>
+          </Button>
+        )}
       </header>
       <MainLandmark className="mx-auto w-full max-w-2xl space-y-6 px-4 pb-16">
         {query.isLoading ? (
@@ -56,7 +71,18 @@ export default function PublicNeedCardPage() {
           <Card>
             <CardContent className="space-y-3 text-center">
               <h1 className="text-lg font-semibold text-foreground"><BilingualText en="Need card" el="Κάρτα ανάγκης" compact /></h1>
-              <p className="text-sm text-muted-foreground"><BilingualText en={CMT.public_missing.en} el={CMT.public_missing.el} wrap /></p>
+              {failed ? (
+                <>
+                  <p role="alert" className="text-sm text-muted-foreground">
+                    <BilingualText en="The card could not be read just now. The link may still be fine." el="Η κάρτα δεν διαβάστηκε αυτή τη στιγμή. Ο σύνδεσμος μπορεί να είναι εντάξει." wrap />
+                  </p>
+                  <Button size="sm" variant="outline" disabled={query.isFetching} onClick={() => void query.refetch()}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground"><BilingualText en={CMT.public_missing.en} el={CMT.public_missing.el} wrap /></p>
+              )}
               <Button size="sm" variant="outline" asChild>
                 <Link href="/"><BilingualText en="Back to home" el="Επιστροφή στην αρχική" compact /></Link>
               </Button>
@@ -75,7 +101,13 @@ export default function PublicNeedCardPage() {
                   <BilingualText en={`${CMT.public_by.en} ${card.owner.displayName}.`} el={`${CMT.public_by.el} ${card.owner.displayName}.`} wrap />
                 </p>
                 <p className="text-sm text-muted-foreground"><BilingualText en={CMT.public_how.en} el={CMT.public_how.el} wrap /></p>
-                {card.outcome === 'open' || card.outcome === 'in_discussion' ? (
+                {member ? (
+                  <Button asChild>
+                    <Link href={`/commitments/${encodeURIComponent(card.id)}`}>
+                      <BilingualText en="Open the card" el="Άνοιγμα της κάρτας" compact />
+                    </Link>
+                  </Button>
+                ) : takesInterest ? (
                   <div className="flex flex-wrap gap-2">
                     <Button asChild>
                       <Link href={joinToRespondHref(card.id)}><BilingualText en={CMT.public_join.en} el={CMT.public_join.el} compact /></Link>

@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Users,
-  Briefcase,
   ChevronRight,
   Globe,
   Mail,
@@ -28,6 +27,9 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { TOP_BANNER_STACK } from '@/components/layout/useTopBannerHeight';
+import { isNotFound } from '@/lib/read-status';
+import { useStoredUser } from '@/hooks/useStoredUser';
 
 function hexToHsl(hex: string): string | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -56,6 +58,10 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
   // hero heading and "Ready to join undefined?"; the slug is the name the
   // visitor typed to get here.
   const tenantName = tenant.displayName || tenant.name || tenant.slug || slug;
+  // A member reading the page was offered "Sign In" and a sign-up; they get
+  // the way into the product instead (AGENTS: members vs visitors).
+  const member = Boolean(useStoredUser()?.id);
+  const custom = Boolean(b?.ctaUrl);
 
   const cssVars: React.CSSProperties & Record<`--${string}`, string> = {} as React.CSSProperties &
     Record<`--${string}`, string>;
@@ -81,7 +87,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
   };
 
   return (
-    <div className="min-h-screen bg-background" style={cssVars}>
+    <div className="min-h-screen bg-background" style={{ ...cssVars, paddingTop: TOP_BANNER_STACK }}>
       <MainLandmark>
       {/* Hero */}
       <section
@@ -124,19 +130,30 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
               </Button>
             )}
 
-            <Button size="lg" className="bg-white text-foreground hover:bg-white/90 gap-2 shadow" asChild>
-              <Link href={b?.ctaUrl || '/register'}>
-                {b?.ctaLabel || <BilingualText en="Get Started" el="Ξεκινήστε" compact />}
-                <ChevronRight className="icon-sm" />
-              </Link>
-            </Button>
+            {member && !custom ? (
+              <Button size="lg" className="bg-white text-foreground hover:bg-white/90 gap-2 shadow" asChild>
+                <Link href="/dashboard">
+                  <BilingualText en="Open CoFounderBay" el="Άνοιγμα CoFounderBay" compact />
+                  <ChevronRight className="icon-sm" />
+                </Link>
+              </Button>
+            ) : (
+              <Button size="lg" className="bg-white text-foreground hover:bg-white/90 gap-2 shadow" asChild>
+                <Link href={b?.ctaUrl || '/register'}>
+                  {b?.ctaLabel || <BilingualText en="Get Started" el="Ξεκινήστε" compact />}
+                  <ChevronRight className="icon-sm" />
+                </Link>
+              </Button>
+            )}
 
-            <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 gap-2" asChild>
-              <Link href="/login">
-                <LogIn className="icon-sm" />
-                <BilingualText en="Sign In" el="Σύνδεση" compact secondaryClassName="text-white/75" />
-              </Link>
-            </Button>
+            {member ? null : (
+              <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 gap-2" asChild>
+                <Link href="/login">
+                  <LogIn className="icon-sm" />
+                  <BilingualText en="Sign In" el="Σύνδεση" compact secondaryClassName="text-white/75" />
+                </Link>
+              </Button>
+            )}
           </div>
 
           {sso?.ssoRequired && (
@@ -187,7 +204,9 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
         </div>
       </section>
 
-      {/* CTA band */}
+      {/* CTA band: a sign-up for visitors. A member has the way in above;
+          the band said "Ready to join" and sent them to register. */}
+      {member && !custom && !(sso?.ssoAvailable && sso.provider) ? null : (
       <section className="mx-auto max-w-3xl px-6 pb-16">
         <Card className="bg-primary-subtle border-primary-muted">
           <CardContent>
@@ -206,16 +225,19 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
               )}
               {/* Default size: a large button's label outranked the card's
                   own title. */}
-              <Button className="gap-2" asChild>
-                <Link href={b?.ctaUrl || '/register'}>
-                  {b?.ctaLabel || <BilingualText en="Join Now" el="Εγγραφή τώρα" compact />}
-                  <ChevronRight className="icon-sm" />
-                </Link>
-              </Button>
+              {member && !custom ? null : (
+                <Button className="gap-2" asChild>
+                  <Link href={b?.ctaUrl || '/register'}>
+                    {b?.ctaLabel || <BilingualText en="Join Now" el="Εγγραφή τώρα" compact />}
+                    <ChevronRight className="icon-sm" />
+                  </Link>
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
       </section>
+      )}
       </MainLandmark>
 
       {/* Footer */}
@@ -234,7 +256,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
               </a>
             )}
             {(b?.websiteUrl || tenant.website) && (
-              <a href={b?.websiteUrl || tenant.website!} target="_blank" rel="noopener noreferrer" aria-label={tenantName + ' website'} className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href={b?.websiteUrl || tenant.website!} target="_blank" rel="noopener noreferrer" aria-label={bilingualAria(`${tenantName} website`, `Ιστότοπος: ${tenantName}`)} className="text-muted-foreground hover:text-foreground transition-colors">
                 <Globe className="icon-sm" aria-hidden="true" />
               </a>
             )}
@@ -286,7 +308,7 @@ export default function TenantPage() {
   const params = useParams();
   const slug = (params?.slug as string) ?? '';
 
-  const { data: tenant, isLoading, isError } = useQuery({
+  const { data: tenant, isLoading, isError, error, isFetching, refetch } = useQuery({
     queryKey: qk('tenant', slug),
     queryFn: () => getTenantBySlug(slug),
     staleTime: 5 * 60_000,
@@ -301,7 +323,7 @@ export default function TenantPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background" style={{ paddingTop: TOP_BANNER_STACK }}>
         <div className="h-[50vh] bg-muted animate-pulse" />
         <div className="mx-auto max-w-5xl px-6 py-12 space-y-6">
           <Skeleton className="h-8 w-48" />
@@ -312,6 +334,22 @@ export default function TenantPage() {
           </div>
         </div>
       </div>
+    );
+  }
+
+  if (isError && !isNotFound(error)) {
+    // The API down said "Organization not found" (docs §92).
+    return (
+      <MainLandmark className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 text-center px-6">
+        <Building2 className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
+        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground"><BilingualText en="Organization" el="Οργανισμός" compact /></h1>
+        <p role="alert" className="max-w-sm text-sm text-muted-foreground">
+          <BilingualText en="This organization's page could not be read just now." el="Η σελίδα του οργανισμού δεν διαβάστηκε αυτή τη στιγμή." wrap />
+        </p>
+        <Button variant="outline" disabled={isFetching} onClick={() => void refetch()}>
+          <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+        </Button>
+      </MainLandmark>
     );
   }
 

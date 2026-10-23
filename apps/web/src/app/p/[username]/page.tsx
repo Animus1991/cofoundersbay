@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { EndorsementBasisLine } from '@/components/endorsements/EndorsementBasisLine';
 import { useQuery } from '@tanstack/react-query';
@@ -12,7 +13,7 @@ import {
   CheckCircle2, Star, Zap, Target, PenLine,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { initialsOf } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -31,6 +32,11 @@ import { ProfileHero } from '@/components/profile/ProfileHero';
 import { ProfileExperience } from '@/components/profile/ProfileSections';
 import { formatDate, bilingualAria } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
+import { TOP_BANNER_STACK } from '@/components/layout/useTopBannerHeight';
+import { useStoredUser } from '@/hooks/useStoredUser';
+import { isNotFound } from '@/lib/read-status';
+import { useToast } from '@/components/ui/toast';
+import { GiveEndorsementDialog } from '@/components/endorsements/GiveEndorsementDialog';
 
 function deriveProfileFields(profile: PublicProfile) {
   const rp = (profile.rolePayload ?? {}) as Record<string, unknown>;
@@ -109,6 +115,41 @@ function EndorsementsSkeleton() {
   );
 }
 
+/**
+ * The page's own header: it is outside the app frame, so it sits under any
+ * top banner (`TOP_BANNER_STACK`) instead of behind it. A visitor gets Sign
+ * in and Join; a member, the way back into the app.
+ */
+function PublicHeader({ member }: { member: boolean }) {
+  return (
+    <header className="sticky z-50 border-b border-border bg-background/80 backdrop-blur-sm" style={{ top: TOP_BANNER_STACK }}>
+      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2" aria-label={bilingualAria('CoFounderBay home', 'Αρχική σελίδα CoFounderBay')}>
+          <Logo size="sm" />
+        </Link>
+        <div className="flex items-center gap-2">
+          {member ? (
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/dashboard"><BilingualText en="Open CoFounderBay" el="Άνοιγμα CoFounderBay" compact /></Link>
+            </Button>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/login"><BilingualText en="Sign In" el="Σύνδεση" compact /></Link>
+              </Button>
+              {/* Outline: the page's one filled button is the person's own
+                  action ("Message") in the card below. */}
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/register"><BilingualText en="Join Free" el="Εγγραφή δωρεάν" compact /></Link>
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
 function ProfilePageSkeleton() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -131,7 +172,7 @@ export default function PublicProfilePage() {
   const params = useParams();
   const username = params?.username as string;
 
-  const { data: profile, isLoading: profileLoading, isError } = useQuery({
+  const { data: profile, isLoading: profileLoading, isError, error, isFetching, refetch } = useQuery({
     queryKey: qk('public-profile', username),
     queryFn: () => getPublicProfile(username),
     staleTime: 60_000,
@@ -151,59 +192,72 @@ export default function PublicProfilePage() {
   });
 
   const endorsements = endorsementsData?.endorsements ?? [];
+  // Who is reading: a visitor is sent to join; a member acts from inside the
+  // app (the buttons used to send a signed-in member to /register too).
+  const me = useStoredUser();
+  const member = Boolean(me?.id);
+  const isSelf = Boolean(me?.id && profile?.userId && me.id === profile.userId);
+  const { success } = useToast();
+  const [endorsing, setEndorsing] = useState(false);
+  // After joining, the visitor comes back to what they meant to do.
+  const joinTo = (path: string) => `/register?redirect=${encodeURIComponent(path)}`;
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-        <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-          <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2" aria-label={bilingualAria('CoFounderBay home', 'Αρχική σελίδα CoFounderBay')}>
-              <Logo size="sm" />
-            </Link>
-          </div>
-        </header>
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30" style={{ paddingTop: TOP_BANNER_STACK }}>
+        <PublicHeader member={member} />
         <ProfilePageSkeleton />
       </div>
     );
   }
 
   if (isError || !profile || !derived) {
+    // "Profile not found" only when the server says so; the API down said it too.
+    const failed = isError && !isNotFound(error);
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center">
-        <div className="text-center space-y-4 p-8">
-          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
-            <Users className="icon-xl text-muted-foreground" />
+      <div className="flex min-h-screen flex-col bg-gradient-to-b from-background to-muted/30" style={{ paddingTop: TOP_BANNER_STACK }}>
+        <PublicHeader member={member} />
+        <MainLandmark className="flex flex-1 items-center justify-center">
+          <div className="text-center space-y-4 p-8">
+            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+              <Users className="icon-xl text-muted-foreground" />
+            </div>
+            {failed ? (
+              <>
+                <h1 className="text-xl font-semibold text-foreground"><BilingualText en="Profile" el="Προφίλ" compact /></h1>
+                <p role="alert" className="text-muted-foreground"><BilingualText en="This profile could not be read just now." el="Το προφίλ δεν διαβάστηκε αυτή τη στιγμή." wrap /></p>
+                <Button variant="outline" disabled={isFetching} onClick={() => void refetch()}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+              </>
+            ) : (
+              <>
+                <h1 className="text-xl font-semibold text-foreground"><BilingualText en="Profile not found" el="Το προφίλ δεν βρέθηκε" compact /></h1>
+                <p className="text-muted-foreground"><BilingualText en="This profile doesn&apos;t exist or may have been removed." el="Αυτό το προφίλ δεν υπάρχει ή έχει αφαιρεθεί." wrap /></p>
+                <Button variant="outline" asChild>
+                  <Link href="/discover"><BilingualText en="Browse Profiles" el="Περιήγηση προφίλ" compact /></Link>
+                </Button>
+              </>
+            )}
           </div>
-          <h2 className="text-xl font-semibold text-foreground"><BilingualText en="Profile not found" el="Το προφίλ δεν βρέθηκε" compact /></h2>
-          <p className="text-muted-foreground"><BilingualText en="This profile doesn&apos;t exist or may have been removed." el="Αυτό το προφίλ δεν υπάρχει ή έχει αφαιρεθεί." wrap /></p>
-          <Button variant="outline" asChild>
-            <Link href="/discover"><BilingualText en="Browse Profiles" el="Περιήγηση προφίλ" compact /></Link>
-          </Button>
-        </div>
+        </MainLandmark>
       </div>
     );
   }
 
   const { firstName, lastName, skills, interests, achievements, lookingFor, isVerified, isAvailable, website, linkedin, twitter, github, joinedAt } = derived;
 
+  const profileUserId = profile.userId;
+  // Facts the public payload may not carry are left out, not drawn as "—".
+  const stats = [
+    derived.connectionsCount != null ? { label: 'Connections', labelEl: 'Συνδέσεις', value: derived.connectionsCount } : null,
+    derived.projectsCount != null ? { label: 'Projects', labelEl: 'Έργα', value: derived.projectsCount } : null,
+    { label: 'Endorsements', labelEl: 'Συστάσεις', value: endorsementsLoading ? '—' : endorsements.length },
+  ].filter((row): row is { label: string; labelEl: string; value: number | string } => row !== null);
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      {/* Header */}
-      <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2" aria-label={bilingualAria('CoFounderBay home', 'Αρχική σελίδα CoFounderBay')}>
-            <Logo size="sm" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/login"><BilingualText en="Sign In" el="Σύνδεση" compact /></Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link href="/register"><BilingualText en="Join Free" el="Εγγραφή δωρεάν" compact /></Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30" style={{ paddingTop: TOP_BANNER_STACK }}>
+      <PublicHeader member={member} />
 
       <MainLandmark className="max-w-5xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -243,20 +297,47 @@ export default function PublicProfilePage() {
               aside={<RoleBadge role={profile.role} />}
               actions={
                 <>
-                  <Button className="gap-2" asChild>
-                    <Link href={`/register?action=message&user=${username}`}>
-                      <MessageSquare className="icon-sm" />
-                      <BilingualText en="Message" el="Μήνυμα" compact />
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="gap-2" asChild>
-                    <Link href={`/register?action=connect&user=${username}`}>
-                      <UserPlus className="icon-sm" />
-                      <BilingualText en="Connect" el="Σύνδεση" compact />
-                    </Link>
-                  </Button>
-                  {profile?.userId ? <FollowButton userId={profile.userId} /> : null}
-                  {/* Had no handler. */}
+                  {isSelf ? (
+                    // One's own public page: what others see, and the way to change it.
+                    <Button variant="outline" className="gap-2" asChild>
+                      <Link href="/profile/edit"><BilingualText en="Edit your profile" el="Επεξεργασία του προφίλ σας" compact /></Link>
+                    </Button>
+                  ) : member ? (
+                    // A member writes and connects from inside the app; the
+                    // full profile has the connection's state (Accept, Request sent).
+                    <>
+                      <Button className="gap-2" asChild>
+                        <Link href={`/messages?to=${encodeURIComponent(profileUserId)}`}>
+                          <MessageSquare className="icon-sm" />
+                          <BilingualText en="Message" el="Μήνυμα" compact />
+                        </Link>
+                      </Button>
+                      <Button variant="outline" className="gap-2" asChild>
+                        <Link href={`/profiles/${encodeURIComponent(profileUserId)}`}>
+                          <UserPlus className="icon-sm" />
+                          <BilingualText en="Open full profile" el="Άνοιγμα πλήρους προφίλ" compact />
+                        </Link>
+                      </Button>
+                    </>
+                  ) : (
+                    // A visitor joins, then lands where they meant to go.
+                    <>
+                      <Button className="gap-2" asChild>
+                        <Link href={joinTo(`/messages?to=${encodeURIComponent(profileUserId)}`)}>
+                          <MessageSquare className="icon-sm" />
+                          <BilingualText en="Message" el="Μήνυμα" compact />
+                        </Link>
+                      </Button>
+                      <Button variant="outline" className="gap-2" asChild>
+                        <Link href={joinTo(`/profiles/${encodeURIComponent(profileUserId)}`)}>
+                          <UserPlus className="icon-sm" />
+                          <BilingualText en="Connect" el="Σύνδεση" compact />
+                        </Link>
+                      </Button>
+                    </>
+                  )}
+                  {profile?.userId && !isSelf ? <FollowButton userId={profile.userId} /> : null}
+                  {/* Had no handler; now it also says the link was copied. */}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -264,7 +345,7 @@ export default function PublicProfilePage() {
                     onClick={() => {
                       const url = window.location.href;
                       if (navigator.share) void navigator.share({ url }).catch(() => {});
-                      else void navigator.clipboard?.writeText(url);
+                      else void navigator.clipboard?.writeText(url).then(() => success('Profile link copied')).catch(() => {});
                     }}
                   >
                     <Share2 className="icon-sm" aria-hidden="true" />
@@ -312,12 +393,21 @@ export default function PublicProfilePage() {
                     <Star className="icon-md text-status-warning" aria-hidden="true" />
                     <BilingualText en="Endorsements" el="Συστάσεις" compact />
                   </CardTitle>
-                  <Button variant="outline" size="sm" className="gap-1.5 text-xs" asChild>
-                    <Link href={`/register?action=endorse&user=${username}`}>
+                  {isSelf ? null : member ? (
+                    // Written here, for this person: the dialog the
+                    // Endorsements page opens, with the recipient chosen.
+                    <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setEndorsing(true)}>
                       <PenLine className="icon-sm" />
                       <BilingualText en="Write Endorsement" el="Γράψτε σύσταση" compact />
-                    </Link>
-                  </Button>
+                    </Button>
+                  ) : (
+                    <Button variant="outline" size="sm" className="gap-1.5 text-xs" asChild>
+                      <Link href={joinTo(`/p/${encodeURIComponent(username)}`)}>
+                        <PenLine className="icon-sm" />
+                        <BilingualText en="Write Endorsement" el="Γράψτε σύσταση" compact />
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
@@ -351,11 +441,7 @@ export default function PublicProfilePage() {
                 {/* Label and figure on one row: three centred columns did not
                     fit this sidebar ("ConnectionsProjects" ran together). */}
                 <dl className="divide-y divide-border/50 text-sm">
-                  {[
-                    { label: 'Connections', labelEl: 'Συνδέσεις', value: derived?.connectionsCount ?? '—' },
-                    { label: 'Projects', labelEl: 'Έργα', value: derived?.projectsCount ?? '—' },
-                    { label: 'Endorsements', labelEl: 'Συστάσεις', value: endorsementsLoading ? '—' : endorsements.length },
-                  ].map((row) => (
+                  {stats.map((row) => (
                     <div key={row.label} className="flex items-baseline justify-between gap-3 py-2 first:pt-0 last:pb-0">
                       <dt className="text-muted-foreground"><BilingualText en={row.label} el={row.labelEl} compact /></dt>
                       <dd className="font-semibold tabular-nums text-foreground">{row.value}</dd>
@@ -365,31 +451,34 @@ export default function PublicProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Skills */}
+            {/* Skills, interests and links: shown when the person has some. A
+                visitor can do nothing with "No links added". */}
+            {skills.length > 0 ? (
             <Card>
               <CardHeader>
                 <CardTitle><BilingualText en="Skills" el="Δεξιότητες" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-1.5">
-                  {skills.length === 0 && <p className="text-sm text-muted-foreground"><BilingualText wrap en="No skills listed" el="Δεν έχουν καταχωριστεί δεξιότητες" compact /></p>}
                   <FactLine className="text-sm text-foreground" items={skills} />
                 </div>
               </CardContent>
             </Card>
+            ) : null}
 
             {/* Interests */}
+            {interests.length > 0 ? (
             <Card>
               <CardHeader>
                 <CardTitle><BilingualText en="Interests" el="Ενδιαφέροντα" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-1.5">
-                  {interests.length === 0 && <p className="text-sm text-muted-foreground"><BilingualText wrap en="No interests listed" el="Δεν έχουν καταχωριστεί ενδιαφέροντα" compact /></p>}
                   <FactLine className="text-sm text-foreground" items={interests} />
                 </div>
               </CardContent>
             </Card>
+            ) : null}
 
             {/* Achievements */}
             {achievements.length > 0 && (
@@ -414,14 +503,12 @@ export default function PublicProfilePage() {
             )}
 
             {/* Links */}
+            {website || linkedin || twitter || github ? (
             <Card>
               <CardHeader>
                 <CardTitle><BilingualText en="Links" el="Σύνδεσμοι" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {!website && !linkedin && !twitter && !github && (
-                  <p className="text-sm text-muted-foreground"><BilingualText wrap en="No links added" el="Δεν έχουν προστεθεί σύνδεσμοι" compact /></p>
-                )}
                 {website && (
                   <a href={website} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -456,28 +543,11 @@ export default function PublicProfilePage() {
                 )}
               </CardContent>
             </Card>
+            ) : null}
 
-            {/* CTA: a section card - the question as its title, the line
-                under it, the one action. */}
-            <Card>
-              <CardHeader>
-                {/* The question wraps in this narrow column: it keeps a
-                    reading line-height rather than the one-line title's. */}
-                <CardTitle>
-                  <span className="leading-snug">
-                    <BilingualText en={`Want to connect with ${firstName}?`} el={`Θέλετε να συνδεθείτε με ${firstName};`} compact wrap />
-                  </span>
-                </CardTitle>
-                <CardDescription>
-                  <BilingualText en={`Join CoFounderBay to message and connect with founders like ${firstName}.`} el={`Εγγραφείτε στο CoFounderBay για μηνύματα και συνδέσεις με ιδρυτές όπως ${firstName}.`} wrap />
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" asChild>
-                  <Link href="/register"><BilingualText en="Join CoFounderBay free" el="Εγγραφείτε δωρεάν στο CoFounderBay" compact wrap /></Link>
-                </Button>
-              </CardContent>
-            </Card>
+            {/* The "Want to connect with …? / Join CoFounderBay free" card went:
+                it sent a visitor to /register as the header's Join does, and
+                said what Message and Connect above already do (docs §92). */}
           </div>
         </div>
       </MainLandmark>
@@ -485,7 +555,7 @@ export default function PublicProfilePage() {
       {/* Footer */}
       <footer className="border-t border-border mt-12 py-8">
         <div className="max-w-5xl mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} CoFounderBay. All rights reserved.</p>
+          <p><BilingualText en={`© ${new Date().getFullYear()} CoFounderBay. All rights reserved.`} el={`© ${new Date().getFullYear()} CoFounderBay. Με επιφύλαξη παντός δικαιώματος.`} wrap /></p>
           <div className="flex items-center justify-center gap-4 mt-2">
             <Link href="/terms" className="hover:text-foreground transition-colors"><BilingualText en="Terms" el="Όροι" compact /></Link>
             <Link href="/privacy" className="hover:text-foreground transition-colors"><BilingualText en="Privacy" el="Απόρρητο" compact /></Link>
@@ -493,6 +563,13 @@ export default function PublicProfilePage() {
           </div>
         </div>
       </footer>
+      {member && !isSelf ? (
+        <GiveEndorsementDialog
+          open={endorsing}
+          onOpenChange={setEndorsing}
+          recipient={{ userId: profileUserId, displayName: `${firstName} ${lastName}`.trim(), avatarUrl: profile.avatarUrl, skillNames: skills }}
+        />
+      ) : null}
     </div>
   );
 }

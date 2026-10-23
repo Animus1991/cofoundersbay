@@ -41,23 +41,38 @@ function OrgMark({ org, icon: Icon }: { org: OrgProfile; icon: LucideIcon }) {
   );
 }
 
+/** "17 Mar 2026": the platform's short date. */
+const SHORT_DATE: Intl.DateTimeFormatOptions = { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' };
+
+/** A tab whose list was not read: said once, with Try again (never its empty state). */
+function FailedRead({ en, el, busy, onRetry }: { en: string; el: string; busy: boolean; onRetry: () => void }) {
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+      <p role="alert"><BilingualText en={en} el={el} wrap /></p>
+      <Button size="sm" variant="outline" disabled={busy} onClick={onRetry}>
+        <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+      </Button>
+    </div>
+  );
+}
+
 interface OrgContentProps {
   org: OrgProfile;
   slug: string;
 }
 
 export function OrgContent({ org, slug }: OrgContentProps) {
-  const { data: opportunitiesData, isLoading: oppsLoading } = useQuery({
+  const { data: opportunitiesData, isLoading: oppsLoading, isError: oppsError, isFetching: oppsFetching, refetch: refetchOpps } = useQuery({
     queryKey: qk('org', 'opportunities', slug),
     queryFn: () => getOrgOpportunities(slug),
   });
 
-  const { data: cohortsData, isLoading: cohortsLoading } = useQuery({
+  const { data: cohortsData, isLoading: cohortsLoading, isError: cohortsError, isFetching: cohortsFetching, refetch: refetchCohorts } = useQuery({
     queryKey: qk('org', 'cohorts', slug),
     queryFn: () => getOrgCohorts(slug),
   });
 
-  const { data: membersData, isLoading: membersLoading } = useQuery({
+  const { data: membersData, isLoading: membersLoading, isError: membersError, isFetching: membersFetching, refetch: refetchMembers } = useQuery({
     queryKey: qk('org', 'members', slug),
     queryFn: () => getOrgMembers(slug),
   });
@@ -96,6 +111,11 @@ export function OrgContent({ org, slug }: OrgContentProps) {
               </a>
             ) : null,
             <><Calendar className="icon-sm shrink-0" aria-hidden="true" /><BilingualText en="On the platform since" el="Στην πλατφόρμα από" compact />{' '}<RelativeTime date={org.createdAt} format={formatRelativeTime} /></>,
+            // The one figure with no tab of its own; the other three are the
+            // tabs' counts below.
+            org._count?.events ? (
+              <BilingualText key="events" en={`${org._count.events} ${org._count.events === 1 ? 'event' : 'events'}`} el={`${org._count.events} ${org._count.events === 1 ? 'εκδήλωση' : 'εκδηλώσεις'}`} compact />
+            ) : null,
           ]}
           aside={
             org.industry ? (
@@ -139,39 +159,8 @@ export function OrgContent({ org, slug }: OrgContentProps) {
           </Card>
         ) : null}
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { label: 'Opportunities', labelEl: 'Ευκαιρίες', value: org._count.opportunities, tab: 'opportunities' },
-            { label: 'Programs', labelEl: 'Προγράμματα', value: org._count.cohorts, tab: 'programs' },
-            { label: 'Members', labelEl: 'Μέλη', value: org._count.members, tab: 'members' },
-            { label: 'Events', labelEl: 'Εκδηλώσεις', value: org._count.events, tab: null },
-          ].map(({ label, labelEl, value, tab: target }) => {
-            const body = (
-              <>
-                <div className="text-2xl font-bold text-foreground tabular-nums">{value}</div>
-                <div className="text-xs text-muted-foreground mt-0.5"><BilingualText en={label} el={labelEl} compact wrap /></div>
-              </>
-            );
-            // A figure that has a tab opens it: the tile was a second copy
-            // of the tab's count with nothing to do.
-            return target ? (
-              <button
-                key={label}
-                type="button"
-                onClick={() => setTab(target)}
-                aria-pressed={tab === target}
-                className={'rounded-xl border bg-card px-3 pt-5 pb-4 text-center transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' + (tab === target ? 'border-primary/40' : 'border-border')}
-              >
-                {body}
-              </button>
-            ) : (
-              <Card key={label} className="border-border">
-                <CardContent className="pt-5 pb-4 text-center">{body}</CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        {/* Four tiles repeated the counts the tabs below carry (2 · 4 · 14);
+            the events figure, which has no tab, joined the line above (docs §92). */}
 
         {/* Tabs */}
         <Tabs value={tab} onValueChange={setTab} className="space-y-6">
@@ -218,6 +207,8 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                   </Card>
                 ))}
               </div>
+            ) : oppsError && !opportunitiesData ? (
+              <FailedRead en="The opportunities could not be read just now." el="Οι ευκαιρίες δεν διαβάστηκαν αυτή τη στιγμή." busy={oppsFetching} onRetry={() => void refetchOpps()} />
             ) : opportunities.length === 0 ? (
               <ListEmptyState
                 icon={Briefcase}
@@ -283,6 +274,8 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                   </Card>
                 ))}
               </div>
+            ) : cohortsError && !cohortsData ? (
+              <FailedRead en="The programmes could not be read just now." el="Τα προγράμματα δεν διαβάστηκαν αυτή τη στιγμή." busy={cohortsFetching} onRetry={() => void refetchCohorts()} />
             ) : cohorts.length === 0 ? (
               <ListEmptyState
                 icon={GraduationCap}
@@ -319,7 +312,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                           <BilingualText key="members" en={`${cohort._count?.members ?? 0} members`} el={`${cohort._count?.members ?? 0} μέλη`} compact />,
                           cohort.capacity ? <BilingualText key="capacity" en={`Capacity ${cohort.capacity}`} el={`Χωρητικότητα ${cohort.capacity}`} compact /> : null,
                           cohort.startDate ? (
-                            <BilingualText key="start" en={`Starts ${new Date(cohort.startDate).toLocaleDateString('en-GB', { timeZone: 'UTC' })}`} el={`Ξεκινά ${new Date(cohort.startDate).toLocaleDateString('el-GR', { timeZone: 'UTC' })}`} compact />
+                            <BilingualText key="start" en={`Starts ${new Date(cohort.startDate).toLocaleDateString('en-GB', SHORT_DATE)}`} el={`Ξεκινά ${new Date(cohort.startDate).toLocaleDateString('el-GR', SHORT_DATE)}`} compact />
                           ) : null,
                         ]}
                       />
@@ -348,6 +341,8 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                   </Card>
                 ))}
               </div>
+            ) : membersError && !membersData ? (
+              <FailedRead en="The members could not be read just now." el="Τα μέλη δεν διαβάστηκαν αυτή τη στιγμή." busy={membersFetching} onRetry={() => void refetchMembers()} />
             ) : members.length === 0 ? (
               <ListEmptyState
                 icon={Users}
@@ -414,6 +409,13 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                     <p className="text-sm text-foreground/80">{org.size}</p>
                   </div>
                 )}
+                {/* A heading over nothing when the organisation filled none of
+                    the four. */}
+                {!org.mission && !org.industry && !org.focus && !org.size ? (
+                  <p className="card-body text-muted-foreground">
+                    <BilingualText en="This organisation has not added its mission, industry, focus or size yet." el="Ο οργανισμός δεν έχει προσθέσει ακόμη αποστολή, κλάδο, πεδία εστίασης ή μέγεθος." wrap />
+                  </p>
+                ) : null}
               </CardContent>
             </Card>
           </TabsContent>

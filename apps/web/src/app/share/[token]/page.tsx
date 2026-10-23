@@ -12,8 +12,17 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  FileText, Lock, AlertCircle, Eye, MessageSquare, Edit3,
-  Loader2, ExternalLink, Calendar, User, Rocket, CheckCircle2,
+  FileText,
+  Lock,
+  AlertCircle,
+  Eye,
+  MessageSquare,
+  Edit3,
+  Loader2,
+  ExternalLink,
+  Calendar,
+  User,
+  Rocket,
 } from 'lucide-react';
 import { cn, errorStatus } from '@/lib/utils';
 import { apiRequest } from '@/lib/api';
@@ -22,6 +31,10 @@ import { MainLandmark } from '@/components/layout/AppShell';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { TOP_BANNER_STACK } from '@/components/layout/useTopBannerHeight';
+import { useStoredUser } from '@/hooks/useStoredUser';
+
+type Pair = { en: string; el: string };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -60,34 +73,59 @@ interface SharedDocument {
 
 function PermissionBadge({ permission }: { permission: string }) {
   const meta = {
-    view:    { label: 'View Only',  color: 'text-muted-foreground bg-muted border-border',    icon: Eye },
-    comment: { label: 'Can Comment',color: 'text-status-info bg-status-info-bg border-status-info-border',   icon: MessageSquare },
-    suggest: { label: 'Can Suggest',color: 'text-status-accent bg-status-accent-bg border-status-accent-border', icon: Edit3 },
-    edit:    { label: 'Can Edit',   color: 'text-status-success bg-status-success-bg border-status-success-border', icon: Edit3 },
-  }[permission] ?? { label: permission, color: 'bg-muted', icon: Eye };
+    view:    { label: 'View Only', labelEl: 'Μόνο προβολή',  color: 'text-muted-foreground bg-muted border-border',    icon: Eye },
+    comment: { label: 'Can Comment', labelEl: 'Σχόλια', color: 'text-status-info bg-status-info-bg border-status-info-border',   icon: MessageSquare },
+    suggest: { label: 'Can Suggest', labelEl: 'Προτάσεις', color: 'text-status-accent bg-status-accent-bg border-status-accent-border', icon: Edit3 },
+    edit:    { label: 'Can Edit', labelEl: 'Επεξεργασία',   color: 'text-status-success bg-status-success-bg border-status-success-border', icon: Edit3 },
+  }[permission] ?? { label: permission, labelEl: permission, color: 'bg-muted', icon: Eye };
 
   const Icon = meta.icon;
   return (
     <Badge variant="outline" className={cn('text-xs flex items-center gap-1', meta.color)}>
       <Icon className="h-2.5 w-2.5" />
-      {meta.label}
+      <BilingualText en={meta.label} el={meta.labelEl} compact />
     </Badge>
   );
 }
 
 // ── Document type label ───────────────────────────────────────────────────────
 
-function docTypeLabel(type: string): string {
-  const map: Record<string, string> = {
-    idea_core: 'Idea Core', business_model_canvas: 'Business Model Canvas',
-    market_analysis: 'Market Analysis', pitch_deck: 'Pitch Deck',
-    mvp_plan: 'MVP Plan', financial_plan: 'Financial Plan',
-    technical_architecture: 'Technical Architecture', prd: 'PRD & User Stories',
-    swot_analysis: 'SWOT Analysis', lean_canvas: 'Lean Canvas',
-    competitive_analysis: 'Competitive Analysis', go_to_market: 'Go-to-Market',
-    fundraising_memo: 'Fundraising Memo', product_roadmap: 'Product Roadmap',
-  };
-  return map[type] ?? type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+const DOC_TYPE: Record<string, Pair> = {
+  idea_core: { en: 'Idea Core', el: 'Πυρήνας ιδέας' },
+  business_model_canvas: { en: 'Business Model Canvas', el: 'Καμβάς επιχειρηματικού μοντέλου' },
+  market_analysis: { en: 'Market Analysis', el: 'Ανάλυση αγοράς' },
+  pitch_deck: { en: 'Pitch Deck', el: 'Pitch deck' },
+  mvp_plan: { en: 'MVP Plan', el: 'Σχέδιο MVP' },
+  financial_plan: { en: 'Financial Plan', el: 'Οικονομικό σχέδιο' },
+  technical_architecture: { en: 'Technical Architecture', el: 'Τεχνική αρχιτεκτονική' },
+  prd: { en: 'PRD & User Stories', el: 'PRD και ιστορίες χρηστών' },
+  swot_analysis: { en: 'SWOT Analysis', el: 'Ανάλυση SWOT' },
+  lean_canvas: { en: 'Lean Canvas', el: 'Lean Canvas' },
+  competitive_analysis: { en: 'Competitive Analysis', el: 'Ανάλυση ανταγωνισμού' },
+  go_to_market: { en: 'Go-to-Market', el: 'Είσοδος στην αγορά' },
+  fundraising_memo: { en: 'Fundraising Memo', el: 'Σημείωμα χρηματοδότησης' },
+  product_roadmap: { en: 'Product Roadmap', el: 'Οδικός χάρτης προϊόντος' },
+};
+
+/** The document's kind in both languages; an unknown kind keeps its own words. */
+function docTypeLabel(type: string): Pair {
+  const known = DOC_TYPE[type];
+  if (known) return known;
+  const words = type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return { en: words, el: words };
+}
+
+/** A list item as words: an object's own text, never its JSON. */
+function itemText(item: unknown): string {
+  if (typeof item === 'string') return item;
+  if (typeof item === 'number') return item.toLocaleString('en-GB');
+  if (item && typeof item === 'object') {
+    return Object.values(item as Record<string, unknown>)
+      .filter((v): v is string | number => typeof v === 'string' || typeof v === 'number')
+      .map(String)
+      .join(' — ');
+  }
+  return '';
 }
 
 // ── Content renderer ──────────────────────────────────────────────────────────
@@ -129,12 +167,19 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
         <div key={key} className="space-y-1">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{label}</p>
           <ul className="space-y-1">
+            {/* An object in a list printed as JSON ({"name":…}); it reads as
+                its words now, and a long list says how much it left out. */}
             {val.slice(0, 10).map((item, i) => (
               <li key={i} className="flex items-start gap-1.5 text-sm">
                 <span className="text-primary-accessible mt-1 shrink-0">•</span>
-                {typeof item === 'string' ? item : JSON.stringify(item)}
+                {itemText(item)}
               </li>
             ))}
+            {val.length > 10 ? (
+              <li className="text-xs text-muted-foreground">
+                <BilingualText en={`and ${val.length - 10} more`} el={`και ${val.length - 10} ακόμη`} compact />
+              </li>
+            ) : null}
           </ul>
         </div>
       );
@@ -151,6 +196,9 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
   );
 }
 
+/** "17 Mar 2026": the platform's short date. */
+const SHORT_DATE: Intl.DateTimeFormatOptions = { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' };
+
 // ── Main Share Page ───────────────────────────────────────────────────────────
 
 export default function SharePage() {
@@ -162,8 +210,14 @@ export default function SharePage() {
   const [linkInfo, setLinkInfo] = useState<ShareLinkValidation | null>(null);
   const [document, setDocument] = useState<SharedDocument | null>(null);
   const [password, setPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [passwordError, setPasswordError] = useState<Pair | null>(null);
+  // Every message is a pair: the page is read by people with no account,
+  // in either language, and these were English only.
+  const [errorMessage, setErrorMessage] = useState<Pair | null>(null);
+  // A read that failed (API down) can be tried again; a refused link cannot.
+  const [canRetry, setCanRetry] = useState(false);
+  const member = Boolean(useStoredUser()?.id);
+  const back = `/share/${encodeURIComponent(token)}`;
   const [submittingPassword, setSubmittingPassword] = useState(false);
 
   // Initial load — check the share token
@@ -198,22 +252,28 @@ export default function SharePage() {
         setStep('loaded');
       } else {
         setStep('error');
-        setErrorMessage('Document content could not be loaded.');
+        setCanRetry(true);
+        setErrorMessage({ en: 'The document\'s content could not be read.', el: 'Το περιεχόμενο του εγγράφου δεν διαβάστηκε.' });
       }
     } catch (err: unknown) {
       const status = errorStatus(err);
       if (status === 401 || status === 403) {
-        setPasswordError('Incorrect password. Please try again.');
+        // Without a password typed yet, the link simply asks for one.
+        setPasswordError(pwd ? { en: 'Incorrect password. Please try again.', el: 'Λάθος κωδικός. Δοκιμάστε ξανά.' } : null);
         setStep('password');
       } else if (status === 404) {
         setStep('error');
-        setErrorMessage('This share link does not exist or has been revoked.');
+        setCanRetry(false);
+        setErrorMessage({ en: 'This share link does not exist or has been revoked.', el: 'Αυτός ο σύνδεσμος κοινοποίησης δεν υπάρχει ή ανακλήθηκε.' });
       } else if (status === 410) {
         setStep('error');
-        setErrorMessage('This share link has expired.');
+        setCanRetry(false);
+        setErrorMessage({ en: 'This share link has expired.', el: 'Αυτός ο σύνδεσμος κοινοποίησης έληξε.' });
       } else {
+        // Not the link's fault: the document was not read (docs §92).
         setStep('error');
-        setErrorMessage('Unable to load this shared document. The link may be invalid or expired.');
+        setCanRetry(true);
+        setErrorMessage({ en: 'The shared document could not be read just now. The link may still be fine.', el: 'Το κοινόχρηστο έγγραφο δεν διαβάστηκε αυτή τη στιγμή. Ο σύνδεσμος μπορεί να είναι εντάξει.' });
       }
     }
   };
@@ -221,7 +281,7 @@ export default function SharePage() {
   const handlePasswordSubmit = async () => {
     if (!password.trim()) return;
     setSubmittingPassword(true);
-    setPasswordError('');
+    setPasswordError(null);
     try {
       await validateToken(password.trim());
     } finally {
@@ -233,7 +293,7 @@ export default function SharePage() {
 
   if (step === 'loading') {
     return (
-      <MainLandmark className="min-h-screen bg-background flex items-center justify-center">
+      <MainLandmark className="min-h-screen bg-background flex items-center justify-center" style={{ paddingTop: TOP_BANNER_STACK }}>
         <div className="text-center">
           <Loader2 className="icon-xl animate-spin mx-auto mb-3 text-primary-accessible" />
           <p className="text-sm text-muted-foreground"><BilingualText en="Loading shared document…" el="Φόρτωση κοινόχρηστου εγγράφου…" compact /></p>
@@ -246,7 +306,7 @@ export default function SharePage() {
 
   if (step === 'password') {
     return (
-      <MainLandmark className="min-h-screen bg-background flex items-center justify-center p-4">
+      <MainLandmark className="min-h-screen bg-background flex items-center justify-center p-4" style={{ paddingTop: TOP_BANNER_STACK }}>
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center pb-3">
             <div className="flex justify-center mb-3">
@@ -256,9 +316,11 @@ export default function SharePage() {
             </div>
             <CardTitle><BilingualText en="Password Protected" el="Προστατεύεται με κωδικό" compact /></CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              {linkInfo?.label
-                ? `"${linkInfo.label}" is password protected.`
-                : 'This document requires a password to view.'}
+              {linkInfo?.label ? (
+                <BilingualText en={`“${linkInfo.label}” is password protected.`} el={`Το «${linkInfo.label}» προστατεύεται με κωδικό.`} wrap />
+              ) : (
+                <BilingualText en="This document requires a password to view." el="Για να δείτε το έγγραφο χρειάζεται κωδικός." wrap />
+              )}
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -274,7 +336,7 @@ export default function SharePage() {
                 className={cn(passwordError && 'border-destructive')}
               />
               {passwordError && (
-                <p className="text-xs text-destructive-accessible">{passwordError}</p>
+                <p role="alert" className="text-xs text-destructive-accessible"><BilingualText en={passwordError.en} el={passwordError.el} wrap /></p>
               )}
             </div>
             <Button
@@ -283,7 +345,7 @@ export default function SharePage() {
               disabled={submittingPassword || !password.trim()}
             >
               {submittingPassword && <Loader2 className="icon-sm mr-2 animate-spin" />}
-              View Document
+              <BilingualText en="View Document" el="Προβολή εγγράφου" compact />
             </Button>
           </CardContent>
         </Card>
@@ -295,15 +357,28 @@ export default function SharePage() {
 
   if (step === 'error') {
     return (
-      <MainLandmark className="min-h-screen bg-background flex items-center justify-center p-4">
+      <MainLandmark className="min-h-screen bg-background flex items-center justify-center p-4" style={{ paddingTop: TOP_BANNER_STACK }}>
         <Card className="w-full max-w-sm text-center">
           <CardContent className="py-8">
             <AlertCircle className="h-10 w-10 mx-auto mb-3 text-destructive-accessible" />
-            <h1 className="font-semibold mb-2"><BilingualText en="Link Unavailable" el="Ο σύνδεσμος δεν είναι διαθέσιμος" compact /></h1>
-            <p className="text-sm text-muted-foreground mb-4">{errorMessage}</p>
-            <Button variant="outline" onClick={() => window.location.href = '/'}>
-              <BilingualText en="Go to CoFounderBay" el="Μετάβαση στο CoFounderBay" compact />
-            </Button>
+            <h1 className="font-semibold mb-2">
+              {canRetry
+                ? <BilingualText en="Shared document" el="Κοινόχρηστο έγγραφο" compact />
+                : <BilingualText en="Link Unavailable" el="Ο σύνδεσμος δεν είναι διαθέσιμος" compact />}
+            </h1>
+            {errorMessage ? (
+              <p role="alert" className="text-sm text-muted-foreground mb-4"><BilingualText en={errorMessage.en} el={errorMessage.el} wrap /></p>
+            ) : null}
+            <div className="flex flex-wrap justify-center gap-2">
+              {canRetry ? (
+                <Button variant="outline" onClick={() => { setStep('loading'); void validateToken(); }}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+              ) : null}
+              <Button variant={canRetry ? 'ghost' : 'outline'} asChild>
+                <Link href="/"><BilingualText en="Go to CoFounderBay" el="Μετάβαση στο CoFounderBay" compact /></Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </MainLandmark>
@@ -313,20 +388,23 @@ export default function SharePage() {
   // ── Document view ────────────────────────────────────────────────────────────
 
   return (
-    <MainLandmark className="min-h-screen bg-muted/30">
-      {/* Top bar */}
-      <div className="bg-background border-b sticky top-0 z-50">
+    <MainLandmark className="min-h-screen bg-muted/30" style={{ paddingTop: TOP_BANNER_STACK }}>
+      {/* Top bar, under any top banner rather than behind it. */}
+      <div className="bg-background border-b sticky z-50" style={{ top: TOP_BANNER_STACK }}>
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="flex items-center gap-2">
+            {/* On a phone the name was hidden and the rocket is decoration,
+                so the bar began with a bare "/". The name stays; the title
+                is the heading right below, so the phone drops it here. */}
+            <Link href="/" className="flex items-center gap-2 shrink-0">
               <Rocket className="icon-md text-muted-foreground shrink-0" />
-              <span className="font-semibold text-sm hidden sm:block">CoFounderBay</span>
-            </div>
+              <span className="font-semibold text-sm">CoFounderBay</span>
+            </Link>
             {document && (
-              <>
-                <span className="text-muted-foreground/40">/</span>
+              <span className="hidden sm:flex items-center gap-3 min-w-0">
+                <span className="text-muted-foreground/40" aria-hidden="true">/</span>
                 <span className="text-sm truncate">{document.title}</span>
-              </>
+              </span>
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -334,18 +412,24 @@ export default function SharePage() {
             {linkInfo?.expiresAt && (
               <span className="text-xs text-muted-foreground hidden sm:flex items-center gap-1">
                 <Calendar className="icon-sm" />
-                Expires {new Date(linkInfo.expiresAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
+                <BilingualText
+                  en={`Expires ${new Date(linkInfo.expiresAt).toLocaleDateString('en-GB', SHORT_DATE)}`}
+                  el={`Λήγει ${new Date(linkInfo.expiresAt).toLocaleDateString('el-GR', SHORT_DATE)}`}
+                  compact
+                />
               </span>
             )}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => window.location.href = '/'}
-              className="text-xs"
-            >
-              <ExternalLink className="icon-sm mr-1.5" />
-              <BilingualText en="Sign In" el="Σύνδεση" compact />
-            </Button>
+            {/* "Sign In" went to the home page. It signs in and comes back
+                here; a member needs none, and while the feedback card below
+                offers it, it is said there once (docs §92). */}
+            {member || linkInfo?.permissions === 'comment' || linkInfo?.permissions === 'suggest' ? null : (
+              <Button size="sm" variant="outline" className="text-xs" asChild>
+                <Link href={`/login?redirect=${encodeURIComponent(back)}`}>
+                  <ExternalLink className="icon-sm mr-1.5" />
+                  <BilingualText en="Sign In" el="Σύνδεση" compact />
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -359,9 +443,13 @@ export default function SharePage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <Badge variant="secondary" className="text-xs">
-                      {docTypeLabel(document.type)}
-                    </Badge>
+                    {/* "Idea Core" above "Idea Core": the kind is said only
+                        when the title does not already say it. */}
+                    {docTypeLabel(document.type).en.toLowerCase() === document.title.trim().toLowerCase() ? null : (
+                      <Badge variant="secondary" className="text-xs">
+                        <BilingualText en={docTypeLabel(document.type).en} el={docTypeLabel(document.type).el} compact />
+                      </Badge>
+                    )}
                     <Badge
                       variant="outline"
                       className={cn('text-xs capitalize', {
@@ -434,7 +522,11 @@ export default function SharePage() {
                     <BilingualText en="Document Content" el="Περιεχόμενο εγγράφου" compact />
                   </CardTitle>
                   <span className="text-xs text-muted-foreground">
-                    v{document.version} · Updated {new Date(document.updatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
+                    <BilingualText
+                      en={`v${document.version} · Updated ${new Date(document.updatedAt).toLocaleDateString('en-GB', SHORT_DATE)}`}
+                      el={`v${document.version} · Ενημερώθηκε ${new Date(document.updatedAt).toLocaleDateString('el-GR', SHORT_DATE)}`}
+                      compact
+                    />
                   </span>
                 </div>
               </CardHeader>
@@ -452,7 +544,7 @@ export default function SharePage() {
             )}
 
             {/* CTA for authenticated actions */}
-            {(linkInfo?.permissions === 'comment' || linkInfo?.permissions === 'suggest') && (
+            {!member && (linkInfo?.permissions === 'comment' || linkInfo?.permissions === 'suggest') && (
               <Card className="border-primary-muted bg-primary-subtle">
                 <CardContent className="flex items-center justify-between gap-4">
                   <div>
@@ -461,8 +553,10 @@ export default function SharePage() {
                       <BilingualText en="Sign in or create a free account to comment on this document." el="Συνδεθείτε ή δημιουργήστε δωρεάν λογαριασμό για να σχολιάσετε αυτό το έγγραφο." wrap />
                     </p>
                   </div>
-                  <Button size="sm" onClick={() => window.location.href = '/login'}>
-                    <BilingualText en="Sign In" el="Σύνδεση" compact />
+                  <Button size="sm" asChild>
+                    <Link href={`/login?redirect=${encodeURIComponent(back)}`}>
+                      <BilingualText en="Sign In" el="Σύνδεση" compact />
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -479,11 +573,11 @@ export default function SharePage() {
 
       {/* Footer */}
       <footer className="border-t mt-12 py-6 text-center text-xs text-muted-foreground">
-        Shared via{' '}
+        <BilingualText en="Shared via" el="Κοινοποιήθηκε μέσω" compact />{' '}
         <Link href="/" className="text-primary-accessible hover:underline font-medium">
           CoFounderBay
         </Link>{' '}
-        — Startup Builder Platform
+        <BilingualText en="— Startup Builder Platform" el="— Πλατφόρμα Startup Builder" compact />
       </footer>
     </MainLandmark>
   );

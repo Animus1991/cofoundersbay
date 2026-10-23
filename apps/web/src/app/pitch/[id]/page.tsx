@@ -8,10 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Share2,
-  Download,
   Mail,
-  ExternalLink,
-  Eye,
   Users,
   TrendingUp,
   DollarSign,
@@ -24,7 +21,6 @@ import {
   Twitter,
   Linkedin,
   Link2,
-  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,7 +47,9 @@ import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { MainLandmark } from '@/components/layout/AppShell';
-import { bilingualInline } from '@/lib/i18n/format';
+import { TOP_BANNER_STACK } from '@/components/layout/useTopBannerHeight';
+import { useToast } from '@/components/ui/toast';
+import { isNotFound } from '@/lib/read-status';
 import { pitchPost, useSuggestedPost } from '@/lib/share-text';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
@@ -477,13 +475,30 @@ function TextSlide({ slide }: { slide: SlideBase }) {
   );
 }
 
+/** The words a slide of an unknown kind holds, in order: strings, and the strings in lists. */
+function slideWords(content: unknown): string[] {
+  if (typeof content === 'string') return content.trim() ? [content.trim()] : [];
+  if (Array.isArray(content)) return content.flatMap(slideWords);
+  if (content && typeof content === 'object') return Object.values(content as Record<string, unknown>).flatMap(slideWords);
+  return [];
+}
+
+/**
+ * A slide of a kind this page has no layout for. It printed the slide's JSON
+ * to every visitor ({"headline": …}); it now shows the words it holds, as a
+ * text slide does (docs §92).
+ */
 function GenericSlide({ slide }: { slide: SlideBase }) {
+  const words = slideWords(slide.content);
   return (
-    <div className="flex flex-col justify-center h-full px-12 py-8">
-      <h2 className="text-3xl font-semibold mb-6">{slide.title}</h2>
-      <pre className="text-muted-foreground text-sm whitespace-pre-wrap">
-        {JSON.stringify(slide.content, null, 2)}
-      </pre>
+    <div className="flex h-full flex-col justify-center px-6 py-8 sm:px-12">
+      <h2 className="mb-6 text-2xl font-semibold sm:text-3xl">{slide.title}</h2>
+      <div className="space-y-4">
+        {words.map((line, i) => (
+          <p key={i} className="text-lg leading-relaxed text-foreground">{line}</p>
+        ))}
+      </div>
+      {MONEY_WORDS.test(words.join(' ')) ? <NonGuaranteeNote className="mt-6" /> : null}
     </div>
   );
 }
@@ -525,11 +540,14 @@ export default function PitchDeckPage() {
   // A published deck from the API; the preview demo answers without one and
   // shows the sample. A deck that is not public (never published, or
   // withdrawn) is a 404, and the page says so instead of showing the sample.
-  const { data, isError, isLoading } = useQuery({
+  const { data, isError, isLoading, error, isFetching, refetch } = useQuery({
     queryKey: qk('pitch-deck', deckId),
     queryFn: () => getPublicPitchDeck(deckId),
     retry: false,
   });
+  // "Not public" needs the server's 404; the API down said it too (docs §92).
+  const failed = isError && !isNotFound(error);
+  const { success: toastSuccess, error: toastError } = useToast();
 
   const deck: PublicPitchDeck | null = data?.deck ?? (isError || isLoading ? null : DEMO_DECK);
   const slides = deck ? [...deck.slides].sort((a, b) => a.order - b.order) : [];
@@ -542,7 +560,12 @@ export default function PitchDeckPage() {
   const contactMutation = useMutation({
     mutationFn: (data: { name: string; email: string; message?: string }) =>
       submitPitchContactRequest(deckId, data),
-    onSuccess: () => setShowContact(false),
+    // The dialog closed and nothing said whether the message went.
+    onSuccess: () => {
+      setShowContact(false);
+      toastSuccess('Message sent', 'The founder sees your name, email and message.');
+    },
+    onError: (err) => toastError('Could not send the message', err instanceof Error ? err.message : undefined),
   });
 
   // Keyboard navigation
@@ -567,12 +590,24 @@ export default function PitchDeckPage() {
 
   if (!deck) {
     return (
-      <div className="flex min-h-screen flex-col bg-background">
+      <div className="flex min-h-screen flex-col bg-background" style={{ paddingTop: TOP_BANNER_STACK }}>
         <MainLandmark className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
           {isLoading ? (
             <p className="text-sm text-muted-foreground" role="status">
               <BilingualText en="Opening the pitch…" el="Άνοιγμα της παρουσίασης…" compact />
             </p>
+          ) : failed ? (
+            <>
+              <h1 className="text-2xl font-semibold text-foreground">
+                <BilingualText en="Pitch" el="Παρουσίαση" compact />
+              </h1>
+              <p role="alert" className="text-sm text-muted-foreground">
+                <BilingualText en="The pitch could not be read just now. The link may still be fine." el="Η παρουσίαση δεν διαβάστηκε αυτή τη στιγμή. Ο σύνδεσμος μπορεί να είναι εντάξει." wrap />
+              </p>
+              <Button variant="outline" disabled={isFetching} onClick={() => void refetch()}>
+                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+              </Button>
+            </>
           ) : (
             <>
               <h1 className="text-2xl font-semibold text-foreground">
@@ -596,9 +631,9 @@ export default function PitchDeckPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Top bar */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+    <div className="min-h-screen bg-background flex flex-col" style={{ paddingTop: TOP_BANNER_STACK }}>
+      {/* Top bar, under any top banner rather than behind it. */}
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky z-50" style={{ top: TOP_BANNER_STACK }}>
         {/* At 390px the bar ran 28px past the screen: name, deck badge and
             three labelled buttons in one unshrinkable row. The identity now
             yields (truncates), the deck badge waits for `sm`, and Share keeps
@@ -616,10 +651,8 @@ export default function PitchDeckPage() {
             <Badge variant="outline" className="hidden max-w-[16rem] truncate text-xs sm:inline-flex">{deck.title}</Badge>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground mr-2">
-              <span className="flex items-center gap-1"><Eye className="icon-sm" />{deck.stats.views}</span>
-              <span className="flex items-center gap-1"><Share2 className="icon-sm" />{deck.stats.shares}</span>
-            </div>
+            {/* The views and shares sat here as bare figures beside an icon,
+                and again, labelled, in "Deck Stats" below (docs §92). */}
             {/* No AppShell on the public deck, so the page-registry help mounts here. */}
             <PageContextualHelp compact />
             <Button variant="outline" size="sm" onClick={() => setShowShare(true)} aria-label={bilingualAria('Share', 'Κοινοποίηση')}>
@@ -639,7 +672,9 @@ export default function PitchDeckPage() {
           {slides.map((slide, i) => (
             <button
               key={slide.id}
+              type="button"
               onClick={() => setCurrentSlide(i)}
+              aria-current={i === currentSlide ? 'step' : undefined}
               className={cn(
                 'min-w-[8.5rem] rounded-lg border p-2 text-left text-xs transition-all',
                 i === currentSlide
@@ -658,7 +693,9 @@ export default function PitchDeckPage() {
           {slides.map((slide, i) => (
             <button
               key={slide.id}
+              type="button"
               onClick={() => setCurrentSlide(i)}
+              aria-current={i === currentSlide ? 'step' : undefined}
               className={cn(
                 'rounded-lg border text-left p-2 text-xs transition-all hover:border-primary',
                 i === currentSlide
@@ -688,23 +725,17 @@ export default function PitchDeckPage() {
               <ChevronLeft className="icon-sm mr-1" /><BilingualText en="Previous" el="Προηγούμενη" compact />
             </Button>
 
-            <div className="flex items-center gap-1.5">
-              {slides.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setCurrentSlide(i)}
-                  aria-label={bilingualAria(`Slide ${i + 1} of ${slides.length}`, `Διαφάνεια ${i + 1} από ${slides.length}`)}
-                  aria-current={i === currentSlide ? 'step' : undefined}
-                  className={cn(
-                    'rounded-full transition-all',
-                    i === currentSlide
-                      ? 'bg-primary w-6 h-2'
-                      : 'bg-muted hover:bg-muted-foreground/30 w-2 h-2'
-                  )}
-                />
-              ))}
-            </div>
+            {/* Eight dots that jumped to a slide, as the slide list beside
+                (or above) does: the touch-target floor drew them as one
+                black blob. The place in the deck says it in words, where the
+                counter below the controls said it again (docs §92). */}
+            <p className="text-sm text-muted-foreground tabular-nums" aria-live="polite">
+              <BilingualText
+                en={`Slide ${currentSlide + 1} of ${slides.length}`}
+                el={`Διαφάνεια ${currentSlide + 1} από ${slides.length}`}
+                compact
+              />
+            </p>
 
             <Button
               variant="outline"
@@ -715,10 +746,6 @@ export default function PitchDeckPage() {
             </Button>
           </div>
 
-          {/* Slide counter */}
-          <p className="text-center text-sm text-muted-foreground mt-2">
-            {currentSlide + 1} / {slides.length}
-          </p>
         </MainLandmark>
 
         {/* Author sidebar */}
@@ -740,11 +767,8 @@ export default function PitchDeckPage() {
                 title={deck.author.name}
                 subtitle={deck.author.headline}
               />
-              {deck.allowContact && (
-                <Button size="sm" className="w-full" onClick={() => setShowContact(true)}>
-                  <Mail className="icon-sm mr-2" /><BilingualText en="Get in Touch" el="Επικοινωνήστε" compact />
-                </Button>
-              )}
+              {/* "Get in Touch" opened the same dialog as "Contact" in the
+                  bar above; the bar keeps it, on every width (docs §92). */}
             </CardContent>
           </Card>
 
@@ -761,28 +785,8 @@ export default function PitchDeckPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle><BilingualText en="Share" el="Κοινοποίηση" compact /></CardTitle>
-            </CardHeader>
-            <CardContent>
-            <div className="flex gap-2">
-              <Button aria-label={bilingualAria('Share on X', 'Κοινοποίηση στο X')} variant="outline" size="icon" className="h-8 w-8" asChild>
-                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(deck.title)}`} target="_blank" rel="noopener noreferrer">
-                  <Twitter className="icon-sm" />
-                </a>
-              </Button>
-              <Button aria-label={bilingualAria('Share on LinkedIn', 'Κοινοποίηση στο LinkedIn')} variant="outline" size="icon" className="h-8 w-8" asChild>
-                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`} target="_blank" rel="noopener noreferrer" onClick={() => suggested.copy(pitchPost(deck, pageUrl, suggested.lang))}>
-                  <Linkedin className="icon-sm" />
-                </a>
-              </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink} aria-label={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}>
-                {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Link2 className="icon-sm" />}
-              </Button>
-            </div>
-            </CardContent>
-          </Card>
+          {/* The X, LinkedIn and copy-link buttons repeated the "Share"
+              dialog the bar opens; they live there now (docs §92). */}
         </aside>
       </div>
 
@@ -832,7 +836,9 @@ export default function PitchDeckPage() {
               onClick={() => contactMutation.mutate(contactForm)}
               disabled={!contactForm.name || !contactForm.email || contactMutation.isPending}
             >
-              {contactMutation.isPending ? 'Sending…' : 'Send Message'}
+              {contactMutation.isPending
+                ? <BilingualText en="Sending…" el="Αποστολή…" compact />
+                : <BilingualText en="Send Message" el="Αποστολή μηνύματος" compact />}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -861,7 +867,7 @@ export default function PitchDeckPage() {
             </div>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" asChild>
-                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}`} target="_blank" rel="noopener noreferrer">
+                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(deck.title)}`} target="_blank" rel="noopener noreferrer">
                   <Twitter className="icon-sm mr-2" />Twitter
                 </a>
               </Button>

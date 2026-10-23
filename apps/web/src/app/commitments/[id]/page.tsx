@@ -49,14 +49,10 @@ import { qk } from '@/lib/query-keys';
 import { rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { cn } from '@/lib/utils';
 import { ApiNetworkError } from '@/lib/api';
+import { isNotFound as isMissing, statusOf } from '@/lib/read-status';
 import { needCardPost, useSuggestedPost } from '@/lib/share-text';
 import { FORM_DRAFT_ROUTES, stashFormDraft } from '@/lib/form-draft';
 import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
-
-/** The HTTP status a failed read carries (the API's ApiError, or the demo's refusal shaped like it). */
-const statusOf = (err: unknown): number | undefined =>
-  typeof (err as { status?: unknown } | null)?.status === 'number' ? (err as { status: number }).status : undefined;
-const isMissing = (err: unknown) => statusOf(err) === 404 || statusOf(err) === 403;
 
 const OFFER_FIELD_COPY: Record<string, { en: string; el: string }> = {
   offerRole: CMT.offer_role,

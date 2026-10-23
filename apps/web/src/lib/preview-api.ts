@@ -4555,6 +4555,44 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   const collabProposalsMatch = pathname.match(/^\/api\/collab\/documents\/([^/]+)\/proposals/);
   if (collabProposalsMatch) return [];
 
+  /*
+   * Opening a share link. The demo hands out links (the POST below) that led
+   * to "content could not be read": nothing answered the reader's side. A
+   * link the demo made (or the showcase's demo-token) opens the Idea Core as
+   * a read-only share; any other token is the 404 a revoked link gets.
+   */
+  const collabShareMatch = pathname.match(/^\/api\/collab\/share\/([^/]+)$/);
+  if (collabShareMatch && method === 'GET') {
+    const token = decodeURIComponent(collabShareMatch[1]);
+    if (!/^(preview-|demo-)/.test(token)) {
+      throw new DemoRefusal(404, 'This share link does not exist or has been revoked', {
+        messageEl: 'Αυτός ο σύνδεσμος κοινοποίησης δεν υπάρχει ή ανακλήθηκε.',
+      });
+    }
+    const doc = previewBuilderDocs.find((d) => d.id === 'preview-doc-idea') ?? previewBuilderDocs[0];
+    return {
+      requiresPassword: false,
+      permissions: 'view',
+      documentId: doc?.id,
+      workspaceId: doc?.workspaceId,
+      document: doc
+        ? {
+            id: doc.id,
+            title: doc.title,
+            type: doc.type,
+            description: doc.description,
+            content: doc.content,
+            status: doc.status,
+            completionPercent: doc.completionPercent,
+            version: doc.version,
+            updatedAt: doc.updatedAt,
+            workspace: { name: 'Harbor', startupName: 'Harbor', stage: 'idea', industry: 'Founder tools' },
+            owner: { displayName: 'Alex Demo' },
+          }
+        : undefined,
+    };
+  }
+
   if (pathname === '/api/collab/share-links' && method === 'POST') {
     const token = `preview-${Math.random().toString(36).slice(2, 10)}`;
     return {
