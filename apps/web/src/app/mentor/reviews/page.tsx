@@ -7,7 +7,6 @@ import { qk } from '@/lib/query-keys';
 import {
   Star,
   Search,
-  Filter,
   ThumbsUp,
   MessageSquare,
 } from 'lucide-react';
@@ -15,7 +14,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -37,6 +36,7 @@ import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { demoPortrait } from '@/lib/demo/photos';
 import { ASK } from '@/lib/page-questions';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 
 type Review = {
   id: string;
@@ -183,8 +183,10 @@ export default function MentorReviewsPage() {
       <AppShell showHelp title="Reviews" titleEl="Αξιολογήσεις" description="Feedback from your mentoring sessions" descriptionEl="Σχόλια από τις συνεδρίες καθοδήγησής σας">
         <EmptyState
           illustration="default"
-          title="No reviews yet"
-          description="Reviews will appear here after your mentees complete sessions and leave feedback."
+          // "Reviews will appear here after your mentees … leave feedback":
+          // nothing collects them yet, so it says that.
+          title={<BilingualText en="No reviews yet" el="Δεν υπάρχουν ακόμη αξιολογήσεις" wrap />}
+          description={<BilingualText en="Mentor reviews are not collected yet. When mentees can leave one after a session, it is listed here." el="Οι αξιολογήσεις μεντόρων δεν συλλέγονται ακόμη. Όταν οι καθοδηγούμενοι μπορούν να αφήσουν μία μετά από συνεδρία, θα εμφανίζεται εδώ." wrap />}
           askAiPrompt={ASK.mentorReviewsEmpty}
         />
       </AppShell>
@@ -194,6 +196,13 @@ export default function MentorReviewsPage() {
   return (
     <AppShell showHelp title="Reviews" titleEl="Αξιολογήσεις" description="Feedback from your mentoring sessions" descriptionEl="Σχόλια από τις συνεδρίες καθοδήγησής σας">
       <div className="space-y-6">
+        {/* Sample reviews, with sample names and dates, stood as the
+            mentor's own with no word that they were not. */}
+        <SampleDataNotice
+          surface="Reviews"
+          detail="These reviews are illustrative; mentor reviews are not collected yet."
+          askAiPrompt={ASK.mentorReviewsEmpty}
+        />
 
         {/* Stats */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -281,8 +290,11 @@ export default function MentorReviewsPage() {
                 <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium"><BilingualText en="No reviews found" el="Δεν βρέθηκαν αξιολογήσεις" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  <BilingualText en="Try adjusting your filters" el="Δοκιμάστε άλλα φίλτρα" compact />
+                  <BilingualText en="No review matches the search or the rating." el="Καμία αξιολόγηση δεν ταιριάζει με την αναζήτηση ή τη βαθμολογία." wrap />
                 </p>
+                <Button variant="outline" size="sm" className="mt-4" onClick={() => { setSearch(''); setRatingFilter('all'); }}>
+                  <BilingualText en="Clear search and rating" el="Καθαρισμός αναζήτησης και βαθμολογίας" compact />
+                </Button>
               </CardContent>
             </Card>
           )}

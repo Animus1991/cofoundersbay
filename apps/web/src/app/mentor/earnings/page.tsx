@@ -167,11 +167,19 @@ export default function MentorEarningsPage() {
     );
   }
 
+  /*
+   * There is no earnings ledger: outside the showcase the page said "$0.00
+   * earned", "0 sessions" and drew an empty history card and a chart of
+   * nothing, as if it had counted. It says there is nothing to count and why;
+   * the figures are "—" (docs §94).
+   */
+  const ledger = showDemoData;
+  const shown = (v: string) => (ledger ? v : '\u2014');
   const figures = [
-    { id: 'earned', icon: DollarSign, en: 'Total Earned', el: 'Συνολικά έσοδα', value: formatCurrency(totalEarned), subEn: 'from paid sessions', subEl: 'από πληρωμένες συνεδρίες', tone: 'text-primary-accessible' },
-    { id: 'pending', icon: Clock, en: 'Pending Payout', el: 'Εκκρεμής πληρωμή', value: formatCurrency(pendingAmount), subEn: 'awaiting release', subEl: 'αναμένει αποδέσμευση', tone: 'text-status-warning' },
-    { id: 'sessions', icon: BarChart3, en: 'Sessions', el: 'Συνεδρίες', value: String(totalSessions), subEn: 'this period', subEl: 'σε αυτή την περίοδο', tone: 'text-primary-accessible' },
-    { id: 'avg', icon: Star, en: 'Avg. Per Session', el: 'Μέσος όρος ανά συνεδρία', value: formatCurrency(avgPerSession), subEn: 'blended rate', subEl: 'μικτή τιμή', tone: 'text-primary-accessible' },
+    { id: 'earned', icon: DollarSign, en: 'Total Earned', el: 'Συνολικά έσοδα', value: shown(formatCurrency(totalEarned)), subEn: 'from paid sessions', subEl: 'από πληρωμένες συνεδρίες', tone: 'text-primary-accessible' },
+    { id: 'pending', icon: Clock, en: 'Pending Payout', el: 'Εκκρεμής πληρωμή', value: shown(formatCurrency(pendingAmount)), subEn: 'awaiting release', subEl: 'αναμένει αποδέσμευση', tone: 'text-status-warning' },
+    { id: 'sessions', icon: BarChart3, en: 'Sessions', el: 'Συνεδρίες', value: shown(String(totalSessions)), subEn: 'this period', subEl: 'σε αυτή την περίοδο', tone: 'text-primary-accessible' },
+    { id: 'avg', icon: Star, en: 'Avg. Per Session', el: 'Μέσος όρος ανά συνεδρία', value: shown(formatCurrency(avgPerSession)), subEn: 'blended rate', subEl: 'μικτή τιμή', tone: 'text-primary-accessible' },
   ];
   const pendingCount = transactions.filter((t) => t.status === 'pending').length;
 
@@ -260,7 +268,9 @@ export default function MentorEarningsPage() {
   ];
 
   return (
-    <AppShell showHelp rail={rail}>
+    // No ledger: totals of nothing, a period over nothing and an export of
+    // nothing were the whole rail; it waits for the ledger.
+    <AppShell showHelp rail={ledger ? rail : undefined}>
       <div className="space-y-6">
         {showDemoData && (
           <SampleDataNotice
@@ -273,12 +283,20 @@ export default function MentorEarningsPage() {
         {/* The period lives in the rail; the column still says which one is
             on, because a history with no stated range reads as all of it. */}
         <p className="text-sm text-muted-foreground">
-          <BilingualText
-            en={`${activePeriod.en} · ${totalSessions} sessions · ${formatCurrency(totalEarned)} earned`}
-            el={`${activePeriod.el} · ${totalSessions} συνεδρίες · ${formatCurrency(totalEarned)} έσοδα`}
-            compact
-            wrap
-          />
+          {ledger ? (
+            <BilingualText
+              en={`${activePeriod.en} · ${totalSessions} sessions · ${formatCurrency(totalEarned)} earned`}
+              el={`${activePeriod.el} · ${totalSessions} συνεδρίες · ${formatCurrency(totalEarned)} έσοδα`}
+              compact
+              wrap
+            />
+          ) : (
+            <BilingualText
+              en="There is no earnings ledger yet: CoFounderBay does not collect session payments, so a paid session is settled between you and the founder."
+              el="Δεν υπάρχει ακόμη καθολικό εσόδων: το CoFounderBay δεν εισπράττει πληρωμές συνεδριών, οπότε μια πληρωμένη συνεδρία διευθετείται ανάμεσα σε εσάς και τον ιδρυτή."
+              wrap
+            />
+          )}
         </p>
 
         <Tabs defaultValue="transactions">
@@ -300,6 +318,14 @@ export default function MentorEarningsPage() {
                     the amount, state and date at the right - under the line
                     on a phone. Five columns in one row once drew the name,
                     amount and duration on top of each other at 390px. */}
+                {transactions.length === 0 ? (
+                  // An empty card under its title.
+                  <p className="card-body text-muted-foreground">
+                    {ledger
+                      ? <BilingualText en="No sessions in this period. Choose a longer one in the rail." el="Καμία συνεδρία σε αυτή την περίοδο. Επιλέξτε μεγαλύτερη στη ράγα." wrap />
+                      : <BilingualText en="No paid sessions are recorded here yet." el="Δεν καταγράφονται ακόμη πληρωμένες συνεδρίες εδώ." wrap />}
+                  </p>
+                ) : null}
                 <div className="card-rows">
                   {transactions.map(tx => (
                     <RowHead
@@ -352,6 +378,10 @@ export default function MentorEarningsPage() {
                 <CardTitle><BilingualText en="Monthly Earnings" el="Μηνιαία έσοδα" compact /></CardTitle>
               </CardHeader>
               <CardContent>
+                {monthlyData.length === 0 ? (
+                  <p className="card-body text-muted-foreground"><BilingualText en="No monthly totals yet." el="Δεν υπάρχουν ακόμη μηνιαία σύνολα." wrap /></p>
+                ) : (
+                <>
                 <div className="flex items-end gap-3 h-48">
                   {monthlyData.map(m => (
                     <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
@@ -359,7 +389,7 @@ export default function MentorEarningsPage() {
                       <div
                         className="w-full rounded-t bg-primary/80 hover:bg-primary transition-colors min-h-[4px]"
                         style={{ height: `${monthlyData.length ? (m.earned / Math.max(...monthlyData.map(d => d.earned))) * 160 : 4}px` }}
-                        title={`${m.sessions} sessions`}
+                        title={bilingualInline(`${m.sessions} sessions`, `${m.sessions} συνεδρίες`)}
                       />
                       <span className="text-xs text-muted-foreground">{m.month}</span>
                     </div>
@@ -382,6 +412,8 @@ export default function MentorEarningsPage() {
                     <p className="text-xs text-muted-foreground"><BilingualText en="Avg per session" el="Μέσος όρος ανά συνεδρία" compact /></p>
                   </div>
                 </div>
+                </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

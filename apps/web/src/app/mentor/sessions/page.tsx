@@ -2,7 +2,6 @@
 
 import { StatusText } from '@/components/common/StatusText';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useToast } from '@/components/ui/toast';
@@ -13,14 +12,12 @@ import {
   Video,
   Plus,
   Loader2,
-  AlertCircle,
   RefreshCw,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
@@ -44,6 +41,7 @@ import {
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Counter } from '@/components/ui/counter';
+import { FailedLine } from '@/components/dashboard/SectionCard';
 
 type SessionActions = {
   onReschedule: (s: MentorshipSessionItem) => void;
@@ -51,7 +49,7 @@ type SessionActions = {
   onNotes: (s: MentorshipSessionItem) => void;
 };
 
-function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: MentorshipSessionItem } & SessionActions) {
+function SessionCard({ session, next = false, onReschedule, onCancel, onNotes }: { session: MentorshipSessionItem; next?: boolean } & SessionActions) {
   const statusColors: Record<string, string> = {
     scheduled: 'bg-status-info-bg text-status-info border-status-info-border',
     completed: 'bg-status-success-bg text-status-success border-status-success-border',
@@ -71,7 +69,7 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
       <CardContent className="space-y-3">
         <CardHead
           mark={<SessionDateTile date={scheduledDate} />}
-          title={session.title || 'Mentorship Session'}
+          title={session.title || <BilingualText en="Mentorship session" el="Συνεδρία καθοδήγησης" compact />}
           subtitle={formattedTime}
           aside={(
             <>
@@ -105,7 +103,9 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
         {session.status === 'scheduled' && (
           <CardFoot>
             {session.meetingUrl && (
-              <Button size="sm" variant="default" asChild>
+              // Filled for the next session only: five filled "Join Meeting"
+              // buttons down the list gave the page five primaries.
+              <Button size="sm" variant={next ? 'default' : 'outline'} asChild>
                 <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">
                   <Video className="icon-sm mr-1" aria-hidden="true" />
                   <BilingualText en="Join Meeting" el="Συμμετοχή στη συνάντηση" compact />
@@ -139,7 +139,7 @@ export default function MentorSessionsPage() {
   const { hasSession, mounted } = useSession();
   const viewerId = useStoredUser()?.id ?? null;
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: qk('mentorships', 'sessions-upcoming'),
     queryFn: getUpcomingMentorshipSessions,
     enabled: hasSession && mounted,
@@ -163,7 +163,7 @@ export default function MentorSessionsPage() {
   const history = historyQueries.flatMap((q) => q.data?.sessions ?? []);
   // Bookings are the same sessions booked directly on /mentoring; until this
   // read they were invisible to the mentor they were sent to.
-  const { data: bookingData, isLoading: bookingsLoading } = useQuery({
+  const { data: bookingData, isLoading: bookingsLoading, isError: bookingsError, refetch: refetchBookings } = useQuery({
     queryKey: qk('mentorships', 'bookings', 'mentor'),
     queryFn: () => listMentorBookings('mentor'),
     enabled: hasSession && mounted,
@@ -275,9 +275,10 @@ export default function MentorSessionsPage() {
   const requestedBookings = bookings.filter((b) => b.status === 'requested');
   const cancellableBookings = bookings.filter((b) => isUpcoming(fromBooking(b, viewerId)));
 
+  const nextKey = upcomingRows[0]?.key;
   const renderRow = (u: UnifiedSession) =>
     u.source === 'mentorship' && u.session ? (
-      <SessionCard key={u.key} session={u.session} {...actions} />
+      <SessionCard key={u.key} session={u.session} next={u.key === nextKey} {...actions} />
     ) : u.booking ? (
       <BookingCard
         key={u.key}
@@ -335,21 +336,21 @@ export default function MentorSessionsPage() {
     );
   }
 
-  if (error) {
+  // Either store unread: the list would show half the calendar as all of
+  // it, so the page says what was not read (the message was the transport's
+  // own English, "Unable to reach the API server").
+  if (error || (bookingsError && !bookingData)) {
     return (
       <AppShell showHelp>
-        <div className="py-6">
+        <div className="space-y-6">
           <Card>
-            <CardContent className="py-12 text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive-accessible mb-4" />
-              <h3 className="font-medium"><BilingualText en="Failed to load sessions" el="Δεν ήταν δυνατή η φόρτωση των συνεδριών" compact /></h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                {error instanceof Error ? error.message : 'An error occurred'}
-              </p>
-              <Button className="mt-4" onClick={() => refetch()}>
-                <RefreshCw className="icon-sm mr-2" />
-                <BilingualText en="Try Again" el="Δοκιμάστε ξανά" compact />
-              </Button>
+            <CardContent className="pt-6">
+              <FailedLine
+                en="Your sessions could not be read just now."
+                el="Οι συνεδρίες σας δεν διαβάστηκαν αυτή τη στιγμή."
+                busy={isFetching}
+                onRetry={() => { void refetch(); void refetchBookings(); }}
+              />
             </CardContent>
           </Card>
         </div>
@@ -357,11 +358,14 @@ export default function MentorSessionsPage() {
     );
   }
 
-  const totalDuration = sessions.reduce((acc, s) => acc + (s.duration || 0), 0)
-    + bookings.reduce((acc, b) => {
+  // "Total Time" added up every session ever booked, cancelled and future
+  // ones included. It is the time given: completed sessions only.
+  const totalDuration = sessions.filter((s) => s.status === 'completed').reduce((acc, s) => acc + (s.duration || 0), 0)
+    + bookings.filter((b) => b.status === 'completed').reduce((acc, b) => {
         const end = new Date(b.endAt).getTime() - new Date(b.startAt).getTime();
         return acc + (Number.isFinite(end) && end > 0 ? Math.round(end / 60000) : 0);
       }, 0);
+  const hoursGiven = totalDuration >= 60 ? `${Math.round((totalDuration / 60) * 10) / 10}` : null;
 
   return (
     <AppShell showHelp
@@ -382,13 +386,8 @@ export default function MentorSessionsPage() {
     >
       <div className="space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <Card>
-            <CardContent>
-              <p className="page-stat text-xl font-bold">{upcomingRows.length}</p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Upcoming" el="Επερχόμενες" compact /></p>
-            </CardContent>
-          </Card>
+        {/* "Upcoming" was the tab's own counter a second time (docs §94). */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Card>
             <CardContent>
               <p className="page-stat text-xl font-bold">
@@ -399,8 +398,12 @@ export default function MentorSessionsPage() {
           </Card>
           <Card>
             <CardContent>
-              <p className="page-stat text-xl font-bold"><BilingualText en={`${totalDuration} min`} el={`${totalDuration} λεπτά`} compact /></p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Total Time" el="Συνολικός χρόνος" compact /></p>
+              <p className="page-stat text-xl font-bold">
+                {hoursGiven
+                  ? <BilingualText en={`${hoursGiven} h`} el={`${hoursGiven.replace('.', ',')} ώρ.`} compact />
+                  : <BilingualText en={`${totalDuration} min`} el={`${totalDuration} λεπτά`} compact />}
+              </p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Time mentored" el="Χρόνος καθοδήγησης" compact /></p>
             </CardContent>
           </Card>
         </div>
@@ -409,7 +412,7 @@ export default function MentorSessionsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="upcoming" className="gap-2">
-              Upcoming
+              <BilingualText en="Upcoming" el="Επερχόμενες" compact />
               {upcomingRows.length > 0 && (
                 <Counter value={upcomingRows.length} />
               )}

@@ -22,7 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { BilingualText } from '@/components/common/BilingualText';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
+import { EmptyLine, FailedLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { bilingualInline } from '@/lib/i18n/format';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
@@ -30,6 +30,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import {
   getMeProfile,
   getMentorDashboardStats,
+  getMyMentorListing,
   getMyMentorships,
   getMyReceivedMentorRequests,
   getUpcomingMentorshipSessions,
@@ -117,7 +118,8 @@ function SessionRowItem({ session, next }: { session: SessionRow; next: boolean 
           {session.meetingUrl ? (
             <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer"><BilingualText en="Join" el="Σύνδεση" compact /></a>
           ) : (
-            <Link href="/mentor/sessions"><BilingualText en="Join" el="Σύνδεση" compact /></Link>
+            // "Join" with no meeting link opened the sessions list; it says so.
+            <Link href="/mentor/sessions"><BilingualText en="Open" el="Άνοιγμα" compact /></Link>
           )}
         </Button>
       )}
@@ -173,15 +175,22 @@ export default function MentorDashboard() {
     enabled,
     retry: 0,
   });
-  const { data: relData } = useQuery({
+  const { data: relData, isError: relError, isFetching: relFetching, refetch: refetchRel } = useQuery({
     queryKey: qk('mentorships', 'mentor'),
     queryFn: () => getMyMentorships('mentor'),
     enabled,
     retry: 0,
   });
-  const { data: sessionData } = useQuery({
+  const { data: sessionData, isError: sessionError, isFetching: sessionFetching, refetch: refetchSessions } = useQuery({
     queryKey: qk('mentorships', 'sessions-upcoming'),
     queryFn: getUpcomingMentorshipSessions,
+    enabled,
+    retry: 0,
+  });
+  // "Accepting requests: Active" was written in; it is the listing's switch.
+  const { data: listing, isError: listingError } = useQuery({
+    queryKey: qk('mentors', 'listing', 'me'),
+    queryFn: getMyMentorListing,
     enabled,
     retry: 0,
   });
@@ -193,7 +202,7 @@ export default function MentorDashboard() {
   });
   // Founders' direct bookings (the /mentoring store) count on the mentor's
   // calendar too - before this read they were invisible here.
-  const { data: bookingData } = useQuery({
+  const { data: bookingData, isError: bookingError, refetch: refetchBookings } = useQuery({
     queryKey: qk('mentorships', 'bookings', 'mentor'),
     queryFn: () => listMentorBookings('mentor'),
     enabled,
@@ -218,7 +227,9 @@ export default function MentorDashboard() {
   const upcomingBookings = (bookingData?.bookings ?? [])
     .filter((b) => b.status === 'requested' || b.status === 'confirmed')
     .map((b) => {
-      const u = fromBooking(b, null);
+      // These are bookings with this mentor, so the other person is the
+      // founder: read without a viewer, the row named the mentor themself.
+      const u = fromBooking(b, b.mentorId);
       return {
         id: b.id,
         menteeName: u.counterpart.displayName,
@@ -238,6 +249,16 @@ export default function MentorDashboard() {
   const pendingRequests = (requestData?.requests ?? [])
     .filter((r) => r.status === 'pending')
     .map((r) => ({ id: r.id, name: r.requester?.displayName ?? 'Founder', message: r.message, avatarUrl: r.requester?.avatarUrl ?? null }));
+
+  /*
+   * Unread, the home said "0 mentees · In progress now", "0 · Nothing
+   * scheduled", "No upcoming sessions scheduled." and an impact of 0/0/0.
+   * Each figure waits for its read; each section says what was not read
+   * (docs §94).
+   */
+  const relFailed = relError && !relData;
+  const sessionsFailed = (sessionError && !sessionData) || (bookingError && !bookingData);
+  const accepting = listing ? listing.isAcceptingRequests !== false : listingError ? null : listing === null ? true : null;
 
   const month = showDemoData ? mentorDemoMonthEarnings() : null;
   const rating = showDemoData ? mentorDemoRating() : null;
@@ -324,8 +345,8 @@ export default function MentorDashboard() {
             reasonEl={sessionWhen(nextSession.scheduledAt, 'el-GR')}
             href={nextSession.meetingUrl || '/mentor/sessions'}
             external={Boolean(nextSession.meetingUrl)}
-            actionEn="Join"
-            actionEl="Συμμετοχή"
+            actionEn={nextSession.meetingUrl ? 'Join' : 'Open'}
+            actionEl={nextSession.meetingUrl ? 'Συμμετοχή' : 'Άνοιγμα'}
           />
         ) : pendingRequests[0] ? (
           <HomeNextStep
@@ -348,18 +369,18 @@ export default function MentorDashboard() {
             icon={Users}
             label="Active mentees"
             labelEl="Ενεργοί καθοδηγούμενοι"
-            value={mentorStats.activeMentees}
-            caption={mentorStats.completedMentorships ? `${mentorStats.completedMentorships} completed before` : 'In progress now'}
-            captionEl={mentorStats.completedMentorships ? `${mentorStats.completedMentorships} ολοκληρωμένες πριν` : 'Σε εξέλιξη τώρα'}
+            value={relFailed && !stats ? '\u2014' : mentorStats.activeMentees}
+            caption={relFailed && !stats ? undefined : mentorStats.completedMentorships ? `${mentorStats.completedMentorships} completed before` : 'In progress now'}
+            captionEl={relFailed && !stats ? undefined : mentorStats.completedMentorships ? `${mentorStats.completedMentorships} ολοκληρωμένες πριν` : 'Σε εξέλιξη τώρα'}
             href="/mentor/mentees"
           />
           <MetricTile
             icon={Calendar}
             label="Upcoming sessions"
             labelEl="Επόμενες συνεδρίες"
-            value={mentorStats.upcomingSessions}
-            caption={nextSession ? `Next ${sessionWhen(nextSession.scheduledAt)}` : 'Nothing scheduled'}
-            captionEl={nextSession ? `Επόμενη ${sessionWhen(nextSession.scheduledAt, 'el-GR')}` : 'Τίποτα προγραμματισμένο'}
+            value={sessionsFailed ? '\u2014' : mentorStats.upcomingSessions}
+            caption={sessionsFailed ? undefined : nextSession ? `Next ${sessionWhen(nextSession.scheduledAt)}` : 'Nothing scheduled'}
+            captionEl={sessionsFailed ? undefined : nextSession ? `Επόμενη ${sessionWhen(nextSession.scheduledAt, 'el-GR')}` : 'Τίποτα προγραμματισμένο'}
             href="/mentor/sessions"
           />
           <MetricTile
@@ -376,8 +397,8 @@ export default function MentorDashboard() {
             label="Average rating"
             labelEl="Μέση βαθμολογία"
             value={mentorStats.avgRating}
-            caption={rating ? `From ${rating.count} reviews` : averageRating != null ? 'Across your reviews' : 'No reviews recorded yet'}
-            captionEl={rating ? `Από ${rating.count} αξιολογήσεις` : averageRating != null ? 'Από τις αξιολογήσεις σας' : 'Καμία αξιολόγηση ακόμα'}
+            caption={rating ? `From ${rating.count} reviews` : averageRating != null ? 'Across your reviews' : stats ? 'No reviews recorded yet' : undefined}
+            captionEl={rating ? `Από ${rating.count} αξιολογήσεις` : averageRating != null ? 'Από τις αξιολογήσεις σας' : stats ? 'Καμία αξιολόγηση ακόμα' : undefined}
             href="/mentor/reviews"
           />
         </div>
@@ -404,14 +425,18 @@ export default function MentorDashboard() {
               {upcomingAll.map((session, i) => (
                 <SessionRowItem key={session.id} session={session} next={i === 0} />
               ))}
-              {upcomingAll.length === 0 && <EmptyLine en="No upcoming sessions scheduled." el="Δεν υπάρχουν προγραμματισμένες συνεδρίες." />}
+              {sessionsFailed ? (
+                <FailedLine en="Your sessions could not be read just now." el="Οι συνεδρίες σας δεν διαβάστηκαν αυτή τη στιγμή." busy={sessionFetching} onRetry={() => { void refetchSessions(); void refetchBookings(); }} />
+              ) : upcomingAll.length === 0 && <EmptyLine en="No upcoming sessions scheduled." el="Δεν υπάρχουν προγραμματισμένες συνεδρίες." />}
             </SectionCard>
 
             <SectionCard title="Your mentees" titleEl="Οι καθοδηγούμενοί σας" icon={UserCheck} action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }} contentClassName="card-rows">
               {mentees.map((mentee) => (
                 <MenteeRowItem key={mentee.id} mentee={mentee} />
               ))}
-              {mentees.length === 0 && <EmptyLine en="Accepted requests become mentees here." el="Τα αιτήματα που αποδέχεστε εμφανίζονται εδώ ως καθοδηγούμενοι." />}
+              {relFailed ? (
+                <FailedLine en="Your mentees could not be read just now." el="Οι καθοδηγούμενοί σας δεν διαβάστηκαν αυτή τη στιγμή." busy={relFetching} onRetry={() => void refetchRel()} />
+              ) : mentees.length === 0 && <EmptyLine en="Accepted requests become mentees here." el="Τα αιτήματα που αποδέχεστε εμφανίζονται εδώ ως καθοδηγούμενοι." />}
             </SectionCard>
           </div>
 
@@ -430,7 +455,10 @@ export default function MentorDashboard() {
             />
 
             <SectionCard title="Your impact" titleEl="Ο αντίκτυπός σας" contentClassName="space-y-2">
-              {[
+              {relFailed && !stats ? (
+                // 0 · 0 · 0 for figures that were not read.
+                <p className="text-sm text-muted-foreground"><BilingualText en="Your mentorships could not be read just now." el="Οι καθοδηγήσεις σας δεν διαβάστηκαν αυτή τη στιγμή." stacked wrap /></p>
+              ) : [
                 { en: 'Founders mentored', el: 'Ιδρυτές που καθοδηγήσατε', value: relationships.length },
                 { en: 'Sessions given', el: 'Συνεδρίες', value: mentorStats.totalSessions },
                 { en: 'Mentorships completed', el: 'Ολοκληρωμένες καθοδηγήσεις', value: mentorStats.completedMentorships },
@@ -449,12 +477,18 @@ export default function MentorDashboard() {
                 <span className="text-sm">
                   <BilingualText en="Accepting requests" el="Δέχεστε αιτήματα" />
                 </span>
-                <Badge variant="success"><BilingualText en="Active" el="Ενεργό" compact /></Badge>
+                {accepting == null ? (
+                  <span className="text-sm text-muted-foreground">{'\u2014'}</span>
+                ) : accepting ? (
+                  <Badge variant="success"><BilingualText en="On" el="Ναι" compact /></Badge>
+                ) : (
+                  <Badge variant="secondary"><BilingualText en="Paused" el="Σε παύση" compact /></Badge>
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 <BilingualText
-                  en="Founders can request you while this is on. Set the hours you offer on the availability page."
-                  el="Οι ιδρυτές μπορούν να σας στείλουν αίτημα όσο είναι ενεργό. Ορίστε τις ώρες σας στη σελίδα διαθεσιμότητας."
+                  en="Founders can request you while this is on; the switch is on the availability page, with the hours you offer."
+                  el="Οι ιδρυτές μπορούν να σας στείλουν αίτημα όσο είναι ενεργό· ο διακόπτης είναι στη σελίδα διαθεσιμότητας, μαζί με τις ώρες σας."
                   wrap
                 />
               </p>

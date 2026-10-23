@@ -413,6 +413,8 @@ export const TOAST_EL: Record<string, string> = {
   "Request sent": "Το αίτημα εστάλη",
   "Request sent!": "Το αίτημα εστάλη!",
   "Request accepted": "Το αίτημα έγινε αποδεκτό",
+  "Requests paused": "Τα αιτήματα τέθηκαν σε παύση",
+  "Accepting requests": "Δέχεστε αιτήματα",
   "You are now connected.": "Είστε πλέον συνδεδεμένοι.",
   "Could not accept the request": "Το αίτημα δεν έγινε αποδεκτό",
   "Restore failed": "Η επαναφορά απέτυχε",

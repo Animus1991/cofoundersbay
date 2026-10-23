@@ -11,7 +11,6 @@ import {
   MessageCircle,
   Calendar,
   Loader2,
-  AlertCircle,
   RefreshCw,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -37,6 +36,7 @@ import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { StatusText } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { FailedLine } from '@/components/dashboard/SectionCard';
 
 type RequestCardProps = {
   request: MentorRequestItem;
@@ -52,7 +52,7 @@ const STATUS_LABEL: Record<string, { en: string; el: string }> = {
 };
 
 function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCardProps) {
-  const displayName = request.requester?.displayName || 'Unknown';
+  const displayName = request.requester?.displayName || '\u2014';
   const initials = initialsOf(displayName);
 
   const statusColors: Record<string, string> = {
@@ -161,7 +161,7 @@ export default function MentorRequestsPage() {
   const queryClient = useQueryClient();
   const { error: toastError } = useToast();
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: qk('mentorships', 'requests-received'),
     queryFn: getMyReceivedMentorRequests,
     enabled: hasSession && mounted,
@@ -221,21 +221,15 @@ export default function MentorRequestsPage() {
     );
   }
 
-  if (error) {
+  // The transport's own English ("Unable to reach the API server") under a
+  // heading; it says what was not read, in both languages.
+  if (error && !data) {
     return (
       <AppShell showHelp>
-        <div className="py-6">
+        <div className="space-y-6">
           <Card>
-            <CardContent className="py-12 text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive-accessible mb-4" />
-              <h3 className="font-medium"><BilingualText en="Requests could not be loaded" el="Δεν ήταν δυνατή η φόρτωση των αιτημάτων" /></h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                {error instanceof Error ? error.message : <BilingualText en="An error occurred" el="Παρουσιάστηκε σφάλμα" compact />}
-              </p>
-              <Button className="mt-4" onClick={() => refetch()}>
-                <RefreshCw className="icon-sm mr-2" aria-hidden="true" />
-                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-              </Button>
+            <CardContent className="pt-6">
+              <FailedLine en="Your requests could not be read just now." el="Τα αιτήματά σας δεν διαβάστηκαν αυτή τη στιγμή." busy={isFetching} onRetry={() => void refetch()} />
             </CardContent>
           </Card>
         </div>
@@ -255,27 +249,8 @@ export default function MentorRequestsPage() {
       }
     >
       <div className="space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
-          <Card>
-            <CardContent>
-              <p className="page-stat text-xl font-bold">{pendingRequests.length}</p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Pending" el="Σε αναμονή" compact wrap /></p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="page-stat text-xl font-bold">{acceptedRequests.length}</p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Accepted" el="Αποδεκτά" compact wrap /></p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="page-stat text-xl font-bold">{declinedRequests.length}</p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Declined" el="Απορριφθέντα" compact wrap /></p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Three tiles repeated the three tabs below, the first one with the
+            tab's own counter; each tab carries its count now (docs §94). */}
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -286,8 +261,8 @@ export default function MentorRequestsPage() {
                 <Counter value={pendingRequests.length} />
               )}
             </TabsTrigger>
-            <TabsTrigger value="accepted"><BilingualText en="Accepted" el="Αποδεκτά" compact /></TabsTrigger>
-            <TabsTrigger value="declined"><BilingualText en="Declined" el="Απορριφθέντα" compact /></TabsTrigger>
+            <TabsTrigger value="accepted" className="gap-2"><BilingualText en="Accepted" el="Αποδεκτά" compact />{acceptedRequests.length > 0 && <Counter value={acceptedRequests.length} />}</TabsTrigger>
+            <TabsTrigger value="declined" className="gap-2"><BilingualText en="Declined" el="Απορριφθέντα" compact />{declinedRequests.length > 0 && <Counter value={declinedRequests.length} />}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending" className="space-y-3 mt-4">

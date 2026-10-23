@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  Star, Clock, Globe, DollarSign, Video, Users, Edit, Save, RefreshCw, Plus, X, ChevronDown,
+  Star,
+  Save,
+  RefreshCw,
 } from 'lucide-react';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
@@ -41,6 +43,8 @@ import { FactLine } from '@/components/common/FactLine';
 
 import { pressableProps } from '@/lib/pressable';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { bilingualAria } from '@/lib/i18n/format';
+import { FailedLine } from '@/components/dashboard/SectionCard';
 const INDUSTRIES = [
   'SaaS', 'Fintech', 'Healthtech', 'Edtech', 'Deep Tech', 'AI/ML',
   'E-commerce', 'Marketplace', 'Web3/Crypto', 'Climate Tech', 'AgriTech',
@@ -129,6 +133,12 @@ export default function MentorProfilePage() {
     enabled: hasSession && mounted,
     retry: 0,
   });
+  /*
+   * With the listing unread the form stood empty under "Save Profile", and a
+   * save would have written the empty form over the saved listing. Unread,
+   * it says so and Save waits (docs §94).
+   */
+  const listingFailed = listing.isError && listing.data === undefined;
   const filledFromSaved = useRef(false);
   useEffect(() => {
     if (filledFromSaved.current || !listing.isFetched) return;
@@ -183,6 +193,7 @@ export default function MentorProfilePage() {
   );
 
   async function handleSave() {
+    if (listingFailed || !listing.isFetched) return;
     setIsSaving(true);
     try {
       await saveMyMentorListing({
@@ -226,7 +237,7 @@ export default function MentorProfilePage() {
     <AppShell showHelp
       actions={
         <>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={isSaving || listingFailed || (hasSession && !listing.isFetched)}>
             {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
             <BilingualText en="Save Profile" el="Αποθήκευση προφίλ" compact />
           </Button>
@@ -234,6 +245,18 @@ export default function MentorProfilePage() {
       }
     >
       <div className="space-y-6">
+        {listingFailed ? (
+          <Card>
+            <CardContent className="pt-6">
+              <FailedLine
+                en="Your mentor listing could not be read just now. Saving waits until it is, so the empty form cannot replace it."
+                el="Η καταχώρισή σας ως μέντορας δεν διαβάστηκε αυτή τη στιγμή. Η αποθήκευση περιμένει, ώστε η κενή φόρμα να μην την αντικαταστήσει."
+                busy={listing.isFetching}
+                onRetry={() => void listing.refetch()}
+              />
+            </CardContent>
+          </Card>
+        ) : null}
         <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         {/* Preview Card */}
         <Card className="border-primary-muted bg-primary-subtle">
@@ -315,7 +338,7 @@ export default function MentorProfilePage() {
                   <div className="space-y-2">
                     <Label htmlFor="yearsExp"><BilingualText en="Years of Experience" el="Χρόνια εμπειρίας" compact /></Label>
                     <Select value={yearsExp} onValueChange={setYearsExp}>
-                      <SelectTrigger id="yearsExp" aria-label="Years of Experience"><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="yearsExp" aria-label={bilingualAria('Years of Experience', 'Χρόνια εμπειρίας')}><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '7', '10', '15', '20+'].map(v => (
                           <SelectItem key={v} value={v}><BilingualText en={`${v} year${v !== '1' ? 's' : ''}`} el={`${v} ${v === '1' ? 'έτος' : 'έτη'}`} compact /></SelectItem>
@@ -326,7 +349,7 @@ export default function MentorProfilePage() {
                   <div className="space-y-2">
                     <Label htmlFor="hoursPerWeek"><BilingualText en="Hours Available / Week" el="Διαθέσιμες ώρες / εβδομάδα" compact /></Label>
                     <Select value={hoursPerWeek} onValueChange={setHoursPerWeek}>
-                      <SelectTrigger id="hoursPerWeek" aria-label="Hours Available / Week"><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="hoursPerWeek" aria-label={bilingualAria('Hours Available / Week', 'Διαθέσιμες ώρες / εβδομάδα')}><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '8', '10', '15', '20'].map(v => (
                           <SelectItem key={v} value={v}><BilingualText en={`${v}h/week`} el={`${v} ώρες/εβδομάδα`} compact /></SelectItem>
@@ -340,7 +363,7 @@ export default function MentorProfilePage() {
                     <p className="text-sm font-medium"><BilingualText en="Accepting New Mentees" el="Δέχεται νέους καθοδηγούμενους" compact /></p>
                     <p className="text-xs text-muted-foreground"><BilingualText en="Toggle visibility in mentee search" el="Εμφάνιση στην αναζήτηση καθοδηγούμενων" wrap /></p>
                   </div>
-                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting New Mentees" />
+                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label={bilingualAria('Accepting New Mentees', 'Δέχεται νέους καθοδηγούμενους')} />
                 </div>
               </CardContent>
             </Card>
@@ -355,11 +378,15 @@ export default function MentorProfilePage() {
                   {INDUSTRIES.map(ind => (
                     <button
                       key={ind}
+                      type="button"
+                      aria-pressed={selectedIndustries.includes(ind)}
                       onClick={() => toggleChip(selectedIndustries, setSelectedIndustries, ind)}
                       className={cn(
                         'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
                         selectedIndustries.includes(ind)
-                          ? 'bg-primary text-primary-foreground border-primary'
+                          // Chosen as tint and edge: fifteen filled chips read
+                        // as fifteen primary buttons beside Save.
+                        ? 'border-primary/50 bg-primary/10 text-foreground'
                           : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
                       )}
                     >
@@ -377,11 +404,15 @@ export default function MentorProfilePage() {
                   {STARTUP_STAGES.map(stage => (
                     <button
                       key={stage}
+                      type="button"
+                      aria-pressed={selectedStages.includes(stage)}
                       onClick={() => toggleChip(selectedStages, setSelectedStages, stage)}
                       className={cn(
                         'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
                         selectedStages.includes(stage)
-                          ? 'bg-primary text-primary-foreground border-primary'
+                          // Chosen as tint and edge: fifteen filled chips read
+                        // as fifteen primary buttons beside Save.
+                        ? 'border-primary/50 bg-primary/10 text-foreground'
                           : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
                       )}
                     >
@@ -399,11 +430,15 @@ export default function MentorProfilePage() {
                   {EXPERTISE_AREAS.map(area => (
                     <button
                       key={area}
+                      type="button"
+                      aria-pressed={selectedExpertise.includes(area)}
                       onClick={() => toggleChip(selectedExpertise, setSelectedExpertise, area)}
                       className={cn(
                         'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
                         selectedExpertise.includes(area)
-                          ? 'bg-primary text-primary-foreground border-primary'
+                          // Chosen as tint and edge: fifteen filled chips read
+                        // as fifteen primary buttons beside Save.
+                        ? 'border-primary/50 bg-primary/10 text-foreground'
                           : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
                       )}
                     >
@@ -443,7 +478,7 @@ export default function MentorProfilePage() {
                       </div>
                       <div className={cn(
                         'w-4 h-4 rounded-full border-2 transition-all',
-                        sessionFormats.includes(f.value) ? 'border-primary bg-primary' : 'border-border'
+                        sessionFormats.includes(f.value) ? 'border-primary bg-primary/60' : 'border-border'
                       )} />
                     </div>
                   ))}
@@ -459,7 +494,7 @@ export default function MentorProfilePage() {
                     <p className="text-sm font-medium"><BilingualText en="Free Mentoring" el="Δωρεάν καθοδήγηση" compact /></p>
                     <p className="text-xs text-muted-foreground"><BilingualText en="Offer sessions at no cost" el="Συνεδρίες χωρίς χρέωση" compact /></p>
                   </div>
-                  <Switch checked={isFree} onCheckedChange={setIsFree} aria-label="Free Mentoring" />
+                  <Switch checked={isFree} onCheckedChange={setIsFree} aria-label={bilingualAria('Free Mentoring', 'Δωρεάν καθοδήγηση')} />
                 </div>
                 {!isFree && (
                   <div className="space-y-2">
@@ -481,7 +516,7 @@ export default function MentorProfilePage() {
                 <div className="space-y-2">
                   <Label htmlFor="sessionDuration"><BilingualText en="Default Session Duration" el="Προεπιλεγμένη διάρκεια συνεδρίας" compact /></Label>
                   <Select value={sessionDuration} onValueChange={setSessionDuration}>
-                    <SelectTrigger id="sessionDuration" aria-label="Default Session Duration" className="w-48"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="sessionDuration" aria-label={bilingualAria('Default Session Duration', 'Προεπιλεγμένη διάρκεια συνεδρίας')} className="w-48"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {[15, 30, 45, 60, 90, 120].map(d => (
                         <SelectItem key={d} value={String(d)}>

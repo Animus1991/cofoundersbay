@@ -458,6 +458,8 @@ const el: Record<string, string> = {
   'Documents, investors and the access log are illustrative — the data room has no backend storage yet.':
     'Τα έγγραφα, οι επενδυτές και το αρχείο πρόσβασης είναι ενδεικτικά — το data room δεν αποθηκεύεται ακόμη στον server.',
   Scouting: 'Ανίχνευση',
+  'These reviews are illustrative; mentor reviews are not collected yet.':
+    'Αυτές οι αξιολογήσεις είναι ενδεικτικές· οι αξιολογήσεις μεντόρων δεν συλλέγονται ακόμη.',
   'These deals are illustrative; your own appear here once you add a startup from Scouting.':
     'Αυτές οι συμφωνίες είναι ενδεικτικές· οι δικές σας εμφανίζονται εδώ μόλις προσθέσετε μια startup από την Ανίχνευση.',
   'These companies are illustrative; a deal you mark as invested in the pipeline replaces them.':

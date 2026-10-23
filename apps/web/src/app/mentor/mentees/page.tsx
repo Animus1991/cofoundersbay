@@ -8,7 +8,6 @@ import {
   MessageCircle,
   Calendar,
   Loader2,
-  AlertCircle,
   RefreshCw,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -16,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { qk } from '@/lib/query-keys';
@@ -33,11 +31,13 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { Counter } from '@/components/ui/counter';
+import { FailedLine } from '@/components/dashboard/SectionCard';
+import { PageFacts } from '@/components/common/PageFacts';
 
 function MenteeCard({ relationship, upcomingBookings = 0 }: { relationship: MentorshipRelationshipItem; upcomingBookings?: number }) {
   const fmtDate = useDateFormat();
   const mentee = relationship.mentee;
-  const displayName = mentee?.displayName || 'Unknown';
+  const displayName = mentee?.displayName || '\u2014';
   const initials = displayName
     .split(' ')
     .map((n: string) => n[0])
@@ -63,7 +63,9 @@ function MenteeCard({ relationship, upcomingBookings = 0 }: { relationship: Ment
       <CardContent className="space-y-3">
         <CardHead
           mark={(
-            <Link href={`/p/${relationship.menteeId}`} aria-label={displayName}>
+            // The public page reads a username; a member opens the profile
+            // by id, as the requests page does.
+            <Link href={`/profiles/${relationship.menteeId}`} aria-label={displayName}>
               <Avatar className="h-10 w-10">
                 <AvatarImage src={mentee?.avatarUrl || undefined} alt="" />
                 <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
@@ -73,7 +75,7 @@ function MenteeCard({ relationship, upcomingBookings = 0 }: { relationship: Ment
             </Link>
           )}
           title={(
-            <Link href={`/p/${relationship.menteeId}`} className="hover:text-primary-accessible transition-colors">
+            <Link href={`/profiles/${relationship.menteeId}`} className="hover:text-primary-accessible transition-colors">
               {displayName}
             </Link>
           )}
@@ -135,7 +137,7 @@ function MenteeCard({ relationship, upcomingBookings = 0 }: { relationship: Ment
 export default function MenteesPage() {
   const { hasSession, mounted } = useSession();
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: qk('mentorships', 'mentor'),
     queryFn: () => getMyMentorships('mentor'),
     enabled: hasSession && mounted,
@@ -194,21 +196,13 @@ export default function MenteesPage() {
     );
   }
 
-  if (error) {
+  if (error && !data) {
     return (
       <AppShell showHelp>
-        <div className="py-6">
+        <div className="space-y-6">
           <Card>
-            <CardContent className="py-12 text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive-accessible mb-4" />
-              <h3 className="font-medium"><BilingualText en="Failed to load mentees" el="Δεν ήταν δυνατή η φόρτωση των καθοδηγούμενων" compact /></h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                {error instanceof Error ? error.message : 'An error occurred'}
-              </p>
-              <Button className="mt-4" onClick={() => refetch()}>
-                <RefreshCw className="icon-sm mr-2" />
-                <BilingualText en="Try Again" el="Δοκιμάστε ξανά" compact />
-              </Button>
+            <CardContent className="pt-6">
+              <FailedLine en="Your mentees could not be read just now." el="Οι καθοδηγούμενοί σας δεν διαβάστηκαν αυτή τη στιγμή." busy={isFetching} onRetry={() => void refetch()} />
             </CardContent>
           </Card>
         </div>
@@ -245,27 +239,15 @@ export default function MenteesPage() {
           </Link>
         )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
-          <Card>
-            <CardContent>
-              <p className="page-stat text-xl font-bold">{activeRelationships.length}</p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Active Mentees" el="Ενεργοί καθοδηγούμενοι" compact /></p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="page-stat text-xl font-bold">{completedRelationships.length}</p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρώθηκε" compact /></p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="page-stat text-xl font-bold">{totalSessions}</p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Total Sessions" el="Σύνολο συνεδριών" compact /></p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* "Active Mentees 3" and "Completed 1" were the counters of the two
+            headings below; the sessions given are said once, here (docs §94). */}
+        <PageFacts
+          labelEn="Your mentoring in figures"
+          labelEl="Η καθοδήγησή σας σε αριθμούς"
+          facts={[
+            { id: 'sessions', value: isLoading ? null : totalSessions, en: totalSessions === 1 ? 'session given' : 'sessions given', el: totalSessions === 1 ? 'συνεδρία' : 'συνεδρίες' },
+          ]}
+        />
 
         {/* Active Mentees */}
         <div className="space-y-3">

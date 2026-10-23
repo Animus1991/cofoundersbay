@@ -3,7 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Clock, Plus, Trash2, Save, CheckCircle2, AlertCircle, Info, RefreshCw,
+  Clock,
+  Plus,
+  Trash2,
+  Save,
+  Info,
+  RefreshCw,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -20,9 +25,9 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
-import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
-import { getMeProfile, listMentorAvailability, replaceMentorAvailability } from '@/lib/api';
+import { getMeProfile, getMyMentorListing, listMentorAvailability, replaceMentorAvailability, saveMyMentorListing } from '@/lib/api';
+import { FailedLine } from '@/components/dashboard/SectionCard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -61,12 +66,12 @@ const TIMEZONES = [
 ];
 
 const DURATIONS = [
-  { value: 15, label: '15 min' },
-  { value: 30, label: '30 min' },
-  { value: 45, label: '45 min' },
-  { value: 60, label: '1 hour' },
-  { value: 90, label: '1.5 hours' },
-  { value: 120, label: '2 hours' },
+  { value: 15, label: '15 min', labelEl: '15 λεπτά' },
+  { value: 30, label: '30 min', labelEl: '30 λεπτά' },
+  { value: 45, label: '45 min', labelEl: '45 λεπτά' },
+  { value: 60, label: '1 hour', labelEl: '1 ώρα' },
+  { value: 90, label: '1.5 hours', labelEl: '1,5 ώρα' },
+  { value: 120, label: '2 hours', labelEl: '2 ώρες' },
 ];
 
 interface TimeSlot {
@@ -96,9 +101,9 @@ export default function MentorAvailabilityPage() {
   const [dirty, setDirty] = useState(false);
   const setSlots = (next: TimeSlot[] | ((prev: TimeSlot[]) => TimeSlot[])) => { setSlotsState(next); setDirty(true); };
   const setTimezone = (tz: string) => { setTimezoneState(tz); setDirty(true); };
-  const [sessionDuration, setSessionDuration] = useState(30);
+  const [sessionDuration, setSessionDurationState] = useState(30);
+  const setSessionDuration = (n: number) => { setSessionDurationState(n); setDirty(true); };
   const [bufferTime, setBufferTime] = useState(15);
-  const [isAccepting, setIsAccepting] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [noticeHours, setNoticeHours] = useState(24);
 
@@ -115,11 +120,43 @@ export default function MentorAvailabilityPage() {
    * a mentee. The three slots below are a starting point shown only while
    * nothing is stored, and the page says they are not saved yet.
    */
-  const { data: stored, isLoading: storedLoading } = useQuery({
+  const { data: stored, isLoading: storedLoading, isError: storedError, isFetching: storedFetching, refetch: refetchStored } = useQuery({
     queryKey: qk('mentors', 'availability', 'mine'),
     queryFn: () => listMentorAvailability(),
     enabled: hasSession && mounted,
     retry: 0,
+  });
+  /*
+   * With the saved hours unread, the page showed the three starting slots as
+   * the week and offered Save, which would have replaced the stored week with
+   * them. Unread, it says so and saving waits (docs §94).
+   */
+  const storedFailed = storedError && !stored;
+
+  /*
+   * "Accepting Requests" was kept on this page only. It is the listing's own
+   * switch (the one on the mentor profile), so it reads and writes there.
+   * The session length is the listing's too.
+   */
+  const listing = useQuery({
+    queryKey: qk('mentors', 'listing', 'me'),
+    queryFn: getMyMentorListing,
+    enabled: hasSession && mounted,
+    retry: 0,
+  });
+  const isAccepting = listing.data ? listing.data.isAcceptingRequests !== false : true;
+  useEffect(() => {
+    const d = listing.data?.sessionDuration;
+    if (typeof d === 'number' && DURATIONS.some((x) => x.value === d)) setSessionDurationState(d);
+  }, [listing.data?.sessionDuration]);
+  const acceptMutation = useMutation({
+    mutationFn: (on: boolean) => saveMyMentorListing({ isAcceptingRequests: on }),
+    onSuccess: (row) => {
+      queryClient.setQueryData(qk('mentors', 'listing', 'me'), row);
+      void queryClient.invalidateQueries({ queryKey: qk('mentors') });
+      success(row.isAcceptingRequests === false ? 'Requests paused' : 'Accepting requests');
+    },
+    onError: (e) => showError('Could not change the listing', e instanceof Error ? e.message : undefined),
   });
   const storedSlots = stored?.slots ?? null;
   useEffect(() => {
@@ -153,12 +190,18 @@ export default function MentorAvailabilityPage() {
   }
 
   async function handleSave(): Promise<PageControlRunResult> {
+    if (storedFailed) return { error: 'Your saved hours have not been read, so saving would replace them.' };
     setIsSaving(true);
     try {
       const res = await replaceMentorAvailability(
         slots.map((sl) => ({ weekday: sl.weekday, startTime: sl.startTime, endTime: sl.endTime, timezone })),
       );
       queryClient.setQueryData(qk('mentors', 'availability', 'mine'), res);
+      // The default length lives on the listing; it was set here and never kept.
+      if (listing.data?.sessionDuration !== sessionDuration && !listing.isError) {
+        const row = await saveMyMentorListing({ sessionDuration });
+        queryClient.setQueryData(qk('mentors', 'listing', 'me'), row);
+      }
       setDirty(false);
       success('Availability saved', 'Your schedule has been updated.');
     } catch (e) {
@@ -179,8 +222,8 @@ export default function MentorAvailabilityPage() {
       labelEn: 'Save my weekly hours',
       labelEl: 'Αποθήκευση εβδομαδιαίων ωρών',
       writes: true,
-      unavailableEn: !hasSession ? 'Sign in first.' : undefined,
-      unavailableEl: !hasSession ? 'Συνδεθείτε πρώτα.' : undefined,
+      unavailableEn: !hasSession ? 'Sign in first.' : storedFailed ? 'Your saved hours have not been read yet.' : undefined,
+      unavailableEl: !hasSession ? 'Συνδεθείτε πρώτα.' : storedFailed ? 'Οι αποθηκευμένες ώρες σας δεν έχουν διαβαστεί ακόμη.' : undefined,
       run: handleSave,
     },
     {
@@ -216,7 +259,7 @@ export default function MentorAvailabilityPage() {
       id: 'availability_slots',
       labelEn: unsaved ? 'Weekly hours (not saved yet)' : 'Weekly hours',
       labelEl: unsaved ? 'Εβδομαδιαίες ώρες (δεν έχουν αποθηκευτεί)' : 'Εβδομαδιαίες ώρες',
-      rows: storedLoading ? undefined : [...slots].sort((a, b) => a.weekday - b.weekday || a.startTime.localeCompare(b.startTime)).map((sl) => `${dayName(sl.weekday)} ${sl.startTime}-${sl.endTime} (${timezone})`),
+      rows: storedLoading || storedFailed ? undefined : [...slots].sort((a, b) => a.weekday - b.weekday || a.startTime.localeCompare(b.startTime)).map((sl) => `${dayName(sl.weekday)} ${sl.startTime}-${sl.endTime} (${timezone})`),
       total: slots.length,
       sample: false,
     },
@@ -246,7 +289,7 @@ export default function MentorAvailabilityPage() {
     <AppShell showHelp
       actions={
         <>
-          <Button onClick={() => void handleSave()} disabled={isSaving}>
+          <Button onClick={() => void handleSave()} disabled={isSaving || storedFailed || storedLoading}>
             {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
             <BilingualText en="Save Changes" el="Αποθήκευση" compact />
           </Button>
@@ -254,7 +297,19 @@ export default function MentorAvailabilityPage() {
       }
     >
       <div className="space-y-6">
-        {unsaved && !storedLoading && (
+        {storedFailed ? (
+          <Card>
+            <CardContent className="pt-6">
+              <FailedLine
+                en="Your saved hours could not be read just now. Saving waits until they are, so it cannot replace them."
+                el="Οι αποθηκευμένες ώρες σας δεν διαβάστηκαν αυτή τη στιγμή. Η αποθήκευση περιμένει, ώστε να μην τις αντικαταστήσει."
+                busy={storedFetching}
+                onRetry={() => void refetchStored()}
+              />
+            </CardContent>
+          </Card>
+        ) : null}
+        {unsaved && !storedLoading && !storedFailed && (
           <p role="status" className="rounded-xl border border-status-warning-border bg-status-warning-bg px-4 py-2.5 text-sm">
             <BilingualText
               en={storedSlots && storedSlots.length === 0 && !dirty
@@ -273,17 +328,24 @@ export default function MentorAvailabilityPage() {
             <CardContent>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium"><BilingualText en="Accepting Requests" el="Δέχεται αιτήματα" compact /></span>
-                <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting Requests. Δέχεται αιτήματα" />
-              </div>
-              {/* No endpoint stores this yet, so it no longer claims to change
-                  who can see the mentor. */}
-              <p className="text-xs text-muted-foreground">
-                <BilingualText
-                  en="Kept on this page only for now - it does not yet change your listing."
-                  el="Προς το παρόν μένει μόνο σε αυτή τη σελίδα - δεν αλλάζει ακόμη την καταχώρισή σας."
-                  compact
-                  wrap
+                <Switch
+                  checked={isAccepting}
+                  disabled={listing.isLoading || listing.isError || acceptMutation.isPending}
+                  onCheckedChange={(on) => acceptMutation.mutate(on)}
+                  aria-label="Accepting Requests. Δέχεται αιτήματα"
                 />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {listing.isError ? (
+                  <BilingualText en="Your listing could not be read just now, so this cannot change." el="Η καταχώρισή σας δεν διαβάστηκε αυτή τη στιγμή, οπότε αυτό δεν αλλάζει." compact wrap />
+                ) : (
+                  <BilingualText
+                    en="Saved with your mentor listing: founders can send you requests while it is on."
+                    el="Αποθηκεύεται στην καταχώρισή σας ως μέντορας: οι ιδρυτές σας στέλνουν αιτήματα όσο είναι ενεργό."
+                    compact
+                    wrap
+                  />
+                )}
               </p>
             </CardContent>
           </Card>
@@ -293,8 +355,16 @@ export default function MentorAvailabilityPage() {
                 <Clock className="icon-sm text-muted-foreground" />
                 <span className="text-sm font-medium"><BilingualText en="Weekly Hours" el="Εβδομαδιαίες ώρες" compact /></span>
               </div>
-              <p className="page-stat text-xl font-bold"><BilingualText en={`${weeklyHours.toFixed(1)}h`} el={durationEl(`${weeklyHours.toFixed(1)}h`)} compact /></p>
-              <p className="text-xs text-muted-foreground"><BilingualText en={`across ${slots.length} time blocks`} el={`σε ${slots.length} χρονοθυρίδες`} compact /></p>
+              {/* The starting slots' 9.0h stood here while the saved week
+                  was unread. */}
+              {storedFailed ? (
+                <p className="page-stat text-xl font-bold">{'\u2014'}</p>
+              ) : (
+                <>
+                  <p className="page-stat text-xl font-bold"><BilingualText en={`${weeklyHours.toFixed(1)}h`} el={durationEl(`${weeklyHours.toFixed(1)}h`)} compact /></p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={`across ${slots.length} time blocks`} el={`σε ${slots.length} χρονοθυρίδες`} compact /></p>
+                </>
+              )}
             </CardContent>
           </Card>
           {/* The zone is shown and changed in one place: this card (it once had
@@ -317,6 +387,7 @@ export default function MentorAvailabilityPage() {
           </Card>
         </div>
 
+        {storedFailed ? null : (
         <Tabs defaultValue="schedule">
           <TabsList>
             <TabsTrigger value="schedule"><BilingualText en="Weekly Schedule" el="Εβδομαδιαίο πρόγραμμα" compact /></TabsTrigger>
@@ -376,7 +447,7 @@ export default function MentorAvailabilityPage() {
                                   ))}
                                 </SelectContent>
                               </Select>
-                              <Button aria-label="Delete · Διαγραφή"
+                              <Button aria-label={bilingualAria(`Delete ${day.label} ${slot.startTime}–${slot.endTime}`, `Διαγραφή: ${DAY_EL[day.key]} ${slot.startTime}–${slot.endTime}`)}
                                 variant="ghost"
                                 className="h-8 w-8 gap-1.5 text-muted-foreground hover:text-destructive-accessible sm:w-auto sm:px-3"
                                 onClick={() => removeSlot(slot.id)}
@@ -402,8 +473,8 @@ export default function MentorAvailabilityPage() {
                 <CardTitle><BilingualText en="Session Settings" el="Ρυθμίσεις συνεδριών" compact /></CardTitle>
                 <CardDescription>
                   <BilingualText
-                    en="Only the weekly hours and time zone are saved today; length, buffer and notice are not stored yet."
-                    el="Σήμερα αποθηκεύονται μόνο οι εβδομαδιαίες ώρες και η ζώνη ώρας· διάρκεια, διάλειμμα και προειδοποίηση δεν αποθηκεύονται ακόμη."
+                    en="Save keeps the weekly hours, the time zone and the default length; buffer and notice are not stored yet."
+                    el="Η αποθήκευση κρατά τις εβδομαδιαίες ώρες, τη ζώνη ώρας και την προεπιλεγμένη διάρκεια· διάλειμμα και προειδοποίηση δεν αποθηκεύονται ακόμη."
                     compact
                     wrap
                   />
@@ -414,12 +485,12 @@ export default function MentorAvailabilityPage() {
                   <div className="space-y-2">
                     <Label htmlFor="sessionDuration"><BilingualText en="Default Session Duration" el="Προεπιλεγμένη διάρκεια συνεδρίας" compact /></Label>
                     <Select value={String(sessionDuration)} onValueChange={v => setSessionDuration(Number(v))}>
-                      <SelectTrigger id="sessionDuration" aria-label="Default Session Duration">
+                      <SelectTrigger id="sessionDuration" aria-label={bilingualAria('Default Session Duration', 'Προεπιλεγμένη διάρκεια συνεδρίας')}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {DURATIONS.map(d => (
-                          <SelectItem key={d.value} value={String(d.value)}>{d.label}</SelectItem>
+                          <SelectItem key={d.value} value={String(d.value)}><BilingualText en={d.label} el={d.labelEl} compact /></SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -429,12 +500,12 @@ export default function MentorAvailabilityPage() {
                   <div className="space-y-2">
                     <Label htmlFor="bufferTime"><BilingualText en="Buffer Between Sessions" el="Διάλειμμα μεταξύ συνεδριών" compact /></Label>
                     <Select value={String(bufferTime)} onValueChange={v => setBufferTime(Number(v))}>
-                      <SelectTrigger id="bufferTime" aria-label="Buffer Between Sessions">
+                      <SelectTrigger id="bufferTime" aria-label={bilingualAria('Buffer Between Sessions', 'Διάλειμμα μεταξύ συνεδριών')}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {[0, 5, 10, 15, 30, 60].map(m => (
-                          <SelectItem key={m} value={String(m)}>{m === 0 ? 'No buffer' : `${m} min`}</SelectItem>
+                          <SelectItem key={m} value={String(m)}>{m === 0 ? <BilingualText en="No buffer" el="Χωρίς διάλειμμα" compact /> : <BilingualText en={`${m} min`} el={`${m} λεπτά`} compact />}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -444,12 +515,12 @@ export default function MentorAvailabilityPage() {
                   <div className="space-y-2">
                     <Label htmlFor="noticeHours"><BilingualText en="Minimum Notice Period" el="Ελάχιστη προειδοποίηση" compact /></Label>
                     <Select value={String(noticeHours)} onValueChange={v => setNoticeHours(Number(v))}>
-                      <SelectTrigger id="noticeHours" aria-label="Minimum Notice Period">
+                      <SelectTrigger id="noticeHours" aria-label={bilingualAria('Minimum Notice Period', 'Ελάχιστη προειδοποίηση')}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {[1, 2, 4, 8, 12, 24, 48, 72].map(h => (
-                          <SelectItem key={h} value={String(h)}>{h < 24 ? `${h}h` : `${h / 24}d`}</SelectItem>
+                          <SelectItem key={h} value={String(h)}>{h < 24 ? <BilingualText en={`${h}h`} el={`${h} ώρ.`} compact /> : <BilingualText en={`${h / 24}d`} el={`${h / 24} ημ.`} compact />}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -475,6 +546,7 @@ export default function MentorAvailabilityPage() {
             </Card>
           </TabsContent>
         </Tabs>
+        )}
       </div>
     </AppShell>
   );
