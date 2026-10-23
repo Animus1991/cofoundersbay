@@ -33,6 +33,7 @@ const PUBLIC_PREFIXES = [
   '/share/',
   '/profiles/',
   '/t/',         // tenant public landing pages /t/[slug]
+  '/join/',      // organisation invitations /join/[token]: read without an account (docs §100)
   '/themes/',    // static theme previews
   '/_next/',
   '/favicon',

@@ -37,6 +37,7 @@ import { demoInvestorPerson } from './demo/investors-world';
 import { demoProviderPerson } from './demo/marketplace-world';
 import { previewMessagesWorld } from './demo/messages-world';
 import { DemoRefusal } from './demo/demo-refusal';
+import { previewOrgInvitationsApi } from './demo/org-invitations-world';
 import {
   harborApplicationDrafts,
   isStaleHarborApplicationBlob,
@@ -2823,6 +2824,9 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   const method = (init?.method ?? 'GET').toUpperCase();
   const body = parseBody(init);
 
+  // Organisation invitations by email (docs §100), with the API's rules.
+  const invitationsAnswer = previewOrgInvitationsApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
+  if (invitationsAnswer !== undefined) return invitationsAnswer;
   // The organisation, its programs and its tenant: one world, one module.
   const orgAnswer = previewOrgApi(pathname, path, method, previewIsoInDays);
   if (orgAnswer !== undefined) return orgAnswer;

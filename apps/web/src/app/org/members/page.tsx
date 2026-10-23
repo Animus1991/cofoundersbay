@@ -225,9 +225,8 @@ export default function OrgMembersPage() {
   const filtersActive = !!search || activeTab !== 'all';
   const reading = orgLoading || isLoading;
   const invitedCount = members.filter((m) => m.status === 'invited').length;
-  // Members are added directly (by user id) on the admin page; `?add=1`
-  // opens its form. "Invite" promised an email that nothing sends.
-  const addHref = slug ? `/org/${slug}/admin?add=1` : null;
+  // The admin page's invite form, by email (docs §100); `?invite=1` opens it.
+  const addHref = slug ? `/org/${slug}/admin?invite=1` : null;
   const clearFilters = () => { setSearch(''); setActiveTab('all'); };
 
   usePageList([
@@ -278,14 +277,14 @@ export default function OrgMembersPage() {
           <Button asChild>
             <Link href={addHref}>
               <UserPlus className="mr-2 icon-sm" aria-hidden="true" />
-              <BilingualText en="Add member" el="Προσθήκη μέλους" compact />
+              <BilingualText en="Invite member" el="Πρόσκληση μέλους" compact />
             </Link>
           </Button>
         ) : (
           <UnavailableButton
             size="md"
-            en="Add member"
-            el="Προσθήκη μέλους"
+            en="Invite member"
+            el="Πρόσκληση μέλους"
             reasonEn="Invitations are sent on behalf of an organisation; join or create one first."
             reasonEl="Οι προσκλήσεις στέλνονται εκ μέρους οργανισμού· γίνετε μέλος ή δημιουργήστε έναν πρώτα."
           />

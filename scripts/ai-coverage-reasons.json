@@ -52,5 +52,6 @@
   "/admin/system-settings": "platform-wide settings, saved by a platform admin; the assistant does not change them",
   "/commitments/new": "a form: draft_need_card fills its fields from the conversation and the person reads the quality checks and presses Publish; publishing is never the assistant’s write",
   "/c/[token]": "public need card for people without an account, read before sign-in; the assistant is a signed-in feature",
+  "/join/[token]": "an organisation invitation opened from its email, read before sign-in; the person answers it themselves with Accept or Decline",
   "/u/[token]": "a founder update its author made public, read without an account; the assistant is a signed-in feature"
 }

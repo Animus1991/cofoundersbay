@@ -238,6 +238,7 @@ enum NotificationType {
   fundraising_update
   commitment_update
   founder_update
+  organization_invite
   intro_request
 }
 
@@ -470,6 +471,7 @@ model User {
 
   // Organization System
   organizationMemberships     OrganizationMembership[]
+  organizationInvitationsSent OrganizationInvitation[]    @relation("OrgInvitationsSent")
   organizationsCreated        Organization[]              @relation("OrganizationsCreated")
   organizationMentorRoles     OrganizationMentor[]
 
@@ -3732,6 +3734,7 @@ model Organization {
   
   // Relations
   memberships       OrganizationMembership[]
+  invitations       OrganizationInvitation[]
   programs          Program[]
   mentorPool        OrganizationMentor[]
   venturePortfolios VenturePortfolio[]
@@ -3742,6 +3745,32 @@ model Organization {
   @@index([isActive])
   @@index([isFeatured])
   @@index([createdAt])
+}
+
+/// An invitation into an organisation by email (docs §100). Schema-only like
+/// the other new models (`prisma db push`). The link carries a random token;
+/// only its SHA-256 is stored. Accepted by a signed-in person whose account
+/// email is the invited one.
+model OrganizationInvitation {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String       // lower-case
+  role           String       @default("member") // ORG_INVITE_ROLES
+  message        String?      @db.Text
+  tokenHash      String       @unique
+  status         String       @default("pending") // ORG_INVITE_STATUSES
+  invitedById    String
+  invitedBy      User         @relation("OrgInvitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)
+  acceptedById   String?
+  respondedAt    DateTime?
+  expiresAt      DateTime
+  sentAt         DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, status])
+  @@index([email])
 }
 
 model OrganizationMembership {

@@ -12,11 +12,15 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OrganizationService } from './organization.service';
+import { OrganizationInvitationsService } from './organization-invitations.service';
 
 @Controller('organizations')
 @UseGuards(JwtAuthGuard)
 export class OrganizationController {
-  constructor(private readonly organizationService: OrganizationService) {}
+  constructor(
+    private readonly organizationService: OrganizationService,
+    private readonly invitations: OrganizationInvitationsService,
+  ) {}
 
   @Post()
   async create(
@@ -144,6 +148,27 @@ export class OrganizationController {
     @Param('memberId') memberId: string,
   ) {
     return this.organizationService.removeMember(id, req.user.id, memberId);
+  }
+
+  // Invitations by email (docs §100): owners and admins.
+  @Get(':id/invitations')
+  async listInvitations(@Request() req: { user: { id: string } }, @Param('id') id: string) {
+    return this.invitations.list(id, req.user.id);
+  }
+
+  @Post(':id/invitations')
+  async invite(@Request() req: { user: { id: string } }, @Param('id') id: string, @Body() body: Record<string, unknown>) {
+    return this.invitations.create(id, req.user.id, body ?? {});
+  }
+
+  @Post(':id/invitations/:invitationId/resend')
+  async resendInvitation(@Request() req: { user: { id: string } }, @Param('id') id: string, @Param('invitationId') invitationId: string) {
+    return this.invitations.resend(id, req.user.id, invitationId);
+  }
+
+  @Delete(':id/invitations/:invitationId')
+  async cancelInvitation(@Request() req: { user: { id: string } }, @Param('id') id: string, @Param('invitationId') invitationId: string) {
+    return this.invitations.cancel(id, req.user.id, invitationId);
   }
 
   // Mentor pool

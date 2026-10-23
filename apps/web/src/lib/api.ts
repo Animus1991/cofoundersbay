@@ -5735,6 +5735,71 @@ export async function addOrganizationMember(
   });
 }
 
+// ── Organisation invitations by email (docs §100) ──────────────────────────
+
+export type OrgInvitationItem = {
+  id: string;
+  email: string;
+  role: string;
+  message: string | null;
+  status: 'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired';
+  sentAt: string;
+  expiresAt: string;
+  respondedAt: string | null;
+  invitedByName: string | null;
+};
+
+/** What creating or resending answers: the row, the link (it works only for the invited address) and how it was delivered. */
+export type OrgInvitationSent = {
+  invitation: OrgInvitationItem;
+  link: string;
+  emailStatus: 'disabled' | 'sent' | 'queued' | 'failed' | 'demo';
+  notified: boolean;
+};
+
+export async function listOrganizationInvitations(organizationId: string): Promise<{ invitations: OrgInvitationItem[] }> {
+  return apiRequest(`/api/organizations/${organizationId}/invitations`);
+}
+
+export async function inviteToOrganization(
+  organizationId: string,
+  body: { email: string; role: string; message?: string },
+): Promise<OrgInvitationSent> {
+  return apiRequest(`/api/organizations/${organizationId}/invitations`, { method: 'POST', body: JSON.stringify(body) });
+}
+
+export async function resendOrganizationInvitation(organizationId: string, invitationId: string): Promise<OrgInvitationSent> {
+  return apiRequest(`/api/organizations/${organizationId}/invitations/${invitationId}/resend`, { method: 'POST' });
+}
+
+export async function cancelOrganizationInvitation(organizationId: string, invitationId: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/organizations/${organizationId}/invitations/${invitationId}`, { method: 'DELETE' });
+}
+
+export type OrgInvitationPreview = {
+  organization: { id: string; name: string; slug: string; logoUrl: string | null };
+  role: string;
+  roleLabel: { en: string; el: string } | null;
+  invitedByName: string | null;
+  message: string | null;
+  emailMasked: string;
+  status: OrgInvitationItem['status'];
+  expiresAt: string;
+};
+
+/** The invitation link's page: readable without an account. */
+export async function getOrganizationInvitation(token: string): Promise<{ invitation: OrgInvitationPreview }> {
+  return apiRequest(`/api/organization-invitations/${encodeURIComponent(token)}`);
+}
+
+export async function acceptOrganizationInvitation(token: string): Promise<{ ok: boolean; organization: { id: string; name: string; slug: string } | null }> {
+  return apiRequest(`/api/organization-invitations/${encodeURIComponent(token)}/accept`, { method: 'POST' });
+}
+
+export async function declineOrganizationInvitation(token: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/organization-invitations/${encodeURIComponent(token)}/decline`, { method: 'POST' });
+}
+
 export async function updateOrganizationMember(
   organizationId: string,
   memberId: string,

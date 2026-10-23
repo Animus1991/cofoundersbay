@@ -52,9 +52,12 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { EmptyLine, FailedLine } from '@/components/dashboard/SectionCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { usePageRail } from '@/components/layout/PageRailContext';
 import { isNotFound } from '@/lib/read-status';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { ORG_INVITE_ROLES, ORG_INVITE_ROLE_COPY } from '@cofounderbay/shared';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { calendarDaysUntil } from '@/lib/calendar-days';
+import { Textarea } from '@/components/ui/textarea';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useToast } from '@/components/ui/toast';
@@ -68,13 +71,20 @@ import {
 } from '@/components/ui/dialog';
 import {
   addOrganizationMember,
+  cancelOrganizationInvitation,
+  inviteToOrganization,
+  listOrganizationInvitations,
+  resendOrganizationInvitation,
+  type OrgInvitationItem,
+  type OrgInvitationSent,
   getOrganizationBySlug,
   listOrganizationMembers,
   removeOrganizationMember,
   updateOrganizationMember,
   type OrgAdminMember,
 } from '@/lib/api';
-import { cn, initialsOf } from '@/lib/utils';
+import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
+import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
@@ -193,7 +203,6 @@ function StatCard({ title, titleEl, value, change, trend }: {
 export default function OrgAdminPage() {
   const sayOne = useBilingualString();
   const fmtDate = useDateFormat();
-  const { openRailSection } = usePageRail();
   const params = useParams();
   const router = useRouter();
   const { success, error: showError } = useToast();
@@ -207,6 +216,15 @@ export default function OrgAdminPage() {
   const [inviteUserId, setInviteUserId] = useState('');
   const [inviteRole, setInviteRole] = useState('member');
   const [inviting, setInviting] = useState(false);
+  /*
+   * Invite by email is the default (docs §100); adding by user id stays for
+   * whoever has one. `sent` holds the answer, so the dialog can say how the
+   * link went out and offer it to copy.
+   */
+  const [inviteMode, setInviteMode] = useState<'email' | 'userId'>('email');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteNote, setInviteNote] = useState('');
+  const [sent, setSent] = useState<OrgInvitationSent | null>(null);
 
   const orgQuery = useQuery({
     queryKey: qk('org', 'admin', slug),
@@ -242,10 +260,30 @@ export default function OrgAdminPage() {
     totalProjects: orgData?._count?.programs ?? '—',
   };
 
-  // /org/members and /org/settings send "Add member" here with ?add=1.
+  // /org/members and /org/settings send "Invite member" here with
+  // ?invite=1 (by email); ?add=1, the older link, opens adding by user id.
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('add') === '1') setInviteOpen(true);
+    const q = new URLSearchParams(window.location.search);
+    if (q.get('invite') === '1') { setInviteMode('email'); setInviteOpen(true); }
+    else if (q.get('add') === '1') { setInviteMode('userId'); setInviteOpen(true); }
   }, []);
+
+  const invitationsQuery = useQuery({
+    queryKey: qk('org', 'invitations', orgId),
+    enabled: !!orgId,
+    queryFn: () => listOrganizationInvitations(orgId as string),
+    retry: 0,
+    staleTime: 30_000,
+  });
+  const invitations: OrgInvitationItem[] = invitationsQuery.data?.invitations ?? [];
+  const waitingInvites = invitations.filter((i) => i.status === 'pending');
+  const invitationsFailed = invitationsQuery.isError && !invitationsQuery.data;
+  const refreshInvitations = () => void qc.invalidateQueries({ queryKey: qk('org', 'invitations', orgId) });
+  const openInvite = (mode: 'email' | 'userId' = 'email') => {
+    setInviteMode(mode);
+    setSent(null);
+    setInviteOpen(true);
+  };
 
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: qk('org', 'admin-members', orgId) });
@@ -313,6 +351,60 @@ export default function OrgAdminPage() {
       return { error: err instanceof Error && err.message ? err.message : 'The member was not removed.' };
     } finally {
       refresh();
+    }
+  };
+
+  const handleEmailInvite = async (): Promise<PageControlRunResult> => {
+    const email = inviteEmail.trim();
+    if (!email || !orgId) return { error: 'Write the email address to invite.' };
+    setInviting(true);
+    try {
+      const answer = await inviteToOrganization(orgId, { email, role: inviteRole, message: inviteNote.trim() || undefined });
+      setSent(answer);
+      setInviteEmail('');
+      setInviteNote('');
+      success('Invitation sent', answer.invitation.email);
+    } catch (err) {
+      showError('Could not send the invitation', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The invitation was not sent.' };
+    } finally {
+      setInviting(false);
+      refreshInvitations();
+    }
+  };
+
+  const handleResend = async (invitation: OrgInvitationItem): Promise<PageControlRunResult> => {
+    if (!orgId) return { error: 'The organisation is not read yet.' };
+    try {
+      const answer = await resendOrganizationInvitation(orgId, invitation.id);
+      success('Invitation sent again', answer.invitation.email);
+      setSent(answer);
+      setInviteMode('email');
+      setInviteOpen(true);
+    } catch (err) {
+      showError('Could not send the invitation', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The invitation was not sent.' };
+    } finally {
+      refreshInvitations();
+    }
+  };
+
+  const handleCancelInvite = async (invitation: OrgInvitationItem): Promise<PageControlRunResult> => {
+    if (!orgId) return { error: 'The organisation is not read yet.' };
+    const ok = await confirm({
+      title: <BilingualText en={`Cancel the invitation to ${invitation.email}?`} el={`Ακύρωση της πρόσκλησης προς ${invitation.email};`} />,
+      description: <BilingualText en="The link stops working. You can invite the same address again." el="Ο σύνδεσμος παύει να λειτουργεί. Μπορείτε να προσκαλέσετε ξανά την ίδια διεύθυνση." />,
+      confirmLabel: <BilingualText en="Cancel invitation" el="Ακύρωση πρόσκλησης" compact />,
+    });
+    if (!ok) return CANCELLED;
+    try {
+      await cancelOrganizationInvitation(orgId, invitation.id);
+      success('Invitation cancelled', invitation.email);
+    } catch (err) {
+      showError('Could not cancel the invitation', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The invitation is still open.' };
+    } finally {
+      refreshInvitations();
     }
   };
 
@@ -385,7 +477,9 @@ export default function OrgAdminPage() {
       { value: 'active', en: 'Active', el: 'Ενεργά' },
       { value: 'suspended', en: 'Suspended', el: 'Σε αναστολή' },
     ], statusFilter, setStatusFilter),
-    { id: 'invite_member', labelEn: 'Open the add member form', labelEl: 'Άνοιγμα φόρμας προσθήκης μέλους', writes: false, run: () => setInviteOpen(true) },
+    { id: 'invite_member', labelEn: 'Open the invite form (by email)', labelEl: 'Άνοιγμα φόρμας πρόσκλησης (με email)', writes: false, run: () => openInvite('email') },
+    { id: 'resend_invitation', labelEn: 'Send an invitation again', labelEl: 'Νέα αποστολή πρόσκλησης', writes: true, options: rowOptions(invitations.filter((i) => i.status === 'pending' || i.status === 'expired'), (i) => i.id, (i) => i.email), run: (v) => { const i = invitations.find((x) => x.id === v); return i ? handleResend(i) : undefined; } },
+    { id: 'cancel_invitation', labelEn: 'Cancel an invitation', labelEl: 'Ακύρωση πρόσκλησης', writes: true, options: rowOptions(waitingInvites, (i) => i.id, (i) => i.email), run: (v) => { const i = invitations.find((x) => x.id === v); return i ? handleCancelInvite(i) : undefined; } },
     { id: 'export_members', labelEn: 'Export members as CSV', labelEl: 'Εξαγωγή μελών σε CSV', writes: false, unavailableEn: filteredMembers.length ? undefined : 'There is nothing to export.', unavailableEl: filteredMembers.length ? undefined : 'Δεν υπάρχει κάτι για εξαγωγή.', run: exportCsv },
     // organization.service updateMember writes only what it is sent (`role`
     // or `isActive`), so each of these is undone by the command that sets the
@@ -465,14 +559,8 @@ export default function OrgAdminPage() {
       labelEl: 'Εργαλεία μελών',
       content: (
         <div className="space-y-0.5">
-          <button
-            type="button"
-            onClick={() => setInviteOpen(true)}
-            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
-          >
-            <UserPlus className="icon-sm shrink-0" aria-hidden="true" />
-            <span className="min-w-0 flex-1"><BilingualText en="Add member" el="Προσθήκη μέλους" compact wrap /></span>
-          </button>
+          {/* "Add member" moved to the page header as "Invite member", where
+              every tab sees it (docs §100). */}
           <button
             type="button"
             onClick={exportCsv}
@@ -554,6 +642,10 @@ export default function OrgAdminPage() {
               <BilingualText en="Settings" el="Ρυθμίσεις" compact />
             </Link>
           </Button>
+          <Button onClick={() => openInvite('email')}>
+            <UserPlus className="icon-sm mr-2" aria-hidden="true" />
+            <BilingualText en="Invite member" el="Πρόσκληση μέλους" compact />
+          </Button>
         </div>
 
         {/* Tabs */}
@@ -566,6 +658,7 @@ export default function OrgAdminPage() {
             <TabsTrigger value="invites" className="gap-2">
               <Mail className="icon-sm" aria-hidden="true" />
               <BilingualText en="Invites" el="Προσκλήσεις" compact />
+              {waitingInvites.length > 0 ? <span className="tabular-nums text-muted-foreground">{waitingInvites.length}</span> : null}
             </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-2">
               <BarChart3 className="icon-sm" aria-hidden="true" />
@@ -706,21 +799,60 @@ export default function OrgAdminPage() {
           <TabsContent value="invites">
             <Card>
               <CardHeader>
-                <CardTitle><BilingualText en="Pending Invitations" el="Εκκρεμείς προσκλήσεις" compact /></CardTitle>
+                <CardTitle><BilingualText en="Invitations" el="Προσκλήσεις" compact /></CardTitle>
+                <CardDescription>
+                  <BilingualText
+                    en="Each one is an email with a link, good for the address it was sent to. Open ones first."
+                    el="Καθεμία είναι email με σύνδεσμο, που ισχύει για τη διεύθυνση στην οποία στάλθηκε. Πρώτα οι ανοιχτές."
+                    wrap
+                  />
+                </CardDescription>
               </CardHeader>
-              {/* An empty line on the card's axis, not a centred block whose
-                  sentence (on the body step) was as loud as the card's title. */}
-              {/* Nothing waits as an invitation: members are added directly by
-                  user id. The tab's own "Invite Members" opened the same form
-                  as the rail's tool, so it points there instead (docs §96). */}
-              <CardContent className="space-y-3">
-                <EmptyLine
-                  en="No invitation waits here: members are added directly, by their user ID."
-                  el="Καμία πρόσκληση δεν περιμένει εδώ: τα μέλη προστίθενται απευθείας, με το αναγνωριστικό χρήστη τους."
-                />
-                <Button size="sm" variant="outline" onClick={() => openRailSection('tools')}>
-                  <BilingualText en="Open member tools" el="Άνοιγμα εργαλείων μελών" compact />
-                </Button>
+              <CardContent className="card-rows">
+                {invitationsFailed ? (
+                  <FailedLine en="The invitations could not be read just now." el="Οι προσκλήσεις δεν διαβάστηκαν αυτή τη στιγμή." busy={invitationsQuery.isFetching} onRetry={() => void invitationsQuery.refetch()} />
+                ) : !invitationsQuery.data ? (
+                  [0, 1].map((i) => <Skeleton key={i} className="h-12" />)
+                ) : invitations.length === 0 ? (
+                  <EmptyLine en="No invitation yet. Invite someone with Invite member, above." el="Καμία πρόσκληση ακόμη. Προσκαλέστε κάποιον με την Πρόσκληση μέλους, επάνω." />
+                ) : (
+                  invitations.map((inv) => {
+                    const days = calendarDaysUntil(inv.expiresAt);
+                    const role = ORG_INVITE_ROLE_COPY[inv.role as keyof typeof ORG_INVITE_ROLE_COPY] ?? { en: inv.role, el: inv.role };
+                    const open = inv.status === 'pending' || inv.status === 'expired';
+                    return (
+                      <div key={inv.id} className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-foreground">{inv.email}</p>
+                          <p className="text-xs text-muted-foreground">
+                            <BilingualText en={role.en} el={role.el} compact />
+                            {' · '}
+                            {inv.status === 'pending' ? (
+                              <BilingualText en={days != null && days <= 0 ? 'Expires today' : `Expires in ${days} days`} el={days != null && days <= 0 ? 'Λήγει σήμερα' : `Λήγει σε ${days} ημέρες`} compact />
+                            ) : (
+                              <StatusText value={inv.status} />
+                            )}
+                            {' · '}
+                            <BilingualText en="sent" el="στάλθηκε" compact /> <RelativeTime date={inv.sentAt} format={formatRelativeTime} />
+                            {inv.invitedByName ? <> · <BilingualText en={`by ${inv.invitedByName}`} el={`από ${inv.invitedByName}`} compact /></> : null}
+                          </p>
+                        </div>
+                        {open ? (
+                          <div className="flex shrink-0 gap-2">
+                            <Button size="sm" variant="outline" onClick={() => void handleResend(inv)} aria-label={bilingualAria(`Send the invitation to ${inv.email} again`, `Νέα αποστολή της πρόσκλησης προς ${inv.email}`)}>
+                              <BilingualText en="Resend" el="Νέα αποστολή" compact />
+                            </Button>
+                            {inv.status === 'pending' ? (
+                              <Button size="sm" variant="ghost" onClick={() => void handleCancelInvite(inv)} aria-label={bilingualAria(`Cancel the invitation to ${inv.email}`, `Ακύρωση της πρόσκλησης προς ${inv.email}`)}>
+                                <BilingualText en="Cancel" el="Ακύρωση" compact />
+                              </Button>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -793,26 +925,95 @@ export default function OrgAdminPage() {
         </Tabs>
       </div>
 
-      {/* Invite member: the endpoint adds by user id - there is no
-          invite-by-email flow for organisations yet. */}
-      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
-        <DialogContent className="max-w-sm">
+      {/* Invite member (docs §100): by email, the default - an email with a
+          link that works only for that address - or by user id, the older
+          way, which adds at once. */}
+      <Dialog open={inviteOpen} onOpenChange={(o) => { setInviteOpen(o); if (!o) setSent(null); }}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle><BilingualText en="Add member" el="Προσθήκη μέλους" compact /></DialogTitle>
-            {/* Said, not hidden: nothing is emailed, the person is added. */}
-            <DialogDescription><BilingualText en="Add an existing user to the organisation by their user ID. Nothing is emailed; they are added at once." el="Προσθέστε υπάρχοντα χρήστη στον οργανισμό με το αναγνωριστικό του. Δεν στέλνεται email· προστίθεται αμέσως." wrap /></DialogDescription>
+            <DialogTitle><BilingualText en="Invite member" el="Πρόσκληση μέλους" compact /></DialogTitle>
+            <DialogDescription>
+              {inviteMode === 'email'
+                ? <BilingualText en="They get an email with a link; they join once they accept, signed in with that address." el="Λαμβάνουν email με σύνδεσμο· γίνονται μέλη όταν αποδεχτούν, συνδεδεμένοι με εκείνη τη διεύθυνση." wrap />
+                : <BilingualText en="Add an existing user by their user ID. Nothing is emailed; they are added at once." el="Προσθέστε υπάρχοντα χρήστη με το αναγνωριστικό του. Δεν στέλνεται email· προστίθεται αμέσως." wrap />}
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="invite-user-id" className="block text-sm font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="User ID" el="Αναγνωριστικό χρήστη" compact /></label>
-              <Input
-                id="invite-user-id"
-                value={inviteUserId}
-                onChange={(e) => setInviteUserId(e.target.value)}
-                placeholder={sayOne("The member's user ID", "Το αναγνωριστικό χρήστη του μέλους")}
-                className="mt-2"
-              />
+          {sent ? (
+            <div className="space-y-4">
+              <p role="status" className="text-sm text-foreground">
+                <BilingualText en={`Invitation sent to ${sent.invitation.email}.`} el={`Η πρόσκληση στάλθηκε στο ${sent.invitation.email}.`} wrap />
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {sent.emailStatus === 'queued' || sent.emailStatus === 'sent'
+                  ? <BilingualText en="We emailed them the link below. It works only for that address." el="Τους στείλαμε με email τον παρακάτω σύνδεσμο. Λειτουργεί μόνο για εκείνη τη διεύθυνση." wrap />
+                  : sent.emailStatus === 'demo'
+                    ? <BilingualText en="In the demo nothing is emailed; this is the link they would get." el="Στο demo δεν στέλνεται email· αυτός είναι ο σύνδεσμος που θα λάμβαναν." wrap />
+                    : <BilingualText en="Email delivery is not working on this server just now, so send them this link yourself. It works only for that address." el="Η αποστολή email δεν λειτουργεί σε αυτόν τον διακομιστή αυτή τη στιγμή, οπότε στείλτε τους εσείς τον σύνδεσμο. Λειτουργεί μόνο για εκείνη τη διεύθυνση." wrap />}
+                {sent.notified ? <> <BilingualText en="They have an account, so they were notified too." el="Έχουν λογαριασμό, οπότε ειδοποιήθηκαν κιόλας." wrap /></> : null}
+              </p>
+              <div className="flex items-center gap-2">
+                <Input readOnly value={sent.link} aria-label={bilingualAria('Invitation link', 'Σύνδεσμος πρόσκλησης')} onFocus={(e) => e.currentTarget.select()} />
+                <Button
+                  variant="outline"
+                  onClick={() => void navigator.clipboard?.writeText(sent.link).then(() => success('Link copied'), () => showError('Could not copy the link', 'Select it and copy it by hand.'))}
+                >
+                  <BilingualText en="Copy" el="Αντιγραφή" compact />
+                </Button>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setSent(null)}>
+                  <BilingualText en="Invite another" el="Νέα πρόσκληση" compact />
+                </Button>
+                <Button onClick={() => { setInviteOpen(false); setSent(null); }}>
+                  <BilingualText en="Done" el="Τέλος" compact />
+                </Button>
+              </div>
             </div>
+          ) : (
+          <div className="space-y-4">
+            <div role="radiogroup" aria-label={bilingualAria('How to invite', 'Τρόπος πρόσκλησης')} onKeyDown={(e) => onRadioGroupKeyDown(e)} className="inline-flex rounded-md border border-border p-0.5">
+              {([
+                { value: 'email', en: 'By email', el: 'Με email' },
+                { value: 'userId', en: 'By user ID', el: 'Με αναγνωριστικό χρήστη' },
+              ] as const).map((m) => (
+                <button
+                  key={m.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={inviteMode === m.value}
+                  tabIndex={radioTabIndex(inviteMode === m.value, 0, true)}
+                  onClick={() => setInviteMode(m.value)}
+                  className={cn('rounded-md px-3 py-1 text-sm', inviteMode === m.value ? 'bg-primary/10 font-medium text-primary-accessible' : 'text-muted-foreground hover:bg-muted/70')}
+                >
+                  <BilingualText en={m.en} el={m.el} compact />
+                </button>
+              ))}
+            </div>
+            {inviteMode === 'email' ? (
+              <div>
+                <label htmlFor="invite-email" className="block text-sm font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Email" el="Email" compact /></label>
+                <Input
+                  id="invite-email"
+                  type="email"
+                  autoComplete="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="name@company.com"
+                  className="mt-2"
+                />
+              </div>
+            ) : (
+              <div>
+                <label htmlFor="invite-user-id" className="block text-sm font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="User ID" el="Αναγνωριστικό χρήστη" compact /></label>
+                <Input
+                  id="invite-user-id"
+                  value={inviteUserId}
+                  onChange={(e) => setInviteUserId(e.target.value)}
+                  placeholder={sayOne("The member's user ID", "Το αναγνωριστικό χρήστη του μέλους")}
+                  className="mt-2"
+                />
+              </div>
+            )}
             <div>
               <label htmlFor="invite-role" className="block text-sm font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></label>
               <Select value={inviteRole} onValueChange={setInviteRole}>
@@ -820,18 +1021,29 @@ export default function OrgAdminPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="member"><BilingualText en="Member" el="Μέλος" compact /></SelectItem>
-                  <SelectItem value="admin"><BilingualText en="Admin" el="Διαχειριστής" compact /></SelectItem>
-                  <SelectItem value="program_manager"><BilingualText en="Program manager" el="Υπεύθυνος προγράμματος" compact /></SelectItem>
-                  <SelectItem value="mentor"><BilingualText en="Mentor" el="Μέντορας" compact /></SelectItem>
-                  <SelectItem value="reviewer"><BilingualText en="Reviewer" el="Αξιολογητής" compact /></SelectItem>
+                  {[...ORG_INVITE_ROLES].reverse().map((r) => (
+                    <SelectItem key={r} value={r}><BilingualText en={ORG_INVITE_ROLE_COPY[r].en} el={ORG_INVITE_ROLE_COPY[r].el} compact /></SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            <Button className="w-full" disabled={!inviteUserId.trim() || inviting} onClick={() => void handleInvite()}>
-              {inviting ? <BilingualText en="Adding…" el="Προσθήκη…" compact /> : <BilingualText en="Add member" el="Προσθήκη μέλους" compact />}
-            </Button>
+            {inviteMode === 'email' ? (
+              <div>
+                <label htmlFor="invite-note" className="block text-sm font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Note (optional)" el="Σημείωμα (προαιρετικό)" compact /></label>
+                <Textarea id="invite-note" rows={2} maxLength={500} value={inviteNote} onChange={(e) => setInviteNote(e.target.value)} className="mt-2" />
+              </div>
+            ) : null}
+            {inviteMode === 'email' ? (
+              <Button className="w-full" disabled={!inviteEmail.trim() || inviting} onClick={() => void handleEmailInvite()}>
+                {inviting ? <BilingualText en="Sending…" el="Αποστολή…" compact /> : <BilingualText en="Send invitation" el="Αποστολή πρόσκλησης" compact />}
+              </Button>
+            ) : (
+              <Button className="w-full" disabled={!inviteUserId.trim() || inviting} onClick={() => void handleInvite()}>
+                {inviting ? <BilingualText en="Adding…" el="Προσθήκη…" compact /> : <BilingualText en="Add member" el="Προσθήκη μέλους" compact />}
+              </Button>
+            )}
           </div>
+          )}
         </DialogContent>
       </Dialog>
     </AppShell>

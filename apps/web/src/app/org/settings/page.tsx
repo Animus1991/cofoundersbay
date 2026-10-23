@@ -422,10 +422,9 @@ export default function OrgSettingsPage() {
                       ? <BilingualText en={`${membersQuery.data.length} team member${membersQuery.data.length === 1 ? '' : 's'}`} el={`${membersQuery.data.length} ${membersQuery.data.length === 1 ? 'μέλος' : 'μέλη'} ομάδας`} compact />
                       : null}
                   </p>
-                  {/* Members are added by user id on the admin page; ?add=1
-                      opens its form. Nothing sends an invitation. */}
+                  {/* The admin page's invite form, by email (docs §100). */}
                   <Button asChild>
-                    <Link href={slug ? `/org/${slug}/admin?add=1` : '/org/dashboard'}><BilingualText en="Add member" el="Προσθήκη μέλους" compact /></Link>
+                    <Link href={slug ? `/org/${slug}/admin?invite=1` : '/org/dashboard'}><BilingualText en="Invite member" el="Πρόσκληση μέλους" compact /></Link>
                   </Button>
                 </div>
                 {/* Rows of the section card: the person, their address under
