@@ -4,7 +4,6 @@ import { useState } from 'react';
 import {
   Star,
   Search,
-  Filter,
   ThumbsUp,
   MessageSquare,
 } from 'lucide-react';
@@ -31,6 +30,9 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { ASK } from '@/lib/page-questions';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { FailedLine } from '@/components/dashboard/SectionCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type Review = {
   id: string;
@@ -125,9 +127,9 @@ function ReviewCard({ review }: { review: Review }) {
 function toReview(row: ServiceInquiryItem): Review {
   return {
     id: row.id,
-    clientName: row.client?.displayName ?? 'A client',
+    clientName: row.client?.displayName ?? '\u2014',
     clientAvatar: row.client?.avatarUrl ?? undefined,
-    service: row.offer.title,
+    service: row.offer?.title ?? '\u2014',
     rating: row.rating ?? 0,
     comment: row.reviewComment ?? '',
     date: row.resolvedAt ?? row.createdAt,
@@ -187,7 +189,7 @@ export default function ProviderReviewsPage() {
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: qk('provider', 'reviews'),
     queryFn: () => listServiceInquiries({ side: 'provider', kind: 'reviews', limit: 100 }),
     staleTime: 60_000,
@@ -223,13 +225,43 @@ export default function ProviderReviewsPage() {
     },
   ]);
 
+  const shell = { title: 'Reviews', titleEl: 'Αξιολογήσεις', description: 'See what clients are saying about your services', descriptionEl: 'Δείτε τι λένε οι πελάτες για τις υπηρεσίες σας' };
+  const isSample = live.length === 0 && reviews.length > 0;
+
+  // Unread, the page said "No client reviews yet" (docs §95).
+  if (isError && !data && !showDemoData) {
+    return (
+      <AppShell {...shell}>
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <FailedLine en="Your reviews could not be read just now." el="Οι αξιολογήσεις σας δεν διαβάστηκαν αυτή τη στιγμή." busy={isFetching} onRetry={() => void refetch()} />
+            </CardContent>
+          </Card>
+        </div>
+      </AppShell>
+    );
+  }
+
+  // While reading, the average of nothing printed "NaN".
+  if (isLoading && reviews.length === 0) {
+    return (
+      <AppShell {...shell}>
+        <div className="space-y-6" aria-busy="true">
+          <Skeleton className="h-36 w-full" />
+          <Skeleton className="h-28 w-full" />
+        </div>
+      </AppShell>
+    );
+  }
+
   if (!isLoading && !showDemoData && reviews.length === 0) {
     return (
-      <AppShell title="Reviews" titleEl="Αξιολογήσεις" description="See what clients are saying about your services" descriptionEl="Δείτε τι λένε οι πελάτες για τις υπηρεσίες σας">
+      <AppShell {...shell}>
         <EmptyState
           illustration="default"
-          title="No client reviews yet"
-          description="Reviews will appear here once clients rate your completed service engagements."
+          title={<BilingualText en="No client reviews yet" el="Δεν υπάρχουν ακόμη αξιολογήσεις πελατών" wrap />}
+          description={<BilingualText en="When you mark a project complete, its client can rate the work; each review is listed here." el="Όταν σημειώνετε ένα έργο ως ολοκληρωμένο, ο πελάτης του μπορεί να αξιολογήσει τη δουλειά· κάθε αξιολόγηση εμφανίζεται εδώ." wrap />}
           askAiPrompt={ASK.providerReviewsEmpty}
         />
       </AppShell>
@@ -237,8 +269,15 @@ export default function ProviderReviewsPage() {
   }
 
   return (
-    <AppShell title="Reviews" titleEl="Αξιολογήσεις" description="See what clients are saying about your services" descriptionEl="Δείτε τι λένε οι πελάτες για τις υπηρεσίες σας">
+    <AppShell {...shell}>
       <div className="space-y-6">
+        {isSample ? (
+          <SampleDataNotice
+            surface="Reviews"
+            detail="These reviews are illustrative; a client who rates a completed project replaces them."
+            askAiPrompt={ASK.providerReviewsEmpty}
+          />
+        ) : null}
 
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -278,31 +317,26 @@ export default function ProviderReviewsPage() {
               </div>
             </CardContent>
           </Card>
+          {/* "Total Reviews 3" and "5-star reviews 2" said the count and the
+              five-star bar beside them again; "Helpful Votes 0" has no field
+              behind it outside the sample (docs §95). */}
           <Card>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground"><BilingualText en="Total Reviews" el="Σύνολο αξιολογήσεων" compact /></p>
-                  <p className="page-stat text-xl font-bold">{reviews.length}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground"><BilingualText en="5-star reviews" el="Αξιολογήσεις 5 αστέρων" compact wrap /></p>
-                  <p className="page-stat text-xl font-bold text-status-warning">
-                    {reviews.filter((r) => r.rating === 5).length}
-                  </p>
-                </div>
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en="Response Rate" el="Ποσοστό απαντήσεων" compact /></p>
                   <p className="page-stat text-xl font-bold">
                     {Math.round((reviews.filter((r) => r.response).length / reviews.length) * 100)}%
                   </p>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground"><BilingualText en="Helpful Votes" el="Ψήφοι «χρήσιμο»" compact /></p>
-                  <p className="page-stat text-xl font-bold">
-                    {reviews.reduce((acc, r) => acc + r.helpful, 0)}
-                  </p>
-                </div>
+                {isSample ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground"><BilingualText en="Helpful Votes" el="Ψήφοι «χρήσιμο»" compact /></p>
+                    <p className="page-stat text-xl font-bold">
+                      {reviews.reduce((acc, r) => acc + r.helpful, 0)}
+                    </p>
+                  </div>
+                ) : null}
               </div>
             </CardContent>
           </Card>
@@ -331,8 +365,11 @@ export default function ProviderReviewsPage() {
                 <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="card-title text-foreground"><BilingualText en="No reviews found" el="Δεν βρέθηκαν αξιολογήσεις" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  <BilingualText en="Try adjusting your search" el="Δοκιμάστε άλλη αναζήτηση" compact />
+                  <BilingualText en="No review matches the search." el="Καμία αξιολόγηση δεν ταιριάζει με την αναζήτηση." wrap />
                 </p>
+                <Button variant="outline" size="sm" className="mt-4" onClick={() => setSearch('')}>
+                  <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
+                </Button>
               </CardContent>
             </Card>
           )}

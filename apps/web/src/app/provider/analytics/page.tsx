@@ -1,10 +1,19 @@
 'use client';
 
-import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  TrendingUp, TrendingDown, Eye, MessageCircle, Star, Users, DollarSign, Clock, ArrowUp, ArrowDown, Minus, RefreshCw, Download,
+  Eye,
+  MessageCircle,
+  Star,
+  Users,
+  DollarSign,
+  Clock,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+  RefreshCw,
+  Download,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -12,7 +21,6 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { downloadCsv } from '@/lib/csv';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RailStats } from '@/components/layout/RailParts';
@@ -27,6 +35,29 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 import { ASK } from '@/lib/page-questions';
+import { FailedLine } from '@/components/dashboard/SectionCard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+
+/** Metric names and funnel stages in Greek (the cards and stages were English only). */
+const LABEL_EL: Record<string, string> = {
+  'Profile Views': 'Προβολές προφίλ',
+  Inquiries: 'Ερωτήματα',
+  'Active Projects': 'Ενεργά έργα',
+  'Avg. Rating': 'Μέση βαθμολογία',
+  Revenue: 'Έσοδα',
+  'Response Rate': 'Ποσοστό απόκρισης',
+  'New Connections': 'Νέες συνδέσεις',
+  'Messages Sent': 'Μηνύματα που στάλθηκαν',
+  'Search Appearances': 'Εμφανίσεις σε αναζητήσεις',
+  'Engagement Rate': 'Ποσοστό αλληλεπίδρασης',
+  'Avg Response': 'Μέσος χρόνος απόκρισης',
+  'Inquiry Sent': 'Στάλθηκε ερώτημα',
+  'Response Given': 'Δόθηκε απάντηση',
+  'Project Started': 'Ξεκίνησε έργο',
+  'Project Completed': 'Ολοκληρώθηκε έργο',
+};
+const DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS_EL = ['Κυρ', 'Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ'];
 
 // ── Mock analytics data ───────────────────────────────────────────────────────
 
@@ -123,7 +154,7 @@ function MetricCard({
     <Card>
       <CardContent>
         <div className="flex items-start justify-between mb-2">
-          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="text-xs text-muted-foreground"><BilingualText en={label} el={LABEL_EL[label]} compact /></p>
           <div className="rounded-md bg-primary/10 p-1.5">
             <Icon className="icon-sm text-muted-foreground" />
           </div>
@@ -133,11 +164,15 @@ function MetricCard({
           'flex items-center gap-1 mt-1 text-xs',
           trend === 'up' ? 'text-status-success' : trend === 'down' ? 'text-status-danger' : 'text-muted-foreground'
         )}>
-          <TrendIcon trend={trend} />
+          {change == null ? null : <TrendIcon trend={trend} />}
           <span>
-            {trend !== 'neutral' && change != null
-              ? <BilingualText en={`${Math.abs(change)}% vs last period`} el={`${Math.abs(change)}% έναντι προηγούμενης περιόδου`} compact />
-              : <BilingualText en="vs last period" el="έναντι προηγούμενης περιόδου" compact />}
+            {/* "vs last period" with no figure said nothing; with no change
+                recorded the line is left out. */}
+            {change == null
+              ? null
+              : trend !== 'neutral'
+                ? <BilingualText en={`${Math.abs(change)}% vs last period`} el={`${Math.abs(change)}% έναντι προηγούμενης περιόδου`} compact />
+                : <BilingualText en="No change vs last period" el="Καμία αλλαγή έναντι προηγούμενης περιόδου" compact />}
           </span>
         </div>
       </CardContent>
@@ -146,6 +181,7 @@ function MetricCard({
 }
 
 export default function ProviderAnalyticsPage() {
+  const sayOne = useBilingualString();
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
   const [period, setPeriod] = useState(DEFAULT_PERIOD);
@@ -161,6 +197,9 @@ export default function ProviderAnalyticsPage() {
     retry: 0,
   });
   const live = overviewQuery.data ?? null;
+  // Unread, the page said "0 profile views" and "No profile views recorded
+  // in this period" (docs §95).
+  const failed = !showDemoData && overviewQuery.isError && !overviewQuery.data;
 
   const overview = showDemoData ? MOCK_OVERVIEW : null;
   const conversions = showDemoData ? MOCK_CONVERSIONS : [];
@@ -172,7 +211,7 @@ export default function ProviderAnalyticsPage() {
   const weeklyViews: { day: string; views: number; inquiries: number }[] = showDemoData
     ? MOCK_WEEKLY_VIEWS
     : (live?.profileViews ?? []).map((d) => ({
-        day: new Date(d.date).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short' }),
+        day: DAYS_EN[new Date(d.date).getUTCDay()],
         views: d.views,
         inquiries: 0,
       }));
@@ -370,6 +409,13 @@ export default function ProviderAnalyticsPage() {
 
         {/* The period lives in the rail; the column still says which one is
             on, because numbers with no stated window read as all-time. */}
+        {failed ? (
+          <Card>
+            <CardContent className="pt-6">
+              <FailedLine en="Your analytics could not be read just now." el="Τα στατιστικά σας δεν διαβάστηκαν αυτή τη στιγμή." busy={overviewQuery.isFetching} onRetry={() => void overviewQuery.refetch()} />
+            </CardContent>
+          </Card>
+        ) : (
         <p className="text-sm text-muted-foreground">
           <BilingualText
             en={`${activePeriod.en} · ${totalViews.toLocaleString('en-GB')} profile views`}
@@ -378,6 +424,7 @@ export default function ProviderAnalyticsPage() {
             wrap
           />
         </p>
+        )}
 
         {/* Metric Grid */}
         {overview && (
@@ -405,6 +452,7 @@ export default function ProviderAnalyticsPage() {
           </div>
         )}
 
+        {failed ? null : (
         <Tabs defaultValue="overview">
           <TabsList>
             <TabsTrigger value="overview"><BilingualText en="Traffic" el="Κίνηση" compact /></TabsTrigger>
@@ -417,7 +465,11 @@ export default function ProviderAnalyticsPage() {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <Card className="lg:col-span-2">
                 <CardHeader className="pb-3">
-                  <CardTitle><BilingualText en="Daily Views & Inquiries" el="Ημερήσιες προβολές & ερωτήματα" compact /></CardTitle>
+                  {/* Live rows carry views only: "& Inquiries" over a chart
+                      with no inquiries in it. */}
+                  <CardTitle>{showDemoData
+                    ? <BilingualText en="Daily Views & Inquiries" el="Ημερήσιες προβολές & ερωτήματα" compact />
+                    : <BilingualText en="Daily profile views" el="Ημερήσιες προβολές προφίλ" compact />}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {weeklyViews.length === 0 && (
@@ -440,7 +492,7 @@ export default function ProviderAnalyticsPage() {
                             style={{ height: `${(d.inquiries / maxInquiries) * 18}%` }}
                           />
                         </div>
-                        <span className="text-xs text-muted-foreground">{d.day}</span>
+                        <span className="text-xs text-muted-foreground">{sayOne(d.day, DAYS_EL[DAYS_EN.indexOf(d.day)] ?? d.day)}</span>
                       </div>
                     ))}
                   </div>
@@ -495,7 +547,7 @@ export default function ProviderAnalyticsPage() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground w-4">{i + 1}.</span>
-                        <span className="font-medium"><StatusText value={stage.stage} /></span>
+                        <span className="font-medium"><BilingualText en={stage.stage} el={LABEL_EL[stage.stage]} compact /></span>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-muted-foreground text-xs">{stage.count.toLocaleString('en-GB')}</span>
@@ -512,7 +564,7 @@ export default function ProviderAnalyticsPage() {
                 ))}
                 {conversions.length > 0 && (
                   <p className="text-xs text-muted-foreground pt-2">
-                    Overall conversion rate: <span className="font-semibold text-foreground">4.1%</span> — above platform average of 2.8%
+                    <BilingualText en="Overall conversion rate: 4.1%, above the platform average of 2.8%." el="Συνολικό ποσοστό μετατροπής: 4,1%, πάνω από τον μέσο όρο της πλατφόρμας (2,8%)." wrap />
                   </p>
                 )}
               </CardContent>
@@ -560,6 +612,7 @@ export default function ProviderAnalyticsPage() {
             </Card>
           </TabsContent>
         </Tabs>
+        )}
       </div>
     </AppShell>
   );

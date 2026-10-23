@@ -19,7 +19,8 @@ import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
+import { EmptyLine, FailedLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
+import { bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -170,25 +171,25 @@ export default function ProviderDashboard() {
     staleTime: 60_000,
     retry: 0,
   });
-  const { data: inquiryPage, isLoading: inquiriesLoading } = useQuery({
+  const { data: inquiryPage, isLoading: inquiriesLoading, isError: inquiriesError, isFetching: inquiriesFetching, refetch: refetchInquiries } = useQuery({
     queryKey: qk('provider', 'inquiries', 'dashboard'),
     queryFn: () => listServiceInquiries({ side: 'provider', limit: 20 }),
     staleTime: 30_000,
     retry: 0,
   });
-  const { data: projectPage, isLoading: projectsLoading } = useQuery({
+  const { data: projectPage, isLoading: projectsLoading, isError: projectsError, isFetching: projectsFetching, refetch: refetchProjects } = useQuery({
     queryKey: qk('provider', 'projects', 'dashboard'),
     queryFn: () => listServiceInquiries({ side: 'provider', kind: 'projects', limit: 50 }),
     staleTime: 30_000,
     retry: 0,
   });
-  const { data: reviewPage, isLoading: reviewsLoading } = useQuery({
+  const { data: reviewPage, isLoading: reviewsLoading, isError: reviewsError, isFetching: reviewsFetching, refetch: refetchReviews } = useQuery({
     queryKey: qk('provider', 'reviews', 'dashboard'),
     queryFn: () => listServiceInquiries({ side: 'provider', kind: 'reviews', limit: 3 }),
     staleTime: 60_000,
     retry: 0,
   });
-  const { data: servicePage, isLoading: servicesLoading } = useQuery({
+  const { data: servicePage, isLoading: servicesLoading, isError: servicesError, isFetching: servicesFetching, refetch: refetchServices } = useQuery({
     queryKey: qk('provider', 'services'),
     queryFn: () => listMyMarketplaceServices({ limit: 50 }),
     staleTime: 60_000,
@@ -198,6 +199,16 @@ export default function ProviderDashboard() {
   const liveInquiries = useMemo(() => (inquiryPage?.inquiries ?? []).map(toInquiry), [inquiryPage]);
   const liveProjects = useMemo(() => (projectPage?.inquiries ?? []).map(toProject), [projectPage]);
   const liveReviews = useMemo(() => (reviewPage?.inquiries ?? []).map(toReview), [reviewPage]);
+  /*
+   * Unread, the home said "0 in all", "Founders who ask about a service
+   * appear here", "An accepted inquiry becomes a project" and "Counted over 0
+   * inquiries" about a book nobody read. Each section says what was not read,
+   * each figure waits with "—" (docs §95).
+   */
+  const inquiriesFailed = inquiriesError && !inquiryPage;
+  const projectsFailed = projectsError && !projectPage;
+  const reviewsFailed = reviewsError && !reviewPage;
+  const servicesFailed = servicesError && !servicePage;
   const fallback = <T,>(live: T[], loading: boolean, demo: T[]) => (live.length ? live : loading ? [] : showDemoData ? demo : []);
   const inquiries = fallback(liveInquiries, inquiriesLoading, DEMO_INQUIRIES);
   const projects = fallback(liveProjects, projectsLoading, DEMO_PROJECTS);
@@ -212,6 +223,7 @@ export default function ProviderDashboard() {
   const totalInquiries = counts ? Object.values(counts).reduce((a, b) => a + b, 0) : inquiries.length;
   const answered = counts ? totalInquiries - counts.open : inquiries.filter((i) => i.status !== 'open').length;
   const converted = summary?.projects ?? projects.length;
+  const bookUnread = inquiriesFailed && !counts;
   const responseRate = totalInquiries ? Math.round((answered / totalInquiries) * 100) : null;
   const conversionRate = totalInquiries ? Math.round((converted / totalInquiries) * 100) : null;
   const agreedValue = projects.reduce((sum, p) => sum + (p.agreedPrice ?? 0), 0);
@@ -232,19 +244,11 @@ export default function ProviderDashboard() {
   }
 
   return (
+    // "Manage services" in the header was the "Manage" of "Your services"
+    // below, to the same page (docs §95).
     <AppShell askAi={false}
       description="Inquiries, active projects, services and reviews - in one view."
       descriptionEl="Αιτήματα, ενεργά έργα, υπηρεσίες και αξιολογήσεις — σε μία προβολή."
-      actions={
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/provider/services">
-              <Store className="mr-2 icon-sm" aria-hidden="true" />
-              <BilingualText en="Manage services" el="Διαχείριση υπηρεσιών" compact />
-            </Link>
-          </Button>
-        </div>
-      }
     >
       <div className="space-y-6">
         <HomeAskHero role="provider" name={profile?.profile?.displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
@@ -255,7 +259,8 @@ export default function ProviderDashboard() {
             kickerEn="Waiting on you"
             kickerEl="Σας περιμένει"
             title={waiting[0].service !== EM_DASH ? `${waiting[0].clientName} · ${waiting[0].service}` : waiting[0].clientName}
-            href="/provider/inquiries"
+            // Opens that inquiry, not the top of the list.
+            href={`/provider/inquiries#inquiry-${waiting[0].id}`}
             actionEn="Reply"
             actionEl="Απάντηση"
           />
@@ -267,27 +272,27 @@ export default function ProviderDashboard() {
             icon={MessageSquare}
             label="Open inquiries"
             labelEl="Ανοιχτά αιτήματα"
-            value={summary?.openInquiries ?? waiting.length}
-            caption={`${totalInquiries} in all`}
-            captionEl={`${totalInquiries} συνολικά`}
+            value={summary?.openInquiries ?? (bookUnread ? EM_DASH : waiting.length)}
+            caption={bookUnread ? undefined : `${totalInquiries} in all`}
+            captionEl={bookUnread ? undefined : `${totalInquiries} συνολικά`}
             href="/provider/inquiries"
           />
           <MetricTile
             icon={FolderKanban}
             label="Active projects"
             labelEl="Ενεργά έργα"
-            value={activeProjects.length}
-            caption={agreedValue ? `${eur(agreedValue)} agreed in all` : 'Accepted inquiries'}
-            captionEl={agreedValue ? `${eur(agreedValue)} συμφωνημένα συνολικά` : 'Αποδεκτά αιτήματα'}
+            value={projectsFailed ? EM_DASH : activeProjects.length}
+            caption={projectsFailed ? undefined : agreedValue ? `${eur(agreedValue)} agreed in all` : 'Accepted inquiries'}
+            captionEl={projectsFailed ? undefined : agreedValue ? `${eur(agreedValue)} συμφωνημένα συνολικά` : 'Αποδεκτά αιτήματα'}
             href="/provider/projects"
           />
           <MetricTile
             icon={Store}
             label="Live services"
             labelEl="Ενεργές υπηρεσίες"
-            value={summary?.offers.active ?? services.filter((s) => s.isActive !== false).length}
-            caption={`${summary?.offers.total ?? services.length} listed`}
-            captionEl={`${summary?.offers.total ?? services.length} καταχωρημένες`}
+            value={summary?.offers.active ?? (servicesFailed ? EM_DASH : services.filter((s) => s.isActive !== false).length)}
+            caption={!summary && servicesFailed ? undefined : `${summary?.offers.total ?? services.length} listed`}
+            captionEl={!summary && servicesFailed ? undefined : `${summary?.offers.total ?? services.length} καταχωρημένες`}
             href="/provider/services"
           />
           <MetricTile
@@ -295,8 +300,8 @@ export default function ProviderDashboard() {
             label="Rating"
             labelEl="Βαθμολογία"
             value={avgRating == null ? EM_DASH : avgRating.toFixed(1)}
-            caption={reviewCount ? `From ${reviewCount} reviews` : 'No reviews yet'}
-            captionEl={reviewCount ? `Από ${reviewCount} αξιολογήσεις` : 'Καμία αξιολόγηση ακόμα'}
+            caption={reviewCount ? `From ${reviewCount} reviews` : !summary && reviewsFailed ? undefined : 'No reviews yet'}
+            captionEl={reviewCount ? `Από ${reviewCount} αξιολογήσεις` : !summary && reviewsFailed ? undefined : 'Καμία αξιολόγηση ακόμα'}
             href="/provider/reviews"
           />
         </div>
@@ -330,11 +335,13 @@ export default function ProviderDashboard() {
                   />
                   <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{inquiry.message}</p>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href="/provider/inquiries"><BilingualText en="Reply" el="Απάντηση" compact /></Link>
+                    <Link href={`/provider/inquiries#inquiry-${inquiry.id}`}><BilingualText en="Reply" el="Απάντηση" compact /></Link>
                   </Button>
                 </div>
               ))}
-              {!inquiriesLoading && waiting.length === 0 && (
+              {inquiriesFailed ? (
+                <FailedLine en="Your inquiries could not be read just now." el="Τα αιτήματά σας δεν διαβάστηκαν αυτή τη στιγμή." busy={inquiriesFetching} onRetry={() => void refetchInquiries()} />
+              ) : !inquiriesLoading && waiting.length === 0 && (
                 <EmptyLine
                   en={inquiries.length ? 'Every inquiry has an answer.' : 'Founders who ask about a service appear here.'}
                   el={inquiries.length ? 'Όλα τα αιτήματα έχουν απάντηση.' : 'Οι ιδρυτές που ρωτούν για μια υπηρεσία εμφανίζονται εδώ.'}
@@ -364,7 +371,9 @@ export default function ProviderDashboard() {
                   aside={<span className="font-semibold tabular-nums text-foreground">{eur(project.agreedPrice, project.currency)}</span>}
                 />
               ))}
-              {!projectsLoading && projects.length === 0 && (
+              {projectsFailed ? (
+                <FailedLine en="Your projects could not be read just now." el="Τα έργα σας δεν διαβάστηκαν αυτή τη στιγμή." busy={projectsFetching} onRetry={() => void refetchProjects()} />
+              ) : !projectsLoading && projects.length === 0 && (
                 <EmptyLine en="An accepted inquiry becomes a project." el="Ένα αποδεκτό αίτημα γίνεται έργο." />
               )}
             </SectionCard>
@@ -393,7 +402,9 @@ export default function ProviderDashboard() {
                   />
                 </Link>
               ))}
-              {!servicesLoading && services.length === 0 && (
+              {servicesFailed ? (
+                <FailedLine en="Your services could not be read just now." el="Οι υπηρεσίες σας δεν διαβάστηκαν αυτή τη στιγμή." busy={servicesFetching} onRetry={() => void refetchServices()} />
+              ) : !servicesLoading && services.length === 0 && (
                 <div>
                   <EmptyLine en="List a service so founders can find and ask about it." el="Καταχωρήστε μια υπηρεσία ώστε οι ιδρυτές να τη βρίσκουν." />
                 </div>
@@ -416,9 +427,12 @@ export default function ProviderDashboard() {
             />
 
             <SectionCard title="Performance" titleEl="Απόδοση" contentClassName="space-y-4">
+              {bookUnread ? (
+                <p className="text-sm text-muted-foreground"><BilingualText en="Counted from your inquiries, which could not be read just now." el="Μετριέται από τα αιτήματά σας, που δεν διαβάστηκαν αυτή τη στιγμή." stacked wrap /></p>
+              ) : (<>
               {[
-                { en: 'Answered', el: 'Απαντημένα', value: responseRate, aria: 'Share of inquiries answered' },
-                { en: 'Became projects', el: 'Έγιναν έργα', value: conversionRate, aria: 'Share of inquiries that became projects' },
+                { en: 'Answered', el: 'Απαντημένα', value: responseRate, aria: 'Share of inquiries answered', ariaEl: 'Μερίδιο αιτημάτων που απαντήθηκαν' },
+                { en: 'Became projects', el: 'Έγιναν έργα', value: conversionRate, aria: 'Share of inquiries that became projects', ariaEl: 'Μερίδιο αιτημάτων που έγιναν έργα' },
               ].map((row) => (
                 <div key={row.en} className="space-y-2">
                   <div className="flex items-baseline justify-between gap-3 text-sm">
@@ -427,7 +441,7 @@ export default function ProviderDashboard() {
                     </span>
                     <span className="font-semibold tabular-nums">{row.value == null ? EM_DASH : `${row.value}%`}</span>
                   </div>
-                  <Progress value={row.value ?? 0} className="h-1.5" aria-label={row.aria} />
+                  <Progress value={row.value ?? 0} className="h-1.5" aria-label={bilingualAria(row.aria, row.ariaEl)} />
                 </div>
               ))}
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -439,6 +453,7 @@ export default function ProviderDashboard() {
                   wrap
                 />
               </p>
+              </>)}
             </SectionCard>
 
             <SectionCard title="Recent reviews" titleEl="Πρόσφατες αξιολογήσεις" icon={Star} action={{ href: '/provider/reviews', label: 'All', labelEl: 'Όλες' }} contentClassName="card-rows">
@@ -449,7 +464,7 @@ export default function ProviderDashboard() {
                       title={review.client}
                       asideStays
                       aside={(
-                        <span className="flex items-center gap-0.5" role="img" aria-label={`${review.rating} out of 5`}>
+                        <span className="flex items-center gap-0.5" role="img" aria-label={bilingualAria(`${review.rating} out of 5`, `${review.rating} από 5`)}>
                           {Array.from({ length: 5 }).map((_, i) => (
                             <Star key={i} className={cn('h-3.5 w-3.5', i < review.rating ? 'fill-status-warning text-status-warning' : 'text-muted-foreground/40')} aria-hidden="true" />
                           ))}
@@ -460,7 +475,9 @@ export default function ProviderDashboard() {
                   <blockquote className="card-body text-muted-foreground">{review.comment}</blockquote>
                 </figure>
               ))}
-              {!reviewsLoading && reviews.length === 0 && (
+              {reviewsFailed ? (
+                <FailedLine en="Your reviews could not be read just now." el="Οι αξιολογήσεις σας δεν διαβάστηκαν αυτή τη στιγμή." busy={reviewsFetching} onRetry={() => void refetchReviews()} />
+              ) : !reviewsLoading && reviews.length === 0 && (
                 <EmptyLine en="Clients rate the work when a project completes." el="Οι πελάτες αξιολογούν τη δουλειά όταν ολοκληρώνεται ένα έργο." />
               )}
             </SectionCard>

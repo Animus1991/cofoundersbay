@@ -10,7 +10,6 @@ import {
   Edit,
   Trash2,
   Eye,
-  EyeOff,
   Star,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -25,7 +24,7 @@ import {
 import { listMyMarketplaceServices, createMarketplaceService, updateMarketplaceService, deleteMarketplaceService, type MarketplaceServiceItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -49,6 +48,9 @@ import { priceEl } from '@/lib/i18n/units';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
 import { PageFacts } from '@/components/common/PageFacts';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { FailedLine } from '@/components/dashboard/SectionCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type Service = {
   id: string;
@@ -252,7 +254,7 @@ const MOCK_SERVICES: Service[] = [
       name: 'Pitch Deck Design',
       description: 'Professional pitch deck design with compelling visuals and storytelling.',
       category: 'Design',
-      price: '$800',
+      price: '€800',
       priceType: 'fixed',
       deliveryTime: '5 days',
       isActive: false,
@@ -267,7 +269,7 @@ export default function ProviderServicesPage() {
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: qk('provider', 'services'),
     queryFn: () => listMyMarketplaceServices({ limit: 50 }),
     staleTime: 60_000,
@@ -276,6 +278,10 @@ export default function ProviderServicesPage() {
 
   const live = useMemo(() => (data?.services ?? []).map(toPageService), [data]);
   const services = live.length > 0 ? live : isLoading ? [] : showDemoData ? MOCK_SERVICES : [];
+  const isSample = live.length === 0 && services.length > 0;
+  const failed = isError && !data;
+  // Nothing listed and nothing being read: the empty state is the page.
+  const empty = !isLoading && !failed && services.length === 0;
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
   const confirm = useConfirm();
@@ -395,19 +401,46 @@ export default function ProviderServicesPage() {
       titleEl="Οι υπηρεσίες μου"
       description="What founders find and book, with price and whether each listing is live"
       descriptionEl="Τι βρίσκουν και κλείνουν οι ιδρυτές, με τιμή και αν η κάθε καταχώριση είναι ενεργή"
-      actions={<Button size="sm" onClick={openCreate}><Plus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Add Service" el="Προσθήκη υπηρεσίας" compact /></Button>}
+      // The header's Add waits while the empty state offers it.
+      actions={empty || failed ? undefined : <Button size="sm" onClick={openCreate}><Plus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Add Service" el="Προσθήκη υπηρεσίας" compact /></Button>}
     >
       <div className="space-y-6">
-        {!showDemoData && services.length === 0 && (
+        {/*
+          * An empty or unread page drew the empty state, then a search box,
+          * "0 services · 0 live · 0 bookings" and a second "No services
+          * found" card; while reading, it said "No services listed" (docs §95).
+          */}
+        {failed ? (
+          <Card>
+            <CardContent className="pt-6">
+              <FailedLine en="Your services could not be read just now." el="Οι υπηρεσίες σας δεν διαβάστηκαν αυτή τη στιγμή." busy={isFetching} onRetry={() => void refetch()} />
+            </CardContent>
+          </Card>
+        ) : null}
+        {isLoading && services.length === 0 ? (
+          <div className="space-y-3" aria-busy="true">
+            {[0, 1].map((i) => <Skeleton key={i} className="h-28 w-full" />)}
+          </div>
+        ) : null}
+        {empty && (
           <EmptyState
             illustration="default"
-            title="No services listed"
-            description="Create your first service offering to start receiving bookings."
+            title={<BilingualText en="No services listed" el="Δεν έχετε καταχωρίσει υπηρεσίες" wrap />}
+            description={<BilingualText en="List your first service so founders can find it and ask about it." el="Καταχωρήστε την πρώτη σας υπηρεσία ώστε οι ιδρυτές να τη βρίσκουν και να ρωτούν γι' αυτή." wrap />}
             askAiPrompt={ASK.servicesEmpty}
             action={<Button size="sm" onClick={openCreate}><Plus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Add Service" el="Προσθήκη υπηρεσίας" compact /></Button>}
           />
         )}
+        {isSample ? (
+          <SampleDataNotice
+            surface="Services"
+            detail="These listings are illustrative; a service you list replaces them."
+            askAiPrompt={ASK.servicesEmpty}
+          />
+        ) : null}
 
+        {services.length > 0 ? (
+        <>
         {/* Search */}
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
@@ -429,7 +462,9 @@ export default function ProviderServicesPage() {
           facts={[
             { id: 'services', value: services.length, en: services.length === 1 ? 'service' : 'services', el: services.length === 1 ? 'υπηρεσία' : 'υπηρεσίες' },
             { id: 'live', value: services.filter((s) => s.isActive).length, en: 'live', el: 'ενεργές' },
-            { id: 'bookings', value: services.reduce((acc, s) => acc + s.bookings, 0), en: 'bookings', el: 'κρατήσεις' },
+            // Bookings have no source on a real listing: "0 bookings" read as
+            // nobody booking. Said only where there is a count.
+            { id: 'bookings', value: services.reduce((acc, s) => acc + s.bookings, 0) || null, en: 'bookings', el: 'κρατήσεις' },
           ]}
         />
 
@@ -444,18 +479,23 @@ export default function ProviderServicesPage() {
                 <Store className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="card-title text-foreground"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  <BilingualText en="Try adjusting your search or add a new service" el="Δοκιμάστε άλλη αναζήτηση ή προσθέστε νέα υπηρεσία" wrap />
+                  <BilingualText en="No listing matches the search." el="Καμία καταχώριση δεν ταιριάζει με την αναζήτηση." wrap />
                 </p>
+                <Button variant="outline" size="sm" className="mt-4" onClick={() => setSearch('')}>
+                  <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
+                </Button>
               </CardContent>
             </Card>
           )}
         </div>
+        </>
+        ) : null}
       </div>
       <Dialog open={editing !== null || creating} onOpenChange={(o) => { if (!o) { setEditing(null); setCreating(false); } }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{creating ? 'New listing' : 'Edit listing'}</DialogTitle>
-            <DialogDescription>{creating ? 'Published to the services marketplace.' : 'Saved to your marketplace listing.'}</DialogDescription>
+            <DialogTitle>{creating ? <BilingualText en="New listing" el="Νέα καταχώριση" compact /> : <BilingualText en="Edit listing" el="Επεξεργασία καταχώρισης" compact />}</DialogTitle>
+            <DialogDescription>{creating ? <BilingualText en="Published to the services marketplace." el="Δημοσιεύεται στον κατάλογο υπηρεσιών." wrap /> : <BilingualText en="Saved to your marketplace listing." el="Αποθηκεύεται στην καταχώρισή σας." wrap />}</DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void saveEdit(); }}>
             <div className="space-y-1.5">
@@ -474,12 +514,12 @@ export default function ProviderServicesPage() {
             )}
             <div className="space-y-1.5">
               <Label htmlFor="svc-pricing"><BilingualText en="Pricing" el="Τιμολόγηση" compact /></Label>
-              <Input id="svc-pricing" value={draft.pricing} onChange={(e) => setDraft((d) => ({ ...d, pricing: e.target.value }))} placeholder="e.g. From €500" />
+              <Input id="svc-pricing" value={draft.pricing} onChange={(e) => setDraft((d) => ({ ...d, pricing: e.target.value }))} placeholder={sayOne('e.g. From €500', 'π.χ. Από €500')} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => { setEditing(null); setCreating(false); }}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
               <Button type="submit" disabled={saving || !draft.title.trim() || (creating && !draft.providerName.trim())}>
-                {saving ? 'Saving…' : creating ? 'Publish' : 'Save'}
+                {saving ? <BilingualText en="Saving…" el="Αποθήκευση…" compact /> : creating ? <BilingualText en="Publish" el="Δημοσίευση" compact /> : <BilingualText en="Save" el="Αποθήκευση" compact />}
               </Button>
             </DialogFooter>
           </form>

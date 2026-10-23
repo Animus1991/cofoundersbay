@@ -6,7 +6,6 @@ import Link from 'next/link';
 import {
   FolderKanban,
   Search,
-  Filter,
   MoreVertical,
   Clock,
   CheckCircle,
@@ -49,6 +48,10 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { bilingualAria } from '@/lib/i18n/format';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { FailedLine } from '@/components/dashboard/SectionCard';
+import { ASK } from '@/lib/page-questions';
 
 /**
  * A project is an inquiry that was accepted — the same row /provider/inquiries
@@ -62,12 +65,14 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 function toProject(row: ServiceInquiryItem): Project {
   return {
     id: row.id,
-    clientName: row.client?.displayName ?? 'A client',
+    clientName: row.client?.displayName ?? '\u2014',
     clientId: row.client?.id,
     clientAvatar: row.client?.avatarUrl ?? undefined,
-    service: row.offer.title,
+    service: row.offer?.title ?? '\u2014',
     status: row.status === 'completed' ? 'completed' : 'active',
-    progress: row.status === 'completed' ? 100 : 0,
+    // No progress field: -1 says "not tracked", so the card draws no bar
+    // rather than "0%" under every live project.
+    progress: row.status === 'completed' ? 100 : -1,
     startDate: row.createdAt,
     dueDate: '',
     lastUpdate: row.resolvedAt ?? row.createdAt,
@@ -141,7 +146,7 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
           aside={(
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open project actions for ${project.clientName}`}>
+                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria(`Open project actions for ${project.clientName}`, `Ενέργειες έργου: ${project.clientName}`)}>
                   <MoreVertical className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
@@ -156,19 +161,8 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
                   reasonEn="Projects do not track progress yet."
                   reasonEl="Τα έργα δεν καταγράφουν ακόμη πρόοδο."
                 />
-                {project.clientId ? (
-                  <DropdownMenuItem asChild>
-                    <Link href={`/messages?to=${project.clientId}`}><BilingualText en="Message Client" el="Μήνυμα στον πελάτη" compact /></Link>
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem disabled><BilingualText en="Message Client" el="Μήνυμα στον πελάτη" compact /></DropdownMenuItem>
-                )}
-                <DropdownMenuItem
-                  disabled={!onComplete || project.status === 'completed'}
-                  onSelect={() => onComplete?.(project)}
-                >
-                  <BilingualText en="Mark Complete" el="Σήμανση ως ολοκληρωμένο" compact />
-                </DropdownMenuItem>
+                {/* "Message Client" was the foot's Message; "Mark Complete"
+                    is in the foot now, where it is seen (docs §95). */}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -176,17 +170,21 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
 
         {project.service ? <p className="text-xs font-medium text-muted-foreground first-letter:uppercase">{project.service}</p> : null}
 
-        <div>
-          <div className="mb-1 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
-            <span className="font-medium tabular-nums">{project.progress}%</span>
+        {/* Progress and the due date have no field on a live project: the
+            bar read 0% and the date a dash under every one of them. */}
+        {project.progress >= 0 ? (
+          <div>
+            <div className="mb-1 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
+              <span className="font-medium tabular-nums">{project.progress}%</span>
+            </div>
+            <Progress value={project.progress} className="h-2" />
           </div>
-          <Progress value={project.progress} className="h-2" />
-        </div>
+        ) : null}
 
         <FactLine
           items={[
-            <BilingualText key="due" en={`Due: ${project.dueDate || '—'}`} el={`Προθεσμία: ${project.dueDate || '—'}`} compact />,
+            project.dueDate ? <BilingualText key="due" en={`Due: ${project.dueDate}`} el={`Προθεσμία: ${project.dueDate}`} compact /> : <span key="started"><BilingualText en="Started" el="Ξεκίνησε" compact /> <RelativeTime date={project.startDate} format={formatRelativeTime} /></span>,
             <span key="updated"><BilingualText en="Updated:" el="Ενημέρωση:" compact /> <RelativeTime date={project.lastUpdate} format={formatRelativeTime} /></span>,
             project.amount ? <span key="amount" className="font-medium tabular-nums text-foreground">{project.amount}</span> : null,
           ]}
@@ -209,9 +207,13 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
               </Button>
             </WithDisabledReason>
           )}
-          <WithDisabledReason reasonEn="Projects do not track progress yet" reasonEl="Τα έργα δεν καταγράφουν ακόμη πρόοδο">
-            <Button size="sm" disabled><BilingualText en="Update" el="Ενημέρωση" compact /></Button>
-          </WithDisabledReason>
+          {/* "Update" (disabled) was the menu's "Update Progress" again. The
+              move that exists - completing the work - was in the menu only. */}
+          {project.status !== 'completed' ? (
+            <Button size="sm" variant="outline" disabled={!onComplete} onClick={() => onComplete?.(project)}>
+              <BilingualText en="Mark complete" el="Σήμανση ως ολοκληρωμένο" compact />
+            </Button>
+          ) : null}
         </CardFoot>
       </CardContent>
     </Card>
@@ -230,7 +232,7 @@ const SEED_PROJECTS: Project[] = [
     startDate: '2026-03-10T09:00:00.000Z',
     dueDate: 'Mar 25',
     lastUpdate: '2026-09-04T08:00:00.000Z',
-    amount: '$2,500',
+    amount: '€2,500',
   },
   {
     id: '2',
@@ -242,7 +244,7 @@ const SEED_PROJECTS: Project[] = [
     startDate: '2026-03-15T09:00:00.000Z',
     dueDate: 'Mar 30',
     lastUpdate: '2026-09-03T10:00:00.000Z',
-    amount: '$1,200',
+    amount: '€1,200',
   },
   {
     id: '3',
@@ -254,7 +256,7 @@ const SEED_PROJECTS: Project[] = [
     startDate: '2026-03-05T09:00:00.000Z',
     dueDate: 'Apr 5',
     lastUpdate: '2026-09-01T10:00:00.000Z',
-    amount: '$450',
+    amount: '€450',
   },
   {
     id: '4',
@@ -266,7 +268,7 @@ const SEED_PROJECTS: Project[] = [
     startDate: '2026-02-20T09:00:00.000Z',
     dueDate: 'Mar 10',
     lastUpdate: '2026-03-10T09:00:00.000Z',
-    amount: '$2,500',
+    amount: '€2,500',
   },
   {
     id: '5',
@@ -278,7 +280,7 @@ const SEED_PROJECTS: Project[] = [
     startDate: '2026-02-15T09:00:00.000Z',
     dueDate: 'Feb 28',
     lastUpdate: '2026-02-28T09:00:00.000Z',
-    amount: '$1,200',
+    amount: '€1,200',
   },
 ];
 
@@ -290,7 +292,7 @@ export default function ProviderProjectsPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('active');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: qk('provider', 'projects'),
     queryFn: () => listServiceInquiries({ side: 'provider', kind: 'projects', limit: 100 }),
     staleTime: 60_000,
@@ -299,6 +301,8 @@ export default function ProviderProjectsPage() {
 
   const live = useMemo(() => (data?.inquiries ?? []).map(toProject), [data]);
   const projects: Project[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_PROJECTS;
+  const isSample = live.length === 0 && projects.length > 0;
+  const failed = isError && !data;
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
   const confirm = useConfirm();
@@ -345,7 +349,7 @@ export default function ProviderProjectsPage() {
       id: 'projects',
       labelEn: 'Client projects',
       labelEl: 'Έργα πελατών',
-      rows: isLoading ? undefined : filteredProjects.map((p) => `${p.clientName}${p.clientCompany ? ` (${p.clientCompany})` : ''} · ${p.service} · ${p.status.replace('_', ' ')} · ${p.progress}% · due ${p.dueDate} · ${p.amount}`),
+      rows: isLoading ? undefined : filteredProjects.map((p) => `${p.clientName}${p.clientCompany ? ` (${p.clientCompany})` : ''} · ${p.service} · ${p.status.replace('_', ' ')}${p.progress >= 0 ? ` · ${p.progress}%` : ''}${p.dueDate ? ` · due ${p.dueDate}` : ''} · ${p.amount}`),
       total: projects.length,
       sample: live.length === 0,
     },
@@ -372,6 +376,21 @@ export default function ProviderProjectsPage() {
   return (
     <AppShell>
       <div className="space-y-6">
+        {isSample ? (
+          <SampleDataNotice
+            surface="Projects"
+            detail="These projects are illustrative; an inquiry you accept becomes a project here."
+            askAiPrompt={ASK.servicesEmpty}
+          />
+        ) : null}
+        {failed ? (
+          <Card>
+            <CardContent className="pt-6">
+              <FailedLine en="Your projects could not be read just now." el="Τα έργα σας δεν διαβάστηκαν αυτή τη στιγμή." busy={isFetching} onRetry={() => void refetch()} />
+            </CardContent>
+          </Card>
+        ) : (
+        <>
         {/* Search */}
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
@@ -390,11 +409,15 @@ export default function ProviderProjectsPage() {
             <TabsTrigger value="active">
               <BilingualText en="Active" el="Ενεργά" compact /> <Counter value={counts.active} />
             </TabsTrigger>
-            <TabsTrigger value="on_hold">
-              <BilingualText en="On Hold" el="Σε αναμονή" compact /> <Counter value={counts.on_hold} />
-            </TabsTrigger>
+            {/* A live project is never on hold (no such state); the tab shows
+                when something is. */}
+            {counts.on_hold > 0 ? (
+              <TabsTrigger value="on_hold">
+                <BilingualText en="On Hold" el="Σε αναμονή" compact /> <Counter value={counts.on_hold} />
+              </TabsTrigger>
+            ) : null}
             <TabsTrigger value="completed">
-              <BilingualText en="Completed" el="Ολοκληρωμένες" compact /> <Counter value={counts.completed} />
+              <BilingualText en="Completed" el="Ολοκληρωμένα" compact /> <Counter value={counts.completed} />
             </TabsTrigger>
           </TabsList>
 
@@ -406,15 +429,25 @@ export default function ProviderProjectsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="card-title text-foreground"><BilingualText en="No projects found" el="Δεν βρέθηκαν έργα" compact /></h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    No {activeTab.replace('_', ' ')} projects
-                  </p>
+                  {projects.length === 0 ? (
+                    <>
+                      <h3 className="card-title text-foreground"><BilingualText en="No projects yet" el="Δεν υπάρχουν ακόμη έργα" compact /></h3>
+                      <p className="text-sm text-muted-foreground mt-1"><BilingualText en="An inquiry you accept becomes a project here." el="Ένα αίτημα που αποδέχεστε γίνεται έργο εδώ." wrap /></p>
+                      <Button size="sm" variant="outline" className="mt-4" asChild><Link href="/provider/inquiries"><BilingualText en="Your inquiries" el="Τα αιτήματά σας" compact /></Link></Button>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="card-title text-foreground"><BilingualText en="No projects found" el="Δεν βρέθηκαν έργα" compact /></h3>
+                      <p className="text-sm text-muted-foreground mt-1"><BilingualText en="None in this tab matches the search." el="Κανένα σε αυτή την καρτέλα δεν ταιριάζει με την αναζήτηση." wrap /></p>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             )}
           </TabsContent>
         </Tabs>
+        </>
+        )}
       </div>
       <Dialog open={viewing !== null} onOpenChange={(o) => { if (!o) setViewing(null); }}>
         <DialogContent className="sm:max-w-md">

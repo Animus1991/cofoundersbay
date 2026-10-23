@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  Save, RefreshCw, DollarSign, Star, Building2,
+  Save,
+  RefreshCw,
+  Star,
 } from 'lucide-react';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
@@ -40,6 +42,8 @@ import { pressableProps } from '@/lib/pressable';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { bilingualAria } from '@/lib/i18n/format';
+import { FailedLine } from '@/components/dashboard/SectionCard';
 const SERVICE_TYPES: { value: ServiceProviderKind; label: string; labelEl: string }[] = [
   { value: 'legal', label: 'Legal', labelEl: 'Νομικές υπηρεσίες' },
   { value: 'accounting', label: 'Accounting & Finance', labelEl: 'Λογιστική & οικονομικά' },
@@ -126,6 +130,11 @@ export default function ProviderProfilePage() {
     enabled: hasSession && mounted,
     retry: 0,
   });
+  /*
+   * Unread, the empty form stood under "Save Profile" and a save would have
+   * written it over the saved listing. Save waits for the read (docs §95).
+   */
+  const listingFailed = listing.isError && listing.data === undefined;
   const filledFromSaved = useRef(false);
   useEffect(() => {
     if (filledFromSaved.current || !listing.isFetched) return;
@@ -173,6 +182,7 @@ export default function ProviderProfilePage() {
   );
 
   async function handleSave() {
+    if (listingFailed || !listing.isFetched) return;
     setIsSaving(true);
     try {
       const clients = readNumber(clientsServed);
@@ -217,7 +227,7 @@ export default function ProviderProfilePage() {
     <AppShell
       actions={
         <>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={isSaving || listingFailed || (hasSession && !listing.isFetched)}>
             {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
             <BilingualText en="Save Profile" el="Αποθήκευση προφίλ" compact />
           </Button>
@@ -225,6 +235,18 @@ export default function ProviderProfilePage() {
       }
     >
       <div className="space-y-6">
+        {listingFailed ? (
+          <Card>
+            <CardContent className="pt-6">
+              <FailedLine
+                en="Your provider listing could not be read just now. Saving waits until it is, so the empty form cannot replace it."
+                el="Η καταχώρισή σας ως πάροχος δεν διαβάστηκε αυτή τη στιγμή. Η αποθήκευση περιμένει, ώστε η κενή φόρμα να μην την αντικαταστήσει."
+                busy={listing.isFetching}
+                onRetry={() => void listing.refetch()}
+              />
+            </CardContent>
+          </Card>
+        ) : null}
         <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         {/* Preview Card */}
         {/* The card others meet, on the card anatomy: the company's mark and
@@ -259,7 +281,8 @@ export default function ProviderProfilePage() {
                     ? <BilingualText en={`${summary.avgRating.toFixed(1)} (${summary.reviewCount} reviews)`} el={`${summary.avgRating.toFixed(1)} (${summary.reviewCount} αξιολογήσεις)`} compact />
                     : <BilingualText en="No reviews yet" el="Καμία αξιολόγηση ακόμη" compact />}
                 </span>,
-                <BilingualText key="clients" en={`${clientsServed || '?'} clients`} el={`${clientsServed || '?'} πελάτες`} compact />,
+                // "? clients" until a number is typed: said once there is one.
+                clientsServed ? <BilingualText key="clients" en={`${clientsServed} clients`} el={`${clientsServed} πελάτες`} compact /> : null,
                 <BilingualText key="years" en={`${yearsInBusiness}y in business`} el={`${yearsInBusiness} έτη λειτουργίας`} compact />,
                 companyWebsite ? <span key="web" className="break-all">{companyWebsite}</span> : null,
               ]}
@@ -292,7 +315,7 @@ export default function ProviderProfilePage() {
                 <div className="space-y-2">
                   <Label htmlFor="serviceType"><BilingualText en="Service Type" el="Τύπος υπηρεσίας" compact /></Label>
                   <Select value={serviceType} onValueChange={(v) => { if (isServiceType(v)) setServiceType(v); }}>
-                    <SelectTrigger id="serviceType" aria-label="Service Type"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="serviceType" aria-label={bilingualAria('Service Type', 'Τύπος υπηρεσίας')}><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {SERVICE_TYPES.map(s => (
                         <SelectItem key={s.value} value={s.value}><BilingualText en={s.label} el={s.labelEl} compact /></SelectItem>
@@ -325,7 +348,7 @@ export default function ProviderProfilePage() {
                   <div className="space-y-2">
                     <Label htmlFor="yearsInBusiness"><BilingualText en="Years in Business" el="Χρόνια λειτουργίας" compact /></Label>
                     <Select value={yearsInBusiness} onValueChange={setYearsInBusiness}>
-                      <SelectTrigger id="yearsInBusiness" aria-label="Years in Business"><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="yearsInBusiness" aria-label={bilingualAria('Years in Business', 'Χρόνια λειτουργίας')}><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '7', '10', '15', '20+'].map(v => (
                           <SelectItem key={v} value={v}><BilingualText en={`${v} year${v !== '1' ? 's' : ''}`} el={`${v} ${v === '1' ? 'έτος' : 'έτη'}`} compact /></SelectItem>
@@ -349,7 +372,7 @@ export default function ProviderProfilePage() {
                     <p className="text-sm font-medium"><BilingualText en="Accepting New Clients" el="Δέχεται νέους πελάτες" compact /></p>
                     <p className="text-xs text-muted-foreground"><BilingualText en="Show in service provider discovery" el="Εμφάνιση στην αναζήτηση παρόχων" wrap /></p>
                   </div>
-                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting New Clients" />
+                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label={bilingualAria('Accepting New Clients', 'Δέχεται νέους πελάτες')} />
                 </div>
               </CardContent>
             </Card>
@@ -364,11 +387,14 @@ export default function ProviderProfilePage() {
                   {INDUSTRIES.map(ind => (
                     <button
                       key={ind}
+                      type="button"
+                      aria-pressed={selectedIndustries.includes(ind)}
                       onClick={() => toggleChip(selectedIndustries, setSelectedIndustries, ind)}
                       className={cn(
                         'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
+                        // Chosen as tint and edge, not filled like Save.
                         selectedIndustries.includes(ind)
-                          ? 'bg-primary text-primary-foreground border-primary'
+                          ? 'border-primary/50 bg-primary/10 text-foreground'
                           : 'border-border text-muted-foreground hover:border-primary/50'
                       )}
                     >
@@ -386,11 +412,13 @@ export default function ProviderProfilePage() {
                   {STARTUP_STAGES.map(stage => (
                     <button
                       key={stage}
+                      type="button"
+                      aria-pressed={selectedStages.includes(stage)}
                       onClick={() => toggleChip(selectedStages, setSelectedStages, stage)}
                       className={cn(
                         'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
                         selectedStages.includes(stage)
-                          ? 'bg-primary text-primary-foreground border-primary'
+                          ? 'border-primary/50 bg-primary/10 text-foreground'
                           : 'border-border text-muted-foreground hover:border-primary/50'
                       )}
                     >

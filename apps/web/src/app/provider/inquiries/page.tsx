@@ -1,20 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   MessageSquare,
   Search,
-  Filter,
   MoreVertical,
   Mail,
   Clock,
   CheckCircle,
   XCircle,
-  TrendingUp,
-  DollarSign,
-  Inbox,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useMemo } from 'react';
@@ -36,7 +32,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
@@ -49,6 +44,11 @@ import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { PageFacts } from '@/components/common/PageFacts';
+import { FactLine } from '@/components/common/FactLine';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { FailedLine } from '@/components/dashboard/SectionCard';
+import { bilingualAria } from '@/lib/i18n/format';
+import { ASK } from '@/lib/page-questions';
 
 type Inquiry = {
   id: string;
@@ -81,9 +81,13 @@ function InquiryCard({
 
   const config = statusConfig[inquiry.status];
   const StatusIcon = config.icon;
+  // A new inquiry's foot carries Reply and the client's profile; the menu
+  // said both again (docs §95). It keeps them for the others, which have no foot.
+  const footed = inquiry.status === 'new';
 
   return (
-    <Card className="transition-all hover:border-primary/30">
+    // The home's Reply opens this card by its id.
+    <Card id={`inquiry-${inquiry.id}`} className="scroll-mt-24 transition-all hover:border-primary/30 target:ring-2 target:ring-primary/40">
       <CardContent className="space-y-3">
         <CardHead
           mark={(
@@ -110,7 +114,7 @@ function InquiryCard({
               </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open inquiry actions for ${inquiry.clientName}`}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria(`Open inquiry actions for ${inquiry.clientName}`, `Ενέργειες αιτήματος: ${inquiry.clientName}`)}>
                       <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -118,6 +122,7 @@ function InquiryCard({
                     {/* All four had no handler. Replying opens a thread with the
                         client and moves the inquiry into discussion; converting
                         accepts it; the statuses are the API's own. */}
+                    {footed ? null : (
                     <DropdownMenuItem
                       disabled={!inquiry.clientId}
                       onSelect={() => {
@@ -128,13 +133,14 @@ function InquiryCard({
                     >
                       <BilingualText en="Reply" el="Απάντηση" compact />
                     </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       disabled={!onStatus || inquiry.status === 'converted'}
                       onSelect={() => onStatus?.(inquiry, 'accepted')}
                     >
                       <BilingualText en="Mark as Converted" el="Σήμανση ως πελάτη" compact />
                     </DropdownMenuItem>
-                    {inquiry.clientId ? (
+                    {footed ? null : inquiry.clientId ? (
                       <DropdownMenuItem asChild>
                         <Link href={`/profiles/${inquiry.clientId}`}><BilingualText en="View Profile" el="Προβολή προφίλ" compact /></Link>
                       </DropdownMenuItem>
@@ -154,7 +160,14 @@ function InquiryCard({
           )}
         />
         {/* The service asked about is a fact, the message the body. */}
-        <p className="text-xs font-medium text-muted-foreground first-letter:uppercase">{inquiry.service}</p>
+        {/* The budget the client named was read and never shown. */}
+        <FactLine
+          className="text-xs font-medium"
+          items={[
+            <span key="svc" className="first-letter:uppercase">{inquiry.service}</span>,
+            inquiry.budget ? <BilingualText key="budget" en={`Budget ${inquiry.budget}`} el={`Προϋπολογισμός ${inquiry.budget}`} compact /> : null,
+          ]}
+        />
         <p className="card-body text-muted-foreground first-letter:uppercase">{inquiry.message}</p>
         {inquiry.status === 'new' && (
           <CardFoot>
@@ -172,12 +185,13 @@ function InquiryCard({
                   <BilingualText en="Reply" el="Απάντηση" compact />
                 </Button>
                 {inquiry.clientId ? (
+                  // "View Details" opened the client's profile; it says so.
                   <Button size="sm" variant="outline" asChild>
-                    <Link href={`/profiles/${inquiry.clientId}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
+                    <Link href={`/profiles/${inquiry.clientId}`}><BilingualText en="View profile" el="Προβολή προφίλ" compact /></Link>
                   </Button>
                 ) : (
                   <WithDisabledReason reasonEn="This client has no profile to open" reasonEl="Ο πελάτης δεν έχει προφίλ για προβολή">
-                    <Button size="sm" variant="outline" disabled><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Button>
+                    <Button size="sm" variant="outline" disabled><BilingualText en="View profile" el="Προβολή προφίλ" compact /></Button>
                   </WithDisabledReason>
                 )}
           </CardFoot>
@@ -210,10 +224,10 @@ const INQUIRY_STATE: Record<string, Inquiry['status']> = {
 function toPageInquiry(row: ServiceInquiryItem): Inquiry {
   return {
     id: row.id,
-    clientName: row.client?.displayName ?? 'Someone',
+    clientName: row.client?.displayName ?? '\u2014',
     clientId: row.client?.id,
     clientAvatar: row.client?.avatarUrl ?? undefined,
-    service: row.offer.title,
+    service: row.offer?.title ?? '\u2014',
     message: row.message,
     receivedAt: row.createdAt,
     status: INQUIRY_STATE[row.status] ?? 'new',
@@ -287,7 +301,7 @@ export default function ProviderInquiriesPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: qk('provider', 'inquiries'),
     queryFn: () => listServiceInquiries({ side: 'provider', limit: 100 }),
     staleTime: 30_000,
@@ -311,6 +325,23 @@ export default function ProviderInquiriesPage() {
   };
   const inquiries =
     live.length > 0 ? live : isLoading ? [] : showDemoData ? MOCK_INQUIRIES : [];
+  const isSample = live.length === 0 && inquiries.length > 0;
+  // An unread list said "You have no inquiries yet" (docs §95).
+  const failed = isError && !data;
+
+  // The home's Reply links to #inquiry-<id>; the card exists only once the
+  // list is read, so the page brings it into view then.
+  useEffect(() => {
+    if (!data || typeof window === 'undefined') return;
+    const id = window.location.hash.slice(1);
+    if (!id.startsWith('inquiry-')) return;
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ block: 'start' });
+      el.setAttribute('tabindex', '-1');
+      el.focus({ preventScroll: true });
+    }
+  }, [data]);
 
   const conversionRate = Math.round((inquiries.filter((i) => i.status === 'converted').length / Math.max(inquiries.length, 1)) * 100);
   const responseRate = Math.round(((inquiries.filter((i) => i.status === 'replied' || i.status === 'converted').length) / Math.max(inquiries.length, 1)) * 100);
@@ -386,16 +417,29 @@ export default function ProviderInquiriesPage() {
       descriptionEl="Διαχειριστείτε τα εισερχόμενα αιτήματα για τις υπηρεσίες σας"
     >
       <div className="space-y-6">
-
-        {/* The figures, one line before the list (docs §64.5, PageFacts): four tiles stood between the header and the first row */}
+        {isSample ? (
+          <SampleDataNotice
+            surface="Inquiries"
+            detail="These inquiries are illustrative; founders who ask about one of your services replace them."
+            askAiPrompt={ASK.servicesEmpty}
+          />
+        ) : null}
+        {failed ? (
+          <Card>
+            <CardContent className="pt-6">
+              <FailedLine en="Your inquiries could not be read just now." el="Τα αιτήματά σας δεν διαβάστηκαν αυτή τη στιγμή." busy={isFetching} onRetry={() => void refetch()} />
+            </CardContent>
+          </Card>
+        ) : (
+        <>
+        {/* The two rates. "6 inquiries · 1 new" were the All and New tabs'
+            own counters a second time (docs §95). */}
         <PageFacts
           labelEn="Your inquiries in figures"
           labelEl="Τα αιτήματά σας σε αριθμούς"
           facts={[
-            { id: 'total', value: inquiries.length, en: inquiries.length === 1 ? 'inquiry' : 'inquiries', el: inquiries.length === 1 ? 'αίτημα' : 'αιτήματα' },
-            { id: 'new', value: counts.new, en: 'new', el: 'νέα' },
-            { id: 'response', value: `${responseRate}%`, en: 'response rate', el: 'ποσοστό απαντήσεων' },
-            { id: 'conversion', value: `${conversionRate}%`, en: 'became clients', el: 'έγιναν πελάτες' },
+            { id: 'response', value: inquiries.length ? `${responseRate}%` : null, en: 'response rate', el: 'ποσοστό απαντήσεων' },
+            { id: 'conversion', value: inquiries.length ? `${conversionRate}%` : null, en: 'became clients', el: 'έγιναν πελάτες' },
           ]}
         />
 
@@ -436,17 +480,27 @@ export default function ProviderInquiriesPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="card-title text-foreground"><BilingualText en="No inquiries found" el="Δεν βρέθηκαν ερωτήματα" compact /></h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {activeTab === 'all'
-                      ? 'You have no inquiries yet'
-                      : `No ${activeTab} inquiries`}
-                  </p>
+                  {/* English only, and "No inquiries found" over an empty
+                      book as over a search with no match. */}
+                  {inquiries.length === 0 ? (
+                    <>
+                      <h3 className="card-title text-foreground"><BilingualText en="No inquiries yet" el="Δεν υπάρχουν ακόμη αιτήματα" compact /></h3>
+                      <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Founders who ask about one of your live services appear here." el="Οι ιδρυτές που ρωτούν για μια ενεργή υπηρεσία σας εμφανίζονται εδώ." wrap /></p>
+                      <Button size="sm" variant="outline" className="mt-4" asChild><Link href="/provider/services"><BilingualText en="Your services" el="Οι υπηρεσίες σας" compact /></Link></Button>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="card-title text-foreground"><BilingualText en="No inquiries found" el="Δεν βρέθηκαν αιτήματα" compact /></h3>
+                      <p className="text-sm text-muted-foreground mt-1"><BilingualText en="None in this tab matches the search." el="Κανένα σε αυτή την καρτέλα δεν ταιριάζει με την αναζήτηση." wrap /></p>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             )}
           </TabsContent>
         </Tabs>
+        </>
+        )}
       </div>
     </AppShell>
   );
