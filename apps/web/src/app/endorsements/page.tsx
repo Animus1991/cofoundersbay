@@ -406,13 +406,13 @@ export default function EndorsementsPage() {
   });
   const meId = meData?.profile?.userId ?? storedUser?.id;
 
-  const { data: receivedData, isLoading: receivedLoading } = useQuery({
+  const { data: receivedData, isLoading: receivedLoading, isError: receivedFailed, refetch: refetchReceived } = useQuery({
     queryKey: qk('endorsements', 'received', meId),
     queryFn: () => getEndorsementsForUser(meId!, { includeUnapproved: true }),
     enabled: !showDemoData && !!meId,
     staleTime: 60_000,
   });
-  const { data: givenData, isLoading: givenLoading } = useQuery({
+  const { data: givenData, isLoading: givenLoading, isError: givenFailed, refetch: refetchGiven } = useQuery({
     queryKey: qk('endorsements', 'given'),
     queryFn: getGivenEndorsements,
     enabled: !showDemoData,
@@ -613,13 +613,19 @@ export default function EndorsementsPage() {
               </TabsTrigger>
               <TabsTrigger value="given" className="gap-1.5">
                 <BilingualText en="Given" el="Δοσμένες" compact />
-                <Counter value={givenCount} />
+                {/* No "0" for a list that was not read. */}
+                {givenFailed && !showDemoData ? null : <Counter value={givenCount} />}
               </TabsTrigger>
             </TabsList>
-            <Button size="sm" className="gap-1.5" onClick={() => setGiving(true)}>
-              <Plus className="icon-sm" aria-hidden="true" />
-              <BilingualText en="Give an endorsement" el="Δώστε σύσταση" compact />
-            </Button>
+            {/* Outline: the approvals waiting below are the page's answers.
+                Not on an empty Given tab, whose own button opens the same
+                dialog (docs §87). */}
+            {tab === 'given' && !loadingList && given.length === 0 && !(givenFailed && !showDemoData) ? null : (
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setGiving(true)}>
+                <Plus className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Give an endorsement" el="Δώστε σύσταση" compact />
+              </Button>
+            )}
           </div>
 
           <TabsContent value="received" className="mt-4 space-y-3">
@@ -636,6 +642,15 @@ export default function EndorsementsPage() {
             {loadingList ? (
               <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">
                 <BilingualText en="Loading endorsements…" el="Φόρτωση συστάσεων…" compact />
+              </CardContent></Card>
+            ) : receivedFailed && !showDemoData ? (
+              <Card><CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+                <p role="alert" className="text-sm text-muted-foreground">
+                  <BilingualText en="Your endorsements could not be read just now." el="Οι συστάσεις σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                </p>
+                <Button size="sm" variant="outline" onClick={() => void refetchReceived()}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
               </CardContent></Card>
             ) : received.length === 0 ? (
               <Card><CardContent className="py-12 text-center">
@@ -656,6 +671,15 @@ export default function EndorsementsPage() {
             {loadingList ? (
               <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">
                 <BilingualText en="Loading endorsements…" el="Φόρτωση συστάσεων…" compact />
+              </CardContent></Card>
+            ) : givenFailed && !showDemoData ? (
+              <Card><CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+                <p role="alert" className="text-sm text-muted-foreground">
+                  <BilingualText en="The endorsements you gave could not be read just now." el="Οι συστάσεις που δώσατε δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                </p>
+                <Button size="sm" variant="outline" onClick={() => void refetchGiven()}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
               </CardContent></Card>
             ) : given.length === 0 ? (
               <Card><CardContent className="py-12 text-center">

@@ -1,6 +1,5 @@
 'use client';
 
-import { StatusText } from '@/components/common/StatusText';
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -10,30 +9,22 @@ import {
   Ban,
   Bookmark,
   BookmarkX,
-  Briefcase,
   Building2,
   Check,
   CheckCircle2,
   CheckSquare,
-  ChevronDown,
-  Clock,
   DollarSign,
   Edit2,
   ExternalLink,
-  Filter,
   Flame,
   GitMerge,
   GraduationCap,
   Grid3X3,
   List,
-  MapPin,
   MessageCircle,
-  RefreshCw,
   Search,
-  SlidersHorizontal,
   Sparkles,
   Square,
-  Star,
   Tag,
   Target,
   Trash2,
@@ -49,18 +40,19 @@ import { RailAction, RailOptions, RailStats } from '@/components/layout/RailPart
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 import { shortlistEn, shortlistEl } from '@/lib/i18n/strings-shortlist';
 import { formatDate } from '@/lib/i18n/format';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { RoleName } from '@/components/common/RoleName';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
@@ -195,13 +187,15 @@ function ShortlistCard({
               className="shrink-0"
               aria-label={profile?.displayName || say(shortlistEn('view_profile'), shortlistEl('view_profile'))}
             >
-              {profile?.avatarUrl ? (
-                <img src={profile.avatarUrl} alt={profile.displayName ?? ''} className="h-10 w-10 rounded-full object-cover ring-2 ring-border/50 hover:ring-primary/40 transition-all" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
-              ) : (
-                <div data-keep-icon="" className="flex h-10 w-10 items-center justify-center rounded-full bg-muted ring-2 ring-border/50">
-                  <User className="icon-md text-muted-foreground" aria-hidden="true" />
-                </div>
-              )}
+              {/* The shared avatar, so a photo that does not load falls back
+                  to the initials: a bare <img> left an empty 40px gap in
+                  front of the name (docs §87). */}
+              <Avatar className="h-10 w-10 ring-2 ring-border/50 transition-all hover:ring-primary/40">
+                <AvatarImage src={profile?.avatarUrl ?? undefined} alt="" />
+                <AvatarFallback className="bg-muted text-sm font-semibold text-muted-foreground">
+                  {profile?.displayName ? initialsOf(profile.displayName) : <User className="icon-md" aria-hidden="true" />}
+                </AvatarFallback>
+              </Avatar>
             </Link>
           )}
           title={(
@@ -260,7 +254,8 @@ function ShortlistCard({
           <FactLine
             items={[
               profile?.headline ? <span key="headline" className="card-subtitle">{profile.headline}</span> : null,
-              profile?.role ? <StatusText key="role" value={profile.role} /> : null,
+              // The badge's word for the role ("Founder"), as on every card.
+              profile?.role ? <RoleName key="role" role={profile.role} /> : null,
               profile?.location,
               ...(profile?.skills?.slice(0, 5) ?? []),
               profile?.skills && profile.skills.length > 5 ? `+${profile.skills.length - 5}` : null,
@@ -301,8 +296,9 @@ function ShortlistCard({
             // The date itself stays pinned to UTC, as every date in the
             // product is; only the word around it changes language.
             <BilingualText
-              en={shortlistEn('saved_on').replace('{date}', formatDate(item.savedAt, 'en'))}
-              el={shortlistEl('saved_on').replace('{date}', formatDate(item.savedAt, 'el'))}
+              // "16 Oct 2026", as every other card writes a date ("16/10/2026").
+              en={shortlistEn('saved_on').replace('{date}', formatDate(item.savedAt, 'en', { day: 'numeric', month: 'short', year: 'numeric' }))}
+              el={shortlistEl('saved_on').replace('{date}', formatDate(item.savedAt, 'el', { day: 'numeric', month: 'short', year: 'numeric' }))}
               compact
             />
           )}
@@ -549,7 +545,9 @@ export default function ShortlistPage() {
     >
       <div className="space-y-6 pb-10">
 
-        {/* Toolbar */}
+        {/* Toolbar — search, sort, view and compare act on saved profiles, so
+            they wait until there is at least one (and a read that worked). */}
+        {!isError && (isLoading || rawItems.length > 0) && (
         <div className="space-y-3">
           {/* Search + sort + view */}
           <div className="flex items-center gap-2 flex-wrap">
@@ -564,8 +562,10 @@ export default function ShortlistPage() {
               />
             </div>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-              {/* w-44 is 176px, and "Newest first · Νεότερα πρώτα" is 76px past that. */}
-              <SelectTrigger aria-label={bilingualAria('Sort by', 'Ταξινόμηση')} className="h-9 w-auto min-w-[11rem] text-sm">
+              {/* w-44 is 176px, and "Newest first · Νεότερα πρώτα" is 76px past that.
+                  A phone shows one language, so there the trigger is as wide as
+                  its word and "Select to compare" stays on the row (docs §87). */}
+              <SelectTrigger aria-label={bilingualAria('Sort by', 'Ταξινόμηση')} className="h-9 w-auto text-sm sm:min-w-[11rem]">
                 <ArrowUpDown className="mr-1.5 icon-sm text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
@@ -600,6 +600,7 @@ export default function ShortlistPage() {
           </div>
 
         </div>
+        )}
 
         {/* Compare action bar */}
         {compareMode && selectedIds.size >= 2 && (
@@ -622,7 +623,7 @@ export default function ShortlistPage() {
         {isError ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
             <AlertTriangle className="icon-xl text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground"><BilingualText en={shortlistEn('load_failed')} el={shortlistEl('load_failed')} compact /></p>
+            <p role="alert" className="text-sm text-muted-foreground"><BilingualText en={shortlistEn('load_failed')} el={shortlistEl('load_failed')} compact wrap /></p>
             <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en={shortlistEn('retry')} el={shortlistEl('retry')} compact /></Button>
           </div>
         ) : isLoading ? (
@@ -682,8 +683,8 @@ export default function ShortlistPage() {
           <>
             <p className="text-xs text-muted-foreground">
               <BilingualText
-                en={shortlistEn('showing_of').replace('{shown}', String(filtered.length)).replace('{total}', String(rawItems.length))}
-                el={shortlistEl('showing_of').replace('{shown}', String(filtered.length)).replace('{total}', String(rawItems.length))}
+                en={shortlistEn(rawItems.length === 1 ? 'showing_of_one' : 'showing_of').replace('{shown}', String(filtered.length)).replace('{total}', String(rawItems.length))}
+                el={shortlistEl(rawItems.length === 1 ? 'showing_of_one' : 'showing_of').replace('{shown}', String(filtered.length)).replace('{total}', String(rawItems.length))}
                 compact
               />
             </p>

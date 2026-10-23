@@ -47,10 +47,10 @@ export const SHORTLIST_STRINGS: Record<string, BilingualPair> = {
 
   // ── Failure and emptiness ──
   load_failed: {
-    en: 'Failed to load shortlist.',
-    el: 'Η λίστα δεν φορτώθηκε.',
+    en: 'Your saved profiles could not be read just now.',
+    el: 'Τα αποθηκευμένα προφίλ σας δεν διαβάστηκαν αυτή τη στιγμή.',
   },
-  retry: { en: 'Retry', el: 'Επανάληψη' },
+  retry: { en: 'Try again', el: 'Δοκιμάστε ξανά' },
   browse_matches: { en: 'Browse matches', el: 'Περιήγηση αντιστοιχίσεων' },
   ask_ai: { en: 'Ask AI', el: 'Ρωτήστε το AI' },
 
@@ -69,9 +69,12 @@ export const SHORTLIST_STRINGS: Record<string, BilingualPair> = {
   stat_roles: { en: 'Roles covered', el: 'Ρόλοι που καλύπτονται' },
 
   // ── Comparison mode and the count line ──
-  compare_start: { en: 'Compare', el: 'Σύγκριση' },
+  // The header button chooses people; each card's "Compare" opens one. Two
+  // "Compare" buttons meant two things (docs §87).
+  compare_start: { en: 'Select to compare', el: 'Επιλογή για σύγκριση' },
   compare_cancel: { en: 'Cancel compare', el: 'Ακύρωση σύγκρισης' },
   showing_of: { en: 'Showing {shown} of {total} profiles', el: 'Εμφανίζονται {shown} από {total} προφίλ' },
+  showing_of_one: { en: 'Showing {shown} of 1 profile', el: 'Εμφανίζεται {shown} από 1 προφίλ' },
   selected_max: { en: '{n} profiles selected (max 3)', el: '{n} προφίλ επιλεγμένα (έως 3)' },
 
   // ── The label a founder puts on someone while deciding ──

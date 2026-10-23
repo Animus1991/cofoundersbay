@@ -5,9 +5,11 @@ import type { BilingualPair } from './types';
  */
 export const CONNECTIONS_STRINGS: Record<string, BilingualPair> = {
   page_title: { en: 'Connections', el: 'Συνδέσεις' },
+  // Introductions through someone you both know live on /intros; this page
+  // is connection requests and connections (docs §87).
   page_description: {
-    en: 'Pending requests, active relationships, and intros you sent or received.',
-    el: 'Εκκρεμή αιτήματα, ενεργές σχέσεις και αιτήματα γνωριμίας που στείλατε ή λάβατε.',
+    en: 'Requests waiting on you, the ones you sent, and the people you are connected with.',
+    el: 'Αιτήματα που σας περιμένουν, όσα στείλατε, και οι άνθρωποι με τους οποίους είστε συνδεδεμένοι.',
   },
   find_people: { en: 'Find people', el: 'Εύρεση ατόμων' },
   message: { en: 'Message', el: 'Μήνυμα' },
@@ -21,12 +23,13 @@ export const CONNECTIONS_STRINGS: Record<string, BilingualPair> = {
   // tabs
   intro_requests: { en: 'Intro Requests', el: 'Αιτήματα γνωριμίας' },
   received: { en: 'Received', el: 'Ληφθέντα' },
+  requests: { en: 'Requests', el: 'Αιτήματα' },
   sent: { en: 'Sent', el: 'Απεσταλμένα' },
   connected: { en: 'Connected', el: 'Συνδεδεμένα' },
 
   // stats
   stat_connected: { en: 'Connected', el: 'Συνδεδεμένοι' },
-  stat_intro_requests: { en: 'Intro Requests', el: 'Αιτήματα γνωριμίας' },
+  stat_intro_requests: { en: 'Requests waiting', el: 'Αιτήματα σε αναμονή' },
   stat_sent_pending: { en: 'Sent Pending', el: 'Αποσταλέντα εκκρεμή' },
   stat_total_interactions: { en: 'Total Interactions', el: 'Σύνολο αλληλεπιδράσεων' },
 
@@ -60,7 +63,10 @@ export const CONNECTIONS_STRINGS: Record<string, BilingualPair> = {
   could_not_respond: { en: 'Could not respond', el: 'Αδυναμία απόκρισης' },
 
   // intro card label
-  intro_request: { en: 'Intro request', el: 'Αίτημα γνωριμίας' },
+  intro_request: { en: 'Connection request', el: 'Αίτημα σύνδεσης' },
+  requests_failed: { en: 'Your requests could not be read just now.', el: 'Τα αιτήματά σας δεν διαβάστηκαν αυτή τη στιγμή.' },
+  connections_failed: { en: 'Your connections could not be read just now.', el: 'Οι συνδέσεις σας δεν διαβάστηκαν αυτή τη στιγμή.' },
+  no_requests_waiting: { en: 'No requests waiting', el: 'Κανένα αίτημα σε αναμονή' },
   ai_collaboration: { en: 'AI collaboration insight', el: 'Ανάλυση συνεργασίας AI' },
 };
 

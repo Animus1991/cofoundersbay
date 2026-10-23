@@ -18,17 +18,11 @@ import {
   Users,
   Crown,
   Zap,
-  Shield,
-  MessageCircle,
-  Calendar,
-  BarChart3,
-  Palette,
-  Key,
   ArrowRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { listBillingPlans, createBillingCheckout, type BillingPlanItem } from '@/lib/api';
-import { formatCents, annualSavingsPct, PLAN_HIGHLIGHTS } from '@/lib/billing';
+import { listBillingPlans, createBillingCheckout } from '@/lib/api';
+import { annualSavingsPct, PLAN_HIGHLIGHTS } from '@/lib/billing';
 import { useSession } from '@/hooks/useSession';
 import { LandingNav } from '@/components/layout/LandingNav';
 import { qk } from '@/lib/query-keys';
@@ -298,7 +292,7 @@ export default function PricingPage() {
                       )
                     }
                     aside={plan.popular ? (
-                      <Badge className="bg-primary text-primary-foreground"><BilingualText en="Most popular" el="Πιο δημοφιλές" compact /></Badge>
+                      <Badge><BilingualText en="Most popular" el="Πιο δημοφιλές" compact /></Badge>
                     ) : undefined}
                   />
                   {/* The saving reads under the head across the card's width: in

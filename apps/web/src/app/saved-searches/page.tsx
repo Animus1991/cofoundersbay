@@ -3,9 +3,16 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Search, Bell, BellOff, Trash2, Play, Clock, Filter,
-  Plus, Edit2, MoreHorizontal, CheckCircle, AlertCircle,
-  Sparkles, Users, Briefcase, MapPin, Target, Loader2,
+  Search,
+  Bell,
+  Trash2,
+  Play,
+  Plus,
+  Edit2,
+  MoreHorizontal,
+  Sparkles,
+  Users,
+  Target,
 } from 'lucide-react';
 import {
   listSavedSearches,
@@ -43,7 +50,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
-import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -84,7 +90,9 @@ function SearchCard({
           title={search.name}
           subtitle={search.query ? <span className="block truncate first-letter:uppercase">{search.query}</span> : undefined}
           aside={search.newResults && search.newResults > 0 ? (
-            <Badge variant="default" className="bg-primary text-primary-foreground">
+            // A badge is ink without its fill (globals.css), so white-on-primary
+            // painted nothing: "2 new" was invisible (docs §87).
+            <Badge variant="default">
               <BilingualText {...fill('new_badge', { n: search.newResults })} compact />
             </Badge>
           ) : undefined}
@@ -109,7 +117,7 @@ function SearchCard({
           meta={(
             <FactLine
               items={[
-                <BilingualText key="results" {...fill('results_count', { n: search.resultCount ?? 0 })} compact wrap />,
+                <BilingualText key="results" {...fill((search.resultCount ?? 0) === 1 ? 'results_count_one' : 'results_count', { n: search.resultCount ?? 0 })} compact wrap />,
                 lastRunDate ? (
                   <RelativeTime
                     key="last-run"
@@ -139,17 +147,18 @@ function SearchCard({
             />
           )}
         >
+          {/* The switch says what it switches: it stood alone with a bell
+              beside it, and nothing on screen said "alerts" (docs §87). */}
           <div className="flex items-center gap-2">
             <Switch
+              id={`alerts-${search.id}`}
               checked={search.alertsEnabled}
               onCheckedChange={() => onToggleAlerts(search.alertsEnabled)}
               aria-label={bilingualAria(savedSearchesEn('toggle_alerts'), savedSearchesEl('toggle_alerts'))}
             />
-            {search.alertsEnabled ? (
-              <Bell className="icon-sm text-muted-foreground" aria-hidden="true" />
-            ) : (
-              <BellOff className="icon-sm text-muted-foreground" aria-hidden="true" />
-            )}
+            <label htmlFor={`alerts-${search.id}`} className="cursor-pointer text-xs text-muted-foreground">
+              <BilingualText en={savedSearchesEn('alerts_label')} el={savedSearchesEl('alerts_label')} compact />
+            </label>
           </div>
 
           <Button variant="outline" size="sm" onClick={onRun}>
@@ -208,10 +217,15 @@ function formatTimeAgo(date: Date): { en: string; el: string } {
   if (diffMins < 60) return fill('time_minutes', { n: diffMins });
   if (diffHours < 24) return fill('time_hours', { n: diffHours });
   if (diffDays < 7) return fill('time_days', { n: diffDays });
-  /* Past a week it is a date. UTC on both sides, as everywhere else here. */
+  /* Past a week it is a date, "14 Oct" as on the other cards ("14/10/2026"
+     beside "3d ago" read as two systems). UTC on both sides. */
+  const sameYear = date.getUTCFullYear() === now.getUTCFullYear();
+  const opts: Intl.DateTimeFormatOptions = sameYear
+    ? { timeZone: 'UTC', day: 'numeric', month: 'short' }
+    : { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' };
   return {
-    en: date.toLocaleDateString('en-GB', { timeZone: 'UTC' }),
-    el: date.toLocaleDateString('el-GR', { timeZone: 'UTC' }),
+    en: date.toLocaleDateString('en-GB', opts),
+    el: date.toLocaleDateString('el-GR', opts),
   };
 }
 
@@ -305,7 +319,7 @@ export default function SavedSearchesPage() {
 
   const [editingSearch, setEditingSearch] = useState<SavedSearch | null>(null);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: qk('saved-searches'),
     queryFn: () => listSavedSearches(),
   });
@@ -461,20 +475,39 @@ export default function SavedSearchesPage() {
   return (
     <AppShell
       rail={rail}
-      actions={
+      // With nothing saved, the empty state holds the one way in ("New
+      // Search" over "Create Your First Search" opened the same page).
+      actions={searches.length > 0 ? (
         <Button onClick={handleCreateNew}>
           <Plus className="icon-sm mr-2 shrink-0" aria-hidden="true" />
           <BilingualText en={savedSearchesEn('new_search')} el={savedSearchesEl('new_search')} compact wrap />
         </Button>
-      }
+      ) : undefined}
     >
       <div className="space-y-6 pb-10">
         {/* The count line that stood here repeated the first card below
             ("0 saved searches" twice), and its new-results suffix the third.
             The page's action joins the others in the header. The three
             figures now live in the rail. */}
-        {/* Search List */}
-        {searches.length === 0 ? (
+        {/* Search List. Loading and a failed read are neither empty: the
+            page said "No saved searches" while it loaded and when the API
+            was down (docs §87). */}
+        {isLoading ? (
+          <div className="space-y-3" aria-busy="true">
+            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-36 w-full rounded-2xl" />)}
+          </div>
+        ) : isError && !data ? (
+          <Card>
+            <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+              <p role="alert" className="text-sm text-muted-foreground">
+                <BilingualText en={savedSearchesEn('load_failed')} el={savedSearchesEl('load_failed')} wrap />
+              </p>
+              <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
+                <BilingualText en={savedSearchesEn('try_again')} el={savedSearchesEl('try_again')} compact />
+              </Button>
+            </CardContent>
+          </Card>
+        ) : searches.length === 0 ? (
           <EmptyState
             illustration="search"
             /* Both take a ReactNode, so the empty state reads bilingually

@@ -23,6 +23,10 @@ export const SAVED_SEARCHES_STRINGS: Record<string, BilingualPair> = {
 
   // ── A saved search ──
   results_count: { en: '{n} results', el: '{n} αποτελέσματα' },
+  results_count_one: { en: '1 result', el: '1 αποτέλεσμα' },
+  alerts_label: { en: 'Alerts', el: 'Ειδοποιήσεις' },
+  load_failed: { en: 'Your saved searches could not be read just now.', el: 'Οι αποθηκευμένες αναζητήσεις σας δεν διαβάστηκαν αυτή τη στιγμή.' },
+  try_again: { en: 'Try again', el: 'Δοκιμάστε ξανά' },
   last_run: { en: 'Last run {when}', el: 'Τελευταία εκτέλεση {when}' },
   never_run: { en: 'never', el: 'ποτέ' },
   more_filters: { en: '+{n} more', el: '+{n} ακόμη' },

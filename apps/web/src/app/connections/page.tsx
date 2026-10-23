@@ -1,13 +1,12 @@
 'use client';
 
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Users,
-  UserCheck,
   Clock,
   Send,
   MessageCircle,
@@ -38,7 +37,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn, initialsOf } from '@/lib/utils';
+import { initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -214,7 +213,7 @@ function IntroRequestCard({
         <CardFoot meta={formatDay(connection.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}>
           <Button size="sm" className="gap-1.5" onClick={onAccept} disabled={isPending}>
             <Check className="icon-sm" />
-            <BilingualText en={connectionsEn('accept_intro')} el={connectionsEl('accept_intro')} compact />
+            <BilingualText en={connectionsEn('accept')} el={connectionsEl('accept')} compact />
           </Button>
           <Button
             size="sm"
@@ -251,16 +250,30 @@ export default function ConnectionsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
-  const [tab, setTab] = useState<'intros' | 'received' | 'sent' | 'accepted'>('intros');
-  // Offered to the assistant: the tab, through the same setter. Accepting and
-  // declining are offered below, once the rows are known.
+  /*
+   * Three tabs. "Intro Requests" and "Received" listed the same rows (the
+   * API's received requests are the pending ones) in two card styles, and
+   * "intro" is the word for /intros, a different thing. One "Requests" tab
+   * keeps the richer card, with the message and Accept / Decline (§87).
+   */
+  const [tab, setTabState] = useState<'received' | 'sent' | 'accepted'>('received');
+  const setTab = (v: string) => setTabState(v === 'sent' || v === 'accepted' ? v : 'received');
+  // Links arrive as ?tab=requests|received|sent|connected (the "Next action"
+  // banner sends ?tab=requests).
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get('tab');
+    if (t === 'sent') setTabState('sent');
+    else if (t === 'connected' || t === 'accepted') setTabState('accepted');
+  }, []);
+  // Offered to the assistant: the tab, through the same setter ("intros"
+  // still opens Requests). Accepting and declining are offered below, once
+  // the rows are known.
   usePageControls([
     choiceControl('tab', 'Connections tab', 'Καρτέλα συνδέσεων', [
-      { value: 'intros', en: 'Intros', el: 'Γνωριμίες' },
-      { value: 'received', en: 'Received requests', el: 'Ληφθέντα αιτήματα' },
+      { value: 'received', en: 'Requests waiting on you', el: 'Αιτήματα που σας περιμένουν' },
       { value: 'sent', en: 'Sent requests', el: 'Σταλμένα αιτήματα' },
       { value: 'accepted', en: 'Connected', el: 'Συνδεδεμένοι' },
-    ], tab, (v) => setTab(v as typeof tab)),
+    ], tab, setTab),
   ]);
   const [justAcceptedUser, setJustAcceptedUser] = useState<{
     id: string; displayName: string; avatarUrl?: string | null; role?: string; headline?: string | null;
@@ -269,9 +282,7 @@ export default function ConnectionsPage() {
   // Read after mount, so the server and the first client render agree.
   const viewerId = useStoredUser()?.id ?? null;
 
-  // Intros and Received are the same read (requests waiting on the reader),
-  // so they share one cache entry.
-  const listType = tab === 'intros' ? 'received' : tab;
+  const listType = tab;
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: qk('connections', listType),
     queryFn: () => listConnectionRequests({ type: listType }),
@@ -338,8 +349,8 @@ export default function ConnectionsPage() {
 
   const allConnections = data?.connections ?? [];
   const connections =
-    tab === 'intros'
-      ? allConnections.filter((c) => c.receiverId === viewerId && c.status === 'pending')
+    tab === 'received'
+      ? allConnections.filter((c) => c.status === 'pending' && (!viewerId || c.receiverId === viewerId))
       : allConnections;
 
   const introCount = receivedCount ?? 0;
@@ -459,17 +470,12 @@ export default function ConnectionsPage() {
       <div className="space-y-6 pb-10">
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
-          <TabsTrigger value="intros" className="gap-2">
+          <TabsTrigger value="received" className="gap-2">
             <Handshake className="icon-sm" />
-            <BilingualText en={connectionsEn('intro_requests')} el={connectionsEl('intro_requests')} compact />
+            <BilingualText en={connectionsEn('requests')} el={connectionsEl('requests')} compact />
             {introCount > 0 && (
               <Counter value={introCount} tone="attention" />
             )}
-          </TabsTrigger>
-          <TabsTrigger value="received" className="gap-2">
-            <UserCheck className="icon-sm" />
-            <BilingualText en={connectionsEn('received')} el={connectionsEl('received')} compact />
-            {receivedCount ? <Counter value={receivedCount} /> : null}
           </TabsTrigger>
           <TabsTrigger value="sent" className="gap-2">
             <Send className="icon-sm" />
@@ -483,11 +489,11 @@ export default function ConnectionsPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Intro Requests tab */}
-        <TabsContent value="intros" className="mt-6 space-y-3">
+        {/* Requests waiting on the reader */}
+        <TabsContent value="received" className="mt-6 space-y-3">
           {isError ? (
             <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-sm text-muted-foreground"><BilingualText en="Requests could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των αιτημάτων." wrap /></p>
+              <p role="alert" className="text-sm text-muted-foreground"><BilingualText en={connectionsEn('requests_failed')} el={connectionsEl('requests_failed')} wrap /></p>
               <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
             </CardContent></Card>
           ) : isLoading ? (
@@ -495,7 +501,7 @@ export default function ConnectionsPage() {
           ) : connections.length === 0 ? (
             <EmptyState
               illustration="default"
-              title={<BilingualText en={connectionsEn('no_intro_requests')} el={connectionsEl('no_intro_requests')} />}
+              title={<BilingualText en={connectionsEn('no_requests_waiting')} el={connectionsEl('no_requests_waiting')} />}
               description={<BilingualText en={connectionsEn('no_intro_desc')} el={connectionsEl('no_intro_desc')} />}
               askAiPrompt={ASK.introsEmpty}
               action={
@@ -521,11 +527,11 @@ export default function ConnectionsPage() {
         </TabsContent>
 
         {/* Standard tabs */}
-        {(['received', 'sent', 'accepted'] as const).map((t) => (
+        {(['sent', 'accepted'] as const).map((t) => (
           <TabsContent key={t} value={t} className="mt-6 space-y-3">
             {isError && tab === t ? (
               <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground"><BilingualText en="Connections could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των συνδέσεων." wrap /></p>
+                <p role="alert" className="text-sm text-muted-foreground"><BilingualText en={t === 'sent' ? connectionsEn('requests_failed') : connectionsEn('connections_failed')} el={t === 'sent' ? connectionsEl('requests_failed') : connectionsEl('connections_failed')} wrap /></p>
                 <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
               </CardContent></Card>
             ) : isLoading && tab === t ? (
@@ -535,36 +541,18 @@ export default function ConnectionsPage() {
                 illustration={t === 'accepted' ? 'connection' : 'default'}
                 title={
                   <BilingualText
-                    en={
-                      t === 'received' ? connectionsEn('no_pending_requests')
-                        : t === 'sent' ? connectionsEn('no_sent_requests')
-                        : connectionsEn('no_connections_yet')
-                    }
-                    el={
-                      t === 'received' ? connectionsEl('no_pending_requests')
-                        : t === 'sent' ? connectionsEl('no_sent_requests')
-                        : connectionsEl('no_connections_yet')
-                    }
+                    en={t === 'sent' ? connectionsEn('no_sent_requests') : connectionsEn('no_connections_yet')}
+                    el={t === 'sent' ? connectionsEl('no_sent_requests') : connectionsEl('no_connections_yet')}
                   />
-                }
-                description={
-                  t === 'received' ? (
-                    <BilingualText
-                      en={connectionsEn('when_people_send')}
-                      el={connectionsEl('when_people_send')}
-                    />
-                  ) : undefined
                 }
                 askAiPrompt={ASK.connectionsEmpty}
                 action={
-                  t !== 'received' ? (
-                    <Button variant="secondary" className="gap-2" asChild>
-                      <Link href="/discover">
-                        <Compass className="icon-sm" />
-                        <BilingualText en={connectionsEn('discover_people')} el={connectionsEl('discover_people')} />
-                      </Link>
-                    </Button>
-                  ) : undefined
+                  <Button variant="secondary" className="gap-2" asChild>
+                    <Link href="/discover">
+                      <Compass className="icon-sm" />
+                      <BilingualText en={connectionsEn('discover_people')} el={connectionsEl('discover_people')} />
+                    </Link>
+                  </Button>
                 }
               />
             ) : (

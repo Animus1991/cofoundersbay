@@ -147,7 +147,9 @@ function IntrosContent() {
   const [forwardNote, setForwardNote] = useState('');
   const [chosen, setChosen] = useState(false);
 
-  const intros = useQuery({ queryKey: qk('intros', 'list'), queryFn: listIntros });
+  // One retry: three silent ones kept a skeleton up for ~7s before saying
+  // anything when the API was down.
+  const intros = useQuery({ queryKey: qk('intros', 'list'), queryFn: listIntros, retry: 1 });
   const sent = intros.data?.sent ?? [];
   const toForward = intros.data?.toForward ?? [];
   const received = intros.data?.received ?? [];
@@ -327,6 +329,18 @@ function IntrosContent() {
           </TabsList>
           {intros.isLoading ? (
             <Skeleton className="h-40 w-full rounded-2xl" />
+          ) : intros.isError && !intros.data ? (
+            // A failed read is not "Nobody has asked you" (docs §87).
+            <Card>
+              <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+                <p role="alert" className="text-sm text-muted-foreground">
+                  <BilingualText en="Your introductions could not be read just now." el="Οι συστάσεις γνωριμίας σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                </p>
+                <Button size="sm" variant="outline" onClick={() => void intros.refetch()} disabled={intros.isFetching}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+              </CardContent>
+            </Card>
           ) : (
             <>
               <TabsContent value="forward" className="space-y-4">
