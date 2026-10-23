@@ -1,7 +1,11 @@
 'use client';
 
 import { SkillEvidencePanel } from '@/components/profile/SkillEvidencePanel';
-import { OwnOpenToPill, VerificationPanel, useMyTrust } from '@/components/profile/ProfileTrust';
+import { OwnOpenToPill, useMyTrust } from '@/components/profile/ProfileTrust';
+import { VerificationCard } from '@/components/settings/VerificationCard';
+import { OpenToCard } from '@/components/settings/OpenToCard';
+import { CompatibilityCard } from '@/components/settings/CompatibilityCard';
+import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { VerifiedBadge } from '@/components/commitments/VerifiedBadge';
 import { ProfileHero } from '@/components/profile/ProfileHero';
@@ -299,6 +303,8 @@ export default function ProfilePage() {
 
   // Verification and "Open to" as Settings holds them (shared cache keys).
   const trust = useMyTrust();
+  // /profile#verification, #open-to, #how-you-work: the cards mount after the profile loads.
+  useScrollToHash();
   const { data: meData, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
@@ -513,13 +519,6 @@ export default function ProfilePage() {
           <RailAction icon={Award} en={profileEn('view_reputation')} el={profileEl('view_reputation')} onClick={() => router.push('/reputation')} />
         </div>
       ),
-    },
-    {
-      id: 'verification',
-      glyph: 'shield',
-      labelEn: profileEn('verification'),
-      labelEl: profileEl('verification'),
-      content: <VerificationPanel email={profile.email} verification={trust.verification} />,
     },
     {
       id: 'similar',
@@ -869,6 +868,18 @@ export default function ProfilePage() {
           </div>
         </div>
         </div>
+
+        {/* Verification, "Open to" and the ten "How you like to work"
+            questions, moved here from Settings (docs §99): they are about
+            how others see and meet this person, so they sit with the
+            profile. Old /settings#verification, #open-to and #how-you-work
+            links are sent on to these anchors. The rail's verification list
+            went with them: the card says each method and its state. */}
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+          <VerificationCard />
+          <OpenToCard />
+        </div>
+        <CompatibilityCard />
       </div>
     </AppShell>
   );

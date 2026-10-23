@@ -715,7 +715,7 @@ export function ConversationalOnboarding() {
                 <ArrowRight className="icon-sm" />
                 <BilingualText en="See my matches" el="Δείτε τις αντιστοιχίσεις σας" compact />
               </Button>
-              <Button variant="outline" className="w-full gap-2" onClick={() => router.push('/settings#how-you-work')}>
+              <Button variant="outline" className="w-full gap-2" onClick={() => router.push('/profile#how-you-work')}>
                 <BilingualText en="Answer the ten work questions" el="Απαντήστε στις δέκα ερωτήσεις συνεργασίας" compact />
               </Button>
               <Button variant="ghost" className="w-full gap-2" onClick={() => router.push(takeReturnTo('/'))} data-testid="onboarding-explore-button">

@@ -24,7 +24,7 @@ import { clearOpenTo, getMyOpenTo, setOpenTo } from '@/lib/open-to-api';
 import { qk } from '@/lib/query-keys';
 
 /**
- * "Open to" in Settings: what this person would take on, and who may see it.
+ * "Open to" on one's own profile (docs §99; it was in Settings): what this person would take on, and who may see it.
  *
  * The default is matching-only, so saving changes ranking and nothing anyone
  * can see. The signal lasts 90 days; saving again renews it.

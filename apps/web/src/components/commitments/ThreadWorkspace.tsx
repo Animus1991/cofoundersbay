@@ -1,5 +1,6 @@
 'use client';
 
+import { PROFILE_VERIFICATION_HREF } from '@/lib/profile-anchors';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -318,7 +319,7 @@ function TermsSpace({
         <div className="space-y-2" role="note">
           <p className="card-body font-medium text-foreground"><BilingualText en={VERIFICATION_REQUIRED_COPY.en} el={VERIFICATION_REQUIRED_COPY.el} wrap /></p>
           <Button asChild size="sm" variant="outline">
-            <Link href="/settings#verification"><BilingualText en="Verify in Settings" el="Επαλήθευση στις Ρυθμίσεις" compact /></Link>
+            <Link href={PROFILE_VERIFICATION_HREF}><BilingualText en="Verify on your profile" el="Επαλήθευση στο προφίλ σας" compact /></Link>
           </Button>
         </div>
       ) : null}

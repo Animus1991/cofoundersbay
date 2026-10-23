@@ -43,11 +43,9 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, getNotificationPreferences, updateNotificationPreferences, getMeProfile, updateProfile } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
-import { VerificationCard } from '@/components/settings/VerificationCard';
 import { openCookieChoices } from '@/lib/cookie-consent';
 import { useScrollToHash } from '@/hooks/useScrollToHash';
-import { OpenToCard } from '@/components/settings/OpenToCard';
-import { CompatibilityCard } from '@/components/settings/CompatibilityCard';
+import { MOVED_SETTINGS_ANCHORS, PROFILE_HOW_YOU_WORK_HREF, PROFILE_OPEN_TO_HREF, PROFILE_VERIFICATION_HREF } from '@/lib/profile-anchors';
 import { getViewerSetting, setViewerSetting } from '@/lib/profile-viewers-api';
 import { COMPAT_COPY, PROFILE_VIEWERS_COPY } from '@cofounderbay/shared';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
@@ -377,9 +375,7 @@ const PAGE_SECTIONS = [
   { id: 'change-password', en: 'Change password', el: 'Αλλαγή κωδικού' },
   { id: 'security', en: 'Security', el: 'Ασφάλεια' },
   { id: 'notifications', en: 'Notifications', el: 'Ειδοποιήσεις' },
-  { id: 'verification', en: 'Verification', el: 'Επαλήθευση' },
-  { id: 'open-to', en: 'Open to', el: 'Ανοιχτός/ή σε' },
-  { id: 'how-you-work', en: COMPAT_COPY.title.en, el: COMPAT_COPY.title.el },
+  { id: 'on-your-profile', en: 'On your profile', el: 'Στο προφίλ σας' },
   { id: 'privacy', en: 'Privacy & Visibility', el: 'Απόρρητο και ορατότητα' },
   { id: 'danger-zone', en: 'Danger Zone', el: 'Επικίνδυνη ζώνη' },
 ] as const;
@@ -670,8 +666,14 @@ function PrivacyCard() {
 export default function SettingsPage() {
   const sayOne = useBilingualString();
   const searchParams = useSearchParams();
-  // `/settings#verification`, `#open-to`, `#language`, `#profile-views`: the cards mount after load.
+  // `/settings#language`, `#profile-views`, `#billing`: the cards mount after load.
   useScrollToHash();
+  // Verification, "Open to" and "How you like to work" moved to the profile
+  // (docs §99); a link that still says /settings#verification lands there.
+  useEffect(() => {
+    const moved = MOVED_SETTINGS_ANCHORS[window.location.hash.slice(1)];
+    if (moved) window.location.replace(moved);
+  }, []);
   const { success, error: showError } = useToast();
   const { t, locale } = useI18n();
   const { displayMode, setDisplayMode } = useLanguagePreference();
@@ -1411,14 +1413,32 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
 
-          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-            <VerificationCard />
-            <OpenToCard />
-          </div>
-          {/* Ten questions and their reasons: the card's own fieldsets sit in two
-              columns, so it takes the full width instead of half of it with the
-              other half blank. */}
-          <CompatibilityCard />
+          {/* Verification, "Open to" and the ten "How you like to work"
+              questions moved to the profile (docs §99). One card says where,
+              for whoever still looks for them here. */}
+          <Card id="on-your-profile" className="scroll-mt-16">
+            <CardHeader>
+              <CardTitle><BilingualText en="On your profile" el="Στο προφίλ σας" compact /></CardTitle>
+              <CardDescription>
+                <BilingualText
+                  en={`Verification, "Open to" and "${COMPAT_COPY.title.en}" are on your profile, with what others see of you.`}
+                  el={`Η επαλήθευση, το «Ανοιχτός/ή σε» και το «${COMPAT_COPY.title.el}» είναι στο προφίλ σας, μαζί με ό,τι βλέπουν οι άλλοι για εσάς.`}
+                  wrap
+                />
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href={PROFILE_VERIFICATION_HREF}><BilingualText en="Verification" el="Επαλήθευση" compact /></Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link href={PROFILE_OPEN_TO_HREF}><BilingualText en="Open to" el="Ανοιχτός/ή σε" compact /></Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link href={PROFILE_HOW_YOU_WORK_HREF}><BilingualText en={COMPAT_COPY.title.en} el={COMPAT_COPY.title.el} compact /></Link>
+              </Button>
+            </CardContent>
+          </Card>
           <PrivacyCard />
           {/* Danger Zone */}
           <Card id="danger-zone" className="scroll-mt-16 border-destructive/30">

@@ -21,7 +21,7 @@ import {
 } from '@/lib/verification-api';
 
 /**
- * "Verification" in Settings: the ways this person has proved who they are,
+ * "Verification" on one's own profile (docs §99; it was in Settings): the ways this person has proved who they are,
  * and the two ways to add one — a code to a work address, or LinkedIn's own
  * verification (only when the server has it set up). Verification is what
  * opens terms and the deal room on the commitments ladder; nothing else

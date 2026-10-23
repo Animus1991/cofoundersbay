@@ -1,5 +1,6 @@
 'use client';
 
+import { PROFILE_HOW_YOU_WORK_HREF } from '@/lib/profile-anchors';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -212,7 +213,7 @@ function CompatibilityModal({
           <div className="space-y-1 text-xs text-muted-foreground">
             <p><BilingualText en={compat.text.en} el={compat.text.el} wrap /></p>
             {!compat.enough && (
-              <Link href="/settings#how-you-work" className="tap-target-y inline-flex items-center gap-1 font-medium text-primary-accessible underline-offset-4 hover:underline">
+              <Link href={PROFILE_HOW_YOU_WORK_HREF} className="tap-target-y inline-flex items-center gap-1 font-medium text-primary-accessible underline-offset-4 hover:underline">
                 <BilingualText en="Answer the working-style questions" el="Απαντήστε στις ερωτήσεις συνεργασίας" compact />
                 <ArrowRight className="icon-sm" aria-hidden="true" />
               </Link>

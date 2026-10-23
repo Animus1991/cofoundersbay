@@ -1,5 +1,6 @@
 'use client';
 
+import { PROFILE_VERIFICATION_HREF } from '@/lib/profile-anchors';
 import Link from 'next/link';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -114,7 +115,7 @@ function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => vo
       {error ? <p role="alert" className="card-body text-status-danger"><BilingualText en={error.en} el={error.el} wrap /></p> : null}
       {error?.reason === 'role_verification_required' || error?.reason === 'verification_required' ? (
         <Button size="sm" variant="outline" asChild>
-          <Link href="/settings#verification"><BilingualText en="Verify in Settings" el="Επαλήθευση στις Ρυθμίσεις" compact /></Link>
+          <Link href={PROFILE_VERIFICATION_HREF}><BilingualText en="Verify on your profile" el="Επαλήθευση στο προφίλ σας" compact /></Link>
         </Button>
       ) : null}
       {budget.data ? (

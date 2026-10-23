@@ -15,7 +15,7 @@ import { qk } from '@/lib/query-keys';
 const CLEAR = 'clear';
 
 /**
- * The compatibility questions in Settings (`#how-you-work`).
+ * The compatibility questions on one's own profile (`/profile#how-you-work`, docs §99; they were in Settings).
  *
  * Each answer saves when it is pressed, and pressing it again clears it, so
  * there is no form to lose. The assistant sets the same answers through one

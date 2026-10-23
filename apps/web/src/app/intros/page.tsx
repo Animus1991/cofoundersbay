@@ -1,5 +1,6 @@
 'use client';
 
+import { PROFILE_VERIFICATION_HREF } from '@/lib/profile-anchors';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
@@ -391,7 +392,7 @@ function IntrosContent() {
                   <div role="alert" className="space-y-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3 text-sm text-foreground">
                     <p><BilingualText en={refusal.en} el={refusal.el} wrap /></p>
                     <Button size="sm" variant="outline" asChild>
-                      <Link href="/settings#verification"><BilingualText en="Verify in Settings" el="Επαλήθευση στις Ρυθμίσεις" compact /></Link>
+                      <Link href={PROFILE_VERIFICATION_HREF}><BilingualText en="Verify on your profile" el="Επαλήθευση στο προφίλ σας" compact /></Link>
                     </Button>
                   </div>
                 ) : null}

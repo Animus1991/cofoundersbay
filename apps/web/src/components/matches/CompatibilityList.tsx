@@ -1,5 +1,6 @@
 'use client';
 
+import { PROFILE_HOW_YOU_WORK_HREF } from '@/lib/profile-anchors';
 import Link from 'next/link';
 import { COMPAT_COPY, COMPAT_MIN_SHARED, type CompatComparison, type CompatVerdict } from '@cofounderbay/shared';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -27,7 +28,7 @@ export function CompatibilityList({ comparison, answeredByYou }: { comparison: C
         </p>
         {typeof answeredByYou === 'number' && answeredByYou < (comparison?.total ?? 10) ? (
           <Button size="sm" variant="outline" asChild>
-            <Link href="/settings#how-you-work">
+            <Link href={PROFILE_HOW_YOU_WORK_HREF}>
               <BilingualText en={`Answer the questions (${answeredByYou} of ${comparison?.total ?? 10})`} el={`Απαντήστε στις ερωτήσεις (${answeredByYou} από ${comparison?.total ?? 10})`} compact />
             </Link>
           </Button>

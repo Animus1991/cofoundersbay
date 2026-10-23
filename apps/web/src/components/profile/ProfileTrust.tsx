@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { BadgeCheck, CheckCircle, Github, Linkedin, Mail, Shield, Briefcase } from 'lucide-react';
+import { BadgeCheck } from 'lucide-react';
 import {
   OPEN_TO_COPY,
   OPEN_TO_VISIBILITY_COPY,
@@ -10,16 +10,15 @@ import {
   type VerificationMethod,
 } from '@cofounderbay/shared';
 import { BilingualText } from '@/components/common/BilingualText';
-import { Button } from '@/components/ui/button';
 import { getMyOpenTo, type MyOpenTo } from '@/lib/open-to-api';
-import { getMyVerification, type MyVerification } from '@/lib/verification-api';
-import { profileEl, profileEn } from '@/lib/i18n/strings-profile';
+import { getMyVerification } from '@/lib/verification-api';
 import { qk } from '@/lib/query-keys';
 
 /**
  * The signed-in person's own trust marks on `/profile`, read from the same
- * endpoints Settings writes (`/verification/me`, `/open-to/me`) and cached
- * under the same keys, so a change in Settings shows here without a reload.
+ * endpoints the profile's Verification and "Open to" cards write
+ * (`/verification/me`, `/open-to/me`) and cached under the same keys, so a
+ * change shows in the header without a reload.
  *
  * Before this, the profile drew a "Verified member" check on every avatar,
  * an "Open to work" pill on every header and "LinkedIn: not connected" in
@@ -50,7 +49,7 @@ export function AvatarVerifiedMark({ methods }: { methods: readonly Verification
 }
 
 /**
- * What the person said they are open to, as Settings holds it. With nothing
+ * What the person said they are open to (the "Open to" card on the profile). With nothing
  * set it offers the setting instead of claiming "Open to work". The pill
  * names who sees the signal, because "Matching only" (the default) means
  * other members do not.
@@ -61,7 +60,7 @@ export function OwnOpenToPill({ openTo }: { openTo: MyOpenTo | undefined }) {
   if (!signal || !kinds.length) {
     return (
       <Link
-        href="/settings#open-to"
+        href="/profile#open-to"
         className="inline-flex items-center rounded-md border border-dashed border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <BilingualText en="Set what you are open to" el="Ορίστε σε τι είστε ανοιχτός/ή" compact />
@@ -71,7 +70,7 @@ export function OwnOpenToPill({ openTo }: { openTo: MyOpenTo | undefined }) {
   const who = OPEN_TO_VISIBILITY_COPY[signal.visibility];
   return (
     <Link
-      href="/settings#open-to"
+      href="/profile#open-to"
       title={`${who.en}: ${who.hintEn} · ${who.el}: ${who.hintEl}`}
       className="inline-flex min-w-0 items-center gap-1.5 rounded-md border border-status-success-border bg-status-success-bg px-3 py-1 text-xs font-medium text-status-success transition-colors hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
@@ -86,55 +85,8 @@ export function OwnOpenToPill({ openTo }: { openTo: MyOpenTo | undefined }) {
   );
 }
 
-type Row = { key: string; en: string; el: string; verified: boolean; icon: React.ElementType; pendingEn: string; pendingEl: string };
-
-/**
- * The profile rail's verification list. Email and GitHub are as before;
- * the rest are the four platform methods (work email, identity and workplace
- * on LinkedIn, the team), each true only when Settings holds that signal.
+/*
+ * The rail's verification list (VerificationPanel) went with docs §99: the
+ * Verification card itself is on the profile now, with every method and its
+ * state; the list's email and GitHub rows had no verification behind them.
  */
-export function VerificationPanel({ email, verification }: { email?: string | null; verification: MyVerification | undefined }) {
-  const has = (m: VerificationMethod) => (verification?.signals ?? []).some((s) => s.method === m);
-  const notYet = { pendingEn: 'Not verified', pendingEl: 'Δεν έχει επαληθευτεί' };
-  const rows: Row[] = [
-    { key: 'email', en: profileEn('email_verified'), el: profileEl('email_verified'), verified: !!email, icon: Mail, pendingEn: profileEn('not_connected'), pendingEl: profileEl('not_connected') },
-    { key: 'work_email', ...VERIFICATION_COPY.work_email, verified: has('work_email'), icon: Briefcase, ...notYet },
-    { key: 'linkedin_identity', ...VERIFICATION_COPY.linkedin_identity, verified: has('linkedin_identity'), icon: Linkedin, ...notYet },
-    { key: 'linkedin_workplace', ...VERIFICATION_COPY.linkedin_workplace, verified: has('linkedin_workplace'), icon: Linkedin, ...notYet },
-    { key: 'admin', ...VERIFICATION_COPY.admin, verified: has('admin'), icon: Shield, ...notYet },
-    { key: 'github', en: profileEn('github_connected'), el: profileEl('github_connected'), verified: false, icon: Github, pendingEn: profileEn('not_connected'), pendingEl: profileEl('not_connected') },
-  ];
-  const verifiedAny = rows.slice(1, 5).some((r) => r.verified);
-  return (
-    <div className="space-y-2.5">
-      {rows.map(({ key, en, el, verified, icon: Icon, pendingEn, pendingEl }) => (
-        /* The status sits under the label, not beside it: in a 320px rail a
-           bilingual status beside a bilingual label left the label 17px. */
-        <div key={key} className="flex items-start gap-2.5 text-xs">
-          <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${verified ? 'bg-status-success-bg' : 'bg-secondary/60'}`}>
-            <Icon className={`icon-sm ${verified ? 'text-status-success' : 'text-muted-foreground'}`} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <span className={`block leading-snug ${verified ? 'text-foreground' : 'text-muted-foreground'}`}>
-              <BilingualText en={en} el={el} compact wrap />
-            </span>
-            {/* No alpha on the muted token: at 0.6 it measures 3.27:1, under AA. */}
-            {!verified && (
-              <span className="mt-0.5 block text-2xs leading-snug text-muted-foreground">
-                <BilingualText en={pendingEn} el={pendingEl} compact wrap />
-              </span>
-            )}
-          </div>
-          {verified && <CheckCircle className="mt-0.5 shrink-0 icon-sm text-status-success" />}
-        </div>
-      ))}
-      <Button variant="outline" size="sm" className="w-full" asChild>
-        <Link href="/settings#verification">
-          {verifiedAny
-            ? <BilingualText en="Manage verification" el="Διαχείριση επαλήθευσης" compact />
-            : <BilingualText en="Verify in Settings" el="Επαλήθευση στις Ρυθμίσεις" compact />}
-        </Link>
-      </Button>
-    </div>
-  );
-}

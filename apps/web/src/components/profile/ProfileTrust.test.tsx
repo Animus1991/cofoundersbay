@@ -3,23 +3,15 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import type { MyOpenTo } from '@/lib/open-to-api';
-import type { MyVerification } from '@/lib/verification-api';
-import { AvatarVerifiedMark, OwnOpenToPill, VerificationPanel } from './ProfileTrust';
+import { AvatarVerifiedMark, OwnOpenToPill } from './ProfileTrust';
 
 /**
- * The own profile's trust marks follow what Settings holds. Before, every
+ * The own profile's trust marks follow what the profile's cards hold. Before, every
  * avatar carried "Verified member", every header "Open to work", and the
  * rail said "LinkedIn: not connected" whatever the person had done.
  */
 
 afterEach(cleanup);
-
-const verification = (methods: MyVerification['signals'][number]['method'][]): MyVerification => ({
-  signals: methods.map((method) => ({ method, verifiedAt: '2026-10-01T00:00:00.000Z' })),
-  verified: methods.length > 0,
-  linkedinAvailable: false,
-  pendingWorkEmail: null,
-});
 
 describe('the avatar check', () => {
   it('is absent without a verification signal', () => {
@@ -37,7 +29,7 @@ describe('the "Open to" pill', () => {
   it('offers the setting when nothing is set, instead of claiming "Open to work"', () => {
     render(<OwnOpenToPill openTo={{ signal: null, active: false }} />);
     const link = screen.getByRole('link', { name: /Set what you are open to/ });
-    expect(link.getAttribute('href')).toBe('/settings#open-to');
+    expect(link.getAttribute('href')).toBe('/profile#open-to');
     expect(screen.queryByText(/Open to work/)).toBeNull();
   });
 
@@ -55,20 +47,17 @@ describe('the "Open to" pill', () => {
   });
 });
 
-describe('the verification list', () => {
-  it('marks only the methods Settings holds', () => {
-    render(<VerificationPanel email="a@b.test" verification={verification(['work_email', 'linkedin_workplace'])} />);
-    const row = (label: RegExp) => screen.getByText(label).closest('div.flex') as HTMLElement;
-    expect(row(/^Work email/).textContent).not.toContain('Not verified');
-    expect(row(/^Workplace, verified on LinkedIn/).textContent).not.toContain('Not verified');
-    expect(row(/^Identity, verified on LinkedIn/).textContent).toContain('Not verified');
-    expect(row(/^Verified by the platform team/).textContent).toContain('Not verified');
-    expect(screen.getByRole('link', { name: /Manage verification/ }).getAttribute('href')).toBe('/settings#verification');
-  });
+describe('the trust cards live on the profile (docs §99)', () => {
+  const read = (rel: string) => readFileSync(join(__dirname, '..', '..', rel), 'utf8');
 
-  it('sends an unverified person to Settings', () => {
-    render(<VerificationPanel email={null} verification={undefined} />);
-    expect(screen.getByRole('link', { name: /Verify in Settings/ }).getAttribute('href')).toBe('/settings#verification');
+  it('the own profile mounts Verification, Open to and How you like to work; Settings does not', () => {
+    const profile = read('app/profile/page.tsx');
+    const settings = read('app/settings/page.tsx');
+    for (const card of ['<VerificationCard', '<OpenToCard', '<CompatibilityCard']) {
+      expect(profile).toContain(card);
+      expect(settings).not.toContain(card);
+    }
+    expect(profile).toContain('useScrollToHash()');
   });
 });
 

@@ -660,7 +660,7 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     const before = await getMyOpenTo();
     await setOpenTo({ kinds, visibility, note: requireString(payload, 'note').trim() || null });
     const prev = before.signal;
-    return { ok: true, href: '/settings#open-to', undo: prev ? { kinds: prev.kinds.join(','), visibility: prev.visibility, note: prev.note ?? '' } : { cleared: true } };
+    return { ok: true, href: '/profile#open-to', undo: prev ? { kinds: prev.kinds.join(','), visibility: prev.visibility, note: prev.note ?? '' } : { cleared: true } };
   },
 
   // The new row's id comes back so the undo removes exactly this link.
@@ -968,13 +968,13 @@ const UNDOS: Record<UndoableActionId, Undo> = {
   set_open_to: async (_payload, context) => {
     if (context?.cleared === true) {
       await clearOpenTo();
-      return { ok: true, href: '/settings#open-to' };
+      return { ok: true, href: '/profile#open-to' };
     }
     const kinds = requireString(context, 'kinds').split(',').filter(isOpenToKind) as OpenToKind[];
     if (!kinds.length) return { ok: false, error: 'Nothing to put back' };
     const visibility = (requireString(context, 'visibility') || 'nobody') as OpenToVisibility;
     await setOpenTo({ kinds, visibility, note: requireString(context, 'note') || null });
-    return { ok: true, href: '/settings#open-to' };
+    return { ok: true, href: '/profile#open-to' };
   },
 
   /** Stops following; the "someone new follows you" notice already went (declared partial). */

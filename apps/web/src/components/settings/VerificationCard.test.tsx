@@ -59,7 +59,7 @@ describe('the ladder’s verification gate (demo world)', () => {
     previewVerificationApi('/api/verification/work_email', 'DELETE', {}, NOW);
     renderWithQuery(<ThreadWorkspace threadId="thr-harbor-alex" />);
     expect(await screen.findAllByText(/Verify yourself once to propose or accept terms/)).toBeTruthy();
-    expect(screen.getByRole('link', { name: /Verify in Settings/ }).getAttribute('href')).toBe('/settings#verification');
+    expect(screen.getByRole('link', { name: /Verify on your profile/ }).getAttribute('href')).toBe('/profile#verification');
     let error: unknown;
     try {
       previewCommitmentsApi('/api/commitments/threads/thr-harbor-alex/terms', '/api/commitments/threads/thr-harbor-alex/terms', 'POST', { role: 'Co-founder', equityPct: 9, vestingMonths: 48, cliffMonths: 12, hoursPerWeek: 40, scope: 'Sales' }, NOW);

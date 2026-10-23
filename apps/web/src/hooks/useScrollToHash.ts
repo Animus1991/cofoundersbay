@@ -7,10 +7,10 @@ import { useEffect } from 'react';
  *
  * A section that mounts after the page has loaded (client-only content, a
  * card waiting on its data) misses the browser's own fragment scroll, so
- * `/settings#verification` - the link the commitments ladder, warm intros and
- * "What's new" all send people to - opened at the top of Settings. This
- * waits for the target, scrolls once, and settles once more if content above
- * it moved. It gives up after `timeoutMs`, and never moves a page the reader
+ * `/settings#verification` (now `/profile#verification`) - the link the
+ * commitments ladder, warm intros and "What's new" all send people to -
+ * opened at the top of the page. This waits for the target, scrolls once,
+ * and lands again while content above it is still moving it. It gives up after `timeoutMs`, and never moves a page the reader
  * has already scrolled.
  */
 export function useScrollToHash(timeoutMs = 4000) {
@@ -38,17 +38,26 @@ export function useScrollToHash(timeoutMs = 4000) {
         const el = document.getElementById(id);
         if (el) {
           if (landedY === null && userScrolled()) return;
-          el.scrollIntoView({ block: 'start' });
+          el.scrollIntoView({ block: 'start', behavior: 'instant' });
           landedY = window.scrollY;
-          // Cards above may still be loading; land again if they pushed it.
-          settle = setTimeout(() => {
+          // Instant, not the page's smooth scroll: while a smooth scroll ran,
+          // the moving scrollY read as the reader scrolling and the hook let
+          // go, so cards loading above pushed the target out of view.
+          // Cards above may still be loading; land again whenever they push
+          // it, for as long as the window lasts. One check at 600ms was not
+          // enough on /profile, where the activity, experience and evidence
+          // cards above the moved cards arrive one after another (docs §99).
+          const landedAt = performance.now();
+          const recheck = () => {
             if (!active || userScrolled()) return;
             const top = el.getBoundingClientRect().top;
             if (Math.abs(top) > 96) {
-              el.scrollIntoView({ block: 'start' });
+              el.scrollIntoView({ block: 'start', behavior: 'instant' });
               landedY = window.scrollY;
             }
-          }, 600);
+            if (performance.now() - landedAt < timeoutMs) settle = setTimeout(recheck, 400);
+          };
+          settle = setTimeout(recheck, 600);
           return;
         }
         if (performance.now() - started > timeoutMs || userScrolled()) return;

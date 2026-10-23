@@ -32,7 +32,7 @@ describe('what is new', () => {
     expect(founder).toEqual(expect.arrayContaining(['/commitments/new', '/scout', '/intros', '/transparency']));
     const investor = whatsNewItems('investor').map((i) => i.href);
     expect(investor).not.toContain('/scout');
-    expect(investor).toEqual(expect.arrayContaining(['/updates', '/intros', '/settings#verification']));
+    expect(investor).toEqual(expect.arrayContaining(['/updates', '/intros', '/profile#verification']));
   });
 
   it('can be hidden, and stays hidden', () => {
