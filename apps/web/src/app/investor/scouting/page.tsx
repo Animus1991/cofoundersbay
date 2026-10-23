@@ -9,21 +9,15 @@ import {
   ArrowUpDown,
   Compass,
   Eye,
-  Filter,
   Flame,
   GanttChart,
   GitCompare,
-  Globe,
   LayoutGrid,
   List,
   MessageCircle,
   MoreVertical,
-  Rocket,
   Search,
-  SlidersHorizontal,
-  Star,
   X,
-  Zap,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
@@ -37,7 +31,7 @@ import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -51,15 +45,16 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { ASK } from '@/lib/page-questions';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { RowHead } from '@/components/dashboard/SectionCard';
@@ -158,10 +153,15 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: qk('investor') });
-      success('Added to your pipeline', `${startup.name} is in Reviewing.`);
+      success('Added to your pipeline', bilingualInline(`${startup.name} is in Reviewing.`, `${startup.name}: Υπό εξέταση.`));
     },
     onError: (err) => showError('Could not add to the pipeline', err instanceof Error ? err.message : undefined),
   });
+
+  // A startup already on the board opens its deal; the card's name, its
+  // "View" and the menu's "View Details" opened three different pages for
+  // the same startup (the first two a deal that did not exist).
+  const href = `/startups/${existing?.id ?? startup.id}`;
 
   // The Opportunities card: the logo and name with the tagline under it,
   // the watch control and menu at the right, then facts, the two scores and
@@ -180,7 +180,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
           )}
           title={(
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              <Link href={`/startups/${startup.id}`} className="transition-colors hover:text-primary-accessible">
+              <Link href={href} className="transition-colors hover:text-primary-accessible">
                 {startup.name}
               </Link>
               {startup.isHot && <Badge variant="destructive" className="h-4 gap-0.5 px-1.5 text-2xs"><Flame className="h-2.5 w-2.5" aria-hidden="true" /><BilingualText en="Hot" el="Δημοφιλές" compact /></Badge>}
@@ -191,7 +191,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
           asideStays
           aside={(
             <>
-              <Button variant="ghost" size="icon" className="h-7 w-7 gap-1 sm:w-auto sm:px-2" onClick={() => setInWatchlist()} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'} aria-label={inWatchlist ? `Remove ${startup.name} from watchlist` : `Add ${startup.name} to watchlist`} aria-pressed={inWatchlist}>
+              <Button variant="ghost" size="icon" className="h-7 w-7 gap-1 sm:w-auto sm:px-2" onClick={() => setInWatchlist()} aria-label={inWatchlist ? bilingualAria(`Remove ${startup.name} from watchlist`, `Αφαίρεση από τη λίστα παρακολούθησης: ${startup.name}`) : bilingualAria(`Add ${startup.name} to watchlist`, `Προσθήκη στη λίστα παρακολούθησης: ${startup.name}`)} aria-pressed={inWatchlist}>
                 <Eye className={cn('icon-sm', inWatchlist ? 'text-primary-accessible fill-primary/20' : 'text-muted-foreground')} />
                 <span className="hidden sm:inline text-xs"><BilingualText en={inWatchlist ? 'Watching' : 'Watch'} el={inWatchlist ? 'Σε παρακολούθηση' : 'Παρακολούθηση'} compact /></span>
               </Button>
@@ -202,24 +202,9 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    {/* A startup already on the board opens its deal. */}
-                    <Link href={`/startups/${existing?.id ?? startup.id}`}><Eye className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem disabled={addToPipeline.isPending} onSelect={() => addToPipeline.mutate()}>
-                    <GanttChart className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Add to Pipeline" el="Προσθήκη στο pipeline" compact />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setInWatchlist()}>
-                    <Eye className="mr-2 icon-sm" />{inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <UnavailableMenuItem
-                    icon={<MessageCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
-                    en="Request Intro"
-                    el="Αίτημα γνωριμίας"
-                    reasonEn="Scouted startups are not linked to founder accounts yet."
-                    reasonEl="Οι startups της αναζήτησης δεν συνδέονται ακόμη με λογαριασμούς ιδρυτών."
-                  />
+                  {/* View Details, Add to Pipeline, Add to Watchlist and
+                      Request Intro were the card's own View, Add to pipeline,
+                      Watch and Intro a second time (docs §93). */}
                   <UnavailableMenuItem
                     icon={<GitCompare className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
                     en="Compare"
@@ -263,12 +248,12 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
 
         <CardFoot>
           <Button size="sm" variant="default" asChild>
-            <Link href={`/startups/${startup.id}`}><Eye className="mr-1 icon-sm" /><BilingualText en="View" el="Προβολή" compact /></Link>
+            <Link href={href}><Eye className="mr-1 icon-sm" /><BilingualText en="View" el="Προβολή" compact /></Link>
           </Button>
           {/* Both had no handler: Pipeline is the menu's Add to Pipeline,
               and Intro has no founder account to reach yet. */}
           <Button size="sm" variant="outline" disabled={addToPipeline.isPending} onClick={() => addToPipeline.mutate()}>
-            <GanttChart className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Pipeline" el="Pipeline" compact />
+            <GanttChart className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Add to pipeline" el="Προσθήκη στο pipeline" compact />
           </Button>
           <WithDisabledReason reasonEn="Scouted startups are not linked to founder accounts yet" reasonEl="Οι νεοφυείς επιχειρήσεις της αναζήτησης δεν συνδέονται ακόμη με λογαριασμούς ιδρυτών">
             <Button size="sm" variant="outline" disabled>
@@ -364,7 +349,7 @@ export default function InvestorScoutingPage() {
         `${s.name} · ${s.industry}, ${s.stage}, ${s.businessModel} · ${s.location} · match ${s.matchScore}% · raising ${s.raisingAmount}${dealFor(s) ? ' · watched' : ''}`,
       ),
       total: startups.length,
-      sample: true,
+      sample: startups.length > 0,
     },
   ]);
   usePageControls([
@@ -387,10 +372,64 @@ export default function InvestorScoutingPage() {
     { id: 'add_to_pipeline', labelEn: 'Add startup to pipeline', labelEl: 'Προσθήκη startup στο pipeline', writes: true, options: startupRows(startups), run: (v) => scout(byId(v), 'pipeline') },
   ]);
   const activeFilters = [industry !== 'all' && industry, stage !== 'all' && stage, model !== 'all' && model].filter(Boolean) as string[];
+  const hot = startups.filter((s) => s.isHot).length;
+  const narrowed = activeFilters.length > 0 || search.trim() !== '';
+
+  /*
+   * The featured pair stood above the list it is part of (the same two
+   * cards, badged "Featured", lead it). It is the page's aside, with the way
+   * to the board the results header carried: auxiliary to the list, so in
+   * the rail (AGENTS: page rail).
+   */
+  const rail: PageRailSection[] | undefined = startups.length === 0 ? undefined : [
+    {
+      id: 'featured',
+      glyph: 'star',
+      labelEn: 'Featured',
+      labelEl: 'Προτεινόμενες',
+      badge: featured.length || null,
+      content: (
+        <div className="space-y-3">
+          {featured.map((s) => (
+            <RowHead
+              key={s.id}
+              mark={(
+                <Avatar className="h-10 w-10 rounded-xl">
+                  <AvatarImage src={s.logoUrl} alt="" className="rounded-xl" />
+                  <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initialsOf(s.name)}</AvatarFallback>
+                </Avatar>
+              )}
+              title={<span className="block truncate">{s.name}</span>}
+              subtitle={<BilingualText en={`${s.matchScore}% match · raising ${s.raisingAmount}`} el={`${s.matchScore}% ταίριασμα · αντλεί ${s.raisingAmount}`} compact />}
+            />
+          ))}
+          {featured.length === 0 ? (
+            <p className="text-sm text-muted-foreground"><BilingualText en="No startup is featured right now." el="Καμία startup δεν προτείνεται αυτή τη στιγμή." wrap /></p>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      id: 'board',
+      glyph: 'target',
+      labelEn: 'Your board',
+      labelEl: 'Ο πίνακάς σας',
+      content: (
+        <div className="space-y-2 text-sm">
+          <p className="text-muted-foreground">
+            <BilingualText en="Watch puts a startup on your watchlist; Add to pipeline puts it in Reviewing." el="Η Παρακολούθηση βάζει μια startup στη λίστα σας· η Προσθήκη στο pipeline τη βάζει στο «Υπό εξέταση»." wrap />
+          </p>
+          <Link href="/investor/watchlist" className="block w-fit text-primary-accessible hover:underline"><BilingualText en="Open the watchlist" el="Άνοιγμα της λίστας παρακολούθησης" compact /></Link>
+          <Link href="/investor/pipeline" className="block w-fit text-primary-accessible hover:underline"><BilingualText en="Open the pipeline" el="Άνοιγμα του pipeline" compact /></Link>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <AppShell showHelp
-      actions={
+      rail={rail}
+      actions={startups.length === 0 ? undefined :
         <>
           <div className="flex items-center gap-2">
             <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label={bilingualAria('List view', 'Προβολή λίστας')} aria-pressed={viewMode === 'list'}>
@@ -404,36 +443,35 @@ export default function InvestorScoutingPage() {
       }
     >
       <div className="space-y-6">
-        {/* Featured */}
-        {featured.length > 0 && (
-          <Card className="border-primary-muted bg-primary-subtle">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2"><Zap className="icon-sm text-muted-foreground" aria-hidden="true" /><BilingualText en="Featured Startups" el="Προτεινόμενες startups" compact /></CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
-              {featured.map(s => (
-                <RowHead
-                  key={s.id}
-                  mark={(
-                    <Avatar className="h-10 w-10 rounded-xl">
-                      <AvatarImage src={s.logoUrl} alt="" className="rounded-xl" />
-                      <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initialsOf(s.name)}</AvatarFallback>
-                    </Avatar>
-                  )}
-                  title={<Link href={`/startups/${s.id}`} className="transition-colors hover:text-primary-accessible">{s.name}</Link>}
-                  subtitle={<span className="line-clamp-1">{s.tagline}</span>}
-                  aside={(
-                    <>
-                      <span className="font-medium tabular-nums text-primary-accessible"><BilingualText en={`${s.matchScore}% match`} el={`${s.matchScore}% ταίριασμα`} compact /></span>
-                      <span className="tabular-nums">{s.raisingAmount}</span>
-                    </>
-                  )}
-                />
-              ))}
+        {startups.length > 0 ? (
+          // The directory is the showcase's; it said nothing of it.
+          <SampleDataNotice
+            surface="Scouting"
+            detail="These startups are illustrative; scouting has no startup directory of its own yet. Watching one or adding it to the pipeline does write to your own board."
+            askAiPrompt={ASK.scoutingSample}
+          />
+        ) : null}
+
+        {startups.length === 0 ? (
+          /*
+           * With no directory behind it, a member's scouting said "0 startups
+           * found · 3 trending" and "Try adjusting your filters" over no
+           * filters. It says what is missing and what does work.
+           */
+          <Card>
+            <CardContent className="space-y-3 pt-6">
+              <h2 className="card-title text-foreground"><BilingualText en="No startups to scout yet" el="Δεν υπάρχουν ακόμη startups για ανίχνευση" wrap /></h2>
+              <p className="card-body text-muted-foreground">
+                <BilingualText en="Scouting has no startup directory yet. Founders are in Discover; a startup you track lives on your watchlist and pipeline." el="Η ανίχνευση δεν έχει ακόμη κατάλογο startups. Οι ιδρυτές είναι στην Ανακάλυψη· μια startup που παρακολουθείτε βρίσκεται στη λίστα παρακολούθησης και στο pipeline." wrap />
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" asChild><Link href="/discover"><BilingualText en="Open Discover" el="Άνοιγμα Ανακάλυψης" compact /></Link></Button>
+                <Button size="sm" variant="outline" asChild><Link href="/investor/pipeline"><BilingualText en="Your pipeline" el="Το pipeline σας" compact /></Link></Button>
+              </div>
             </CardContent>
           </Card>
-        )}
-
+        ) : (
+        <>
         {/* Filters */}
         <div className="flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -442,21 +480,21 @@ export default function InvestorScoutingPage() {
               <Input aria-label={bilingualAria("Search startups", "Αναζήτηση startups")} placeholder={sayOne("Search by name, industry, or keyword…", "Αναζήτηση με όνομα, κλάδο ή λέξη-κλειδί…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={industry} onValueChange={setIndustry}>
-              <SelectTrigger aria-label="Industry" className="w-full sm:w-[140px]"><SelectValue placeholder={sayOne("Industry", "Κλάδος")} /></SelectTrigger>
+              <SelectTrigger aria-label={bilingualAria('Industry', 'Κλάδος')} className="w-full sm:w-[140px]"><SelectValue placeholder={sayOne("Industry", "Κλάδος")} /></SelectTrigger>
               <SelectContent>
-                {industries.map(i => <SelectItem key={i} value={i}>{i === 'all' ? 'All Industries' : i}</SelectItem>)}
+                {industries.map(i => <SelectItem key={i} value={i}>{i === 'all' ? <BilingualText en="All industries" el="Όλοι οι κλάδοι" compact /> : i}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={stage} onValueChange={setStage}>
-              <SelectTrigger aria-label="Stage" className="w-full sm:w-[130px]"><SelectValue placeholder={sayOne("Stage", "Στάδιο")} /></SelectTrigger>
+              <SelectTrigger aria-label={bilingualAria('Stage', 'Στάδιο')} className="w-full sm:w-[130px]"><SelectValue placeholder={sayOne("Stage", "Στάδιο")} /></SelectTrigger>
               <SelectContent>
-                {stages.map(s => <SelectItem key={s} value={s}>{s === 'all' ? 'All Stages' : s}</SelectItem>)}
+                {stages.map(s => <SelectItem key={s} value={s}>{s === 'all' ? <BilingualText en="All stages" el="Όλα τα στάδια" compact /> : s}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={model} onValueChange={setModel}>
               <SelectTrigger aria-label={bilingualAria('Business model', 'Επιχειρηματικό μοντέλο')} className="w-full sm:w-[120px]"><SelectValue placeholder={sayOne("Model", "Μοντέλο")} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all"><BilingualText en="All Models" el="Όλα τα μοντέλα" compact /></SelectItem>
+                <SelectItem value="all"><BilingualText en="All models" el="Όλα τα μοντέλα" compact /></SelectItem>
                 {['B2B', 'B2C', 'B2B2C', 'Marketplace'].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -475,7 +513,7 @@ export default function InvestorScoutingPage() {
               {activeFilters.map(f => (
                 <Badge key={f} variant="secondary" data-chip="" className="gap-1 text-xs">
                   {f}
-                  <button aria-label={`Remove filter ${f}`} onClick={() => { if (f === industry) setIndustry('all'); else if (f === stage) setStage('all'); else setModel('all'); }}>
+                  <button type="button" aria-label={bilingualAria(`Remove filter ${f}`, `Αφαίρεση φίλτρου ${f}`)} onClick={() => { if (f === industry) setIndustry('all'); else if (f === stage) setStage('all'); else setModel('all'); }}>
                     <X className="icon-sm" />
                   </button>
                 </Badge>
@@ -489,11 +527,10 @@ export default function InvestorScoutingPage() {
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{filtered.length}</span>{' '}<BilingualText en={filtered.length === 1 ? 'startup found' : 'startups found'} el={filtered.length === 1 ? 'startup βρέθηκε' : 'startups βρέθηκαν'} compact />
-            {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 inline-flex items-center gap-1 text-status-warning"><Flame className="h-3 w-3" aria-hidden="true" /><BilingualText en={`${ALL_STARTUPS.filter(s => s.isHot).length} trending`} el={`${ALL_STARTUPS.filter(s => s.isHot).length} σε άνοδο`} compact /></span>}
+            {/* Counted over the startups listed, and named as the cards
+                name them ("Hot"), not "trending". */}
+            {hot > 0 && <span className="ml-2 inline-flex items-center gap-1 text-status-warning"><Flame className="h-3 w-3" aria-hidden="true" /><BilingualText en={`${hot} hot`} el={`${hot} δημοφιλείς`} compact /></span>}
           </p>
-          <Link href="/investor/pipeline" className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
-            <GanttChart className="icon-sm" /><BilingualText en="View Pipeline" el="Προβολή pipeline" compact />
-          </Link>
         </div>
 
         {/* Results */}
@@ -507,11 +544,15 @@ export default function InvestorScoutingPage() {
                 <Compass className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
                 <h3 className="card-title text-foreground"><BilingualText en="No startups found" el="Δεν βρέθηκαν startups" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Try adjusting your filters or search term" el="Δοκιμάστε να αλλάξετε φίλτρα ή αναζήτηση" wrap /></p>
-                <Button variant="outline" size="sm" className="mt-4" onClick={() => { setIndustry('all'); setStage('all'); setModel('all'); setSearch(''); }}><BilingualText en="Clear Filters" el="Καθαρισμός φίλτρων" compact /></Button>
+                {narrowed ? (
+                  <Button variant="outline" size="sm" className="mt-4" onClick={() => { setIndustry('all'); setStage('all'); setModel('all'); setSearch(''); }}><BilingualText en="Clear Filters" el="Καθαρισμός φίλτρων" compact /></Button>
+                ) : null}
               </CardContent>
             </Card>
           )}
         </div>
+        </>
+        )}
       </div>
     </AppShell>
   );

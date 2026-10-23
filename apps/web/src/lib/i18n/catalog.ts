@@ -457,6 +457,15 @@ const el: Record<string, string> = {
     'Δεν έχετε ακόμη προθεσμίες ορόσημων, προγραμματισμένες συνεδρίες ή εκδηλώσεις που θα παρακολουθήσετε. Αυτά είναι δείγματα, για να γνωρίσετε τη διάταξη.',
   'Documents, investors and the access log are illustrative — the data room has no backend storage yet.':
     'Τα έγγραφα, οι επενδυτές και το αρχείο πρόσβασης είναι ενδεικτικά — το data room δεν αποθηκεύεται ακόμη στον server.',
+  Scouting: 'Ανίχνευση',
+  'These deals are illustrative; your own appear here once you add a startup from Scouting.':
+    'Αυτές οι συμφωνίες είναι ενδεικτικές· οι δικές σας εμφανίζονται εδώ μόλις προσθέσετε μια startup από την Ανίχνευση.',
+  'These companies are illustrative; a deal you mark as invested in the pipeline replaces them.':
+    'Αυτές οι εταιρείες είναι ενδεικτικές· μια συμφωνία που σημειώνετε ως επένδυση στο pipeline τις αντικαθιστά.',
+  'These startups are illustrative; scouting has no startup directory of its own yet. Watching one or adding it to the pipeline does write to your own board.':
+    'Αυτές οι startups είναι ενδεικτικές· η ανίχνευση δεν έχει ακόμη δικό της κατάλογο. Η παρακολούθηση ή η προσθήκη στο pipeline γράφει όμως στον δικό σας πίνακα.',
+  'These startups are illustrative; one you watch from Scouting replaces them.':
+    'Αυτές οι startups είναι ενδεικτικές· μια startup που παρακολουθείτε από την Ανίχνευση τις αντικαθιστά.',
   "These endorsements are samples written by the demo's own people. Approve and Decline change this screen only.":
     'Αυτές οι συστάσεις είναι δείγματα, γραμμένα από τα πρόσωπα του demo. Η έγκριση και η απόρριψη αλλάζουν μόνο αυτή την οθόνη.',
   'Your network has not posted yet, so these posts are samples that show how the feed reads.':

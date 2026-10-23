@@ -124,6 +124,26 @@ export function EmptyLine({ en, el, action }: { en: string; el?: string; action?
 }
 
 /**
+ * A section whose rows were not read: it says so, where an empty line would
+ * have claimed there are none, with the one move that helps (AGENTS: failed
+ * reads, docs §93). Same axis and type as `EmptyLine`.
+ */
+export function FailedLine({ en, el, onRetry, busy }: { en: string; el: string; onRetry?: () => void; busy?: boolean }) {
+  return (
+    <div className="space-y-2">
+      <p role="alert" className="text-sm text-muted-foreground">
+        <BilingualText en={en} el={el} stacked wrap />
+      </p>
+      {onRetry ? (
+        <Button size="sm" variant="outline" disabled={busy} onClick={onRetry}>
+          <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+/**
  * A row inside a section card, set like `CardHead`: a mark (a person's
  * circle, an organisation's rounded square, or nothing), the title with the
  * line under it, and one state, time or figure at the right - which drops

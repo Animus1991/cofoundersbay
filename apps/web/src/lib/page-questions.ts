@@ -326,6 +326,11 @@ export const ASK = {
     el: 'Γιατί το data room δείχνει δείγματα εγγράφων;',
     answer: 'samples',
   },
+  scoutingSample: {
+    en: 'Why does scouting show sample startups?',
+    el: 'Γιατί η ανίχνευση δείχνει δείγματα startups;',
+    answer: 'samples',
+  },
   earningsSample: {
     en: 'Why does the earnings page show sample transactions?',
     el: 'Γιατί η σελίδα εσόδων δείχνει δείγματα συναλλαγών;',

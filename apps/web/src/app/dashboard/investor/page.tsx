@@ -23,7 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
+import { EmptyLine, FailedLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { StatusText } from '@/components/common/StatusText';
 import { useSession } from '@/hooks/useSession';
@@ -155,13 +155,13 @@ export default function InvestorDashboard() {
     staleTime: 60_000,
     retry: 0,
   });
-  const { data: dealsPage, isLoading: dealsLoading } = useQuery({
+  const { data: dealsPage, isLoading: dealsLoading, isError: dealsError, isFetching: dealsFetching, refetch: refetchDeals } = useQuery({
     queryKey: qk('investor', 'deals', 'all'),
     queryFn: () => listInvestorDeals({ limit: 100 }),
     staleTime: 60_000,
     retry: 0,
   });
-  const { data: activityPage } = useQuery({
+  const { data: activityPage, isError: activityError, isFetching: activityFetching, refetch: refetchActivity } = useQuery({
     queryKey: qk('investor', 'activity'),
     queryFn: () => getInvestorActivity(20),
     staleTime: 60_000,
@@ -169,6 +169,15 @@ export default function InvestorDashboard() {
   });
 
   const deals = dealsPage?.deals ?? [];
+  /*
+   * With the board unread, the sections said "No deal is between review and
+   * term sheet", "Mark a deal as invested…" and "Startups you watch… appear
+   * here": three claims about a board nobody read. One section says the
+   * deals were not read, with Try again; the two that list the same rows
+   * wait for it (docs §93).
+   */
+  const dealsFailed = dealsError && !dealsPage;
+  const activityFailed = activityError && !activityPage;
   const discovered = deals.filter((d) => d.pipelineStage === 'discovered').slice(0, 4);
   const active = deals.filter((d) => ACTIVE_STAGES.includes(d.pipelineStage));
   const invested = deals.filter((d) => d.pipelineStage === 'invested');
@@ -222,7 +231,9 @@ export default function InvestorDashboard() {
             title={active[0].name}
             reasonEn={STAGE_LABEL[active[0].pipelineStage]?.en}
             reasonEl={STAGE_LABEL[active[0].pipelineStage]?.el}
-            href="/investor/pipeline"
+            // "Open" over one named deal opened the whole board; it opens
+            // the deal.
+            href={`/startups/${active[0].id}`}
             actionEn="Open"
             actionEl="Άνοιγμα"
           />
@@ -231,7 +242,7 @@ export default function InvestorDashboard() {
         {/* The four figures, each linking to the page that holds its rows. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <MetricTile icon={Briefcase} label="Deal flow" labelEl="Ροή συμφωνιών" value={summary?.totalDeals ?? '—'} caption="Deals on your board" captionEl="Συμφωνίες στον πίνακά σας" href="/investor/pipeline" />
-          <MetricTile icon={Target} label="Active deals" labelEl="Ενεργές συμφωνίες" value={summary ? active.length : '—'} caption="Reviewing to negotiating" captionEl="Από αξιολόγηση έως διαπραγμάτευση" href="/investor/pipeline" />
+          <MetricTile icon={Target} label="Active deals" labelEl="Ενεργές συμφωνίες" value={dealsPage ? active.length : '—'} caption="Reviewing to negotiating" captionEl="Από αξιολόγηση έως διαπραγμάτευση" href="/investor/pipeline" />
           <MetricTile
             icon={Building2}
             label="Portfolio"
@@ -277,11 +288,20 @@ export default function InvestorDashboard() {
                   }
                 />
               ))}
-              {!dealsLoading && active.length === 0 && (
+              {dealsFailed ? (
+                <FailedLine
+                  en="Your deals could not be read just now, so active deals, the portfolio and new finds are not shown."
+                  el="Οι συμφωνίες σας δεν διαβάστηκαν αυτή τη στιγμή, οπότε δεν εμφανίζονται ενεργές συμφωνίες, χαρτοφυλάκιο και νέες ανακαλύψεις."
+                  busy={dealsFetching}
+                  onRetry={() => void refetchDeals()}
+                />
+              ) : null}
+              {!dealsLoading && !dealsFailed && active.length === 0 && (
                 <EmptyLine en="No deal is between review and term sheet right now." el="Καμία συμφωνία δεν είναι αυτή τη στιγμή μεταξύ αξιολόγησης και term sheet." />
               )}
             </SectionCard>
 
+            {dealsFailed ? null : (
             <SectionCard title="Portfolio" titleEl="Χαρτοφυλάκιο" icon={PieChart} action={{ href: '/investor/portfolio', label: 'All companies', labelEl: 'Όλες οι εταιρείες' }} contentClassName="card-rows">
               {invested.map((deal) => {
                 const x = multiple(deal);
@@ -304,15 +324,21 @@ export default function InvestorDashboard() {
                 <EmptyLine en="Mark a deal as invested in the pipeline to track it here." el="Σημειώστε μια συμφωνία ως επένδυση στο pipeline για να την παρακολουθείτε εδώ." />
               )}
             </SectionCard>
+            )}
 
+            {dealsFailed ? null : (
             <SectionCard title="Recently discovered" titleEl="Πρόσφατες ανακαλύψεις" icon={Rocket} action={{ href: '/investor/scouting', label: 'Scout more', labelEl: 'Περισσότερα' }} contentClassName="card-rows">
               {discovered.map((deal) => (
                 <DealRow
                   key={deal.id}
                   deal={deal}
+                  // "€200K" alone, in the accent, beside "Asking €750K" in
+                  // the section above: the same figure says what it is.
                   trailing={
                     deal.askAmountCents != null ? (
-                      <p className="text-sm font-semibold tabular-nums text-primary-accessible">{money(deal.askAmountCents, deal.currency)}</p>
+                      <p className="text-xs tabular-nums text-muted-foreground">
+                        <BilingualText en={`Asking ${money(deal.askAmountCents, deal.currency)}`} el={`Ζητά ${money(deal.askAmountCents, deal.currency)}`} compact />
+                      </p>
                     ) : null
                   }
                 />
@@ -321,6 +347,7 @@ export default function InvestorDashboard() {
                 <EmptyLine en="Startups you watch from Scouting appear here first." el="Οι startups που παρακολουθείτε από την Ανίχνευση εμφανίζονται πρώτα εδώ." />
               )}
             </SectionCard>
+            )}
           </div>
 
           <div className="space-y-6">
@@ -337,8 +364,17 @@ export default function InvestorDashboard() {
             />
 
             <SectionCard title="Board mix" titleEl="Σύνθεση πίνακα" contentClassName="space-y-4">
-              <Distribution title="Industries" titleEl="Κλάδοι" rows={leaningIndustries} total={deals.length} />
-              <Distribution title="Company stages" titleEl="Στάδια εταιρειών" rows={leaningStages} total={deals.length} />
+              {dealsFailed ? (
+                // Two "—" under "Counted from the deals on your board".
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en="Your deals could not be read just now." el="Οι συμφωνίες σας δεν διαβάστηκαν αυτή τη στιγμή." stacked wrap />
+                </p>
+              ) : (
+                <>
+                  <Distribution title="Industries" titleEl="Κλάδοι" rows={leaningIndustries} total={deals.length} />
+                  <Distribution title="Company stages" titleEl="Στάδια εταιρειών" rows={leaningStages} total={deals.length} />
+                </>
+              )}
               <p className="text-xs text-muted-foreground">
                 <BilingualText
                   en="Counted from the deals on your board. State your own focus on your profile."
@@ -365,7 +401,9 @@ export default function InvestorDashboard() {
                   />
                 </Link>
               ))}
-              {activity.length === 0 && (
+              {activityFailed ? (
+                <FailedLine en="Recent activity could not be read just now." el="Η πρόσφατη δραστηριότητα δεν διαβάστηκε αυτή τη στιγμή." busy={activityFetching} onRetry={() => void refetchActivity()} />
+              ) : activity.length === 0 && (
                 <EmptyLine en="Moves, notes and meetings on your deals show up here." el="Κινήσεις, σημειώσεις και συναντήσεις στις συμφωνίες σας εμφανίζονται εδώ." />
               )}
             </SectionCard>

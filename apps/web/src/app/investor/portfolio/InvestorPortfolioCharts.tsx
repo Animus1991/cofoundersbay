@@ -9,7 +9,8 @@ import {
 type ValueDatum = { month: string; value: number };
 type SectorDatum = { name: string; value: number; color: string };
 
-export function PortfolioValueChart({ data }: { data: ValueDatum[] }) {
+// The tooltip's word comes from the page, in the reader's language (it was 'Value' only).
+export function PortfolioValueChart({ data, valueLabel = 'Value' }: { data: ValueDatum[]; valueLabel?: string }) {
   return (
     <ResponsiveContainer width="100%" height={200}>
       <AreaChart data={data}>
@@ -22,14 +23,14 @@ export function PortfolioValueChart({ data }: { data: ValueDatum[] }) {
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
         <XAxis dataKey="month" tick={{ fontSize: 11 }} />
         <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `€${v}K`} />
-        <RechartsTooltip formatter={(v: number) => [`€${v}K`, 'Value']} />
+        <RechartsTooltip formatter={(v: number) => [`€${v}K`, valueLabel]} />
         <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="url(#portGrad)" strokeWidth={2} />
       </AreaChart>
     </ResponsiveContainer>
   );
 }
 
-export function SectorMixChart({ data }: { data: SectorDatum[] }) {
+export function SectorMixChart({ data, investedLabel = 'Invested' }: { data: SectorDatum[]; investedLabel?: string }) {
   return (
     <ResponsiveContainer width="100%" height={200}>
       <RPieChart>
@@ -39,7 +40,7 @@ export function SectorMixChart({ data }: { data: SectorDatum[] }) {
           ))}
         </Pie>
         <Legend />
-        <RechartsTooltip formatter={(v: number) => [`€${v}K`, 'Invested']} />
+        <RechartsTooltip formatter={(v: number) => [`€${v}K`, investedLabel]} />
       </RPieChart>
     </ResponsiveContainer>
   );

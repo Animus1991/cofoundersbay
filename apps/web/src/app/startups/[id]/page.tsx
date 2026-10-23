@@ -19,7 +19,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import {
-  ApiError,
   addInvestorDealEvent,
   getInvestorDeal,
   updateInvestorDeal,
@@ -31,7 +30,10 @@ import { qk } from '@/lib/query-keys';
 import { CANCELLED, usePageControls } from '@/lib/page-controls';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
-import { bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline, formatCompactMoney } from '@/lib/i18n/format';
+import { isNotFound } from '@/lib/read-status';
+import { dealEventTitleEl } from '@/lib/i18n/deal-events';
+import { cn } from '@/lib/utils';
 
 const STAGE_LABEL: Record<PipelineStage, { en: string; el: string }> = {
   discovered: { en: 'Discovered', el: 'Εντοπίστηκε' },
@@ -79,7 +81,7 @@ export default function StartupDealPage() {
 
   const moveTo = useMutation({
     mutationFn: (stage: PipelineStage) => updateInvestorDeal(id, { pipelineStage: stage }),
-    onSuccess: (_d, stage) => { success('Stage updated', STAGE_LABEL[stage].en); refresh(); },
+    onSuccess: (_d, stage) => { success('Stage updated', bilingualInline(STAGE_LABEL[stage].en, STAGE_LABEL[stage].el)); refresh(); },
     onError: (e) => showError('Could not move the deal', e instanceof Error ? e.message : undefined),
   });
 
@@ -154,7 +156,7 @@ export default function StartupDealPage() {
 
   // "Not on your board" only when the answer says so: a read that failed
   // (the API down) said the startup was missing (docs §86).
-  if (isError && !(readError instanceof ApiError && (readError.status === 404 || readError.status === 403))) {
+  if (isError && !isNotFound(readError)) {
     return (
       <AppShell title="Startup" titleEl="Startup">
         <Card>
@@ -187,7 +189,7 @@ export default function StartupDealPage() {
             <p className="mx-auto max-w-md text-sm text-muted-foreground">
               <BilingualText
                 en="This startup is not on your deal board. Add it from Scouting or the watchlist, then it opens here with its stage, notes and history."
-                el="Αυτή η startup δεν είναι στον πίνακα συμφωνιών σας. Προσθέστε τη από την Αναζήτηση ή τη λίστα παρακολούθησης."
+                el="Αυτή η startup δεν είναι στον πίνακα συμφωνιών σας. Προσθέστε τη από την Αναζήτηση ή τη λίστα παρακολούθησης· τότε ανοίγει εδώ με το στάδιο, τις σημειώσεις και το ιστορικό της."
                 compact
                 wrap
               />
@@ -278,13 +280,19 @@ export default function StartupDealPage() {
                     <button
                       type="button"
                       aria-current={deal.pipelineStage === s ? 'step' : undefined}
-                      onClick={() => s !== deal.pipelineStage && moveTo.mutate(s)}
+                      // "Passed" here moved the deal without the question the
+                      // header's Pass asks first.
+                      onClick={() => { if (s === deal.pipelineStage) return; if (s === 'passed') void pass(); else moveTo.mutate(s); }}
                       disabled={moveTo.isPending}
-                      className={
+                      // The current stage as tint and edge: a filled chip
+                      // stood beside the header's filled "Move to …" as a
+                      // second primary.
+                      className={cn(
+                        'rounded-full border px-3 py-1 text-xs',
                         deal.pipelineStage === s
-                          ? 'rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground'
-                          : 'rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted'
-                      }
+                          ? 'border-primary/40 bg-primary/10 font-semibold text-foreground'
+                          : 'border-border text-muted-foreground hover:bg-muted',
+                      )}
                     >
                       <BilingualText en={STAGE_LABEL[s].en} el={STAGE_LABEL[s].el} compact />
                     </button>
@@ -294,7 +302,8 @@ export default function StartupDealPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          {/* The board's "Add Note" lands here, not at the top of the page. */}
+          <Card id="add-note" className="scroll-mt-24">
             <CardHeader className="pb-2">
               <CardTitle><BilingualText en="Add a note" el="Προσθήκη σημείωσης" compact /></CardTitle>
             </CardHeader>
@@ -325,7 +334,7 @@ export default function StartupDealPage() {
                 <ol className="card-rows">
                   {deal.recentEvents.map((ev) => (
                     <li key={ev.id}>
-                      <p className="text-sm font-medium">{ev.title}</p>
+                      <p className="text-sm font-medium"><BilingualText en={ev.title} el={dealEventTitleEl(ev.title)} compact /></p>
                       {ev.body && ev.body !== ev.title && <p className="whitespace-pre-line text-sm text-muted-foreground">{ev.body}</p>}
                       <p className="text-xs text-muted-foreground"><RelativeTime date={ev.createdAt} format={formatRelativeTime} /></p>
                     </li>
@@ -357,10 +366,11 @@ export default function StartupDealPage() {
                   deal.location,
                   deal.teamSize != null ? <BilingualText key="team" en={`Team of ${deal.teamSize}`} el={`Ομάδα ${deal.teamSize}`} compact /> : null,
                   deal.askAmountCents != null ? (
+                    // Said as the home and the board say it ("Asking €750K").
                     <span key="ask" className="font-medium tabular-nums text-foreground">
                       <BilingualText
-                        en={`Raising ${new Intl.NumberFormat('en-GB', { style: 'currency', currency: deal.currency, maximumFractionDigits: 0 }).format(deal.askAmountCents / 100)}`}
-                        el={`Αναζητά ${new Intl.NumberFormat('en-GB', { style: 'currency', currency: deal.currency, maximumFractionDigits: 0 }).format(deal.askAmountCents / 100)}`}
+                        en={`Asking ${formatCompactMoney(deal.askAmountCents / 100, deal.currency)}`}
+                        el={`Ζητά ${formatCompactMoney(deal.askAmountCents / 100, deal.currency)}`}
                         compact
                       />
                     </span>
@@ -373,7 +383,14 @@ export default function StartupDealPage() {
                   {deal.website.replace(/^https?:\/\//, '')}
                 </a>
               )}
-              {deal.notes && <p className="card-body whitespace-pre-line border-t border-border pt-3 text-muted-foreground">{deal.notes}</p>}
+              {/* The investor's own note on the deal, which read as the
+                  startup's description. */}
+              {deal.notes && (
+                <div className="space-y-1 border-t border-border pt-3">
+                  <p className="text-xs font-medium text-muted-foreground"><BilingualText en="Your note" el="Η σημείωσή σας" compact /></p>
+                  <p className="card-body whitespace-pre-line text-muted-foreground">{deal.notes}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
           {deal.founder && (

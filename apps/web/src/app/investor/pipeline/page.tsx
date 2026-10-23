@@ -5,9 +5,15 @@ import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
-  FolderKanban, Search, Filter, Plus, MoreVertical,
-  Star, DollarSign, TrendingUp, Target, ArrowRight, Zap,
-  MessageSquare, Calendar, Users, Telescope,
+  Search,
+  Filter,
+  Plus,
+  MoreVertical,
+  Star,
+  ArrowRight,
+  Zap,
+  Users,
+  Telescope,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -34,7 +40,10 @@ import { formatCompactMoney } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 import { FactLine } from '@/components/common/FactLine';
 import { RowHead } from '@/components/dashboard/SectionCard';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { FailedLine } from '@/components/dashboard/SectionCard';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { PageFacts } from '@/components/common/PageFacts';
@@ -75,6 +84,13 @@ const PIPELINE_STAGES: { key: PipelineStage; label: string; labelEl: string; col
   { key: 'negotiating', label: 'Negotiating', labelEl: 'Διαπραγμάτευση', color: 'bg-status-warning-mark' },
   { key: 'invested', label: 'Invested', labelEl: 'Επένδυση', color: 'bg-status-success-mark' },
 ];
+/*
+ * "Show passed" filtered a list that never held the passed stage, so the
+ * button changed nothing: the deals passed on had no column to appear in.
+ * They have one now, shown on request after the forward path.
+ */
+const PASSED_STAGE = { key: 'passed' as PipelineStage, label: 'Passed', labelEl: 'Απορρίφθηκαν', color: 'bg-muted-foreground/50' };
+const stageName = (key: PipelineStage) => [...PIPELINE_STAGES, PASSED_STAGE].find((s) => s.key === key) ?? { label: key, labelEl: key };
 
 /** The next stage forward on the board; null at the end or once passed. */
 function nextStage(stage: PipelineStage): PipelineStage | null {
@@ -93,7 +109,9 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
   return (
     // A board tile: the row head every list uses (mark, name, the sector
     // under it, the menu at the right), then the facts on the mark's edge.
-    <div className="group cursor-pointer space-y-2 rounded-lg border bg-card p-3 transition-colors hover:border-primary/30">
+    // The tile looked like a link (pointer, hover edge) and opened nothing;
+    // its name opens the deal now, and the menu is for the moves.
+    <div className="group space-y-2 rounded-lg border bg-card p-3 transition-colors hover:border-primary/30">
       <RowHead
         mark={(
           <Avatar className="h-10 w-10 rounded-xl">
@@ -105,7 +123,11 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
         )}
         title={(
           <span className="flex min-w-0 items-center gap-2">
-            <span className="truncate">{deal.name}</span>
+            {onMove ? (
+              <Link href={`/startups/${deal.id}`} className="truncate hover:text-primary-accessible hover:underline focus-ring">{deal.name}</Link>
+            ) : (
+              <span className="truncate">{deal.name}</span>
+            )}
             {deal.starred && <Star className="icon-sm shrink-0 text-status-warning fill-status-warning" aria-label={bilingualInline('Starred', 'Με αστέρι')} />}
           </span>
         )}
@@ -114,7 +136,7 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
         aside={(
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" aria-label={`Open actions for ${deal.name}`}>
+              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" aria-label={bilingualAria(`Open actions for ${deal.name}`, `Ενέργειες για ${deal.name}`)}>
                 <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
@@ -129,7 +151,9 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
                 disabled={!onMove || !next}
                 onSelect={() => { if (onMove && next) onMove(deal, next); }}
               >
-                Move to Next Stage{next ? ` (${next.replace('_', ' ')})` : ''}
+                {next
+                  ? <BilingualText en={`Move to ${stageName(next).label}`} el={`Μετακίνηση σε ${stageName(next).labelEl}`} compact />
+                  : <BilingualText en="Move to next stage" el="Μετακίνηση στο επόμενο στάδιο" compact />}
               </DropdownMenuItem>
               <UnavailableMenuItem
                 en="Schedule Meeting"
@@ -138,7 +162,7 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
                 reasonEl="Οι συναντήσεις με ιδρυτές δεν προγραμματίζονται ακόμη εδώ - στείλτε μήνυμα από τη σελίδα της συμφωνίας."
               />
               <DropdownMenuItem asChild>
-                <Link href={`/startups/${deal.id}`}><BilingualText en="Add Note" el="Προσθήκη σημείωσης" compact /></Link>
+                <Link href={`/startups/${deal.id}#add-note`}><BilingualText en="Add Note" el="Προσθήκη σημείωσης" compact /></Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive-accessible"
@@ -240,12 +264,14 @@ export default function InvestorPipelinePage() {
    * board shows while the "demo data" switch is on — the switch is a feature,
    * not scaffolding — but a real deal always wins over an illustrative one.
    */
-  const { data: dealsPage, isLoading } = useQuery({
+  const { data: dealsPage, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: qk('investor', 'deals'),
     queryFn: () => listInvestorDeals({ limit: 100 }),
     staleTime: 60_000,
     retry: 0,
   });
+  // An unread board said "No deals in pipeline · Start scouting" (docs §93).
+  const failed = isError && !dealsPage;
 
   const liveDeals = useMemo(
     () => (dealsPage?.deals ?? []).map(toPageDeal),
@@ -268,7 +294,7 @@ export default function InvestorPipelinePage() {
     }
     try {
       await updateInvestorDeal(deal.id, { pipelineStage: stage });
-      success('Deal moved', `${deal.name} → ${stage.replace('_', ' ')}`);
+      success('Deal moved', bilingualInline(`${deal.name} → ${stageName(stage).label}`, `${deal.name} → ${stageName(stage).labelEl}`));
     } catch (e) {
       toastError('Could not move the deal', e instanceof Error ? e.message : undefined);
       return { error: e instanceof Error && e.message ? e.message : 'The deal was not moved.' };
@@ -306,9 +332,8 @@ export default function InvestorPipelinePage() {
   const getDealsByStage = (stage: PipelineStage) =>
     filteredDeals.filter((d) => d.pipelineStage === stage);
 
-  const visibleStages = showPassed
-    ? PIPELINE_STAGES
-    : PIPELINE_STAGES.filter((s) => s.key !== 'passed' as PipelineStage);
+  const visibleStages = showPassed ? [...PIPELINE_STAGES, PASSED_STAGE] : PIPELINE_STAGES;
+  const passedCount = deals.filter((d) => d.pipelineStage === 'passed').length;
 
   const sampleEn = isLive ? undefined : 'These are sample deals; moving one needs a deal in your own pipeline.';
   const sampleEl = isLive ? undefined : 'Είναι δείγματα· η μετακίνηση χρειάζεται συμφωνία από το δικό σας pipeline.';
@@ -339,7 +364,7 @@ export default function InvestorPipelinePage() {
     ], starredOnly ? 'on' : 'off', (v) => setStarredOnly(v === 'on')),
     // The same move the stage buttons on each card make; passing still asks
     // first, as it does from the card.
-    ...[...PIPELINE_STAGES, { key: 'passed' as PipelineStage, label: 'Passed', labelEl: 'Απορρίφθηκε', color: '' }].map((stage) => ({
+    ...[...PIPELINE_STAGES, PASSED_STAGE].map((stage) => ({
       id: `move_to_${stage.key}`,
       labelEn: stage.key === 'passed' ? 'Pass on deal' : `Move deal to ${stage.label}`,
       labelEl: stage.key === 'passed' ? 'Απόρριψη συμφωνίας' : `Μετακίνηση συμφωνίας σε ${stage.labelEl}`,
@@ -360,13 +385,49 @@ export default function InvestorPipelinePage() {
     })),
   ]);
 
+  const shellProps = {
+    title: 'Investment Pipeline',
+    titleEl: 'Ροή επενδύσεων',
+    description: 'Track deals through your investment process',
+    descriptionEl: 'Παρακολουθήστε τις ευκαιρίες σε κάθε στάδιο της επενδυτικής σας διαδικασίας',
+  };
+
+  if (failed) {
+    return (
+      <AppShell showHelp {...shellProps}>
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <FailedLine en="Your pipeline could not be read just now." el="Το pipeline σας δεν διαβάστηκε αυτή τη στιγμή." busy={isFetching} onRetry={() => void refetch()} />
+            </CardContent>
+          </Card>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (isLoading && !showDemoData) {
+    // Six columns of "No deals in this stage" while the board was still
+    // being read.
+    return (
+      <AppShell showHelp {...shellProps}>
+        <div className="space-y-6" aria-busy="true">
+          <Skeleton className="h-5 w-64" />
+          <div className="flex gap-4 overflow-hidden">
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-48 w-72 shrink-0 rounded-lg" />)}
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
   if (!isLoading && !showDemoData && deals.length === 0) {
     return (
-      <AppShell showHelp title="Investment Pipeline" titleEl="Ροή επενδύσεων" description="Track deals through your investment process" descriptionEl="Παρακολουθήστε τις ευκαιρίες σε κάθε στάδιο της επενδυτικής σας διαδικασίας">
+      <AppShell showHelp {...shellProps}>
         <EmptyState
           illustration="rocket"
-          title="No deals in pipeline"
-          description="Start scouting startups to build your investment pipeline."
+          title={<BilingualText en="No deals in pipeline" el="Δεν υπάρχουν συμφωνίες στο pipeline" wrap />}
+          description={<BilingualText en="Start scouting startups to build your investment pipeline." el="Ξεκινήστε την ανίχνευση startups για να χτίσετε το pipeline σας." wrap />}
           askAiPrompt={ASK.pipelineEmpty}
           action={<Button asChild><Link href="/investor/scouting"><Telescope className="mr-2 icon-sm" /><BilingualText en="Scout Startups" el="Αναζήτηση startups" compact /></Link></Button>}
         />
@@ -376,24 +437,24 @@ export default function InvestorPipelinePage() {
 
   return (
     <AppShell showHelp
-      title="Investment Pipeline"
-      titleEl="Ροή επενδύσεων"
-      description="Track deals through your investment process"
-      descriptionEl="Παρακολουθήστε τις ευκαιρίες σε κάθε στάδιο της επενδυτικής σας διαδικασίας"
+      {...shellProps}
       actions={
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowPassed(!showPassed)}>
-            {showPassed
-              ? <BilingualText en="Hide passed" el="Απόκρυψη απορριφθεισών" compact />
-              : <BilingualText en="Show passed" el="Εμφάνιση απορριφθεισών" compact />}
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/investor/scouting"><Plus className="mr-2 icon-sm" /><BilingualText en="Add Deal" el="Νέα ευκαιρία" compact /></Link>
-          </Button>
-        </div>
+        // "Add Deal" opened Scouting: it says where a deal is added from.
+        // "Show passed" is a view of the board and sits with its filters.
+        <Button asChild size="sm">
+          <Link href="/investor/scouting"><Plus className="mr-2 icon-sm" /><BilingualText en="Add from Scouting" el="Προσθήκη από την ανίχνευση" compact /></Link>
+        </Button>
       }
     >
       <div className="space-y-6">
+        {!isLive ? (
+          // Showcase deals on an empty board, with no word that they were.
+          <SampleDataNotice
+            surface="Pipeline"
+            detail="These deals are illustrative; your own appear here once you add a startup from Scouting."
+            askAiPrompt={ASK.pipelineEmpty}
+          />
+        ) : null}
 
         {/* The figures, one line before the list (docs §64.5, PageFacts): four tiles stood between the header and the first row */}
         <PageFacts
@@ -426,6 +487,9 @@ export default function InvestorPipelinePage() {
             <Filter className="mr-2 icon-sm" aria-hidden="true" />
             <BilingualText en="Starred only" el="Μόνο με αστέρι" compact />
           </Button>
+          <Button variant={showPassed ? 'default' : 'outline'} aria-pressed={showPassed} onClick={() => setShowPassed((v) => !v)}>
+            <BilingualText en={`Show passed (${passedCount})`} el={`Εμφάνιση απορριφθεισών (${passedCount})`} compact />
+          </Button>
         </div>
 
         {/* Kanban Board */}
@@ -446,13 +510,22 @@ export default function InvestorPipelinePage() {
                     <DealCard key={deal.id} deal={deal} onMove={isLive ? (d, st) => void moveDeal(d, st) : undefined} />
                   ))}
                   {stageDeals.length === 0 && (
+                    // Every empty column sent the reader to Scouting, where
+                    // a deal only ever enters at "Discovered". Later columns
+                    // say how a deal reaches them.
                     <div className="py-8 text-center">
                       <p className="text-xs text-muted-foreground">
                         <BilingualText en="No deals in this stage" el="Καμία ευκαιρία σε αυτό το στάδιο" compact wrap />
                       </p>
-                      <Link href="/investor/scouting" className="mt-2 inline-block text-xs text-primary-accessible hover:underline">
-                        <BilingualText en="Find startups in scouting" el="Βρείτε startups στο scouting" compact wrap />
-                      </Link>
+                      {stage.key === 'discovered' ? (
+                        <Link href="/investor/scouting" className="mt-2 inline-block text-xs text-primary-accessible hover:underline">
+                          <BilingualText en="Find startups in scouting" el="Βρείτε startups στο scouting" compact wrap />
+                        </Link>
+                      ) : stage.key === 'passed' ? null : (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          <BilingualText en="A deal moves here from its card's menu." el="Μια συμφωνία έρχεται εδώ από το μενού της κάρτας της." compact wrap />
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -465,7 +538,7 @@ export default function InvestorPipelinePage() {
         {/* Conversion Funnel */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2"><Zap className="icon-sm text-muted-foreground" aria-hidden="true" /> <BilingualText en="Pipeline Conversion" el="Μετατροπή ανά στάδιο" compact /></CardTitle>
+            <CardTitle className="flex items-center gap-2"><Zap className="icon-sm text-muted-foreground" aria-hidden="true" /> <BilingualText en="Deals by stage" el="Συμφωνίες ανά στάδιο" compact /></CardTitle>
           </CardHeader>
           <CardContent>
             {/* Seven stages do not fit one row on a phone: a 4-column grid

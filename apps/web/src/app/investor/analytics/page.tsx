@@ -1,14 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
 import {
   BarChart3,
   TrendingUp,
   Calendar,
   DollarSign,
   Target,
-  ArrowUpRight,
   MapPin,
   Zap,
   LineChart,
@@ -20,8 +18,8 @@ import { useQuery } from '@tanstack/react-query';
 import { getInvestorSummary, listInvestorDeals, PIPELINE_STAGES, type InvestorDeal, type PipelineStage } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
-import { Button } from '@/components/ui/button';
+import { EmptyLine, FailedLine, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useChartTheme } from '@/lib/chart-theme';
@@ -62,6 +60,13 @@ const STAGE_LABEL: Record<PipelineStage, { en: string; el: string }> = {
 const FUNNEL_STAGES = PIPELINE_STAGES.filter((s) => s !== 'passed');
 
 const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+// The chart's month names were English only; an SVG label takes one string.
+const MONTHS_EL = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιούν', 'Ιούλ', 'Αύγ', 'Σεπ', 'Οκτ', 'Νοέ', 'Δεκ'];
+/** The tally's name for a deal with no industry or place; drawn in both languages. */
+const UNSPECIFIED = 'Unspecified';
+function TallyName({ name }: { name: string }) {
+  return name === UNSPECIFIED ? <BilingualText en="Unspecified" el="Χωρίς στοιχείο" compact /> : <>{name}</>;
+}
 
 function tally(values: (string | null | undefined)[], fallback: string) {
   const counts = new Map<string, number>();
@@ -77,10 +82,10 @@ function tally(values: (string | null | undefined)[], fallback: string) {
 
 /** Deals added to the board, and investments made, per calendar month. */
 function monthly(deals: InvestorDeal[], months: number, now = new Date()) {
-  const rows: { key: string; label: string; added: number; invested: number }[] = [];
+  const rows: { key: string; month: number; added: number; invested: number }[] = [];
   for (let i = months - 1; i >= 0; i -= 1) {
     const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
-    rows.push({ key: `${d.getUTCFullYear()}-${d.getUTCMonth()}`, label: MONTHS_EN[d.getUTCMonth()], added: 0, invested: 0 });
+    rows.push({ key: `${d.getUTCFullYear()}-${d.getUTCMonth()}`, month: d.getUTCMonth(), added: 0, invested: 0 });
   }
   const at = (iso: string | null) => {
     if (!iso) return null;
@@ -97,13 +102,17 @@ function monthly(deals: InvestorDeal[], months: number, now = new Date()) {
 }
 
 function MonthlyBars({ rows }: { rows: ReturnType<typeof monthly> }) {
+  const sayOne = useBilingualString();
   const max = Math.max(1, ...rows.map((r) => r.added));
   const W = 420;
   const H = 120;
+  // Room above the tallest bar for its figure: the busiest month's count was
+  // drawn above the top of the chart and cut off.
+  const TOP = 14;
   const slot = (W - 20) / rows.length;
   const bar = Math.min(26, slot * 0.55);
   return (
-    <svg viewBox={`0 0 ${W} ${H + 24}`} className="w-full" role="img" aria-label={bilingualAria('Deals added and investments made per month', 'Συμφωνίες που προστέθηκαν και επενδύσεις ανά μήνα')}>
+    <svg viewBox={`0 ${-TOP} ${W} ${H + 24 + TOP}`} className="w-full" role="img" aria-label={bilingualAria('Deals added and investments made per month', 'Συμφωνίες που προστέθηκαν και επενδύσεις ανά μήνα')}>
       {rows.map((r, i) => {
         const x = 10 + i * slot + (slot - bar) / 2;
         const addedH = (r.added / max) * H;
@@ -115,7 +124,7 @@ function MonthlyBars({ rows }: { rows: ReturnType<typeof monthly> }) {
             {r.added > 0 && (
               <text x={x + bar / 2} y={H - addedH - 4} textAnchor="middle" fontSize={10} fill="currentColor" opacity={0.7}>{r.added}</text>
             )}
-            <text x={x + bar / 2} y={H + 16} textAnchor="middle" fontSize={10} fill="currentColor" opacity={0.55}>{r.label}</text>
+            <text x={x + bar / 2} y={H + 16} textAnchor="middle" fontSize={10} fill="currentColor" opacity={0.55}>{sayOne(MONTHS_EN[r.month], MONTHS_EL[r.month])}</text>
           </g>
         );
       })}
@@ -124,11 +133,12 @@ function MonthlyBars({ rows }: { rows: ReturnType<typeof monthly> }) {
 }
 
 function Donut({ slices, total, colors }: { slices: { name: string; count: number }[]; total: number; colors: readonly string[] }) {
+  const sayOne = useBilingualString();
   const R = 50;
   const C = 2 * Math.PI * R;
   let offset = 0;
   return (
-    <svg viewBox="0 0 140 130" className="mx-auto w-full max-w-[180px]" role="img" aria-label={`${total} deals by industry`}>
+    <svg viewBox="0 0 140 130" className="mx-auto w-full max-w-[180px]" role="img" aria-label={bilingualAria(`${total} deals by industry`, `${total} συμφωνίες ανά κλάδο`)}>
       {slices.map((s, i) => {
         const share = total ? s.count / total : 0;
         const dash = share * C;
@@ -149,7 +159,7 @@ function Donut({ slices, total, colors }: { slices: { name: string; count: numbe
         );
       })}
       <text x={70} y={63} textAnchor="middle" fontSize={16} fontWeight={700} fill="currentColor">{total}</text>
-      <text x={70} y={78} textAnchor="middle" fontSize={9} fill="currentColor" opacity={0.55}>deals</text>
+      <text x={70} y={78} textAnchor="middle" fontSize={9} fill="currentColor" opacity={0.55}>{sayOne('deals', 'συμφωνίες')}</text>
     </svg>
   );
 }
@@ -166,7 +176,7 @@ export default function InvestorAnalyticsPage() {
     retry: 0,
   });
   // The pipeline's own read, under its key: one list behind both pages.
-  const { data: dealsPage, isLoading: dealsLoading } = useQuery({
+  const { data: dealsPage, isLoading: dealsLoading, isError: dealsError, isFetching: dealsFetching, refetch: refetchDeals } = useQuery({
     queryKey: qk('investor', 'deals'),
     queryFn: () => listInvestorDeals({ limit: 100 }),
     staleTime: 60_000,
@@ -190,7 +200,8 @@ export default function InvestorAnalyticsPage() {
     { label: 'Deals reviewed', labelEl: 'Αξιολογημένες', value: reviewed == null ? '—' : String(reviewed), icon: Target, caption: summary ? `${summary.totalDeals} on the board` : undefined, captionEl: summary ? `${summary.totalDeals} στον πίνακα` : undefined },
     { label: 'Invested', labelEl: 'Επενδύσεις', value: summary ? String(summary.investments) : '—', icon: DollarSign },
     { label: 'Conversion rate', labelEl: 'Ποσοστό μετατροπής', value: conversion == null ? '—' : `${conversion}%`, icon: TrendingUp, caption: 'Invested ÷ reviewed', captionEl: 'Επενδύσεις ÷ αξιολογημένες' },
-    { label: 'Avg time to close', labelEl: 'Μέσος χρόνος κλεισίματος', value: daysToClose == null ? '—' : `${daysToClose} d`, icon: Calendar, caption: closed.length ? `Over ${closed.length} investments` : 'No investment closed yet', captionEl: closed.length ? `Σε ${closed.length} επενδύσεις` : 'Καμία επένδυση ακόμα' },
+    // "No investment closed yet" under a "—" the board was never read for.
+    { label: 'Avg time to close', labelEl: 'Μέσος χρόνος κλεισίματος', value: daysToClose == null ? '—' : `${daysToClose} d`, icon: Calendar, caption: !dealsPage ? undefined : closed.length ? `Over ${closed.length} investments` : 'No investment closed yet', captionEl: !dealsPage ? undefined : closed.length ? `Σε ${closed.length} επενδύσεις` : 'Καμία επένδυση ακόμα' },
     { label: 'Total deployed', labelEl: 'Επενδυμένο κεφάλαιο', value: money(summary?.deployedCents, currency), icon: BarChart3 },
     { label: 'Portfolio value', labelEl: 'Αξία χαρτοφυλακίου', value: money(summary?.currentValueCents, currency), icon: LineChart, caption: summary?.returnPct != null ? `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}% on deployed` : undefined, captionEl: summary?.returnPct != null ? `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}% επί του επενδυμένου` : undefined },
   ];
@@ -209,8 +220,8 @@ export default function InvestorAnalyticsPage() {
 
   const months = period === '3m' ? 3 : period === '6m' ? 6 : 12;
   const rows = useMemo(() => monthly(deals, months), [deals, months]);
-  const sectors = useMemo(() => tally(deals.map((d) => d.industry), 'Unspecified'), [deals]);
-  const cities = useMemo(() => tally(deals.map((d) => d.location?.split(',')[0]), 'Unspecified'), [deals]);
+  const sectors = useMemo(() => tally(deals.map((d) => d.industry), UNSPECIFIED), [deals]);
+  const cities = useMemo(() => tally(deals.map((d) => d.location?.split(',')[0]), UNSPECIFIED), [deals]);
   const holdings = deals.filter((d) => d.investedCents != null && d.investedCents > 0);
   const investedTotal = holdings.reduce((sum, d) => sum + (d.investedCents ?? 0), 0);
   const valueTotal = holdings.reduce((sum, d) => sum + (d.currentValueCents ?? d.investedCents ?? 0), 0);
@@ -235,10 +246,17 @@ export default function InvestorAnalyticsPage() {
   } : null);
 
   const empty = !dealsLoading && deals.length === 0;
+  /*
+   * Every chart below is the board. Unread, each tab said "No deals on the
+   * board yet" / "Add a startup…": the charts give way to one line that says
+   * the board was not read, and the window switch, which only reshapes them,
+   * waits with them (docs §93).
+   */
+  const dealsFailed = dealsError && !dealsPage;
 
   return (
     <AppShell showHelp
-      actions={
+      actions={dealsFailed ? undefined :
         <div role="group" aria-label={bilingualAria('Analytics window', 'Χρονικό διάστημα αναλυτικών')} className="inline-flex items-center gap-0.5 rounded-xl border border-border bg-muted/40 p-0.5">
           {([
             ['3m', '3 months', '3 μήνες'],
@@ -268,6 +286,16 @@ export default function InvestorAnalyticsPage() {
           ))}
         </div>
 
+        {dealsFailed ? (
+          <SectionCard title="Your board" titleEl="Ο πίνακάς σας" icon={BarChart3}>
+            <FailedLine
+              en="Your deals could not be read just now, so the charts are not drawn."
+              el="Οι συμφωνίες σας δεν διαβάστηκαν αυτή τη στιγμή, οπότε τα γραφήματα δεν σχεδιάζονται."
+              busy={dealsFetching}
+              onRetry={() => void refetchDeals()}
+            />
+          </SectionCard>
+        ) : (
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList>
             <TabsTrigger value="flow"><BilingualText en="Deal flow" el="Ροή συμφωνιών" compact /></TabsTrigger>
@@ -338,11 +366,11 @@ export default function InvestorAnalyticsPage() {
                         <div className="mb-1 flex items-center justify-between gap-3 text-sm">
                           <span className="flex min-w-0 items-center gap-2">
                             <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: theme.series[i % theme.series.length] }} aria-hidden="true" />
-                            <span className="truncate">{s.name}</span>
+                            <span className="truncate"><TallyName name={s.name} /></span>
                           </span>
                           <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{s.count} · {s.pct}%</span>
                         </div>
-                        <Progress value={s.pct} className="h-1.5" aria-label={`${s.name}: ${s.pct}% of deals`} />
+                        <Progress value={s.pct} className="h-1.5" aria-label={bilingualAria(`${s.name}: ${s.pct}% of deals`, `${s.name}: ${s.pct}% των συμφωνιών`)} />
                       </li>
                     ))}
                   </ul>
@@ -359,10 +387,10 @@ export default function InvestorAnalyticsPage() {
                   {cities.map((c) => (
                     <li key={c.name}>
                       <div className="mb-1 flex items-center justify-between gap-3 text-sm">
-                        <span>{c.name}</span>
+                        <span><TallyName name={c.name} /></span>
                         <span className="text-xs tabular-nums text-muted-foreground">{c.count} · {c.pct}%</span>
                       </div>
-                      <Progress value={c.pct} className="h-1.5" aria-label={`${c.name}: ${c.pct}% of deals`} />
+                      <Progress value={c.pct} className="h-1.5" aria-label={bilingualAria(`${c.name}: ${c.pct}% of deals`, `${c.name}: ${c.pct}% των συμφωνιών`)} />
                     </li>
                   ))}
                 </ul>
@@ -414,15 +442,12 @@ export default function InvestorAnalyticsPage() {
                   </div>
                 </dl>
               )}
-              <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link href="/investor/portfolio">
-                  <BilingualText en="Full portfolio" el="Πλήρες χαρτοφυλάκιο" compact />
-                  <ArrowUpRight className="ml-1 icon-sm" aria-hidden="true" />
-                </Link>
-              </Button>
+              {/* "Full portfolio" here opened /investor/portfolio, as the
+                  section's own "Portfolio" in its corner does (docs §93). */}
             </SectionCard>
           </TabsContent>
         </Tabs>
+        )}
       </div>
     </AppShell>
   );

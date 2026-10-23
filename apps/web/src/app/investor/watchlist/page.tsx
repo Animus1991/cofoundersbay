@@ -34,7 +34,7 @@ import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
@@ -57,6 +57,10 @@ import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { dealEventTitleEl } from '@/lib/i18n/deal-events';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { PageFacts } from '@/components/common/PageFacts';
+import { FailedLine } from '@/components/dashboard/SectionCard';
+import { ASK } from '@/lib/page-questions';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -281,7 +285,12 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
           asideStays
           aside={(
             <>
-              <Button aria-label="Notifications"
+              <Button
+                // "Notifications" and an English title: it turns this
+                // startup's alerts on and off, and says which.
+                aria-label={alertsEnabled
+                  ? bilingualAria(`Alerts on for ${startup.name}`, `Ειδοποιήσεις ενεργές για ${startup.name}`)
+                  : bilingualAria(`Alerts off for ${startup.name}`, `Ειδοποιήσεις ανενεργές για ${startup.name}`)}
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7"
@@ -289,7 +298,6 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
                 // column and PATCH writes it.
                 onClick={() => { const next = !alertsEnabled; setAlertsEnabled(next); if (live) onAlerts(startup, next); }}
                 aria-pressed={alertsEnabled}
-                title={alertsEnabled ? 'Disable alerts' : 'Enable alerts'}
               >
                 {alertsEnabled ? (
                   <Bell className="icon-sm text-muted-foreground" />
@@ -299,7 +307,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`Open actions for ${startup.name}`}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={bilingualAria(`Open actions for ${startup.name}`, `Ενέργειες για ${startup.name}`)}>
                     <MoreVertical className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -422,13 +430,13 @@ export default function InvestorWatchlistPage() {
    * fixtures remain what an empty watchlist shows while the "demo data" switch
    * is on; a real one always wins.
    */
-  const { data: watchedPage, isLoading: watchedLoading } = useQuery({
+  const { data: watchedPage, isLoading: watchedLoading, isError: watchedError, isFetching: watchedFetching, refetch: refetchWatched } = useQuery({
     queryKey: qk('investor', 'deals', 'discovered'),
     queryFn: () => listInvestorDeals({ pipelineStage: 'discovered', limit: 100 }),
     staleTime: 60_000,
     retry: 0,
   });
-  const { data: activityPage } = useQuery({
+  const { data: activityPage, isError: activityError, isFetching: activityFetching, refetch: refetchActivity } = useQuery({
     queryKey: qk('investor', 'activity'),
     queryFn: () => getInvestorActivity(20),
     staleTime: 60_000,
@@ -438,6 +446,11 @@ export default function InvestorWatchlistPage() {
   const liveWatched = (watchedPage?.deals ?? []).map(toWatched);
   const watched = liveWatched.length > 0 ? liveWatched : showDemoData ? MOCK_WATCHED : [];
   const watchLive = liveWatched.length > 0;
+  const isSample = !watchLive && showDemoData;
+  // An unread watchlist said "No results · Add startups from the scouting
+  // feed"; an unread feed showed an empty tab (docs §93).
+  const watchedFailed = watchedError && !watchedPage;
+  const activityFailed = activityError && !activityPage;
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
   const confirm = useConfirm();
@@ -446,7 +459,7 @@ export default function InvestorWatchlistPage() {
     onPromote: async (st) => {
       try {
         await updateInvestorDeal(st.id, { pipelineStage: 'reviewing' });
-        success('Added to pipeline', `${st.name} is now in Reviewing.`);
+        success('Added to pipeline', bilingualInline(`${st.name} is now in Reviewing.`, `${st.name}: τώρα Υπό εξέταση.`));
       } catch (e) {
         toastError('Could not add to pipeline', e instanceof Error ? e.message : undefined);
         return { error: e instanceof Error && e.message ? e.message : 'It was not added to the pipeline.' };
@@ -531,56 +544,66 @@ export default function InvestorWatchlistPage() {
   return (
     <AppShell showHelp
       actions={
-        <>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="gap-1.5">
-              <Bell className="icon-sm" />
-              <BilingualText en={`${alertCount} alerts active`} el={`${alertCount} ενεργές ειδοποιήσεις`} compact />
-            </Badge>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/investor/scouting">
-                <Search className="mr-1.5 icon-sm" />
-                <BilingualText en="Scout More" el="Αναζήτηση περισσότερων" compact />
-              </Link>
-            </Button>
-          </div>
-        </>
+        // "1 alerts active" beside a tile saying "Alerts on 1": the count is
+        // the filter's own now (docs §93). "Scout More" waits while the
+        // empty list offers the same way.
+        watched.length === 0 ? undefined : (
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/investor/scouting">
+              <Search className="mr-1.5 icon-sm" />
+              <BilingualText en="Scout More" el="Αναζήτηση περισσότερων" compact />
+            </Link>
+          </Button>
+        )
       }
     >
       <div className="space-y-6">
+        {isSample ? (
+          // Four sample startups, with sample notes, as if they were the
+          // reader's own watchlist.
+          <SampleDataNotice
+            surface="Watchlist"
+            detail="These startups are illustrative; one you watch from Scouting replaces them."
+            askAiPrompt={ASK.scoutingSample}
+          />
+        ) : null}
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
-          {[
-            { label: 'Watching', labelEl: 'Σε παρακολούθηση', value: watched.length },
-            { label: 'Alerts on', labelEl: 'Ενεργές ειδοποιήσεις', value: alertCount },
-            { label: 'New activity', labelEl: 'Νέα δραστηριότητα', value: activity.length },
-            { label: 'Avg match', labelEl: 'Μέσο ταίριασμα', value: (() => {
-              // Averaged over the rows that carry a score, so adding an
-              // unscored startup cannot drag the average down.
+        {/*
+          * Four tiles: "Watching" and "New activity" were the two tab
+          * counters below, "Alerts on" the header badge and now the filter's
+          * count, and "Avg match" a dash for every real watchlist. What the
+          * tabs and the filter do not say is said here, when known.
+          */}
+        <PageFacts
+          labelEn="Your watchlist in figures"
+          labelEl="Η λίστα σας σε αριθμούς"
+          facts={[
+            { id: 'match', value: (() => {
               const scored = watched.filter((w) => w.matchScore != null);
-              return scored.length
-                ? `${Math.round(scored.reduce((sum, w) => sum + (w.matchScore ?? 0), 0) / scored.length)}%`
-                : '—';
-            })() },
-          ].map(stat => (
-            <Card key={stat.label}>
-              <CardContent>
-                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact /></p>
-                <p className="page-stat text-xl font-bold">{stat.value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              return scored.length ? `${Math.round(scored.reduce((sum, w) => sum + (w.matchScore ?? 0), 0) / scored.length)}%` : null;
+            })(), en: 'average match', el: 'μέσο ταίριασμα' },
+          ]}
+        />
 
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList>
-            <TabsTrigger value="watchlist"><BilingualText en="My watchlist" el="Υπό παρακολούθηση" compact /><Counter value={watched.length} /></TabsTrigger>
-            <TabsTrigger value="activity"><BilingualText en="Recent activity" el="Πρόσφατη δραστηριότητα" compact /><Counter value={activity.length} /></TabsTrigger>
+            <TabsTrigger value="watchlist"><BilingualText en="My watchlist" el="Υπό παρακολούθηση" compact />{watchedFailed ? null : <Counter value={watched.length} />}</TabsTrigger>
+            {/* The feed is every deal on the board, not only the watched
+                ones: "Recent activity" under "Watchlist" said otherwise. */}
+            <TabsTrigger value="activity"><BilingualText en="Board activity" el="Δραστηριότητα πίνακα" compact />{activityFailed && !isSample ? null : <Counter value={activity.length} />}</TabsTrigger>
           </TabsList>
 
           {/* Watchlist Tab */}
           <TabsContent value="watchlist" className="space-y-4">
+            {watchedFailed ? (
+              <Card>
+                <CardContent className="pt-6">
+                  <FailedLine en="Your watchlist could not be read just now." el="Η λίστα παρακολούθησής σας δεν διαβάστηκε αυτή τη στιγμή." busy={watchedFetching} onRetry={() => void refetchWatched()} />
+                </CardContent>
+              </Card>
+            ) : (
+            <>
+            {watched.length > 0 ? (
             <div className="flex items-center gap-3">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
@@ -595,41 +618,70 @@ export default function InvestorWatchlistPage() {
               {/* "Filter" had no handler; alerts are the watchlist's own facet. */}
               <Button variant={alertsOnly ? 'default' : 'outline'} size="sm" aria-pressed={alertsOnly} onClick={() => setAlertsOnly((v) => !v)}>
                 <Filter className="mr-1.5 icon-sm" aria-hidden="true" />
-                <BilingualText en="Alerts on only" el="Μόνο με ειδοποιήσεις" compact />
+                <BilingualText en={`Alerts on only (${alertCount})`} el={`Μόνο με ειδοποιήσεις (${alertCount})`} compact />
               </Button>
               {selectedIds.size > 0 && (
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/investor/scouting">
                     <GitCompare className="mr-1.5 icon-sm" />
-                    Compare ({selectedIds.size})
+                    <BilingualText en={`Compare (${selectedIds.size})`} el={`Σύγκριση (${selectedIds.size})`} compact />
                   </Link>
                 </Button>
               )}
             </div>
+            ) : null}
 
             <div className="space-y-3">
               {filtered.map(startup => (
                 <WatchlistCard key={startup.id} startup={startup} live={watchLive} {...watchActions} />
               ))}
-              {filtered.length === 0 && (
+              {filtered.length === 0 && !watchedLoading && (
                 <Card>
                   <CardContent className="py-12 text-center">
                     <Eye className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                    <h3 className="card-title text-foreground"><BilingualText en="No results" el="Κανένα αποτέλεσμα" compact /></h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {search ? 'No startups match your search' : 'Add startups from the scouting feed'}
-                    </p>
-                    <Button size="sm" className="mt-4" asChild>
-                      <Link href="/investor/scouting"><BilingualText en="Scout Startups" el="Αναζήτηση startups" compact /></Link>
-                    </Button>
+                    {/* "No results · Add startups from the scouting feed",
+                        English only, for an empty list and a search alike. */}
+                    {watched.length === 0 ? (
+                      <>
+                        <h3 className="card-title text-foreground"><BilingualText en="Your watchlist is empty" el="Η λίστα παρακολούθησής σας είναι άδεια" compact /></h3>
+                        <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Press Watch on a startup in Scouting and it is listed here." el="Πατήστε «Παρακολούθηση» σε μια startup στην Ανίχνευση και θα εμφανιστεί εδώ." wrap /></p>
+                        <Button size="sm" className="mt-4" asChild>
+                          <Link href="/investor/scouting"><BilingualText en="Scout Startups" el="Αναζήτηση startups" compact /></Link>
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="card-title text-foreground"><BilingualText en="No results" el="Κανένα αποτέλεσμα" compact /></h3>
+                        <p className="text-sm text-muted-foreground mt-1"><BilingualText en="No watched startup matches the search or the filter." el="Καμία startup της λίστας δεν ταιριάζει με την αναζήτηση ή το φίλτρο." wrap /></p>
+                        <Button size="sm" variant="outline" className="mt-4" onClick={() => { setSearch(''); setAlertsOnly(false); }}>
+                          <BilingualText en="Clear search and filter" el="Καθαρισμός αναζήτησης και φίλτρου" compact />
+                        </Button>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               )}
             </div>
+            </>
+            )}
           </TabsContent>
 
           {/* Activity Feed Tab */}
           <TabsContent value="activity" className="space-y-3">
+            {activityFailed && !isSample ? (
+              <Card>
+                <CardContent className="pt-6">
+                  <FailedLine en="The activity could not be read just now." el="Η δραστηριότητα δεν διαβάστηκε αυτή τη στιγμή." busy={activityFetching} onRetry={() => void refetchActivity()} />
+                </CardContent>
+              </Card>
+            ) : activity.length === 0 ? (
+              // The tab was blank.
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="card-body text-muted-foreground"><BilingualText en="Moves, notes and meetings on your deals show up here." el="Κινήσεις, σημειώσεις και συναντήσεις στις συμφωνίες σας εμφανίζονται εδώ." wrap /></p>
+                </CardContent>
+              </Card>
+            ) : null}
             {activity.map(item => {
               const cfg = ACTIVITY_TYPE_CONFIG[item.type];
               return (

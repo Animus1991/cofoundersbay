@@ -5,8 +5,10 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
-  Briefcase, TrendingUp, TrendingDown, DollarSign,
-  MoreVertical, ExternalLink, PieChart, Download,
+  TrendingUp,
+  TrendingDown,
+  MoreVertical,
+  Download,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -39,6 +41,10 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { formatCompactMoney } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
 import { ASK } from '@/lib/page-questions';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { FailedLine } from '@/components/dashboard/SectionCard';
 
 const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
 const PortfolioValueChart = dynamic(
@@ -50,16 +56,17 @@ const SectorMixChart = dynamic(
   { ssr: false, loading: ChartFallback },
 );
 
-// Thousands of euros. Starts at the €350K invested and ends at the €555K the
-// "Current value" tile shows, so the chart and the tiles tell one story (it
-// ended at 535, in dollars, beside tiles in euros).
+// The sample portfolio's value, in thousands of euros: from the €275K its
+// four rows invested to the €535K they are worth, so the chart, the tiles and
+// the rows under it are one sample (the chart ended at 555, beside tiles of
+// 275 and 535 in dollars). Months as the live series writes them.
 const PORTFOLIO_VALUE_HISTORY = [
-  { month: 'Oct', value: 350 },
-  { month: 'Nov', value: 368 },
-  { month: 'Dec', value: 395 },
-  { month: 'Jan', value: 432 },
-  { month: 'Feb', value: 498 },
-  { month: 'Mar', value: 555 },
+  { month: '10/24', value: 275 },
+  { month: '12/24', value: 300 },
+  { month: '02/25', value: 345 },
+  { month: '06/25', value: 410 },
+  { month: '12/25', value: 470 },
+  { month: '06/26', value: 535 },
 ];
 
 const SECTOR_DISTRIBUTION = [
@@ -131,7 +138,7 @@ const SECTOR_COLOURS = [
  * amount, and the last point is the sum of current values. No history is
  * invented between them.
  */
-function portfolioValueSeries(deals: InvestorDeal[]): { month: string; value: number }[] {
+function portfolioValueSeries(deals: InvestorDeal[], nowLabel = 'Now'): { month: string; value: number }[] {
   const dated = deals
     .filter((d) => d.investedAt && d.investedCents != null)
     .sort((a, b) => (a.investedAt ?? '').localeCompare(b.investedAt ?? ''));
@@ -145,7 +152,7 @@ function portfolioValueSeries(deals: InvestorDeal[]): { month: string; value: nu
     };
   });
   const now = deals.reduce((sum, d) => sum + (d.currentValueCents ?? d.investedCents ?? 0), 0);
-  if (points.length) points.push({ month: 'Now', value: Math.round(now / 100_000) });
+  if (points.length) points.push({ month: nowLabel, value: Math.round(now / 100_000) });
   return points;
 }
 
@@ -163,11 +170,12 @@ function portfolioSectorMix(deals: InvestorDeal[]): { name: string; value: numbe
   }));
 }
 
+// In euros, as every live figure on the page; dates as the live rows write them.
 const MOCK_INVESTMENTS: Investment[] = [
-  { id: '1', name: 'FoodTech Pro', industry: 'FoodTech', investedAt: 'Feb 2025', amount: '$50K', currentValue: '$75K', returnPct: 50, stage: 'Seed', status: 'active', teamSize: 5, lastUpdate: '2026-08-28T09:00:00.000Z' },
-  { id: '2', name: 'CloudSecure', industry: 'Cybersecurity', investedAt: 'Jan 2025', amount: '$100K', currentValue: '$120K', returnPct: 20, stage: 'Series A', status: 'active', teamSize: 12, lastUpdate: '2026-09-01T09:00:00.000Z' },
-  { id: '3', name: 'DataVault', industry: 'Enterprise', investedAt: 'Dec 2024', amount: '$75K', currentValue: '$90K', returnPct: 20, stage: 'Seed', status: 'active', teamSize: 8, lastUpdate: '2026-08-21T09:00:00.000Z' },
-  { id: '4', name: 'QuickShip', industry: 'Logistics', investedAt: 'Oct 2024', amount: '$50K', currentValue: '$250K', returnPct: 400, stage: 'Series B', status: 'exited', teamSize: 25, lastUpdate: '2026-03-18T09:00:00.000Z' },
+  { id: '1', name: 'FoodTech Pro', industry: 'FoodTech', investedAt: '02/2025', amount: '€50K', currentValue: '€75K', returnPct: 50, stage: 'Seed', status: 'active', teamSize: 5, lastUpdate: '2026-08-28T09:00:00.000Z' },
+  { id: '2', name: 'CloudSecure', industry: 'Cybersecurity', investedAt: '01/2025', amount: '€100K', currentValue: '€120K', returnPct: 20, stage: 'Series A', status: 'active', teamSize: 12, lastUpdate: '2026-09-01T09:00:00.000Z' },
+  { id: '3', name: 'DataVault', industry: 'Enterprise', investedAt: '12/2024', amount: '€75K', currentValue: '€90K', returnPct: 20, stage: 'Seed', status: 'active', teamSize: 8, lastUpdate: '2026-08-21T09:00:00.000Z' },
+  { id: '4', name: 'QuickShip', industry: 'Logistics', investedAt: '10/2024', amount: '€50K', currentValue: '€250K', returnPct: 400, stage: 'Series B', status: 'exited', teamSize: 25, lastUpdate: '2026-03-18T09:00:00.000Z' },
 ];
 
 /** One investment as a one-row CSV - what "Export Report" hands over. */
@@ -186,7 +194,7 @@ function exportInvestment(inv: Investment) {
   URL.revokeObjectURL(url);
 }
 
-function InvestmentCard({ investment }: { investment: Investment }) {
+function InvestmentCard({ investment, live }: { investment: Investment; live: boolean }) {
   const statusColors: Record<string, string> = {
     active: 'bg-status-success-bg text-status-success border-status-success-border',
     exited: 'bg-status-info-bg text-status-info border-status-info-border',
@@ -212,9 +220,14 @@ function InvestmentCard({ investment }: { investment: Investment }) {
           )}
           title={(
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              <Link href={`/startups/${investment.id}`} className="transition-colors hover:text-primary-accessible">
-                {investment.name}
-              </Link>
+              {live ? (
+                <Link href={`/startups/${investment.id}`} className="transition-colors hover:text-primary-accessible">
+                  {investment.name}
+                </Link>
+              ) : (
+                // A sample row has no deal page to open.
+                <span>{investment.name}</span>
+              )}
               <Badge variant="outline" className={cn('text-xs', statusColors[investment.status])}>
                 <StatusText value={investment.status} />
               </Badge>
@@ -225,14 +238,16 @@ function InvestmentCard({ investment }: { investment: Investment }) {
           aside={(
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${investment.name}`}>
+                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria(`Open actions for ${investment.name}`, `Ενέργειες για ${investment.name}`)}>
                   <MoreVertical className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href={`/startups/${investment.id}`}><BilingualText en="View Startup" el="Προβολή startup" compact /></Link>
-                </DropdownMenuItem>
+                {live ? (
+                  <DropdownMenuItem asChild>
+                    <Link href={`/startups/${investment.id}`}><BilingualText en="View Startup" el="Προβολή startup" compact /></Link>
+                  </DropdownMenuItem>
+                ) : null}
                 {/* These three had no handler. Updates are events on the
                     deal, added from its page; the report is this row. */}
                 <UnavailableMenuItem
@@ -241,10 +256,16 @@ function InvestmentCard({ investment }: { investment: Investment }) {
                   reasonEn="Portfolio documents have no storage yet."
                   reasonEl="Τα έγγραφα χαρτοφυλακίου δεν έχουν ακόμη αποθήκευση."
                 />
-                <DropdownMenuItem asChild>
-                  <Link href={`/startups/${investment.id}`}><BilingualText en="Add Update" el="Προσθήκη ενημέρωσης" compact /></Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => exportInvestment(investment)}><BilingualText en="Export Report" el="Εξαγωγή αναφοράς" compact /></DropdownMenuItem>
+                {/* "Add Update" opened the top of the same page "View Startup"
+                    opens; it lands on the deal's note form. */}
+                {live ? (
+                  <DropdownMenuItem asChild>
+                    <Link href={`/startups/${investment.id}#add-note`}><BilingualText en="Add Update" el="Προσθήκη ενημέρωσης" compact /></Link>
+                  </DropdownMenuItem>
+                ) : null}
+                {/* One company's row, beside the header's whole portfolio:
+                    the two "Export Report"s now say which is which. */}
+                <DropdownMenuItem onSelect={() => exportInvestment(investment)}><BilingualText en="Export this company (CSV)" el="Εξαγωγή αυτής της εταιρείας (CSV)" compact /></DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -274,7 +295,8 @@ function InvestmentCard({ investment }: { investment: Investment }) {
 
         <FactLine
           items={[
-            <BilingualText key="team" en={`${investment.teamSize} team members`} el={`${investment.teamSize} μέλη ομάδας`} compact />,
+            // "0 team members" for a deal with no team size recorded.
+            investment.teamSize > 0 ? <BilingualText key="team" en={`${investment.teamSize} team members`} el={`${investment.teamSize} μέλη ομάδας`} compact /> : null,
             <span key="update"><BilingualText en="Last update:" el="Τελευταία ενημέρωση:" compact /> <RelativeTime date={investment.lastUpdate} format={formatRelativeTime} /></span>,
           ]}
         />
@@ -285,12 +307,13 @@ function InvestmentCard({ investment }: { investment: Investment }) {
 
 export default function InvestorPortfolioPage() {
   const { showDemoData } = useDemoData();
+  const sayOne = useBilingualString();
   /*
    * The portfolio is the `invested` slice of the investor's own board. The
    * demo fixtures stay as what an empty portfolio shows while the "demo data"
    * switch is on; a real investment always wins.
    */
-  const { data: investedPage, isLoading } = useQuery({
+  const { data: investedPage, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: qk('investor', 'deals', 'invested'),
     queryFn: () => listInvestorDeals({ pipelineStage: 'invested', limit: 100 }),
     staleTime: 60_000,
@@ -308,12 +331,16 @@ export default function InvestorPortfolioPage() {
     ? liveInvestments
     : showDemoData ? MOCK_INVESTMENTS : [];
   const isLive = liveInvestments.length > 0;
+  // The showcase rows, shown only on an empty portfolio with demo data on.
+  const isSample = !isLive && showDemoData;
+  // An unread portfolio said "No portfolio companies yet" (docs §93).
+  const failed = isError && !investedPage;
   // Both charts come from the rows on this page. The fixed series and sector
   // mix described four mock companies (FoodTech Pro, CloudSecure...) under a
   // portfolio of Aegis Health and Orion Grid, in dollars beside euro tiles.
   const liveDeals = investedPage?.deals ?? [];
   const valueHistory = isLive
-    ? portfolioValueSeries(liveDeals)
+    ? portfolioValueSeries(liveDeals, sayOne('Now', 'Σήμερα'))
     : showDemoData ? PORTFOLIO_VALUE_HISTORY : [];
   const sectorData = isLive
     ? portfolioSectorMix(liveDeals)
@@ -367,13 +394,42 @@ export default function InvestorPortfolioPage() {
     },
   ]);
 
+  if (failed) {
+    return (
+      <AppShell showHelp title="Portfolio" titleEl="Χαρτοφυλάκιο" description="Track your investments and returns" descriptionEl="Παρακολουθήστε τις επενδύσεις και τις αποδόσεις σας">
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <FailedLine en="Your portfolio could not be read just now." el="Το χαρτοφυλάκιό σας δεν διαβάστηκε αυτή τη στιγμή." busy={isFetching} onRetry={() => void refetch()} />
+            </CardContent>
+          </Card>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (isLoading && !showDemoData) {
+    // The tiles printed the sample's totals while the portfolio was still
+    // being read.
+    return (
+      <AppShell showHelp title="Portfolio" titleEl="Χαρτοφυλάκιο" description="Track your investments and returns" descriptionEl="Παρακολουθήστε τις επενδύσεις και τις αποδόσεις σας">
+        <div className="space-y-6" aria-busy="true">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-20" />)}
+          </div>
+          <Skeleton className="h-64" />
+        </div>
+      </AppShell>
+    );
+  }
+
   if (!isLoading && !showDemoData && investments.length === 0) {
     return (
       <AppShell showHelp title="Portfolio" titleEl="Χαρτοφυλάκιο" description="Track your investments and returns" descriptionEl="Παρακολουθήστε τις επενδύσεις και τις αποδόσεις σας">
         <EmptyState
           illustration="default"
-          title="No portfolio companies yet"
-          description="Start investing through your deal pipeline to build your portfolio."
+          title={<BilingualText en="No portfolio companies yet" el="Δεν υπάρχουν ακόμη εταιρείες στο χαρτοφυλάκιο" wrap />}
+          description={<BilingualText en="A deal you mark as invested in the pipeline is listed here with its value and return." el="Μια συμφωνία που σημειώνετε ως επένδυση στο pipeline εμφανίζεται εδώ με την αξία και την απόδοσή της." wrap />}
           askAiPrompt={ASK.portfolioEmpty}
           action={<Button asChild><Link href="/investor/pipeline"><TrendingUp className="mr-2 icon-sm" /><BilingualText en="View Pipeline" el="Προβολή pipeline" compact /></Link></Button>}
         />
@@ -395,11 +451,20 @@ export default function InvestorPortfolioPage() {
           disabled={investments.length === 0}
           onClick={exportPortfolio}
         >
-          <Download className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Export Report" el="Εξαγωγή αναφοράς" compact />
+          <Download className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Export portfolio (CSV)" el="Εξαγωγή χαρτοφυλακίου (CSV)" compact />
         </Button>
       }
     >
       <div className="space-y-6">
+        {isSample ? (
+          // The four sample companies stood on the page as if they were the
+          // reader's, with no word that they were not.
+          <SampleDataNotice
+            surface="Portfolio"
+            detail="These companies are illustrative; a deal you mark as invested in the pipeline replaces them."
+            askAiPrompt={ASK.portfolioEmpty}
+          />
+        ) : null}
         {/* Summary Stats */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
           {[
@@ -408,11 +473,11 @@ export default function InvestorPortfolioPage() {
              * company count. Summed by the API over the same rows the table
              * below lists, so the four tiles are one statement.
              */
-            { label: 'Total invested', labelEl: 'Συνολική επένδυση', value: isLive ? money(summary?.deployedCents, 'EUR') : '$275K' },
-            { label: 'Current value', labelEl: 'Τρέχουσα αξία', value: isLive ? money(summary?.currentValueCents, 'EUR') : '$535K' },
-            { label: 'Total return', labelEl: 'Συνολική απόδοση', value: isLive
-                ? (summary?.returnPct == null ? '\u2014' : `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}%`)
-                : `+${totalReturn.toFixed(0)}%` },
+            { label: 'Total invested', labelEl: 'Συνολική επένδυση', value: isSample ? '€275K' : money(summary?.deployedCents, 'EUR') },
+            { label: 'Current value', labelEl: 'Τρέχουσα αξία', value: isSample ? '€535K' : money(summary?.currentValueCents, 'EUR') },
+            { label: 'Total return', labelEl: 'Συνολική απόδοση', value: isSample
+                ? `+${totalReturn.toFixed(0)}%`
+                : (summary?.returnPct == null ? '\u2014' : `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}%`) },
             { label: 'Companies', labelEl: 'Εταιρείες', value: investments.length },
           ].map(({ label, labelEl, value }) => (
             <Card key={label}>
@@ -436,7 +501,7 @@ export default function InvestorPortfolioPage() {
                 <CardTitle><BilingualText en="Portfolio value (€K)" el="Αξία portfolio (χιλ. €)" compact /></CardTitle>
               </CardHeader>
               <CardContent>
-                <PortfolioValueChart data={valueHistory} />
+                <PortfolioValueChart data={valueHistory} valueLabel={sayOne('Value', 'Αξία')} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -446,7 +511,7 @@ export default function InvestorPortfolioPage() {
                 <CardTitle><BilingualText en="Invested by sector (€K)" el="Επενδύσεις ανά κλάδο (χιλ. €)" compact /></CardTitle>
               </CardHeader>
               <CardContent>
-                <SectorMixChart data={sectorData} />
+                <SectorMixChart data={sectorData} investedLabel={sayOne('Invested', 'Επένδυση')} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -455,7 +520,7 @@ export default function InvestorPortfolioPage() {
         {/* Portfolio List */}
         <div className="space-y-3">
           {investments.map((investment) => (
-            <InvestmentCard key={investment.id} investment={investment} />
+            <InvestmentCard key={investment.id} investment={investment} live={isLive} />
           ))}
         </div>
       </div>
