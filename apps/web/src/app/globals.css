@@ -1916,8 +1916,21 @@ html {
     /* Rows that declare themselves targets are 5% shorter like every
        button (41.8px, far above the 24px floor); a native select is a
        field and stays 44px. */
+    /* Row links used to sit at 41.8px while the buttons beside them were
+       30.458px. One phone height, so a name or a "Try again" is not a tall
+       empty bar. The hit area stays the button floor, not the old 44px. */
     .tap-target-y {
-      min-height: calc(44px * var(--button-y));
+      min-height: calc(30.458px * var(--button-y));
+    }
+    /* min-h-14 / min-h-16 are 56px and 64px. On a phone a one-line button
+       with that floor is mostly empty padding. Let the text and the phone
+       button floor decide the height. Textareas keep their own min-h-16. */
+    :is(button, a).min-h-14,
+    :is(button, a).min-h-16,
+    :is(button, a)[class~='min-h-14'],
+    :is(button, a)[class~='min-h-16'] {
+      height: auto;
+      min-height: calc(30.458px * var(--button-y));
     }
     select {
       min-height: 44px;
@@ -2309,9 +2322,12 @@ html {
       padding-bottom: env(safe-area-inset-bottom, 0px);
     }
   }
+  /* A bare icon target on a phone matches the button floor. 44px beside a
+     ~29px button was the tall, empty control. From 640px the unlayered
+     control-height rule still wins, so this only shortens the phone. */
   .tap-target {
-    min-width: 44px;
-    min-height: 44px;
+    min-width: calc(30.458px * var(--button-y));
+    min-height: calc(30.458px * var(--button-y));
   }
   .overflow-touch {
     overflow-x: auto;
@@ -2612,12 +2628,10 @@ img[data-img-failed] {
     height: var(--control-h);
     min-height: var(--control-h);
   }
-  /* .tap-target (44px) is a phone floor. From 640px every other icon
-     button is the control height (473 of them on the 149 routes, against
-     22 tap-targets at 44px: card Save toggles, row deletes, info marks),
-     so a tap-target is that height too; a hover background no longer
-     shows a box half again as tall as its neighbours. A call site that
-     sets its own min-h-* or min-w-* keeps it. */
+  /* From 640px every icon button is the control height, including a
+     tap-target (on a phone that class is already the button floor). A
+     hover background no longer shows a box taller than its neighbours.
+     A call site that sets its own min-h-* or min-w-* keeps it. */
   html:root .tap-target:not([class*='min-h-']) {
     min-height: var(--control-h);
   }

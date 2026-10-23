@@ -35,7 +35,8 @@ export type OrgInviteProblem =
   | 'already_invited'
   | 'not_pending'
   | 'expired'
-  | 'wrong_email';
+  | 'wrong_email'
+  | 'email_unverified';
 
 export const ORG_INVITE_PROBLEM_COPY: Record<OrgInviteProblem, { en: string; el: string }> = {
   email_invalid: { en: 'Write one email address.', el: 'Γράψτε μία διεύθυνση email.' },
@@ -46,6 +47,7 @@ export const ORG_INVITE_PROBLEM_COPY: Record<OrgInviteProblem, { en: string; el:
   not_pending: { en: 'This invitation is no longer open.', el: 'Αυτή η πρόσκληση δεν είναι πια ανοιχτή.' },
   expired: { en: 'This invitation has expired; ask for a new one.', el: 'Η πρόσκληση έληξε· ζητήστε νέα.' },
   wrong_email: { en: 'This invitation was sent to another email address. Sign in with that address to accept it.', el: 'Η πρόσκληση στάλθηκε σε άλλη διεύθυνση email. Συνδεθείτε με εκείνη τη διεύθυνση για να την αποδεχτείτε.' },
+  email_unverified: { en: 'Verify this email address before accepting the invitation.', el: 'Επαληθεύστε αυτή τη διεύθυνση email πριν αποδεχτείτε την πρόσκληση.' },
 };
 
 /** Lower-case and trimmed: the form two addresses are compared in. */

@@ -37,7 +37,11 @@ describe('button height', () => {
     expect(CSS).toContain('min-height: calc(28.939px * var(--button-y));');
     expect(CSS).toContain('min-height: calc(32.997px * var(--button-y));');
     expect(CSS).toContain('min-height: calc(2.75rem * var(--chrome-y) * var(--button-y));');
-    expect(CSS).toContain('min-height: calc(44px * var(--button-y));');
+    // Row links and a one-line min-h-14/16 button share the phone floor.
+    // A 44px × --button-y bar was the disproportionate height.
+    expect(CSS).toContain('min-height: calc(30.458px * var(--button-y));');
+    expect(CSS).not.toContain('min-height: calc(44px * var(--button-y));');
+    expect(CSS).toContain(':is(button, a).min-h-14');
   });
 
   it('gives a row of controls one height from 640px, and keeps the phone floors', () => {
@@ -58,8 +62,10 @@ describe('button height', () => {
     ]) {
       expect(block, selector).toContain(selector);
     }
-    // Below 640px the 44px tap-target stays.
-    expect(CSS).toMatch(/\.tap-target\s*\{\s*min-width:\s*44px;\s*min-height:\s*44px;\s*\}/);
+    // On a phone a bare tap-target is the button floor, not a 44px box.
+    expect(CSS).toMatch(
+      /\.tap-target\s*\{\s*min-width:\s*calc\(30\.458px \* var\(--button-y\)\);\s*min-height:\s*calc\(30\.458px \* var\(--button-y\)\);\s*\}/,
+    );
   });
 
   it('never touches type', () => {

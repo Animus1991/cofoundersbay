@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { publicOrigin, safeInternalPath, sanitizeHost } from './lib/return-to';
 
 const PUBLIC_PATHS = new Set([
   '/',
@@ -94,39 +95,22 @@ function extractTenantSlugFromHostname(hostname: string): string | null {
   return null; // Custom domains resolved client-side via resolveTenantFromDomain()
 }
 
-// A forwarded or direct host header is used to build redirect URLs, so it is
-// validated before it is trusted: host[:port] only, first entry of any
-// comma-separated proxy list. A malformed value falls back to the next header
-// and finally to the URL Next itself parsed - never to the bad string.
-const SAFE_HOST = /^[a-zA-Z0-9.-]+(?::\d+)?$/;
-
-function sanitizedHost(value: string | null): string | null {
-  const first = value?.split(',')[0]?.trim();
-  return first && SAFE_HOST.test(first) ? first : null;
-}
-
 function requestPublicOrigin(request: NextRequest): string {
-  const forwardedProto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim();
-  const proto =
-    forwardedProto === 'http' || forwardedProto === 'https'
-      ? forwardedProto
-      : request.nextUrl.protocol.replace(':', '') || 'https';
-  const host =
-    sanitizedHost(request.headers.get('x-forwarded-host')) ??
-    sanitizedHost(request.headers.get('host')) ??
-    request.nextUrl.host;
-  return `${proto}://${host}`;
+  return publicOrigin({
+    host: request.headers.get('host'),
+    forwardedProto: request.headers.get('x-forwarded-proto'),
+    nextProtocol: request.nextUrl.protocol,
+    nextHost: request.nextUrl.host,
+  });
 }
 
 function isCloudflarePreviewHost(request: NextRequest): boolean {
-  const host = (
-    request.headers.get('x-forwarded-host') ??
-    request.headers.get('host') ??
-    ''
-  )
-    .split(':')[0]
-    .toLowerCase();
-  return host.endsWith('.trycloudflare.com');
+  // The tunnel sets Host to the public name. A client-supplied
+  // x-forwarded-host must not turn a real site into a demo session,
+  // and it is not the host of a redirect (publicOrigin uses Host).
+  const host = sanitizeHost(request.headers.get('host'));
+  if (!host) return false;
+  return host.split(':')[0].toLowerCase().endsWith('.trycloudflare.com');
 }
 
 function applyPreviewDemoCookies(response: NextResponse, secure: boolean) {
@@ -139,10 +123,6 @@ function applyPreviewDemoCookies(response: NextResponse, secure: boolean) {
   response.cookies.set('cfb_session', 'preview-demo', options);
   response.cookies.set('cfb_preview_demo', '1', options);
   response.cookies.set('cfb_primary_role', 'existing_founder', options);
-}
-
-function isSafeInternalPath(value: string | null): value is string {
-  return Boolean(value && value.startsWith('/') && !value.startsWith('//') && !value.startsWith('/login') && !value.startsWith('/register'));
 }
 
 export function middleware(request: NextRequest) {
@@ -166,7 +146,7 @@ export function middleware(request: NextRequest) {
     applyPreviewDemoCookies(response, publicOrigin.startsWith('https:'));
     if (pathname === '/login' || pathname === '/register') {
       const redirectTo = request.nextUrl.searchParams.get('redirect');
-      const target = isSafeInternalPath(redirectTo) ? redirectTo : '/dashboard/founder';
+      const target = safeInternalPath(redirectTo) ?? '/dashboard/founder';
       const bounce = NextResponse.redirect(new URL(target, publicOrigin));
       applyPreviewDemoCookies(bounce, publicOrigin.startsWith('https:'));
       return bounce;

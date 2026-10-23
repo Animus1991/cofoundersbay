@@ -2,6 +2,7 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { AuthService } from '../auth.service';
+import { extractJwtFromCookieOrHeader } from '../strategies/jwt.strategy';
 
 /** Use on routes that work for both authenticated and anonymous; sets req.user when token is valid. */
 @Injectable()
@@ -13,8 +14,10 @@ export class OptionalJwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    const auth = request.headers.authorization;
-    const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null;
+    // Same order as JwtStrategy: the HttpOnly access cookie, then Bearer.
+    // Reading only the header left a signed-in viewer anonymous on optional
+    // routes (a profile view was stored with no viewer).
+    const token = extractJwtFromCookieOrHeader(request);
     if (!token) return true;
 
     try {

@@ -671,8 +671,13 @@ export default function SettingsPage() {
   // Verification, "Open to" and "How you like to work" moved to the profile
   // (docs §99); a link that still says /settings#verification lands there.
   useEffect(() => {
-    const moved = MOVED_SETTINGS_ANCHORS[window.location.hash.slice(1)];
-    if (moved) window.location.replace(moved);
+    const go = () => {
+      const moved = MOVED_SETTINGS_ANCHORS[window.location.hash.slice(1)];
+      if (moved) window.location.replace(moved);
+    };
+    go();
+    window.addEventListener('hashchange', go);
+    return () => window.removeEventListener('hashchange', go);
   }, []);
   const { success, error: showError } = useToast();
   const { t, locale } = useI18n();

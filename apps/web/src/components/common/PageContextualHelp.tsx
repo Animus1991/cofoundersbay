@@ -1872,9 +1872,10 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          People who can run programs, review applications, and change settings for this organization. Adding
-          someone (by their user ID, on the admin page) writes a membership at once — nothing is emailed, and it is
-          not a platform-admin grant.
+          People who can run programs, review applications, and change settings for this organization. Invite
+          someone by email from the admin page: they get a link and join when they accept, signed in with that
+          address. Adding by user ID still writes a membership at once and emails nothing. Neither is a
+          platform-admin grant.
         </p>
         <p>
           Removing a member drops org access only. Their personal CoFounderBay account stays. Roles here do not
@@ -1886,8 +1887,9 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Όσοι μπορούν να τρέχουν προγράμματα, να αξιολογούν αιτήσεις και να αλλάζουν ρυθμίσεις αυτού του
-          οργανισμού. Η προσθήκη κάποιου (με το αναγνωριστικό χρήστη του, στη σελίδα διαχείρισης) γράφει αμέσως
-          ιδιότητα μέλους — δεν στέλνεται email, και δεν είναι δικαίωμα platform-admin.
+          οργανισμού. Προσκαλέστε κάποιον με email από τη σελίδα διαχείρισης: λαμβάνει σύνδεσμο και γίνεται μέλος
+          όταν αποδεχτεί, συνδεδεμένος με εκείνη τη διεύθυνση. Η προσθήκη με αναγνωριστικό χρήστη γράφει αμέσως
+          ιδιότητα μέλους και δεν στέλνει email. Κανένα από τα δύο δεν είναι δικαίωμα platform-admin.
         </p>
         <p>
           Η αφαίρεση μέλους κόβει μόνο την πρόσβαση στον οργανισμό. Ο προσωπικός λογαριασμός CoFounderBay μένει. Οι
@@ -1900,9 +1902,9 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Mentors available to your cohorts. Find more in the public{' '}
-          <Link href="/mentoring">Find mentors</Link> directory and message them; there is no email invitation yet.
-          They are not automatically every mentor on the platform.
+          Mentors available to your cohorts. Invite one by email from the organisation admin page (role Mentor),
+          or find more in the public <Link href="/mentoring">Find mentors</Link> directory and message them. They
+          are not automatically every mentor on the platform.
         </p>
         <p>
           Assigning a mentor to a startup is not stored yet, and cohort membership is managed by platform
@@ -1913,9 +1915,9 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     el: (
       <>
         <p>
-          Μέντορες διαθέσιμοι στους κύκλους σας. Βρείτε κι άλλους στον δημόσιο κατάλογο{' '}
-          <Link href="/mentoring">Εύρεση μεντόρων</Link> και στείλτε τους μήνυμα· πρόσκληση με email δεν υπάρχει
-          ακόμη. Δεν είναι αυτόματα όλοι οι μέντορες της πλατφόρμας.
+          Μέντορες διαθέσιμοι στους κύκλους σας. Προσκαλέστε κάποιον με email από τη διαχείριση του οργανισμού
+          (ρόλος Μέντορας), ή βρείτε κι άλλους στον δημόσιο κατάλογο <Link href="/mentoring">Εύρεση μεντόρων</Link>{' '}
+          και στείλτε τους μήνυμα. Δεν είναι αυτόματα όλοι οι μέντορες της πλατφόρμας.
         </p>
         <p>
           Η ανάθεση μέντορα σε startup δεν αποθηκεύεται ακόμη, και τη συμμετοχή σε κύκλους τη διαχειρίζονται οι

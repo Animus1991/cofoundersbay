@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { forgotPassword, login, register } from './api';
-import { applyPreviewDemoSession, isPreviewDemo, leavePreviewDemoForRealAccount } from './preview-demo';
+import { applyPreviewDemoSession, isPreviewDemo, leavePreviewDemoForRealAccount, restorePreviewDemoSessionIfNeeded } from './preview-demo';
 import { DemoDataProvider, useDemoData } from '@/contexts/DemoDataContext';
 
 function json(body: unknown, status = 200) {
@@ -24,6 +24,16 @@ afterEach(() => {
   vi.unstubAllGlobals();
   localStorage.clear();
   clearCookies();
+});
+
+describe('restoring a demo session', () => {
+  it('does not overwrite a real session when sample data was left on', () => {
+    document.cookie = 'cfb_session=real-session; path=/';
+    localStorage.setItem('cfb_demo_data', '1');
+    expect(restorePreviewDemoSessionIfNeeded()).toBe(false);
+    expect(document.cookie).toContain('cfb_session=real-session');
+    expect(document.cookie).not.toContain('preview-demo');
+  });
 });
 
 describe('leaving the demo before a real account', () => {

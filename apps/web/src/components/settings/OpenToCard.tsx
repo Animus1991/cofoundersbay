@@ -70,7 +70,11 @@ export function OpenToCard() {
     onError: () => showError('Could not remove it'),
   });
 
-  const toggle = (k: OpenToKind) => setKinds((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]));
+  const settled = mine.isFetched && !mine.isLoading;
+  const toggle = (k: OpenToKind) => {
+    if (!settled) return;
+    setKinds((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]));
+  };
   const lapsed = signal && !mine.data?.active;
 
   return (
@@ -151,7 +155,7 @@ export function OpenToCard() {
         ) : null}
 
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={!kinds.length || save.isPending} onClick={() => save.mutate()}>
+          <Button type="button" disabled={!settled || !kinds.length || save.isPending} onClick={() => save.mutate()}>
             <BilingualText en={signal ? 'Save and renew' : 'Save'} el={signal ? 'Αποθήκευση και ανανέωση' : 'Αποθήκευση'} compact />
           </Button>
           {signal ? (

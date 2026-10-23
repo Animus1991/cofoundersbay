@@ -87,8 +87,12 @@ export function restorePreviewDemoSessionIfNeeded() {
       document.cookie.includes('cfb_preview_demo=1') ||
       (typeof window !== 'undefined' && window.location.hostname.endsWith('.trycloudflare.com'));
     if (!wantsDemo) return false;
+    // A real session wins. Sample-data mode left on from an earlier visit
+    // used to call applyPreviewDemoSession and overwrite cfb_session.
+    const session = /(?:^|;\s*)cfb_session=([^;]*)/.exec(document.cookie)?.[1];
+    if (session && decodeURIComponent(session) !== 'preview-demo') return false;
     const hasUser = Boolean(window.localStorage.getItem('user'));
-    const hasCookie = document.cookie.includes('cfb_session=preview-demo');
+    const hasCookie = session === 'preview-demo';
     if (!hasCookie || !hasUser) {
       applyPreviewDemoSession();
       return true;

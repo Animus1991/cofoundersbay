@@ -197,7 +197,7 @@ export default function ProviderReviewsPage() {
   });
 
   const live = useMemo(() => (data?.inquiries ?? []).map(toReview), [data]);
-  const reviews = live.length > 0 ? live : isLoading ? [] : showDemoData ? MOCK_REVIEWS : [];
+  const reviews = live.length > 0 ? live : isLoading || isError ? [] : showDemoData ? MOCK_REVIEWS : [];
   const filteredReviews = reviews.filter(
     (r) =>
       !search ||
@@ -229,7 +229,7 @@ export default function ProviderReviewsPage() {
   const isSample = live.length === 0 && reviews.length > 0;
 
   // Unread, the page said "No client reviews yet" (docs §95).
-  if (isError && !data && !showDemoData) {
+  if (isError && !data) {
     return (
       <AppShell {...shell}>
         <div className="space-y-6">

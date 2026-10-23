@@ -25,5 +25,10 @@ describe('phone touch floor', () => {
     const phone = css.slice(mediaStart, css.indexOf('Reading measure', start));
     expect(phone).toContain('select');
     expect(phone).toMatch(/select[\s\S]*min-height:\s*44px/);
+    const tapStart = phone.indexOf('.tap-target-y {');
+    const tapRule = phone.slice(tapStart, phone.indexOf('}', tapStart));
+    expect(tapRule).toContain('min-height: calc(30.458px * var(--button-y))');
+    expect(tapRule).not.toContain('44px');
+    expect(phone).toContain(":is(button, a).min-h-14");
   });
 });

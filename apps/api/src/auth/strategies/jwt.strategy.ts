@@ -6,7 +6,7 @@ import { Request } from 'express';
 import { AuthService, JwtPayload } from '../auth.service';
 import { COOKIE_NAMES } from '../cookie.utils';
 
-function extractJwtFromCookieOrHeader(req: Request): string | null {
+export function extractJwtFromCookieOrHeader(req: Request): string | null {
   // 1. Try HttpOnly cookie first
   const cookieToken = (req.cookies as Record<string, string>)?.[COOKIE_NAMES.ACCESS_TOKEN];
   if (cookieToken) return cookieToken;

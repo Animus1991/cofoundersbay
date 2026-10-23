@@ -111,17 +111,30 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
     staleTime: 60_000,
     retry: 0,
   });
+  const { data: board } = useQuery({
+    queryKey: qk('investor', 'deals', 'board'),
+    queryFn: () => listInvestorDeals({ limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
 
-  const existing = watched?.deals.find((deal) => deal.name === startup.name);
-  const inWatchlist = Boolean(existing);
+  const onBoard = board?.deals.find((deal) => deal.name === startup.name);
+  // Discovered is the watchlist. A deal that has moved on (Reviewing and
+  // later) is the same row: watching it again must not create a second one.
+  const watchedDeal =
+    (onBoard?.pipelineStage === 'discovered' ? onBoard : undefined) ??
+    watched?.deals.find((deal) => deal.name === startup.name);
+  const inWatchlist = Boolean(watchedDeal);
+  const pastWatchlist = Boolean(onBoard && onBoard.pipelineStage !== 'discovered');
   const [pending, setPending] = useState(false);
 
   const toggle = useMutation({
     mutationFn: async () => {
-      if (existing) {
-        await deleteInvestorDeal(existing.id);
+      if (watchedDeal) {
+        await deleteInvestorDeal(watchedDeal.id);
         return false;
       }
+      if (onBoard) return false;
       await createInvestorDeal(startupDeal(startup));
       return true;
     },
@@ -145,8 +158,9 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
   // deal moved to Reviewing.
   const addToPipeline = useMutation({
     mutationFn: async () => {
-      if (existing) {
-        await updateInvestorDeal(existing.id, { pipelineStage: 'reviewing' });
+      const deal = onBoard ?? watchedDeal;
+      if (deal) {
+        await updateInvestorDeal(deal.id, { pipelineStage: 'reviewing' });
         return;
       }
       await createInvestorDeal(startupDeal(startup, 'reviewing'));
@@ -158,10 +172,9 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
     onError: (err) => showError('Could not add to the pipeline', err instanceof Error ? err.message : undefined),
   });
 
-  // A startup already on the board opens its deal; the card's name, its
-  // "View" and the menu's "View Details" opened three different pages for
-  // the same startup (the first two a deal that did not exist).
-  const href = `/startups/${existing?.id ?? startup.id}`;
+  // Open the deal only when one exists on the board. A sample id (1…7) is
+  // not a deal, and a startup that has left Discovered is still on the board.
+  const href = onBoard ? `/startups/${onBoard.id}` : null;
 
   // The Opportunities card: the logo and name with the tagline under it,
   // the watch control and menu at the right, then facts, the two scores and
@@ -180,9 +193,13 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
           )}
           title={(
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              <Link href={href} className="transition-colors hover:text-primary-accessible">
-                {startup.name}
-              </Link>
+              {href ? (
+                <Link href={href} className="transition-colors hover:text-primary-accessible">
+                  {startup.name}
+                </Link>
+              ) : (
+                <span>{startup.name}</span>
+              )}
               {startup.isHot && <Badge variant="destructive" className="h-4 gap-0.5 px-1.5 text-2xs"><Flame className="h-2.5 w-2.5" aria-hidden="true" /><BilingualText en="Hot" el="Δημοφιλές" compact /></Badge>}
               {startup.isFeatured && <Badge className="h-4 border-primary/30 bg-primary/10 px-1.5 text-2xs text-primary-accessible"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
             </span>
@@ -191,10 +208,22 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
           asideStays
           aside={(
             <>
-              <Button variant="ghost" size="icon" className="h-7 w-7 gap-1 sm:w-auto sm:px-2" onClick={() => setInWatchlist()} aria-label={inWatchlist ? bilingualAria(`Remove ${startup.name} from watchlist`, `Αφαίρεση από τη λίστα παρακολούθησης: ${startup.name}`) : bilingualAria(`Add ${startup.name} to watchlist`, `Προσθήκη στη λίστα παρακολούθησης: ${startup.name}`)} aria-pressed={inWatchlist}>
-                <Eye className={cn('icon-sm', inWatchlist ? 'text-primary-accessible fill-primary/20' : 'text-muted-foreground')} />
-                <span className="hidden sm:inline text-xs"><BilingualText en={inWatchlist ? 'Watching' : 'Watch'} el={inWatchlist ? 'Σε παρακολούθηση' : 'Παρακολούθηση'} compact /></span>
-              </Button>
+              {pastWatchlist ? (
+                <WithDisabledReason
+                  reasonEn="Already on your board, past the watchlist."
+                  reasonEl="Είναι ήδη στον πίνακα, πέρα από τη λίστα παρακολούθησης."
+                >
+                  <Button variant="ghost" size="icon" className="h-7 w-7 gap-1 sm:w-auto sm:px-2" aria-label={bilingualAria(`${startup.name} is already on your board`, `${startup.name}: είναι ήδη στον πίνακα`)}>
+                    <Eye className="icon-sm text-muted-foreground" />
+                    <span className="hidden sm:inline text-xs"><BilingualText en="On board" el="Στον πίνακα" compact /></span>
+                  </Button>
+                </WithDisabledReason>
+              ) : (
+                <Button variant="ghost" size="icon" className="h-7 w-7 gap-1 sm:w-auto sm:px-2" onClick={() => setInWatchlist()} aria-label={inWatchlist ? bilingualAria(`Remove ${startup.name} from watchlist`, `Αφαίρεση από τη λίστα παρακολούθησης: ${startup.name}`) : bilingualAria(`Add ${startup.name} to watchlist`, `Προσθήκη στη λίστα παρακολούθησης: ${startup.name}`)} aria-pressed={inWatchlist}>
+                  <Eye className={cn('icon-sm', inWatchlist ? 'text-primary-accessible fill-primary/20' : 'text-muted-foreground')} />
+                  <span className="hidden sm:inline text-xs"><BilingualText en={inWatchlist ? 'Watching' : 'Watch'} el={inWatchlist ? 'Σε παρακολούθηση' : 'Παρακολούθηση'} compact /></span>
+                </Button>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={bilingualAria(`More actions for ${startup.name}`, `Περισσότερες ενέργειες: ${startup.name}`)}>
@@ -247,9 +276,15 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
         </div>
 
         <CardFoot>
-          <Button size="sm" variant="default" asChild>
-            <Link href={href}><Eye className="mr-1 icon-sm" /><BilingualText en="View" el="Προβολή" compact /></Link>
-          </Button>
+          {href ? (
+            <Button size="sm" variant="default" asChild>
+              <Link href={href}><Eye className="mr-1 icon-sm" /><BilingualText en="View" el="Προβολή" compact /></Link>
+            </Button>
+          ) : (
+            <Button size="sm" variant="default" disabled title="Add it to the pipeline to open the deal. Προσθέστε το στο pipeline για να ανοίξει η συμφωνία.">
+              <Eye className="mr-1 icon-sm" /><BilingualText en="View" el="Προβολή" compact />
+            </Button>
+          )}
           {/* Both had no handler: Pipeline is the menu's Add to Pipeline,
               and Intro has no founder account to reach yet. */}
           <Button size="sm" variant="outline" disabled={addToPipeline.isPending} onClick={() => addToPipeline.mutate()}>
@@ -319,13 +354,29 @@ export default function InvestorScoutingPage() {
     staleTime: 60_000,
     retry: 0,
   });
-  const dealFor = (st: Startup) => watchedDeals?.deals?.find((deal) => deal.name === st.name);
+  const { data: boardDeals } = useQuery({
+    queryKey: qk('investor', 'deals', 'board'),
+    queryFn: () => listInvestorDeals({ limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const dealFor = (st: Startup) =>
+    boardDeals?.deals?.find((deal) => deal.name === st.name) ??
+    watchedDeals?.deals?.find((deal) => deal.name === st.name);
   const scout = async (st: Startup | undefined, action: 'watch' | 'unwatch' | 'pipeline'): Promise<PageControlRunResult> => {
     if (!st) return ROW_GONE;
     const existing = dealFor(st);
     try {
-      if (action === 'watch' && !existing) await createInvestorDeal(startupDeal(st));
-      if (action === 'unwatch' && existing) await deleteInvestorDeal(existing.id);
+      if (action === 'watch') {
+        if (existing && existing.pipelineStage !== 'discovered') {
+          return { error: 'This startup is already on your board, past the watchlist.' };
+        }
+        if (!existing) await createInvestorDeal(startupDeal(st));
+      }
+      if (action === 'unwatch') {
+        if (existing?.pipelineStage === 'discovered') await deleteInvestorDeal(existing.id);
+        else if (existing) return { error: 'This startup is on your board past the watchlist, so it was left there.' };
+      }
       if (action === 'pipeline') {
         if (existing) await updateInvestorDeal(existing.id, { pipelineStage: 'reviewing' });
         else await createInvestorDeal(startupDeal(st, 'reviewing'));

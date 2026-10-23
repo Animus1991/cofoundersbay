@@ -14,7 +14,10 @@ type Row = Record<string, any>;
 function setup(opts: { admin?: boolean; members?: Row[]; users?: Row[] } = {}) {
   const invitations: Row[] = [];
   const memberships: Row[] = [...(opts.members ?? [])];
-  const users: Row[] = opts.users ?? [{ id: 'u-invitee', email: 'Sofia@Meltemi.example' }, { id: 'u-other', email: 'other@x.example' }];
+  const users: Row[] = opts.users ?? [
+    { id: 'u-invitee', email: 'Sofia@Meltemi.example', emailVerified: true },
+    { id: 'u-other', email: 'other@x.example', emailVerified: true },
+  ];
   const notifications: Row[] = [];
   const emails: Row[] = [];
   const prisma: any = {
@@ -132,6 +135,24 @@ describe('organisation invitations', () => {
     expect(invitations[0].status).toBe('pending');
     await service.cancel('org-1', 'u-admin', invitations[0].id);
     await expect(service.accept(tokenOf(emails[1]), 'u-invitee')).rejects.toMatchObject({ response: { error: { details: { problem: 'not_pending' } } } });
+  });
+
+  it('an unverified address cannot accept, and an active member is refused', async () => {
+    const unverified = setup({
+      users: [
+        { id: 'u-invitee', email: 'sofia@meltemi.example', emailVerified: false },
+        { id: 'u-other', email: 'other@x.example', emailVerified: true },
+      ],
+    });
+    await unverified.service.create('org-1', 'u-admin', { email: 'sofia@meltemi.example', role: 'admin' });
+    await expect(unverified.service.accept(tokenOf(unverified.emails[0]), 'u-invitee')).rejects.toMatchObject({ response: { error: { details: { problem: 'email_unverified' } } } });
+    expect(unverified.memberships).toHaveLength(0);
+
+    const { service, emails, memberships } = setup();
+    await service.create('org-1', 'u-admin', { email: 'sofia@meltemi.example', role: 'admin' });
+    memberships.push({ id: 'm-existing', organizationId: 'org-1', userId: 'u-invitee', role: 'member', isActive: true });
+    await expect(service.accept(tokenOf(emails[0]), 'u-invitee')).rejects.toMatchObject({ response: { error: { details: { problem: 'already_member' } } } });
+    expect(memberships.find((m) => m.userId === 'u-invitee')).toMatchObject({ role: 'member', isActive: true });
   });
 
   it('resending issues a new link; the old one stops working', async () => {

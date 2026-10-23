@@ -705,8 +705,9 @@ export default function FounderDashboardContent() {
       'Recommended matches': matchCount ?? recommendations?.suggestions?.length ?? 0,
       'Milestones complete': `${completedMilestoneCount}/${milestones.length}`,
       'Next milestone': nextOpenMilestone?.titleEn ?? 'none',
-      'Round progress': `${fundingPct}%`,
-      'Committed investors': fundStats.committed,
+      ...(showDemoData
+        ? { 'Round progress': `${fundingPct}%`, 'Committed investors': fundStats.committed }
+        : {}),
       'Need cards posted': firstMove.count ?? 'unknown',
       'Ladder steps waiting on you': waitingThreads.length,
     },

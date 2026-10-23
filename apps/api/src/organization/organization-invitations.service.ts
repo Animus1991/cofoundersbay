@@ -177,6 +177,7 @@ export class OrganizationInvitationsService {
       const existing = await tx.organizationMembership.findUnique({
         where: { organizationId_userId: { organizationId: row.organizationId, userId } },
       });
+      if (existing?.isActive) throw refusal('already_member');
       if (existing && !existing.isActive) {
         await tx.organizationMembership.update({ where: { id: existing.id }, data: { isActive: true, role: row.role as never, invitedBy: row.invitedById } });
       } else if (!existing) {
@@ -202,7 +203,7 @@ export class OrganizationInvitationsService {
   private async answerable(token: string, userId: string) {
     const row = await this.prisma.organizationInvitation.findUnique({ where: { tokenHash: hash(token) } });
     if (!row) throw new NotFoundException('Invitation not found');
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true } });
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, emailVerified: true } });
     const verdict = canAnswerOrgInvite(row, user?.email, Date.now());
     if (!verdict.ok) {
       if (verdict.problem === 'expired' && row.status === 'pending') {
@@ -210,6 +211,9 @@ export class OrganizationInvitationsService {
       }
       throw refusal(verdict.problem);
     }
+    // Registration issues a session before the address is verified. Matching
+    // the string is not enough to take a membership, including admin.
+    if (!user?.emailVerified) throw refusal('email_unverified');
     return { row, user: user! };
   }
 

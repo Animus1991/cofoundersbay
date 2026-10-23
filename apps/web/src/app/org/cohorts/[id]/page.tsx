@@ -240,7 +240,7 @@ export default function CohortDetailPage() {
   const cohortId = params?.id as string;
   const [activeTab, setActiveTab] = useState('overview');
 
-  const { slug, failed: orgFailed, refetch: refetchOrg, isFetching: orgFetching } = useCurrentOrg();
+  const { slug, failed: orgFailed, isLoading: orgLoading, refetch: refetchOrg, isFetching: orgFetching } = useCurrentOrg();
 
   /*
    * One request for the whole dashboard. The id in the URL used to be read and
@@ -263,8 +263,8 @@ export default function CohortDetailPage() {
   const { showDemoData } = useDemoData();
   const hydrated = useHydrated();
   const sample = useMemo(
-    () => (!data && !isLoading && showDemoData && hydrated ? demoCohortDetail(cohortId, Date.now()) : null),
-    [data, isLoading, showDemoData, hydrated, cohortId],
+    () => (!data && !isLoading && !orgLoading && !orgFailed && showDemoData && hydrated ? demoCohortDetail(cohortId, Date.now()) : null),
+    [data, isLoading, orgLoading, orgFailed, showDemoData, hydrated, cohortId],
   );
   const live = data ?? sample;
   const isSample = !data && sample != null;
@@ -451,7 +451,7 @@ export default function CohortDetailPage() {
   if (!cohort) {
     return (
       <AppShell title="Cohort" titleEl="Κύκλος">
-        {isLoading || !hydrated ? (
+        {isLoading || orgLoading || !hydrated ? (
           <div className="space-y-4">
             <Skeleton className="h-8 w-2/3" />
             <Skeleton className="h-40 w-full" />

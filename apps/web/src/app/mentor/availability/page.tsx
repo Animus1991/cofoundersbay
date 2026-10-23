@@ -102,7 +102,8 @@ export default function MentorAvailabilityPage() {
   const setSlots = (next: TimeSlot[] | ((prev: TimeSlot[]) => TimeSlot[])) => { setSlotsState(next); setDirty(true); };
   const setTimezone = (tz: string) => { setTimezoneState(tz); setDirty(true); };
   const [sessionDuration, setSessionDurationState] = useState(30);
-  const setSessionDuration = (n: number) => { setSessionDurationState(n); setDirty(true); };
+  const [durationTouched, setDurationTouched] = useState(false);
+  const setSessionDuration = (n: number) => { setSessionDurationState(n); setDurationTouched(true); };
   const [bufferTime, setBufferTime] = useState(15);
   const [isSaving, setIsSaving] = useState(false);
   const [noticeHours, setNoticeHours] = useState(24);
@@ -169,7 +170,7 @@ export default function MentorAvailabilityPage() {
     // Only when a new read arrives; local edits win until they are saved.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storedSlots]);
-  const unsaved = dirty || (storedSlots !== null && storedSlots.length === 0 && slots.length > 0);
+  const unsaved = dirty || durationTouched || (storedSlots !== null && storedSlots.length === 0 && slots.length > 0);
 
   function addSlot(weekday: number) {
     const newSlot: TimeSlot = {
@@ -198,9 +199,13 @@ export default function MentorAvailabilityPage() {
       );
       queryClient.setQueryData(qk('mentors', 'availability', 'mine'), res);
       // The default length lives on the listing; it was set here and never kept.
-      if (listing.data?.sessionDuration !== sessionDuration && !listing.isError) {
+      // The default 30 used to be written while the listing was still loading,
+      // over the stored length. Write it only after the person changes it,
+      // and only once that listing has been read.
+      if (durationTouched && listing.isSuccess) {
         const row = await saveMyMentorListing({ sessionDuration });
         queryClient.setQueryData(qk('mentors', 'listing', 'me'), row);
+        setDurationTouched(false);
       }
       setDirty(false);
       success('Availability saved', 'Your schedule has been updated.');
@@ -484,7 +489,7 @@ export default function MentorAvailabilityPage() {
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="sessionDuration"><BilingualText en="Default Session Duration" el="Προεπιλεγμένη διάρκεια συνεδρίας" compact /></Label>
-                    <Select value={String(sessionDuration)} onValueChange={v => setSessionDuration(Number(v))}>
+                    <Select value={String(sessionDuration)} onValueChange={v => setSessionDuration(Number(v))} disabled={!listing.isSuccess}>
                       <SelectTrigger id="sessionDuration" aria-label={bilingualAria('Default Session Duration', 'Προεπιλεγμένη διάρκεια συνεδρίας')}>
                         <SelectValue />
                       </SelectTrigger>

@@ -184,11 +184,12 @@ export default function PublicProfilePage() {
   // The public page counts signed-out readers too: as a number, never a name.
   useRecordProfileView(profile?.userId, Boolean(profile));
 
-  const { data: endorsementsData, isLoading: endorsementsLoading } = useQuery({
+  const { data: endorsementsData, isLoading: endorsementsLoading, isError: endorsementsFailed, isFetching: endorsementsFetching, refetch: refetchEndorsements } = useQuery({
     queryKey: qk('endorsements', profile?.userId),
     queryFn: () => getEndorsementsForUser(profile!.userId),
     enabled: !!profile?.userId,
     staleTime: 60_000,
+    retry: 0,
   });
 
   const endorsements = endorsementsData?.endorsements ?? [];
@@ -252,7 +253,7 @@ export default function PublicProfilePage() {
   const stats = [
     derived.connectionsCount != null ? { label: 'Connections', labelEl: 'Συνδέσεις', value: derived.connectionsCount } : null,
     derived.projectsCount != null ? { label: 'Projects', labelEl: 'Έργα', value: derived.projectsCount } : null,
-    { label: 'Endorsements', labelEl: 'Συστάσεις', value: endorsementsLoading ? '—' : endorsements.length },
+    { label: 'Endorsements', labelEl: 'Συστάσεις', value: endorsementsLoading || endorsementsFailed ? '—' : endorsements.length },
   ].filter((row): row is { label: string; labelEl: string; value: number | string } => row !== null);
 
   return (
@@ -413,6 +414,15 @@ export default function PublicProfilePage() {
               <CardContent>
                 {endorsementsLoading ? (
                   <EndorsementsSkeleton />
+                ) : endorsementsFailed ? (
+                  <div className="space-y-2">
+                    <p role="alert" className="card-body text-muted-foreground">
+                      <BilingualText en="Endorsements could not be read just now." el="Οι συστάσεις δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                    </p>
+                    <Button type="button" variant="outline" size="sm" disabled={endorsementsFetching} onClick={() => void refetchEndorsements()}>
+                      <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                    </Button>
+                  </div>
                 ) : endorsements.length > 0 ? (
                   <ul className="divide-y divide-border">
                     {endorsements.map((endorsement) => (

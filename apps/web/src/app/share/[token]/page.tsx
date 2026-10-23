@@ -257,15 +257,21 @@ export default function SharePage() {
       }
     } catch (err: unknown) {
       const status = errorStatus(err);
-      if (status === 401 || status === 403) {
-        // Without a password typed yet, the link simply asks for one.
+      const text = err instanceof Error ? err.message.toLowerCase() : '';
+      // The API answers 400 for a missing password, a wrong one, expiry and
+      // the view limit. 401/403 stay for older clients.
+      if (status === 401 || status === 403 || (status === 400 && text.includes('password'))) {
         setPasswordError(pwd ? { en: 'Incorrect password. Please try again.', el: 'Λάθος κωδικός. Δοκιμάστε ξανά.' } : null);
         setStep('password');
+      } else if (status === 400 && text.includes('view limit')) {
+        setStep('error');
+        setCanRetry(false);
+        setErrorMessage({ en: 'This share link has reached its view limit.', el: 'Αυτός ο σύνδεσμος κοινοποίησης έφτασε το όριο προβολών.' });
       } else if (status === 404) {
         setStep('error');
         setCanRetry(false);
         setErrorMessage({ en: 'This share link does not exist or has been revoked.', el: 'Αυτός ο σύνδεσμος κοινοποίησης δεν υπάρχει ή ανακλήθηκε.' });
-      } else if (status === 410) {
+      } else if (status === 410 || (status === 400 && text.includes('expired'))) {
         setStep('error');
         setCanRetry(false);
         setErrorMessage({ en: 'This share link has expired.', el: 'Αυτός ο σύνδεσμος κοινοποίησης έληξε.' });
