@@ -146,13 +146,19 @@ export function AppShellFrame({
           // inside it: under the "API server is unavailable" banner the bar
           // sat 47px down, over the inbox's title. The frame already holds
           // the banner's height in its padding (docs §73).
-          style={fullHeight ? ({ '--topbar-top': '0px' } as CSSProperties) : undefined}
+          // A scrolling page's column fills what the banners leave: at a full
+          // 100dvh under the frame's banner padding, every page scrolled by
+          // the banner's height even when it had nothing more to show
+          // (docs §86).
+          style={fullHeight
+            ? ({ '--topbar-top': '0px' } as CSSProperties)
+            : { minHeight: `calc(100dvh - ${TOP_BANNER_STACK})` }}
           className={cn(
             'group/shell flex min-w-0 flex-col',
             // h-full, not 100dvh: the frame's padding holds the banners, and a
             // 100dvh column under them lost its last 47px - the bottom of the
             // inbox card, the composer of an open thread.
-            fullHeight ? 'h-full overflow-hidden' : 'min-h-[100dvh]',
+            fullHeight && 'h-full overflow-hidden',
             'transition-[margin-left] duration-200 ease-out',
             // Rail from `sm` (68px), drawer from `lg`. Below `sm` the nav is the
             // bottom bar and the column takes the full width.

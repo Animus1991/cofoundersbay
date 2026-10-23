@@ -67,10 +67,14 @@ describe('a full-height frame under a banner', () => {
     expect(column.style.getPropertyValue('--topbar-top')).toBe('0px');
   });
 
-  it('leaves a scrolling page as it was', () => {
+  it('lets a scrolling page fill what the banners leave, and no more', () => {
     render(<AppShellFrame><p>Page</p></AppShellFrame>);
     const column = document.querySelector('main#main-content')!.parentElement as HTMLElement;
-    expect(column.className).toContain('min-h-[100dvh]');
+    // docs §86: 100dvh under the banner padding scrolled every page by the
+    // banner's height.
+    expect(column.className).not.toContain('min-h-[100dvh]');
+    expect(column.style.minHeight).toContain('100dvh');
+    expect(column.style.minHeight).toContain('--banner-network');
     expect(column.style.getPropertyValue('--topbar-top')).toBe('');
   });
 });

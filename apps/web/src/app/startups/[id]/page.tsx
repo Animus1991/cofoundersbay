@@ -19,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import {
+  ApiError,
   addInvestorDealEvent,
   getInvestorDeal,
   updateInvestorDeal,
@@ -64,7 +65,7 @@ export default function StartupDealPage() {
   const { success, error: showError } = useToast();
   const [note, setNote] = useState('');
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error: readError, refetch, isFetching } = useQuery({
     queryKey: qk('investor', 'deal', id),
     queryFn: () => getInvestorDeal(id),
     enabled: Boolean(id),
@@ -147,6 +148,33 @@ export default function StartupDealPage() {
           <Skeleton className="h-8 w-2/3" />
           <Skeleton className="h-40 w-full" />
         </div>
+      </AppShell>
+    );
+  }
+
+  // "Not on your board" only when the answer says so: a read that failed
+  // (the API down) said the startup was missing (docs §86).
+  if (isError && !(readError instanceof ApiError && (readError.status === 404 || readError.status === 403))) {
+    return (
+      <AppShell title="Startup" titleEl="Startup">
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+            <p role="alert" className="text-sm text-muted-foreground">
+              <BilingualText en="This deal could not be read just now." el="Η συμφωνία δεν διαβάστηκε αυτή τη στιγμή." wrap />
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}>
+                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+              </Button>
+              <Button variant="ghost" className="gap-2" asChild>
+                <Link href="/investor/pipeline">
+                  <ArrowLeft className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Pipeline" el="Pipeline" compact />
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </AppShell>
     );
   }

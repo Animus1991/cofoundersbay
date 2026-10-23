@@ -23,6 +23,7 @@ import {
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { hasInAppPrevious } from '@/lib/in-app-history';
 import { settle, usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import { cn, initialsOf } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -30,9 +31,15 @@ import { SectionCard } from '@/components/dashboard/SectionCard';
 import { CompatibilityList } from '@/components/matches/CompatibilityList';
 import { StatusText } from '@/components/common/StatusText';
 import {
-  getMatchVs, getMyCompatibility, recordMatchFeedback, recordBehavioralSignal, sendConnectionRequest,
-  saveToShortlist, removeFromShortlist, getShortlistIds,
-  type MatchVsResult, type MatchVsBreakdownItem,
+  getMatchVs,
+  getMyCompatibility,
+  recordMatchFeedback,
+  recordBehavioralSignal,
+  sendConnectionRequest,
+  saveToShortlist,
+  removeFromShortlist,
+  getShortlistIds,
+  type MatchVsBreakdownItem,
 } from '@/lib/api';
 
 // ── Factor Row ────────────────────────────────────────────────────────────────
@@ -144,7 +151,7 @@ export default function MatchDetailPage() {
   const shortlisted = shortlistOverride ?? Boolean(shortlistData?.ids?.includes(targetUserId));
   const setShortlisted = (value: boolean) => setShortlistOverride(value);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: qk('matching', 'vs', targetUserId),
     queryFn: () => getMatchVs(targetUserId),
     enabled: !!targetUserId,
@@ -265,8 +272,15 @@ export default function MatchDetailPage() {
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <Info className="icon-xl text-muted-foreground" />
-          <p className="text-muted-foreground"><BilingualText en="Could not load compatibility data." el="Τα στοιχεία συμβατότητας δεν φορτώθηκαν." compact wrap /></p>
-          <Button variant="outline" onClick={() => router.back()}><BilingualText en="Go Back" el="Επιστροφή" compact /></Button>
+          <p role="alert" className="text-muted-foreground"><BilingualText en="Could not load compatibility data." el="Τα στοιχεία συμβατότητας δεν φορτώθηκαν." compact wrap /></p>
+          {/* Try again for a read that failed; Back to where the reader came
+              from, or to the matches when they arrived from outside (§86). */}
+          <div className="flex flex-wrap justify-center gap-2">
+            {isError ? (
+              <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
+            ) : null}
+            <Button variant="ghost" onClick={() => (hasInAppPrevious() ? router.back() : router.push('/matches'))}><BilingualText en="Go back" el="Επιστροφή" compact /></Button>
+          </div>
         </div>
       </AppShell>
     );

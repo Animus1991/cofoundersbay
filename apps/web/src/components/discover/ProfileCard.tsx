@@ -11,7 +11,9 @@ import {
   Flag,
   Share2,
   Star,
+  Check,
 } from 'lucide-react';
+import type { MatchConnection } from '@/components/common/MatchCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -92,6 +94,14 @@ type ProfileCardProps = {
   onBookmark?: () => void;
   onConnect?: () => void;
   onMessage?: () => void;
+  /**
+   * Where a connection with this person stands (`useConnectionActions`).
+   * Without it the card offers Connect, as it always has; with it the one
+   * action follows the state: Accept their waiting request, "Request sent",
+   * or Message once connected (docs §86).
+   */
+  connection?: MatchConnection;
+  onAccept?: () => void;
   className?: string;
 };
 
@@ -121,6 +131,8 @@ function ProfileCardInner({
   onBookmark,
   onConnect,
   onMessage,
+  connection = 'none',
+  onAccept,
   className,
 }: ProfileCardProps) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
@@ -160,6 +172,39 @@ function ProfileCardInner({
       {extra}
     </Link>
   );
+  // The card's connection action, from where the connection stands.
+  const connectButton = (variant: 'default' | 'secondary', showIcon = true) => {
+    if (connection === 'connected') return null;
+    if (connection === 'received' && onAccept) {
+      return (
+        <Button
+          onClick={onAccept}
+          size="sm"
+          variant={variant}
+          className="gap-1.5"
+          aria-label={bilingualAria(`Accept ${profile.displayName}'s request`, `Αποδοχή αιτήματος από ${profile.displayName}`)}
+        >
+          {showIcon ? <Check className="icon-sm" /> : null}
+          <BilingualText en="Accept" el="Αποδοχή" compact />
+        </Button>
+      );
+    }
+    if (connection === 'sent') {
+      return (
+        <Button size="sm" variant="ghost" disabled title={bilingualAria('Your request is waiting for their answer', 'Το αίτημά σας περιμένει απάντηση')}>
+          <BilingualText en="Request sent" el="Το αίτημα στάλθηκε" compact />
+        </Button>
+      );
+    }
+    return (
+      <Button onClick={onConnect} size="sm" variant={variant} className="gap-1.5">
+        {showIcon ? <UserPlus className="icon-sm" /> : null}
+        <BilingualText en="Connect" el="Σύνδεση" compact />
+      </Button>
+    );
+  };
+  const connected = connection === 'connected';
+
   const nameWithRole = (
     <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
       <PersonHovercard userId={profile.userId}><Link href={`/profiles/${profile.userId}`} className="person-name transition-colors hover:text-primary-accessible">{profile.displayName}</Link></PersonHovercard>
@@ -177,7 +222,19 @@ function ProfileCardInner({
             title={nameWithRole}
             subtitle={profile.headline ? <span className="line-clamp-1">{profile.headline}</span> : undefined}
             asideStays
-            aside={(
+            aside={connected ? (
+              <Button aria-label={bilingualAria(`Message ${profile.displayName}`, `Μήνυμα προς ${profile.displayName}`)} size="sm" variant="ghost" onClick={onMessage}>
+                <MessageCircle className="icon-sm" />
+              </Button>
+            ) : connection === 'received' && onAccept ? (
+              <Button aria-label={bilingualAria(`Accept ${profile.displayName}'s request`, `Αποδοχή αιτήματος από ${profile.displayName}`)} size="sm" variant="ghost" onClick={onAccept}>
+                <Check className="icon-sm" />
+              </Button>
+            ) : connection === 'sent' ? (
+              <Button aria-label={bilingualAria('Request sent', 'Το αίτημα στάλθηκε')} size="sm" variant="ghost" disabled title={bilingualAria('Your request is waiting for their answer', 'Το αίτημά σας περιμένει απάντηση')}>
+                <UserPlus className="icon-sm" />
+              </Button>
+            ) : (
               <Button aria-label="Connect · Σύνδεση" size="sm" variant="ghost" onClick={onConnect}>
                 <UserPlus className="icon-sm" />
               </Button>
@@ -277,11 +334,8 @@ function ProfileCardInner({
 
           {/* Actions */}
           <CardFoot>
-            <Button onClick={onConnect} size="sm" className="gap-2">
-              <UserPlus className="icon-sm" />
-              <BilingualText en="Connect" el="Σύνδεση" compact />
-            </Button>
-            <Button onClick={onMessage} size="sm" variant="secondary" className="gap-2">
+            {connectButton('default')}
+            <Button onClick={onMessage} size="sm" variant={connected ? 'default' : 'secondary'} className="gap-2">
               <MessageCircle className="icon-sm" />
               <BilingualText en="Message" el="Μήνυμα" compact />
             </Button>
@@ -396,13 +450,10 @@ function ProfileCardInner({
 
         {/* Actions */}
         <CardFoot>
-          <Button onClick={onConnect} size="sm" variant="secondary" className="gap-1.5">
-            <UserPlus className="icon-sm" />
-            <BilingualText en="Connect" el="Σύνδεση" compact />
-          </Button>
-          <Button onClick={onMessage} size="sm" variant="ghost" className="min-w-10 gap-1.5 sm:min-w-0 sm:px-3" aria-label="Message · Μήνυμα">
+          {connectButton('secondary')}
+          <Button onClick={onMessage} size="sm" variant={connected ? 'secondary' : 'ghost'} className="min-w-10 gap-1.5 sm:min-w-0 sm:px-3" aria-label="Message · Μήνυμα">
             <MessageCircle className="icon-sm" />
-            <span className="hidden sm:inline"><BilingualText en="Message" el="Μήνυμα" compact /></span>
+            <span className={connected ? undefined : 'hidden sm:inline'}><BilingualText en="Message" el="Μήνυμα" compact /></span>
           </Button>
           <Button aria-label="Save"
             variant="ghost"

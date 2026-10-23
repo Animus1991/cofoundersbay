@@ -13,9 +13,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
-import { StatusText } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
-import { ROLE_FAMILY_LABEL, roleFamily } from '@/lib/role-family';
+import { RoleName } from '@/components/common/RoleName';
 import { listTimeLabel } from '@/lib/thread-time';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { cn } from '@/lib/utils';
@@ -61,13 +60,6 @@ type ConversationListProps = {
   onRetry?: () => void;
 };
 
-/** The role as the badge in the thread's header names it (lib/role-family). */
-function RoleLabel({ role }: { role: string }) {
-  const family = roleFamily(role);
-  if (!family) return <StatusText value={role} />;
-  const label = ROLE_FAMILY_LABEL[family];
-  return <BilingualText en={label.en} el={label.el} compact />;
-}
 
 function ConversationItem({
   conversation,
@@ -158,7 +150,7 @@ function ConversationItem({
               founder's read differently at a glance. */}
           {conversation.recipientRole ? (
             <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-2xs leading-none text-muted-foreground">
-              <RoleLabel role={conversation.recipientRole} />
+              <RoleName role={conversation.recipientRole} />
             </span>
           ) : null}
           <p

@@ -9,17 +9,11 @@ import {
   Search,
   Grid3x3,
   List,
-  MapPin,
-  Briefcase,
   X,
   UserPlus,
   MessageCircle,
-  Star,
-  Zap,
   TrendingUp,
-  Sparkles,
   Activity,
-  Circle,
   Award,
   Compass,
   Target,
@@ -34,7 +28,6 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,9 +37,14 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
-import { StatusText } from '@/components/common/StatusText';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { RoleName } from '@/components/common/RoleName';
+import { useConnectionActions } from '@/hooks/useConnectionWith';
+import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
+import { useStoredUser } from '@/hooks/useStoredUser';
+import type { MatchConnection } from '@/components/common/MatchCard';
+import { expertiseFacets, withExpertise } from '@/lib/mentoring/expertise';
 
 type ViewMode = 'grid' | 'list';
 type SortBy = 'relevance' | 'recent' | 'active';
@@ -78,10 +76,6 @@ const AVAILABILITY_OPTIONS = [
   { value: 'flexible', label: 'Flexible', labelEl: 'Ευέλικτα' },
 ] as const;
 
-const SKILL_PILLS = [
-  'All Skills', 'React', 'Node.js', 'Python', 'Fundraising',
-  'Product', 'Growth', 'Design', 'AI/ML', 'Sales', 'Legal',
-];
 
 function scoreColor(score: number) {
   if (score >= 80) return 'text-status-success';
@@ -128,9 +122,12 @@ interface MemberCardProps {
   viewMode: ViewMode;
   onConnect: () => void;
   onMessage: () => void;
+  /** Where the connection stands: the one action follows it (docs §86). */
+  connection?: MatchConnection;
+  onAccept?: () => void;
 }
 
-function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps) {
+function MemberCard({ member, viewMode, onConnect, onMessage, connection = 'none', onAccept }: MemberCardProps) {
   const isGridView = viewMode === 'grid';
   const completeness = profileCompleteness(member);
   // Reading the clock during render would differ between the server pass and
@@ -153,19 +150,37 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
       )}
     </Link>
   );
+  // The verified mark sits by the name on every card. It was only on a
+  // "Featured Members" strip that repeated the first three cards (§86).
   const name = (
-    <PersonHovercard userId={member.userId}><Link href={`/profiles/${member.userId}`} className="transition-colors hover:text-primary-accessible">{member.displayName}</Link></PersonHovercard>
+    <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+      <PersonHovercard userId={member.userId}><Link href={`/profiles/${member.userId}`} className="transition-colors hover:text-primary-accessible">{member.displayName}</Link></PersonHovercard>
+      <PersonVerifiedBadge userId={member.userId} />
+    </span>
   );
-  const role = member.role ? <StatusText value={member.role} /> : undefined;
+  // The badge's word for the role, as on every other card ("Founder", not
+  // "Cofounder" here and "Founder" on Explore).
+  const role = member.role ? <RoleName role={member.role} /> : undefined;
+  const connected = connection === 'connected';
   const actions = (
     <>
-      <Button size="sm" onClick={onConnect} className="gap-1.5">
-        <UserPlus className="icon-sm" />
-        <BilingualText en="Connect" el="Σύνδεση" compact />
-      </Button>
-      <Button aria-label={`Message ${member.displayName}`} size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
+      {connection === 'received' && onAccept ? (
+        <Button size="sm" onClick={onAccept} className="gap-1.5" aria-label={bilingualInline(`Accept ${member.displayName}'s request`, `Αποδοχή αιτήματος από ${member.displayName}`)}>
+          <BilingualText en="Accept" el="Αποδοχή" compact />
+        </Button>
+      ) : connection === 'sent' ? (
+        <Button size="sm" variant="ghost" disabled title={bilingualInline('Your request is waiting for their answer', 'Το αίτημά σας περιμένει απάντηση')}>
+          <BilingualText en="Request sent" el="Το αίτημα στάλθηκε" compact />
+        </Button>
+      ) : connected ? null : (
+        <Button size="sm" onClick={onConnect} className="gap-1.5">
+          <UserPlus className="icon-sm" />
+          <BilingualText en="Connect" el="Σύνδεση" compact />
+        </Button>
+      )}
+      <Button aria-label={`Message ${member.displayName}`} size="sm" variant={connected ? 'default' : 'outline'} onClick={onMessage} className="gap-1.5">
         <MessageCircle className="icon-sm" />
-        <span className="hidden sm:inline"><BilingualText en="Message" el="Μήνυμα" compact /></span>
+        <span className={connected ? undefined : 'hidden sm:inline'}><BilingualText en="Message" el="Μήνυμα" compact /></span>
       </Button>
     </>
   );
@@ -319,8 +334,20 @@ export function MembersPageClient() {
     staleTime: 30_000,
   });
 
-  const members = data?.hits ?? [];
-  const total = data?.total ?? 0;
+  const listed = data?.hits ?? [];
+  // Skill chips come from the skills the listed members name, most common
+  // first, and filter on what the cards print. The fixed list (React,
+  // Node.js, Python...) changed nothing at all: the skill never reached the
+  // search (docs §86).
+  const skillsOf = (m: SearchHit) => (m.skills?.length ? m.skills : m.skillNames ?? []);
+  const skillFacets = useMemo(
+    () => expertiseFacets((data?.hits ?? []).map((m) => ({ expertise: m.skills?.length ? m.skills : m.skillNames ?? [] })), activeSkill === 'All Skills' ? 'All' : activeSkill, 10),
+    [data, activeSkill],
+  );
+  const members = activeSkill === 'All Skills'
+    ? listed
+    : listed.filter((m) => withExpertise([{ expertise: skillsOf(m) }], activeSkill).length > 0);
+  const total = activeSkill === 'All Skills' ? data?.total ?? 0 : members.length;
   /*
    * Counted server-side over the same filter as the results. They used to be
    * `total * 0.08`, `* 0.05` and `* 0.1` with invented fallbacks, which put
@@ -336,14 +363,16 @@ export function MembersPageClient() {
     if (selectedIndustry !== 'All Industries') count++;
     if (selectedLocation !== 'All Locations') count++;
     if (selectedAvailability !== 'all') count++;
+    if (activeSkill !== 'All Skills') count++;
     return count;
-  }, [selectedRole, selectedIndustry, selectedLocation, selectedAvailability]);
+  }, [selectedRole, selectedIndustry, selectedLocation, selectedAvailability, activeSkill]);
 
   const clearFilters = () => {
     setSelectedRole('all');
     setSelectedIndustry('All Industries');
     setSelectedLocation('All Locations');
     setSelectedAvailability('all');
+    setActiveSkill('All Skills');
     setSearchQuery('');
   };
 
@@ -364,7 +393,9 @@ export function MembersPageClient() {
   const handleConnect = (memberId: string) => connectMutation.mutate(memberId);
   const handleMessage = (memberId: string) => messageMutation.mutate(memberId);
 
-  const featuredMembers = members.slice(0, 3);
+  const authed = useIsAuthenticated();
+  const me = useStoredUser();
+  const { connectionOf, accept } = useConnectionActions(authed, me?.id);
 
   usePageControls([
     choiceControl('role', 'Role filter', 'Φίλτρο ρόλου', ROLE_OPTIONS.map((r) => ({ value: r.value, en: r.label, el: r.labelEl })), selectedRole, (v) => setSelectedRole(v as typeof selectedRole)),
@@ -381,7 +412,7 @@ export function MembersPageClient() {
     choiceControl('industry', 'Industry filter', 'Φίλτρο κλάδου', INDUSTRIES.map((i) => ({ value: i, en: i, el: INDUSTRY_EL[i] ?? i })), selectedIndustry, setSelectedIndustry),
     choiceControl('location', 'Location filter', 'Φίλτρο τοποθεσίας', LOCATIONS.map((l) => ({ value: l, en: l, el: LOCATION_EL[l] ?? l })), selectedLocation, setSelectedLocation),
     choiceControl('availability', 'Availability filter', 'Φίλτρο διαθεσιμότητας', AVAILABILITY_OPTIONS.map((a) => ({ value: a.value, en: a.label, el: a.labelEl })), selectedAvailability, (v) => setSelectedAvailability(v as typeof selectedAvailability)),
-    choiceControl('skill', 'Skill filter', 'Φίλτρο δεξιότητας', SKILL_PILLS.map((s) => ({ value: s, en: s, el: s === 'All Skills' ? 'Όλες οι δεξιότητες' : s })), activeSkill, setActiveSkill),
+    choiceControl('skill', 'Skill filter', 'Φίλτρο δεξιότητας', [{ value: 'All Skills', en: 'All Skills', el: 'Όλες οι δεξιότητες' }, ...skillFacets.map((f) => ({ value: f.label, en: f.label, el: f.label }))], activeSkill, setActiveSkill),
     { id: 'clear_filters', labelEn: 'Clear member filters', labelEl: 'Καθαρισμός φίλτρων μελών', writes: false, run: clearFilters },
   ]);
   // The assistant sees the members the page shows, as the page shows them.
@@ -419,7 +450,7 @@ export function MembersPageClient() {
       glyph: 'sliders',
       labelEn: 'Filters & view',
       labelEl: 'Φίλτρα & προβολή',
-      badge: activeFiltersCount + (activeSkill !== 'All Skills' ? 1 : 0) || null,
+      badge: activeFiltersCount || null,
       content: (
         <div className="space-y-4">
           <RailOptions
@@ -453,7 +484,10 @@ export function MembersPageClient() {
           <RailOptions
             title="Skill"
             titleEl="Δεξιότητα"
-            options={SKILL_PILLS.map((skill) => ({ value: skill, en: skill, el: skill }))}
+            options={[
+              { value: 'All Skills', en: 'All Skills', el: 'Όλες οι δεξιότητες' },
+              ...skillFacets.map((f) => ({ value: f.label, en: f.label, el: f.label, count: f.n })),
+            ]}
             value={activeSkill}
             onChange={setActiveSkill}
           />
@@ -506,46 +540,13 @@ export function MembersPageClient() {
          number in it, which reads as two different sentences rather than one
          sentence twice. */
       title="Member Directory"
-      description={`Discover and connect with ${total.toLocaleString('en-GB')} members`}
-      descriptionEl={`Ανακαλύψτε και συνδεθείτε με ${total.toLocaleString('el-GR')} μέλη`}
+      // No count until there is one: "with 0 members" stood over a list that
+      // had failed to load (docs §86).
+      description={data ? `Discover and connect with ${(data.total ?? 0).toLocaleString('en-GB')} members` : 'Discover and connect with members'}
+      descriptionEl={data ? `Ανακαλύψτε και συνδεθείτε με ${(data.total ?? 0).toLocaleString('el-GR')} μέλη` : 'Ανακαλύψτε και συνδεθείτε με μέλη'}
       rail={rail}
     >
       <div className="space-y-4 pb-10">
-
-        {/* Featured spotlight */}
-        {!isLoading && featuredMembers.length > 0 && !searchQuery && activeFiltersCount === 0 && activeSkill === 'All Skills' && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Sparkles className="icon-sm text-muted-foreground" />
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground"><BilingualText en="Featured Members" el="Προτεινόμενα μέλη" compact /></h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {featuredMembers.map((member) => (
-                <div key={member.userId} data-card="" className="rounded-2xl border border-primary-muted bg-primary-subtle p-3">
-                  <CardHead
-                    titleAs="p"
-                    mark={(
-                      <Link href={`/profiles/${member.userId}`} className="relative block" aria-label={bilingualInline(`Open ${member.displayName}'s profile`, `Άνοιγμα προφίλ: ${member.displayName}`)}>
-                        <Avatar className="h-10 w-10 ring-1 ring-primary/30">
-                          <AvatarImage src={member.avatarUrl ?? undefined} />
-                          <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">{initialsOf(member.displayName)}</AvatarFallback>
-                        </Avatar>
-                      </Link>
-                    )}
-                    /* The badge wraps under the name rather than clipping it. */
-                    title={(
-                      <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                        <PersonHovercard userId={member.userId}><Link href={`/profiles/${member.userId}`} className="hover:text-primary-accessible transition-colors">{member.displayName}</Link></PersonHovercard>
-                        <PersonVerifiedBadge userId={member.userId} />
-                      </span>
-                    )}
-                    subtitle={<span className="line-clamp-2">{member.headline ?? (member.role ? <StatusText value={member.role} /> : <BilingualText en="Member" el="Μέλος" compact />)}</span>}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Search — filters and layout live in the rail. */}
         <div className="relative">
@@ -560,20 +561,22 @@ export function MembersPageClient() {
         </div>
 
         {/* Results Header */}
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {isLoading
-              ? <BilingualText en="Loading…" el="Φόρτωση…" compact />
-              : <BilingualText en={`${total.toLocaleString('en-GB')} member${total !== 1 ? 's' : ''} found`} el={`${total.toLocaleString('el-GR')} ${total !== 1 ? 'μέλη' : 'μέλος'}`} compact />}
-          </p>
-        </div>
+        {isError ? null : (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {isLoading
+                ? <BilingualText en="Loading…" el="Φόρτωση…" compact />
+                : <BilingualText en={`${total.toLocaleString('en-GB')} member${total !== 1 ? 's' : ''} found`} el={`${total.toLocaleString('el-GR')} ${total !== 1 ? 'μέλη' : 'μέλος'}`} compact />}
+            </p>
+          </div>
+        )}
 
         {/* Members Grid/List */}
         {isError ? (
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
               <Users className="icon-xl text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load members. Please check your connection." el="Δεν ήταν δυνατή η φόρτωση των μελών. Ελέγξτε τη σύνδεσή σας." wrap /></p>
+              <p role="alert" className="text-sm text-muted-foreground"><BilingualText en="The member directory could not be read just now." el="Ο κατάλογος μελών δεν διαβάστηκε αυτή τη στιγμή." wrap /></p>
               <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
             </CardContent>
           </Card>
@@ -613,6 +616,8 @@ export function MembersPageClient() {
                 viewMode={viewMode}
                 onConnect={() => handleConnect(member.userId)}
                 onMessage={() => handleMessage(member.userId)}
+                connection={connectionOf(member.userId)}
+                onAccept={() => void accept(member.userId)}
               />
             ))}
           </div>

@@ -34,7 +34,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -51,14 +51,23 @@ import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, ROW_GONE, type PageControlRunResult } from '@/lib/page-controls';
-import { StatusText, statusEl } from '@/components/common/StatusText';
+import { statusEl } from '@/components/common/StatusText';
 import { namedFilters, namedQuery, type NamedFilter } from '@/components/common/EmptyStates';
 import { ASK } from '@/lib/page-questions';
+import { useConnectionActions } from '@/hooks/useConnectionWith';
+import { RoleName } from '@/components/common/RoleName';
 
 const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
 
 type ViewMode = 'grid' | 'list' | 'match';
+
+/**
+ * Cards at least 24rem wide (as /events), as many as fit: three in the full column, two
+ * beside a pinned page rail, where three cut "Elena Papadopoulos" over two
+ * lines (docs §86). A base of one column stays for twMerge to replace.
+ */
+const PEOPLE_GRID = 'grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))]';
 type RoleFilter = 'all' | 'founder' | 'cofounder' | 'mentor' | 'investor' | 'service_provider';
 
 const ROLE_FILTERS: { value: RoleFilter; labelEn: string; labelEl: string; icon: React.ElementType }[] = [
@@ -140,6 +149,10 @@ export default function DiscoverPage() {
   // The first search starts on mount (150ms debounce), so the page opens
   // loading: starting at false showed "No profiles found" until it answered.
   const [loading, setLoading] = useState(true);
+  // A search that failed is not "No profiles found": it said so under "0
+  // results found", with "Clear filters" for filters nobody had set and a
+  // toast that went away (docs §86).
+  const [searchFailed, setSearchFailed] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [activeTab, setActiveTab] = useState<'search' | 'suggestions' | 'matches'>('search');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
@@ -204,6 +217,15 @@ export default function DiscoverPage() {
     staleTime: 5 * 60_000,
   });
   const viewer = useMemo(() => viewerFacts(meData?.profile ?? null), [meData]);
+  // Where each person's connection stands, as on /matches and the homes:
+  // Elena's request waited, and her card here offered a second Connect.
+  const { connectionOf, accept } = useConnectionActions(hasToken, meData?.profile?.userId);
+  const personActions = (userId: string) => ({ connection: connectionOf(userId), onAccept: () => void accept(userId) });
+  // The best four matches, by score: the rail's short list (docs §86).
+  const bestMatches = useMemo(
+    () => [...((recommendationsData?.suggestions ?? []) as SearchHit[])].sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0)).slice(0, 4),
+    [recommendationsData],
+  );
   const [nowMs] = useState(() => Date.now());
 
   // Passing on a match here is passing on /matches: the card leaves, the
@@ -265,15 +287,16 @@ export default function DiscoverPage() {
       setHits(Array.isArray(res?.hits) ? res.hits : []);
       setPromotedIds(Array.isArray(res?.promotedUserIds) ? res.promotedUserIds.filter((id): id is string => typeof id === 'string') : []);
       setTotal(typeof res?.total === 'number' ? res.total : 0);
+      setSearchFailed(false);
     } catch {
       setHits([]);
       setPromotedIds([]);
       setTotal(0);
-      showError('Search failed', 'Please try again');
+      setSearchFailed(true);
     } finally {
       setLoading(false);
     }
-  }, [filters, showError]);
+  }, [filters]);
 
   // Debounced auto-search on filter changes when on search tab
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -474,6 +497,42 @@ export default function DiscoverPage() {
   ]);
 
   const rail: PageRailSection[] = [
+    // First: the best matches as a short list beside the search. In the column, a
+    // "Featured profiles · Top matches for your profile" strip listed the
+    // first four search results, the same four cards drawn right under it
+    // (docs §86).
+    ...(bestMatches.length ? [{
+      id: 'best',
+      glyph: 'matches' as const,
+      labelEn: 'Best matches',
+      labelEl: 'Καλύτερες αντιστοιχίσεις',
+      content: (
+        <div className="space-y-1">
+          <ul className="space-y-0.5">
+            {bestMatches.map((h) => (
+              <li key={h.id}>
+                <Link href={`/profiles/${h.userId}`} className="group flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/70">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={h.avatarUrl ?? undefined} alt="" />
+                    <AvatarFallback className="bg-muted text-2xs font-semibold text-muted-foreground">{initialsOf(h.displayName)}</AvatarFallback>
+                  </Avatar>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium text-foreground group-hover:text-primary-accessible">{h.displayName}</span>
+                    <span className="block text-xs text-muted-foreground"><RoleName role={h.role} /></span>
+                  </span>
+                  {typeof h.matchScore === 'number' ? (
+                    <span className={cn('shrink-0 rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums', h.matchScore >= 80 ? STATUS.success.chip : h.matchScore >= 60 ? STATUS.info.chip : STATUS.neutral.chip)}>
+                      {h.matchScore}%
+                    </span>
+                  ) : null}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <RailAction icon={TrendingUp} en="See every match" el="Όλες οι αντιστοιχίσεις" onClick={() => { setActiveTab('matches'); setRoleFilter('all'); }} />
+        </div>
+      ),
+    } satisfies PageRailSection] : []),
     {
       id: 'summary',
       glyph: 'discover',
@@ -583,70 +642,28 @@ export default function DiscoverPage() {
             interpreted={interpreted?.understood}
             onSearchAsTyped={searchAsTyped}
             loading={loading}
-            resultCount={total}
+            resultCount={searchFailed ? undefined : total}
             onSaveSearch={openSaveSearch}
           />
 
           {/* Results */}
           {loading && (
-            <div className={cn(
-              'grid grid-cols-1 gap-4',
-              viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
-            )}>
+            <div className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && PEOPLE_GRID)}>
               {[...Array(6)].map((_, i) => (
                 <ProfileCardSkeleton key={i} variant={viewMode === 'list' ? 'compact' : 'default'} />
               ))}
             </div>
           )}
 
-          {/* Featured strip when no query */}
-          {!loading && !filters.q && hits.length > 0 && roleFilter === 'all' && (
-            // A section card: its title and the line under it, then the
-            // people as chips on the title's edge.
-            <Card className="border-primary-muted bg-primary-subtle">
-              <CardHeader>
-                <CardTitle>
-                  <BilingualText en="Featured profiles" el="Προτεινόμενα προφίλ" compact />
-                </CardTitle>
-                <CardDescription className="hidden sm:block">
-                  <BilingualText en="Top matches for your profile" el="Κορυφαίες αντιστοιχίσεις για το προφίλ σας" compact />
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* The people as rows on the card, each its circle with the
-                    name and role beside it: no framed chip around a person
-                    inside the card. The strip still scrolls on a phone. */}
-                <div className="-mx-1 flex gap-x-6 gap-y-3 overflow-x-auto px-1 pb-0.5 scrollbar-hide sm:flex-wrap">
-                  {hits.slice(0, 4).map((h) => (
-                    <Link key={h.id} href={`/profiles/${h.userId}`}
-                      className="group flex shrink-0 items-center gap-3 rounded-md">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={h.avatarUrl ?? undefined} alt="" />
-                        <AvatarFallback className="bg-muted text-xs font-semibold text-muted-foreground">
-                          {initialsOf(h.displayName)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0">
-                        {/* No cap and no ellipsis: the strip scrolls, so a
-                            full name costs a little scroll and nothing else
-                            (capped at 100px, "Elena Papadopoulos" lost two
-                            thirds of itself). */}
-                        <p className="whitespace-nowrap text-sm font-medium text-foreground transition-colors group-hover:text-primary-accessible">{h.displayName}</p>
-                        {/* The raw role ("founder") read as a lower-case enum once the
-                            DOM pass translated it («ιδρυτής»). */}
-                        <p className="flex items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
-                          <StatusText value={h.role} />
-                          {h.matchScore !== undefined && (
-                            <span className={cn(
-                              'rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
-                              h.matchScore >= 80 ? STATUS.success.chip : h.matchScore >= 60 ? STATUS.info.chip : STATUS.neutral.chip,
-                            )}>{h.matchScore}%</span>
-                          )}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+          {!loading && searchFailed && (
+            <Card>
+              <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+                <p role="alert" className="text-sm text-muted-foreground">
+                  <BilingualText en="Profiles could not be searched just now." el="Η αναζήτηση προφίλ δεν έγινε αυτή τη στιγμή." wrap />
+                </p>
+                <Button variant="outline" size="sm" onClick={() => void runSearch()}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
               </CardContent>
             </Card>
           )}
@@ -664,7 +681,7 @@ export default function DiscoverPage() {
             </div>
           )}
 
-          {!loading && hits.length === 0 && (
+          {!loading && !searchFailed && hits.length === 0 && (
             <EmptyState
               title={<BilingualText en="No profiles found" el="Δεν βρέθηκαν προφίλ" compact wrap />}
               description={(() => {
@@ -681,11 +698,12 @@ export default function DiscoverPage() {
               illustration="search"
               className="py-12"
               askAiPrompt={ASK.discoverNobody}
-              action={
+              // Only with something to clear: it was offered with no filter set.
+              action={discoverFilterNames(filters).length ? (
                 <Button onClick={() => setFilters(defaultFilters)}>
                   <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
                 </Button>
-              }
+              ) : undefined}
             />
           )}
 
@@ -699,7 +717,9 @@ export default function DiscoverPage() {
                   <BilingualText en={PROMOTED_COPY.disclosure.en} el={PROMOTED_COPY.disclosure.el} wrap />
                 </span>
               </div>
-              <div className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' ? 'md:grid-cols-2' : 'grid-cols-1')}>
+              {/* The same columns as the results under it: the promoted card
+                  was half the row wide beside cards a third wide. */}
+              <div className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && PEOPLE_GRID)}>
                 {promotedHits.map((hit) => {
                   const profile = hitToProfile(hit);
                   return (
@@ -710,6 +730,7 @@ export default function DiscoverPage() {
                       onConnect={() => handleConnect(profile)}
                       onMessage={() => handleMessage(profile)}
                       onBookmark={() => handleBookmark(profile)}
+                      {...personActions(profile.userId)}
                     />
                   );
                 })}
@@ -721,10 +742,7 @@ export default function DiscoverPage() {
             <AnimatedList
               animation="fade-in-up"
               staggerDelay={50}
-              className={cn(
-                'grid grid-cols-1 gap-4',
-                viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
-              )}
+              className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && PEOPLE_GRID)}
             >
               {filteredHits.map((hit) => {
                 const profile = hitToProfile(hit);
@@ -736,6 +754,7 @@ export default function DiscoverPage() {
                     onConnect={() => handleConnect(profile)}
                     onMessage={() => handleMessage(profile)}
                     onBookmark={() => handleBookmark(profile)}
+                    {...personActions(profile.userId)}
                   />
                 );
               })}
@@ -816,6 +835,7 @@ export default function DiscoverPage() {
                     onConnect={() => handleConnect(profile)}
                     onMessage={() => handleMessage(profile)}
                     onBookmark={() => handleBookmark(profile)}
+                    {...personActions(profile.userId)}
                   />
                 );
               })}
@@ -896,6 +916,8 @@ export default function DiscoverPage() {
                     matchReasons={matchReasons}
                     reasons={explainMatch(hit, viewer, { nowMs })}
                     onLike={() => handleConnect(profile)}
+                    connection={connectionOf(hit.userId)}
+                    onAccept={() => void accept(hit.userId)}
                     onPass={() => passMatch(hit)}
                     onMessage={() => handleMessage(profile)}
                     onBookmark={() => handleBookmark(profile)}

@@ -4,16 +4,22 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
-  X, Plus, UserPlus, MessageCircle, Sparkles, MapPin, Briefcase, GraduationCap, Clock, Target, Users, CheckCircle, XCircle, Minus, ChevronDown, ChevronUp, BarChart3, Zap, Heart, Share2, Download,
+  X,
+  Plus,
+  UserPlus,
+  MessageCircle,
+  Clock,
+  CheckCircle,
+  Minus,
+  Zap,
+  Share2,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
@@ -177,7 +183,7 @@ function AddProfileSlot({ onClick }: { onClick: () => void }) {
         <Plus className="icon-xl text-primary-accessible" />
       </div>
       <p className="font-medium text-foreground"><BilingualText en="Add Profile" el="Προσθήκη προφίλ" compact /></p>
-      <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Select from matches or search" el="Επιλέξτε από τις αντιστοιχίσεις ή αναζητήστε" compact /></p>
+      <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Choose on Matches" el="Επιλογή στις Αντιστοιχίσεις" compact /></p>
     </button>
   );
 }
@@ -302,9 +308,11 @@ export default function ComparePage() {
     updateUrl(newIds);
   };
 
+  // People are chosen on Matches (Select, then Compare). This sent the reader
+  // to Explore with a "compare mode" Explore never read, so nothing came back
+  // here (docs §86).
   const handleAdd = () => {
-    // Navigate to discover with compare mode
-    router.push('/discover?mode=compare&returnTo=/compare');
+    router.push('/matches');
   };
 
   const handleConnect = async (id: string): Promise<PageControlRunResult> => {
@@ -379,22 +387,16 @@ export default function ComparePage() {
 
   return (
     <AppShell
-      actions={
-        <>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleShare}>
-              <Share2 className="icon-sm mr-1" aria-hidden="true" />
-              <BilingualText en="Share" el="Κοινοποίηση" compact />
-            </Button>
-            {profileIds.length < MAX_PROFILES && (
-              <Button size="sm" onClick={handleAdd}>
-                <Plus className="icon-sm mr-1" aria-hidden="true" />
-                <BilingualText en="Add Profile" el="Προσθήκη προφίλ" compact />
-              </Button>
-            )}
-          </div>
-        </>
-      }
+      // With nobody compared the empty state holds the one way in: the header
+      // offered "Add Profile" over "Add Profiles", and a link to share an
+      // empty comparison (docs §86).
+      // The "Add profile" slot beside the columns is the way to add more.
+      actions={profileIds.length > 0 ? (
+        <Button variant="outline" size="sm" onClick={handleShare}>
+          <Share2 className="icon-sm mr-1" aria-hidden="true" />
+          <BilingualText en="Share" el="Κοινοποίηση" compact />
+        </Button>
+      ) : undefined}
     >
       <div className="space-y-6 pb-10">
         {/* Empty State */}
@@ -402,12 +404,11 @@ export default function ComparePage() {
           <EmptyState
             illustration="search"
             title={<BilingualText en="No profiles to compare" el="Κανένα προφίλ για σύγκριση" compact wrap />}
-            description={<BilingualText en="Add profiles from your matches or search to compare them side by side" el="Προσθέστε προφίλ από τις αντιστοιχίσεις ή την αναζήτηση για να τα συγκρίνετε δίπλα-δίπλα" wrap />}
+            description={<BilingualText en="On Matches, choose Select, tick up to four people and press Compare: they open here side by side." el="Στις Αντιστοιχίσεις πατήστε «Επιλογή», διαλέξτε έως τέσσερα άτομα και πατήστε «Σύγκριση»: ανοίγουν εδώ δίπλα-δίπλα." wrap />}
             askAiPrompt={ASK.compareEmpty}
             action={
               <Button onClick={handleAdd}>
-                <Plus className="icon-sm mr-2" aria-hidden="true" />
-                <BilingualText en="Add Profiles" el="Προσθήκη προφίλ" compact />
+                <BilingualText en="Choose on Matches" el="Επιλογή στις Αντιστοιχίσεις" compact />
               </Button>
             }
           />

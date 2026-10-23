@@ -1562,7 +1562,7 @@ export default function MatchesPage() {
       {/* ── Bulk action bar (b4) ── */}
       {selectMode && selectedIds.size > 0 && (
         <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 shadow-modal animate-in slide-in-from-bottom duration-200 lg:bottom-6">
-          <span className="text-sm font-medium text-foreground">{selectedIds.size} selected</span>
+          <span className="text-sm font-medium text-foreground"><BilingualText en={`${selectedIds.size} selected`} el={`${selectedIds.size} επιλεγμένοι`} compact /></span>
           <div className="w-px h-5 bg-border/60" />
           <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs"
             onClick={() => {

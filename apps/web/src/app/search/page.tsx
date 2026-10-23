@@ -5,9 +5,16 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
-  Search, X, Users, Briefcase, Calendar,
-  GraduationCap, Building2, FileText, Sparkles,
-  MapPin, Clock, ArrowRight, History,
+  Search,
+  X,
+  Users,
+  Briefcase,
+  Calendar,
+  GraduationCap,
+  Building2,
+  FileText,
+  Sparkles,
+  History,
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -312,6 +319,15 @@ function EmptyState({
             <BilingualText en={searchEn('browse_people')} el={searchEl('browse_people')} compact secondaryFrom="lg" />
           </Link>
         </Button>
+        {/* One row of ways in. "Quick Links" under it repeated three of
+            them as cards (people, jobs, events) and added mentors, which
+            is here now (docs §86). */}
+        <Button variant="outline" size="sm" className="gap-2" asChild>
+          <Link href="/mentoring">
+            <GraduationCap className="icon-sm" />
+            <BilingualText en={searchEn('find_mentors_title')} el={searchEl('find_mentors_title')} compact secondaryFrom="lg" />
+          </Link>
+        </Button>
         <Button variant="outline" size="sm" className="gap-2" asChild>
           <Link href="/jobs">
             <Briefcase className="icon-sm" />
@@ -392,7 +408,7 @@ export default function SearchPage() {
     router.replace(newUrl, { scroll: false });
   }, [debouncedQuery, category, router]);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: qk('search', debouncedQuery, category),
     queryFn: () => performSearch(debouncedQuery, category),
     enabled: debouncedQuery.length >= 2,
@@ -564,14 +580,18 @@ export default function SearchPage() {
                   const isActive = category === key;
 
                   return (
+                    // A filter, so it reads as chosen, not as the page's
+                    // action: a filled "All" was the only filled button on
+                    // the page (docs §86).
                     <Button
                       key={key}
-                      variant={isActive ? 'default' : 'outline'}
+                      variant="outline"
                       size="sm"
+                      aria-pressed={isActive}
                       onClick={() => setCategory(key)}
                       className={cn(
                         'gap-1.5 text-xs',
-                        !isActive && 'border-border'
+                        isActive ? 'border-primary bg-primary/10 text-primary-accessible hover:bg-primary/15' : 'border-border'
                       )}
                     >
                       <Icon className="icon-sm" />
@@ -583,7 +603,7 @@ export default function SearchPage() {
                       />
                       {debouncedQuery.length >= 2 && count > 0 && (
                         <Badge
-                          variant={isActive ? 'secondary' : 'outline'}
+                          variant="outline"
                           className="ml-1 h-4 px-1 text-2xs"
                         >
                           {count}
@@ -618,7 +638,8 @@ export default function SearchPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 <BilingualText en={searchEn('search_failed_body')} el={searchEl('search_failed_body')} />
               </p>
-              <Button variant="outline" onClick={() => window.location.reload()}>
+              {/* The search again, not the whole page. */}
+              <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}>
                 <BilingualText en={searchEn('retry')} el={searchEl('retry')} />
               </Button>
             </div>
@@ -651,66 +672,6 @@ export default function SearchPage() {
           )}
         </div>
 
-        {/* Quick Links */}
-        {debouncedQuery.length < 2 && (
-          <div className="mt-8">
-            <h3 className="mb-4 text-sm font-semibold text-foreground">
-              <BilingualText
-                en={searchEn('quick_links')}
-                el={searchEl('quick_links')}
-                stacked
-                wrap
-                secondaryFrom="lg"
-              />
-            </h3>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Link href="/discover" className="group block rounded-2xl">
-                <Card className="h-full hover:border-primary/50 transition-colors">
-                  <CardContent>
-                    <CardHead
-                      titleAs="p"
-                      title={<span className="transition-colors group-hover:text-primary-accessible"><BilingualText en={searchEn('discover_people_title')} el={searchEl('discover_people_title')} /></span>}
-                      subtitle={<BilingualText en={searchEn('discover_people_desc')} el={searchEl('discover_people_desc')} />}
-                    />
-                  </CardContent>
-                </Card>
-              </Link>
-              <Link href="/mentoring" className="group block rounded-2xl">
-                <Card className="h-full hover:border-primary/50 transition-colors">
-                  <CardContent>
-                    <CardHead
-                      titleAs="p"
-                      title={<span className="transition-colors group-hover:text-primary-accessible"><BilingualText en={searchEn('find_mentors_title')} el={searchEl('find_mentors_title')} /></span>}
-                      subtitle={<BilingualText en={searchEn('find_mentors_desc')} el={searchEl('find_mentors_desc')} />}
-                    />
-                  </CardContent>
-                </Card>
-              </Link>
-              <Link href="/jobs" className="group block rounded-2xl">
-                <Card className="h-full hover:border-primary/50 transition-colors">
-                  <CardContent>
-                    <CardHead
-                      titleAs="p"
-                      title={<span className="transition-colors group-hover:text-primary-accessible"><BilingualText en={searchEn('browse_jobs_title')} el={searchEl('browse_jobs_title')} /></span>}
-                      subtitle={<BilingualText en={searchEn('browse_jobs_desc')} el={searchEl('browse_jobs_desc')} />}
-                    />
-                  </CardContent>
-                </Card>
-              </Link>
-              <Link href="/events" className="group block rounded-2xl">
-                <Card className="h-full hover:border-primary/50 transition-colors">
-                  <CardContent>
-                    <CardHead
-                      titleAs="p"
-                      title={<span className="transition-colors group-hover:text-primary-accessible"><BilingualText en={searchEn('upcoming_events_title')} el={searchEl('upcoming_events_title')} /></span>}
-                      subtitle={<BilingualText en={searchEn('upcoming_events_desc')} el={searchEl('upcoming_events_desc')} />}
-                    />
-                  </CardContent>
-                </Card>
-              </Link>
-            </div>
-          </div>
-        )}
       </div>
     </AppShell>
   );

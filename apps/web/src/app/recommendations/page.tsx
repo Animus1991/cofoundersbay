@@ -14,7 +14,6 @@ import {
   Star,
   ThumbsUp,
   ThumbsDown,
-  MapPin,
   Briefcase,
   GraduationCap,
   DollarSign,
@@ -26,7 +25,6 @@ import {
   BookmarkPlus,
   Filter,
   X,
-  Info,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Link from 'next/link';
@@ -63,22 +61,12 @@ import { choiceControl, rowOptions, usePageControls, usePageList, type PageContr
 import { FactLine } from '@/components/common/FactLine';
 import { matchReasonCopy } from '@/lib/match-reason';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
-import { StatusText } from '@/components/common/StatusText';
 import { bilingualAria } from '@/lib/i18n/format';
-
-const ROLE_ICON: Record<string, typeof Users> = {
-  founder: Briefcase,
-  mentor: GraduationCap,
-  investor: DollarSign,
-  org: Users,
-};
-
-const ROLE_COLOR: Record<string, string> = {
-  founder: 'bg-status-info-bg text-status-info border-status-info-border',
-  mentor: 'bg-status-info-bg text-status-info border-status-info-border',
-  investor: 'bg-status-warning-bg text-status-warning border-status-warning-border',
-  org: 'bg-status-accent-bg text-status-accent border-status-accent-border',
-};
+import { RoleBadge } from '@/components/common/RoleBadge';
+import { useConnectionActions } from '@/hooks/useConnectionWith';
+import { useStoredUser } from '@/hooks/useStoredUser';
+import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
+import type { MatchConnection } from '@/components/common/MatchCard';
 
 function MatchScoreBadge({ score }: { score: number }) {
   // Semantic chips, not white on a mid-tone fill: white on emerald-500 is
@@ -135,26 +123,26 @@ function BreakdownModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Star className="icon-sm text-muted-foreground" />
-            Match Score Breakdown
+            <BilingualText en={`Score breakdown: ${displayName}`} el={`Ανάλυση βαθμολογίας: ${displayName}`} compact wrap />
           </DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="How the overall score breaks down by dimension." el="Πώς αναλύεται ο συνολικός βαθμός ανά διάσταση." /></DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
-            <span className="text-sm text-muted-foreground">Overall Match Score</span>
+            <span className="text-sm text-muted-foreground"><BilingualText en="Overall match" el="Συνολική αντιστοίχιση" compact /></span>
             <span className={cn('page-stat text-2xl font-bold', color)}>{score}%</span>
           </div>
           {explanation.length > 0 ? (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Score by Dimension</p>
+              <p className="mb-2 text-xs font-medium text-muted-foreground"><BilingualText en="By dimension" el="Ανά διάσταση" compact /></p>
               <ExplanationBar items={explanation} maxItems={explanation.length} />
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">Dimension breakdown not available for this match.</p>
+            <p className="text-sm text-muted-foreground"><BilingualText en="This match has no breakdown by dimension yet." el="Αυτή η αντιστοίχιση δεν έχει ακόμη ανάλυση ανά διάσταση." wrap /></p>
           )}
           {reasons.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why We Matched You</p>
+              <p className="mb-2 text-xs font-medium text-muted-foreground"><BilingualText en="Why you were matched" el="Γιατί ταιριάξατε" compact /></p>
               <div className="flex flex-wrap gap-1.5">
                 {reasons.map((r, i) => {
                   const copy = matchReasonCopy(r);
@@ -168,7 +156,11 @@ function BreakdownModal({
             </div>
           )}
           <p className="text-xs text-muted-foreground">
-            Scores are based on skills, industry, goals, experience, and availability alignment with <strong>{displayName}</strong>.
+            <BilingualText
+              en={`The score weighs skills, industry, goals, experience and availability against ${displayName}'s.`}
+              el={`Η βαθμολογία σταθμίζει δεξιότητες, κλάδο, στόχους, εμπειρία και διαθεσιμότητα σε σχέση με ${displayName}.`}
+              wrap
+            />
           </p>
         </div>
       </DialogContent>
@@ -266,11 +258,14 @@ function normaliseHit(hit: RecommendationHit) {
   };
 }
 
-function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
+function RecommendationCard({ hit, onConnect, onFeedback, onSave, connection = 'none', onAccept }: {
   hit: RecommendationHit;
   onConnect: (userId: string) => void;
   onFeedback: (userId: string, fb: MatchFeedbackType) => void;
   onSave?: (userId: string) => void;
+  /** Where the connection stands: the card's one action follows it (docs §86). */
+  connection?: MatchConnection;
+  onAccept?: (userId: string) => void;
 }) {
   const {
     userId,
@@ -286,8 +281,6 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
     explanation,
   } = normaliseHit(hit);
 
-  const RoleIcon = ROLE_ICON[role ?? 'founder'] ?? Users;
-  const [showExplanation, setShowExplanation] = useState(false);
   const [breakdownOpen, setBreakdownOpen] = useState(false);
 
   return (
@@ -340,38 +333,26 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                   {confidence}%
                 </span>
               )}
+              {/* The role badge every other card uses: "Cofounder" here was
+                  "Founder" on Explore and the inbox. */}
               {role && (
-                <Badge variant="outline" className={cn('text-xs hidden sm:flex', ROLE_COLOR[role ?? 'founder'])}>
-                  <RoleIcon className="icon-sm mr-1" />
-                  <StatusText value={role} />
-                </Badge>
+                <span className="hidden sm:inline-flex">
+                  <RoleBadge role={role} size="sm" />
+                </span>
               )}
             </>
           ) : undefined}
         />
 
-        {/* Reasons, then the dimension bars when asked for. */}
+        {/* The reasons. Their bars by dimension are in "Score breakdown";
+            a "Why this match?" line under them opened three of the same
+            bars in the card (docs §86). */}
         {reasons.length > 0 && (
-          <div className="space-y-1">
-            <FactLine items={reasons.slice(0, 3).map((reason) => {
-              const copy = matchReasonCopy(reason);
-              return <BilingualText key={copy.en} en={copy.en} el={copy.el} compact />;
-            })} />
-            <button
-              type="button"
-              aria-expanded={showExplanation}
-              onClick={() => setShowExplanation(p => !p)}
-              className="text-xs text-muted-foreground underline-offset-2 hover:underline flex items-center gap-0.5"
-            >
-              <Info className="icon-sm" aria-hidden="true" />
-              {showExplanation
-                ? <BilingualText en="Hide the reasons" el="Απόκρυψη αιτιών" compact />
-                : <BilingualText en="Why this match?" el="Γιατί αυτή η αντιστοίχιση;" compact />}
-            </button>
-          </div>
+          <FactLine items={reasons.slice(0, 3).map((reason) => {
+            const copy = matchReasonCopy(reason);
+            return <BilingualText key={copy.en} en={copy.en} el={copy.el} compact />;
+          })} />
         )}
-
-        {showExplanation && <ExplanationBar items={explanation} />}
 
         {/* Skills: facts, not chips. */}
         {skills.length > 0 && (
@@ -409,10 +390,26 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
             <TrendingUp className="icon-sm" />
             <BilingualText en="Score breakdown" el="Ανάλυση βαθμολογίας" compact />
           </Button>
-          <Button size="sm" className="gap-1.5" onClick={() => onConnect(userId)}>
-            <UserPlus className="icon-sm" />
-            <BilingualText en="Connect" el="Σύνδεση" compact />
-          </Button>
+          {connection === 'received' && onAccept ? (
+            <Button size="sm" className="gap-1.5" onClick={() => onAccept(userId)} aria-label={bilingualAria(`Accept ${displayName}'s request`, `Αποδοχή αιτήματος από ${displayName}`)}>
+              <BilingualText en="Accept" el="Αποδοχή" compact />
+            </Button>
+          ) : connection === 'sent' ? (
+            <Button size="sm" variant="ghost" disabled title={bilingualAria('Your request is waiting for their answer', 'Το αίτημά σας περιμένει απάντηση')}>
+              <BilingualText en="Request sent" el="Το αίτημα στάλθηκε" compact />
+            </Button>
+          ) : connection === 'connected' ? (
+            <Button size="sm" asChild>
+              <Link href={`/messages?to=${encodeURIComponent(userId)}`}>
+                <BilingualText en="Message" el="Μήνυμα" compact />
+              </Link>
+            </Button>
+          ) : (
+            <Button size="sm" className="gap-1.5" onClick={() => onConnect(userId)}>
+              <UserPlus className="icon-sm" />
+              <BilingualText en="Connect" el="Σύνδεση" compact />
+            </Button>
+          )}
         </CardFoot>
       </CardContent>
     </Card>
@@ -456,6 +453,9 @@ export default function RecommendationsPage() {
   const { success: toastSuccess, error: toastError } = useToast();
 
   const role = (activeTab === 'all' || activeTab === 'saved') ? undefined : activeTab.replace(/s$/, '');
+  const authed = useIsAuthenticated();
+  const me = useStoredUser();
+  const { connectionOf, accept } = useConnectionActions(authed, me?.id);
 
   const { data: recsData, isLoading: recsLoading, isError: recsError, refetch: refetchRecs } = useQuery({
     queryKey: qk('recommendations', role, refreshKey),
@@ -697,8 +697,9 @@ export default function RecommendationsPage() {
           )}
           <span className="ml-auto text-xs text-muted-foreground">
             <BilingualText
-              en={`${recommendations.length} match${recommendations.length !== 1 ? 'es' : ''}${savedIds.size > 0 ? ` · ${savedIds.size} saved` : ''}`}
-              el={`${recommendations.length} ${recommendations.length !== 1 ? 'αντιστοιχίσεις' : 'αντιστοίχιση'}${savedIds.size > 0 ? ` · ${savedIds.size} ${savedIds.size !== 1 ? 'αποθηκευμένες' : 'αποθηκευμένη'}` : ''}`}
+              // The saved count is on the Saved tab's badge, beside it.
+              en={`${recommendations.length} match${recommendations.length !== 1 ? 'es' : ''}`}
+              el={`${recommendations.length} ${recommendations.length !== 1 ? 'αντιστοιχίσεις' : 'αντιστοίχιση'}`}
               compact
             />
           </span>
@@ -739,8 +740,8 @@ export default function RecommendationsPage() {
               <Skeleton3 />
             ) : recsError ? (
               <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load recommendations." el="Δεν ήταν δυνατή η φόρτωση των προτάσεων." /></p>
-                <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}><BilingualText en="Retry" el="Επανάληψη" compact /></Button>
+                <p role="alert" className="text-sm text-muted-foreground"><BilingualText en="Your picks could not be read just now." el="Οι προτάσεις σας δεν διαβάστηκαν αυτή τη στιγμή." /></p>
+                <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
               </CardContent></Card>
             ) : activeTab === 'saved' && savedIds.size === 0 ? (
               <Card><CardContent className="py-14 text-center">
@@ -756,6 +757,8 @@ export default function RecommendationsPage() {
                   onConnect={(uid) => connectMutation.mutate(uid)}
                   onFeedback={(uid, fb) => feedbackMutation.mutate({ userId: uid, fb })}
                   onSave={handleSave}
+                  connection={connectionOf(hit.userId)}
+                  onAccept={(uid) => void accept(uid)}
                 />
               ))
             ) : (
@@ -764,7 +767,10 @@ export default function RecommendationsPage() {
                   <Sparkles className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
                   <h3 className="font-semibold mb-1"><BilingualText en="No recommendations yet" el="Δεν υπάρχουν ακόμη προτάσεις" /></h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    {minScore > 0 ? `No matches with score ≥${minScore}%. Try lowering the filter.` : 'Complete your profile to unlock personalized matches.'}
+                    {/* It was English on a Greek page. */}
+                    {minScore > 0
+                      ? <BilingualText en={`No matches score ${minScore}% or more. Lower the minimum to see more.`} el={`Καμία αντιστοίχιση δεν φτάνει το ${minScore}%. Χαμηλώστε το ελάχιστο για να δείτε περισσότερες.`} wrap />
+                      : <BilingualText en="Complete your profile to unlock personalised matches." el="Συμπληρώστε το προφίλ σας για εξατομικευμένες αντιστοιχίσεις." wrap />}
                   </p>
                   {minScore > 0 ? (
                     <Button size="sm" variant="outline" onClick={() => setMinScore(0)}><BilingualText en="Clear Filter" el="Εκκαθάριση φίλτρου" compact /></Button>

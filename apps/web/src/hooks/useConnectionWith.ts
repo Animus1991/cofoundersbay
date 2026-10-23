@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { listConnectionRequests } from '@/lib/api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { listConnectionRequests, respondToConnectionRequest } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 import { qk } from '@/lib/query-keys';
 import type { MatchConnection } from '@/components/common/MatchCard';
 
@@ -42,4 +43,34 @@ export function useConnectionWith(enabled: boolean, myId: string | null | undefi
   );
 
   return { connectionWith, connectionOf };
+}
+
+/**
+ * The connection state plus the one write every person card needs: accept a
+ * request they sent. The founder home, /matches, a profile, Explore, the
+ * member directory and For you each offered Accept with a copy of this; a
+ * card that offered Connect instead sent a second request to someone whose
+ * own was waiting (docs §86).
+ */
+export function useConnectionActions(enabled: boolean, myId: string | null | undefined) {
+  const { connectionWith, connectionOf } = useConnectionWith(enabled, myId);
+  const queryClient = useQueryClient();
+  const { success, error: showError } = useToast();
+  const accept = useCallback(
+    async (userId: string): Promise<boolean> => {
+      const link = connectionWith.get(userId);
+      if (!link || link.state !== 'received') return false;
+      try {
+        await respondToConnectionRequest(link.id, 'accepted');
+        success('Request accepted', 'You are now connected.');
+        await queryClient.invalidateQueries({ queryKey: qk('connections') });
+        return true;
+      } catch (err) {
+        showError('Could not accept the request', err instanceof Error ? err.message : 'Please try again');
+        return false;
+      }
+    },
+    [connectionWith, queryClient, success, showError],
+  );
+  return { connectionWith, connectionOf, accept };
 }

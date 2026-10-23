@@ -67,6 +67,7 @@ const PATH_GLYPH: Record<string, CfbGlyphName> = {
   '/ai/capabilities': 'spark',
   '/settings/ai': 'spark',
   '/matches/compare': 'compare',
+  '/compare': 'compare',
   '/builder/applications': 'applications',
   '/builder/pitch-deck': 'deck',
 };

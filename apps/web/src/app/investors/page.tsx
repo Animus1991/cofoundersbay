@@ -292,6 +292,10 @@ function InvestorCard({
           <p className="card-body line-clamp-2 text-muted-foreground">{investor.thesisSummary}</p>
         )}
 
+        {/* The facts side by side where the card is wide: one column of
+            five captions made each card about 480px tall at 1440 and the
+            directory of seven 3,500px (docs §86). The order stays. */}
+        <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
         {investor.industries.length ? (
           <CardFact en="Sectors" el="Τομείς">
             <TagList label={bilingualInline('Sectors', 'Τομείς')}>
@@ -340,6 +344,7 @@ function InvestorCard({
             </p>
           </CardFact>
         ) : null}
+        </div>
 
         <div className="flex flex-wrap items-center gap-2 pt-1">
           {investor.sample && !inDemo ? (
@@ -587,7 +592,7 @@ export default function InvestorsPage() {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs text-muted-foreground" aria-live="polite">
-            {isLoading ? (
+            {isError && directory.length === 0 ? null : isLoading ? (
               <BilingualText en="Loading investors…" el="Φόρτωση επενδυτών…" compact />
             ) : (
               <BilingualText
@@ -616,8 +621,8 @@ export default function InvestorsPage() {
           {isError && (
             <Card>
               <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  <BilingualText en="The investor directory could not be loaded." el="Δεν ήταν δυνατή η φόρτωση του καταλόγου επενδυτών." wrap />
+                <p role="alert" className="text-sm text-muted-foreground">
+                  <BilingualText en="The investor directory could not be read just now." el="Ο κατάλογος επενδυτών δεν διαβάστηκε αυτή τη στιγμή." wrap />
                 </p>
                 <Button variant="outline" size="sm" onClick={() => refetch()}>
                   <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
@@ -641,7 +646,9 @@ export default function InvestorsPage() {
             : filtered.map((inv) => (
                 <InvestorCard key={inv.id} investor={inv} saved={isSaved(inv)} onToggleSave={() => void toggleSave(inv)} />
               ))}
-          {!isLoading && filtered.length === 0 && (
+          {/* Not under a failed read: "No investors have joined yet" stood
+              under "could not be loaded" (docs §86). */}
+          {!isLoading && !isError && filtered.length === 0 && (
             <Card>
               <CardContent className="py-14 text-center">
                 <TrendingUp className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" aria-hidden="true" />
