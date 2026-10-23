@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
-import { ArrowLeft } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { listDeclarations, type ActionDeclaration } from '@cofounderbay/shared';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -10,6 +11,9 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 
@@ -165,27 +169,39 @@ function CapabilityCard({ spec }: { spec: ActionDeclaration }) {
   );
 }
 
+/** Everything a reader might type to find a capability, in both languages. */
+function haystack(spec: ActionDeclaration): string {
+  const sample = SAMPLE_ASK[spec.id];
+  return [spec.label.en, spec.label.el, spec.description.en, spec.description.el, sample?.en, sample?.el]
+    .filter(Boolean)
+    .join(' ')
+    .toLocaleLowerCase();
+}
+
 export default function AICapabilitiesPage() {
-  const capabilities = listDeclarations();
-  const reads = capabilities.filter((spec) => spec.kind === 'read');
-  const mutations = capabilities.filter((spec) => spec.kind === 'mutation');
+  const sayOne = useBilingualString();
+  const capabilities = useMemo(() => listDeclarations(), []);
+  /*
+   * Close to a hundred cards on one page (9.093px) with no way to find one:
+   * the field narrows both lists by name, description or sample ask
+   * (docs §91).
+   */
+  const [query, setQuery] = useState('');
+  const q = query.trim().toLocaleLowerCase();
+  const shown = q ? capabilities.filter((spec) => haystack(spec).includes(q)) : capabilities;
+  const reads = shown.filter((spec) => spec.kind === 'read');
+  const mutations = shown.filter((spec) => spec.kind === 'mutation');
 
   return (
     <AppShell>
       <div className="max-w-[84rem]">
-        <Link
-          href="/ai"
-          className="mb-6 inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="icon-sm" />
-          <BilingualText en="Back to the assistant" el="Πίσω στον βοηθό" compact />
-        </Link>
-
+        {/* "Back to the assistant" went to /ai, as "Open assistant" beside
+            the intro does (docs §91). */}
         <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <p className="max-w-2xl text-sm text-muted-foreground">
             <BilingualText
-              en="Every capability below is declared once, offered to the model, and confirmed by you before anything is written. The sample asks are example phrasings with an example name. This page is generated from that contract, so it cannot fall behind."
-              el="Κάθε δυνατότητα δηλώνεται μία φορά, προσφέρεται στο μοντέλο και επιβεβαιώνεται από εσάς πριν γραφτεί οτιδήποτε. Τα δείγματα είναι παραδείγματα διατύπωσης με ενδεικτικό όνομα. Η σελίδα παράγεται από αυτό το συμβόλαιο, οπότε δεν μπορεί να μείνει πίσω."
+              en="Every capability below is declared once, offered to the model, and confirmed by you before anything is written. This page is generated from that contract, so it cannot fall behind."
+              el="Κάθε δυνατότητα δηλώνεται μία φορά, προσφέρεται στο μοντέλο και επιβεβαιώνεται από εσάς πριν γραφτεί οτιδήποτε. Η σελίδα παράγεται από αυτό το συμβόλαιο, οπότε δεν μπορεί να μείνει πίσω."
               wrap
             />
           </p>
@@ -204,6 +220,37 @@ export default function AICapabilitiesPage() {
           </div>
         </div>
 
+        <div className="relative mb-8 max-w-xl">
+          <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <Input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label={bilingualInline('Search what the assistant can do', 'Αναζήτηση στις δυνατότητες του βοηθού')}
+            placeholder={sayOne('Search what the assistant can do…', 'Αναζήτηση στις δυνατότητες του βοηθού…')}
+            className="pl-9"
+          />
+        </div>
+        <p className="sr-only" role="status" aria-live="polite">
+          {q ? <BilingualText en={`${shown.length} capabilities match`} el={`${shown.length} δυνατότητες ταιριάζουν`} compact /> : null}
+        </p>
+
+        {q && shown.length === 0 ? (
+          <div className="mb-10 space-y-3 rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
+            <p>
+              <BilingualText
+                en={`Nothing matches “${query.trim()}”. Ask the assistant in your own words: it may still do it through the page you are on.`}
+                el={`Τίποτα δεν ταιριάζει με «${query.trim()}». Ρωτήστε τον βοηθό με δικά σας λόγια: μπορεί να το κάνει μέσα από τη σελίδα όπου βρίσκεστε.`}
+                wrap
+              />
+            </p>
+            <Button size="sm" variant="outline" onClick={() => setQuery('')}>
+              <BilingualText en="Clear the search" el="Καθαρισμός αναζήτησης" compact />
+            </Button>
+          </div>
+        ) : null}
+
+        {reads.length > 0 ? (
         <section className="mb-10">
           <h2 className="page-section mb-1 font-semibold">
             <BilingualText en="Looks something up" el="Αναζητά κάτι" compact />
@@ -221,7 +268,9 @@ export default function AICapabilitiesPage() {
             ))}
           </div>
         </section>
+        ) : null}
 
+        {mutations.length > 0 ? (
         <section>
           <h2 className="page-section mb-1 font-semibold">
             <BilingualText en="Changes something you own" el="Αλλάζει κάτι δικό σας" compact />
@@ -239,6 +288,7 @@ export default function AICapabilitiesPage() {
             ))}
           </div>
         </section>
+        ) : null}
       </div>
     </AppShell>
   );

@@ -616,10 +616,18 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
     );
   }
   if (!thread) {
+    // A failed read can be tried again; it was a dead end (docs §91).
     return (
-      <p className="card-body text-muted-foreground">
-        <BilingualText en="This conversation could not be opened." el="Η συζήτηση δεν άνοιξε." wrap />
-      </p>
+      <div className="space-y-3">
+        <p role="alert" className="card-body text-muted-foreground">
+          <BilingualText en="This conversation could not be opened." el="Η συζήτηση δεν άνοιξε." wrap />
+        </p>
+        {query.isError ? (
+          <Button size="sm" variant="outline" disabled={query.isFetching} onClick={() => void query.refetch()}>
+            <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+          </Button>
+        ) : null}
+      </div>
     );
   }
 

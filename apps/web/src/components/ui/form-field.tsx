@@ -6,7 +6,8 @@ import { bilingualAria } from '@/lib/i18n/format';
 export interface FormFieldProps {
   label: React.ReactNode;
   htmlFor?: string;
-  hint?: string;
+  /** One line under the field; a bilingual pair is a node (docs §91). */
+  hint?: React.ReactNode;
   error?: string;
   required?: boolean;
   className?: string;

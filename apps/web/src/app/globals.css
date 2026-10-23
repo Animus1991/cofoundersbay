@@ -3469,7 +3469,9 @@ a[class~="inline-flex"].bg-destructive {
 /* ── Decorative icons ─────────────────────────────────────────────────────
    Glyphs beside copy on labeled buttons and inside cards go away.
    Icons that *are* the control stay: nav/chrome, close (X), chevrons
-   inside a control, checkbox, spinner - and every icon-only control. So do
+   inside a control (a <summary> is one: "Earlier versions" read as a plain
+   label once its chevron went, docs §91), checkbox, spinner - and every
+   icon-only control. So do
    glyphs that carry state rather than decoration (check, empty circle,
    lock), rating stars (a review's score, as on the page-wide rule below)
    and any icon inside [data-keep-icon], where the icon is content.
@@ -3492,8 +3494,8 @@ a[class~="inline-flex"].bg-destructive {
 #main-content [data-surface="card"] .icon-well-sm {
   display: none;
 }
-#main-content [data-surface="card"] :not(button):not(a):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.cfb-glyph:not([data-keep-icon] > *):not([data-card-mark] > *),
-#main-content [data-surface="card"] :not(button):not(a):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.lucide:not(.lucide-check):not(.lucide-circle-check):not(.lucide-circle-check-big):not(.lucide-circle):not(.lucide-lock):not(.lucide-loader-2):not(.lucide-loader-circle):not(.lucide-star):not(.lucide-star-half):not([data-keep-icon] > *):not([data-card-mark] > *),
+#main-content [data-surface="card"] :not(button):not(a):not(summary):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.cfb-glyph:not([data-keep-icon] > *):not([data-card-mark] > *),
+#main-content [data-surface="card"] :not(button):not(a):not(summary):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.lucide:not(.lucide-check):not(.lucide-circle-check):not(.lucide-circle-check-big):not(.lucide-circle):not(.lucide-lock):not(.lucide-loader-2):not(.lucide-loader-circle):not(.lucide-star):not(.lucide-star-half):not([data-keep-icon] > *):not([data-card-mark] > *),
 #main-content [data-surface="card"] button:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph:not([data-keep-icon] *),
 #main-content [data-surface="card"] [data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph:not([data-keep-icon] *),
 #main-content [data-surface="card"] a:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph:not([data-keep-icon] *),

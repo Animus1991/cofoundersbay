@@ -13,7 +13,6 @@ import {
   MapPin,
   Video,
   Users,
-  ArrowLeft,
   Loader2,
   Globe,
   Building2,
@@ -31,6 +30,7 @@ import { cn } from '@/lib/utils';
 import { isPitchPractice } from '@/lib/pitch-practice';
 import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { bilingualAria } from '@/lib/i18n/format';
 
 const EVENT_TYPES = [
   { value: 'networking', label: 'Networking', labelEl: 'Δικτύωση' },
@@ -148,7 +148,7 @@ export default function CreateEventPage() {
       const startDate = new Date(form.startAt).toISOString();
       const endDate = form.endAt ? new Date(form.endAt).toISOString() : undefined;
 
-      await createEvent({
+      const created = await createEvent({
         title: form.title.trim(),
         description: form.description.trim() || undefined,
         type: form.type,
@@ -161,7 +161,10 @@ export default function CreateEventPage() {
         capacity: form.capacity ? parseInt(form.capacity, 10) : undefined,
       });
       success('Event created', form.title.trim());
-      router.push(`/events`);
+      // To the event just made, where it can be shared and its RSVPs seen;
+      // the list when the answer carries no id.
+      const id = created?.event?.id;
+      router.push(id ? `/events/${encodeURIComponent(id)}` : '/events');
     } catch (err) {
       showError('Could not create event', err instanceof Error ? err.message : 'Please try again');
     } finally {
@@ -172,7 +175,9 @@ export default function CreateEventPage() {
   const type = EVENT_TYPES.find((t) => t.value === form.type) ?? EVENT_TYPES[0];
   // Typed as local time, so shown in local time, in the reader's language.
   const when = whenText(form.startAt, form.endAt, primary === 'el' ? 'el-GR' : 'en-GB');
-  const place = form.isOnline ? (form.meetingUrl.trim() ? 'Online' : null) : form.location.trim() || null;
+  const place = form.isOnline
+    ? (form.meetingUrl.trim() ? <BilingualText en="Online" el="Διαδικτυακά" compact /> : null)
+    : form.location.trim() || null;
   const capacity = form.capacity ? parseInt(form.capacity, 10) : null;
   const checklist = [
     { done: Boolean(form.title.trim()), en: 'A title', el: 'Τίτλος', required: true },
@@ -187,14 +192,8 @@ export default function CreateEventPage() {
       titleEl="Δημιουργία εκδήλωσης"
       description="Host a meetup, webinar or demo day for the community."
       descriptionEl="Οργανώστε συνάντηση, webinar ή demo day για την κοινότητα."
-      actions={
-        <Button variant="secondary" size="sm" className="gap-2" asChild>
-          <Link href="/events">
-            <ArrowLeft className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Back to events" el="Πίσω στις εκδηλώσεις" compact />
-          </Link>
-        </Button>
-      }
+      // "Back to events" in the header went where the form's Cancel goes
+      // (docs §91).
     >
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,44rem)_22rem]">
         <form onSubmit={handleSubmit} className="min-w-0 space-y-6">
@@ -211,7 +210,7 @@ export default function CreateEventPage() {
           <FormSection icon={Calendar} title="Basic information" titleEl="Βασικά στοιχεία">
             <FormField htmlFor="event-title" required label={<BilingualText en="Event title" el="Τίτλος εκδήλωσης" compact />}>
               <Input
-                placeholder="e.g. Founder Meetup Athens Q2"
+                placeholder={sayOne('e.g. Founder Meetup Athens Q2', 'π.χ. Συνάντηση ιδρυτών Αθήνα Q2')}
                 value={form.title}
                 onChange={(e) => set('title', e.target.value)}
                 required
@@ -277,7 +276,7 @@ export default function CreateEventPage() {
           </FormSection>
 
           <FormSection icon={MapPin} title="Location" titleEl="Τοποθεσία">
-            <div role="group" aria-label="Where the event happens" className="inline-flex rounded-xl border border-border bg-muted/40 p-0.5">
+            <div role="group" aria-label={bilingualAria('Where the event happens', 'Πού γίνεται η εκδήλωση')} className="inline-flex rounded-xl border border-border bg-muted/40 p-0.5">
               {[
                 { online: false, en: 'In person', el: 'Δια ζώσης', icon: Building2 },
                 { online: true, en: 'Online', el: 'Διαδικτυακά', icon: Video },
@@ -305,7 +304,7 @@ export default function CreateEventPage() {
             ) : (
               <FormField htmlFor="event-location" label={<BilingualText en="Venue / address" el="Χώρος / διεύθυνση" compact />}>
                 <Input
-                  placeholder="e.g. Station F, 5 Parvis Alan Turing, Paris"
+                  placeholder={sayOne('e.g. Station F, 5 Parvis Alan Turing, Paris', 'π.χ. Station F, 5 Parvis Alan Turing, Παρίσι')}
                   value={form.location}
                   onChange={(e) => set('location', e.target.value)}
                   maxLength={180}
@@ -318,7 +317,7 @@ export default function CreateEventPage() {
             <FormField
               htmlFor="event-capacity"
               label={<BilingualText en="Max attendees" el="Μέγιστος αριθμός συμμετεχόντων" compact />}
-              hint="Leave empty for unlimited attendees."
+              hint={<BilingualText en="Leave empty for unlimited attendees." el="Αφήστε το κενό για απεριόριστους συμμετέχοντες." wrap />}
             >
               <Input
                 type="number"
@@ -355,7 +354,7 @@ export default function CreateEventPage() {
         </form>
 
         {/* How the listing will read, and what it still lacks. */}
-        <aside aria-label="Preview" className="min-w-0 space-y-4 lg:sticky lg:top-24">
+        <aside aria-label={bilingualAria('Preview', 'Προεπισκόπηση')} className="min-w-0 space-y-4 lg:sticky lg:top-24">
           {/* The listing as it will read: the event card's own head (mark,
               title, kind), then the facts and the sentence on the mark's edge. */}
           <Card>

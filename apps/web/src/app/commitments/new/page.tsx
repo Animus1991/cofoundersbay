@@ -139,6 +139,9 @@ function PostingGuide() {
   const [loaded, setLoaded] = useState(!editId);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<{ en: string; el: string } | null>(null);
+  // Editing a card that was not read: no empty form to save over it.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   // Projects live in this browser until a projects API exists: read after mount.
   useEffect(() => {
@@ -153,6 +156,7 @@ function PostingGuide() {
   useEffect(() => {
     if (!editId) return;
     let live = true;
+    setLoadFailed(false);
     getCommitmentCard(editId)
       .then((card) => {
         if (!live) return;
@@ -176,12 +180,16 @@ function PostingGuide() {
         setForm(values);
         setOriginal(values);
       })
-      .catch((err) => setError(commitmentRefusal(err)))
+      .catch((err) => {
+        if (!live) return;
+        setError(commitmentRefusal(err));
+        setLoadFailed(true);
+      })
       .finally(() => live && setLoaded(true));
     return () => {
       live = false;
     };
-  }, [editId]);
+  }, [editId, loadAttempt]);
 
   // A card the assistant drafted (draft_need_card): fields arrive filled and
   // the person still reads them and presses Publish.
@@ -253,14 +261,29 @@ function PostingGuide() {
   return (
     <AppShell showHelp title={editId ? CMT.guide_edit_title.en : undefined} titleEl={editId ? CMT.guide_edit_title.el : undefined} askAi={ASK.needCardNew}>
       <div className="space-y-6">
+        {/* "About two minutes" sat beside this as a pill; the description
+            above already says "in about two minutes" (docs §91). */}
         <p className="max-w-2xl text-sm text-muted-foreground">
           <BilingualText en={CMT.guide_intro.en} el={CMT.guide_intro.el} wrap />
-          <span className="ml-2 inline-flex rounded-full bg-muted px-2 py-0.5 text-2xs font-medium text-muted-foreground">
-            <BilingualText en={CMT.two_minutes.en} el={CMT.two_minutes.el} compact />
-          </span>
         </p>
         <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
 
+        {loadFailed ? (
+          <div className="space-y-3 rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+            <p role="alert">
+              <BilingualText en="The card could not be read just now, so there is nothing to edit yet." el="Η κάρτα δεν διαβάστηκε αυτή τη στιγμή, οπότε δεν υπάρχει ακόμη τι να επεξεργαστείτε." wrap />
+            </p>
+            {error ? <p className="text-xs"><BilingualText en={error.en} el={error.el} wrap /></p> : null}
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={() => { setError(null); setLoadAttempt((n) => n + 1); }}>
+                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+              </Button>
+              <Button size="sm" variant="ghost" asChild>
+                <Link href={`/commitments/${encodeURIComponent(editId)}`}><BilingualText en="Back to the card" el="Πίσω στην κάρτα" compact /></Link>
+              </Button>
+            </div>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
           <form onSubmit={submit} className="min-w-0 space-y-6" aria-label={bilingualAria(CMT.guide_title.en, CMT.guide_title.el)}>
             <Card>
@@ -480,6 +503,7 @@ function PostingGuide() {
             </Card>
           </aside>
         </div>
+        )}
       </div>
     </AppShell>
   );

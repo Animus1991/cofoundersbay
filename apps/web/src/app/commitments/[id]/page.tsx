@@ -48,9 +48,15 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { cn } from '@/lib/utils';
+import { ApiNetworkError } from '@/lib/api';
 import { needCardPost, useSuggestedPost } from '@/lib/share-text';
 import { FORM_DRAFT_ROUTES, stashFormDraft } from '@/lib/form-draft';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+
+/** The HTTP status a failed read carries (the API's ApiError, or the demo's refusal shaped like it). */
+const statusOf = (err: unknown): number | undefined =>
+  typeof (err as { status?: unknown } | null)?.status === 'number' ? (err as { status: number }).status : undefined;
+const isMissing = (err: unknown) => statusOf(err) === 404 || statusOf(err) === 403;
 
 const OFFER_FIELD_COPY: Record<string, { en: string; el: string }> = {
   offerRole: CMT.offer_role,
@@ -67,6 +73,7 @@ function offerLine(offer: { role: string; equity: string | null; hoursPerWeek: n
 
 function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => void }) {
   const { success } = useToast();
+  const sayOne = useBilingualString();
   const [note, setNote] = useState('');
   const [error, setError] = useState<{ en: string; el: string; reason?: string | null } | null>(null);
   const [sending, setSending] = useState(false);
@@ -97,7 +104,7 @@ function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => vo
         <h2 className="card-title text-foreground"><BilingualText en={CMT.interest_title.en} el={CMT.interest_title.el} compact /></h2>
         <p id="interest-hint" className="card-subtitle"><BilingualText en={CMT.interest_hint.en} el={CMT.interest_hint.el} wrap /></p>
       </div>
-      <Label htmlFor="interest-note" className="sr-only">{CMT.interest_title.en}</Label>
+      <Label htmlFor="interest-note" className="sr-only">{bilingualAria(CMT.interest_title.en, CMT.interest_title.el)}</Label>
       <Textarea
         id="interest-note"
         value={note}
@@ -105,7 +112,7 @@ function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => vo
         maxLength={NEED_CARD_LIMITS.note}
         className="min-h-20"
         aria-describedby="interest-hint"
-        placeholder="I have shipped… and could start with…"
+        placeholder={sayOne('I have shipped… and could start with…', 'Έχω παραδώσει… και θα μπορούσα να ξεκινήσω με…')}
       />
       <ContactWarning text={note} promises />
       {error ? <p role="alert" className="card-body text-status-danger"><BilingualText en={error.en} el={error.el} wrap /></p> : null}
@@ -146,7 +153,20 @@ function Board() {
   const cardId = String(params?.id ?? '');
   const threadParam = search?.get('thread') ?? '';
 
-  const cardQ = useQuery({ queryKey: qk('commitments', 'card', cardId), queryFn: () => getCommitmentCard(cardId), enabled: Boolean(cardId) });
+  const cardQ = useQuery({
+    queryKey: qk('commitments', 'card', cardId),
+    queryFn: () => getCommitmentCard(cardId),
+    enabled: Boolean(cardId),
+    // The app's policy (no retry for a network failure or a 4xx), plus the
+    // demo's refusal, which carries a status but is not an ApiError: a card
+    // that does not exist will not appear on a retry, so say so at once.
+    retry: (count, err) => {
+      if (err instanceof ApiNetworkError) return false;
+      const status = statusOf(err);
+      if (status !== undefined && status >= 400 && status < 500) return false;
+      return count < 2;
+    },
+  });
   const card = cardQ.data;
   const isOwner = card?.isMine === true;
   const threadsQ = useQuery({ queryKey: qk('commitments', 'threads', 'owner'), queryFn: () => listCommitmentThreads('owner'), enabled: isOwner });
@@ -364,7 +384,9 @@ function Board() {
     ? [
       {
         id: 'scout',
-        glyph: 'discover',
+        // The scout's own glyph, as in the sidebar: "Public card" above has
+        // the discover one, and two identical icons read as one section.
+        glyph: 'scout',
         labelEn: 'Find people',
         labelEl: 'Εύρεση ανθρώπων',
         content: (
@@ -457,6 +479,22 @@ function Board() {
         <div className="space-y-6">
           <Skeleton className="h-64 w-full rounded-2xl" />
           <Skeleton className="h-40 w-full rounded-2xl" />
+        </div>
+      </AppShell>
+    );
+  }
+  // Only a 404/403 is "not found"; any other failed read says it was not
+  // read, with Try again (AGENTS, docs §91). The API down said "This need
+  // card was not found."
+  const missing = !cardQ.isError || isMissing(cardQ.error);
+  if ((!card || !card.id) && !missing) {
+    return (
+      <AppShell showHelp>
+        <div className="space-y-6 rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+          <p role="alert"><BilingualText en="This need card could not be read just now." el="Η κάρτα ανάγκης δεν διαβάστηκε αυτή τη στιγμή." wrap /></p>
+          <Button size="sm" variant="outline" disabled={cardQ.isFetching} onClick={() => void cardQ.refetch()}>
+            <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+          </Button>
         </div>
       </AppShell>
     );

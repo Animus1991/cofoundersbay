@@ -18,6 +18,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { COMMITMENT_LEVELS, LOOKING_FOR_OPTIONS, STARTUP_STAGES, founderGoalsPayload } from '@/lib/founder-options';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
+import { TOP_BANNER_STACK } from '@/components/layout/useTopBannerHeight';
 
 type Role = 'founder' | 'mentor' | 'investor' | 'org';
 
@@ -399,7 +400,10 @@ export function ConversationalOnboarding() {
   const meta = isInputStep ? STEP_META[steps[stepIndex]] : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    // Under a top banner ("API server is unavailable") the header's first row
+    // (logo, "Step 1 of 6") was covered: this page has no app frame to hold
+    // the banner's height, so it holds it here (docs §91).
+    <div className="flex min-h-screen flex-col bg-background" style={{ paddingTop: TOP_BANNER_STACK }}>
       {/* Header: named stepper with live progress */}
       <header className="border-b border-border bg-card px-4 py-3 sm:px-6" data-testid="onboarding-header">
         <div className="mx-auto w-full max-w-2xl space-y-3">
@@ -573,10 +577,12 @@ export function ConversationalOnboarding() {
                 onKeyDown={handleKeyDown}
                 data-testid="onboarding-text-input"
                 aria-label={bilingualInline(STEP_META[step].labelEn, STEP_META[step].labelEl)}
+                // A placeholder is read inside its box: the reader's language,
+                // not "Your name… · Το όνομά σας…" (as the bio field below).
                 placeholder={
-                  step === 'name' ? bilingualInline('Your name…', 'Το όνομά σας…') :
-                  step === 'headline' ? bilingualInline('Your professional headline…', 'Ο επαγγελματικός σας τίτλος…') :
-                  bilingualInline('City, Country…', 'Πόλη, Χώρα…')
+                  step === 'name' ? sayOne('Your name…', 'Το όνομά σας…') :
+                  step === 'headline' ? sayOne('Your professional headline…', 'Ο επαγγελματικός σας τίτλος…') :
+                  sayOne('City, Country…', 'Πόλη, Χώρα…')
                 }
                 className="flex-1"
                 autoFocus
