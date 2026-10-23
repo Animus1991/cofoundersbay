@@ -69,9 +69,6 @@ const TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: 
   invite:      { icon: Gift,          color: 'text-status-accent',  bg: 'bg-status-accent-bg',  key: 'type_invite'     },
 };
 
-const NOTIF_ICONS: Record<string, React.ElementType> = Object.fromEntries(
-  Object.entries(TYPE_CONFIG).map(([k, v]) => [k, v.icon])
-);
 
 const FEED_TYPE_FILTERS: { value: ActivityType; key: ActivityKey; icon: React.ElementType }[] = [
   { value: 'all',         key: 'type_all',         icon: Sparkles  },
@@ -145,15 +142,16 @@ function ItemSkeleton() {
 
 function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
   const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG['system'];
-  const Icon = cfg.icon;
+  // No type glyph in a well: the design hides decorative wells, all but the
+  // match row's trend arrow (spared as data elsewhere), so one row in ten
+  // started 42px further in. The kind is the word in the line below.
+  // "By Elena" under "Elena … wants to connect" said the name twice.
+  const showAuthor = !!item.author && !item.title.includes(item.author);
   return (
     <div className="flex items-start gap-3 border-b border-border px-4 py-3.5 last:border-0 hover:bg-muted/20 transition-colors group">
-      <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', cfg.bg, cfg.color)}>
-        <Icon className="icon-sm" />
-      </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm text-foreground leading-snug">{item.title}</p>
-        {item.author && (
+        {showAuthor && item.author && (
           <p className="text-xs text-muted-foreground mt-0.5">
             <BilingualText
               en={activityEn('by_author').replace('{name}', item.author)}
@@ -193,22 +191,16 @@ function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
 // ── Notification row ─────────────────────────────────────────────────────────
 
 function NotificationRow({ item }: { item: NotificationItem }) {
-  const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG['system'];
-  const Icon = cfg.icon;
   const isUnread = !item.readAt;
+  // One left edge for every row. The glyph's well was hidden by the design's
+  // decorative-icon rule except for a match's trend arrow, and the unread dot
+  // stayed on its own, so rows started at three different places; "New" and
+  // the weight of the title already say unread (docs §88).
   return (
     <div className={cn(
       'flex items-start gap-3 border-b border-border px-4 py-3.5 last:border-0 hover:bg-muted/20 transition-colors group',
       isUnread && 'bg-primary/[0.03]',
     )}>
-      <div className="relative shrink-0">
-        <div className={cn('flex h-9 w-9 items-center justify-center rounded-full', cfg.bg, cfg.color)}>
-          <Icon className="icon-sm" />
-        </div>
-        {isUnread && (
-          <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
-        )}
-      </div>
       <div className="flex-1 min-w-0">
         <p className={cn('text-sm leading-snug', isUnread ? 'font-medium text-foreground' : 'text-foreground/80')}>
           {item.title}
@@ -528,7 +520,7 @@ export default function ActivityPage() {
                 <div className="overflow-hidden rounded-2xl border border-border bg-card">
                   {activityError ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
-                      <p className="text-sm text-muted-foreground">
+                      <p role="alert" className="text-sm text-muted-foreground">
                         <BilingualText en={activityEn('activity_failed')} el={activityEl('activity_failed')} compact />
                       </p>
                       <Button variant="secondary" size="sm" onClick={() => refetchActivity()}>
@@ -594,7 +586,7 @@ export default function ActivityPage() {
                 <div className="overflow-hidden rounded-2xl border border-border bg-card">
                   {notifError ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
-                      <p className="text-sm text-muted-foreground">
+                      <p role="alert" className="text-sm text-muted-foreground">
                         <BilingualText en={activityEn('notifications_failed')} el={activityEl('notifications_failed')} compact />
                       </p>
                       <Button variant="secondary" size="sm" onClick={() => refetchNotif()}>
@@ -634,7 +626,18 @@ export default function ActivityPage() {
               {/* Events */}
               <TabsContent value="events" className="mt-0">
                 <div className="overflow-hidden rounded-2xl border border-border bg-card">
-                  {activityLoading ? (
+                  {activityError ? (
+                    // The events come from the same read; a failed one is not
+                    // "No upcoming events".
+                    <div className="flex flex-col items-center gap-3 py-12 text-center">
+                      <p role="alert" className="text-sm text-muted-foreground">
+                        <BilingualText en={activityEn('activity_failed')} el={activityEl('activity_failed')} compact />
+                      </p>
+                      <Button variant="secondary" size="sm" onClick={() => refetchActivity()}>
+                        <BilingualText en={activityEn('retry')} el={activityEl('retry')} compact />
+                      </Button>
+                    </div>
+                  ) : activityLoading ? (
                     Array.from({ length: 3 }).map((_, i) => <ItemSkeleton key={i} />)
                   ) : eventItems.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">

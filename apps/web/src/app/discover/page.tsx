@@ -33,9 +33,9 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { RailPeople } from '@/components/layout/RailPeople';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -47,15 +47,13 @@ import { ProfileCard, ProfileCardSkeleton, type ProfileCardData } from '@/compon
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { discoverEn, discoverEl } from '@/lib/i18n/strings-discover';
-import { cn, initialsOf } from '@/lib/utils';
-import { STATUS } from '@/lib/semantic-colors';
+import { cn } from '@/lib/utils';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, ROW_GONE, type PageControlRunResult } from '@/lib/page-controls';
 import { statusEl } from '@/components/common/StatusText';
 import { namedFilters, namedQuery, type NamedFilter } from '@/components/common/EmptyStates';
 import { ASK } from '@/lib/page-questions';
 import { useConnectionActions } from '@/hooks/useConnectionWith';
-import { RoleName } from '@/components/common/RoleName';
 
 const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
@@ -508,27 +506,7 @@ export default function DiscoverPage() {
       labelEl: 'Καλύτερες αντιστοιχίσεις',
       content: (
         <div className="space-y-1">
-          <ul className="space-y-0.5">
-            {bestMatches.map((h) => (
-              <li key={h.id}>
-                <Link href={`/profiles/${h.userId}`} className="group flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/70">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={h.avatarUrl ?? undefined} alt="" />
-                    <AvatarFallback className="bg-muted text-2xs font-semibold text-muted-foreground">{initialsOf(h.displayName)}</AvatarFallback>
-                  </Avatar>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-foreground group-hover:text-primary-accessible">{h.displayName}</span>
-                    <span className="block text-xs text-muted-foreground"><RoleName role={h.role} /></span>
-                  </span>
-                  {typeof h.matchScore === 'number' ? (
-                    <span className={cn('shrink-0 rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums', h.matchScore >= 80 ? STATUS.success.chip : h.matchScore >= 60 ? STATUS.info.chip : STATUS.neutral.chip)}>
-                      {h.matchScore}%
-                    </span>
-                  ) : null}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <RailPeople people={bestMatches} />
           <RailAction icon={TrendingUp} en="See every match" el="Όλες οι αντιστοιχίσεις" onClick={() => { setActiveTab('matches'); setRoleFilter('all'); }} />
         </div>
       ),

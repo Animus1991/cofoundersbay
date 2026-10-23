@@ -1,21 +1,33 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { errorMessage, initialsOf } from '@/lib/utils';
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft, Users, Globe, Lock, MessageCircle, Send, Loader2,
-  MoreHorizontal, Trash2, Pin, Heart, ThumbsUp, Smile, RefreshCw,
-  Settings, UserPlus, LogOut, CheckCircle2,
+  ArrowLeft,
+  Users,
+  MessageCircle,
+  Send,
+  Loader2,
+  Trash2,
+  Pin,
+  Heart,
+  RefreshCw,
+  UserPlus,
+  LogOut,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction } from '@/components/layout/RailParts';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
+import { useCoverFailed } from '@/hooks/useCoverFailed';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import { ListEmptyState } from '@/components/common/EmptyStates';
 import { STATUS } from '@/lib/semantic-colors';
@@ -31,8 +43,8 @@ import {
   reactToGroupPost,
   listGroupComments,
   createGroupComment,
+  ApiError,
   type GroupPost,
-  type GroupComment,
 } from '@/lib/api';
 import { bilingualAria } from '@/lib/i18n/format';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
@@ -82,7 +94,7 @@ function PostCard({
       setNewComment('');
       commentsQuery.refetch();
     } catch (e: unknown) {
-      toastError('Error', errorMessage(e, 'Failed to add comment'));
+      toastError('Could not add the comment', errorMessage(e, 'Failed to add comment'));
     } finally {
       setSubmittingComment(false);
     }
@@ -144,7 +156,10 @@ function PostCard({
               type="button"
               variant="outline"
               size="sm"
-              aria-label={bilingualAria('React', 'Αντίδραση')}
+              // The name carries the number the button shows ("14").
+              aria-label={post.reactionCount > 0
+                ? bilingualAria(`React (${post.reactionCount})`, `Αντίδραση (${post.reactionCount})`)
+                : bilingualAria('React', 'Αντίδραση')}
               aria-expanded={showReactions}
               onClick={() => setShowReactions((p) => !p)}
               className={cn('gap-1.5', post.myReaction && 'border-primary/30 bg-primary/10 text-primary-accessible')}
@@ -312,7 +327,7 @@ export default function GroupDetailPage() {
       setNewPost('');
       queryClient.invalidateQueries({ queryKey: qk('groups', 'posts', groupId) });
     } catch (e: unknown) {
-      toastError('Error', errorMessage(e, 'Failed to create post.'));
+      toastError('Could not post', errorMessage(e, 'Failed to create post.'));
     } finally {
       setSubmittingPost(false);
     }
@@ -402,6 +417,11 @@ export default function GroupDetailPage() {
     },
   ]);
 
+  // Hooks before the early returns. A cover that does not load counts as
+  // none, as on event cards (`useCoverFailed`).
+  const cover = useCoverFailed(group?.coverImageUrl);
+  const showCover = !!group?.coverImageUrl && !cover.failed;
+
   if (groupQuery.isLoading) {
     return (
       <AppShell>
@@ -413,11 +433,25 @@ export default function GroupDetailPage() {
   }
 
   if (groupQuery.isError || !group) {
+    // "Not found" only when the API says so: a read that failed is not a
+    // community that does not exist (docs §88).
+    const missing = !groupQuery.isError || (groupQuery.error instanceof ApiError && (groupQuery.error.status === 404 || groupQuery.error.status === 403));
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <p className="text-muted-foreground"><BilingualText en="Group not found" el="Η κοινότητα δεν βρέθηκε" compact /></p>
-          <Button variant="outline" onClick={() => router.push('/groups')}><BilingualText en="Back to Groups" el="Πίσω στις κοινότητες" compact /></Button>
+          <p role="alert" className="text-muted-foreground">
+            {missing
+              ? <BilingualText en="This community does not exist, or it is private." el="Αυτή η κοινότητα δεν υπάρχει ή είναι ιδιωτική." wrap />
+              : <BilingualText en="This community could not be read just now." el="Αυτή η κοινότητα δεν διαβάστηκε αυτή τη στιγμή." wrap />}
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {!missing && (
+              <Button variant="outline" onClick={() => void groupQuery.refetch()} disabled={groupQuery.isFetching}>
+                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => router.push('/groups')}><BilingualText en="Back to Communities" el="Πίσω στις κοινότητες" compact /></Button>
+          </div>
         </div>
       </AppShell>
     );
@@ -425,8 +459,77 @@ export default function GroupDetailPage() {
 
   const posts = postsQuery.data?.posts ?? [];
 
+  /*
+   * The rules and the members beside the feed were a second column inside
+   * the page; they are the page's rail now, like every other page's
+   * auxiliary panels, and the posts take the column (docs §88).
+   */
+  const rules = group.rules ?? [];
+  const rail: PageRailSection[] = [
+    {
+      id: 'rules',
+      glyph: 'shield',
+      labelEn: 'Community rules',
+      labelEl: 'Κανόνες κοινότητας',
+      content: rules.length > 0 ? (
+        <ol className="space-y-2 px-2.5">
+          {rules.map((rule, i) => (
+            <li key={i} className="text-xs text-muted-foreground">
+              <p className="text-sm font-medium text-foreground"><span className="tabular-nums">{i + 1}.</span> {rule.title}</p>
+              {rule.description && <p className="mt-0.5">{rule.description}</p>}
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p className="px-2.5 text-sm text-muted-foreground">
+          <BilingualText en="This community has not written rules yet." el="Αυτή η κοινότητα δεν έχει γράψει ακόμη κανόνες." wrap />
+        </p>
+      ),
+    },
+    {
+      id: 'people',
+      glyph: 'people',
+      labelEn: 'Members at a glance',
+      labelEl: 'Μέλη με μια ματιά',
+      content: groupMembers.length > 0 ? (
+        <div className="space-y-1">
+          <ul className="space-y-0.5">
+            {groupMembers.slice(0, 6).map((m) => (
+              <li key={m.userId}>
+                <Link href={`/profiles/${m.userId}`} className="group flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/70">
+                  <Avatar className="h-8 w-8 shrink-0">
+                    <AvatarImage src={m.user?.avatarUrl ?? undefined} alt="" />
+                    <AvatarFallback className="text-2xs">{initialsOf(m.user?.displayName)}</AvatarFallback>
+                  </Avatar>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium group-hover:text-primary-accessible">{m.user?.displayName ?? <BilingualText en="Unnamed member" el="Μέλος χωρίς όνομα" compact />}</span>
+                    {m.role !== 'member' && (
+                      <span className="block text-xs text-muted-foreground"><StatusText value={m.role} /></span>
+                    )}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {group.memberCount > 6 && (
+            <RailAction
+              icon={Users}
+              en={`See all ${group.memberCount.toLocaleString('en-GB')} members`}
+              el={`Όλα τα ${group.memberCount.toLocaleString('el-GR')} μέλη`}
+              onClick={() => setActiveSection('members')}
+            />
+          )}
+        </div>
+      ) : (
+        <p className="px-2.5 text-sm text-muted-foreground">
+          <BilingualText en="No members are listed yet." el="Δεν εμφανίζονται ακόμη μέλη." wrap />
+        </p>
+      ),
+    },
+  ];
+
   return (
-    <AppShell>
+    <AppShell rail={rail}>
       {/* Cover / Header */}
       <div className="space-y-6">
         <button
@@ -435,22 +538,20 @@ export default function GroupDetailPage() {
           className="-ml-2 flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm text-muted-foreground transition-colors hover:text-foreground focus-ring sm:min-h-9"
         >
           <ArrowLeft className="icon-sm" aria-hidden="true" />
-          <BilingualText en="Back to Groups" el="Πίσω στις κοινότητες" compact />
+          <BilingualText en="Back to Communities" el="Πίσω στις κοινότητες" compact />
         </button>
 
         {/* The page's hero: its name is the page's display title and its
             mark a hero's, so the card ladder does not apply to it. */}
         <div data-card-hero="" className="rounded-2xl border border-border bg-card/70 overflow-hidden">
-          {group.coverImageUrl ? (
-            <div
-              className="h-40 w-full bg-cover bg-center"
-              style={{ backgroundImage: `url(${group.coverImageUrl})` }}
-            />
+          {showCover ? (
+            <img ref={cover.ref} onError={cover.onError} src={group.coverImageUrl ?? undefined} alt="" referrerPolicy="no-referrer" decoding="async" className="h-40 w-full object-cover" />
           ) : null}
 
           {/* Without a cover the header starts at the card's edge: a blank
-              band under an avatar half-sitting on it read as a missing image. */}
-          <div className={cn('relative px-4 pb-5 sm:px-6', group.coverImageUrl ? '-mt-8' : 'pt-5')}>
+              band under an avatar half-sitting on it read as a missing image.
+              A cover that does not load counts as none. */}
+          <div className={cn('relative px-4 pb-5 sm:px-6', showCover ? '-mt-8' : 'pt-5')}>
             {/* On a phone the join button drops under the name instead of
                 being pushed off the card's right edge. */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -465,37 +566,55 @@ export default function GroupDetailPage() {
                 </div>
                 <div className="min-w-0 pb-1">
                   <h2 className="font-display text-xl sm:text-2xl xl:text-3xl font-semibold">{group.name}</h2>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      {group.privacy === 'public' ? <Globe className="icon-sm" /> : <Lock className="icon-sm" />}
-                      <StatusText value={group.privacy} />
-                    </div>
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="icon-sm" />
-                      <BilingualText en={`${group.memberCount.toLocaleString('en-GB')} members`} el={`${group.memberCount.toLocaleString('el-GR')} μέλη`} compact />
-                    </span>
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MessageCircle className="icon-sm" />
-                      <BilingualText en={`${group.postCount.toLocaleString('en-GB')} posts`} el={`${group.postCount.toLocaleString('el-GR')} δημοσιεύσεις`} compact />
-                    </span>
-                  </div>
+                  {/* One dotted line of facts (the glyphs before each were
+                      hidden, which left three words with no separator), and
+                      the reader's place in it: the button now says what it
+                      does, so "Joined" moved here. */}
+                  <FactLine
+                    className="mt-1 text-xs"
+                    items={[
+                      <StatusText key="privacy" value={group.privacy} />,
+                      <BilingualText key="members" en={`${group.memberCount.toLocaleString('en-GB')} ${group.memberCount === 1 ? 'member' : 'members'}`} el={`${group.memberCount.toLocaleString('el-GR')} ${group.memberCount === 1 ? 'μέλος' : 'μέλη'}`} compact />,
+                      <BilingualText key="posts" en={`${group.postCount.toLocaleString('en-GB')} ${group.postCount === 1 ? 'post' : 'posts'}`} el={`${group.postCount.toLocaleString('el-GR')} ${group.postCount === 1 ? 'δημοσίευση' : 'δημοσιεύσεις'}`} compact />,
+                      isMember
+                        ? (memberRole && memberRole !== 'member'
+                          ? <span key="you" className={STATUS.success.text}><BilingualText en="You: " el="Εσείς: " compact /><StatusText value={memberRole} /></span>
+                          : <span key="you" className={STATUS.success.text}><BilingualText en="You are a member" el="Είστε μέλος" compact /></span>)
+                        : null,
+                    ]}
+                  />
                 </div>
               </div>
 
-              <Button
-                variant={isMember ? 'outline' : 'default'}
-                className="w-full gap-2 shrink-0 sm:w-auto"
-                disabled={togglingMembership}
-                onClick={() => void handleToggleMembership()}
-              >
-                {togglingMembership ? (
-                  <Loader2 className="icon-sm animate-spin" />
-                ) : isMember ? (
-                  <><CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} aria-hidden="true" /> <BilingualText en="Joined" el="Μέλος" compact /></>
-                ) : (
-                  <><UserPlus className="icon-sm" aria-hidden="true" /> <BilingualText en="Join Group" el="Συμμετοχή" compact /></>
-                )}
-              </Button>
+              {/* The button says what it does, as on the directory's card:
+                  "Joined" left the community when pressed. The owner cannot
+                  leave, and the button says why (the assistant already did). */}
+              {(() => {
+                const membership = (
+                  <Button
+                    variant={isMember ? 'outline' : 'default'}
+                    className="w-full gap-2 shrink-0 sm:w-auto"
+                    disabled={togglingMembership}
+                    onClick={() => void handleToggleMembership()}
+                  >
+                    {togglingMembership ? (
+                      <Loader2 className="icon-sm animate-spin" />
+                    ) : isMember ? (
+                      <><LogOut className="icon-sm" aria-hidden="true" /> <BilingualText en="Leave" el="Αποχώρηση" compact /></>
+                    ) : (
+                      <><UserPlus className="icon-sm" aria-hidden="true" /> <BilingualText en="Join" el="Συμμετοχή" compact /></>
+                    )}
+                  </Button>
+                );
+                return isMember && memberRole === 'owner' ? (
+                  <WithDisabledReason
+                    reasonEn="The owner cannot leave; transfer ownership first."
+                    reasonEl="Ο ιδιοκτήτης δεν μπορεί να αποχωρήσει· μεταβιβάστε πρώτα την ιδιοκτησία."
+                  >
+                    {membership}
+                  </WithDisabledReason>
+                ) : membership;
+              })()}
             </div>
 
             {group.description && (
@@ -536,7 +655,6 @@ export default function GroupDetailPage() {
 
         {/* Feed section */}
         {activeSection === 'feed' && (
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
             <div className="space-y-4">
               {/* Create post */}
               {isMember && (
@@ -573,9 +691,9 @@ export default function GroupDetailPage() {
 
               {postsQuery.isError && (
                 <div className="flex flex-col items-center justify-center py-8 gap-3">
-                  <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load posts" el="Δεν φορτώθηκαν οι δημοσιεύσεις" compact /></p>
+                  <p role="alert" className="text-sm text-muted-foreground"><BilingualText en="Posts could not be read just now." el="Οι δημοσιεύσεις δεν διαβάστηκαν αυτή τη στιγμή." wrap /></p>
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => postsQuery.refetch()}>
-                    <RefreshCw className="icon-sm" aria-hidden="true" /> <BilingualText en="Retry" el="Δοκιμάστε ξανά" compact />
+                    <RefreshCw className="icon-sm" aria-hidden="true" /> <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
                   </Button>
                 </div>
               )}
@@ -606,65 +724,6 @@ export default function GroupDetailPage() {
               ))}
             </div>
 
-            {/* Sidebar */}
-            <div className="space-y-4">
-              {/* Rules: a section card; each rule's title and sentence
-                  start on the card's axis, the number in front of the title. */}
-              {(group.rules?.length ?? 0) > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle><BilingualText en="Group Rules" el="Κανόνες κοινότητας" compact /></CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ol className="space-y-2">
-                      {(group.rules ?? []).map((rule, i) => (
-                        <li key={i} className="text-xs text-muted-foreground">
-                          <p className="font-medium text-foreground"><span className="tabular-nums">{i + 1}.</span> {rule.title}</p>
-                          {rule.description && <p className="mt-0.5">{rule.description}</p>}
-                        </li>
-                      ))}
-                    </ol>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Recent members: rows without a frame of their own. */}
-              {groupMembers.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle><BilingualText en="Members" el="Μέλη" compact /><Counter value={group.memberCount} /></CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <ul className="space-y-2">
-                      {groupMembers.slice(0, 6).map((m) => (
-                        <li key={m.userId} className="flex items-center gap-2">
-                          <Avatar className="h-7 w-7 shrink-0">
-                            <AvatarImage src={m.user?.avatarUrl ?? undefined} alt="" />
-                            <AvatarFallback className="text-2xs">{initialsOf(m.user?.displayName)}</AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-xs font-medium">{m.user?.displayName ?? <BilingualText en="Member" el="Μέλος" compact />}</p>
-                            {m.role !== 'member' && (
-                              <p className="text-2xs text-primary-accessible"><StatusText value={m.role} /></p>
-                            )}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                    {group.memberCount > 6 && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveSection('members')}
-                        className="rounded-md text-xs text-primary-accessible hover:underline focus-ring"
-                      >
-                        <BilingualText en={`View all ${group.memberCount} members →`} el={`Όλα τα ${group.memberCount} μέλη →`} compact />
-                      </button>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
         )}
 
         {/* Members section: a section card whose people are rows on its

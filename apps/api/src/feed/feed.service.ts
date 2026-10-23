@@ -232,7 +232,12 @@ export class FeedService {
     return next;
   }
 
-  async personalized(viewerId: string, query: { limit?: number; offset?: number; contentTypes?: string[]; topics?: string[]; refresh?: boolean }, now = Date.now()) {
+  /**
+   * `following` keeps the posts of the reader's network (accepted
+   * connections): the Following tab asked for exactly what All asked for and
+   * showed the same list (docs §88).
+   */
+  async personalized(viewerId: string, query: { limit?: number; offset?: number; contentTypes?: string[]; topics?: string[]; refresh?: boolean; following?: boolean }, now = Date.now()) {
     const limit = Math.min(Math.max(query.limit ?? 20, 1), FEED_LIMITS.page);
     const offset = Math.max(query.offset ?? 0, 0);
     const [prefs, network, hidden] = await Promise.all([
@@ -253,8 +258,9 @@ export class FeedService {
       take: FEED_LIMITS.window,
     });
     const topicFilter = (query.topics ?? []).map((t) => t.toLowerCase().replace(/^#/, ''));
-    const candidates = topicFilter.length ? rows.filter((r) => hashtags(r.content).some((t) => topicFilter.includes(t))) : rows;
     const networkSet = new Set(network);
+    const tagged = topicFilter.length ? rows.filter((r) => hashtags(r.content).some((t) => topicFilter.includes(t))) : rows;
+    const candidates = query.following ? tagged.filter((r) => networkSet.has(r.authorId)) : tagged;
     const ranked = rankPosts(
       candidates.map((r) => ({
         id: r.id,

@@ -23,6 +23,7 @@ export class FeedController {
     @Query('contentTypes') contentTypes?: string,
     @Query('topics') topics?: string,
     @Query('refresh') refresh?: string,
+    @Query('scope') scope?: string,
   ) {
     return this.feed.personalized(user.id, {
       limit: limit ? parseInt(limit, 10) : undefined,
@@ -30,6 +31,7 @@ export class FeedController {
       contentTypes: list(contentTypes),
       topics: list(topics),
       refresh: refresh === 'true',
+      following: scope === 'following',
     });
   }
 

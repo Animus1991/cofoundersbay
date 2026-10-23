@@ -1,19 +1,16 @@
 'use client';
 
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
   BookOpen,
   CheckCircle2,
-  Globe,
   Layers,
   Loader2,
-  Lock,
   LogOut,
-  MessageCircle,
   Plus,
   RefreshCw,
   Rocket,
@@ -36,12 +33,11 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn, errorMessage } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
-import { STATUS, categoryChip } from '@/lib/semantic-colors';
+import { STATUS } from '@/lib/semantic-colors';
 import { ListEmptyState } from '@/components/common/EmptyStates';
 import {
   listGroups,
@@ -57,7 +53,7 @@ import { pressableProps } from '@/lib/pressable';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
-import { PhotoChip } from '@/components/common/PhotoChip';
+import { useCoverFailed } from '@/hooks/useCoverFailed';
 const CATEGORIES = ['All', 'Founders', 'Tech', 'Marketing', 'Design', 'Finance', 'Product', 'Operations', 'Legal'];
 
 /**
@@ -100,67 +96,35 @@ const TYPE_FILTERS = [
   { value: 'learning', label: 'Learning', icon: BookOpen },
 ];
 
-const COVER_TONES = [
-  'bg-primary/10',
-  'bg-status-success-bg',
-  'bg-status-warning-bg',
-  'bg-status-info-bg',
-  'bg-status-accent-bg',
-  'bg-status-neutral-bg',
-];
 
 function GroupCard({
   group,
   onToggle,
   loading,
-  index = 0,
 }: {
   group: GroupView;
   onToggle: (id: string, isMember: boolean) => void;
   loading: boolean;
+  /** Its place in the list (it picked a tint for the empty cover band). */
   index?: number;
 }) {
   const router = useRouter();
-  const coverTone = COVER_TONES[index % COVER_TONES.length];
+  const cover = useCoverFailed(group.coverImageUrl);
   const groupType = (group.category?.toLowerCase() ?? 'industry') as string;
-  const typeColor = categoryChip(groupType);
   return (
     <Card
       className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30 cursor-pointer overflow-hidden"
       onClick={() => router.push(`/groups/${group.id}`)}
       {...pressableProps({ role: 'link', label: group.name })}
     >
-      {/* Cover Image */}
-      {group.coverImageUrl ? (
-        <div
-          className="h-28 w-full bg-cover bg-center relative"
-          style={{ backgroundImage: `url(${group.coverImageUrl})` }}
-        >
-          {/* On the card's axis, like everything under it; opaque, so it
-              reads on any photo. */}
-          <div className="absolute top-2 left-4 sm:left-6 lg:left-[24px]">
-            <PhotoChip>
-              <BilingualText en={categoryLabel(groupType).en} el={categoryLabel(groupType).el} compact />
-            </PhotoChip>
-          </div>
-          {group.privacy === 'private' && (
-            <div className="absolute top-2 right-2">
-              <Globe className="icon-sm text-white/80" />
-            </div>
-          )}
-        </div>
-      ) : (
-        // No cover image: a thin tinted band carries the type chip. A 112px
-        // block with a faint icon was the tallest thing on the card and said
-        // nothing the card's own icon does not.
-        <div className={cn('h-10 w-full rounded-t-xl relative', coverTone)}>
-          <div className="absolute top-2 left-4 sm:left-6 lg:left-[24px]">
-            <span className={cn('rounded-full px-2 py-0.5 text-xs font-semibold', typeColor.chip)}>
-              <BilingualText en={categoryLabel(groupType).en} el={categoryLabel(groupType).el} compact />
-            </span>
-          </div>
-        </div>
-      )}
+      {/* The cover, when there is one that loads (an <img>, so a blocked
+          photo leaves no band: `useCoverFailed`, as on event cards). The
+          category chip on it, and on a tinted band when there was none,
+          repeated the category the line under the name gives, and a globe
+          marked a private group (docs §88). */}
+      {group.coverImageUrl && !cover.failed ? (
+        <img ref={cover.ref} onError={cover.onError} src={group.coverImageUrl} alt="" referrerPolicy="no-referrer" loading="lazy" decoding="async" className="h-28 w-full object-cover" />
+      ) : null}
       <CardContent className="space-y-3">
         <CardHead
           mark={(
@@ -195,7 +159,9 @@ function GroupCard({
           <p className="card-body line-clamp-2 text-muted-foreground">{group.description}</p>
         )}
 
-        <FactLine items={(group.tags ?? []).slice(0, 4)} />
+        {/* A tag that is the category already reads in the line under the
+            name ("Fundraising · Private", then "Fundraising · Legal"). */}
+        <FactLine items={(group.tags ?? []).filter((t) => t.toLowerCase() !== groupType).slice(0, 4)} />
 
         {/* The foot keeps its clicks to itself: the card opens the group. */}
         <div onClick={(e) => e.stopPropagation()}>
@@ -263,6 +229,15 @@ export default function GroupsPage() {
   const { openRailSection } = usePageRail();
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  // /groups?create=1 opens the form: "Create community" on Manage
+  // communities lands here (docs §88). Read after mount, like ?section=.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('create') !== '1') return;
+    setShowCreateModal(true);
+    url.searchParams.delete('create');
+    window.history.replaceState(window.history.state, '', url);
+  }, []);
   const [sort, setSort] = useState<'popular' | 'recent' | 'trending'>('popular');
   const [typeFilter, setTypeFilter] = useState('all');
   // Offered to the assistant: tab, category, sort and type, and the create
@@ -332,8 +307,11 @@ export default function GroupsPage() {
   );
 
   const displayGroups = activeTab === 'my-groups' ? myGroups : filteredDiscover;
-  const topGroups = displayGroups.slice(0, 4);
-  const restGroups = displayGroups.slice(4);
+  // Discover leads with its top four; your own communities are one grid
+  // (they were "Your communities" and then "More communities", which read as
+  // other people's).
+  const topGroups = activeTab === 'my-groups' ? [] : displayGroups.slice(0, 4);
+  const restGroups = activeTab === 'my-groups' ? displayGroups : displayGroups.slice(4);
 
   const totalGroups = discoverGroups.length;
   // The my-groups read only runs on its tab, so on Discover this counted an
@@ -355,6 +333,10 @@ export default function GroupsPage() {
   // What the tab shows, and the card's Join / Leave as commands - the same
   // handler the card button calls.
   const listLoading = activeTab === 'my-groups' ? myGroupsQuery.isLoading : discoverQuery.isLoading;
+  const listFailed = activeTab === 'my-groups' ? myGroupsQuery.isError : discoverQuery.isError;
+  // The empty Discover list offers its own "Create community"; the header's
+  // would be a second filled button doing the same.
+  const discoverEmpty = activeTab === 'discover' && !listLoading && !listFailed && displayGroups.length === 0 && !discoverFiltersActive;
   usePageList([
     {
       id: 'groups',
@@ -474,7 +456,14 @@ export default function GroupsPage() {
           </span>
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium">{trendingGroup.name}</span>
-            <span className="block text-xs text-muted-foreground">{trendingGroup.memberCount} members · {trendingGroup.postCount} posts</span>
+            <span className="block text-xs text-muted-foreground">
+              <BilingualText
+                en={`${trendingGroup.memberCount.toLocaleString('en-GB')} members · ${trendingGroup.postCount.toLocaleString('en-GB')} posts`}
+                el={`${trendingGroup.memberCount.toLocaleString('el-GR')} μέλη · ${trendingGroup.postCount.toLocaleString('el-GR')} αναρτήσεις`}
+                compact
+                wrap
+              />
+            </span>
           </span>
           <ArrowRight className="icon-sm shrink-0 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
         </Link>
@@ -501,12 +490,12 @@ export default function GroupsPage() {
     <AppShell
       showHelp
       rail={rail}
-      actions={
+      actions={discoverEmpty ? undefined : (
         <Button className="gap-2" onClick={() => setShowCreateModal(true)}>
           <Plus className="icon-sm" />
           <BilingualText en="Create Community" el="Δημιουργία κοινότητας" compact />
         </Button>
-      }
+      )}
     >
       {showCreateModal && (
         <CreateGroupModal
@@ -525,9 +514,11 @@ export default function GroupsPage() {
             <TabsTrigger value="discover"><BilingualText en="Discover" el="Ανακάλυψη" compact /></TabsTrigger>
             <TabsTrigger value="my-groups">
               <BilingualText en="My Communities" el="Οι κοινότητές μου" compact />
-              {myGroups.length > 0 && (
+              {/* The same count as the rail's "Joined": it read nothing until
+                  the tab had been opened once. */}
+              {myGroupsCount > 0 && (
                 <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-2xs text-primary-accessible">
-                  {myGroups.length}
+                  {myGroupsCount}
                 </span>
               )}
             </TabsTrigger>
@@ -553,16 +544,21 @@ export default function GroupsPage() {
           )}
 
           {/* Loading */}
-          {(activeTab === 'discover' ? discoverQuery.isLoading : myGroupsQuery.isLoading) && (
+          {listLoading && (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="icon-xl animate-spin text-primary/50" />
             </div>
           )}
 
-          {/* Error */}
-          {(activeTab === 'discover' ? discoverQuery.isError : myGroupsQuery.isError) && (
+          {/* Error — and only the error: "No communities yet" used to follow
+              it, with its own Create button (docs §88). */}
+          {listFailed && (
             <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
-              <p className="text-sm text-muted-foreground">Failed to load groups</p>
+              <p role="alert" className="text-sm text-muted-foreground">
+                {activeTab === 'discover'
+                  ? <BilingualText en="Communities could not be read just now." el="Οι κοινότητες δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                  : <BilingualText en="Your communities could not be read just now." el="Οι κοινότητές σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />}
+              </p>
               <Button
                 variant="outline"
                 size="sm"
@@ -574,13 +570,13 @@ export default function GroupsPage() {
                 }
               >
                 <RefreshCw className="icon-sm" />
-                Retry
+                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
               </Button>
             </div>
           )}
 
           {/* Result count */}
-          {!discoverQuery.isLoading && displayGroups.length > 0 && (
+          {!listLoading && displayGroups.length > 0 && (
             <p className="text-xs text-muted-foreground px-0.5">
               {activeTab === 'my-groups'
                 ? <BilingualText en={`${displayGroups.length} joined`} el={`${displayGroups.length} με συμμετοχή`} compact />
@@ -589,16 +585,14 @@ export default function GroupsPage() {
           )}
 
           {/* Featured top row */}
-          {!discoverQuery.isLoading && topGroups.length > 0 && (
+          {!listLoading && topGroups.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="icon-sm text-muted-foreground" />
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {activeTab === 'my-groups'
-                    ? <BilingualText en="Your communities" el="Οι κοινότητές σας" compact />
-                    : sort === 'trending'
-                      ? <BilingualText en="Trending now" el="Σε άνοδο τώρα" compact />
-                      : <BilingualText en="Top communities" el="Κορυφαίες κοινότητες" compact />}
+                  {sort === 'trending'
+                    ? <BilingualText en="Trending now" el="Σε άνοδο τώρα" compact />
+                    : <BilingualText en="Top communities" el="Κορυφαίες κοινότητες" compact />}
                 </h2>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -609,27 +603,30 @@ export default function GroupsPage() {
             </div>
           )}
 
-          {/* Rest of groups */}
-          {!discoverQuery.isLoading && restGroups.length > 0 && (
+          {/* Rest of groups. "All communities" headed the ones after the top
+              four, not all of them. */}
+          {!listLoading && restGroups.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {activeTab === 'my-groups'
-                  ? <BilingualText en="More communities" el="Περισσότερες κοινότητες" compact />
-                  : <BilingualText en="All communities" el="Όλες οι κοινότητες" compact />}
-              </h2>
+              {topGroups.length > 0 && (
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <BilingualText en="More communities" el="Περισσότερες κοινότητες" compact />
+                </h2>
+              )}
               <GroupsGrid groups={restGroups} onToggle={handleToggle} loadingId={loadingId} offset={topGroups.length} />
             </div>
           )}
 
           {/* Empty State — filter-aware */}
-          {!discoverQuery.isLoading && !myGroupsQuery.isLoading && displayGroups.length === 0 && (
+          {!listLoading && !listFailed && displayGroups.length === 0 && (
             activeTab === 'my-groups' ? (
               <ListEmptyState
                 icon={Users}
                 tone="primary"
                 title={<BilingualText en="You haven't joined any communities yet" el="Δεν έχετε ενταχθεί ακόμα σε κοινότητες" />}
+                description={<BilingualText en="Join one from Discover; its posts and events then show here." el="Μπείτε σε μία από την Ανακάλυψη· οι αναρτήσεις και οι εκδηλώσεις της εμφανίζονται μετά εδώ." />}
                 action={(
-                  <Button className="gap-2" onClick={() => setActiveTab('discover')}>
+                  // Secondary: "Create Community" in the header is the page's one filled button.
+                  <Button variant="secondary" className="gap-2" onClick={() => setActiveTab('discover')}>
                     <Search className="icon-sm" />
                     <BilingualText en="Browse communities" el="Περιήγηση κοινοτήτων" compact />
                   </Button>
@@ -641,6 +638,7 @@ export default function GroupsPage() {
               <ListEmptyState
                 icon={Search}
                 title={<BilingualText en="No communities match" el="Καμία κοινότητα δεν ταιριάζει" />}
+                description={<BilingualText en="Nothing matched the search or the filters." el="Τίποτα δεν ταίριαξε με την αναζήτηση ή τα φίλτρα." />}
                 action={(
                   <div className="flex flex-wrap justify-center gap-2">
                     <Button variant="secondary" size="sm" className="gap-1.5" onClick={clearDiscoverFilters}>
@@ -661,6 +659,7 @@ export default function GroupsPage() {
                 icon={Sparkles}
                 tone="primary"
                 title={<BilingualText en="No communities yet" el="Δεν υπάρχουν κοινότητες ακόμα" />}
+                description={<BilingualText en="Start one around a topic, a stage or a city; members post and meet there." el="Ξεκινήστε μία γύρω από ένα θέμα, ένα στάδιο ή μια πόλη· τα μέλη δημοσιεύουν και συναντιούνται εκεί." />}
                 action={(
                   <Button className="gap-2" onClick={() => setShowCreateModal(true)}>
                     <Plus className="icon-sm" />

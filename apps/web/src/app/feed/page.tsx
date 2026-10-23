@@ -4,15 +4,29 @@ import { useState, useCallback, useEffect } from 'react';
 import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery, type InfiniteData } from '@tanstack/react-query';
 import {
-  Heart, MessageCircle, Share2, Bookmark, MoreHorizontal,
-  Send, Link2, Smile, TrendingUp,
-  Users, Sparkles, Filter, Clock, Flame, ThumbsUp,
-  Award, Rocket, Target, Briefcase, GraduationCap,
-  Plus, RefreshCw, ChevronDown, X, Flag, Settings, CalendarDays,
+  Heart,
+  MessageCircle,
+  Share2,
+  Bookmark,
+  MoreHorizontal,
+  Send,
+  TrendingUp,
+  Users,
+  Sparkles,
+  Award,
+  Rocket,
+  Target,
+  RefreshCw,
+  X,
+  Flag,
+  Settings,
+  CalendarDays,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { RailAction } from '@/components/layout/RailParts';
+import { RailAction, RailLink } from '@/components/layout/RailParts';
+import { RailPeople } from '@/components/layout/RailPeople';
+import { EmptyState } from '@/components/common/EmptyState';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -24,17 +38,16 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge, badgeVariants } from '@/components/ui/badge';
+import { badgeVariants } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { FeedPostComposer } from '@/components/feed/FeedPostComposer';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/toast';
@@ -51,6 +64,7 @@ import {
   updateFeedPreferences,
   recordFeedInteraction,
   getTrendingTopics,
+  getRecommendations,
   type FeedPost,
   type FeedPreferences,
 } from '@/lib/api';
@@ -268,18 +282,8 @@ function PostCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onBookmark}>
-                <Bookmark className="icon-sm mr-2" />
-                {post.isBookmarked
-                  ? <BilingualText en="Remove Bookmark" el="Αφαίρεση σελιδοδείκτη" compact />
-                  : <BilingualText en="Bookmark" el="Σελιδοδείκτης" compact />}
-              </DropdownMenuItem>
-              {/* Copy Link and Report had no handler. */}
-              <DropdownMenuItem onSelect={onShare}>
-                <Link2 className="icon-sm mr-2" aria-hidden="true" />
-                <BilingualText en="Copy Link" el="Αντιγραφή συνδέσμου" compact />
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              {/* "Bookmark" and "Copy Link" were here too: the same Save and
+                  Share as the buttons at the foot of this card (docs §88). */}
               <DropdownMenuItem className="text-destructive-accessible" onSelect={onReport}>
                 <Flag className="icon-sm mr-2" aria-hidden="true" />
                 <BilingualText en="Report" el="Αναφορά" compact />
@@ -305,9 +309,9 @@ function PostCard({
           meta={(
             <FactLine
               items={[
-                <BilingualText key="likes" en={`${post.likes} likes`} el={`${post.likes} μου αρέσει`} compact />,
-                <BilingualText key="comments" en={`${post.comments} comments`} el={`${post.comments} σχόλια`} compact />,
-                <BilingualText key="shares" en={`${post.shares} shares`} el={`${post.shares} κοινοποιήσεις`} compact />,
+                <BilingualText key="likes" en={`${post.likes} ${post.likes === 1 ? 'like' : 'likes'}`} el={`${post.likes} μου αρέσει`} compact />,
+                <BilingualText key="comments" en={`${post.comments} ${post.comments === 1 ? 'comment' : 'comments'}`} el={`${post.comments} ${post.comments === 1 ? 'σχόλιο' : 'σχόλια'}`} compact />,
+                <BilingualText key="shares" en={`${post.shares} ${post.shares === 1 ? 'share' : 'shares'}`} el={`${post.shares} ${post.shares === 1 ? 'κοινοποίηση' : 'κοινοποιήσεις'}`} compact />,
               ]}
             />
           )}
@@ -340,10 +344,12 @@ function PostCard({
             size="sm"
             onClick={onBookmark}
             className={cn(post.isBookmarked && 'text-primary-accessible')}
+            // The name carries the word on the button ("Save"); it was
+            // "Bookmark post", which a voice user saying "Save" never reached.
             aria-label={
               post.isBookmarked
-                ? bilingualAria('Remove bookmark', 'Αφαίρεση σελιδοδείκτη')
-                : bilingualAria('Bookmark post', 'Σελιδοδείκτης δημοσίευσης')
+                ? bilingualAria('Saved — remove from saved', 'Αποθηκευμένη — αφαίρεση από τα αποθηκευμένα')
+                : bilingualAria('Save post', 'Αποθήκευση ανάρτησης')
             }
             aria-pressed={post.isBookmarked}
           >
@@ -385,98 +391,133 @@ function PostCard({
   );
 }
 
-function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: number; engagement: number; growth: number }> }) {
-  const defaultTopics = [
-    { tag: 'fundraising', posts: 234, engagement: 89, growth: 12 },
-    { tag: 'mvp', posts: 189, engagement: 76, growth: 8 },
-    { tag: 'hiring', posts: 156, engagement: 65, growth: -2 },
-    { tag: 'productlaunch', posts: 142, engagement: 82, growth: 15 },
-    { tag: 'mentorship', posts: 98, engagement: 71, growth: 5 },
-  ];
-
-  const topicsToShow = topics || defaultTopics;
-
+/*
+ * The rail's own section names these two ("Trending topics", "Suggested
+ * connections"), so they draw no card and no second heading of their own.
+ * Neither invents rows any more: the topics were five made-up tags with
+ * made-up counts whenever the API had none, and the people were three
+ * invented names with invented scores, shown to every reader (docs §88).
+ */
+function TrendingTopics({
+  topics,
+  failed,
+  active,
+  onPick,
+}: {
+  topics?: Array<{ tag: string; posts: number; engagement: number; growth: number }>;
+  failed: boolean;
+  active: string | null;
+  onPick: (tag: string) => void;
+}) {
+  if (!topics) {
+    return failed ? (
+      <p className="text-sm text-muted-foreground">
+        <BilingualText en="Trending topics could not be read just now." el="Οι τάσεις δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+      </p>
+    ) : (
+      <div className="space-y-2" aria-hidden="true">
+        {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}
+      </div>
+    );
+  }
+  if (topics.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        <BilingualText
+          en="Nothing is trending this week. A #tag in a post starts a topic."
+          el="Τίποτα δεν είναι σε τάση αυτή την εβδομάδα. Ένα #tag σε ανάρτηση ξεκινά ένα θέμα."
+          wrap
+        />
+      </p>
+    );
+  }
   return (
-    <Card className="shadow-sm border-border">
-      <CardHeader className="pb-3 border-b border-border">
-        <h3 className="font-semibold flex items-center gap-2">
-          <Flame className="icon-sm text-status-warning" />
-          Trending Topics
-        </h3>
-      </CardHeader>
-      <CardContent className="pt-4">
-        <div className="space-y-3">
-          {topicsToShow.map((topic, i) => (
-            <a
-              key={topic.tag}
-              href={`/feed?tag=${topic.tag}`}
-              className="flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground w-4">{i + 1}</span>
-                <span className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
-                  #{topic.tag}
-                </span>
-                {topic.growth > 0 && (
-                  <Badge variant="secondary" className="text-xs bg-status-success-bg text-status-success border-status-success-border">
-                    +{topic.growth}%
-                  </Badge>
-                )}
-              </div>
-              <div className="text-right">
-                <span className="text-xs text-muted-foreground">{topic.posts} posts</span>
-                <div className="text-xs text-muted-foreground">{topic.engagement} engagement</div>
-              </div>
-            </a>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <ol className="space-y-0.5">
+      {topics.map((topic, i) => (
+        <li key={topic.tag}>
+          {/* A real link (it opens in a new tab and can be copied); here it
+              narrows the feed to the tag without leaving the page. */}
+          <a
+            href={`/feed?tag=${encodeURIComponent(topic.tag)}`}
+            aria-current={active === topic.tag ? 'true' : undefined}
+            onClick={(e) => {
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+              e.preventDefault();
+              onPick(topic.tag);
+            }}
+            className={cn(
+              'group flex items-start gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/70',
+              active === topic.tag && 'bg-muted',
+            )}
+          >
+            <span className="w-4 shrink-0 text-xs tabular-nums text-muted-foreground">{i + 1}</span>
+            <span className="min-w-0 flex-1">
+              <span className="flex items-baseline gap-2">
+                <span className="truncate text-sm font-medium text-foreground group-hover:text-primary-accessible">#{topic.tag}</span>
+                {topic.growth > 0 ? <span className="text-xs tabular-nums text-status-success">+{topic.growth}%</span> : null}
+              </span>
+              <span className="block text-xs text-muted-foreground">
+                <BilingualText
+                  en={`${topic.posts} ${topic.posts === 1 ? 'post' : 'posts'} · ${topic.engagement} ${topic.engagement === 1 ? 'interaction' : 'interactions'}`}
+                  el={`${topic.posts} ${topic.posts === 1 ? 'ανάρτηση' : 'αναρτήσεις'} · ${topic.engagement} ${topic.engagement === 1 ? 'αλληλεπίδραση' : 'αλληλεπιδράσεις'}`}
+                  compact
+                  wrap
+                />
+              </span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
   );
 }
 
+/** The best three of the reader's recommendations, from the same engine and
+ * cache as Discover's "Best matches". */
 function SuggestedConnections() {
-  const suggestions: Array<{ id: string; name: string; role: string; match: number; avatarUrl?: string }> = attachDemoPhotos([
-    { id: '1', name: 'Anna Kowalski', role: 'UX Designer', match: 85 },
-    { id: '2', name: 'James Wilson', role: 'Backend Developer', match: 78 },
-    { id: '3', name: 'Maria Santos', role: 'Growth Marketer', match: 72 },
-  ], { portraitKey: 'avatarUrl' });
-
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: qk('recommendations', { limit: 8 }),
+    queryFn: () => getRecommendations({ limit: 8 }),
+    staleTime: 5 * 60_000,
+    retry: 1,
+  });
+  const people = [...(data?.suggestions ?? [])].sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0)).slice(0, 3);
+  if (isLoading) {
+    return (
+      <div className="space-y-2" aria-hidden="true">
+        {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+      </div>
+    );
+  }
+  if (isError && !data) {
+    return (
+      <div className="space-y-1">
+        <p className="text-sm text-muted-foreground">
+          <BilingualText en="Suggestions could not be read just now." el="Οι προτάσεις δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+        </p>
+        <RailAction icon={RefreshCw} en="Try again" el="Δοκιμάστε ξανά" onClick={() => void refetch()} />
+      </div>
+    );
+  }
+  if (people.length === 0) {
+    return (
+      <div className="space-y-1">
+        <p className="text-sm text-muted-foreground">
+          <BilingualText
+            en="No suggestions yet. What you are looking for, on your profile, is what matching goes on."
+            el="Καμία πρόταση ακόμη. Η αντιστοίχιση βασίζεται σε ό,τι αναζητάτε, στο προφίλ σας."
+            wrap
+          />
+        </p>
+        <RailLink href="/profile/edit" icon={Target} en="Edit your profile" el="Επεξεργασία προφίλ" />
+      </div>
+    );
+  }
   return (
-    <Card className="shadow-sm border-border">
-      <CardHeader className="pb-3 border-b border-border">
-        <h3 className="font-semibold flex items-center gap-2">
-          <Users className="icon-sm text-muted-foreground" />
-          Suggested Connections
-        </h3>
-      </CardHeader>
-      <CardContent className="pt-4">
-        <div className="space-y-3">
-          {suggestions.map((person) => (
-            <div key={person.id} className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={person.avatarUrl} alt="" />
-                <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">
-                  {initialsOf(person.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{person.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{person.role}</p>
-              </div>
-              <Badge variant="secondary" className="text-xs">
-                {person.match}%
-              </Badge>
-            </div>
-          ))}
-        </div>
-        <Button asChild variant="ghost" size="sm" className="w-full mt-3">
-          <Link href="/discover">
-            <BilingualText en="View All" el="Προβολή όλων" compact />
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
+    <div className="space-y-1">
+      <RailPeople people={people} />
+      <RailLink href="/matches" icon={TrendingUp} en="See every match" el="Όλες οι αντιστοιχίσεις" />
+    </div>
   );
 }
 
@@ -486,6 +527,24 @@ export default function FeedPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all' | 'following' | 'trending'>('all');
   const { openRailSection } = usePageRail();
+  /*
+   * A tag narrows the feed: /feed?tag=fundraising, which the trending
+   * topics have always linked to and the page never read (docs §88). The
+   * URL follows the choice so the narrowed feed can be shared.
+   */
+  const [tag, setTagState] = useState<string | null>(null);
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get('tag');
+    if (t) setTagState(t.trim().toLowerCase().replace(/^#/, '') || null);
+  }, []);
+  const setTag = useCallback((next: string | null) => {
+    setTagState(next);
+    const url = new URL(window.location.href);
+    if (next) url.searchParams.set('tag', next);
+    else url.searchParams.delete('tag');
+    window.history.replaceState(window.history.state, '', url);
+  }, []);
+  const feedKey = qk('feed', 'personalized', activeTab, tag ?? '');
 
   // Fetch personalized feed
   // `useInfiniteQuery` was imported and never used, and "Load More" sat below a
@@ -495,20 +554,26 @@ export default function FeedPage() {
   const {
     data: feedPages,
     isLoading: feedLoading,
-    error: feedError,
+    isError: feedFailed,
+    isFetching: feedFetching,
     refetch: refetchFeed,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: qk('feed', 'personalized', activeTab),
+    queryKey: feedKey,
     initialPageParam: 0,
+    // "Following" asked for exactly what "All" asked for and showed the same
+    // list; it now asks for the reader's connections' posts (docs §88).
     queryFn: ({ pageParam }) => getPersonalizedFeed({
       limit: PAGE_SIZE,
       offset: pageParam as number,
       contentTypes: activeTab === 'trending' ? undefined : ['update', 'milestone', 'question', 'announcement', 'achievement'],
+      topics: tag ? [tag] : undefined,
       refresh: activeTab === 'trending',
+      scope: activeTab === 'following' ? 'following' : undefined,
     }),
+    retry: 1,
     getNextPageParam: (last, all) =>
       last?.hasMore ? all.reduce((n, page) => n + (page?.posts?.length ?? 0), 0) : undefined,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -539,6 +604,7 @@ export default function FeedPage() {
   // Fetch trending topics
   const {
     data: trendingData,
+    isError: trendingFailed,
   } = useQuery({
     queryKey: qk('feed', 'trending-topics'),
     queryFn: () => getTrendingTopics(10),
@@ -553,6 +619,8 @@ export default function FeedPage() {
       queryClient.invalidateQueries({ queryKey: qk('feed', 'preferences') });
       refetchFeed(); // Refresh feed with new preferences
     },
+    // A refused change said nothing and the chip stayed as it was.
+    onError: () => showError('Could not save the preferences'),
   });
 
   // Record interaction mutation
@@ -560,9 +628,13 @@ export default function FeedPage() {
     mutationFn: recordFeedInteraction,
   });
 
+  // The sample posts stand in for an empty feed, never for a narrowed one:
+  // a tag or the Following tab with nothing in it says so.
+  const narrowed = !!tag || activeTab === 'following';
+  const showingSamples = !feedData?.posts?.length && isPreviewDemo() && !narrowed;
   const posts = feedData?.posts?.length
     ? feedData.posts
-    : isPreviewDemo()
+    : showingSamples
       ? DEMO_POSTS
       : [];
 
@@ -594,7 +666,7 @@ export default function FeedPage() {
   // A failed write puts the feed back the way the server has it.
   const handleLike = async (postId: string, isCurrentlyLiked: boolean): Promise<PageControlRunResult> => {
     queryClient.setQueryData(
-      qk('feed', 'personalized', activeTab),
+      feedKey,
       (old: InfiniteData<{ posts: FeedPost[]; hasMore: boolean; nextCursor?: string }, number> | undefined) => {
         if (!old) return old;
         return {
@@ -616,13 +688,13 @@ export default function FeedPage() {
     );
     // The endpoint toggles: the same 'like' interaction likes and unlikes.
     const result = await settle(() => recordInteractionMutation.mutateAsync({ postId, interaction: 'like' }));
-    if (result) void queryClient.invalidateQueries({ queryKey: qk('feed', 'personalized', activeTab) });
+    if (result) void queryClient.invalidateQueries({ queryKey: feedKey });
     return result;
   };
 
   const handleBookmark = async (postId: string, isCurrentlyBookmarked: boolean): Promise<PageControlRunResult> => {
     queryClient.setQueryData(
-      qk('feed', 'personalized', activeTab),
+      feedKey,
       (old: InfiniteData<{ posts: FeedPost[]; hasMore: boolean; nextCursor?: string }, number> | undefined) => {
         if (!old) return old;
         return {
@@ -638,10 +710,11 @@ export default function FeedPage() {
     // Toggles as well; the toast now waits for the server to agree.
     const result = await settle(() => recordInteractionMutation.mutateAsync({ postId, interaction: 'bookmark' }));
     if (result) {
-      void queryClient.invalidateQueries({ queryKey: qk('feed', 'personalized', activeTab) });
+      void queryClient.invalidateQueries({ queryKey: feedKey });
       return result;
     }
-    success('Bookmark updated');
+    // The button says "Save", so the toast does too.
+    success(isCurrentlyBookmarked ? 'Removed from saved' : 'Post saved');
   };
 
   const [reporting, setReporting] = useState<{ id: string; name: string } | null>(null);
@@ -699,7 +772,7 @@ export default function FeedPage() {
           `${p.likes ?? 0} likes${p.isLiked ? ' (liked)' : ''}${p.isBookmarked ? ' (saved)' : ''}`,
         ].join(' · '),
       ),
-      sample: !feedData?.posts?.length && isPreviewDemo(),
+      sample: showingSamples,
     },
   ]);
   const byAuthor = (list: FeedPost[]) => rowOptions(list, (p) => p.id, (p) => p.author?.displayName ?? 'Post');
@@ -710,6 +783,24 @@ export default function FeedPage() {
       { value: 'trending', en: 'Trending', el: 'Τάσεις' },
     ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
     { id: 'refresh', labelEn: 'Refresh the feed', labelEl: 'Ανανέωση ροής', writes: false, run: () => void refetchFeed() },
+    // The trending topics' links, offered to the assistant too.
+    {
+      id: 'show_tag',
+      labelEn: 'Show posts with a tag',
+      labelEl: 'Εμφάνιση αναρτήσεων με ετικέτα',
+      writes: false,
+      options: rowOptions(trendingData?.topics ?? [], (t) => t.tag, (t) => `#${t.tag}`),
+      run: (v) => { if (v) setTag(v); },
+    },
+    {
+      id: 'clear_tag',
+      labelEn: 'Show all posts',
+      labelEl: 'Εμφάνιση όλων των αναρτήσεων',
+      writes: false,
+      unavailableEn: tag ? undefined : 'The feed is not narrowed to a tag.',
+      unavailableEl: tag ? undefined : 'Η ροή δεν περιορίζεται σε ετικέτα.',
+      run: () => setTag(null),
+    },
     {
       id: 'load_more',
       labelEn: 'Load more posts',
@@ -744,7 +835,7 @@ export default function FeedPage() {
       glyph: 'chart',
       labelEn: 'Trending topics',
       labelEl: 'Τάσεις',
-      content: <TrendingTopics topics={trendingData?.topics} />,
+      content: <TrendingTopics topics={trendingData?.topics} failed={trendingFailed} active={tag} onPick={setTag} />,
     },
     {
       id: 'suggested',
@@ -778,7 +869,8 @@ export default function FeedPage() {
                     handlePreferencesUpdate({ contentTypes: newTypes });
                   }}
                 >
-                  {type}
+                  {/* The kind's own word, in both languages ("update" was raw). */}
+                  <BilingualText en={POST_TYPE_CONFIG[type as PostType].label} el={POST_TYPE_CONFIG[type as PostType].labelEl} compact />
                 </button>
               ))}
             </div>
@@ -860,7 +952,7 @@ export default function FeedPage() {
       }
     >
       <div className="pb-10">
-        {isPreviewDemo() && (!feedData?.posts?.length) && (
+        {showingSamples && (
           <SampleDataNotice
             className="mb-6"
             surface="Feed"
@@ -875,6 +967,18 @@ export default function FeedPage() {
 
             {/* Create Post */}
             <FeedPostComposer onPost={handlePost} />
+
+            {tag && (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en={`Posts tagged #${tag}`} el={`Αναρτήσεις με #${tag}`} compact wrap />
+                </p>
+                <Button variant="ghost" size="sm" onClick={() => setTag(null)}>
+                  <X className="icon-sm mr-1" aria-hidden="true" />
+                  <BilingualText en="Show all posts" el="Όλες οι αναρτήσεις" compact />
+                </Button>
+              </div>
+            )}
 
             {/* Posts */}
             <div className="space-y-4">
@@ -903,6 +1007,60 @@ export default function FeedPage() {
                     </CardContent>
                   </Card>
                 ))
+              ) : feedFailed && !feedPages && posts.length === 0 ? (
+                // A failed read showed the composer and nothing under it.
+                <Card>
+                  <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+                    <p role="alert" className="text-sm text-muted-foreground">
+                      <BilingualText en="Posts could not be read just now." el="Οι αναρτήσεις δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                    </p>
+                    <Button size="sm" variant="outline" onClick={() => void refetchFeed()} disabled={feedFetching}>
+                      <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : posts.length === 0 ? (
+                tag ? (
+                  <EmptyState
+                    size="sm"
+                    title={<BilingualText en={`No posts tagged #${tag} yet`} el={`Καμία ανάρτηση με #${tag} ακόμη`} />}
+                    description={<BilingualText en={`A post with #${tag} in its text appears here.`} el={`Μια ανάρτηση με #${tag} στο κείμενό της εμφανίζεται εδώ.`} />}
+                    action={(
+                      <Button variant="secondary" size="sm" onClick={() => setTag(null)}>
+                        <BilingualText en="Show all posts" el="Όλες οι αναρτήσεις" compact />
+                      </Button>
+                    )}
+                  />
+                ) : activeTab === 'following' ? (
+                  <EmptyState
+                    size="sm"
+                    illustration="connection"
+                    title={<BilingualText en="Nothing from your connections yet" el="Τίποτα από τις συνδέσεις σας ακόμη" />}
+                    description={<BilingualText en="Posts by the people you are connected with appear here." el="Οι αναρτήσεις όσων είστε συνδεδεμένοι εμφανίζονται εδώ." />}
+                    action={(
+                      <Button variant="secondary" size="sm" asChild>
+                        <Link href="/discover"><BilingualText en="Find people" el="Εύρεση ατόμων" compact /></Link>
+                      </Button>
+                    )}
+                  />
+                ) : (
+                  <EmptyState
+                    size="sm"
+                    title={<BilingualText en="Nothing in your feed yet" el="Τίποτα στη ροή σας ακόμη" />}
+                    description={(
+                      <BilingualText
+                        en="Share an update above, or connect with people and join groups to see what they post."
+                        el="Μοιραστείτε μια ενημέρωση παραπάνω, ή συνδεθείτε με άτομα και μπείτε σε κοινότητες για να βλέπετε τι δημοσιεύουν."
+                      />
+                    )}
+                    askAiPrompt={ASK.feedSample}
+                    action={(
+                      <Button variant="secondary" size="sm" asChild>
+                        <Link href="/groups"><BilingualText en="Browse groups" el="Περιήγηση στις κοινότητες" compact /></Link>
+                      </Button>
+                    )}
+                  />
+                )
               ) : posts.map((post) => (
                 <PostCard
                   key={post.id}

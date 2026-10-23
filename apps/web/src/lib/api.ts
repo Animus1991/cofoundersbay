@@ -727,8 +727,11 @@ export async function getPersonalizedFeed(params?: {
   contentTypes?: string[];
   topics?: string[];
   refresh?: boolean;
+  /** 'following': only posts from the reader's connections. */
+  scope?: 'following';
 }): Promise<{ posts: FeedPost[]; hasMore: boolean; nextCursor?: string }> {
   const sp = new URLSearchParams();
+  if (params?.scope) sp.set('scope', params.scope);
   if (params?.limit) sp.set('limit', String(params.limit));
   if (params?.offset) sp.set('offset', String(params.offset));
   if (params?.contentTypes?.length) sp.set('contentTypes', params.contentTypes.join(','));

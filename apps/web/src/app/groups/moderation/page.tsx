@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Shield,
-  Flag,
   UserX,
-  MessageSquare,
   AlertTriangle,
   CheckCircle,
   XCircle,
@@ -17,17 +16,15 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates';
@@ -138,12 +135,10 @@ function ReportCard({ report }: { report: ModerationReport }) {
                   <DropdownMenuContent align="end">
                     {/* The queue is sample data (see the notice above the list):
                         there is no group-report store behind it, so none of
-                        these can act, and each says so. */}
+                        these can act, and each says so. Resolve, Dismiss and
+                        Ban were here as well as in the card's foot (docs §88). */}
                     <UnavailableMenuItem icon={<Eye className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="View Content" el="Προβολή περιεχομένου" reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
-                    <UnavailableMenuItem icon={<CheckCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Mark Resolved" el="Επίλυση" reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
-                    <UnavailableMenuItem icon={<XCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Dismiss" el="Απόρριψη" reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
                     <UnavailableMenuItem icon={<UserX className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Remove Member" el="Αφαίρεση μέλους" reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
-                    <UnavailableMenuItem className="text-destructive-accessible" icon={<Ban className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Ban User" el="Αποκλεισμός χρήστη" reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
                   </DropdownMenuContent>
                 </DropdownMenu>
             </>
@@ -189,6 +184,8 @@ export default function GroupsModerationPage() {
   const { showDemoData } = useDemoData();
   const reports = showDemoData ? SAMPLE_REPORTS : [];
   const pendingCount = reports.filter(r => r.status === 'pending').length;
+  const reviewedCount = reports.filter(r => r.status === 'reviewed').length;
+  const resolvedCount = reports.filter(r => r.status === 'resolved').length;
   const highPriority = reports.filter(r => r.priority === 'high' && r.status === 'pending').length;
 
   const filtered = reports.filter(r => {
@@ -251,23 +248,31 @@ export default function GroupsModerationPage() {
           </Card>
         )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
-          {[
-            { label: 'Pending', labelEl: 'Σε αναμονή', value: pendingCount, color: STATUS.warning.icon },
-            { label: 'High Priority', labelEl: 'Υψηλή προτεραιότητα', value: highPriority, color: STATUS.danger.icon },
-            { label: 'Resolved', labelEl: 'Επιλυμένες', value: reports.filter(r => r.status === 'resolved').length, color: STATUS.success.icon },
-            { label: 'Total Reports', labelEl: 'Σύνολο αναφορών', value: reports.length, color: 'text-foreground' },
-          ].map(stat => (
-            <Card key={stat.label}>
-              <CardContent>
-                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
-                <p className={cn('page-stat text-2xl font-bold', stat.color)}>{stat.value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
+        {/* The four figures above the list (Pending, High Priority,
+            Resolved, Total) were the tabs' counts and the banner's number
+            again; each figure is now said once, on its tab (docs §88). */}
+        {reports.length === 0 ? (
+          // No queue behind the page without samples: "All caught up" over
+          // four zeros and four tabs claimed a queue that does not exist.
+          <ListEmptyState
+            icon={Shield}
+            tone="neutral"
+            title={<BilingualText en="No community reports to review" el="Καμία αναφορά κοινότητας για έλεγχο" wrap />}
+            description={(
+              <BilingualText
+                en="Group reports have no queue yet. Reports about a member are handled in Admin → Reports."
+                el="Οι αναφορές κοινοτήτων δεν έχουν ακόμη ουρά. Οι αναφορές για μέλη χειρίζονται στο Διαχείριση → Αναφορές."
+                wrap
+              />
+            )}
+            action={(
+              <Button variant="secondary" size="sm" asChild>
+                <Link href="/groups/manage"><BilingualText en="Manage communities" el="Διαχείριση κοινοτήτων" compact /></Link>
+              </Button>
+            )}
+          />
+        ) : (
+        <>
         {/* Search */}
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
@@ -277,8 +282,8 @@ export default function GroupsModerationPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="pending"><BilingualText en="Pending" el="Σε αναμονή" compact /><Counter value={pendingCount} /></TabsTrigger>
-            <TabsTrigger value="reviewed"><BilingualText en="Reviewed" el="Ελεγμένες" compact /></TabsTrigger>
-            <TabsTrigger value="resolved"><BilingualText en="Resolved" el="Επιλυμένες" compact /></TabsTrigger>
+            <TabsTrigger value="reviewed"><BilingualText en="Reviewed" el="Ελεγμένες" compact /><Counter value={reviewedCount} /></TabsTrigger>
+            <TabsTrigger value="resolved"><BilingualText en="Resolved" el="Επιλυμένες" compact /><Counter value={resolvedCount} /></TabsTrigger>
             <TabsTrigger value="all"><BilingualText en="All" el="Όλες" compact /><Counter value={reports.length} /></TabsTrigger>
           </TabsList>
           <TabsContent value={activeTab} className="mt-4 space-y-3">
@@ -291,13 +296,7 @@ export default function GroupsModerationPage() {
                   icon={CheckCircle}
                   tone="success"
                   title={<BilingualText en="All caught up" el="Όλα εντάξει" wrap />}
-                  description={reports.length === 0 ? (
-                    <BilingualText
-                      en="Group reports have no queue yet. Reports about a member are handled in Admin → Reports."
-                      el="Οι αναφορές κοινοτήτων δεν έχουν ακόμη ουρά. Οι αναφορές για μέλη χειρίζονται στο Διαχείριση → Αναφορές."
-                      wrap
-                    />
-                  ) : (
+                  description={(
                     <BilingualText
                       en="There are no pending reports to review. New community reports will appear here for action."
                       el="Δεν υπάρχουν αναφορές σε αναμονή. Οι νέες αναφορές κοινοτήτων θα εμφανίζονται εδώ."
@@ -315,6 +314,8 @@ export default function GroupsModerationPage() {
             )}
           </TabsContent>
         </Tabs>
+        </>
+        )}
       </div>
     </AppShell>
   );

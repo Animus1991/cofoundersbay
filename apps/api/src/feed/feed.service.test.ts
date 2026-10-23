@@ -137,6 +137,19 @@ describe('FeedService', () => {
     expect(JSON.stringify(where)).toContain('"authorId":{"in":["u-b"]}');
   });
 
+  it('narrows to the reader’s network for the Following tab, and to a tag', async () => {
+    const prisma = prismaMock();
+    prisma.feedPost.findMany.mockResolvedValue([
+      row('p1'),
+      row('p2', { authorId: 'u-c', author: { id: 'u-c', role: 'founder', profile: { displayName: 'Nikos', avatarUrl: null, headline: null } }, content: 'Closed our seed #fundraising' }),
+    ]);
+    const feed = new FeedService(prisma as never);
+    expect((await feed.personalized('me', { limit: 10 }, NOW)).posts.map((p) => p.id).sort()).toEqual(['p1', 'p2']);
+    expect((await feed.personalized('me', { limit: 10, following: true }, NOW)).posts.map((p) => p.id)).toEqual(['p1']);
+    expect((await feed.personalized('me', { limit: 10, topics: ['#Fundraising'] }, NOW)).posts.map((p) => p.id)).toEqual(['p2']);
+    expect((await feed.personalized('me', { limit: 10, topics: ['fundraising'], following: true }, NOW)).posts).toEqual([]);
+  });
+
   it('toggles a like with its count, toggles a bookmark, and hides for the reader only', async () => {
     const prisma = prismaMock();
     const feed = new FeedService(prisma as never);

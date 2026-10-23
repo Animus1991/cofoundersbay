@@ -1401,6 +1401,26 @@ const FEED_POSTS = [
     createdAt: '2026-09-03T08:15:00.000Z',
     tags: ['tech', 'mvp'],
   },
+  // From the reader's one accepted connection, so the Following tab has a
+  // post of its own (docs §88).
+  {
+    id: 'post-3',
+    author: {
+      id: 'user-sarah',
+      displayName: 'Dr. Sarah Kim',
+      headline: 'Startup mentor',
+      role: 'mentor',
+    },
+    type: 'announcement',
+    content: 'Office hours on Thursday: bring your pricing page and the one objection you keep hearing. Four slots.',
+    likes: 18,
+    comments: 4,
+    shares: 1,
+    isLiked: false,
+    isBookmarked: false,
+    createdAt: '2026-09-01T16:00:00.000Z',
+    tags: ['mentorship', 'pricing'],
+  },
 ];
 
 const ME_PROFILE = {
@@ -3480,8 +3500,18 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     const [post] = addComposedPost({ content, type, author: { id: 'me', displayName: 'You', headline: undefined } });
     return { post, stored: false };
   }
+  // A tag and the Following tab narrow the sample posts the way the API
+  // narrows real ones: by hashtag, and to the reader's accepted connections.
   if (pathname.startsWith('/api/feed/personalized')) {
-    return { posts: FEED_POSTS, hasMore: false };
+    const sp = new URLSearchParams(path.split('?')[1] ?? '');
+    const topics = (sp.get('topics') ?? '').split(',').map((t) => t.trim().toLowerCase().replace(/^#/, '')).filter(Boolean);
+    const network = new Set(
+      CONNECTIONS.filter((c) => c.status === 'accepted').map((c) => (c.requesterId === ME_ID ? c.receiverId : c.requesterId)),
+    );
+    const posts = FEED_POSTS
+      .filter((p) => !topics.length || p.tags.some((t) => topics.includes(t.toLowerCase())))
+      .filter((p) => sp.get('scope') !== 'following' || network.has(p.author.id));
+    return { posts, hasMore: false };
   }
   if (pathname === '/api/feed/preferences') {
     return {

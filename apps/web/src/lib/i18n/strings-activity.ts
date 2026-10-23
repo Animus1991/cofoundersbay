@@ -61,7 +61,7 @@ export const ACTIVITY_STRINGS: Record<string, BilingualPair> = {
   mark_all_read: { en: 'Mark all read', el: 'Όλα ως αναγνωσμένα' },
   refresh: { en: 'Refresh', el: 'Ανανέωση' },
   clear_filter: { en: 'Clear', el: 'Καθαρισμός' },
-  retry: { en: 'Retry', el: 'Επανάληψη' },
+  retry: { en: 'Try again', el: 'Δοκιμάστε ξανά' },
   load_more: { en: 'Load more', el: 'Περισσότερα' },
   loading: { en: 'Loading…', el: 'Φόρτωση…' },
   by_author: { en: 'By {name}', el: 'Από {name}' },
@@ -69,8 +69,8 @@ export const ACTIVITY_STRINGS: Record<string, BilingualPair> = {
   open_item: { en: 'Open', el: 'Άνοιγμα' },
 
   // ── When there is nothing, or nothing loaded ──
-  activity_failed: { en: 'Failed to load activity.', el: 'Η δραστηριότητα δεν φορτώθηκε.' },
-  notifications_failed: { en: 'Failed to load notifications.', el: 'Οι ειδοποιήσεις δεν φορτώθηκαν.' },
+  activity_failed: { en: 'Your activity could not be read just now.', el: 'Η δραστηριότητά σας δεν διαβάστηκε αυτή τη στιγμή.' },
+  notifications_failed: { en: 'Your notifications could not be read just now.', el: 'Οι ειδοποιήσεις σας δεν διαβάστηκαν αυτή τη στιγμή.' },
   empty_activity: { en: 'No network activity yet', el: 'Καμία δραστηριότητα δικτύου ακόμη' },
   empty_activity_filtered: { en: 'Nothing under this filter', el: 'Τίποτα με αυτό το φίλτρο' },
   empty_activity_hint: {

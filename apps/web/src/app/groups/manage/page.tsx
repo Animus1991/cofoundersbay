@@ -12,25 +12,20 @@ import {
   Users,
   Plus,
   Search,
-  Settings,
   MoreVertical,
   Eye,
-  Edit,
   Trash2,
   UserPlus,
   Lock,
   Globe,
   Shield,
-  TrendingUp,
-  MessageSquare,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -130,15 +125,15 @@ function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & Grou
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {/* All four had no handler. Editing and settings happen on
-                      the group itself; inviting shares its link; deleting is
-                      the owner's, and the server enforces that. */}
+                  {/* Inviting shares its link; the members list is the group
+                      page's Members section; deleting is the owner's, and the
+                      server enforces that. "Edit Group" opened the same page
+                      as View and the name (the page has no editor), and
+                      "Group Settings" opened the members: each item now says
+                      where it goes (docs §88). */}
+                  <DropdownMenuItem onSelect={() => onInvite(group)}><UserPlus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Copy invite link" el="Αντιγραφή συνδέσμου πρόσκλησης" compact /></DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={`/groups/${group.id}`}><Edit className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Edit Group" el="Επεξεργασία κοινότητας" compact /></Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => onInvite(group)}><UserPlus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Invite Members" el="Πρόσκληση μελών" compact /></DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href={`/groups/${group.id}?section=members`}><Settings className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Group Settings" el="Ρυθμίσεις κοινότητας" compact /></Link>
+                    <Link href={`/groups/${group.id}?section=members`}><Users className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="See members" el="Προβολή μελών" compact /></Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {group.role === 'owner' ? (
@@ -170,7 +165,7 @@ function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & Grou
             <FactLine
               items={[
                 <BilingualText key="members" en={`${(group.memberCount ?? 0).toLocaleString('en-GB')} members`} el={`${(group.memberCount ?? 0).toLocaleString('el-GR')} μέλη`} compact />,
-                <BilingualText key="posts" en={`${group.postCount ?? 0} posts`} el={`${group.postCount ?? 0} αναρτήσεις`} compact />,
+                <BilingualText key="posts" en={`${group.postCount ?? 0} ${group.postCount === 1 ? 'post' : 'posts'}`} el={`${group.postCount ?? 0} ${group.postCount === 1 ? 'ανάρτηση' : 'αναρτήσεις'}`} compact />,
                 <BilingualText key="active" en={`Active ${group.lastActivity}`} el={`Δραστηριότητα ${group.lastActivity}`} compact />,
                 group.pendingRequests && group.pendingRequests > 0 ? (
                   <span key="pending" className="font-medium text-destructive-accessible">
@@ -205,7 +200,7 @@ export default function ManageGroupsPage() {
 
   // The groups the viewer runs, from GET /groups/my; this list was a fixed
   // array. Plain membership is not management, so members are left out.
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: qk('groups', 'my'),
     queryFn: getMyGroups,
     staleTime: 60_000,
@@ -229,8 +224,13 @@ export default function ManageGroupsPage() {
         })),
     [data, fmtDate],
   );
-  const showingSample = !isLoading && live.length === 0;
-  const groups: ManagedGroup[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : MOCK_GROUPS;
+  // Samples only where there are samples: with demo data off, the notice
+  // said "showing sample items" over an empty page, and a failed read is
+  // not an empty account (docs §88).
+  const showingSample = !isLoading && !isError && live.length === 0 && showDemoData;
+  const groups: ManagedGroup[] = live.length > 0 ? live : showingSample ? MOCK_GROUPS : [];
+  const failed = isError && live.length === 0;
+  const noneYet = !isLoading && !failed && groups.length === 0;
 
   const actions: GroupActions = {
     onInvite: async (g) => {
@@ -270,6 +270,9 @@ export default function ManageGroupsPage() {
 
   const totalMembers = groups.reduce((s, g) => s + g.memberCount, 0);
   const pendingTotal = groups.reduce((s, g) => s + (g.pendingRequests ?? 0), 0);
+  // The API does not report join requests yet, so a live account always read
+  // "Pending Requests 0"; the tile shows only when a row carries the figure.
+  const pendingKnown = groups.some((g) => g.pendingRequests != null);
 
   // Offered to the assistant: the card menu's invite link and delete (which
   // asks, and refuses the sample communities).
@@ -294,9 +297,12 @@ export default function ManageGroupsPage() {
       titleEl="Διαχείριση κοινοτήτων"
       description="Communities you own or administer — review members, pending requests, and activity at a glance."
       descriptionEl="Κοινότητες που σας ανήκουν ή διαχειρίζεστε — μέλη, εκκρεμή αιτήματα και δραστηριότητα με μια ματιά."
-      actions={(
+      // Create opens the directory's create form (?create=1); it led to the
+      // directory and left the reader to find the button again. The empty
+      // state carries its own, so the header's waits for a list.
+      actions={noneYet ? undefined : (
         <Button asChild>
-          <Link href="/groups">
+          <Link href="/groups?create=1">
             <Plus className="mr-2 icon-sm" />
             <BilingualText en="Create community" el="Νέα κοινότητα" compact />
           </Link>
@@ -311,12 +317,27 @@ export default function ManageGroupsPage() {
             askAiPrompt={ASK.groupsManage}
           />
         )}
-        {/* Stats */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
+        {failed && (
+          <Card>
+            <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+              <p role="alert" className="text-sm text-muted-foreground">
+                <BilingualText en="Your communities could not be read just now." el="Οι κοινότητές σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+              </p>
+              <Button size="sm" variant="outline" onClick={() => void refetch()} disabled={isFetching}>
+                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+        {/* Stats and search: only over a list. Zeros over an empty state, or
+            over a read that failed, said nothing the state did not. */}
+        {groups.length > 0 && (
+        <>
+        <div className={cn('grid grid-cols-2 gap-4', pendingKnown ? 'kpi-odd-span-md md:grid-cols-3' : 'md:grid-cols-2')}>
           {[
-            { label: 'Groups Managed', labelEl: 'Κοινότητες που διαχειρίζεστε', value: groups.length },
+            { label: 'Communities managed', labelEl: 'Κοινότητες που διαχειρίζεστε', value: groups.length },
             { label: 'Total Members', labelEl: 'Σύνολο μελών', value: totalMembers.toLocaleString('en-GB') },
-            { label: 'Pending Requests', labelEl: 'Εκκρεμή αιτήματα', value: pendingTotal },
+            ...(pendingKnown ? [{ label: 'Pending Requests', labelEl: 'Εκκρεμή αιτήματα', value: pendingTotal }] : []),
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent>
@@ -330,26 +351,28 @@ export default function ManageGroupsPage() {
         {/* Search */}
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-          <Input aria-label={bilingualAria("Search groups", "Αναζήτηση κοινοτήτων")} placeholder={sayOne("Search groups…", "Αναζήτηση κοινοτήτων…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input aria-label={bilingualAria("Search communities", "Αναζήτηση κοινοτήτων")} placeholder={sayOne("Search communities…", "Αναζήτηση κοινοτήτων…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
+        </>
+        )}
 
         {/* Groups */}
         <div className="space-y-3">
           {filtered.map(group => (
             <GroupCard key={group.id} group={group} {...actions} />
           ))}
-          {filtered.length === 0 && (
+          {filtered.length === 0 && !failed && !isLoading && (
             search ? (
               <NoFilterResults entity="communities" onClear={() => setSearch('')} active={[{ en: `“${search}”`, el: `«${search}»` }]} />
             ) : (
               <ListEmptyState
                 icon={Users}
                 tone="primary"
-                title="You don't manage any communities yet"
-                description="Create a community to bring people together. As owner you control privacy, membership, and moderation."
+                title={<BilingualText en="You don't manage any communities yet" el="Δεν διαχειρίζεστε ακόμη κοινότητες" />}
+                description={<BilingualText en="Create a community to bring people together. As owner you control privacy, membership, and moderation." el="Δημιουργήστε μια κοινότητα για να φέρετε ανθρώπους κοντά. Ως ιδιοκτήτης ορίζετε την ιδιωτικότητα, τα μέλη και τη συντονιστική πολιτική." />}
                 action={(
                   <Button asChild className="gap-2">
-                    <Link href="/groups">
+                    <Link href="/groups?create=1">
                       <Plus className="icon-sm" />
                       <BilingualText en="Create community" el="Νέα κοινότητα" compact />
                     </Link>
