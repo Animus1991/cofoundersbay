@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsArray, ValidateNested, IsEnum, IsNumber, IsBoolean } from 'class-validator';
+import { IsIn, IsString, IsOptional, IsArray, ValidateNested, IsEnum, IsNumber, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ChatMessageDto {
@@ -90,7 +90,9 @@ export class UpdateAIPreferencesDto {
   @IsOptional()
   maxTokens?: number;
 
-  @IsString()
+  // The four /settings/ai offers; anything else would be stored and then
+  // ignored by every answer (docs §98).
+  @IsIn(['concise', 'detailed', 'casual', 'formal'])
   @IsOptional()
   responseStyle?: string;
 

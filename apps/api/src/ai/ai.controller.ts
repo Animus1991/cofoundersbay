@@ -16,6 +16,7 @@ import { toToolCatalog } from '@cofounderbay/shared';
 import { AIActionAuditService } from './ai-action-audit.service';
 import { RecordAIActionDto } from './dto/record-action.dto';
 import { reviewToolCalls } from './tool-calls';
+import { generationFor, withAnswerPreferences, type AnswerPreferences } from './answer-preferences';
 
 @Controller('ai')
 @UseGuards(JwtAuthGuard)
@@ -130,10 +131,14 @@ export class AIController {
       history = [...contextMessages, ...history];
     }
 
-    const messages = agent.buildMessages(dto.message, history, {
+    // The person's reply style, language, emoji, creativity and length
+    // (/settings/ai), which nothing read before (docs §98).
+    const preferences = await this.answerPreferences(user.id);
+    const messages = withAnswerPreferences(agent.buildMessages(dto.message, history, {
       userId: user.id,
       userData: dto.context,
-    });
+    }), preferences);
+    const generation = generationFor(agent.config, preferences);
 
     const startMs = Date.now();
     let success = false;
@@ -144,8 +149,8 @@ export class AIController {
     try {
       const response = await this.ollama.chat(messages, {
         model: dto.model,
-        temperature: agent.config.temperature,
-        maxTokens: agent.config.maxTokens,
+        temperature: generation.temperature,
+        maxTokens: generation.maxTokens,
         tools: dto.enableTools ? toToolCatalog(user?.role ?? null) : undefined,
         onToolCalls: (calls) => {
           toolCalls = calls;
@@ -228,10 +233,12 @@ export class AIController {
       history = [...contextMessages, ...history];
     }
 
-    const messages = agent.buildMessages(dto.message, history, {
+    const preferences = await this.answerPreferences(user.id);
+    const messages = withAnswerPreferences(agent.buildMessages(dto.message, history, {
       userId: user.id,
       userData: dto.context,
-    });
+    }), preferences);
+    const generation = generationFor(agent.config, preferences);
 
     // Save user message
     if (dto.conversationId) {
@@ -252,8 +259,8 @@ export class AIController {
 
       for await (const chunk of this.ollama.chatStream(messages, {
         model: dto.model,
-        temperature: agent.config.temperature,
-        maxTokens: agent.config.maxTokens,
+        temperature: generation.temperature,
+        maxTokens: generation.maxTokens,
         tools: dto.enableTools ? toToolCatalog(user?.role ?? null) : undefined,
         onToolCalls: (calls) => {
           toolCalls = calls;
@@ -356,6 +363,22 @@ export class AIController {
   ) {
     const deleted = await this.conversations.deleteConversation(id, user.id);
     return { deleted };
+  }
+
+  /**
+   * The answer preferences for a turn. `AIUserPreference` is schema-only
+   * (`prisma db push`): where the table is missing or the read fails, the
+   * turn goes ahead with the agent's defaults rather than failing.
+   */
+  private async answerPreferences(userId: string): Promise<AnswerPreferences | null> {
+    try {
+      return await this.prisma.aIUserPreference.findUnique({
+        where: { userId },
+        select: { responseStyle: true, responseLanguage: true, useEmoji: true, temperature: true, maxTokens: true },
+      });
+    } catch {
+      return null;
+    }
   }
 
   @Get('preferences')
