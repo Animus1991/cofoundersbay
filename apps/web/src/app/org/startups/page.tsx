@@ -7,6 +7,7 @@ import {
   MoreVertical,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { OrgReadFailed } from '@/components/org/OrgReadFailed';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { getOrgCohorts, getOrgMembers, type OrgMember } from '@/lib/api';
@@ -42,6 +43,9 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ASK } from '@/lib/page-questions';
 
 /**
  * The page's own row from the organisation's member list.
@@ -99,7 +103,7 @@ const STARTUP_STATUS_TONE: Record<Startup['status'], StatusTone> = {
   dropped: 'danger',
 };
 
-function StartupCard({ startup }: { startup: Startup }) {
+function StartupCard({ startup, sample = false }: { startup: Startup; /** A sample startup has no founder profile or thread (ids '1'…'4'). */ sample?: boolean }) {
   const statusColors = STATUS[STARTUP_STATUS_TONE[startup.status]];
 
   // The Programs card: the startup's rounded square, its name over sector
@@ -113,12 +117,15 @@ function StartupCard({ startup }: { startup: Startup }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link href={`/profiles/${startup.id}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/builder"><BilingualText en="Open Workspace" el="Άνοιγμα χώρου εργασίας" compact /></Link>
-        </DropdownMenuItem>
+        {/* "View Details" went: the startup's name opens the same founder
+            profile (docs §96). "Open Workspace" opened /builder, which is
+            the reader's own workspace, never this startup's. */}
+        <UnavailableMenuItem
+          en="Open Workspace"
+          el="Άνοιγμα χώρου εργασίας"
+          reasonEn="A startup's workspace belongs to its team; there is no organiser view of it yet."
+          reasonEl="Ο χώρος εργασίας μιας startup ανήκει στην ομάδα της· δεν υπάρχει ακόμη προβολή του για τον οργανισμό."
+        />
         {/* A cohort "startup" is its member (id = user id, see
             toStartup), so details are their profile and a message
             opens a thread with them. Both links pointed at
@@ -129,9 +136,13 @@ function StartupCard({ startup }: { startup: Startup }) {
           reasonEn="Mentor assignments are not stored yet."
           reasonEl="Οι αναθέσεις μεντόρων δεν αποθηκεύονται ακόμη."
         />
-        <DropdownMenuItem asChild>
-          <Link href={`/messages?to=${startup.id}`}><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></Link>
-        </DropdownMenuItem>
+        {sample ? (
+          <UnavailableMenuItem en="Send Message" el="Αποστολή μηνύματος" reasonEn="A sample founder cannot receive messages." reasonEl="Ένα δείγμα ιδρυτή δεν λαμβάνει μηνύματα." />
+        ) : (
+          <DropdownMenuItem asChild>
+            <Link href={`/messages?to=${startup.id}`}><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></Link>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -140,17 +151,17 @@ function StartupCard({ startup }: { startup: Startup }) {
     <Card className="transition-all hover:border-primary/30">
       <CardContent className="space-y-3">
         <CardHead
+          // The mark and the name were two links to one profile; the name is
+          // the one (docs §96).
           mark={(
-            <Link href={`/profiles/${startup.id}`} aria-label={bilingualInline(`Open ${startup.name}`, `Άνοιγμα: ${startup.name}`)}>
-              <Avatar className="h-10 w-10 rounded-xl">
-                <AvatarImage src={startup.logoUrl} alt="" />
-                <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
-                  {initialsOf(startup.name)}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
+            <Avatar className="h-10 w-10 rounded-xl">
+              <AvatarImage src={startup.logoUrl} alt="" />
+              <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
+                {initialsOf(startup.name)}
+              </AvatarFallback>
+            </Avatar>
           )}
-          title={(
+          title={sample ? startup.name : (
             <Link href={`/profiles/${startup.id}`} className="transition-colors hover:text-primary-accessible">
               {startup.name}
             </Link>
@@ -236,7 +247,7 @@ const SEED_STARTUPS: Startup[] = [
     industry: 'FinTech',
     stage: 'Seed',
     program: 'FinTech Bootcamp',
-    cohort: 'Spring 2024',
+    cohort: 'Spring cohort',
     progress: 100,
     teamSize: 5,
     foundedAt: '2023',
@@ -272,8 +283,8 @@ export default function OrgStartupsPage() {
    * organisation with an empty cohort sees, so the screen still teaches its
    * shape rather than opening blank.
    */
-  const { slug } = useCurrentOrg();
-  const { data, isLoading } = useQuery({
+  const { slug, isLoading: orgLoading, failed: orgFailed, refetch: refetchOrg, isFetching: orgFetching } = useCurrentOrg();
+  const { data, isLoading, isError: mainError, refetch: refetchMain, isFetching: mainFetching } = useQuery({
     queryKey: qk('org', 'members', slug),
     queryFn: () => getOrgMembers(slug!, { limit: 100 }),
     enabled: Boolean(slug),
@@ -300,6 +311,8 @@ export default function OrgStartupsPage() {
     [data, graduatedCohorts],
   );
   const startups: Startup[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_STARTUPS;
+  const isSample = live.length === 0 && startups.length > 0;
+  const reading = orgLoading || isLoading;
 
 
   const scored = startups.filter((s) => s.readinessScore != null);
@@ -340,6 +353,16 @@ export default function OrgStartupsPage() {
     { id: 'clear_filters', labelEn: 'Clear the startup filters', labelEl: 'Καθαρισμός φίλτρων startups', writes: false, unavailableEn: filtersActive ? undefined : 'No filter is set.', unavailableEl: filtersActive ? undefined : 'Δεν υπάρχει φίλτρο.', run: clearFilters },
   ]);
 
+  // Unread, the page drew its tiles as 0 and its empty state, as if the
+  // organisation had nothing in it (docs §96).
+  if (orgFailed || (mainError && !data)) {
+    return (
+      <AppShell showHelp>
+        <OrgReadFailed en={orgFailed ? undefined : 'Your startups could not be read just now.'} el={orgFailed ? undefined : 'Οι startups σας δεν διαβάστηκαν αυτή τη στιγμή.'} busy={orgFetching || mainFetching} onRetry={() => { refetchOrg(); void refetchMain(); }} />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell showHelp
       title="Portfolio Startups"
@@ -354,9 +377,19 @@ export default function OrgStartupsPage() {
       )}
     >
       <div className="space-y-6">
+        {isSample && (
+          <SampleDataNotice
+            surface="Portfolio Startups"
+            detail="No founder is in your cohorts yet, so these are samples that show the layout; they open no profile."
+            askAiPrompt={ASK.orgStartupsSample}
+          />
+        )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
+        {/* Figures and filters show over startups that were read. "Avg.
+            Readiness" shows once a startup carries a score: no member row
+            does, so it read "—" for every live organisation (docs §96). */}
+        {(startups.length > 0 || filtersActive) && (<>
+        <div className={cn('grid grid-cols-2 gap-4', scored.length ? 'kpi-odd-span-md md:grid-cols-4' : 'md:grid-cols-3')}>
           <Card>
             <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Startups" el="Σύνολο startups" compact /></p>
@@ -379,14 +412,16 @@ export default function OrgStartupsPage() {
               </p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Avg. Readiness" el="Μέση ετοιμότητα" compact /></p>
-              <p className="page-stat text-xl font-bold">
-                {scored.length ? `${Math.round(scored.reduce((acc, s) => acc + (s.readinessScore ?? 0), 0) / scored.length)}%` : '\u2014'}
-              </p>
-            </CardContent>
-          </Card>
+          {scored.length > 0 && (
+            <Card>
+              <CardContent>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Avg. Readiness" el="Μέση ετοιμότητα" compact /></p>
+                <p className="page-stat text-xl font-bold">
+                  {`${Math.round(scored.reduce((acc, s) => acc + (s.readinessScore ?? 0), 0) / scored.length)}%`}
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Filters */}
@@ -406,7 +441,7 @@ export default function OrgStartupsPage() {
               <SelectValue placeholder={sayOne("Program", "Πρόγραμμα")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all"><BilingualText en="All Programs" el="Όλα τα προγράμματα" compact /></SelectItem>
+              <SelectItem value="all"><BilingualText en="All programs" el="Όλα τα προγράμματα" compact /></SelectItem>
               {programs.map((p) => (
                 <SelectItem key={p} value={p}>{p}</SelectItem>
               ))}
@@ -417,7 +452,7 @@ export default function OrgStartupsPage() {
               <SelectValue placeholder={sayOne("Status", "Κατάσταση")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>
+              <SelectItem value="all"><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
               <SelectItem value="active"><BilingualText en="Active" el="Ενεργά" compact /></SelectItem>
               <SelectItem value="graduated"><BilingualText en="Graduated" el="Αποφοίτησαν" compact /></SelectItem>
               <SelectItem value="paused"><BilingualText en="Paused" el="Σε παύση" compact /></SelectItem>
@@ -425,20 +460,25 @@ export default function OrgStartupsPage() {
             </SelectContent>
           </Select>
         </div>
+        </>)}
 
-        {/* Results */}
+        {/* Results. "10 startups" repeated the Total tile above it; the line
+            speaks only when a filter narrows the list. */}
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            <BilingualText
-              en={`${filteredStartups.length} startup${filteredStartups.length !== 1 ? 's' : ''}`}
-              el={`${filteredStartups.length} ${filteredStartups.length !== 1 ? 'startups' : 'startup'}`}
-              compact
-            />
-          </p>
+          {filtersActive && filteredStartups.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              <BilingualText
+                en={`${filteredStartups.length} of ${startups.length} startups`}
+                el={`${filteredStartups.length} από ${startups.length} startups`}
+                compact
+              />
+            </p>
+          )}
+          {reading && startups.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="h-28" />)}
           {filteredStartups.map((startup) => (
-            <StartupCard key={startup.id} startup={startup} />
+            <StartupCard key={startup.id} startup={startup} sample={isSample} />
           ))}
-          {filteredStartups.length === 0 && (
+          {!reading && filteredStartups.length === 0 && (
             <EmptyOrgStartups
               filtersActive={filtersActive}
               onClearFilters={clearFilters}

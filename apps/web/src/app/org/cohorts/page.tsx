@@ -7,15 +7,12 @@ import {
   Plus,
   MoreVertical,
   Award,
-  Eye,
   Edit,
   Trash2,
-  GraduationCap,
-  Rocket,
-  TrendingUp,
   CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { OrgReadFailed } from '@/components/org/OrgReadFailed';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { getOrgCohorts, type CohortItem } from '@/lib/api';
@@ -39,7 +36,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { EmptyOrgCohorts, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
@@ -58,6 +54,9 @@ import { formatDate } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { demoMark } from '@/lib/demo/photos';
 import { PageFacts } from '@/components/common/PageFacts';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ASK } from '@/lib/page-questions';
 
 /**
  * The page's own row from the API row.
@@ -127,18 +126,13 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
   const menu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
+        <Button aria-label={bilingualAria(`More options for ${cohort.name}`, `Περισσότερες επιλογές: ${cohort.name}`)} variant="ghost" size="icon">
           <MoreVertical className="icon-sm" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link href={`/org/cohorts/${cohort.id}`}>
-            <Eye className="mr-2 icon-sm" aria-hidden="true" />
-            <BilingualText en="View Details" el="Λεπτομέρειες" compact />
-          </Link>
-        </DropdownMenuItem>
-        {/* Neither had a handler. Cohort writes exist only on the
+        {/* "View Details" went: the cohort's name opens the same page
+            (docs §96). Neither of these had a handler. Cohort writes exist only on the
             platform-admin routes (PATCH/DELETE /admin/cohorts/:id), so
             an organisation cannot make them from here yet. */}
         <UnavailableMenuItem
@@ -247,8 +241,8 @@ export default function OrgCohortsPage() {
    * with none yet sees, so the screen still teaches its shape instead of
    * opening empty — a real cohort always wins.
    */
-  const { slug } = useCurrentOrg();
-  const { data, isLoading } = useQuery({
+  const { slug, isLoading: orgLoading, failed: orgFailed, refetch: refetchOrg, isFetching: orgFetching } = useCurrentOrg();
+  const { data, isLoading, isError: mainError, refetch: refetchMain, isFetching: mainFetching } = useQuery({
     queryKey: qk('org', 'cohorts', slug),
     queryFn: () => getOrgCohorts(slug!, { limit: 50 }),
     enabled: Boolean(slug),
@@ -266,6 +260,9 @@ export default function OrgCohortsPage() {
     [hydrated, showDemoData],
   );
   const cohorts: Cohort[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : samples;
+  const isSample = live.length === 0 && cohorts.length > 0;
+  const reading = orgLoading || isLoading;
+  const filtersOn = !!search || statusFilter !== 'all';
 
 
   // These were memoised with no dependencies, so they kept the counts of the
@@ -289,8 +286,8 @@ export default function OrgCohortsPage() {
     choiceControl('status_filter', 'Cohort status', 'Κατάσταση κύκλου', [
       { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
       { value: 'recruiting', en: 'Recruiting', el: 'Δέχεται αιτήσεις' },
-      { value: 'active', en: 'Active', el: 'Ενεργές' },
-      { value: 'completed', en: 'Completed', el: 'Ολοκληρωμένες' },
+      { value: 'active', en: 'Active', el: 'Ενεργοί' },
+      { value: 'completed', en: 'Completed', el: 'Ολοκληρωμένοι' },
     ], statusFilter, setStatusFilter),
     {
       id: 'open_cohort',
@@ -326,6 +323,16 @@ export default function OrgCohortsPage() {
     },
   ]);
 
+  // Unread, the page drew its tiles as 0 and its empty state, as if the
+  // organisation had nothing in it (docs §96).
+  if (orgFailed || (mainError && !data)) {
+    return (
+      <AppShell showHelp>
+        <OrgReadFailed en={orgFailed ? undefined : 'Your cohorts could not be read just now.'} el={orgFailed ? undefined : 'Οι κύκλοι σας δεν διαβάστηκαν αυτή τη στιγμή.'} busy={orgFetching || mainFetching} onRetry={() => { refetchOrg(); void refetchMain(); }} />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell showHelp
       title="Cohorts"
@@ -341,28 +348,37 @@ export default function OrgCohortsPage() {
       }
     >
       <div className="space-y-6">
+        {isSample && (
+          <SampleDataNotice
+            surface="Cohorts"
+            detail="Your organisation has no cohort yet, so these are the demo organisation's cohorts, shown because sample data is on."
+            askAiPrompt={ASK.orgCohortsSample}
+          />
+        )}
 
-        {/* Filters */}
+        {/* Search, status and the figures show over cohorts that were read;
+            with none they read "0 cohorts · 0 active" above the empty state. */}
+        {(cohorts.length > 0 || filtersOn) && (<>
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
-              aria-label="Search cohorts. Αναζήτηση κοορτών"
-              placeholder={sayOne('Search cohorts…', 'Αναζήτηση κοορτών…')}
+              aria-label={bilingualAria('Search cohorts', 'Αναζήτηση κύκλων')}
+              placeholder={sayOne('Search cohorts…', 'Αναζήτηση κύκλων…')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger aria-label="Status. Κατάσταση" className="w-full sm:w-[150px]">
+            <SelectTrigger aria-label={bilingualAria('Status', 'Κατάσταση')} className="w-full sm:w-[150px]">
               <SelectValue placeholder={sayOne('Status', 'Κατάσταση')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>
+              <SelectItem value="all"><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
               <SelectItem value="recruiting"><BilingualText en="Recruiting" el="Δέχεται αιτήσεις" compact /></SelectItem>
-              <SelectItem value="active"><BilingualText en="Active" el="Ενεργές" compact /></SelectItem>
-              <SelectItem value="completed"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /></SelectItem>
+              <SelectItem value="active"><BilingualText en="Active" el="Ενεργοί" compact /></SelectItem>
+              <SelectItem value="completed"><BilingualText en="Completed" el="Ολοκληρωμένοι" compact /></SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -370,28 +386,32 @@ export default function OrgCohortsPage() {
         {/* The figures, one line before the list (docs §64.5, PageFacts): four tiles stood between the header and the first row */}
         <PageFacts
           labelEn="Cohorts in figures"
-          labelEl="Οι κοόρτεις σε αριθμούς"
+          labelEl="Οι κύκλοι σε αριθμούς"
           facts={[
-            { id: 'cohorts', value: cohorts.length, en: cohorts.length === 1 ? 'cohort' : 'cohorts', el: cohorts.length === 1 ? 'κοόρτη' : 'κοόρτεις' },
-            { id: 'active', value: cohorts.filter((c) => c.status === 'active').length, en: 'active', el: 'ενεργές' },
+            { id: 'cohorts', value: cohorts.length, en: cohorts.length === 1 ? 'cohort' : 'cohorts', el: cohorts.length === 1 ? 'κύκλος' : 'κύκλοι' },
+            { id: 'active', value: cohorts.filter((c) => c.status === 'active').length, en: 'active', el: 'ενεργοί' },
             totalMentors == null ? { id: 'startups', value: totalStartups, en: 'cohort memberships', el: 'συμμετοχές σε κύκλους' } : { id: 'startups', value: totalStartups, en: 'startups', el: 'startups' },
-            { id: 'mentors', value: totalMentors ?? '\u2014', en: 'mentors', el: 'μέντορες' },
+            // The cohort list counts members, not mentors: the "— mentors"
+            // fact had nothing behind it for a live organisation.
+            ...(totalMentors == null ? [] : [{ id: 'mentors', value: totalMentors, en: 'mentors', el: 'μέντορες' }]),
           ]}
         />
+        </>)}
 
         {/* Cohorts List */}
         <div className="space-y-3">
           {filteredCohorts.map((cohort) => (
             <CohortCard key={cohort.id} cohort={cohort} />
           ))}
-          {filteredCohorts.length === 0 && (
+          {reading && cohorts.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="h-32" />)}
+          {!reading && filteredCohorts.length === 0 && (
             <EmptyOrgCohorts
               filtersActive={!!search || statusFilter !== 'all'}
               onClearFilters={() => { setSearch(''); setStatusFilter('all'); }}
               active={namedFilters(namedQuery(search), namedChoice(statusFilter, 'all', {
                 recruiting: { en: 'Recruiting', el: 'Δέχεται αιτήσεις' },
-                active: { en: 'Active', el: 'Ενεργές' },
-                completed: { en: 'Completed', el: 'Ολοκληρωμένες' },
+                active: { en: 'Active', el: 'Ενεργοί' },
+                completed: { en: 'Completed', el: 'Ολοκληρωμένοι' },
               }))}
             />
           )}

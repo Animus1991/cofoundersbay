@@ -12,10 +12,9 @@ import {
   ShieldCheck,
   Crown,
   Edit,
-  Trash2,
-  UserMinus,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { OrgReadFailed } from '@/components/org/OrgReadFailed';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { listOrganizationMembers, type OrgAdminMember } from '@/lib/api';
@@ -29,7 +28,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { EmptyOrgMembers, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
@@ -45,6 +43,8 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { PageFacts } from '@/components/common/PageFacts';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type MemberRole = 'owner' | 'admin' | 'manager' | 'member' | 'mentor' | 'viewer';
 
@@ -127,7 +127,7 @@ function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boole
   const menu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="shrink-0">
+        <Button aria-label={bilingualAria(`More options for ${member.name}`, `Περισσότερες επιλογές: ${member.name}`)} variant="ghost" size="icon" className="shrink-0">
           <MoreVertical className="icon-sm" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
@@ -135,12 +135,14 @@ function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boole
         {/* None had a handler. Roles and removal are managed on the
             organisation's admin page, which writes membership rows; this
             directory lists cohort members by user id. */}
+        {/* "Edit Role" and "Remove Member" were two items opening the same
+            admin page, where both are done; one item says so (docs §96). */}
         {adminHref ? (
           <DropdownMenuItem asChild>
-            <Link href={adminHref}><Edit className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Edit Role" el="Επεξεργασία ρόλου" compact /></Link>
+            <Link href={adminHref}><Edit className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Change role or remove…" el="Αλλαγή ρόλου ή αφαίρεση…" compact /></Link>
           </DropdownMenuItem>
         ) : (
-          <DropdownMenuItem disabled><Edit className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Edit Role" el="Επεξεργασία ρόλου" compact /></DropdownMenuItem>
+          <DropdownMenuItem disabled><Edit className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Change role or remove…" el="Αλλαγή ρόλου ή αφαίρεση…" compact /></DropdownMenuItem>
         )}
         {live ? (
           <DropdownMenuItem asChild>
@@ -148,16 +150,6 @@ function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boole
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem disabled><Mail className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></DropdownMenuItem>
-        )}
-        <DropdownMenuSeparator />
-        {adminHref ? (
-          <DropdownMenuItem asChild className="text-destructive-accessible">
-            <Link href={adminHref}><UserMinus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Remove Member" el="Αφαίρεση μέλους" compact /></Link>
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem disabled className="text-destructive-accessible">
-            <UserMinus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Remove Member" el="Αφαίρεση μέλους" compact />
-          </DropdownMenuItem>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
@@ -205,9 +197,9 @@ export default function OrgMembersPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  const { slug, membership } = useCurrentOrg();
+  const { slug, membership, isLoading: orgLoading, failed: orgFailed, refetch: refetchOrg, isFetching: orgFetching } = useCurrentOrg();
   const organizationId = membership?.organizationId ?? null;
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError: mainError, refetch: refetchMain, isFetching: mainFetching } = useQuery({
     queryKey: qk('org', 'admin-members', organizationId),
     queryFn: () => listOrganizationMembers(organizationId!),
     enabled: Boolean(organizationId),
@@ -231,6 +223,11 @@ export default function OrgMembersPage() {
   }, {} as Record<string, number>);
 
   const filtersActive = !!search || activeTab !== 'all';
+  const reading = orgLoading || isLoading;
+  const invitedCount = members.filter((m) => m.status === 'invited').length;
+  // Members are added directly (by user id) on the admin page; `?add=1`
+  // opens its form. "Invite" promised an email that nothing sends.
+  const addHref = slug ? `/org/${slug}/admin?add=1` : null;
   const clearFilters = () => { setSearch(''); setActiveTab('all'); };
 
   usePageList([
@@ -260,25 +257,35 @@ export default function OrgMembersPage() {
     },
   ]);
 
+  // Unread, the page drew its tiles as 0 and its empty state, as if the
+  // organisation had nothing in it (docs §96).
+  if (orgFailed || (mainError && !data)) {
+    return (
+      <AppShell showHelp>
+        <OrgReadFailed en={orgFailed ? undefined : 'Your team could not be read just now.'} el={orgFailed ? undefined : 'Η ομάδα σας δεν διαβάστηκε αυτή τη στιγμή.'} busy={orgFetching || mainFetching} onRetry={() => { refetchOrg(); void refetchMain(); }} />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell showHelp
       title="Team Members"
-      description="Invite and manage who can run programs, review applications, and access workspace settings."
-      descriptionEl="Προσκαλέστε και ορίστε ποιοι τρέχουν προγράμματα, αξιολογούν αιτήσεις και έχουν πρόσβαση στις ρυθμίσεις."
+      description="Add and manage who can run programs, review applications, and access workspace settings."
+      descriptionEl="Προσθέστε και ορίστε ποιοι τρέχουν προγράμματα, αξιολογούν αιτήσεις και έχουν πρόσβαση στις ρυθμίσεις."
       actions={(
         // Had no handler; invitations are sent from the organisation admin page.
-        slug ? (
+        addHref ? (
           <Button asChild>
-            <Link href={`/org/${slug}/admin`}>
+            <Link href={addHref}>
               <UserPlus className="mr-2 icon-sm" aria-hidden="true" />
-              <BilingualText en="Invite Member" el="Πρόσκληση μέλους" compact />
+              <BilingualText en="Add member" el="Προσθήκη μέλους" compact />
             </Link>
           </Button>
         ) : (
           <UnavailableButton
             size="md"
-            en="Invite member"
-            el="Πρόσκληση μέλους"
+            en="Add member"
+            el="Προσθήκη μέλους"
             reasonEn="Invitations are sent on behalf of an organisation; join or create one first."
             reasonEl="Οι προσκλήσεις στέλνονται εκ μέρους οργανισμού· γίνετε μέλος ή δημιουργήστε έναν πρώτα."
           />
@@ -287,42 +294,48 @@ export default function OrgMembersPage() {
     >
       <div className="space-y-6">
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
-          {[
-            { label: 'Total Members', labelEl: 'Σύνολο μελών', value: members.length },
-            { label: 'Admins', labelEl: 'Διαχειριστές', value: (roleCounts['owner'] ?? 0) + (roleCounts['admin'] ?? 0) },
-            { label: 'Mentors', labelEl: 'Μέντορες', value: roleCounts['mentor'] ?? 0 },
-            { label: 'Pending Invites', labelEl: 'Εκκρεμείς προσκλήσεις', value: members.filter((m) => m.status === 'invited').length },
-          ].map(stat => (
-            <Card key={stat.label}>
-              <CardContent>
-                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
-                <p className="page-stat text-xl font-bold">{stat.value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* "Total Members" repeated the All tab's counter and "Pending
+            Invites" the Invited one, which nothing can fill: members are
+            added directly, never invited (docs §96). Who runs the team is
+            one line. */}
+        {members.length > 0 && (
+          <PageFacts
+            labelEn="The team in figures"
+            labelEl="Η ομάδα σε αριθμούς"
+            facts={[
+              { id: 'admins', value: (roleCounts['owner'] ?? 0) + (roleCounts['admin'] ?? 0), en: 'owners and admins', el: 'κάτοχοι και διαχειριστές' },
+              { id: 'mentors', value: roleCounts['mentor'] ?? 0, en: 'mentors', el: 'μέντορες' },
+            ]}
+          />
+        )}
 
-        {/* Search */}
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-          <Input aria-label="Search members. Αναζήτηση μελών" placeholder={sayOne('Search members…', 'Αναζήτηση μελών…')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-        </div>
+        {(members.length > 0 || filtersActive) && (
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+            <Input aria-label={bilingualAria('Search members', 'Αναζήτηση μελών')} placeholder={sayOne('Search members…', 'Αναζήτηση μελών…')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          </div>
+        )}
 
         {/* Table */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
+          {(members.length > 0 || filtersActive) && (
           <TabsList>
             {/* Counted over the members on screen - these read the sample
                 list, so a real organisation's tabs said 8 / 6 / 2 whatever
                 it held. */}
             <TabsTrigger value="all"><BilingualText en="All" el="Όλα" compact /><Counter value={members.length} /></TabsTrigger>
             <TabsTrigger value="active"><BilingualText en="Active" el="Ενεργά" compact /><Counter value={members.filter(m => m.status === 'active').length} /></TabsTrigger>
-            <TabsTrigger value="invited"><BilingualText en="Invited" el="Προσκεκλημένα" compact /><Counter value={members.filter(m => m.status === 'invited').length} /></TabsTrigger>
+            {invitedCount > 0 && (
+              <TabsTrigger value="invited"><BilingualText en="Invited" el="Προσκεκλημένα" compact /><Counter value={invitedCount} /></TabsTrigger>
+            )}
           </TabsList>
+          )}
           <TabsContent value={activeTab} className="mt-4">
             <Card>
               <CardContent>
+                {reading && members.length === 0 && (
+                  <div className="space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-12" />)}</div>
+                )}
                 {filtered.length > 0 ? (
                   <div className="card-rows">
                     {filtered.map(member => (
@@ -330,8 +343,9 @@ export default function OrgMembersPage() {
                     ))}
                   </div>
                 ) : null}
-                {filtered.length === 0 && (
+                {!reading && filtered.length === 0 && (
                   <EmptyOrgMembers
+                    actionHref={addHref ?? undefined}
                     filtersActive={filtersActive}
                     onClearFilters={clearFilters}
                     active={namedFilters(namedQuery(search), namedChoice(activeTab, 'all', {

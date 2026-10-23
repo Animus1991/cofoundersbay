@@ -30,11 +30,19 @@ export type CurrentOrg = {
   isLoading: boolean;
   /** True once the lookup finished and found no organisation. */
   isNone: boolean;
+  /**
+   * True when the lookup failed and nothing is cached: not "belongs to none".
+   * The /org screens read it, so an unread membership is not drawn as an
+   * organisation with nothing in it (docs §96).
+   */
+  failed: boolean;
+  isFetching: boolean;
+  refetch: () => void;
   memberships: OrgMembershipItem[];
 };
 
 export function useCurrentOrg(): CurrentOrg {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: qk('org', 'my-memberships'),
     queryFn: getUserOrganizations,
     // An organisation membership changes rarely and every /org screen asks for
@@ -52,7 +60,11 @@ export function useCurrentOrg(): CurrentOrg {
     name: membership?.organization?.name ?? null,
     role: membership?.role ?? null,
     isLoading,
-    isNone: !isLoading && memberships.length === 0,
+    // "No organisation yet" only from an answer; a failed read said it too.
+    isNone: !isLoading && Boolean(data) && memberships.length === 0,
+    failed: isError && !data,
+    isFetching,
+    refetch: () => void refetch(),
     memberships,
   };
 }

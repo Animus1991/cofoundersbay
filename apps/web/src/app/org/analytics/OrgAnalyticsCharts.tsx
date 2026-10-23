@@ -4,12 +4,16 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type ApplicationsDatum = { month: string; applications: number; accepted: number };
 type SessionsDatum = { month: string; sessions: number };
 type IndustryDatum = { name: string; value: number; color: string };
 
+// Series names reach the tooltip as plain strings, so they take the reader's
+// language here (they were English in both).
 export function ApplicationsTrendChart({ data }: { data: ApplicationsDatum[] }) {
+  const sayOne = useBilingualString();
   return (
     <ResponsiveContainer width="100%" height={180}>
       <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
@@ -27,14 +31,15 @@ export function ApplicationsTrendChart({ data }: { data: ApplicationsDatum[] }) 
         <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
         <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
         <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-        <Area type="monotone" dataKey="applications" stroke="hsl(var(--primary))" fill="url(#appFill)" strokeWidth={2} name="Applications" />
-        <Area type="monotone" dataKey="accepted" stroke="hsl(var(--status-success-mark))" fill="url(#accFill)" strokeWidth={2} name="Accepted" />
+        <Area type="monotone" dataKey="applications" stroke="hsl(var(--primary))" fill="url(#appFill)" strokeWidth={2} name={sayOne('Applications', 'Αιτήσεις')} />
+        <Area type="monotone" dataKey="accepted" stroke="hsl(var(--status-success-mark))" fill="url(#accFill)" strokeWidth={2} name={sayOne('Accepted', 'Εγκρίθηκαν')} />
       </AreaChart>
     </ResponsiveContainer>
   );
 }
 
 export function MentorSessionsChart({ data }: { data: SessionsDatum[] }) {
+  const sayOne = useBilingualString();
   return (
     <ResponsiveContainer width="100%" height={180}>
       <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
@@ -42,7 +47,7 @@ export function MentorSessionsChart({ data }: { data: SessionsDatum[] }) {
         <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
         <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
         <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-        <Bar dataKey="sessions" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Sessions" />
+        <Bar dataKey="sessions" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name={sayOne('Sessions', 'Συνεδρίες')} />
       </BarChart>
     </ResponsiveContainer>
   );

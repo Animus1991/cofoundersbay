@@ -24,17 +24,10 @@ import {
   TrendingUp,
   GraduationCap,
   Target,
-  MessageCircle,
-  Link2,
   ArrowLeft,
   Mail,
-  Phone,
   MapPin,
-  Clock,
   Star,
-  CheckCircle2,
-  XCircle,
-  Clock3,
   MoreVertical,
   Download,
   Share2,
@@ -48,11 +41,13 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
-import { RowHead } from '@/components/dashboard/SectionCard';
+import { EmptyLine, FailedLine, RowHead } from '@/components/dashboard/SectionCard';
+import { isNotFound } from '@/lib/read-status';
+import { bilingualAria } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { bilingualInline } from '@/lib/i18n/format';
 import { downloadCsv } from '@/lib/csv';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
@@ -68,7 +63,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn, initialsOf } from '@/lib/utils';
+import { initialsOf } from '@/lib/utils';
 import Link from 'next/link';
 import { qk } from '@/lib/query-keys';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
@@ -245,13 +240,13 @@ export default function CohortDetailPage() {
   const cohortId = params?.id as string;
   const [activeTab, setActiveTab] = useState('overview');
 
-  const { slug } = useCurrentOrg();
+  const { slug, failed: orgFailed, refetch: refetchOrg, isFetching: orgFetching } = useCurrentOrg();
 
   /*
    * One request for the whole dashboard. The id in the URL used to be read and
    * then ignored, so every cohort an organiser opened was the same one.
    */
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: qk('org', slug, 'cohort', cohortId),
     queryFn: () => getOrgCohortDetail(slug!, cohortId),
     enabled: Boolean(slug && cohortId),
@@ -331,6 +326,24 @@ export default function CohortDetailPage() {
     const ratio = (Date.now() - start) / (end - start);
     return Math.max(0, Math.min(100, Math.round(ratio * 100)));
   }, [hydrated, cohort?.startDate, cohort?.endDate]);
+
+  /*
+   * The Mentoring tab printed "92%" completion and a "4.8" rating for every
+   * cohort - constants (docs §96). Both are counted from the sessions now:
+   * held out of those that have ended (held, cancelled, no-show), and the
+   * mean of the ratings given; "—" when there is nothing to count.
+   */
+  const endedSessions = sessions.filter((x) => x.status !== 'scheduled');
+  const heldSessions = endedSessions.filter((x) => x.status === 'completed');
+  const completionRate = endedSessions.length ? Math.round((heldSessions.length / endedSessions.length) * 100) : null;
+  const ratedSessions = sessions.filter((x) => x.rating != null);
+  const averageRating = ratedSessions.length
+    ? Math.round((ratedSessions.reduce((sum, x) => sum + (x.rating ?? 0), 0) / ratedSessions.length) * 10) / 10
+    : null;
+  const investors = participants.filter((pt) => pt.role === 'investor').length;
+  // No participant row carries progress yet, so the column read "N/A" on
+  // every row; it shows once any row has a figure.
+  const progressTracked = participants.some((pt) => pt.progress !== undefined);
 
   const formatDate = (dateString: string) => {
     return fmtDate(dateString, { month: 'short', day: 'numeric', year: 'numeric' });
@@ -443,6 +456,22 @@ export default function CohortDetailPage() {
             <Skeleton className="h-8 w-2/3" />
             <Skeleton className="h-40 w-full" />
           </div>
+        ) : (orgFailed || isError) && !isNotFound(error) ? (
+          /* A failed read is not "it may belong to another organisation":
+             that is said only when the server says so (404/403, docs §96). */
+          <Card>
+            <CardContent className="space-y-4">
+              <FailedLine
+                en={orgFailed ? 'Your organisation could not be read just now.' : 'This cohort could not be read just now.'}
+                el={orgFailed ? 'Ο οργανισμός σας δεν διαβάστηκε αυτή τη στιγμή.' : 'Ο κύκλος δεν διαβάστηκε αυτή τη στιγμή.'}
+                busy={orgFetching || isFetching}
+                onRetry={() => { refetchOrg(); void refetch(); }}
+              />
+              <Button variant="ghost" size="sm" className="gap-2" asChild>
+                <Link href="/org/cohorts"><ArrowLeft className="icon-sm" aria-hidden="true" /><BilingualText en="All cohorts" el="Όλοι οι κύκλοι" compact /></Link>
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <Card>
             <CardContent className="py-12 text-center">
@@ -559,18 +588,21 @@ export default function CohortDetailPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  <BilingualText en="Total Participants" el="Σύνολο συμμετεχόντων" compact wrap />
+                  {/* "Total Participants" repeated the Participants tab's
+                      counter beside it; the tile now leads with the founders
+                      and says who else is in (docs §96). */}
+                  <BilingualText en="Founders" el="Ιδρυτές" compact wrap />
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold">{stats.totalParticipants}</div>
+                  <div className="text-2xl font-bold">{stats.activeStartups}</div>
                   <Users className="icon-sm text-muted-foreground" aria-hidden="true" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   <BilingualText
-                    en={`${stats.activeStartups} active startups • ${stats.totalMentors} mentors`}
-                    el={`${stats.activeStartups} ενεργές startups • ${stats.totalMentors} μέντορες`}
+                    en={`${stats.totalMentors} ${stats.totalMentors === 1 ? 'mentor' : 'mentors'}${investors ? ` · ${investors} ${investors === 1 ? 'investor' : 'investors'}` : ''}`}
+                    el={`${stats.totalMentors} ${stats.totalMentors === 1 ? 'μέντορας' : 'μέντορες'}${investors ? ` · ${investors} ${investors === 1 ? 'επενδυτής' : 'επενδυτές'}` : ''}`}
                     compact
                     wrap
                   />
@@ -581,7 +613,7 @@ export default function CohortDetailPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  <BilingualText en="Mentoring Sessions" el="Συνεδρίες καθοδήγησης" compact wrap />
+                  <BilingualText en="Sessions held" el="Συνεδρίες που έγιναν" compact wrap />
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -677,6 +709,9 @@ export default function CohortDetailPage() {
                   {/* Each row is a card's head without its frame: the pair,
                       their names, the score under them, the state at the
                       right. */}
+                  {matches.length === 0 && (
+                    <EmptyLine en="No match has been suggested inside this cohort yet." el="Δεν έχει προταθεί ακόμη αντιστοίχιση μέσα σε αυτόν τον κύκλο." />
+                  )}
                   {matches.slice(0, 3).map((match) => (
                     <RowHead
                       key={match.id}
@@ -695,6 +730,7 @@ export default function CohortDetailPage() {
                     />
                   ))}
                 </div>
+                {matches.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setActiveTab('matches')}
@@ -703,6 +739,7 @@ export default function CohortDetailPage() {
                   <BilingualText en="All matches" el="Όλες οι αντιστοιχίσεις" compact />
                   <ChevronRight className="icon-xs" aria-hidden="true" />
                 </button>
+                )}
               </CardContent>
             </Card>
 
@@ -714,6 +751,9 @@ export default function CohortDetailPage() {
               </CardHeader>
               <CardContent className="flex flex-1 flex-col">
                 <div className="card-rows">
+                  {sessions.every((s) => s.status !== 'scheduled') && (
+                    <EmptyLine en="No session is scheduled in this cohort." el="Καμία συνεδρία δεν έχει προγραμματιστεί σε αυτόν τον κύκλο." />
+                  )}
                   {sessions
                     .filter((s) => s.status === 'scheduled')
                     .slice(0, 3)
@@ -730,11 +770,12 @@ export default function CohortDetailPage() {
                         )}
                         title={<span className="block first-letter:uppercase">{session.topic}</span>}
                         subtitle={<>{session.mentor.name} → {session.mentee.name}</>}
-                        meta={<span className="tabular-nums">{formatDate(session.scheduledDate)} · {session.duration} min</span>}
+                        meta={<span className="tabular-nums">{formatDate(session.scheduledDate)} · <BilingualText en={`${session.duration} min`} el={`${session.duration} λεπτά`} compact /></span>}
                         aside={getStatusBadge(session.status)}
                       />
                     ))}
                 </div>
+                {sessions.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setActiveTab('mentoring')}
@@ -743,6 +784,7 @@ export default function CohortDetailPage() {
                   <BilingualText en="All sessions" el="Όλες οι συνεδρίες" compact />
                   <ChevronRight className="icon-xs" aria-hidden="true" />
                 </button>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -768,7 +810,7 @@ export default function CohortDetailPage() {
                     <TableHead><BilingualText en="Status" el="Κατάσταση" compact /></TableHead>
                     <TableHead><BilingualText en="Location" el="Τοποθεσία" compact /></TableHead>
                     <TableHead><BilingualText en="Join Date" el="Ημερομηνία ένταξης" compact /></TableHead>
-                    <TableHead><BilingualText en="Progress" el="Πρόοδος" compact /></TableHead>
+                    {progressTracked && <TableHead><BilingualText en="Progress" el="Πρόοδος" compact /></TableHead>}
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -791,26 +833,30 @@ export default function CohortDetailPage() {
                       <TableCell>{getRoleBadge(participant.role)}</TableCell>
                       <TableCell>{getStatusBadge(participant.status)}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <MapPin className="icon-sm" aria-hidden="true" />
-                          {participant.location}
-                        </div>
+                        {participant.location ? (
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <MapPin className="icon-sm" aria-hidden="true" />
+                            {participant.location}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell>{formatDate(participant.joinDate)}</TableCell>
-                      <TableCell>
+                      {progressTracked && <TableCell>
                         {participant.progress !== undefined ? (
                           <div className="flex items-center gap-2">
                             <Progress value={participant.progress} className="w-20" />
                             <span className="text-xs">{participant.progress}%</span>
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground"><BilingualText en="N/A" el="—" compact /></span>
+                          <span className="text-xs text-muted-foreground">—</span>
                         )}
-                      </TableCell>
+                      </TableCell>}
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button aria-label={`More options for ${participant.name}. Περισσότερες επιλογές`} variant="ghost" size="icon">
+                            <Button aria-label={bilingualAria(`More options for ${participant.name}`, `Περισσότερες επιλογές: ${participant.name}`)} variant="ghost" size="icon">
                               <MoreVertical className="icon-sm" aria-hidden="true" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -844,6 +890,13 @@ export default function CohortDetailPage() {
                       </TableCell>
                     </TableRow>
                   ))}
+                  {participants.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={progressTracked ? 7 : 6} className="text-sm text-muted-foreground">
+                        <BilingualText en="Nobody has joined this cohort yet." el="Κανείς δεν έχει μπει ακόμη σε αυτόν τον κύκλο." wrap />
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -857,12 +910,17 @@ export default function CohortDetailPage() {
               <Button size="sm" asChild>
                 <Link href="/matches">
                   <Target className="icon-sm mr-2" aria-hidden="true" />
-                  <BilingualText en="Generate Matches" el="Δημιουργία αντιστοιχίσεων" compact />
+                  {/* It was "Generate Matches": nothing runs matching for a
+                      cohort; the link opens the Matches page (docs §96). */}
+                  <BilingualText en="Open Matches" el="Άνοιγμα αντιστοιχίσεων" compact />
                 </Link>
               </Button>
             </CardHeader>
             <CardContent>
               <div className="card-rows">
+                {matches.length === 0 && (
+                  <EmptyLine en="No match has been suggested inside this cohort yet." el="Δεν έχει προταθεί ακόμη αντιστοίχιση μέσα σε αυτόν τον κύκλο." />
+                )}
                 {/* The pair, their names over their roles, the dates as one
                     caption line; the score is a fact under the title, not a
                     figure louder than the names. */}
@@ -907,7 +965,7 @@ export default function CohortDetailPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    <BilingualText en="Total Sessions" el="Συνολικές συνεδρίες" compact />
+                    <BilingualText en="Held" el="Έγιναν" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -931,7 +989,12 @@ export default function CohortDetailPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">92%</div>
+                  <div className="text-2xl font-bold">{completionRate == null ? '—' : `${completionRate}%`}</div>
+                  {completionRate != null && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      <BilingualText en={`${heldSessions.length} of ${endedSessions.length} ended sessions held`} el={`${heldSessions.length} από ${endedSessions.length} συνεδρίες που έληξαν`} compact wrap />
+                    </p>
+                  )}
                 </CardContent>
               </Card>
               <Card>
@@ -942,9 +1005,14 @@ export default function CohortDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-1">
-                    <div className="text-2xl font-bold">4.8</div>
-                    <Star className="icon-sm text-status-warning fill-status-warning" />
+                    <div className="text-2xl font-bold">{averageRating == null ? '—' : averageRating.toFixed(1)}</div>
+                    {averageRating != null && <Star className="icon-sm text-status-warning fill-status-warning" aria-hidden="true" />}
                   </div>
+                  {averageRating != null && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      <BilingualText en={`${ratedSessions.length} rated`} el={`${ratedSessions.length} με βαθμολογία`} compact />
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -998,7 +1066,7 @@ export default function CohortDetailPage() {
                         </TableCell>
                         <TableCell className="font-medium">{session.topic}</TableCell>
                         <TableCell>{formatDate(session.scheduledDate)}</TableCell>
-                        <TableCell>{session.duration} min</TableCell>
+                        <TableCell><BilingualText en={`${session.duration} min`} el={`${session.duration} λεπτά`} compact /></TableCell>
                         <TableCell>{getStatusBadge(session.status)}</TableCell>
                         <TableCell>
                           {session.rating ? (
@@ -1012,6 +1080,13 @@ export default function CohortDetailPage() {
                         </TableCell>
                       </TableRow>
                     ))}
+                    {sessions.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-sm text-muted-foreground">
+                          <BilingualText en="No mentoring session has been booked in this cohort yet." el="Δεν έχει κλειστεί ακόμη συνεδρία καθοδήγησης σε αυτόν τον κύκλο." wrap />
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>

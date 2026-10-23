@@ -254,7 +254,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
   // ── Organization ──
   '/org/dashboard': {
     title: 'Πίνακας ελέγχου οργανισμού',
-    description: 'Προγράμματα, cohorts και υγεία χαρτοφυλακίου.',
+    description: 'Προγράμματα, κύκλοι και υγεία χαρτοφυλακίου.',
     section: 'Εργασία',
   },
   '/org/programs': {
@@ -270,9 +270,9 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     section: 'Εργασία',
   },
   '/org/cohorts': {
-    title: 'Cohorts',
+    title: 'Κύκλοι',
     description:
-      'Διαχείριση cohorts προγράμματος, κάλυψης μεντόρων και προόδου συμμετεχόντων.',
+      'Διαχείριση κύκλων προγράμματος, κάλυψης μεντόρων και προόδου συμμετεχόντων.',
     section: 'Εργασία',
   },
   '/org/startups': {
@@ -283,25 +283,25 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
   '/org/members': {
     title: 'Μέλη ομάδας',
     description:
-      'Πρόσκληση και διαχείριση δικαιωμάτων εκτέλεσης προγραμμάτων, αξιολόγησης αιτήσεων και ρυθμίσεων.',
+      'Προσθήκη και διαχείριση όσων τρέχουν προγράμματα, αξιολογούν αιτήσεις και αλλάζουν ρυθμίσεις.',
     section: 'Εργασία',
   },
   '/org/mentors': {
     title: 'Δεξαμενή μεντόρων',
     description:
-      'Μέντορες διαθέσιμοι για τα cohorts σας. Πρόσκληση μέσω email ή onboarding από τον κατάλογο.',
+      'Μέντορες διαθέσιμοι για τους κύκλους σας, από τον κατάλογο μεντόρων της πλατφόρμας.',
     section: 'Εργασία',
   },
   '/org/events': {
     title: 'Εκδηλώσεις οργανισμού',
     description:
-      'Demo days, office hours, εργαστήρια και pitch nights για τα cohorts σας.',
+      'Demo days, ώρες γραφείου, εργαστήρια και βραδιές παρουσιάσεων για τους κύκλους σας.',
     section: 'Εργασία',
   },
   '/org/analytics': {
     title: 'Αναλυτικά οργανισμού',
     description:
-      'Υγεία cohorts, αντίκτυπος προγραμμάτων, funnel αιτήσεων και ανάπτυξη μελών.',
+      'Κατάσταση κύκλων, αντίκτυπος προγραμμάτων, ροή αιτήσεων και ανάπτυξη μελών.',
     section: 'Εργασία',
   },
   '/org/settings': {
@@ -769,7 +769,7 @@ export const PAGE_META_EL_PATTERNS: Array<{
     pattern: /^\/org\/cohorts\/[^/]+$/,
     meta: {
       title: 'Cohort',
-      description: 'Συμμετέχοντες, κάλυψη μεντόρων και πρόσφατες αντιστοιχίσεις αυτού του cohort.',
+      description: 'Συμμετέχοντες, κάλυψη μεντόρων και πρόσφατες αντιστοιχίσεις αυτού του κύκλου.',
       section: 'Εργασία',
     },
   },

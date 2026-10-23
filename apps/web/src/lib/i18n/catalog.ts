@@ -494,6 +494,17 @@ const el: Record<string, string> = {
     'Οι εισερχόμενες προτάσεις συνεργασίας δεν λειτουργούν ακόμη ζωντανά. Αυτές οι δύο κάρτες δείχνουν τη διάταξη, για να γνωρίσετε την αποδοχή και την απόρριψη.',
   'This organisation and its members are illustrative until the directory responds; member actions are disabled on them.':
     'Ο οργανισμός και τα μέλη του είναι ενδεικτικά μέχρι να απαντήσει ο κατάλογος· οι ενέργειες για μέλη δεν εφαρμόζονται σε αυτά.',
+  // The organisation pages' samples (docs §96).
+  "Your organisation has no cohort yet, so these are the demo organisation's cohorts, shown because sample data is on.":
+    'Ο οργανισμός σας δεν έχει ακόμη κύκλο, οπότε αυτοί είναι οι κύκλοι του οργανισμού του demo· εμφανίζονται επειδή τα δείγματα είναι ενεργά.',
+  'You host no events yet, so these four are samples that show the layout; they open nothing and cannot be duplicated.':
+    'Δεν διοργανώνετε ακόμη εκδηλώσεις, οπότε αυτές οι τέσσερις είναι δείγματα που δείχνουν τη διάταξη· δεν ανοίγουν και δεν αντιγράφονται.',
+  'Your organisation has no programme yet, so these are samples that show the layout; they open nothing and cannot be archived.':
+    'Ο οργανισμός σας δεν έχει ακόμη πρόγραμμα, οπότε αυτά είναι δείγματα που δείχνουν τη διάταξη· δεν ανοίγουν και δεν αρχειοθετούνται.',
+  'No founder is in your cohorts yet, so these are samples that show the layout; they open no profile.':
+    'Κανένας ιδρυτής δεν είναι ακόμη στους κύκλους σας, οπότε αυτές είναι δείγματα που δείχνουν τη διάταξη· δεν ανοίγουν προφίλ.',
+  'Your mentor pool is empty, so these are samples that show the layout; they open no profile.':
+    'Η δεξαμενή μεντόρων σας είναι άδεια, οπότε αυτοί είναι δείγματα που δείχνουν τη διάταξη· δεν ανοίγουν προφίλ.',
   "This is a sample cohort from the demo organisation, shown because sample data is on and your organisation's cohort did not load.":
     'Αυτός είναι ένας δειγματικός κύκλος από τον οργανισμό του demo. Εμφανίζεται επειδή τα δείγματα είναι ενεργά και ο κύκλος του οργανισμού σας δεν φορτώθηκε.',
   'The metric cards, traffic sources, funnel and service rows are illustrative - live analytics cover profile views, connections, messages and engagement.':

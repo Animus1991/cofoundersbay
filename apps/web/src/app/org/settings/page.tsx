@@ -7,13 +7,12 @@ import {
   Palette,
   Users,
   Shield,
-  Bell,
   CreditCard,
-  Globe,
   Save,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
+import { OrgReadFailed } from '@/components/org/OrgReadFailed';
 import { useToast } from '@/components/ui/toast';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import {
@@ -32,6 +31,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { qk } from '@/lib/query-keys';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   Select,
   SelectContent,
@@ -40,7 +41,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BilingualText } from '@/components/common/BilingualText';
-import { RowHead } from '@/components/dashboard/SectionCard';
+import { FailedLine, RowHead } from '@/components/dashboard/SectionCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { initialsOf } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -85,12 +86,12 @@ export default function OrgSettingsPage() {
    * and write it back through `PATCH /organizations/:id`, which has existed
    * all along without a client.
    */
-  const { slug, membership } = useCurrentOrg();
+  const { slug, membership, failed: orgFailed, refetch: refetchOrg, isFetching: orgFetching } = useCurrentOrg();
   const organizationId = membership?.organizationId ?? null;
   const qc = useQueryClient();
   const { success, error: showError } = useToast();
 
-  const { data: profileData } = useQuery({
+  const { data: profileData, isError: mainError, refetch: refetchMain, isFetching: mainFetching } = useQuery({
     queryKey: qk('org', 'profile', slug),
     queryFn: () => getOrgProfile(slug!),
     enabled: Boolean(slug),
@@ -115,6 +116,7 @@ export default function OrgSettingsPage() {
     workspaceAccess: true,
   });
   const savedSettings = profileData?.org?.settings ?? null;
+  const { showDemoData } = useDemoData();
 
   const membersQuery = useQuery({
     queryKey: qk('org', 'admin-members', organizationId),
@@ -204,6 +206,16 @@ export default function OrgSettingsPage() {
     [m.user?.profile?.firstName, m.user?.profile?.lastName].filter(Boolean).join(' ') ||
     m.user?.email ||
     'Member';
+
+  // Unread, the page drew its tiles as 0 and its empty state, as if the
+  // organisation had nothing in it (docs §96).
+  if (orgFailed || (mainError && !profileData)) {
+    return (
+      <AppShell showHelp>
+        <OrgReadFailed en={orgFailed ? undefined : "Your organisation's details could not be read just now."} el={orgFailed ? undefined : 'Τα στοιχεία του οργανισμού σας δεν διαβάστηκαν αυτή τη στιγμή.'} busy={orgFetching || mainFetching} onRetry={() => { refetchOrg(); void refetchMain(); }} />
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell showHelp
@@ -304,8 +316,11 @@ export default function OrgSettingsPage() {
                     </Select>
                   </div>
                 </div>
+                {/* Save waits for the stored details (docs §94): pressed while
+                    they were still loading, it wrote the empty fields over
+                    the organisation's name, description and website. */}
                 <Button
-                  disabled={!organizationId || saveProfile.isPending}
+                  disabled={!organizationId || !seeded || saveProfile.isPending}
                   onClick={() => saveProfile.mutate()}
                 >
                   <Save className="mr-2 icon-sm" aria-hidden="true" />
@@ -374,7 +389,7 @@ export default function OrgSettingsPage() {
                     reason on them rather than looking live. */}
                 <div className="flex items-center gap-3">
                   <Button
-                    disabled={!organizationId || saveBranding.isPending}
+                    disabled={!organizationId || !seeded || saveBranding.isPending}
                     onClick={() => saveBranding.mutate()}
                   >
                     <Save className="mr-2 icon-sm" aria-hidden="true" />
@@ -405,10 +420,12 @@ export default function OrgSettingsPage() {
                   <p className="text-sm text-muted-foreground">
                     {membersQuery.data
                       ? <BilingualText en={`${membersQuery.data.length} team member${membersQuery.data.length === 1 ? '' : 's'}`} el={`${membersQuery.data.length} ${membersQuery.data.length === 1 ? 'μέλος' : 'μέλη'} ομάδας`} compact />
-                      : <BilingualText en="Members could not be loaded" el="Δεν ήταν δυνατή η φόρτωση των μελών" compact />}
+                      : null}
                   </p>
+                  {/* Members are added by user id on the admin page; ?add=1
+                      opens its form. Nothing sends an invitation. */}
                   <Button asChild>
-                    <Link href={slug ? `/org/${slug}/admin` : '/org/dashboard'}><BilingualText en="Invite Member" el="Πρόσκληση μέλους" compact /></Link>
+                    <Link href={slug ? `/org/${slug}/admin?add=1` : '/org/dashboard'}><BilingualText en="Add member" el="Προσθήκη μέλους" compact /></Link>
                   </Button>
                 </div>
                 {/* Rows of the section card: the person, their address under
@@ -435,10 +452,13 @@ export default function OrgSettingsPage() {
                         }
                         disabled={member.role === 'owner'}
                       >
-                        <SelectTrigger aria-label={`Role for ${memberName(member)}`} className="w-[170px]">
+                        <SelectTrigger aria-label={bilingualAria(`Role for ${memberName(member)}`, `Ρόλος: ${memberName(member)}`)} className="w-[170px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
+                          {/* Shown, not chosen: the owner's row read blank
+                              because "owner" had no option to display. */}
+                          <SelectItem value="owner" disabled><BilingualText en="Owner" el="Κάτοχος" compact /></SelectItem>
                           <SelectItem value="admin"><BilingualText en="Admin" el="Διαχειριστής" compact /></SelectItem>
                           <SelectItem value="program_manager"><BilingualText en="Program Manager" el="Υπεύθυνος προγράμματος" compact /></SelectItem>
                           <SelectItem value="mentor"><BilingualText en="Mentor" el="Μέντορας" compact /></SelectItem>
@@ -449,10 +469,17 @@ export default function OrgSettingsPage() {
                       )}
                     />
                   ))}
-                  {!membersQuery.data && (
-                    <p className="text-xs text-muted-foreground">
-                      <BilingualText en="The member list lives under the organisation's admin page until the directory responds." el="Η λίστα μελών βρίσκεται στη σελίδα διαχείρισης του οργανισμού μέχρι να απαντήσει ο κατάλογος." wrap />
-                    </p>
+                  {/* "Members could not be loaded" showed while they loaded. */}
+                  {!membersQuery.data && !membersQuery.isError && (
+                    <div className="space-y-3">{[0, 1].map((i) => <Skeleton key={i} className="h-12" />)}</div>
+                  )}
+                  {!membersQuery.data && membersQuery.isError && (
+                    <FailedLine
+                      en="Your team could not be read just now."
+                      el="Η ομάδα σας δεν διαβάστηκε αυτή τη στιγμή."
+                      busy={membersQuery.isFetching}
+                      onRetry={() => void membersQuery.refetch()}
+                    />
                   )}
                 </div>
               </CardContent>
@@ -472,6 +499,16 @@ export default function OrgSettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Each switch is stored with the organisation, but nothing on
+                    the platform reads them yet; the card says so rather than
+                    implying they take effect (docs §96). */}
+                <p className="text-xs text-muted-foreground">
+                  <BilingualText
+                    en="These choices are saved with your organisation. The platform does not apply them yet."
+                    el="Οι επιλογές αποθηκεύονται με τον οργανισμό σας. Η πλατφόρμα δεν τις εφαρμόζει ακόμη."
+                    wrap
+                  />
+                </p>
                 {[
                   { key: 'publicProfile', label: 'Public Profile', labelEl: 'Δημόσιο προφίλ', hint: 'Allow your organization to be discovered publicly', hintEl: 'Ο οργανισμός σας εμφανίζεται δημόσια στην αναζήτηση' },
                   { key: 'openApplications', label: 'Open Applications', labelEl: 'Ανοιχτές αιτήσεις', hint: 'Accept applications from any startup', hintEl: 'Δεχτείτε αιτήσεις από οποιαδήποτε startup' },
@@ -487,7 +524,7 @@ export default function OrgSettingsPage() {
                       aria-label={bilingualAria(p.label, p.labelEl)}
                       checked={policies[p.key]}
                       onCheckedChange={(v) => setPolicy(p.key, v)}
-                      disabled={!organizationId || savePolicies.isPending}
+                      disabled={!organizationId || !seeded || savePolicies.isPending}
                     />
                   </div>
                 ))}
@@ -508,11 +545,17 @@ export default function OrgSettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* A plan, usage limits and a card ending 4242 were shown to
+                    every organisation; they are the showcase's, so they show
+                    only with sample data on (docs §96). */}
                 <p className="text-xs text-muted-foreground">
-                  <BilingualText en="Plan and payment details are illustrative — billing is not connected to the organisation yet." el="Τα στοιχεία πλάνου και πληρωμής είναι ενδεικτικά — οι χρεώσεις δεν έχουν συνδεθεί ακόμη με τον οργανισμό." wrap />
+                  {showDemoData
+                    ? <BilingualText en="Plan and payment details are illustrative — billing is not connected to the organisation yet." el="Τα στοιχεία πλάνου και πληρωμής είναι ενδεικτικά — οι χρεώσεις δεν έχουν συνδεθεί ακόμη με τον οργανισμό." wrap />
+                    : <BilingualText en="Billing is not connected to organisations yet, so there is no plan or payment method to show." el="Οι χρεώσεις δεν έχουν συνδεθεί ακόμη με τους οργανισμούς, οπότε δεν υπάρχει πλάνο ή τρόπος πληρωμής για προβολή." wrap />}
                 </p>
                 {/* The plan, the usage and the payment method as rows of the
                     card, not as cards drawn inside it. */}
+                {showDemoData && (
                 <div className="card-rows">
                   <RowHead
                     titleAs="h4"
@@ -552,6 +595,7 @@ export default function OrgSettingsPage() {
                     )}
                   />
                 </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

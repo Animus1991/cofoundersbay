@@ -9,6 +9,7 @@ import {
   MoreVertical,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { OrgReadFailed } from '@/components/org/OrgReadFailed';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/toast';
 import { listOrganizationPrograms, updateProgram, type ProgramItem } from '@/lib/api';
@@ -38,6 +39,11 @@ import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { demoMark } from '@/lib/demo/photos';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { useHydrated } from '@/components/common/RelativeTime';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ASK } from '@/lib/page-questions';
 
 /**
  * The page's own row from the API row.
@@ -97,7 +103,7 @@ const STATUS_LABEL: Record<Program['status'], { en: string; el: string }> = {
 /** "7 Sep 2026": the API sends ISO timestamps, which the card printed as they came. */
 const PROGRAM_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-function ProgramCard({ program }: { program: Program }) {
+function ProgramCard({ program, sample = false }: { program: Program; /** A sample programme has no page and nothing to archive (ids '1'…'4'). */ sample?: boolean }) {
   const fmtDate = useDateFormat();
   /*
    * "Archive" was a menu item with no handler. It writes the status the API
@@ -124,20 +130,29 @@ function ProgramCard({ program }: { program: Program }) {
   const menu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
+        <Button aria-label={bilingualAria(`More options for ${program.name}`, `Περισσότερες επιλογές: ${program.name}`)} variant="ghost" size="icon">
           <MoreVertical className="icon-sm" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link href={`/programs/${program.id}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/tenant/programs"><BilingualText en="Edit Program" el="Επεξεργασία προγράμματος" compact /></Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/org/applications"><BilingualText en="Manage Participants" el="Διαχείριση συμμετεχόντων" compact /></Link>
-        </DropdownMenuItem>
+        {/* "View Details" went: the programme's name opens the same page
+            (docs §96). Manage Participants opens the applications to this
+            programme, not all of them. */}
+        {sample ? (
+          <>
+            <UnavailableMenuItem en="Edit Program" el="Επεξεργασία προγράμματος" reasonEn="A sample programme has nothing to edit." reasonEl="Ένα δείγμα προγράμματος δεν επεξεργάζεται." />
+            <UnavailableMenuItem en="Manage Participants" el="Διαχείριση συμμετεχόντων" reasonEn="A sample programme has no participants." reasonEl="Ένα δείγμα προγράμματος δεν έχει συμμετέχοντες." />
+          </>
+        ) : (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/tenant/programs"><BilingualText en="Edit Program" el="Επεξεργασία προγράμματος" compact /></Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/org/applications?program=${program.id}`}><BilingualText en="Manage Participants" el="Διαχείριση συμμετεχόντων" compact /></Link>
+            </DropdownMenuItem>
+          </>
+        )}
         {/*
           * "Duplicate" is gone rather than left inert: there is no
           * create-from-existing route, and a menu item that does nothing
@@ -146,7 +161,7 @@ function ProgramCard({ program }: { program: Program }) {
           */}
         <DropdownMenuItem
           className="text-destructive-accessible"
-          disabled={archive.isPending || program.status === 'archived'}
+          disabled={sample || archive.isPending || program.status === 'archived'}
           onClick={() => archive.mutate()}
         >
           {program.status === 'archived'
@@ -170,7 +185,7 @@ function ProgramCard({ program }: { program: Program }) {
               </AvatarFallback>
             </Avatar>
           )}
-          title={(
+          title={sample ? program.name : (
             <Link href={`/programs/${program.id}`} className="transition-colors hover:text-primary-accessible">
               {program.name}
             </Link>
@@ -204,52 +219,26 @@ function ProgramCard({ program }: { program: Program }) {
   );
 }
 
-/** Shown to an organisation that has not created a program yet. */
-const SEED_PROGRAMS: Program[] = [
-  {
-    id: '1',
-    name: 'AI Accelerator 2025',
-    type: 'Accelerator',
-    status: 'active',
-    startDate: 'Jan 2025',
-    endDate: 'Apr 2025',
-    capacity: 15,
-    enrolled: 12,
-    description: 'Intensive 12-week program for AI/ML startups',
-  },
-  {
-    id: '2',
-    name: 'FinTech Bootcamp',
-    type: 'Bootcamp',
-    status: 'draft',
-    startDate: 'Apr 2025',
-    endDate: 'Jun 2025',
-    capacity: 20,
-    enrolled: 0,
-    description: '8-week fintech innovation program',
-  },
-  {
-    id: '3',
-    name: 'Climate Innovation',
-    type: 'Incubator',
-    status: 'active',
-    startDate: 'Jan 2025',
-    endDate: 'Dec 2025',
-    capacity: 10,
-    enrolled: 8,
-    description: 'Year-long program for climate-focused startups',
-  },
-  {
-    id: '4',
-    name: 'Fall 2024 Cohort',
-    type: 'Accelerator',
-    status: 'completed',
-    startDate: 'Sep 2024',
-    endDate: 'Dec 2024',
-    capacity: 12,
-    enrolled: 12,
-  },
+/**
+ * Shown to an organisation that has not created a program yet, with sample
+ * data on. Ages, not dates (AGENTS): "AI Accelerator 2025" was "active" from
+ * January to April 2025 whatever the day.
+ */
+const SEED_PROGRAM_ROWS: Array<Omit<Program, 'startDate' | 'endDate'> & { startInDays: number; endInDays: number }> = [
+  { id: '1', name: 'AI Accelerator', type: 'Accelerator', status: 'active', startInDays: -40, endInDays: 44, capacity: 15, enrolled: 12, description: 'Intensive 12-week program for AI/ML startups' },
+  { id: '2', name: 'FinTech Bootcamp', type: 'Bootcamp', status: 'draft', startInDays: 60, endInDays: 116, capacity: 20, enrolled: 0, description: '8-week fintech innovation program' },
+  { id: '3', name: 'Climate Innovation', type: 'Incubator', status: 'active', startInDays: -120, endInDays: 245, capacity: 10, enrolled: 8, description: 'Year-long program for climate-focused startups' },
+  { id: '4', name: "Last autumn's cohort", type: 'Accelerator', status: 'completed', startInDays: -400, endInDays: -310, capacity: 12, enrolled: 12 },
 ];
+
+function seedPrograms(now: number): Program[] {
+  const day = 86_400_000;
+  return SEED_PROGRAM_ROWS.map(({ startInDays, endInDays, ...row }) => ({
+    ...row,
+    startDate: new Date(now + startInDays * day).toISOString(),
+    endDate: new Date(now + endInDays * day).toISOString(),
+  }));
+}
 
 export default function OrgProgramsPage() {
   const sayOne = useBilingualString();
@@ -265,9 +254,9 @@ export default function OrgProgramsPage() {
    * array below is kept as what an organisation with none yet sees, so the
    * screen still teaches its shape rather than opening empty.
    */
-  const { membership } = useCurrentOrg();
+  const { membership, isLoading: orgLoading, failed: orgFailed, refetch: refetchOrg, isFetching: orgFetching } = useCurrentOrg();
   const organizationId = membership?.organizationId ?? null;
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError: mainError, refetch: refetchMain, isFetching: mainFetching } = useQuery({
     queryKey: qk('programs', 'organization', organizationId),
     queryFn: () => listOrganizationPrograms(organizationId!),
     enabled: Boolean(organizationId),
@@ -276,7 +265,11 @@ export default function OrgProgramsPage() {
   });
 
   const live = useMemo(() => (data ?? []).map(toPageProgram), [data]);
-  const programs: Program[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_PROGRAMS;
+  const hydrated = useHydrated();
+  const seeds = useMemo(() => (hydrated ? seedPrograms(Date.now()) : []), [hydrated]);
+  const programs: Program[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : seeds;
+  const isSample = live.length === 0 && programs.length > 0;
+  const reading = orgLoading || isLoading;
 
 
   const filteredPrograms = programs.filter((p) => {
@@ -325,23 +318,43 @@ export default function OrgProgramsPage() {
     },
   ]);
 
+  // Unread, the page drew its tiles as 0 and its empty state, as if the
+  // organisation had nothing in it (docs §96).
+  if (orgFailed || (mainError && !data)) {
+    return (
+      <AppShell showHelp>
+        <OrgReadFailed en={orgFailed ? undefined : 'Your programmes could not be read just now.'} el={orgFailed ? undefined : 'Τα προγράμματά σας δεν διαβάστηκαν αυτή τη στιγμή.'} busy={orgFetching || mainFetching} onRetry={() => { refetchOrg(); void refetchMain(); }} />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell showHelp
       title="Programs"
       titleEl="Προγράμματα"
       description="Create, run, and review accelerator, bootcamp, and incubator programs."
-      actions={(
+      // The empty state carries its own "Create program" (docs §87, §96).
+      actions={programs.length > 0 || reading ? (
         <Button asChild>
           <Link href="/tenant/programs">
-            <Plus className="mr-2 icon-sm" />
+            <Plus className="mr-2 icon-sm" aria-hidden="true" />
             <BilingualText en="New Program" el="Νέο πρόγραμμα" compact />
           </Link>
         </Button>
-      )}
+      ) : undefined}
     >
       <div className="space-y-6">
+        {isSample && (
+          <SampleDataNotice
+            surface="Programs"
+            detail="Your organisation has no programme yet, so these are samples that show the layout; they open nothing and cannot be archived."
+            askAiPrompt={ASK.orgProgramsSample}
+          />
+        )}
 
-        {/* Stats */}
+        {/* Figures and search show over programmes that were read; with none
+            they read 0 / 0 / 0 / 0 above the empty state. */}
+        {(programs.length > 0 || filtersActive) && (<>
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <Card>
             <CardContent>
@@ -388,13 +401,15 @@ export default function OrgProgramsPage() {
             />
           </div>
         </div>
+        </>)}
 
         {/* Programs List */}
         <div className="space-y-3">
+          {reading && programs.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="h-28" />)}
           {filteredPrograms.map((program) => (
-            <ProgramCard key={program.id} program={program} />
+            <ProgramCard key={program.id} program={program} sample={isSample} />
           ))}
-          {filteredPrograms.length === 0 && (
+          {!reading && filteredPrograms.length === 0 && (
             <EmptyOrgPrograms
               filtersActive={filtersActive}
               onClearFilters={clearFilters}

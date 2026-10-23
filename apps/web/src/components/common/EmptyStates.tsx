@@ -601,8 +601,10 @@ export function EmptyOrgMentors({ filtersActive, onClearFilters, active, classNa
     <ListEmptyState
       icon={GraduationCap}
       tone="success"
-      title={<BilingualText en="No mentors invited yet" el="Δεν έχουν προσκληθεί ακόμη μέντορες" wrap />}
-      description={<BilingualText en="Mentors are vetted advisors you can assign to startups in your cohorts. Find them in the platform's mentor directory." el="Οι μέντορες είναι ελεγμένοι σύμβουλοι που αναθέτετε σε startups των κύκλων σας. Θα τους βρείτε στον κατάλογο μεντόρων της πλατφόρμας." wrap />}
+      // Nothing invites a mentor into a pool or assigns one to a startup yet
+      // (the pool page's menu says so); the sentence promised both.
+      title={<BilingualText en="No mentors in your pool yet" el="Δεν υπάρχουν ακόμη μέντορες στη δεξαμενή σας" wrap />}
+      description={<BilingualText en="Mentors in your pool advise the startups in your cohorts. Find them in the platform's mentor directory and message them." el="Οι μέντορες της δεξαμενής σας συμβουλεύουν τις startups των κύκλων σας. Θα τους βρείτε στον κατάλογο μεντόρων της πλατφόρμας, όπου μπορείτε να τους στείλετε μήνυμα." wrap />}
       action={(
         <Button asChild>
           <Link href="/mentoring">

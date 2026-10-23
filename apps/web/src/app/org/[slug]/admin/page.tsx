@@ -1,14 +1,25 @@
 'use client';
 
 import { StatusText } from '@/components/common/StatusText';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowLeft, Users, Settings, BarChart3, Shield, Mail,
-  UserPlus, MoreVertical, Search, Filter, Download,
-  CheckCircle2, XCircle, Clock, Calendar,
-  Building2, Globe, Edit, Trash2, Crown, UserMinus,
+  ArrowLeft,
+  Users,
+  Settings,
+  BarChart3,
+  Shield,
+  Mail,
+  UserPlus,
+  MoreVertical,
+  Search,
+  Download,
+  CheckCircle2,
+  XCircle,
+  Building2,
+  Crown,
+  UserMinus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,10 +50,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AppShell } from '@/components/layout/AppShell';
-import { EmptyLine } from '@/components/dashboard/SectionCard';
+import { EmptyLine, FailedLine } from '@/components/dashboard/SectionCard';
+import { Skeleton } from '@/components/ui/skeleton';
+import { usePageRail } from '@/components/layout/PageRailContext';
+import { isNotFound } from '@/lib/read-status';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
-import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { useToast } from '@/components/ui/toast';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -65,11 +79,8 @@ import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useConfirm } from '@/components/ui/confirm-dialog';
-import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
-import { attachDemoPhotos } from '@/lib/demo/photos';
-import { ASK } from '@/lib/page-questions';
 
 type OrgMember = {
   id: string;
@@ -105,86 +116,29 @@ function toViewMember(m: OrgAdminMember): OrgMember {
   };
 }
 
-type OrgStats = {
-  totalMembers: number;
-  activeMembers: number;
-  pendingInvites: number;
-  totalProjects: number;
-  totalConnections: number;
-  monthlyGrowth: number;
-};
+/*
+ * The invented organisation ("TechStars SF") and its five members stood in
+ * for a member list that was loading or had failed, under a sample notice,
+ * with a real accelerator's name and addresses (AGENTS: samples never name a
+ * real company). A list that was not read says so now (docs §96).
+ */
 
-const MOCK_ORG = {
-  id: 'org1',
-  name: 'TechStars SF',
-  slug: 'techstars-sf',
-  logo: undefined,
-  description: 'San Francisco\'s premier startup accelerator community',
-  website: 'https://techstars.com',
-  memberCount: 156,
-  createdAt: new Date('2023-01-15'),
-};
+/** What each role may do, as `organization.service` checks it. */
+const PERMISSIONS: Array<{ en: string; el: string; roles: Array<'owner' | 'admin' | 'others'> }> = [
+  { en: 'See members, programmes and analytics', el: 'Προβολή μελών, προγραμμάτων και αναλυτικών', roles: ['owner', 'admin', 'others'] },
+  { en: 'Add and remove members', el: 'Προσθήκη και αφαίρεση μελών', roles: ['owner', 'admin'] },
+  { en: 'Change roles (except an owner\'s)', el: 'Αλλαγή ρόλων (εκτός του κατόχου)', roles: ['owner', 'admin'] },
+  { en: 'Edit the organisation', el: 'Επεξεργασία οργανισμού', roles: ['owner', 'admin'] },
+  { en: 'Run programmes and decide applications', el: 'Διαχείριση προγραμμάτων και αποφάσεις για αιτήσεις', roles: ['owner', 'admin'] },
+  { en: 'Make or remove an owner', el: 'Ορισμός ή αφαίρεση κατόχου', roles: ['owner'] },
+  { en: 'Delete the organisation', el: 'Διαγραφή οργανισμού', roles: ['owner'] },
+];
 
-const MOCK_STATS: OrgStats = {
-  totalMembers: 156,
-  activeMembers: 142,
-  pendingInvites: 8,
-  totalProjects: 34,
-  totalConnections: 892,
-  monthlyGrowth: 12.5,
-};
-
-const MOCK_MEMBERS: OrgMember[] = attachDemoPhotos([
-  {
-    id: 'm1',
-    name: 'Sarah Chen',
-    email: 'sarah@techstars.com',
-    avatar: undefined,
-    role: 'owner',
-    status: 'active',
-    joinedAt: new Date('2023-01-15'),
-    lastActive: new Date(),
-  },
-  {
-    id: 'm2',
-    name: 'Mike Ross',
-    email: 'mike@techstars.com',
-    avatar: undefined,
-    role: 'admin',
-    status: 'active',
-    joinedAt: new Date('2023-02-20'),
-    lastActive: new Date(Date.now() - 3600000),
-  },
-  {
-    id: 'm3',
-    name: 'Lisa Park',
-    email: 'lisa@example.com',
-    avatar: undefined,
-    role: 'member',
-    status: 'active',
-    joinedAt: new Date('2023-06-10'),
-    lastActive: new Date(Date.now() - 86400000),
-  },
-  {
-    id: 'm4',
-    name: 'James Wilson',
-    email: 'james@example.com',
-    avatar: undefined,
-    role: 'member',
-    status: 'pending',
-    joinedAt: new Date('2024-03-01'),
-  },
-  {
-    id: 'm5',
-    name: 'Emma Davis',
-    email: 'emma@example.com',
-    avatar: undefined,
-    role: 'member',
-    status: 'suspended',
-    joinedAt: new Date('2023-08-15'),
-    lastActive: new Date('2024-01-10'),
-  },
-], { portraitKey: 'avatar' });
+const PERMISSION_ROLES: Array<{ id: 'owner' | 'admin' | 'others'; en: string; el: string; noteEn?: string; noteEl?: string }> = [
+  { id: 'owner', en: 'Owner', el: 'Κάτοχος' },
+  { id: 'admin', en: 'Admin', el: 'Διαχειριστής' },
+  { id: 'others', en: 'Every other role', el: 'Κάθε άλλος ρόλος', noteEn: 'Program manager, mentor, reviewer, member', noteEl: 'Υπεύθυνος προγράμματος, μέντορας, αξιολογητής, μέλος' },
+];
 
 const ROLE_TONE: Record<string, StatusTone | 'neutral'> = {
   owner: 'warning',
@@ -238,9 +192,8 @@ function StatCard({ title, titleEl, value, change, trend }: {
 
 export default function OrgAdminPage() {
   const sayOne = useBilingualString();
-  // Illustrative rows are for the showcase; a real account with nothing
-  // to list sees the page's empty state, not invented people and records.
-  const { showDemoData } = useDemoData();
+  const fmtDate = useDateFormat();
+  const { openRailSection } = usePageRail();
   const params = useParams();
   const router = useRouter();
   const { success, error: showError } = useToast();
@@ -279,16 +232,20 @@ export default function OrgAdminPage() {
   /** True once the real organisation and member list have answered; the
    *  mock rows below are illustrative and the write paths refuse them. */
   const isLive = !!orgData && !!membersQuery.data;
-  const org = orgData
-    ? { name: orgData.name, logo: orgData.logo ?? orgData.logoUrl ?? undefined }
-    : MOCK_ORG;
-  const members = isLive ? (membersQuery.data ?? []).map(toViewMember) : showDemoData ? MOCK_MEMBERS : [];
+  const org = { name: orgData?.name ?? '', logo: orgData?.logo ?? orgData?.logoUrl ?? undefined };
+  const members = isLive ? (membersQuery.data ?? []).map(toViewMember) : [];
+  const membersFailed = membersQuery.isError && !membersQuery.data;
   const stats = {
-    totalMembers: members.length,
-    activeMembers: members.filter((m) => m.status === 'active').length,
-    suspended: members.filter((m) => m.status === 'suspended').length,
-    totalProjects: orgData?._count?.programs ?? 0,
+    totalMembers: isLive ? members.length : '—',
+    activeMembers: isLive ? members.filter((m) => m.status === 'active').length : '—',
+    suspended: isLive ? members.filter((m) => m.status === 'suspended').length : '—',
+    totalProjects: orgData?._count?.programs ?? '—',
   };
+
+  // /org/members and /org/settings send "Add member" here with ?add=1.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('add') === '1') setInviteOpen(true);
+  }, []);
 
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: qk('org', 'admin-members', orgId) });
@@ -450,7 +407,7 @@ export default function OrgAdminPage() {
       glyph: 'chart',
       labelEn: 'Organisation totals',
       labelEl: 'Σύνολα οργανισμού',
-      badge: stats.suspended || null,
+      badge: typeof stats.suspended === 'number' && stats.suspended > 0 ? stats.suspended : null,
       content: (
         <div className="space-y-2">
           <StatCard title="Total Members" titleEl="Σύνολο μελών" value={stats.totalMembers} icon={Users} />
@@ -488,7 +445,7 @@ export default function OrgAdminPage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger aria-label="Status" className="mt-2">
+              <SelectTrigger aria-label={bilingualAria('Status', 'Κατάσταση')} className="mt-2">
                 <SelectValue placeholder={sayOne("All statuses", "Όλες οι καταστάσεις")} />
               </SelectTrigger>
               <SelectContent>
@@ -514,7 +471,7 @@ export default function OrgAdminPage() {
             className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
           >
             <UserPlus className="icon-sm shrink-0" aria-hidden="true" />
-            <span className="min-w-0 flex-1"><BilingualText en="Invite member" el="Πρόσκληση μέλους" compact wrap /></span>
+            <span className="min-w-0 flex-1"><BilingualText en="Add member" el="Προσθήκη μέλους" compact wrap /></span>
           </button>
           <button
             type="button"
@@ -541,18 +498,32 @@ export default function OrgAdminPage() {
   }
 
   if (!orgData) {
+    // "Not found" only when the server says so (docs §91-§92); any other
+    // failure can be tried again.
+    const failedRead = orgQuery.isError && !isNotFound(orgQuery.error);
     return (
-      <AppShell showHelp>
-        <div className="flex flex-col items-center gap-4 py-16 text-center">
-          <h1 className="text-xl font-semibold">
-            {orgQuery.isError
-              ? <BilingualText en="Could not load organization" el="Δεν ήταν δυνατή η φόρτωση του οργανισμού" compact />
-              : <BilingualText en="Organization not found" el="Ο οργανισμός δεν βρέθηκε" compact />}
-          </h1>
-          <Button variant="outline" asChild>
-            <Link href="/org/dashboard"><BilingualText en="Back to organization dashboard" el="Πίσω στον πίνακα οργανισμού" compact /></Link>
-          </Button>
-        </div>
+      <AppShell showHelp title="Organization admin" titleEl="Διαχείριση οργανισμού">
+        {failedRead ? (
+          <Card>
+            <CardContent className="space-y-4">
+              <FailedLine
+                en="This organisation could not be read just now."
+                el="Ο οργανισμός δεν διαβάστηκε αυτή τη στιγμή."
+                busy={orgQuery.isFetching}
+                onRetry={() => void orgQuery.refetch()}
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="flex flex-col items-center gap-4 py-16 text-center">
+            <h1 className="text-xl font-semibold">
+              <BilingualText en="Organization not found" el="Ο οργανισμός δεν βρέθηκε" compact />
+            </h1>
+            <Button variant="outline" asChild>
+              <Link href="/org/dashboard"><BilingualText en="Back to organization dashboard" el="Πίσω στον πίνακα οργανισμού" compact /></Link>
+            </Button>
+          </div>
+        )}
       </AppShell>
     );
   }
@@ -584,14 +555,6 @@ export default function OrgAdminPage() {
             </Link>
           </Button>
         </div>
-
-        {!isLive && (
-          <SampleDataNotice
-            surface="Organization admin"
-            detail="This organisation and its members are illustrative until the directory responds; member actions are disabled on them."
-            askAiPrompt={ASK.orgAdminSample}
-          />
-        )}
 
         {/* Tabs */}
         <Tabs defaultValue="members" className="min-w-0 max-w-full space-y-4">
@@ -669,12 +632,12 @@ export default function OrgAdminPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {member.joinedAt.toLocaleDateString('en-GB', { timeZone: 'UTC' })}
+                        {fmtDate(member.joinedAt, { day: 'numeric', month: 'short', year: 'numeric' })}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
+                            <Button aria-label={bilingualAria(`More options for ${member.name}`, `Περισσότερες επιλογές: ${member.name}`)} variant="ghost" size="icon">
                               <MoreVertical className="icon-sm" aria-hidden="true" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -711,7 +674,24 @@ export default function OrgAdminPage() {
                       </TableCell>
                     </TableRow>
                   ))}
-                  {filteredMembers.length === 0 && (
+                  {membersFailed && (
+                    <TableRow>
+                      <TableCell colSpan={5}>
+                        <FailedLine
+                          en="The members could not be read just now."
+                          el="Τα μέλη δεν διαβάστηκαν αυτή τη στιγμή."
+                          busy={membersQuery.isFetching}
+                          onRetry={() => void membersQuery.refetch()}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {!isLive && !membersFailed && [0, 1, 2].map((i) => (
+                    <TableRow key={`loading-${i}`}>
+                      <TableCell colSpan={5}><Skeleton className="h-9" /></TableCell>
+                    </TableRow>
+                  ))}
+                  {isLive && filteredMembers.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
                         <BilingualText en="No members match the current filters." el="Κανένα μέλος δεν ταιριάζει με τα φίλτρα." wrap />
@@ -730,35 +710,38 @@ export default function OrgAdminPage() {
               </CardHeader>
               {/* An empty line on the card's axis, not a centred block whose
                   sentence (on the body step) was as loud as the card's title. */}
+              {/* Nothing waits as an invitation: members are added directly by
+                  user id. The tab's own "Invite Members" opened the same form
+                  as the rail's tool, so it points there instead (docs §96). */}
               <CardContent className="space-y-3">
-                <EmptyLine en="No pending invitations" el="Δεν υπάρχουν εκκρεμείς προσκλήσεις" />
-                <Button size="sm" onClick={() => setInviteOpen(true)}>
-                  <UserPlus className="icon-sm mr-2" aria-hidden="true" />
-                  <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
+                <EmptyLine
+                  en="No invitation waits here: members are added directly, by their user ID."
+                  el="Καμία πρόσκληση δεν περιμένει εδώ: τα μέλη προστίθενται απευθείας, με το αναγνωριστικό χρήστη τους."
+                />
+                <Button size="sm" variant="outline" onClick={() => openRailSection('tools')}>
+                  <BilingualText en="Open member tools" el="Άνοιγμα εργαλείων μελών" compact />
                 </Button>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="analytics">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle><BilingualText en="Member Growth" el="Αύξηση μελών" compact /></CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <EmptyLine en="No growth data recorded yet." el="Δεν έχουν καταγραφεί δεδομένα αύξησης ακόμα." />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle><BilingualText en="Activity Overview" el="Επισκόπηση δραστηριότητας" compact /></CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <EmptyLine en="No activity data recorded yet." el="Δεν έχει καταγραφεί δραστηριότητα ακόμα." />
-                </CardContent>
-              </Card>
-            </div>
+            {/* Two cards said "No growth data recorded yet" and "No activity
+                data recorded yet" for every organisation: nothing records
+                either. The organisation's counted figures live on Org
+                analytics, and this tab says where (docs §96). */}
+            <Card>
+              <CardHeader>
+                <CardTitle><BilingualText en="Member Growth" el="Αύξηση μελών" compact /></CardTitle>
+              </CardHeader>
+              <CardContent>
+                <EmptyLine
+                  en="Member growth and activity are not recorded yet. Programmes, applications, sessions and members are counted on Org analytics."
+                  el="Η αύξηση και η δραστηριότητα μελών δεν καταγράφονται ακόμη. Προγράμματα, αιτήσεις, συνεδρίες και μέλη μετρώνται στα Αναλυτικά οργανισμού."
+                  action={{ href: '/org/analytics', en: 'Open Org analytics', el: 'Άνοιγμα αναλυτικών οργανισμού' }}
+                />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="permissions">
@@ -768,33 +751,40 @@ export default function OrgAdminPage() {
                 <CardDescription><BilingualText en="What each role can do" el="Τι μπορεί να κάνει κάθε ρόλος" compact wrap /></CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {['owner', 'admin', 'member'].map((role) => (
-                  <div key={role} className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className={cn('capitalize border', roleChip(role))}>
-                        {role === 'owner' && <Crown className="icon-sm mr-1" />}
-                        <StatusText value={role} />
+                {/* What the API allows, not an illustration (docs §96): owners
+                    and admins pass checkAdminAccess (members, roles, the
+                    organisation, programmes); only an owner deletes the
+                    organisation or changes an owner; every other role -
+                    programme manager, mentor, reviewer, member - reads. The
+                    old grid gave members "Manage projects" and denied it to
+                    admins. */}
+                {PERMISSION_ROLES.map((group) => (
+                  <div key={group.id} className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="outline" className={cn('border', roleChip(group.id))}>
+                        {group.id === 'owner' && <Crown className="icon-sm mr-1" aria-hidden="true" />}
+                        <BilingualText en={group.en} el={group.el} compact />
                       </Badge>
+                      {group.noteEn ? <span className="text-xs text-muted-foreground"><BilingualText en={group.noteEn} el={group.noteEl ?? group.noteEn} compact wrap /></span> : null}
                     </div>
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 text-sm">
-                      {[
-                        { en: 'Invite members', el: 'Πρόσκληση μελών' },
-                        { en: 'Remove members', el: 'Αφαίρεση μελών' },
-                        { en: 'Manage roles', el: 'Διαχείριση ρόλων' },
-                        { en: 'Edit organization', el: 'Επεξεργασία οργανισμού' },
-                        { en: 'View analytics', el: 'Προβολή αναλυτικών' },
-                        { en: 'Manage projects', el: 'Διαχείριση έργων' },
-                      ].map((perm, i) => (
-                        <div key={perm.en} className="flex items-center gap-2">
-                          {(role === 'owner' || (role === 'admin' && i < 5) || (role === 'member' && i > 3)) ? (
-                            <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
-                          ) : (
-                            <XCircle className="icon-sm text-muted-foreground" aria-hidden="true" />
-                          )}
-                          <span className="min-w-0 text-muted-foreground"><BilingualText en={perm.en} el={perm.el} compact wrap /></span>
-                        </div>
-                      ))}
-                    </div>
+                    <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 text-sm">
+                      {PERMISSIONS.map((perm) => {
+                        const allowed = perm.roles.includes(group.id);
+                        return (
+                          <li key={perm.en} className="flex items-center gap-2">
+                            {allowed ? (
+                              <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} aria-hidden="true" />
+                            ) : (
+                              <XCircle className="icon-sm text-muted-foreground" aria-hidden="true" />
+                            )}
+                            <span className={cn('min-w-0', allowed ? 'text-foreground' : 'text-muted-foreground')}>
+                              <span className="sr-only">{allowed ? bilingualAria('Allowed:', 'Επιτρέπεται:') : bilingualAria('Not allowed:', 'Δεν επιτρέπεται:')} </span>
+                              <BilingualText en={perm.en} el={perm.el} compact wrap />
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
                 ))}
               </CardContent>
@@ -808,8 +798,9 @@ export default function OrgAdminPage() {
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle><BilingualText en="Invite member" el="Πρόσκληση μέλους" compact /></DialogTitle>
-            <DialogDescription className="sr-only"><BilingualText en="Add an existing user to the organisation by their user ID." el="Προσθέστε υπάρχοντα χρήστη στον οργανισμό με το αναγνωριστικό του." /></DialogDescription>
+            <DialogTitle><BilingualText en="Add member" el="Προσθήκη μέλους" compact /></DialogTitle>
+            {/* Said, not hidden: nothing is emailed, the person is added. */}
+            <DialogDescription><BilingualText en="Add an existing user to the organisation by their user ID. Nothing is emailed; they are added at once." el="Προσθέστε υπάρχοντα χρήστη στον οργανισμό με το αναγνωριστικό του. Δεν στέλνεται email· προστίθεται αμέσως." wrap /></DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -838,7 +829,7 @@ export default function OrgAdminPage() {
               </Select>
             </div>
             <Button className="w-full" disabled={!inviteUserId.trim() || inviting} onClick={() => void handleInvite()}>
-              {inviting ? 'Adding…' : 'Add member'}
+              {inviting ? <BilingualText en="Adding…" el="Προσθήκη…" compact /> : <BilingualText en="Add member" el="Προσθήκη μέλους" compact />}
             </Button>
           </div>
         </DialogContent>

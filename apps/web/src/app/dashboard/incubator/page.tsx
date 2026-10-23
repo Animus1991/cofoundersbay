@@ -27,7 +27,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
+import { EmptyLine, FailedLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { useSession } from '@/hooks/useSession';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import {
@@ -89,7 +89,10 @@ export default function IncubatorDashboard() {
   const fmtDate = useDateFormat();
   const shortDate = (iso: string | null) => (iso ? fmtDate(iso, { day: 'numeric', month: 'short' }) : '—');
   const { hasSession, mounted } = useSession();
-  const { membership, name: orgName, isLoading: orgLoading, isNone } = useCurrentOrg();
+  const {
+    membership, name: orgName, isLoading: orgLoading, isNone,
+    failed: orgFailed, refetch: refetchOrg, isFetching: orgFetching,
+  } = useCurrentOrg();
   const organizationId = membership?.organizationId ?? null;
 
   const { data: profile } = useQuery({
@@ -98,7 +101,10 @@ export default function IncubatorDashboard() {
     enabled: hasSession && mounted,
   });
 
-  const { data: programData, isLoading: programsLoading } = useQuery({
+  const {
+    data: programData, isLoading: programsLoading, isError: programsError,
+    refetch: refetchPrograms, isFetching: programsFetching,
+  } = useQuery({
     queryKey: qk('programs', 'organization', organizationId),
     queryFn: () => listOrganizationPrograms(organizationId!),
     enabled: Boolean(organizationId),
@@ -116,13 +122,27 @@ export default function IncubatorDashboard() {
     })),
   });
 
-  const { data: mentorData } = useQuery({
+  const { data: mentorData, isError: mentorsError } = useQuery({
     queryKey: qk('org', 'mentor-pool', organizationId),
     queryFn: () => getOrgMentorPool(organizationId!),
     enabled: Boolean(organizationId),
     staleTime: 60_000,
     retry: 0,
   });
+
+  /*
+   * What was not read is unknown, not zero (docs §96). Unread, the home said
+   * "No organisation yet", drew four tiles at 0 and told an organisation
+   * with programmes to "Create a program to start taking applications".
+   * Programmes failing takes every section with it (one line says so);
+   * participants failing takes the applications and the startups.
+   */
+  const programsFailed = orgFailed || (programsError && !programData);
+  const participantsFailed = participantQueries.some((q) => q.isError && !q.data);
+  const participantsFetching = participantQueries.some((q) => q.isFetching);
+  const mentorsFailed = orgFailed || (mentorsError && !mentorData);
+  const retryPrograms = () => { refetchOrg(); void refetchPrograms(); };
+  const retryParticipants = () => participantQueries.forEach((q) => { if (q.isError) void q.refetch(); });
 
   const now = Date.now();
   const rows = participantQueries.flatMap((q, i) =>
@@ -217,7 +237,7 @@ export default function IncubatorDashboard() {
             kickerEn="Application waiting"
             kickerEl="Αίτηση σε αναμονή"
             title={nextApplicationTitle}
-            href="/org/applications"
+            href={`/org/applications?review=${nextApplication.row.id}`}
             actionEn="Review"
             actionEl="Αξιολόγηση"
           />
@@ -227,7 +247,18 @@ export default function IncubatorDashboard() {
           <SectionCard title="No organisation yet" titleEl="Δεν υπάρχει οργανισμός ακόμα">
             <EmptyLine
               en="Programs, applications and cohorts appear here once your account belongs to an organisation."
-              el="Προγράμματα, αιτήσεις και cohorts εμφανίζονται εδώ όταν ο λογαριασμός σας ανήκει σε οργανισμό."
+              el="Προγράμματα, αιτήσεις και κύκλοι εμφανίζονται εδώ όταν ο λογαριασμός σας ανήκει σε οργανισμό."
+            />
+          </SectionCard>
+        )}
+
+        {programsFailed && (
+          <SectionCard title="Programs" titleEl="Προγράμματα" icon={FolderKanban}>
+            <FailedLine
+              en={orgFailed ? 'Your organisation could not be read just now.' : 'Your programmes could not be read just now.'}
+              el={orgFailed ? 'Ο οργανισμός σας δεν διαβάστηκε αυτή τη στιγμή.' : 'Τα προγράμματά σας δεν διαβάστηκαν αυτή τη στιγμή.'}
+              busy={orgFetching || programsFetching}
+              onRetry={retryPrograms}
             />
           </SectionCard>
         )}
@@ -238,52 +269,62 @@ export default function IncubatorDashboard() {
             icon={LayoutGrid}
             label="Running programs"
             labelEl="Ενεργά προγράμματα"
-            value={loading ? '—' : running.length}
-            caption={`${upcoming.length} upcoming · ${completed.length} completed`}
-            captionEl={`${upcoming.length} προσεχώς · ${completed.length} ολοκληρωμένα`}
+            value={loading || programsFailed ? '—' : running.length}
+            caption={programsFailed ? 'Not read just now' : `${upcoming.length} upcoming · ${completed.length} completed`}
+            captionEl={programsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : `${upcoming.length} προσεχώς · ${completed.length} ολοκληρωμένα`}
             href="/org/programs"
           />
           <MetricTile
             icon={Rocket}
             label="Startups in programs"
             labelEl="Startups σε προγράμματα"
-            value={loading ? '—' : inPrograms.length}
-            caption={`${alumni.length} alumni`}
-            captionEl={`${alumni.length} απόφοιτοι`}
+            value={loading || programsFailed || participantsFailed ? '—' : inPrograms.length}
+            caption={programsFailed || participantsFailed ? 'Not read just now' : `${alumni.length} alumni`}
+            captionEl={programsFailed || participantsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : `${alumni.length} απόφοιτοι`}
             href="/org/startups"
           />
           <MetricTile
             icon={GraduationCap}
             label="Mentors"
             labelEl="Μέντορες"
-            value={mentorData ? mentors.length : '—'}
-            caption={menteeSlots ? `${menteesTaken} of ${menteeSlots} mentee places taken` : 'Your mentor pool'}
-            captionEl={menteeSlots ? `${menteesTaken} από ${menteeSlots} θέσεις καθοδηγούμενων` : 'Η ομάδα μεντόρων σας'}
+            value={mentorData && !mentorsFailed ? mentors.length : '—'}
+            caption={mentorsFailed ? 'Not read just now' : menteeSlots ? `${menteesTaken} of ${menteeSlots} mentee places taken` : 'Your mentor pool'}
+            captionEl={mentorsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : menteeSlots ? `${menteesTaken} από ${menteeSlots} θέσεις καθοδηγούμενων` : 'Η δεξαμενή μεντόρων σας'}
             href="/org/mentors"
           />
           <MetricTile
             icon={UserPlus}
             label="Applications waiting"
             labelEl="Αιτήσεις σε αναμονή"
-            value={loading ? '—' : waiting.length}
-            caption={nextClose ? `${nextClose.p.title.split(' · ')[0]} closes in ${nextClose.d} days` : 'No round is open'}
-            captionEl={nextClose ? `Κλείνει σε ${nextClose.d} ημέρες` : 'Κανένας γύρος ανοιχτός'}
+            value={loading || programsFailed || participantsFailed ? '—' : waiting.length}
+            caption={programsFailed ? 'Not read just now' : nextClose ? `${nextClose.p.title.split(' · ')[0]} closes in ${nextClose.d} days` : 'No round is open'}
+            captionEl={programsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : nextClose ? `${nextClose.p.title.split(' · ')[0]}: κλείνει σε ${nextClose.d} ημέρες` : 'Κανένας γύρος ανοιχτός'}
             href="/org/applications"
           />
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
-            {/* Decisions first: each application waits on this organisation. */}
+            {/* Decisions first: each application waits on this organisation.
+                The one the flash above names is not listed again here. */}
+            {!programsFailed && (<>
             <SectionCard
-              title="Applications waiting"
-              titleEl="Αιτήσεις σε αναμονή"
+              title={nextApplication && !loading ? 'Also waiting' : 'Applications waiting'}
+              titleEl={nextApplication && !loading ? 'Επίσης σε αναμονή' : 'Αιτήσεις σε αναμονή'}
               icon={UserPlus}
               action={{ href: '/org/applications', label: 'All applications', labelEl: 'Όλες οι αιτήσεις' }}
               contentClassName="card-rows"
             >
               {loading && [0, 1].map((i) => <Skeleton key={i} className="h-16" />)}
-              {waiting.slice(0, 5).map(({ row, program }) => {
+              {participantsFailed && (
+                <FailedLine
+                  en="Applications could not be read just now."
+                  el="Οι αιτήσεις δεν διαβάστηκαν αυτή τη στιγμή."
+                  busy={participantsFetching}
+                  onRetry={retryParticipants}
+                />
+              )}
+              {waiting.slice(nextApplication && !loading ? 1 : 0, 6).map(({ row, program }) => {
                 const name = row.user.profile?.displayName ?? 'Applicant';
                 const startup = startupOf(row.user.profile?.headline);
                 // The applicant's circle, the startup over the program and
@@ -313,9 +354,9 @@ export default function IncubatorDashboard() {
                     aside={(
                       <>
                         <Button size="sm" variant="outline" asChild>
-                          <Link href="/org/applications"><BilingualText en="Review" el="Αξιολόγηση" compact /></Link>
+                          <Link href={`/org/applications?review=${row.id}`} aria-label={bilingualAria(`Review ${startup ?? name}`, `Αξιολόγηση: ${startup ?? name}`)}><BilingualText en="Review" el="Αξιολόγηση" compact /></Link>
                         </Button>
-                        <Button size="icon" variant="ghost" aria-label={`Message ${name} to schedule a call`} asChild>
+                        <Button size="icon" variant="ghost" aria-label={bilingualAria(`Message ${name} to schedule a call`, `Μήνυμα σε ${name} για να κλείσετε κλήση`)} asChild>
                           <Link href={`/messages?to=${row.userId}`}>
                             <MessageCircle className="icon-sm" aria-hidden="true" />
                           </Link>
@@ -325,8 +366,11 @@ export default function IncubatorDashboard() {
                   />
                 );
               })}
-              {!loading && waiting.length === 0 && (
+              {!loading && !participantsFailed && waiting.length === 0 && (
                 <EmptyLine en="No application is waiting for a decision." el="Καμία αίτηση δεν περιμένει απόφαση." />
+              )}
+              {!loading && !participantsFailed && waiting.length === 1 && (
+                <EmptyLine en="No other application is waiting." el="Καμία άλλη αίτηση δεν περιμένει." />
               )}
             </SectionCard>
 
@@ -364,6 +408,7 @@ export default function IncubatorDashboard() {
               )}
             </SectionCard>
 
+            {!participantsFailed && (
             <SectionCard title="Startups in programs" titleEl="Startups σε προγράμματα" icon={Rocket} action={{ href: '/org/startups', label: 'All startups', labelEl: 'Όλες οι startups' }} contentClassName="card-rows">
               {/* Startups are rounded squares, the founder and the program
                   under the name: two columns of rows, no frame per row. */}
@@ -392,6 +437,8 @@ export default function IncubatorDashboard() {
                 <EmptyLine en="Accepted applicants appear here once their program starts." el="Οι αποδεκτοί εμφανίζονται εδώ όταν ξεκινά το πρόγραμμά τους." />
               )}
             </SectionCard>
+            )}
+            </>)}
           </div>
 
           <div className="space-y-6">
@@ -399,15 +446,15 @@ export default function IncubatorDashboard() {
               label="Organisation pages"
               labelEl="Σελίδες οργανισμού"
               links={[
-                { href: '/tenant/programs', icon: Plus, label: 'Create program', labelEl: 'Νέο πρόγραμμα' },
                 { href: '/org/applications', icon: UserPlus, label: 'Review applications', labelEl: 'Αξιολόγηση αιτήσεων' },
-                { href: '/org/cohorts', icon: Users, label: 'Cohorts', labelEl: 'Cohorts' },
+                { href: '/org/cohorts', icon: Users, label: 'Cohorts', labelEl: 'Κύκλοι' },
                 { href: '/org/mentors', icon: GraduationCap, label: 'Manage mentors', labelEl: 'Μέντορες' },
                 { href: '/org/analytics', icon: BarChart3, label: 'Cohort reports', labelEl: 'Αναφορές' },
                 { href: '/org/settings', icon: Settings, label: 'Organisation settings', labelEl: 'Ρυθμίσεις οργανισμού' },
               ]}
             />
 
+            {!programsFailed && (<>
             <SectionCard title="Coming up" titleEl="Επόμενα" icon={CalendarClock} contentClassName="card-rows">
               {comingUp.map((item) => (
                 <RowHead
@@ -436,7 +483,7 @@ export default function IncubatorDashboard() {
             <SectionCard title="Program health" titleEl="Υγεία προγραμμάτων" contentClassName="space-y-4">
               {[
                 { en: 'Places filled', el: 'Πληρότητα θέσεων', value: fill, detail: seats ? { en: `${filled} of ${seats} in running programs`, el: `${filled} από ${seats} σε προγράμματα σε εξέλιξη` } : null },
-                { en: 'Acceptance rate', el: 'Ποσοστό αποδοχής', value: acceptance, detail: decided.length ? { en: `${accepted.length} of ${decided.length} decided applications`, el: `${accepted.length} από ${decided.length} αιτήσεις που κρίθηκαν` } : null },
+                { en: 'Acceptance rate', el: 'Ποσοστό αποδοχής', value: participantsFailed ? null : acceptance, detail: participantsFailed ? { en: 'Applications were not read just now', el: 'Οι αιτήσεις δεν διαβάστηκαν αυτή τη στιγμή' } : decided.length ? { en: `${accepted.length} of ${decided.length} decided applications`, el: `${accepted.length} από ${decided.length} αιτήσεις που κρίθηκαν` } : null },
               ].map((row) => (
                 <div key={row.en} className="space-y-1.5">
                   <div className="flex items-baseline justify-between gap-3 text-sm">
@@ -451,10 +498,11 @@ export default function IncubatorDashboard() {
               ))}
               <p className="flex items-center gap-1.5 border-t border-border pt-3 text-sm">
                 <GraduationCap className="icon-sm text-muted-foreground" aria-hidden="true" />
-                <span className="tabular-nums">{alumni.length}</span>
+                <span className="tabular-nums">{participantsFailed ? '—' : alumni.length}</span>
                 <BilingualText en="startups graduated" el="startups αποφοίτησαν" />
               </p>
             </SectionCard>
+            </>)}
           </div>
         </div>
 

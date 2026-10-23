@@ -1283,24 +1283,20 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          This screen administers <strong>one organization</strong> — programs, cohorts, members, and branding for
-          this slug — not the platform-wide admin console and not the public org page.
+          This screen administers <strong>one organization&rsquo;s members</strong> — roles, suspension, removal and adding someone by their user ID — not the platform-wide admin console and not the public org page.
         </p>
         <p>
-          Changes here apply to this org only. Cohort detail, applications, and the org dashboard stay one click away
-          from the rail and header. A dash in a stat means it was not recorded, not zero.
+          Changes here apply to this org only, and only owners and admins can make them; the Permissions tab lists what each role may do, as the server checks it. A dash in a figure means it was not read, not zero.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Αυτή η οθόνη διαχειρίζεται <strong>έναν οργανισμό</strong> — προγράμματα, κύκλους, μέλη και branding για αυτό
-          το slug — όχι την κονσόλα όλης της πλατφόρμας και όχι τη δημόσια σελίδα.
+          Αυτή η οθόνη διαχειρίζεται <strong>τα μέλη ενός οργανισμού</strong> — ρόλους, αναστολή, αφαίρεση και προσθήκη με αναγνωριστικό χρήστη — όχι την κονσόλα όλης της πλατφόρμας και όχι τη δημόσια σελίδα.
         </p>
         <p>
-          Οι αλλαγές ισχύουν μόνο για αυτόν τον οργανισμό. Η λεπτομέρεια κύκλου, οι αιτήσεις και ο πίνακας οργανισμού
-          μένουν ένα κλικ μακριά από ράγα και κεφαλίδα. Παύλα σε στατιστικό σημαίνει ότι δεν καταγράφηκε, όχι μηδέν.
+          Οι αλλαγές ισχύουν μόνο για αυτόν τον οργανισμό και τις κάνουν μόνο κάτοχοι και διαχειριστές· η καρτέλα Δικαιώματα δείχνει τι μπορεί κάθε ρόλος, όπως το ελέγχει ο διακομιστής. Παύλα σε αριθμό σημαίνει ότι δεν διαβάστηκε, όχι μηδέν.
         </p>
       </>
     ),
@@ -1786,8 +1782,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           <em>participantCount</em> from the same program row — it cannot disagree with Applications.
         </p>
         <p>
-          Create writes a real program. Opening a row goes to that program&rsquo;s cohorts and applications, not a
-          separate catalogue.
+          Create writes a real program. Opening a row goes to the programme&rsquo;s own page; <em>Manage participants</em>, in its menu, opens the applications to that programme.
         </p>
       </>
     ),
@@ -1798,8 +1793,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           εγγραφή είναι το <em>participantCount</em> της ίδιας γραμμής — δεν μπορεί να διαφωνεί με τις Αιτήσεις.
         </p>
         <p>
-          Η δημιουργία γράφει πραγματικό πρόγραμμα. Το άνοιγμα γραμμής πηγαίνει στους κύκλους και τις αιτήσεις του —
-          όχι σε ξεχωριστό κατάλογο.
+          Η δημιουργία γράφει πραγματικό πρόγραμμα. Το άνοιγμα γραμμής πηγαίνει στη σελίδα του προγράμματος· η <em>Διαχείριση συμμετεχόντων</em>, στο μενού του, ανοίγει τις αιτήσεις σε αυτό το πρόγραμμα.
         </p>
       </>
     ),
@@ -1808,24 +1802,20 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Applications across every open program you run. Scoring and status write to the same artefact the
-          founder sees on Builder Applications.
+          Applications across your programmes. Accept and Reject write the participant&rsquo;s status — the record the programme counts its places from.
         </p>
         <p>
-          Filters slice this list only. A dash in a score means it was not rated yet. Accepting places the startup
-          on <Link href="/org/startups">Portfolio</Link> and the matching cohort.
+          Filters slice this list only. A score is shown when one was given; it is not set from this page. <Link href="/org/startups">Portfolio</Link> lists the founders in your cohorts.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Αιτήσεις από κάθε ανοιχτό πρόγραμμα που τρέχετε. Η βαθμολογία και η κατάσταση γράφουν στο ίδιο παραδοτέο
-          που βλέπει ο ιδρυτής στις Αιτήσεις του Builder.
+          Αιτήσεις από τα προγράμματά σας. Η αποδοχή και η απόρριψη γράφουν την κατάσταση του συμμετέχοντα — την εγγραφή από την οποία το πρόγραμμα μετρά τις θέσεις του.
         </p>
         <p>
-          Τα φίλτρα κόβουν μόνο αυτή τη λίστα. Παύλα σε βαθμό σημαίνει ότι δεν βαθμολογήθηκε ακόμη. Η αποδοχή βάζει
-          το startup στο <Link href="/org/startups">Χαρτοφυλάκιο</Link> και στον αντίστοιχο κύκλο.
+          Τα φίλτρα κόβουν μόνο αυτή τη λίστα. Ο βαθμός εμφανίζεται όταν έχει δοθεί· δεν ορίζεται από αυτή τη σελίδα. Το <Link href="/org/startups">Χαρτοφυλάκιο</Link> δείχνει τους ιδρυτές των κύκλων σας.
         </p>
       </>
     ),
@@ -1860,24 +1850,20 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Startups currently in your programs and graduates. The row is a participant the applications list already
-          accepted — not a second CRM.
+          The founders in your cohorts: each row is the startup their headline names, the founder, their place and their cohort — not a second CRM.
         </p>
         <p>
-          Stage and progress come from that program membership. A dash was not recorded. Open the company for the
-          cohort they sit in.
+          Stage, progress and readiness are not recorded for a cohort member, so they are not shown. Opening a startup opens its founder&rsquo;s profile.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Startups στα προγράμματά σας και απόφοιτοι. Η γραμμή είναι συμμετέχων που οι αιτήσεις έχουν ήδη
-          αποδεχτεί — όχι δεύτερο CRM.
+          Οι ιδρυτές των κύκλων σας: κάθε γραμμή είναι η startup που ονομάζει ο τίτλος τους, ο ιδρυτής, ο τόπος και ο κύκλος τους — όχι δεύτερο CRM.
         </p>
         <p>
-          Στάδιο και πρόοδος έρχονται από εκείνη τη συμμετοχή στο πρόγραμμα. Η παύλα δεν καταγράφηκε. Ανοίξτε την
-          εταιρεία για τον κύκλο στον οποίο ανήκει.
+          Στάδιο, πρόοδος και ετοιμότητα δεν καταγράφονται για μέλος κύκλου, οπότε δεν εμφανίζονται. Το άνοιγμα μιας startup ανοίγει το προφίλ του ιδρυτή της.
         </p>
       </>
     ),
@@ -1886,8 +1872,9 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          People who can run programs, review applications, and change settings for this organization. Invite
-          writes a membership — it is not a platform-admin grant.
+          People who can run programs, review applications, and change settings for this organization. Adding
+          someone (by their user ID, on the admin page) writes a membership at once — nothing is emailed, and it is
+          not a platform-admin grant.
         </p>
         <p>
           Removing a member drops org access only. Their personal CoFounderBay account stays. Roles here do not
@@ -1899,7 +1886,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Όσοι μπορούν να τρέχουν προγράμματα, να αξιολογούν αιτήσεις και να αλλάζουν ρυθμίσεις αυτού του
-          οργανισμού. Η πρόσκληση γράφει ιδιότητα μέλους — όχι δικαίωμα platform-admin.
+          οργανισμού. Η προσθήκη κάποιου (με το αναγνωριστικό χρήστη του, στη σελίδα διαχείρισης) γράφει αμέσως
+          ιδιότητα μέλους — δεν στέλνεται email, και δεν είναι δικαίωμα platform-admin.
         </p>
         <p>
           Η αφαίρεση μέλους κόβει μόνο την πρόσβαση στον οργανισμό. Ο προσωπικός λογαριασμός CoFounderBay μένει. Οι
@@ -1912,24 +1900,26 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Mentors available to your cohorts. Invite by email or pull from the public{' '}
-          <Link href="/mentoring">Find mentors</Link> directory. They are not automatically every mentor on the platform.
+          Mentors available to your cohorts. Find more in the public{' '}
+          <Link href="/mentoring">Find mentors</Link> directory and message them; there is no email invitation yet.
+          They are not automatically every mentor on the platform.
         </p>
         <p>
-          Assigning a mentor to a cohort happens on the cohort detail page. This list is the pool, not the
-          session calendar.
+          Assigning a mentor to a startup is not stored yet, and cohort membership is managed by platform
+          administrators. This list is the pool, not the session calendar.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Μέντορες διαθέσιμοι στους κύκλους σας. Προσκαλέστε με email ή από τον δημόσιο κατάλογο{' '}
-          <Link href="/mentoring">Εύρεση μεντόρων</Link>. Δεν είναι αυτόματα όλοι οι μέντορες της πλατφόρμας.
+          Μέντορες διαθέσιμοι στους κύκλους σας. Βρείτε κι άλλους στον δημόσιο κατάλογο{' '}
+          <Link href="/mentoring">Εύρεση μεντόρων</Link> και στείλτε τους μήνυμα· πρόσκληση με email δεν υπάρχει
+          ακόμη. Δεν είναι αυτόματα όλοι οι μέντορες της πλατφόρμας.
         </p>
         <p>
-          Η ανάθεση μέντορα σε κύκλο γίνεται στη σελίδα του κύκλου. Αυτή η λίστα είναι το pool, όχι το ημερολόγιο
-          συνεδριών.
+          Η ανάθεση μέντορα σε startup δεν αποθηκεύεται ακόμη, και τη συμμετοχή σε κύκλους τη διαχειρίζονται οι
+          διαχειριστές της πλατφόρμας. Αυτή η λίστα είναι η δεξαμενή, όχι το ημερολόγιο συνεδριών.
         </p>
       </>
     ),
@@ -1938,25 +1928,20 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Demo days, office hours, workshops, and pitch nights for your cohorts. RSVP and dates write to this
-          org&rsquo;s events — not the public <Link href="/events">Events</Link> catalogue unless you publish them there.
+          The events you host. They are the same events the public <Link href="/events">Events</Link> catalogue lists — an event has no organisation of its own yet.
         </p>
         <p>
-          Create opens the real composer. A missing location or time is omitted on the card, not filled with
-          sample copy.
+          Create opens the real composer; Duplicate copies an event a week later. Editing and deleting an event are not available yet. A missing location or time is omitted on the card, not filled with sample copy.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Demo days, office hours, workshops και pitch nights για τους κύκλους σας. RSVP και ημερομηνίες γράφουν
-          στις εκδηλώσεις αυτού του οργανισμού — όχι στον δημόσιο κατάλογο <Link href="/events">Εκδηλώσεων</Link> εκτός αν
-          τις δημοσιεύσετε εκεί.
+          Οι εκδηλώσεις που διοργανώνετε. Είναι οι ίδιες που δείχνει ο δημόσιος κατάλογος <Link href="/events">Εκδηλώσεων</Link> — μια εκδήλωση δεν ανήκει ακόμη σε οργανισμό.
         </p>
         <p>
-          Η δημιουργία ανοίγει τον πραγματικό συνθέτη. Η απουσία τοποθεσίας ή ώρας παραλείπεται στην κάρτα, δεν
-          γεμίζει με δείγμα.
+          Η δημιουργία ανοίγει τον πραγματικό συνθέτη· η Αντιγραφή φτιάχνει την ίδια εκδήλωση μια εβδομάδα αργότερα. Επεξεργασία και διαγραφή δεν υπάρχουν ακόμη. Η απουσία τοποθεσίας ή ώρας παραλείπεται στην κάρτα, δεν γεμίζει με δείγμα.
         </p>
       </>
     ),
@@ -1965,24 +1950,20 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Funnel and cohort health are recorded counts for this organization only — not platform-wide admin
-          analytics. A dash means the period was not measured.
+          Counted from this organisation&rsquo;s own lists — programmes, their applications, your cohorts&rsquo; members and sessions, the mentor pool — not platform-wide admin analytics. A dash means it was not read or not recorded.
         </p>
         <p>
-          Application totals must match <Link href="/org/applications">Applications</Link> for the same range. Member
-          growth is new org memberships, not every login.
+          Application totals match <Link href="/org/applications">Applications</Link> for the same range. Members by role and founders by city come from your cohorts&rsquo; members.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Η χοάνη και η υγεία των κύκλων είναι καταγεγραμμένα πλήθη μόνο γι&rsquo; αυτόν τον οργανισμό — όχι τα αναλυτικά όλης
-          της πλατφόρμας. Η παύλα σημαίνει ότι η περίοδος δεν μετρήθηκε.
+          Μετρώνται από τις λίστες του ίδιου του οργανισμού — προγράμματα, οι αιτήσεις τους, τα μέλη και οι συνεδρίες των κύκλων σας, η δεξαμενή μεντόρων — όχι τα αναλυτικά όλης της πλατφόρμας. Η παύλα σημαίνει ότι δεν διαβάστηκε ή δεν καταγράφηκε.
         </p>
         <p>
-          Τα σύνολα αιτήσεων πρέπει να συμφωνούν με τις <Link href="/org/applications">Αιτήσεις</Link> για το ίδιο
-          διάστημα. Η ανάπτυξη μελών είναι νέες ιδιότητες μέλους οργανισμού, όχι κάθε σύνδεση.
+          Τα σύνολα αιτήσεων συμφωνούν με τις <Link href="/org/applications">Αιτήσεις</Link> για το ίδιο διάστημα. Τα μέλη ανά ρόλο και οι ιδρυτές ανά πόλη προέρχονται από τα μέλη των κύκλων σας.
         </p>
       </>
     ),
@@ -1991,24 +1972,20 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Profile, branding, permissions, and billing for <em>this</em> organization. These are not tenant
-          white-label settings and not the platform admin console.
+          Profile, branding, permissions, and billing for <em>this</em> organization. These are not tenant white-label settings and not the platform admin console.
         </p>
         <p>
-          Publish branding only when this screen says so. Team permissions overlap <Link href="/org/members">Members</Link>{' '}
-          — changing a role here is the same membership.
+          The profile and the primary colour are saved; logo, custom domain and billing are not connected yet, and the access policies are stored but not applied yet. Changing a role here is the same membership as on <Link href="/org/members">Members</Link>.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Προφίλ, branding, δικαιώματα και χρέωση για <em>αυτόν</em> τον οργανισμό. Δεν είναι ρυθμίσεις white-label
-          tenant και όχι η κονσόλα platform admin.
+          Προφίλ, branding, δικαιώματα και χρέωση για <em>αυτόν</em> τον οργανισμό. Δεν είναι ρυθμίσεις white-label tenant και όχι η κονσόλα platform admin.
         </p>
         <p>
-          Δημοσιεύστε branding μόνο όταν το λέει αυτή η οθόνη. Τα δικαιώματα ομάδας επικαλύπτονται με τα{' '}
-          <Link href="/org/members">Μέλη</Link> — η αλλαγή ρόλου εδώ είναι η ίδια ιδιότητα μέλους.
+          Το προφίλ και το κύριο χρώμα αποθηκεύονται· λογότυπο, προσαρμοσμένος τομέας και χρέωση δεν έχουν συνδεθεί ακόμη, και οι πολιτικές πρόσβασης αποθηκεύονται αλλά δεν εφαρμόζονται ακόμη. Η αλλαγή ρόλου εδώ είναι η ίδια ιδιότητα μέλους με τα <Link href="/org/members">Μέλη</Link>.
         </p>
       </>
     ),

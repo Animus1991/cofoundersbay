@@ -3,16 +3,14 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
-  GraduationCap,
   Search,
   Plus,
   Star,
-  Users,
-  Calendar,
   MoreVertical,
   CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { OrgReadFailed } from '@/components/org/OrgReadFailed';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { getOrgMentorPool, type OrgMentorPoolItem } from '@/lib/api';
@@ -41,6 +39,9 @@ import { StatusText } from '@/components/common/StatusText';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ASK } from '@/lib/page-questions';
 
 /**
  * The page's own row from the pool row.
@@ -88,7 +89,7 @@ const MENTOR_STATUS_TONE: Record<Mentor['status'], StatusTone> = {
   pending: 'warning',
 };
 
-function MentorCard({ mentor }: { mentor: Mentor }) {
+function MentorCard({ mentor, sample = false }: { mentor: Mentor; /** A sample mentor has no profile or thread (ids 'mentor1'…). */ sample?: boolean }) {
   const initials = mentor.name
     ?.split(' ')
     .map((n) => n[0])
@@ -102,21 +103,25 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
     <Card className="transition-all hover:border-primary/30">
       <CardContent className="space-y-3">
         <CardHead
+          // The avatar, the name and the menu's "View Profile" were three
+          // links to one profile; the name is the one (docs §96). It opens
+          // the member profile, as /mentor/mentees does, not the public /p
+          // page, which is addressed by username.
           mark={(
-            <Link href={`/p/${mentor.userId}`} aria-label={bilingualInline(`Open ${mentor.name}'s profile`, `Άνοιγμα προφίλ: ${mentor.name}`)}>
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={mentor.avatar} />
-                <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={mentor.avatar} alt="" />
+              <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
           )}
           title={(
             <span className="flex items-center gap-1.5">
-              <Link href={`/p/${mentor.userId}`} className="hover:text-primary-accessible transition-colors">
-                {mentor.name}
-              </Link>
+              {sample ? mentor.name : (
+                <Link href={`/profiles/${mentor.userId}`} className="hover:text-primary-accessible transition-colors">
+                  {mentor.name}
+                </Link>
+              )}
               {mentor.isVerified && (
                 <CheckCircle2 className="icon-sm text-primary-accessible" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />
               )}
@@ -131,19 +136,20 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
               </Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
+                  <Button aria-label={bilingualAria(`More options for ${mentor.name}`, `Περισσότερες επιλογές: ${mentor.name}`)} variant="ghost" size="icon">
                     <MoreVertical className="icon-sm" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href={`/p/${mentor.userId}`}><BilingualText en="View Profile" el="Προβολή προφίλ" compact /></Link>
-                  </DropdownMenuItem>
                   <UnavailableMenuItem en="Assign to Startup" el="Ανάθεση σε startup" reasonEn="Mentor assignments are not stored yet." reasonEl="Οι αναθέσεις μεντόρων δεν αποθηκεύονται ακόμη." />
                   <UnavailableMenuItem en="View Sessions" el="Συνεδρίες" reasonEn="No organisation-wide session view yet." reasonEl="Δεν υπάρχει ακόμη προβολή συνεδριών ανά οργανισμό." />
-                  <DropdownMenuItem asChild>
-                    <Link href={`/messages?to=${mentor.userId}`}><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></Link>
-                  </DropdownMenuItem>
+                  {sample ? (
+                    <UnavailableMenuItem en="Send Message" el="Αποστολή μηνύματος" reasonEn="A sample mentor cannot receive messages." reasonEl="Ένα δείγμα μέντορα δεν λαμβάνει μηνύματα." />
+                  ) : (
+                    <DropdownMenuItem asChild>
+                      <Link href={`/messages?to=${mentor.userId}`}><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></Link>
+                    </DropdownMenuItem>
+                  )}
                   <UnavailableMenuItem className="text-destructive-accessible" en="Remove from Pool" el="Αφαίρεση από τη δεξαμενή" reasonEn="The pool is read from mentor profiles; there is no pool membership to remove." reasonEl="Η δεξαμενή προκύπτει από τα προφίλ μεντόρων· δεν υπάρχει συμμετοχή για αφαίρεση." />
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -203,7 +209,7 @@ const SEED_MENTORS: Mentor[] = attachDemoPhotos([
     id: '3',
     userId: 'mentor3',
     name: 'Emma Williams',
-    headline: 'FinTech Expert, Ex-Stripe',
+    headline: 'FinTech expert, former payments lead',
     expertise: ['FinTech', 'Payments', 'Compliance'],
     activeMentees: 2,
     maxMentees: 3,
@@ -237,9 +243,9 @@ export default function OrgMentorsPage() {
    * The organisation's real pool. The seed below is what an organisation
    * with an empty pool sees, so the screen still teaches its shape.
    */
-  const { membership } = useCurrentOrg();
+  const { membership, isLoading: orgLoading, failed: orgFailed, refetch: refetchOrg, isFetching: orgFetching } = useCurrentOrg();
   const organizationId = membership?.organizationId ?? null;
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError: mainError, refetch: refetchMain, isFetching: mainFetching } = useQuery({
     queryKey: qk('org', 'mentor-pool', organizationId),
     queryFn: () => getOrgMentorPool(organizationId!),
     enabled: Boolean(organizationId),
@@ -249,6 +255,11 @@ export default function OrgMentorsPage() {
 
   const live = useMemo(() => (data?.mentors ?? []).map(toPageMentor), [data]);
   const mentors: Mentor[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_MENTORS;
+  const isSample = live.length === 0 && mentors.length > 0;
+  const reading = orgLoading || isLoading;
+  // The pool records no sessions, so a live pool's "Total Sessions" read "—"
+  // for ever; the figure shows only where every row carries one.
+  const sessionsCounted = mentors.length > 0 && mentors.every((m) => m.totalSessions != null);
 
 
   const filteredMentors = mentors.filter((m) => {
@@ -275,27 +286,44 @@ export default function OrgMentorsPage() {
     { id: 'clear_search', labelEn: 'Clear the mentor search', labelEl: 'Καθαρισμός αναζήτησης μεντόρων', writes: false, unavailableEn: search ? undefined : 'No search is set.', unavailableEl: search ? undefined : 'Δεν υπάρχει αναζήτηση.', run: () => setSearch('') },
   ]);
 
+  // Unread, the page drew its tiles as 0 and its empty state, as if the
+  // organisation had nothing in it (docs §96).
+  if (orgFailed || (mainError && !data)) {
+    return (
+      <AppShell showHelp>
+        <OrgReadFailed en={orgFailed ? undefined : 'Your mentor pool could not be read just now.'} el={orgFailed ? undefined : 'Η δεξαμενή μεντόρων σας δεν διαβάστηκε αυτή τη στιγμή.'} busy={orgFetching || mainFetching} onRetry={() => { refetchOrg(); void refetchMain(); }} />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell showHelp
       title="Mentor Pool"
       description="Manage mentors available to your cohorts. Find them in the platform's mentor directory."
-      descriptionEl="Διαχειριστείτε τους μέντορες των κοορτών σας. Βρείτε νέους στον κατάλογο μεντόρων της πλατφόρμας."
-      actions={(
-        // Linked to /org/mentors/invite, which never existed, and promised
-        // email invites no endpoint sends. The directory is where a mentor is
-        // found today.
+      descriptionEl="Διαχειριστείτε τους μέντορες των κύκλων σας. Βρείτε νέους στον κατάλογο μεντόρων της πλατφόρμας."
+      // Linked to /org/mentors/invite, which never existed, and promised
+      // email invites no endpoint sends. The directory is where a mentor is
+      // found today; the empty state carries the same link (docs §96).
+      actions={mentors.length > 0 || reading ? (
         <Button asChild>
           <Link href="/mentoring">
             <Plus className="mr-2 icon-sm" aria-hidden="true" />
-            <BilingualText en="Find a mentor to invite" el="Βρείτε μέντορα για πρόσκληση" compact />
+            <BilingualText en="Find a mentor" el="Βρείτε μέντορα" compact />
           </Link>
         </Button>
-      )}
+      ) : undefined}
     >
       <div className="space-y-6">
+        {isSample && (
+          <SampleDataNotice
+            surface="Mentor Pool"
+            detail="Your mentor pool is empty, so these are samples that show the layout; they open no profile."
+            askAiPrompt={ASK.orgMentorsSample}
+          />
+        )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
+        {mentors.length > 0 && (<>
+        <div className={cn('grid grid-cols-2 gap-4', sessionsCounted ? 'kpi-odd-span-md md:grid-cols-4' : 'md:grid-cols-3')}>
           <Card>
             <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Mentors" el="Σύνολο μεντόρων" compact /></p>
@@ -314,17 +342,18 @@ export default function OrgMentorsPage() {
               <p className="page-stat text-xl font-bold">{currentMentees}/{totalCapacity}</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Total Sessions" el="Σύνολο συνεδριών" compact /></p>
-              <p className="page-stat text-xl font-bold">
-                {mentors.some((m) => m.totalSessions == null) ? '\u2014' : mentors.reduce((acc, m) => acc + (m.totalSessions ?? 0), 0)}
-              </p>
-            </CardContent>
-          </Card>
+          {sessionsCounted && (
+            <Card>
+              <CardContent>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Total Sessions" el="Σύνολο συνεδριών" compact /></p>
+                <p className="page-stat text-xl font-bold">{mentors.reduce((acc, m) => acc + (m.totalSessions ?? 0), 0)}</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
+        </>)}
 
-        {/* Search */}
+        {(mentors.length > 0 || !!search) && (
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
@@ -335,13 +364,15 @@ export default function OrgMentorsPage() {
             className="pl-9"
           />
         </div>
+        )}
 
         {/* Mentors List */}
         <div className="space-y-3">
+          {reading && mentors.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="h-28" />)}
           {filteredMentors.map((mentor) => (
-            <MentorCard key={mentor.id} mentor={mentor} />
+            <MentorCard key={mentor.id} mentor={mentor} sample={isSample} />
           ))}
-          {filteredMentors.length === 0 && (
+          {!reading && filteredMentors.length === 0 && (
             <EmptyOrgMentors filtersActive={!!search} onClearFilters={() => setSearch('')} active={namedFilters(namedQuery(search))} />
           )}
         </div>

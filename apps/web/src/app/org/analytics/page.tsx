@@ -6,6 +6,7 @@ import { CalendarCheck, Download, GraduationCap, RefreshCw, Rocket, UserPlus } f
 import dynamic from 'next/dynamic';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
+import { OrgReadFailed } from '@/components/org/OrgReadFailed';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BilingualText } from '@/components/common/BilingualText';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
+import { EmptyLine, FailedLine, SectionCard } from '@/components/dashboard/SectionCard';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import {
   getOrgCohortDetail,
@@ -82,6 +83,9 @@ const SERIES_COLORS = [
   'hsl(var(--status-warning-mark))',
 ] as const;
 
+/** Founders with no place on their profile, counted under one key and said in the reader's language. */
+const UNKNOWN_CITY = '\u0000unknown';
+
 function monthKey(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth()}`;
 }
@@ -91,11 +95,11 @@ export default function OrgAnalyticsPage() {
   const fmtDate = useDateFormat();
   const [period, setPeriod] = useState<(typeof PERIODS)[number]['value']>('30d');
   const windowDays = PERIODS.find((p) => p.value === period)?.days ?? 30;
-  const { slug, membership } = useCurrentOrg();
+  const { slug, membership, failed: orgFailed, refetch: refetchOrg, isFetching: orgFetching } = useCurrentOrg();
   const organizationId = membership?.organizationId ?? null;
   const queryClient = useQueryClient();
 
-  const { data: programsData, isLoading: programsLoading } = useQuery({
+  const { data: programsData, isLoading: programsLoading, isError: mainError, refetch: refetchMain, isFetching: mainFetching } = useQuery({
     queryKey: qk('programs', 'organization', organizationId),
     queryFn: () => listOrganizationPrograms(organizationId!),
     enabled: Boolean(organizationId),
@@ -111,21 +115,21 @@ export default function OrgAnalyticsPage() {
       retry: 0,
     })),
   });
-  const { data: membersData } = useQuery({
+  const { data: membersData, isError: membersError, refetch: refetchMembers, isFetching: membersFetching } = useQuery({
     queryKey: qk('org', 'members', slug),
     queryFn: () => getOrgMembers(slug!, { limit: 100 }),
     enabled: Boolean(slug),
     staleTime: 60_000,
     retry: 0,
   });
-  const { data: mentorsData } = useQuery({
+  const { data: mentorsData, isError: mentorsError, refetch: refetchMentors, isFetching: mentorsFetching } = useQuery({
     queryKey: qk('org', 'mentor-pool', organizationId),
     queryFn: () => getOrgMentorPool(organizationId!),
     enabled: Boolean(organizationId),
     staleTime: 60_000,
     retry: 0,
   });
-  const { data: cohortsData } = useQuery({
+  const { data: cohortsData, isError: cohortsError, refetch: refetchCohorts, isFetching: cohortsFetching } = useQuery({
     queryKey: qk('org', 'cohorts', slug),
     queryFn: () => getOrgCohorts(slug!, { limit: 50 }),
     enabled: Boolean(slug),
@@ -142,6 +146,20 @@ export default function OrgAnalyticsPage() {
       retry: 0,
     })),
   });
+
+  /*
+   * Each panel says when its own read failed (docs §96): unread, the funnel
+   * read 0 -> 0, the charts drew six empty months and "Members appear once
+   * a cohort has started" stood under an organisation that has members.
+   */
+  const participantsFailed = participantQueries.some((q) => q.isError && !q.data);
+  const participantsFetching = participantQueries.some((q) => q.isFetching);
+  const retryParticipants = () => participantQueries.forEach((q) => { if (q.isError) void q.refetch(); });
+  const membersFailed = membersError && !membersData;
+  const mentorsFailed = mentorsError && !mentorsData;
+  const sessionsFailed = (cohortsError && !cohortsData) || cohortQueries.some((q) => q.isError && !q.data);
+  const sessionsFetching = cohortsFetching || cohortQueries.some((q) => q.isFetching);
+  const retrySessions = () => { void refetchCohorts(); cohortQueries.forEach((q) => { if (q.isError) void q.refetch(); }); };
 
   const now = Date.now();
   const inWindow = (iso: string | null | undefined) => {
@@ -193,14 +211,19 @@ export default function OrgAnalyticsPage() {
   const perMonth = Math.round(recentMonths.reduce((sum, m) => sum + m.sessions, 0) / recentMonths.length);
 
   // ── Who is in the organisation ──────────────────────────────────────────
-  const byRole = (['founder', 'mentor', 'investor'] as const)
-    .map((role, i) => ({ name: role[0].toUpperCase() + role.slice(1) + 's', value: members.filter((m) => m.role === role).length, color: SERIES_COLORS[i] }))
+  // The legend was English in both languages ("Founders", "Unknown").
+  const byRole = ([
+    ['founder', 'Founders', 'Ιδρυτές'],
+    ['mentor', 'Mentors', 'Μέντορες'],
+    ['investor', 'Investors', 'Επενδυτές'],
+  ] as const)
+    .map(([role, en, el], i) => ({ name: en, nameEl: el, value: members.filter((m) => m.role === role).length, color: SERIES_COLORS[i] }))
     .filter((r) => r.value > 0);
   const cities = Object.entries(
     members
       .filter((m) => m.role === 'founder')
       .reduce<Record<string, number>>((acc, m) => {
-        const city = m.location?.split(',')[0]?.trim() || 'Unknown';
+        const city = m.location?.split(',')[0]?.trim() || UNKNOWN_CITY;
         acc[city] = (acc[city] ?? 0) + 1;
         return acc;
       }, {}),
@@ -260,11 +283,21 @@ export default function OrgAnalyticsPage() {
     { id: 'export', labelEn: 'Export the analytics as CSV', labelEl: 'Εξαγωγή αναλυτικών σε CSV', writes: false, run: exportCsv },
   ]);
 
+  // Unread, the page drew its tiles as 0 and its empty state, as if the
+  // organisation had nothing in it (docs §96).
+  if (orgFailed || (mainError && !programsData)) {
+    return (
+      <AppShell showHelp>
+        <OrgReadFailed en={orgFailed ? undefined : 'Your programmes could not be read just now.'} el={orgFailed ? undefined : 'Τα προγράμματά σας δεν διαβάστηκαν αυτή τη στιγμή.'} busy={orgFetching || mainFetching} onRetry={() => { refetchOrg(); void refetchMain(); }} />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell showHelp
       title="Org Analytics"
       description="Cohort health, program impact, application funnel, and member growth in one dashboard."
-      descriptionEl="Κατάσταση κοορτών, αντίκτυπος προγραμμάτων, ροή αιτήσεων και αύξηση μελών σε έναν πίνακα."
+      descriptionEl="Κατάσταση κύκλων, αντίκτυπος προγραμμάτων, ροή αιτήσεων και αύξηση μελών σε έναν πίνακα."
       actions={(
         <>
           <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
@@ -292,16 +325,16 @@ export default function OrgAnalyticsPage() {
             icon={Rocket}
             label="Startups in programs"
             labelEl="Startups σε προγράμματα"
-            value={loading ? '—' : inPrograms.length}
-            caption={`${graduated.length} graduated`}
-            captionEl={`${graduated.length} αποφοίτησαν`}
+            value={loading || participantsFailed ? '—' : inPrograms.length}
+            caption={participantsFailed ? 'Not read just now' : `${graduated.length} graduated`}
+            captionEl={participantsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : `${graduated.length} αποφοίτησαν`}
             href="/org/startups"
           />
           <MetricTile
             icon={UserPlus}
             label="Applications"
             labelEl="Αιτήσεις"
-            value={loading ? '—' : appsInWindow.length}
+            value={loading || participantsFailed ? '—' : appsInWindow.length}
             caption={periodLabel}
             captionEl={PERIODS.find((p) => p.value === period)?.el}
             href="/org/applications"
@@ -310,24 +343,27 @@ export default function OrgAnalyticsPage() {
             icon={CalendarCheck}
             label="Mentor sessions held"
             labelEl="Συνεδρίες μεντόρων"
-            value={cohortsData ? heldInWindow.length : '—'}
-            caption={`${upcomingSessions.length} scheduled ahead`}
-            captionEl={`${upcomingSessions.length} προγραμματισμένες`}
+            value={cohortsData && !sessionsFailed ? heldInWindow.length : '—'}
+            caption={sessionsFailed ? 'Not read just now' : cohortsData ? `${upcomingSessions.length} scheduled ahead` : undefined}
+            captionEl={sessionsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : cohortsData ? `${upcomingSessions.length} προγραμματισμένες` : undefined}
             href="/org/cohorts"
           />
           <MetricTile
             icon={GraduationCap}
             label="Acceptance rate"
             labelEl="Ποσοστό αποδοχής"
-            value={acceptance == null ? '—' : `${acceptance}%`}
-            caption={decided.length ? `${accepted.length} of ${decided.length} decided` : 'No decisions yet'}
-            captionEl={decided.length ? `${accepted.length} από ${decided.length} με απόφαση` : 'Καμία απόφαση ακόμα'}
+            value={acceptance == null || participantsFailed ? '—' : `${acceptance}%`}
+            caption={participantsFailed ? 'Not read just now' : decided.length ? `${accepted.length} of ${decided.length} decided` : 'No decisions yet'}
+            captionEl={participantsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : decided.length ? `${accepted.length} από ${decided.length} με απόφαση` : 'Καμία απόφαση ακόμα'}
             href="/org/applications"
           />
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <SectionCard title="Applications by month" titleEl="Αιτήσεις ανά μήνα" contentClassName="space-y-2">
+            {participantsFailed ? (
+              <FailedLine en="Applications could not be read just now." el="Οι αιτήσεις δεν διαβάστηκαν αυτή τη στιγμή." busy={participantsFetching} onRetry={retryParticipants} />
+            ) : (<>
             <ApplicationsTrendChart data={trend} />
             <p className="text-xs text-muted-foreground">
               <BilingualText
@@ -336,10 +372,15 @@ export default function OrgAnalyticsPage() {
                 wrap
               />
             </p>
+            </>)}
           </SectionCard>
           <SectionCard title="Mentor sessions by month" titleEl="Συνεδρίες ανά μήνα" contentClassName="space-y-2">
-            <MentorSessionsChart data={sessionsByMonth} />
-            <p className="text-xs text-muted-foreground"><BilingualText en="Held and scheduled sessions across every cohort." el="Συνεδρίες που έγιναν και που έχουν προγραμματιστεί, σε όλους τους κύκλους." wrap /></p>
+            {sessionsFailed ? (
+              <FailedLine en="Mentor sessions could not be read just now." el="Οι συνεδρίες μεντόρων δεν διαβάστηκαν αυτή τη στιγμή." busy={sessionsFetching} onRetry={retrySessions} />
+            ) : (<>
+              <MentorSessionsChart data={sessionsByMonth} />
+              <p className="text-xs text-muted-foreground"><BilingualText en="Held and scheduled sessions across every cohort." el="Συνεδρίες που έγιναν και που έχουν προγραμματιστεί, σε όλους τους κύκλους." wrap /></p>
+            </>)}
           </SectionCard>
         </div>
 
@@ -370,12 +411,15 @@ export default function OrgAnalyticsPage() {
                 note under it) at the left, the figure at the right. In a 2x2
                 grid a note that wrapped in the right column started a line
                 of its own, off the axis. */}
+            {mentorsFailed && (
+              <FailedLine en="Your mentor pool could not be read just now." el="Η δεξαμενή μεντόρων σας δεν διαβάστηκε αυτή τη στιγμή." busy={mentorsFetching} onRetry={() => void refetchMentors()} />
+            )}
             <dl className="card-rows">
               {([
-                { en: 'Active mentors', el: 'Ενεργοί μέντορες', value: mentorsData ? `${activeMentors} / ${mentors.length}` : '—' },
-                { en: 'Sessions a month', el: 'Συνεδρίες τον μήνα', value: cohortsData ? perMonth : '—', note: 'Last three months', noteEl: 'Τελευταίοι τρεις μήνες' },
-                { en: 'Average rating', el: 'Μέση βαθμολογία', value: avgRating == null ? '—' : avgRating.toFixed(1), note: rated.length ? `${rated.length} rated sessions` : undefined, noteEl: `${rated.length} αξιολογημένες συνεδρίες` },
-                { en: 'Places taken', el: 'Κατειλημμένες θέσεις', value: slots ? `${Math.round((taken / slots) * 100)}%` : '—', note: slots ? `${taken} of ${slots} mentee places` : undefined, noteEl: `${taken} από ${slots} θέσεις καθοδηγούμενων` },
+                { en: 'Active mentors', el: 'Ενεργοί μέντορες', value: mentorsData && !mentorsFailed ? `${activeMentors} / ${mentors.length}` : '—' },
+                { en: 'Sessions a month', el: 'Συνεδρίες τον μήνα', value: cohortsData && !sessionsFailed ? perMonth : '—', note: sessionsFailed ? 'Not read just now' : 'Last three months', noteEl: sessionsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : 'Τελευταίοι τρεις μήνες' },
+                { en: 'Average rating', el: 'Μέση βαθμολογία', value: avgRating == null || sessionsFailed ? '—' : avgRating.toFixed(1), note: !sessionsFailed && rated.length ? `${rated.length} rated sessions` : undefined, noteEl: `${rated.length} αξιολογημένες συνεδρίες` },
+                { en: 'Places taken', el: 'Κατειλημμένες θέσεις', value: slots && !mentorsFailed ? `${Math.round((taken / slots) * 100)}%` : '—', note: slots && !mentorsFailed ? `${taken} of ${slots} mentee places` : undefined, noteEl: `${taken} από ${slots} θέσεις καθοδηγούμενων` },
               ] as { en: string; el: string; value: string | number; note?: string; noteEl?: string }[]).map((cell) => (
                 <div key={cell.en} className="flex items-baseline justify-between gap-3">
                   <dt className="min-w-0 text-sm text-muted-foreground">
@@ -389,7 +433,9 @@ export default function OrgAnalyticsPage() {
           </SectionCard>
 
           <SectionCard title="Members by role" titleEl="Μέλη ανά ρόλο" action={{ href: '/org/members', label: 'Members', labelEl: 'Μέλη' }}>
-            {byRole.length ? (
+            {membersFailed ? (
+              <FailedLine en="Members could not be read just now." el="Τα μέλη δεν διαβάστηκαν αυτή τη στιγμή." busy={membersFetching} onRetry={() => void refetchMembers()} />
+            ) : byRole.length ? (
               <div className="flex items-center gap-4">
                 <div inert>
                   <IndustryPieChart data={byRole} />
@@ -399,7 +445,7 @@ export default function OrgAnalyticsPage() {
                     <li key={item.name} className="flex items-center justify-between text-sm">
                       <span className="flex items-center gap-2">
                         <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: item.color }} aria-hidden="true" />
-                        <span className="text-muted-foreground">{item.name}</span>
+                        <span className="text-muted-foreground"><BilingualText en={item.name} el={item.nameEl} compact /></span>
                       </span>
                       <span className="font-medium tabular-nums">{item.value}</span>
                     </li>
@@ -407,21 +453,24 @@ export default function OrgAnalyticsPage() {
                 </ul>
               </div>
             ) : (
-              <EmptyLine en="Members appear once a cohort has started." el="Τα μέλη εμφανίζονται όταν ξεκινήσει ένα cohort." />
+              <EmptyLine en="Members appear once a cohort has started." el="Τα μέλη εμφανίζονται όταν ξεκινήσει ένας κύκλος." />
             )}
           </SectionCard>
 
           <SectionCard title="Founders by city" titleEl="Ιδρυτές ανά πόλη" contentClassName="space-y-3">
+            {membersFailed && (
+              <FailedLine en="Members could not be read just now." el="Τα μέλη δεν διαβάστηκαν αυτή τη στιγμή." busy={membersFetching} onRetry={() => void refetchMembers()} />
+            )}
             {cities.map(([city, count]) => (
               <div key={city} className="space-y-1">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{city}</span>
+                  <span className="text-muted-foreground">{city === UNKNOWN_CITY ? <BilingualText en="No place given" el="Χωρίς τόπο" compact /> : city}</span>
                   <span className="font-medium tabular-nums">{count}</span>
                 </div>
-                <Progress value={(count / maxCity) * 100} className="h-1.5" aria-label={bilingualAria(`${city}: ${count} ${count === 1 ? 'founder' : 'founders'}`, `${city}: ${count} ${count === 1 ? 'ιδρυτής' : 'ιδρυτές'}`)} />
+                <Progress value={(count / maxCity) * 100} className="h-1.5" aria-label={bilingualAria(`${city === UNKNOWN_CITY ? 'No place given' : city}: ${count} ${count === 1 ? 'founder' : 'founders'}`, `${city === UNKNOWN_CITY ? 'Χωρίς τόπο' : city}: ${count} ${count === 1 ? 'ιδρυτής' : 'ιδρυτές'}`)} />
               </div>
             ))}
-            {cities.length === 0 && <EmptyLine en="No founder has joined a cohort yet." el="Κανένας ιδρυτής σε cohort ακόμα." action={{ href: '/org/applications', en: 'Review applications', el: 'Δείτε τις αιτήσεις' }} />}
+            {!membersFailed && cities.length === 0 && <EmptyLine en="No founder has joined a cohort yet." el="Κανένας ιδρυτής σε κύκλο ακόμα." action={{ href: '/org/applications', en: 'Review applications', el: 'Δείτε τις αιτήσεις' }} />}
           </SectionCard>
         </div>
 
@@ -429,6 +478,9 @@ export default function OrgAnalyticsPage() {
           {/* Each bar is its step's share of the applications that entered;
               the right column is how many of the previous step went on. The
               steps are the statuses a participant row can have. */}
+          {participantsFailed ? (
+            <FailedLine en="Applications could not be read just now." el="Οι αιτήσεις δεν διαβάστηκαν αυτή τη στιγμή." busy={participantsFetching} onRetry={retryParticipants} />
+          ) : (
           <ol className="space-y-2.5">
             {funnel.map((step, index) => {
               const top = funnel[0]?.value || 1;
@@ -449,6 +501,7 @@ export default function OrgAnalyticsPage() {
               );
             })}
           </ol>
+          )}
           {/* The caption leads the pills, so the row starts on the card's
               axis with words rather than a pill's padding. */}
           {programs.some((p) => p.status === 'upcoming') ? (

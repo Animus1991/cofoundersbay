@@ -14,12 +14,13 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { OrgReadFailed } from '@/components/org/OrgReadFailed';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createEvent, listEvents, type EventItem } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -42,6 +43,10 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { statusEl } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
+import { PageFacts } from '@/components/common/PageFacts';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ASK } from '@/lib/page-questions';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type OrgEvent = {
@@ -185,7 +190,7 @@ function mockEvents(now: number, fmtDate: (v: number, o?: Intl.DateTimeFormatOpt
   }));
 }
 
-function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: OrgEvent) => void }) {
+function EventCard({ event, onDuplicate, sample = false }: { event: OrgEvent; onDuplicate?: (e: OrgEvent) => void; /** A sample row has no page to open (its id is '1'…'4'). */ sample?: boolean }) {
   const typeCfg = TYPE_CONFIG[event.type];
   const statusCfg = STATUS_CONFIG[event.status];
   const statusColors = STATUS[statusCfg.tone];
@@ -201,7 +206,7 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
   const menu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="shrink-0">
+        <Button aria-label={bilingualAria(`More options for ${event.title}`, `Περισσότερες επιλογές: ${event.title}`)} variant="ghost" size="icon" className="shrink-0">
           <MoreVertical className="icon-sm" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
@@ -220,9 +225,19 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
         <DropdownMenuItem disabled={!onDuplicate} onSelect={() => onDuplicate?.(event)}>
           <Copy className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Duplicate" el="Αντιγραφή" compact />
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/events/${event.id}`}><ExternalLink className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="View Public Page" el="Δημόσια σελίδα" compact /></Link>
-        </DropdownMenuItem>
+        {sample ? (
+          <UnavailableMenuItem
+            icon={<ExternalLink className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+            en="View Public Page"
+            el="Δημόσια σελίδα"
+            reasonEn="A sample event has no page."
+            reasonEl="Ένα δείγμα εκδήλωσης δεν έχει σελίδα."
+          />
+        ) : (
+          <DropdownMenuItem asChild>
+            <Link href={`/events/${event.id}`}><ExternalLink className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="View Public Page" el="Δημόσια σελίδα" compact /></Link>
+          </DropdownMenuItem>
+        )}
         <UnavailableMenuItem
           className="text-destructive-accessible"
           icon={<Trash2 className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
@@ -244,7 +259,7 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
               {event.format === 'online' ? <Video className="icon-md" aria-hidden="true" /> : <Calendar className="icon-md" aria-hidden="true" />}
             </div>
           )}
-          title={(
+          title={sample ? event.title : (
             <Link href={`/events/${event.id}`} className="transition-colors hover:text-primary-accessible">
               {event.title}
             </Link>
@@ -314,7 +329,7 @@ export default function OrgEventsPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError: mainError, refetch: refetchMain, isFetching: mainFetching } = useQuery({
     queryKey: qk('events', 'org'),
     queryFn: () => listEvents({ scope: 'mine', limit: 50 }),
     staleTime: 60_000,
@@ -327,6 +342,7 @@ export default function OrgEventsPage() {
   useEffect(() => setNow(Date.now()), []);
   const live = useMemo(() => (data?.events ?? []).map((e) => toOrgEvent(e, fmtDate)), [data, fmtDate]);
   const events = live.length > 0 ? live : isLoading || !showDemoData || now == null ? [] : mockEvents(now, fmtDate);
+  const isSample = live.length === 0 && events.length > 0;
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
 
@@ -393,58 +409,80 @@ export default function OrgEventsPage() {
     { id: 'duplicate_event', labelEn: 'Duplicate event a week later', labelEl: 'Αντίγραφο εκδήλωσης μια εβδομάδα αργότερα', writes: true, options: rowOptions(filtered, (e) => e.id, (e) => e.title), unavailableEn: live.length > 0 ? undefined : 'These events are samples; there is nothing to duplicate.', unavailableEl: live.length > 0 ? undefined : 'Οι εκδηλώσεις είναι δείγματα· δεν υπάρχει κάτι για αντιγραφή.', run: (v) => { const e = events.find((x) => x.id === v); return e ? duplicate(e) : ROW_GONE; } },
   ]);
 
+  // Unread, the page drew its tiles as 0 and its empty state, as if the
+  // organisation had nothing in it (docs §96).
+  if (mainError && !data) {
+    return (
+      <AppShell showHelp>
+        <OrgReadFailed en={'Your events could not be read just now.'} el={'Οι εκδηλώσεις σας δεν διαβάστηκαν αυτή τη στιγμή.'} busy={mainFetching} onRetry={() => void refetchMain()} />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell showHelp
       title="Organization Events"
       description="Demo days, office hours, workshops, and pitch nights for your cohorts."
       descriptionEl="Demo days, ώρες γραφείου, εργαστήρια και βραδιές παρουσιάσεων για τους κύκλους σας."
-      actions={(
+      // The empty state carries its own Create event (docs §87, §96).
+      actions={events.length > 0 || isLoading ? (
         <Button asChild>
           <Link href="/events/create">
-            <Plus className="mr-2 icon-sm" />
+            <Plus className="mr-2 icon-sm" aria-hidden="true" />
             <BilingualText en="Create Event" el="Νέα εκδήλωση" compact />
           </Link>
         </Button>
-      )}
+      ) : undefined}
     >
       <div className="space-y-6">
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
-          {[
-            { label: 'Upcoming Events', labelEl: 'Προσεχείς εκδηλώσεις', value: upcoming },
-            { label: 'Total Attendees (all)', labelEl: 'Συνολικοί συμμετέχοντες', value: totalAttendees },
-            // Every event not cancelled — it was labelled "This Month" but never filtered by date.
-            { label: 'Events not cancelled', labelEl: 'Εκδηλώσεις σε ισχύ', value: events.filter(e => e.status !== 'cancelled').length },
-          ].map(stat => (
-            <Card key={stat.label}>
-              <CardContent>
-                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
-                <p className="page-stat text-xl font-bold">{stat.value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {isSample && (
+          <SampleDataNotice
+            surface="Events"
+            detail="You host no events yet, so these four are samples that show the layout; they open nothing and cannot be duplicated."
+            askAiPrompt={ASK.orgEventsSample}
+          />
+        )}
 
-        {/* Search & Tabs */}
+        {/* One line of figures (docs §64.5). "Events not cancelled" went:
+            no event here is ever cancelled, so it always equalled the All
+            tab's counter beside it (docs §96). */}
+        {events.length > 0 && (
+          <PageFacts
+            labelEn="Events in figures"
+            labelEl="Οι εκδηλώσεις σε αριθμούς"
+            facts={[
+              { id: 'upcoming', value: upcoming, en: 'upcoming', el: 'προσεχείς' },
+              { id: 'attending', value: totalAttendees, en: 'attending in all', el: 'συμμετέχοντες συνολικά' },
+            ]}
+          />
+        )}
+
+        {/* Search and tabs show over events that were read; with none they
+            counted "All 0 · Active 0" above the empty state. */}
+        {(events.length > 0 || filtersActive) && (
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-            <Input aria-label="Search events. Αναζήτηση εκδηλώσεων" placeholder={sayOne('Search events…', 'Αναζήτηση εκδηλώσεων…')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+            <Input aria-label={bilingualAria('Search events', 'Αναζήτηση εκδηλώσεων')} placeholder={sayOne('Search events…', 'Αναζήτηση εκδηλώσεων…')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
         </div>
+        )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
+          {(events.length > 0 || filtersActive) && (
           <TabsList>
             <TabsTrigger value="all"><BilingualText en="All" el="Όλες" compact /><Counter value={events.length} /></TabsTrigger>
             <TabsTrigger value="active"><BilingualText en="Active" el="Ενεργές" compact /><Counter value={activeCount} /></TabsTrigger>
             <TabsTrigger value="completed"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /><Counter value={completedCount} /></TabsTrigger>
           </TabsList>
+          )}
           <TabsContent value={activeTab} className="mt-4 space-y-3">
+            {isLoading && events.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="h-36" />)}
             {filtered.map(event => (
-              <EventCard key={event.id} event={event} onDuplicate={live.length > 0 ? (ev) => void duplicate(ev) : undefined} />
+              <EventCard key={event.id} event={event} sample={isSample} onDuplicate={live.length > 0 ? (ev) => void duplicate(ev) : undefined} />
             ))}
-            {filtered.length === 0 && (
+            {!isLoading && filtered.length === 0 && (
               <EmptyOrgEvents
                 filtersActive={filtersActive}
                 onClearFilters={clearFilters}

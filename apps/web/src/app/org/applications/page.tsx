@@ -1,18 +1,17 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  FileText,
   Search,
-  Filter,
-  Calendar,
-  Star,
   MoreVertical,
   CheckCircle2,
   XCircle,
   Clock,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { FailedLine } from '@/components/dashboard/SectionCard';
+import { Skeleton } from '@/components/ui/skeleton';
+import { OrgReadFailed } from '@/components/org/OrgReadFailed';
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/toast';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
@@ -27,7 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -180,6 +179,7 @@ function ApplicationCard({
             <button
               type="button"
               onClick={() => onReview(application)}
+              aria-label={bilingualAria(`Review ${application.startupName}`, `Αξιολόγηση: ${application.startupName}`)}
               className="text-left transition-colors hover:text-primary-accessible"
             >
               {application.startupName}
@@ -207,12 +207,13 @@ function ApplicationCard({
               </Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
+                  <Button aria-label={bilingualAria(`Decide on ${application.startupName}`, `Απόφαση για ${application.startupName}`)} variant="ghost" size="icon">
                     <MoreVertical className="icon-sm" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={() => onReview(application)}><BilingualText en="Review Application" el="Έλεγχος αίτησης" compact /></DropdownMenuItem>
+                  {/* "Review Application" went: the startup's name above
+                      opens the same review (docs §96). */}
                   {/*
                     * "Mark as Shortlisted" and "Schedule Interview" are gone
                     * rather than left inert: the participant status enum has
@@ -270,12 +271,12 @@ export default function OrgApplicationsPage() {
    * applications sees; they carry no decision handler, because there is
    * nothing behind them to write to.
    */
-  const { slug, membership } = useCurrentOrg();
+  const { slug, membership, isLoading: orgLoading, failed: orgFailed, refetch: refetchOrg, isFetching: orgFetching } = useCurrentOrg();
   const organizationId = membership?.organizationId ?? null;
   const qc = useQueryClient();
   const { success, error: showError } = useToast();
 
-  const { data: programsData } = useQuery({
+  const { data: programsData, isError: mainError, refetch: refetchMain, isFetching: mainFetching } = useQuery({
     queryKey: qk('programs', 'organization', organizationId),
     queryFn: () => listOrganizationPrograms(organizationId!),
     enabled: Boolean(organizationId),
@@ -325,6 +326,18 @@ export default function OrgApplicationsPage() {
 
   const [reviewing, setReviewing] = useState<Application | null>(null);
 
+  /*
+   * What was not read is not "No applications yet" (docs §96): every
+   * programme's participants are one request, so some can fail while others
+   * answer. The rows that came back stay under a line that says so.
+   */
+  const participantsFailed = participantQueries.filter((q) => q.isError && !q.data).length;
+  const participantsFetching = participantQueries.some((q) => q.isFetching);
+  const retryParticipants = () => participantQueries.forEach((q) => { if (q.isError) void q.refetch(); });
+  const reading = orgLoading
+    || (Boolean(organizationId) && programsData === undefined && !mainError)
+    || participantQueries.some((q) => q.isLoading);
+
   // Settles with the server: the decision is reported only once stored.
   const onDecide: DecideFn = (application, status) => {
     const programId = (application as Application & { programId?: string }).programId;
@@ -348,6 +361,35 @@ export default function OrgApplicationsPage() {
     [live],
   );
   void slug;
+
+  /*
+   * The home's Review opens that application (`?review=<participant id>`)
+   * and a programme's "Manage participants" narrows the list to it
+   * (`?program=<programme id>`); both pointed at the whole list. Read after
+   * mount (the page is prerendered) and applied once the rows arrive.
+   */
+  const [linked, setLinked] = useState<{ review: string | null; program: string | null } | null>(null);
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    setLinked({ review: q.get('review'), program: q.get('program') });
+  }, []);
+  useEffect(() => {
+    if (!linked) return;
+    if (linked.review) {
+      const found = applications.find((a) => a.id === linked.review);
+      if (found) {
+        setReviewing(found);
+        setLinked((l) => (l ? { ...l, review: null } : l));
+      }
+    }
+    if (linked.program) {
+      const found = programs.find((p) => p.id === linked.program);
+      if (found) {
+        setProgram(found.title);
+        setLinked((l) => (l ? { ...l, program: null } : l));
+      }
+    }
+  }, [linked, applications, programs]);
 
 
   const filteredApplications = applications.filter((a) => {
@@ -404,6 +446,16 @@ export default function OrgApplicationsPage() {
     { id: 'reject_application', labelEn: 'Reject application', labelEl: 'Απόρριψη αίτησης', writes: true, options: byStartup(undecided), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const a = applications.find((x) => x.id === v); return a ? onDecide(a, 'rejected') : ROW_GONE; } },
   ]);
 
+  // Unread, the page drew its tiles as 0 and its empty state, as if the
+  // organisation had nothing in it (docs §96).
+  if (orgFailed || (mainError && !programsData)) {
+    return (
+      <AppShell showHelp>
+        <OrgReadFailed en={orgFailed ? undefined : 'Your programmes could not be read just now.'} el={orgFailed ? undefined : 'Τα προγράμματά σας δεν διαβάστηκαν αυτή τη στιγμή.'} busy={orgFetching || mainFetching} onRetry={() => { refetchOrg(); void refetchMain(); }} />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell showHelp
       title="Applications"
@@ -411,24 +463,24 @@ export default function OrgApplicationsPage() {
     >
       <div className="space-y-6">
 
-        {/* Stats: the three states an application can be in, and the whole. */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-          {[
-            { label: 'Total', labelEl: 'Σύνολο', value: statusCounts.all, tone: '' },
-            { label: 'Pending', labelEl: 'Σε αναμονή', value: statusCounts.pending, tone: STATUS.warning.icon },
-            { label: 'Accepted', labelEl: 'Εγκεκριμένες', value: statusCounts.accepted, tone: STATUS.success.icon },
-            { label: 'Rejected', labelEl: 'Απορριφθείσες', value: statusCounts.rejected, tone: STATUS.danger.icon },
-          ].map((kpi) => (
-            <Card key={kpi.label}>
-              <CardContent>
-                <p className="text-sm text-muted-foreground"><BilingualText en={kpi.label} el={kpi.labelEl} compact wrap /></p>
-                <p className={cn('page-stat text-xl font-semibold tabular-nums sm:text-2xl', kpi.tone)}>{kpi.value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Four tiles (Total, Pending, Accepted, Rejected) repeated the four
+            tab counters under them and went (docs §96). Tabs and filters
+            show over rows that were read; In review and Shortlisted had no
+            status behind them and read 0 forever. */}
+        {participantsFailed > 0 && (
+          <Card>
+            <CardContent>
+              <FailedLine
+                en={applications.length ? 'Some applications could not be read just now.' : 'Applications could not be read just now.'}
+                el={applications.length ? 'Κάποιες αιτήσεις δεν διαβάστηκαν αυτή τη στιγμή.' : 'Οι αιτήσεις δεν διαβάστηκαν αυτή τη στιγμή.'}
+                busy={participantsFetching}
+                onRetry={retryParticipants}
+              />
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Tabs: In review and Shortlisted had no status behind them and read 0 forever. */}
+        {(applications.length > 0 || filtersActive) && (<>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="all"><BilingualText en="All" el="Όλες" compact /><Counter value={statusCounts.all} /></TabsTrigger>
@@ -451,17 +503,18 @@ export default function OrgApplicationsPage() {
             />
           </div>
           <Select value={program} onValueChange={setProgram}>
-            <SelectTrigger aria-label="Program. Πρόγραμμα" className="w-full sm:w-[200px]">
+            <SelectTrigger aria-label={bilingualAria('Program', 'Πρόγραμμα')} className="w-full sm:w-[200px]">
               <SelectValue placeholder={sayOne('Program', 'Πρόγραμμα')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all"><BilingualText en="All Programs" el="Όλα τα προγράμματα" compact /></SelectItem>
+              <SelectItem value="all"><BilingualText en="All programs" el="Όλα τα προγράμματα" compact /></SelectItem>
               {programNames.map((p) => (
                 <SelectItem key={p} value={p}>{p}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
+        </>)}
 
         {/* Applications List */}
         <div className="space-y-3">
@@ -473,7 +526,8 @@ export default function OrgApplicationsPage() {
               onReview={setReviewing}
             />
           ))}
-          {filteredApplications.length === 0 && (
+          {reading && applications.length === 0 && [0, 1, 2].map((i) => <Skeleton key={i} className="h-24" />)}
+          {!reading && !(participantsFailed > 0 && applications.length === 0) && filteredApplications.length === 0 && (
             <EmptyOrgApplications
               filtersActive={filtersActive}
               onClearFilters={clearFilters}

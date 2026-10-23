@@ -346,6 +346,31 @@ export const ASK = {
     el: 'Γιατί βλέπω δείγμα κύκλου;',
     answer: 'samples',
   },
+  orgCohortsSample: {
+    en: 'Why does the cohorts page show sample cohorts?',
+    el: 'Γιατί η σελίδα κύκλων δείχνει δείγματα κύκλων;',
+    answer: 'samples',
+  },
+  orgEventsSample: {
+    en: 'Why does the events page show sample events?',
+    el: 'Γιατί η σελίδα εκδηλώσεων δείχνει δείγματα εκδηλώσεων;',
+    answer: 'samples',
+  },
+  orgProgramsSample: {
+    en: "Why does the organisation's programmes page show sample programmes?",
+    el: 'Γιατί η σελίδα προγραμμάτων του οργανισμού δείχνει δείγματα προγραμμάτων;',
+    answer: 'samples',
+  },
+  orgStartupsSample: {
+    en: 'Why does the portfolio show sample startups?',
+    el: 'Γιατί το χαρτοφυλάκιο δείχνει δείγματα startups;',
+    answer: 'samples',
+  },
+  orgMentorsSample: {
+    en: 'Why does the mentor pool show sample mentors?',
+    el: 'Γιατί η δεξαμενή μεντόρων δείχνει δείγματα μεντόρων;',
+    answer: 'samples',
+  },
   providerAnalyticsSample: {
     en: 'Why does the analytics page show sample numbers?',
     el: 'Γιατί η σελίδα αναλυτικών δείχνει δείγματα αριθμών;',
