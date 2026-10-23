@@ -6,11 +6,28 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Search, Star, ExternalLink, TrendingUp, DollarSign,
-  CheckCircle, MessageCircle, Bookmark, Filter, ArrowUpDown,
-  Clock, MapPin, Users, Zap, ChevronRight, ShieldCheck, Plus,
-  Scale, Calculator, Megaphone, Code2, Brush, BrainCircuit, GraduationCap,
-  Globe, BadgeCheck, Store, Handshake, Briefcase,
+  Search,
+  Star,
+  TrendingUp,
+  CheckCircle,
+  MessageCircle,
+  Bookmark,
+  ArrowUpDown,
+  Zap,
+  ShieldCheck,
+  Plus,
+  Scale,
+  Calculator,
+  Megaphone,
+  Code2,
+  Brush,
+  BrainCircuit,
+  GraduationCap,
+  Globe,
+  BadgeCheck,
+  Store,
+  Handshake,
+  Briefcase,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -18,7 +35,7 @@ import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -274,7 +291,7 @@ export default function MarketplacePage() {
   const [sortBy, setSortBy] = useState('rating');
   const [availableOnly, setAvailableOnly] = useState(false);
 
-  const { data: apiData, isLoading } = useQuery({
+  const { data: apiData, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: qk('marketplace', selectedCategory !== 'All' ? selectedCategory : undefined, search || undefined),
     queryFn: () => listMarketplaceServices({
       category: selectedCategory !== 'All' ? selectedCategory.toLowerCase() as MarketplaceCategory : undefined,
@@ -309,7 +326,14 @@ export default function MarketplacePage() {
     providerUserId: s.providerUserId ?? undefined,
   }));
 
-  const allProviders = backendProviders.length > 0 ? backendProviders : showDemoData ? MOCK_PROVIDERS : [];
+  const showingSamples = backendProviders.length === 0 && showDemoData;
+  const allProviders = backendProviders.length > 0 ? backendProviders : showingSamples ? MOCK_PROVIDERS : [];
+  // A read that failed is not an empty marketplace (docs §90).
+  const readFailed = isError && !apiData && !showingSamples;
+  // Search and categories narrow a list that was read; over an unfiltered
+  // read that failed they filter nothing. A narrowed read that failed keeps
+  // them, so the reader can see and undo what they narrowed by.
+  const toolbarHidden = readFailed && !search && selectedCategory === 'All';
 
   const filtered = allProviders
     .filter(p => {
@@ -338,7 +362,7 @@ export default function MarketplacePage() {
         `${p.title} · by ${p.providerName} · ${p.category} · ${p.pricing}${p.reviewCount ? ` · ${p.avgRating.toFixed(1)}★ (${p.reviewCount})` : ''}${p.isAvailable ? '' : ' · unavailable'}`,
       ),
       total: allProviders.length,
-      sample: backendProviders.length === 0,
+      sample: showingSamples,
     },
   ]);
   // Offered to the assistant: category, sort and the available-only switch,
@@ -381,7 +405,7 @@ export default function MarketplacePage() {
           <div>
             <p className="mb-1.5 text-xs font-medium text-muted-foreground"><BilingualText en="Sort by" el="Ταξινόμηση" compact /></p>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger aria-label="Sort by" className="w-full">
+              <SelectTrigger aria-label={bilingualAria('Sort by', 'Ταξινόμηση')} className="w-full">
                 <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" aria-hidden="true" />
                 <SelectValue />
               </SelectTrigger>
@@ -425,7 +449,9 @@ export default function MarketplacePage() {
   return (
     <AppShell showHelp rail={rail}>
       <div className="space-y-6 pb-10">
-        {backendProviders.length === 0 && (
+        {/* Only over the sample cards: with sample data off it said "showing
+            sample items" above an empty page. */}
+        {showingSamples && (
           <SampleDataNotice
             surface="Marketplace"
             detail="No provider has listed a service yet, so these cards are sample experts that show the layout."
@@ -450,7 +476,7 @@ export default function MarketplacePage() {
         </Card>
 
         {/* Search — sort and the availability filter live in the rail */}
-        <div className="relative max-w-xl">
+        <div className={cn('relative max-w-xl', toolbarHidden && 'hidden')}>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder={sayOne("Search services, providers, specialties…", "Αναζήτηση υπηρεσιών, παρόχων, ειδικοτήτων…")}
@@ -463,7 +489,7 @@ export default function MarketplacePage() {
 
         {/* Category Tabs */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-          <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
+          <TabsList className={cn('flex flex-wrap h-auto gap-1 bg-muted/50 p-1', toolbarHidden && 'hidden')}>
             {CATEGORIES.map(cat => {
               const cfg = CAT_CONFIG[cat];
               const CatIcon = cfg.icon;
@@ -488,7 +514,18 @@ export default function MarketplacePage() {
               </div>
             )}
 
-            {!isLoading && (
+            {!isLoading && readFailed && (
+              <div className="flex flex-col items-start gap-3 py-12 text-left">
+                <p role="alert" className="card-body text-muted-foreground">
+                  <BilingualText en="The services could not be read just now." el="Οι υπηρεσίες δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                </p>
+                <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+              </div>
+            )}
+
+            {!isLoading && !readFailed && (
               <>
                 {featured.length > 0 && (
                   <div className="space-y-3">

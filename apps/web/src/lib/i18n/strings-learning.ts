@@ -17,7 +17,9 @@ export const LEARNING_STRINGS: Record<string, BilingualPair> = {
   paths: { en: 'Learning paths', el: 'Μονοπάτια μάθησης' },
   paths_count: { en: 'paths', el: 'μονοπάτια' },
   recommended: { en: 'Recommended for you', el: 'Προτεινόμενα για εσάς' },
-  featured: { en: 'Featured resources', el: 'Προτεινόμενοι πόροι' },
+  // «Προτεινόμενα» is "Recommended for you"; "Featured" is the library's own
+  // pick, so it takes another word (docs §90).
+  featured: { en: 'Featured resources', el: 'Επιλεγμένοι πόροι' },
   all_resources: { en: 'All resources', el: 'Όλοι οι πόροι' },
   tab_all: { en: 'All resources', el: 'Όλοι οι πόροι' },
   tab_saved: { en: 'Saved', el: 'Αποθηκευμένα' },
@@ -38,7 +40,7 @@ export const LEARNING_STRINGS: Record<string, BilingualPair> = {
   difficulty_beginner: { en: 'Beginner', el: 'Αρχάριοι' },
   difficulty_intermediate: { en: 'Intermediate', el: 'Μεσαίο' },
   difficulty_advanced: { en: 'Advanced', el: 'Προχωρημένο' },
-  featured_badge: { en: 'Featured', el: 'Προτεινόμενο' },
+  featured_badge: { en: 'Featured', el: 'Επιλεγμένο' },
   start: { en: 'Start', el: 'Έναρξη' },
   open: { en: 'Open', el: 'Άνοιγμα' },
   modules: { en: '{n} modules', el: '{n} ενότητες' },

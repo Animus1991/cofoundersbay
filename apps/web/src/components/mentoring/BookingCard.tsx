@@ -229,7 +229,9 @@ export function BookingCard({
               </div>
             )}
 
-            {booking.meetingUrl && booking.status === 'confirmed' && (
+            {/* A past meeting keeps its link here; a coming one joins from the
+                action row, as a session row does (docs §90). */}
+            {booking.meetingUrl && booking.status === 'confirmed' && isPast && (
               <a
                 href={booking.meetingUrl}
                 target="_blank"
@@ -269,6 +271,16 @@ export function BookingCard({
                 {!isMentor && booking.status === 'requested' && (
                   <Button size="sm" variant="outline" className="h-7 text-xs text-muted-foreground hover:text-destructive-accessible" onClick={onCancel} disabled={isActing}>
                     <BilingualText en="Cancel request" el="Ακύρωση αιτήματος" compact />
+                  </Button>
+                )}
+                {booking.status === 'confirmed' && booking.meetingUrl && (
+                  // "Join meeting" was a small link above the row, where a
+                  // session row has a "Join session" button.
+                  <Button size="sm" className="h-7 gap-1 text-xs" asChild>
+                    <a href={booking.meetingUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="icon-sm" aria-hidden="true" />
+                      <BilingualText en="Join session" el="Σύνδεση στη συνεδρία" compact />
+                    </a>
                   </Button>
                 )}
                 {booking.status === 'confirmed' && (

@@ -3,10 +3,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Gift, Users, Copy, Share2, Mail, MessageCircle,
-  CheckCircle, Clock, XCircle, TrendingUp, Award,
-  Sparkles, ChevronRight, ExternalLink, Trophy,
-  Zap, Target, Star, Crown,
+  Gift,
+  Users,
+  Copy,
+  Share2,
+  Mail,
+  CheckCircle,
+  Clock,
+  XCircle,
+  Award,
+  ExternalLink,
+  Trophy,
+  Zap,
+  Star,
+  Crown,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -23,7 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -176,7 +186,9 @@ function ReferralLink({ onCopy }: { onCopy?: (copy: () => void) => void }) {
             aria-label="Sign-up link. Σύνδεσμος εγγραφής"
             className="font-mono text-sm"
           />
-          <Button onClick={copyLink}>
+          {/* One primary: "Invite by email" below is the invitation that is
+              tracked and counts toward the tier; the bare link is not. */}
+          <Button variant="outline" onClick={copyLink}>
             <Copy className="icon-sm mr-1 shrink-0" aria-hidden="true" />
             <BilingualText en={referralsEn('copy')} el={referralsEl('copy')} compact wrap />
           </Button>
@@ -194,11 +206,11 @@ function ReferralLink({ onCopy }: { onCopy?: (copy: () => void) => void }) {
             <BilingualText en={referralsEn('share_email')} el={referralsEl('share_email')} compact />
           </Button>
           <Button variant="outline" size="sm" onClick={() => shareVia('twitter')}>
-            <ExternalLink className="icon-sm mr-1" />
+            <ExternalLink className="icon-sm mr-1" aria-hidden="true" />
             Twitter
           </Button>
           <Button variant="outline" size="sm" onClick={() => shareVia('linkedin')}>
-            <ExternalLink className="icon-sm mr-1" />
+            <ExternalLink className="icon-sm mr-1" aria-hidden="true" />
             LinkedIn
           </Button>
         </div>
@@ -324,7 +336,7 @@ function ReferralCard({ referral }: { referral: Referral }) {
   );
 }
 
-function StatsCards({ referrals }: { referrals: Referral[] }) {
+function StatsCards({ referrals, unread = false }: { referrals: Referral[]; unread?: boolean }) {
   const totalInvited = referrals.length;
   const signedUp = referrals.filter((r) => r.status !== 'pending' && r.status !== 'expired').length;
   const rewarded = referrals.filter((r) => r.status === 'rewarded').length;
@@ -333,15 +345,15 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
   return (
     <div className="grid grid-cols-2 gap-3">
       <Card className="p-4">
-        <p className="page-stat text-xl font-bold">{totalInvited}</p>
+        <p className="page-stat text-xl font-bold">{unread ? '—' : totalInvited}</p>
         <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_invited')} el={referralsEl('stat_invited')} compact wrap /></p>
       </Card>
       <Card className="p-4">
-        <p className="page-stat text-xl font-bold">{signedUp}</p>
+        <p className="page-stat text-xl font-bold">{unread ? '—' : signedUp}</p>
         <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_signed_up')} el={referralsEl('stat_signed_up')} compact wrap /></p>
       </Card>
       <Card className="p-4">
-        <p className="page-stat text-xl font-bold">{rewarded}</p>
+        <p className="page-stat text-xl font-bold">{unread ? '—' : rewarded}</p>
         <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_rewarded')} el={referralsEl('stat_rewarded')} compact wrap /></p>
       </Card>
       <Card className="p-4">
@@ -373,7 +385,7 @@ export default function ReferralsPage() {
 
   // The invitations this account has sent (GET /invites). The samples used to
   // be every account's list; they are the demo's now.
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: qk('invites', 'mine'),
     queryFn: () => listInvites({ limit: 100 }),
     retry: 0,
@@ -382,6 +394,8 @@ export default function ReferralsPage() {
   const live = Array.isArray(data?.invites) ? data.invites.map(inviteToReferral) : [];
   const referrals: Referral[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : DEMO_REFERRALS;
   const isSample = live.length === 0 && referrals.length > 0;
+  // A list that was not read is not an empty one (docs §90).
+  const readFailed = isError && !data && !isSample;
 
   const successfulReferrals = referrals.filter(
     (r) => r.status === 'signed_up' || r.status === 'active' || r.status === 'rewarded'
@@ -425,7 +439,7 @@ export default function ReferralsPage() {
       glyph: 'chart',
       labelEn: 'Summary',
       labelEl: 'Σύνοψη',
-      content: <StatsCards referrals={referrals} />,
+      content: <StatsCards referrals={referrals} unread={readFailed} />,
     },
     {
       id: 'tier',
@@ -486,10 +500,46 @@ export default function ReferralsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {filteredReferrals.length === 0 ? (
+            {isLoading ? (
+              <div className="space-y-3 py-2" aria-busy="true">
+                <div className="h-10 w-full animate-pulse rounded-lg bg-muted/40" />
+                <div className="h-10 w-full animate-pulse rounded-lg bg-muted/40" />
+              </div>
+            ) : readFailed ? (
+              <div className="space-y-3 py-2 text-sm text-muted-foreground">
+                <p role="alert">
+                  <BilingualText en="Your invitations could not be read just now." el="Οι προσκλήσεις σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                </p>
+                <Button size="sm" variant="outline" disabled={isFetching} onClick={() => void refetch()}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+              </div>
+            ) : filteredReferrals.length === 0 ? (
+              // Each view says why it is empty and what fills it; one line,
+              // "No referrals in this category", said none of that.
               <div className="py-8 text-center text-muted-foreground">
                 <Users className="mx-auto mb-3 h-12 w-12 opacity-50" aria-hidden="true" />
-                <p className="text-sm"><BilingualText en={referralsEn('empty_list')} el={referralsEl('empty_list')} compact wrap /></p>
+                <p className="text-sm">
+                  {referrals.length === 0 ? (
+                    <BilingualText
+                      en="You have not invited anyone yet. Invite someone by email above and the invitation is tracked here."
+                      el="Δεν έχετε προσκαλέσει ακόμη κανέναν. Προσκαλέστε κάποιον με email πιο πάνω και η πρόσκληση θα φαίνεται εδώ."
+                      compact
+                      wrap
+                    />
+                  ) : activeTab === 'pending' ? (
+                    <BilingualText en="No invitation is waiting for an answer." el="Καμία πρόσκληση δεν περιμένει απάντηση." compact wrap />
+                  ) : activeTab === 'rewarded' ? (
+                    <BilingualText
+                      en="Nothing is rewarded yet: rewards are planned, not live."
+                      el="Τίποτα δεν έχει ανταμειφθεί ακόμη: οι ανταμοιβές είναι σχεδιασμένες, όχι ενεργές."
+                      compact
+                      wrap
+                    />
+                  ) : (
+                    <BilingualText en={referralsEn('empty_list')} el={referralsEl('empty_list')} compact wrap />
+                  )}
+                </p>
               </div>
             ) : (
               <div className="card-rows">

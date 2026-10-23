@@ -13,10 +13,24 @@ import { useRouter } from 'next/navigation';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
-  BrainCircuit, Calendar, Clock, CheckCircle2, XCircle, AlertTriangle,
-  Video, MapPin, MessageCircle, Star, Plus, ChevronRight, Target,
-  Users, TrendingUp, ListChecks, ArrowRight, Lightbulb, RefreshCw,
-  ClipboardList, Zap, BookOpen, CalendarDays,
+  BrainCircuit,
+  Calendar,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Video,
+  MessageCircle,
+  Star,
+  Plus,
+  ChevronRight,
+  Target,
+  Users,
+  TrendingUp,
+  ListChecks,
+  Lightbulb,
+  Zap,
+  BookOpen,
+  CalendarDays,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -32,6 +46,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import {
@@ -54,6 +69,8 @@ type SessionType = 'accountability' | 'clarity' | 'team_dynamics' | 'execution' 
 
 interface CoachingSession {
   id: string;
+  /** The coach's user id, for a message; a sample row has none. */
+  coachId?: string;
   coachName: string;
   coachAvatar?: string;
   coachTitle: string;
@@ -88,6 +105,7 @@ interface CoachProfile {
   pricePerHour?: number;
   currency?: string;
   availability: string;
+  availabilityEl: string;
   isVerified: boolean;
 }
 
@@ -179,6 +197,7 @@ const DEMO_COACHES: CoachProfile[] = attachDemoPhotos([
     bio: 'Ex-operator at 2 scale-ups, 3 exits. Specializes in founder accountability, execution rhythms, and OKR systems for early-stage startups.',
     pricePerHour: 120,
     availability: 'Mon–Fri, 9am–5pm CET',
+    availabilityEl: 'Δευ–Παρ, 9:00–17:00 CET',
     isVerified: true,
   },
   {
@@ -192,6 +211,7 @@ const DEMO_COACHES: CoachProfile[] = attachDemoPhotos([
     bio: 'ICF-certified coach with 8 years helping founders navigate clarity, co-founder dynamics, and founder wellbeing under pressure.',
     pricePerHour: 150,
     availability: 'Tue–Thu, flexible',
+    availabilityEl: 'Τρι–Πεμ, ευέλικτα',
     isVerified: true,
   },
   {
@@ -205,6 +225,7 @@ const DEMO_COACHES: CoachProfile[] = attachDemoPhotos([
     bio: 'Former VP Marketing at Series B startup. Coaches early-stage founders on go-to-market, positioning, and growth strategy.',
     pricePerHour: 100,
     availability: 'Mon, Wed, Fri',
+    availabilityEl: 'Δευ, Τετ, Παρ',
     isVerified: false,
   },
 ], { portraitKey: 'avatar' });
@@ -400,14 +421,20 @@ function SessionCard({ session }: { session: CoachingSession }) {
                 </Button>
               )
             )}
-            {/* Messaging is real, and it lives with the mentors a founder can
-                actually reach today. */}
-            <Button size="sm" variant="outline" className="gap-1" asChild>
-              <Link href="/mentoring">
-                <MessageCircle className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Find a mentor" el="Εύρεση μέντορα" compact wrap />
-              </Link>
-            </Button>
+            {/* The row's own coach, not the directory: "Find a mentor" on every
+                row went to /mentoring, where "Book a session" above already
+                goes (docs §90). */}
+            {session.coachId && !isSample ? (
+              <Button size="sm" variant="outline" className="gap-1" asChild>
+                <Link
+                  href={`/messages?to=${encodeURIComponent(session.coachId)}`}
+                  aria-label={bilingualAria(`Message ${session.coachName}`, `Μήνυμα: ${session.coachName}`)}
+                >
+                  <MessageCircle className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Message" el="Μήνυμα" compact wrap />
+                </Link>
+              </Button>
+            ) : null}
           </div>
           <button
             type="button"
@@ -455,7 +482,19 @@ function SessionCard({ session }: { session: CoachingSession }) {
   );
 }
 
-function CoachCard({ coach }: { coach: CoachProfile }) {
+/** A read that failed, said once, with the way to try again (docs §90). */
+function FailedRead({ en, el, onRetry, busy = false, bare = false }: { en: string; el: string; onRetry: () => void; busy?: boolean; bare?: boolean }) {
+  return (
+    <div className={cn('space-y-3 text-sm text-muted-foreground', !bare && 'rounded-xl border border-border bg-card p-4')}>
+      <p role="alert"><BilingualText en={en} el={el} wrap /></p>
+      <Button size="sm" variant="outline" disabled={busy} onClick={onRetry}>
+        <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+      </Button>
+    </div>
+  );
+}
+
+function CoachCard({ coach, sample }: { coach: CoachProfile; sample: boolean }) {
   return (
     <Card className="transition-colors hover:border-primary/20">
       <CardContent className="space-y-3">
@@ -509,13 +548,15 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
                 />
               </span>,
               coach.responseTime ? <BilingualText key="responds" en={`Responds ${coach.responseTime}`} el={`Απαντά ${coach.responseTime}`} compact /> : null,
+              // Read but never printed: whether they take new founders.
+              <BilingualText key="availability" en={coach.availability} el={coach.availabilityEl} compact />,
             ]}
           />
         </div>
 
-        {/* These coaches are constants with demo ids, so neither booking nor
-            a conversation can be opened with them. `/mentoring` is the same
-            offer against real people. */}
+        {/* Booking lives on /mentoring, against the same people. The second
+            button went there too ("Browse"); a listed coach is a member, so it
+            opens their profile now, and a sample coach has none (docs §90). */}
         <CardFoot>
           <Button size="sm" className="gap-1" asChild>
             <Link href="/mentoring">
@@ -523,12 +564,16 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
               <BilingualText en="Book with a mentor" el="Κράτηση με μέντορα" compact wrap />
             </Link>
           </Button>
-          <Button size="sm" variant="outline" className="gap-1" asChild>
-            <Link href="/mentoring">
-              <MessageCircle className="icon-sm" aria-hidden="true" />
-              <BilingualText en="Browse" el="Περιήγηση" compact wrap />
-            </Link>
-          </Button>
+          {sample ? null : (
+            <Button size="sm" variant="outline" className="gap-1" asChild>
+              <Link
+                href={`/profiles/${encodeURIComponent(coach.id)}`}
+                aria-label={bilingualAria(`View profile: ${coach.name}`, `Προβολή προφίλ: ${coach.name}`)}
+              >
+                <BilingualText en="View profile" el="Προβολή προφίλ" compact wrap />
+              </Link>
+            </Button>
+          )}
         </CardFoot>
       </CardContent>
     </Card>
@@ -595,6 +640,7 @@ function toCoachingSession(
   const [specialty] = specialtiesFrom(focus);
   return {
     id: row.id,
+    coachId: relationship?.mentorId ?? undefined,
     coachName: relationship?.mentor?.displayName ?? 'Your coach',
     coachAvatar: relationship?.mentor?.avatarUrl ?? undefined,
     coachTitle: relationship?.mentor?.headline ?? '',
@@ -622,6 +668,12 @@ function toCoachProfile(mentor: MentorProfileItem): CoachProfile {
       : mentor.availabilityStatus === 'limited'
         ? 'Limited availability'
         : 'Not taking new founders';
+  const availabilityEl =
+    mentor.availabilityStatus === 'available'
+      ? 'Δέχεται νέους ιδρυτές'
+      : mentor.availabilityStatus === 'limited'
+        ? 'Περιορισμένη διαθεσιμότητα'
+        : 'Δεν δέχεται νέους ιδρυτές';
   return {
     id: mentor.userId,
     name: mentor.displayName,
@@ -636,6 +688,7 @@ function toCoachProfile(mentor: MentorProfileItem): CoachProfile {
     pricePerHour: mentor.isFree ? undefined : (mentor.hourlyRate ?? undefined),
     currency: mentor.currency ?? undefined,
     availability,
+    availabilityEl,
     // Nothing on a mentor profile carries a verification state yet; claiming
     // one would be the same invention this page is being cured of.
     isVerified: false,
@@ -655,7 +708,7 @@ export default function CoachingPage() {
    * founder has a handful of coaches, and asking per relationship keeps the
    * coach's name beside every session without a second lookup.
    */
-  const { data: relationshipData, isLoading: relationshipsLoading } = useQuery({
+  const { data: relationshipData, isLoading: relationshipsLoading, isError: relationshipsError, refetch: refetchRelationships } = useQuery({
     queryKey: qk('mentorships', 'mentee'),
     queryFn: () => getMyMentorships('mentee'),
     staleTime: 60_000,
@@ -670,7 +723,7 @@ export default function CoachingPage() {
   const queryClient = useQueryClient();
   const { success: toastSuccess, error: toastError } = useToast();
   const userId = useStoredUser()?.id ?? null;
-  const { data: bookingData, isLoading: bookingsLoading } = useQuery({
+  const { data: bookingData, isLoading: bookingsLoading, isError: bookingsError, refetch: refetchBookings } = useQuery({
     queryKey: qk('mentorships', 'bookings', 'mentee'),
     queryFn: () => listMentorBookings('mentee'),
     staleTime: 30_000,
@@ -732,7 +785,7 @@ export default function CoachingPage() {
    * from the founder's side. This list used to be three constants rendered
    * unconditionally, so a real founder browsed three coaches who do not exist.
    */
-  const { data: mentorData, isLoading: coachesLoading } = useQuery({
+  const { data: mentorData, isLoading: coachesLoading, isError: coachesError, isFetching: coachesFetching, refetch: refetchCoaches } = useQuery({
     queryKey: qk('mentors', 'coaching'),
     queryFn: () => discoverMentors({ limit: 24 }),
     staleTime: 5 * 60_000,
@@ -752,6 +805,27 @@ export default function CoachingPage() {
         : showDemoData
           ? DEMO_COACHES
           : [];
+
+  const sampleCoaches = liveCoaches.length === 0 && !coachesLoading && showDemoData;
+  const coachesFailed = coachesError && !mentorData && !sampleCoaches;
+
+  /*
+   * A list not yet read is not empty (docs §90): a failed read of the
+   * mentorships, a coach's sessions or the bookings said "No coaching
+   * sessions yet" and offered to find a coach.
+   */
+  const showingSampleSessions = liveSessions.length === 0 && !sessionsLoading && showDemoData;
+  const sessionsReadFailed =
+    !showingSampleSessions &&
+    ((relationshipsError && !relationshipData) ||
+      sessionQueries.some((q) => q.isError && !q.data) ||
+      (bookingsError && !bookingData));
+  const listsLoading = sessionsLoading || bookingsLoading;
+  const retrySessions = () => {
+    void refetchRelationships();
+    void refetchBookings();
+    for (const q of sessionQueries) if (q.isError) void q.refetch();
+  };
 
   const visibleCoaches = specialtyFilter
     ? coaches.filter((c) => c.specialties.includes(specialtyFilter))
@@ -788,6 +862,8 @@ export default function CoachingPage() {
         onCancel={() => void cancelBooking(row.u.id)}
       />
     ) : null;
+  const hasRows = upcomingMerged.length + completedMerged.length > 0;
+  const sessionsEmpty = !listsLoading && !sessionsReadFailed && sessions.length === 0 && bookingRows.length === 0;
   const totalActionItems = sessions.flatMap((s) => s.actionItems ?? []);
   const completedActions = totalActionItems.filter((a) => a.done).length;
 
@@ -799,11 +875,19 @@ export default function CoachingPage() {
    * figures and the same chips - reachable from the strip on the right, and
    * kept open by anyone who wants them there.
    */
+  /*
+   * "Total sessions" counted the coaching sessions only (3) over a list of
+   * four rows with the booking; it now counts the rows listed. The average
+   * divided by the rated sessions, and printed "NaN/5" when none was rated.
+   * A figure that was not read is a dash (docs §90).
+   */
+  const rated = completed.filter((s) => s.rating);
+  const unread = sessionsReadFailed;
   const railStats = [
-    { labelEn: 'Total sessions', labelEl: 'Συνολικές συνεδρίες', value: sessions.length, icon: Calendar, color: 'text-primary-accessible', bg: 'bg-primary/10' },
-    { labelEn: 'Upcoming', labelEl: 'Επερχόμενες', value: upcomingMerged.length, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
-    { labelEn: 'Action items done', labelEl: 'Ολοκληρωμένες ενέργειες', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-status-success', bg: 'bg-status-success-bg' },
-    { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+    { labelEn: 'Total sessions', labelEl: 'Συνολικές συνεδρίες', value: unread ? '—' : upcomingMerged.length + completedMerged.length, icon: Calendar, color: 'text-primary-accessible', bg: 'bg-primary/10' },
+    { labelEn: 'Upcoming', labelEl: 'Επερχόμενες', value: unread ? '—' : upcomingMerged.length, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
+    { labelEn: 'Action items done', labelEl: 'Ολοκληρωμένες ενέργειες', value: unread ? '—' : `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-status-success', bg: 'bg-status-success-bg' },
+    { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: !unread && rated.length ? `${(rated.reduce((a, s) => a + (s.rating ?? 0), 0) / rated.length).toFixed(1)}/5` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
   ];
 
   usePageList([
@@ -823,7 +907,7 @@ export default function CoachingPage() {
       labelEl: 'Coaches',
       rows: coachesLoading ? undefined : visibleCoaches.map((c) => `${c.name} · ${c.title}`),
       total: coaches.length,
-      sample: liveCoaches.length === 0 && showDemoData,
+      sample: sampleCoaches,
     },
   ]);
   // Offered to the assistant: the tab and the rail's specialty filter, same
@@ -952,8 +1036,10 @@ export default function CoachingPage() {
     >
       <div className="space-y-6 pb-10">
 
-        {/* Upcoming session banner */}
-        {upcomingMerged.length > 0 && (() => {
+        {/* Upcoming session banner. On My Sessions the same session is the
+            first row under "Upcoming", with its own Join: the banner repeated
+            it there, so it shows over the other tabs only (docs §90). */}
+        {upcomingMerged.length > 0 && activeTab !== 'sessions' && (() => {
           const next = upcomingMerged[0];
           const nextBooking = next.kind === 'booking' ? next.u : null;
           const nextTitle = next.kind === 'session' ? next.s.title : nextBooking?.title ?? null;
@@ -1004,17 +1090,31 @@ export default function CoachingPage() {
               <TabsTrigger value="actions" className="text-xs"><BilingualText en="Action Items" el="Ενέργειες" compact /></TabsTrigger>
               <TabsTrigger value="insights" className="text-xs"><BilingualText en="Insights" el="Αναλύσεις" compact /></TabsTrigger>
             </TabsList>
-            <Button size="sm" className="h-8 gap-1.5 text-xs" asChild>
-              <Link href="/mentoring">
-                <Plus className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Book a session" el="Κράτηση συνεδρίας" compact wrap />
-              </Link>
-            </Button>
+            {/* Hidden while the empty My Sessions carries its own way in. */}
+            {sessionsEmpty && activeTab === 'sessions' ? null : (
+              <Button size="sm" className="h-8 gap-1.5 text-xs" asChild>
+                <Link href="/mentoring">
+                  <Plus className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Book a session" el="Κράτηση συνεδρίας" compact wrap />
+                </Link>
+              </Button>
+            )}
           </div>
 
           {/* My Sessions */}
           <TabsContent value="sessions" className="mt-4 space-y-3">
-            {sessions.length === 0 && bookingRows.length === 0 ? (
+            {listsLoading && !hasRows ? (
+              <div className="space-y-3">
+                <Skeleton className="h-32 w-full rounded-2xl" />
+                <Skeleton className="h-32 w-full rounded-2xl" />
+              </div>
+            ) : sessionsReadFailed && !hasRows ? (
+              <FailedRead
+                en="Your sessions could not be read just now."
+                el="Οι συνεδρίες σας δεν διαβάστηκαν αυτή τη στιγμή."
+                onRetry={retrySessions}
+              />
+            ) : sessionsEmpty ? (
               <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
                   <BrainCircuit className="h-7 w-7 text-primary-accessible" />
@@ -1027,6 +1127,15 @@ export default function CoachingPage() {
               </div>
             ) : (
               <>
+                {sessionsReadFailed ? (
+                  // Some stores answered and one did not: the rows are real,
+                  // and the list says it may be missing some.
+                  <FailedRead
+                    en="Some of your sessions could not be read just now."
+                    el="Μερικές από τις συνεδρίες σας δεν διαβάστηκαν αυτή τη στιγμή."
+                    onRetry={retrySessions}
+                  />
+                ) : null}
                 {upcomingMerged.length > 0 && (
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Upcoming" el="Επερχόμενες" compact /></p>
@@ -1074,14 +1183,49 @@ export default function CoachingPage() {
             )}
 
             <div className="space-y-3">
-              {visibleCoaches.map((coach) => <CoachCard key={coach.id} coach={coach} />)}
-              {visibleCoaches.length === 0 && (
-                <p className="rounded-xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
-                  <BilingualText
-                    en="No coaches with that specialty. Clear the filter to see all of them."
-                    el="Κανένας coach με αυτή την ειδίκευση. Καθαρίστε το φίλτρο για να τους δείτε όλους."
-                  />
-                </p>
+              {coachesLoading ? (
+                <>
+                  <Skeleton className="h-36 w-full rounded-2xl" />
+                  <Skeleton className="h-36 w-full rounded-2xl" />
+                </>
+              ) : coachesFailed ? (
+                <FailedRead
+                  en="The coaches could not be read just now."
+                  el="Οι coaches δεν διαβάστηκαν αυτή τη στιγμή."
+                  onRetry={() => void refetchCoaches()}
+                  busy={coachesFetching}
+                />
+              ) : (
+                <>
+                  {visibleCoaches.map((coach) => <CoachCard key={coach.id} coach={coach} sample={sampleCoaches} />)}
+                  {visibleCoaches.length === 0 && (
+                    <div className="space-y-3 rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                      {specialtyFilter ? (
+                        <>
+                          <p>
+                            <BilingualText
+                              en="No coaches with that specialty. Clear the filter to see all of them."
+                              el="Κανένας coach με αυτή την ειδίκευση. Καθαρίστε το φίλτρο για να τους δείτε όλους."
+                              wrap
+                            />
+                          </p>
+                          <Button size="sm" variant="outline" onClick={() => setSpecialtyFilter(null)}>
+                            <BilingualText en="Clear the filter" el="Καθαρισμός φίλτρου" compact />
+                          </Button>
+                        </>
+                      ) : (
+                        // It said "No coaches with that specialty" with no filter on.
+                        <p>
+                          <BilingualText
+                            en="No coaches are listed yet. Mentors appear here as they open their profiles to founders."
+                            el="Δεν εμφανίζονται ακόμη coaches. Οι μέντορες εμφανίζονται εδώ καθώς ανοίγουν το προφίλ τους σε ιδρυτές."
+                            wrap
+                          />
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -1108,6 +1252,25 @@ export default function CoachingPage() {
               {/* One row per item on the card's axis, hairlines between them:
                   the rows were inset 8px with a hover box of their own. */}
               <CardContent className="card-rows">
+                {totalActionItems.length === 0 ? (
+                  sessionsReadFailed ? (
+                    <FailedRead
+                      en="Your action items could not be read just now."
+                      el="Οι ενέργειές σας δεν διαβάστηκαν αυτή τη στιγμή."
+                      onRetry={retrySessions}
+                      bare
+                    />
+                  ) : (
+                    // The card had a title and nothing under it.
+                    <p className="text-sm text-muted-foreground">
+                      <BilingualText
+                        en="No action items yet. Your coach adds them to a session; they gather here from every session."
+                        el="Δεν υπάρχουν ακόμη ενέργειες. Ο coach σας τις προσθέτει σε μια συνεδρία· εδώ συγκεντρώνονται από όλες."
+                        wrap
+                      />
+                    </p>
+                  )
+                ) : null}
                 {sessions.flatMap((session) =>
                   (session.actionItems ?? []).map((item, idx) => (
                     <div key={`${session.id}-${idx}`} className="flex items-start gap-3">
@@ -1128,6 +1291,25 @@ export default function CoachingPage() {
 
           {/* Insights */}
           <TabsContent value="insights" className="mt-4 space-y-4">
+            {sessions.length === 0 ? (
+              // Two cards of "0 of 0" and no themes said nothing.
+              sessionsReadFailed ? (
+                <FailedRead
+                  en="Your sessions could not be read just now."
+                  el="Οι συνεδρίες σας δεν διαβάστηκαν αυτή τη στιγμή."
+                  onRetry={retrySessions}
+                />
+              ) : (
+                <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                  <BilingualText
+                    en="Insights appear after your first coaching session: its themes, how many action items you closed, and the key takeaways."
+                    el="Οι αναλύσεις εμφανίζονται μετά την πρώτη σας συνεδρία coaching: τα θέματά της, πόσες ενέργειες κλείσατε και τα βασικά συμπεράσματα."
+                    wrap
+                  />
+                </div>
+              )
+            ) : (
+            <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Card>
                 <CardHeader className="pb-2">
@@ -1136,6 +1318,11 @@ export default function CoachingPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
+                  {!sessions.some((s) => s.sessionType) ? (
+                    <p className="text-sm text-muted-foreground">
+                      <BilingualText en="No session names a theme yet." el="Καμία συνεδρία δεν ορίζει ακόμη θέμα." wrap />
+                    </p>
+                  ) : null}
                   {(Object.keys(SESSION_TYPE_CONFIG) as SessionType[]).map((type) => {
                     const count = sessions.filter((s) => s.sessionType === type).length;
                     if (!count) return null;
@@ -1201,6 +1388,8 @@ export default function CoachingPage() {
                   ))}
                 </CardContent>
               </Card>
+            )}
+            </>
             )}
           </TabsContent>
         </Tabs>

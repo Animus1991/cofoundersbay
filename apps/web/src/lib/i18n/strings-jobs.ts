@@ -55,7 +55,7 @@ export const JOBS_STRINGS: Record<string, BilingualPair> = {
   emp_cofounder: { en: 'Co-founder', el: 'Συνιδρυτής' },
   emp_advisor: { en: 'Advisor', el: 'Advisor' },
 
-  load_failed: { en: 'Failed to load jobs. Please check your connection.', el: 'Οι θέσεις δεν φορτώθηκαν. Ελέγξτε τη σύνδεση.' },
+  load_failed: { en: 'The roles could not be read just now.', el: 'Οι θέσεις δεν διαβάστηκαν αυτή τη στιγμή.' },
   try_again: { en: 'Try again', el: 'Δοκιμάστε ξανά' },
   empty_search: { en: 'No jobs match your search', el: 'Καμία θέση δεν ταιριάζει' },
   empty_search_hint: { en: 'Try a different keyword or clear the search.', el: 'Δοκιμάστε άλλο όρο ή καθαρίστε την αναζήτηση.' },

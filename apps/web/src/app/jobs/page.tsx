@@ -14,7 +14,6 @@ import {
   Loader2,
   AlertCircle,
   Star,
-  Filter,
   Code2,
   Megaphone,
   Palette,
@@ -52,6 +51,7 @@ import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
+import { useStoredUser } from '@/hooks/useStoredUser';
 
 const ROLE_FILTERS = [
   { value: 'all',         labelKey: 'role_all' as const,         icon: Briefcase },
@@ -73,7 +73,8 @@ const EMPLOYMENT_TYPES = [
   { value: 'advisor',   labelKey: 'emp_advisor' as const },
 ] as const;
 
-function JobCard({ job, featured = false }: { job: JobPostingView; featured?: boolean }) {
+function JobCard({ job, featured = false, myId }: { job: JobPostingView; featured?: boolean; myId?: string | null }) {
+  const sayOne = useBilingualString();
   // The Opportunities card: the poster's mark, the role's title with the
   // poster and the kind of work under it, then the facts and the actions,
   // all on the mark's left edge.
@@ -136,6 +137,23 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
               </Link>
             </Button>
           ) : null}
+          {/* A candidate's next step. A role had no way to answer it: "Post
+              a role so candidates can apply", and nothing to apply with.
+              The conversation opens with a first line the reader edits
+              before sending (the marketplace's "Request" does the same). */}
+          {job.creator?.id && job.creator.id !== myId ? (
+            <Button variant="outline" size="sm" asChild>
+              <Link
+                href={`/messages?to=${encodeURIComponent(job.creator.id)}&text=${encodeURIComponent(sayOne(
+                  `Hi ${job.creator.displayName.split(' ')[0]}, I'm interested in the ${job.title} role. `,
+                  `Γεια σας ${job.creator.displayName.split(' ')[0]}, με ενδιαφέρει η θέση ${job.title}. `,
+                ))}`}
+                aria-label={bilingualInline(`Ask about the role: “${job.title}”`, `Ερώτηση για τη θέση: «${job.title}»`)}
+              >
+                <BilingualText en="Ask about the role" el="Ερώτηση για τη θέση" compact />
+              </Link>
+            </Button>
+          ) : null}
         </CardFoot>
       </CardContent>
     </Card>
@@ -175,7 +193,7 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
       onCreated();
       onClose();
     },
-    onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Please try again'),
+    onError: (err) => showError('Could not post the role', err instanceof Error ? err.message : 'Please try again'),
   });
 
   return (
@@ -269,6 +287,7 @@ export default function JobsPage() {
   });
 
   const jobs = data?.jobs ?? [];
+  const myId = useStoredUser()?.id ?? null;
 
   const filtered = jobs.filter((j) => {
     const matchSearch = !search.trim() ||
@@ -404,16 +423,19 @@ export default function JobsPage() {
     <AppShell
       showHelp
       rail={rail}
-      actions={
+      // An empty board carries its own "Post a role"; the header's waits
+      // for a list, so the page has one filled button (docs §90).
+      actions={!isLoading && !isError && jobs.length === 0 ? undefined : (
         <Button className="gap-2" onClick={() => setShowPostForm(true)}>
           <Plus className="icon-sm" />
           <BilingualText en={jobsEn('post')} el={jobsEl('post')} compact />
         </Button>
-      }
+      )}
     >
       <div className="space-y-6 pb-10">
-      {/* Search + filters */}
-      <div className="space-y-3">
+      {/* Search + filters: over roles that were read. A failed or empty read
+          has nothing to search (docs §90); a typed search stays to be undone. */}
+      <div className={cn('space-y-3', !search && (isError || (!isLoading && jobs.length === 0)) && 'hidden')}>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -429,7 +451,7 @@ export default function JobsPage() {
       {isError ? (
         <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
           <AlertCircle className="icon-xl text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
+          <p role="alert" className="text-sm text-muted-foreground">
             <BilingualText en={jobsEn('load_failed')} el={jobsEl('load_failed')} compact />
           </p>
           <Button variant="secondary" size="sm" onClick={() => refetch()}>
@@ -506,7 +528,7 @@ export default function JobsPage() {
                   <BilingualText en={jobsEn('featured')} el={jobsEl('featured')} compact />
                 </h2>
               </div>
-              {featuredJobs.map((job) => <JobCard key={job.id} job={job} featured />)}
+              {featuredJobs.map((job) => <JobCard key={job.id} job={job} featured myId={myId} />)}
             </section>
           )}
 
@@ -519,7 +541,7 @@ export default function JobsPage() {
                   <BilingualText en={jobsEn('remote_section')} el={jobsEl('remote_section')} compact />
                 </h2>
               </div>
-              {remoteRest.map((job) => <JobCard key={job.id} job={job} />)}
+              {remoteRest.map((job) => <JobCard key={job.id} job={job} myId={myId} />)}
             </section>
           )}
 
@@ -531,7 +553,7 @@ export default function JobsPage() {
                   <BilingualText en={jobsEn('onsite_section')} el={jobsEl('onsite_section')} compact />
                 </h2>
               </div>
-              {onsiteRest.map((job) => <JobCard key={job.id} job={job} />)}
+              {onsiteRest.map((job) => <JobCard key={job.id} job={job} myId={myId} />)}
             </section>
           )}
         </div>

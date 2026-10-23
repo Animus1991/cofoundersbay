@@ -32,7 +32,9 @@ export const REFERRALS_STRINGS: Record<string, BilingualPair> = {
   },
   copy: { en: 'Copy', el: 'Αντιγραφή' },
   copied: { en: 'Link copied!', el: 'Ο σύνδεσμος αντιγράφηκε!' },
-  share_email: { en: 'Email', el: 'Email' },
+  // Beside "Invite by email" (tracked), "Email" did not say it opens the
+  // reader's own email app with the bare link (docs §90).
+  share_email: { en: 'Send from your email', el: 'Αποστολή από το email σας' },
   share_subject: { en: 'Join CoFounderBay', el: 'Ελάτε στο CoFounderBay' },
   share_text: {
     en: 'Join me on CoFounderBay — the platform to find your perfect co-founder!',

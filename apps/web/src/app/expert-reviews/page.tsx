@@ -23,7 +23,6 @@ import {
   FileText,
   Lightbulb,
   MessageCircle,
-  Palette,
   Plus,
   RefreshCw,
   Scale,
@@ -46,6 +45,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, scoreTenPointClass, type StatusTone } from '@/lib/semantic-colors';
 import Link from 'next/link';
@@ -62,8 +62,8 @@ import { ASK } from '@/lib/page-questions';
 
 /** Why the one disabled control is disabled, in both languages. */
 const MESSAGE_HINT = bilingualAria(
-  'A conversation opens once expert reviews are live',
-  'Η συνομιλία θα είναι διαθέσιμη όταν ενεργοποιηθούν οι αξιολογήσεις ειδικών',
+  'Message expert. Sample review - there is no expert to write to',
+  'Μήνυμα στον ειδικό. Δείγμα αξιολόγησης - δεν υπάρχει ειδικός για μήνυμα',
 );
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -75,6 +75,8 @@ type ReviewType =
 
 interface ExpertReview {
   id: string;
+  /** The expert's user id; a sample row has none. */
+  expertId?: string;
   expertName: string;
   expertTitle: string;
   expertAvatar?: string;
@@ -267,6 +269,9 @@ function ReviewCard({ review }: { review: ExpertReview }) {
   const status = STATUS_CONFIG[review.status];
   const type = REVIEW_TYPE_CONFIG[review.reviewType];
   const StatusIcon = status.icon;
+  // Empty lists are not feedback: "See feedback" sat on every requested and
+  // in-progress review and opened an empty panel (docs §90).
+  const hasFeedback = Boolean(review.strengthsJson?.length || review.improvementsJson?.length || review.scoresByArea);
 
   return (
     <Card className="overflow-hidden">
@@ -322,10 +327,17 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                   </span>
                 </p>
                 {review.rating ? (
-                  <div data-keep-icon="" className="flex items-center gap-0.5" role="img" aria-label={bilingualAria(`Rated ${review.rating} of 5`, `Βαθμολογία ${review.rating} από 5`)}>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={cn('icon-sm', i < review.rating! ? cn('fill-current', STATUS.warning.icon) : 'text-muted-foreground/30')} aria-hidden="true" />
-                    ))}
+                  // Five stars beside "7/10" read as the expert's score; they
+                  // are the founder's rating of the review, and now say so.
+                  <div className="flex items-center gap-1.5">
+                    <div data-keep-icon="" className="flex items-center gap-0.5" role="img" aria-label={bilingualAria(`Your rating: ${review.rating} of 5`, `Η βαθμολογία σας: ${review.rating} από 5`)}>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className={cn('icon-sm', i < review.rating! ? cn('fill-current', STATUS.warning.icon) : 'text-muted-foreground/30')} aria-hidden="true" />
+                      ))}
+                    </div>
+                    <span className="text-xs text-muted-foreground" aria-hidden="true">
+                      <BilingualText en="Your rating" el="Η βαθμολογία σας" compact />
+                    </span>
                   </div>
                 ) : null}
               </div>
@@ -340,28 +352,40 @@ function ReviewCard({ review }: { review: ExpertReview }) {
         )}
 
         <CardFoot end>
-          {/* A review carries the expert's name but no user id, so there
-              is no conversation to open. Disabled and labelled beats a
-              button that looks live. */}
-          <WithDisabledReason
-            reasonEn="A conversation opens once expert reviews are live"
-            reasonEl="Η συνομιλία θα είναι διαθέσιμη όταν ενεργοποιηθούν οι αξιολογήσεις ειδικών"
-          >
-          <Button
-            size="sm"
-            variant="outline"
-            className="gap-1"
-            aria-label={MESSAGE_HINT}
-            disabled
-          >
-            <MessageCircle className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Message expert" el="Μήνυμα στον ειδικό" compact wrap />
-          </Button>
-          </WithDisabledReason>
+          {/* A review from the API carries the expert's user id, so the
+              conversation opens; it was disabled on every row, real ones
+              included (docs §90). A sample row has no one to write to. */}
+          {review.expertId ? (
+            <Button size="sm" variant="outline" className="gap-1" asChild>
+              <Link
+                href={`/messages?to=${encodeURIComponent(review.expertId)}`}
+                aria-label={bilingualAria(`Message expert: ${review.expertName}`, `Μήνυμα στον ειδικό: ${review.expertName}`)}
+              >
+                <MessageCircle className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Message expert" el="Μήνυμα στον ειδικό" compact wrap />
+              </Link>
+            </Button>
+          ) : (
+            <WithDisabledReason
+              reasonEn="Sample review - there is no expert to write to"
+              reasonEl="Δείγμα αξιολόγησης - δεν υπάρχει ειδικός για μήνυμα"
+            >
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1"
+                aria-label={MESSAGE_HINT}
+                disabled
+              >
+                <MessageCircle className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Message expert" el="Μήνυμα στον ειδικό" compact wrap />
+              </Button>
+            </WithDisabledReason>
+          )}
           {/* "View full review" is gone rather than wired: "See feedback"
               already expands the full review in place, and did so while
               that one did nothing. Two buttons for one action is the defect. */}
-          {review.strengthsJson || review.improvementsJson ? (
+          {hasFeedback ? (
             <Button size="sm" variant="ghost" className="gap-0.5" onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
               <BilingualText
                 en={expanded ? 'Collapse' : 'See feedback'}
@@ -375,7 +399,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
       </CardContent>
 
       {/* Expanded feedback */}
-      {expanded && (review.strengthsJson || review.improvementsJson || review.scoresByArea) && (
+      {expanded && hasFeedback && (
         <div className="space-y-4 border-t border-border bg-muted/30 p-4 sm:p-6">
           {/* Scores by area */}
           {review.scoresByArea && (
@@ -430,7 +454,19 @@ function ReviewCard({ review }: { review: ExpertReview }) {
   );
 }
 
-function ExpertCard({ expert }: { expert: ExpertProfile }) {
+/** A read that failed, said once, with the way to try again (docs §90). */
+function FailedRead({ en, el, onRetry, busy = false }: { en: string; el: string; onRetry: () => void; busy?: boolean }) {
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+      <p role="alert"><BilingualText en={en} el={el} wrap /></p>
+      <Button size="sm" variant="outline" disabled={busy} onClick={onRetry}>
+        <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+      </Button>
+    </div>
+  );
+}
+
+function ExpertCard({ expert, sample }: { expert: ExpertProfile; sample: boolean }) {
   return (
     <Card className="transition-all hover:border-primary/20">
       <CardContent className="space-y-3">
@@ -500,9 +536,10 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
           />
         </div>
 
-        {/* These experts are constants. Mentors are real, bookable and
-            messageable, and a structured review is one of the things they
-            do — so that is where both buttons lead. */}
+        {/* A structured review is booked through Mentoring, against the same
+            people. "Browse" went there too; a listed expert is a member, so
+            the second button opens their profile, and a sample expert has
+            none (docs §90). */}
         <CardFoot>
           <Button size="sm" className="gap-1" asChild>
             <Link href="/mentoring">
@@ -510,12 +547,16 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
               <BilingualText en="Request a review" el="Αίτημα αξιολόγησης" compact wrap />
             </Link>
           </Button>
-          <Button size="sm" variant="outline" className="gap-1" asChild>
-            <Link href="/mentoring">
-              <MessageCircle className="icon-sm shrink-0" aria-hidden="true" />
-              <BilingualText en="Browse" el="Περιήγηση" compact wrap />
-            </Link>
-          </Button>
+          {sample ? null : (
+            <Button size="sm" variant="outline" className="gap-1" asChild>
+              <Link
+                href={`/profiles/${encodeURIComponent(expert.id)}`}
+                aria-label={bilingualAria(`View profile: ${expert.name}`, `Προβολή προφίλ: ${expert.name}`)}
+              >
+                <BilingualText en="View profile" el="Προβολή προφίλ" compact wrap />
+              </Link>
+            </Button>
+          )}
         </CardFoot>
       </CardContent>
     </Card>
@@ -581,6 +622,7 @@ function notes(raw: Record<string, unknown>[], key: 'comment' | 'recommendation'
 function toPageReview(row: ExpertReviewItem): ExpertReview {
   return {
     id: row.id,
+    expertId: row.expert?.id || undefined,
     expertName: row.expert?.displayName ?? 'An expert',
     expertTitle: row.expert?.headline ?? '',
     expertAvatar: row.expert?.avatarUrl ?? undefined,
@@ -634,7 +676,7 @@ export default function ExpertReviewsPage() {
    * `side: 'requester'` is what keeps an expert's own requests out of the
    * queue of requests made of them.
    */
-  const { data: reviewData, isLoading: reviewsLoading } = useQuery({
+  const { data: reviewData, isLoading: reviewsLoading, isError: reviewsError, isFetching: reviewsFetching, refetch: refetchReviews } = useQuery({
     queryKey: qk('expert-reviews', 'requester'),
     queryFn: () => listExpertReviews({ side: 'requester', limit: 50 }),
     staleTime: 60_000,
@@ -659,7 +701,7 @@ export default function ExpertReviewsPage() {
    * The expert directory. This list used to render unconditionally, so a real
    * founder browsed four experts who do not exist.
    */
-  const { data: expertData, isLoading: expertsLoading } = useQuery({
+  const { data: expertData, isLoading: expertsLoading, isError: expertsError, isFetching: expertsFetching, refetch: refetchExperts } = useQuery({
     queryKey: qk('expert-reviews', 'experts'),
     queryFn: () => listExperts({ limit: 24 }),
     staleTime: 5 * 60_000,
@@ -679,8 +721,15 @@ export default function ExpertReviewsPage() {
         : showDemoData
           ? DEMO_EXPERTS
           : [];
+  // A list not yet read is not empty (docs §90).
+  const sampleReviews = liveReviews.length === 0 && !reviewsLoading && showDemoData;
+  const reviewsFailed = reviewsError && !reviewData && !sampleReviews;
+  const sampleExperts = liveExperts.length === 0 && !expertsLoading && showDemoData;
+  const expertsFailed = expertsError && !expertData && !sampleExperts;
   const submitted = myReviews.filter((r) => r.status === 'submitted');
   const pending = myReviews.filter((r) => r.status !== 'submitted' && r.status !== 'declined');
+
+  const reviewsEmpty = !reviewsLoading && !reviewsFailed && myReviews.length === 0;
 
   const filteredExperts = experts.filter((e) => {
     const q = searchExperts.toLowerCase();
@@ -692,8 +741,8 @@ export default function ExpertReviewsPage() {
   // Offered to the assistant: the tab and the expertise filter; the reviews
   // and the experts on screen go out as lists.
   usePageList([
-    { id: 'my_reviews', labelEn: 'My reviews', labelEl: 'Οι αξιολογήσεις μου', rows: reviewsLoading ? undefined : myReviews.map((r) => `${r.expertName} · ${REVIEW_TYPE_CONFIG[r.reviewType]?.label ?? r.reviewType} · ${r.status}${r.scoreOverall != null ? ` · score ${r.scoreOverall}` : ''}${r.dueDate ? ` · due ${r.dueDate.slice(0, 10)}` : ''}`), sample: liveReviews.length === 0 },
-    { id: 'experts', labelEn: 'Experts', labelEl: 'Ειδικοί', rows: expertsLoading ? undefined : filteredExperts.map((e) => `${e.name} · ${e.title} · ${e.domains.map((d) => REVIEW_TYPE_CONFIG[d]?.label ?? d).join(', ')} · ${e.completedReviews} reviews${e.rating != null ? ` · ${e.rating.toFixed(1)}★` : ''}`), total: experts.length, sample: liveExperts.length === 0 },
+    { id: 'my_reviews', labelEn: 'My reviews', labelEl: 'Οι αξιολογήσεις μου', rows: reviewsLoading ? undefined : myReviews.map((r) => `${r.expertName} · ${REVIEW_TYPE_CONFIG[r.reviewType]?.label ?? r.reviewType} · ${r.status}${r.scoreOverall != null ? ` · score ${r.scoreOverall}` : ''}${r.dueDate ? ` · due ${r.dueDate.slice(0, 10)}` : ''}`), sample: sampleReviews },
+    { id: 'experts', labelEn: 'Experts', labelEl: 'Ειδικοί', rows: expertsLoading ? undefined : filteredExperts.map((e) => `${e.name} · ${e.title} · ${e.domains.map((d) => REVIEW_TYPE_CONFIG[d]?.label ?? d).join(', ')} · ${e.completedReviews} reviews${e.rating != null ? ` · ${e.rating.toFixed(1)}★` : ''}`), total: experts.length, sample: sampleExperts },
   ]);
   usePageControls([
     choiceControl('expert_tab', 'Expert reviews section', 'Ενότητα αξιολογήσεων', [
@@ -707,8 +756,10 @@ export default function ExpertReviewsPage() {
     ], selectedDomain, (v) => { setSelectedDomain(v as ReviewType | 'all'); setActiveTab('find-experts'); }),
   ]);
 
-  const avgScore = submitted.length
-    ? (submitted.filter((r) => r.scoreOverall).reduce((acc, r) => acc + (r.scoreOverall ?? 0), 0) / submitted.filter((r) => r.scoreOverall).length)
+  // Over the scored reviews only: a submitted review without a score made it 0/0.
+  const scored = submitted.filter((r) => r.scoreOverall);
+  const avgScore = scored.length
+    ? scored.reduce((acc, r) => acc + (r.scoreOverall ?? 0), 0) / scored.length
     : null;
 
   /*
@@ -726,9 +777,10 @@ export default function ExpertReviewsPage() {
       content: (
         <RailStats
           items={[
-            { key: 'total', label: 'Total reviews', labelEl: 'Συνολικές αξιολογήσεις', value: myReviews.length, icon: FileText, tone: 'bg-status-accent-bg text-status-accent' },
-            { key: 'pending', label: 'In progress', labelEl: 'Σε εξέλιξη', value: pending.length, icon: Clock, tone: 'bg-status-warning-bg text-status-warning' },
-            { key: 'done', label: 'Completed', labelEl: 'Ολοκληρωμένες', value: submitted.length, icon: CheckCircle2, tone: 'bg-status-success-bg text-status-success' },
+            // A figure that was not read is a dash, never 0 (docs §90).
+            { key: 'total', label: 'Total reviews', labelEl: 'Συνολικές αξιολογήσεις', value: reviewsFailed ? '—' : myReviews.length, icon: FileText, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'pending', label: 'In progress', labelEl: 'Σε εξέλιξη', value: reviewsFailed ? '—' : pending.length, icon: Clock, tone: 'bg-status-warning-bg text-status-warning' },
+            { key: 'done', label: 'Completed', labelEl: 'Ολοκληρωμένες', value: reviewsFailed ? '—' : submitted.length, icon: CheckCircle2, tone: 'bg-status-success-bg text-status-success' },
             { key: 'avg', label: 'Avg score', labelEl: 'Μέση βαθμολογία', value: avgScore ? `${avgScore.toFixed(1)}/10` : '—', icon: BarChart3, tone: 'bg-status-info-bg text-status-info' },
           ]}
         />
@@ -795,14 +847,32 @@ export default function ExpertReviewsPage() {
                 <BilingualText en="Insights" el="Αναλύσεις" compact />
               </TabsTrigger>
             </TabsList>
-            <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setActiveTab('find-experts')}>
-              <Plus className="icon-sm" />{' '}
-              <BilingualText en="Request review" el="Αίτημα αξιολόγησης" compact wrap />
-            </Button>
+            {/* It opens Find Experts: on that tab it did nothing, and the empty
+                My Reviews carries its own "Find an expert". */}
+            {activeTab === 'find-experts' || (activeTab === 'my-reviews' && reviewsEmpty) ? null : (
+              <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setActiveTab('find-experts')}>
+                <Plus className="icon-sm" />{' '}
+                <BilingualText en="Request review" el="Αίτημα αξιολόγησης" compact wrap />
+              </Button>
+            )}
           </div>
 
           {/* My Reviews */}
           <TabsContent value="my-reviews" className="mt-4 space-y-3">
+            {reviewsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-36 w-full rounded-2xl" />
+                <Skeleton className="h-36 w-full rounded-2xl" />
+              </div>
+            ) : null}
+            {reviewsFailed ? (
+              <FailedRead
+                en="Your reviews could not be read just now."
+                el="Οι αξιολογήσεις σας δεν διαβάστηκαν αυτή τη στιγμή."
+                onRetry={() => void refetchReviews()}
+                busy={reviewsFetching}
+              />
+            ) : null}
             {pending.length > 0 && (
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
@@ -819,7 +889,7 @@ export default function ExpertReviewsPage() {
                 <div className="space-y-4">{submitted.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
               </div>
             )}
-            {myReviews.length === 0 && (
+            {reviewsEmpty && (
               <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
                   <Award className="h-7 w-7 text-primary-accessible" />
@@ -835,15 +905,49 @@ export default function ExpertReviewsPage() {
 
           {/* Find Experts */}
           <TabsContent value="find-experts" className="mt-4 space-y-4">
-            {/* Search — domain lives in the rail. */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-              <Input placeholder={sayOne("Search experts…", "Αναζήτηση ειδικών…")} value={searchExperts} onChange={(e) => setSearchExperts(e.target.value)} className="pl-9 h-9 text-sm" />
-            </div>
+            {/* Search — domain lives in the rail. Shown over a directory that
+                was read and has people in it. */}
+            {experts.length > 0 ? (
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+                <Input
+                  aria-label={bilingualInline('Search experts', 'Αναζήτηση ειδικών')}
+                  placeholder={sayOne("Search experts…", "Αναζήτηση ειδικών…")}
+                  value={searchExperts}
+                  onChange={(e) => setSearchExperts(e.target.value)}
+                  className="pl-9 h-9 text-sm"
+                />
+              </div>
+            ) : null}
 
             <div className="space-y-3">
-              {filteredExperts.map((e) => <ExpertCard key={e.id} expert={e} />)}
-              {filteredExperts.length === 0 && (
+              {expertsLoading ? (
+                <>
+                  <Skeleton className="h-36 w-full rounded-2xl" />
+                  <Skeleton className="h-36 w-full rounded-2xl" />
+                </>
+              ) : null}
+              {expertsFailed ? (
+                <FailedRead
+                  en="The experts could not be read just now."
+                  el="Οι ειδικοί δεν διαβάστηκαν αυτή τη στιγμή."
+                  onRetry={() => void refetchExperts()}
+                  busy={expertsFetching}
+                />
+              ) : null}
+              {filteredExperts.map((e) => <ExpertCard key={e.id} expert={e} sample={sampleExperts} />)}
+              {!expertsLoading && !expertsFailed && experts.length === 0 && (
+                // "No experts match your search" with "Clear search" over an
+                // empty search, when the directory itself is empty.
+                <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                  <BilingualText
+                    en="No experts are listed yet. Mentors who review pitches, models and plans appear here; you can apply as one below."
+                    el="Δεν εμφανίζονται ακόμη ειδικοί. Οι μέντορες που αξιολογούν pitch, μοντέλα και σχέδια εμφανίζονται εδώ· μπορείτε να κάνετε αίτηση πιο κάτω."
+                    wrap
+                  />
+                </div>
+              )}
+              {experts.length > 0 && filteredExperts.length === 0 && (
                 <div className="text-center py-10 text-sm text-muted-foreground">
                   <BilingualText en="No experts match your search." el="Κανένας ειδικός δεν ταιριάζει με την αναζήτηση." compact wrap />{' '}
                   {listingFilters > 0 ? (
@@ -882,7 +986,14 @@ export default function ExpertReviewsPage() {
 
           {/* Insights */}
           <TabsContent value="insights" className="mt-4 space-y-4">
-            {submitted.length === 0 ? (
+            {reviewsFailed ? (
+              <FailedRead
+                en="Your reviews could not be read just now."
+                el="Οι αξιολογήσεις σας δεν διαβάστηκαν αυτή τη στιγμή."
+                onRetry={() => void refetchReviews()}
+                busy={reviewsFetching}
+              />
+            ) : submitted.length === 0 ? (
               <div className="text-center py-12 text-sm text-muted-foreground">
                 <BilingualText en="Complete your first review to see insights." el="Ολοκληρώστε την πρώτη σας αξιολόγηση για να δείτε στοιχεία." wrap />
               </div>

@@ -3,7 +3,7 @@
 import React, { useEffect, useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Search, BookOpen, BookMarked, Video, FileText, Award, Clock, Headphones, LayoutTemplate, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target, X, GraduationCap, Wrench } from 'lucide-react';
+import { Search, BookOpen, BookMarked, Video, FileText, Award, Clock, Headphones, LayoutTemplate, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, ChevronRight, Target, X, GraduationCap, Wrench } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
@@ -33,6 +33,8 @@ import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/p
 import { durationEl } from '@/lib/i18n/units';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
+import { useCoverFailed } from '@/hooks/useCoverFailed';
+import { ROLE_FAMILY_LABEL, roleFamily } from '@/lib/role-family';
 
 interface Resource {
   id: string;
@@ -127,6 +129,9 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
   // without handing the new tab this one. A script URL opened with window.open
   // runs with this site's origin.
   const target = linkTarget(resource.url);
+  // A cover that does not load leaves no band: it was a blank 16:9 block over
+  // every card whose image was blocked (docs §90).
+  const cover = useCoverFailed(resource.image);
   const follow = () => {
     if (!target) return;
     if (target.kind === 'internal') router.push(target.path);
@@ -135,8 +140,8 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
 
   return (
     <Card className="flex flex-col overflow-hidden transition-all hover:border-primary/20">
-      {resource.image ? (
-        <img src={resource.image} alt="" referrerPolicy="no-referrer" className="aspect-video w-full object-cover" />
+      {resource.image && !cover.failed ? (
+        <img ref={cover.ref} onError={cover.onError} src={resource.image} alt="" referrerPolicy="no-referrer" className="aspect-video w-full object-cover" />
       ) : null}
       <CardContent className="flex flex-1 flex-col gap-3">
         {/* The kind of resource is the card's mark; its title, then type and
@@ -277,10 +282,20 @@ function LearningPathCard({ path, onSelect }: { path: LearningPath; onSelect: (c
         </p>
         {path.progress > 0 && <Progress value={path.progress} className="h-1.5" aria-label={bilingualAria(`${done}% done`, `${done}% ολοκληρωμένο`)} />}
         <CardFoot className="mt-auto">
-          <Button size="sm" variant="outline" className="gap-1" onClick={() => onSelect(path.category)}>
-            {path.progress > 0
-              ? <BilingualText en={learningEn('continue_path')} el={learningEl('continue_path')} compact />
-              : <BilingualText en={learningEn('start_path')} el={learningEl('start_path')} compact />}
+          {/* The button narrows the page to the path's topic; nothing opens a
+              path or records a step yet, so "Start path" / "Continue path"
+              promised what it did not do (docs §90). */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1"
+            aria-label={bilingualAria(
+              `Show its resources: ${learningEn(path.titleKey)}`,
+              `Εμφάνιση των πόρων του: ${learningEl(path.titleKey)}`,
+            )}
+            onClick={() => onSelect(path.category)}
+          >
+            <BilingualText en="Show its resources" el="Εμφάνιση των πόρων του" compact />
             <ChevronRight className="icon-sm" aria-hidden="true" />
           </Button>
         </CardFoot>
@@ -370,7 +385,7 @@ export default function LearningPage() {
   });
 
   // Fetch from real backend; fall back to DEMO_RESOURCES if empty (new installation)
-  const { data: learningData, isLoading: learningLoading } = useQuery({
+  const { data: learningData, isLoading: learningLoading, isError: learningError, isFetching: learningFetching, refetch: refetchLearning } = useQuery({
     queryKey: qk('learning', selectedCategory !== 'All' ? selectedCategory : undefined, searchQuery || undefined),
     queryFn: () => listLearningResources({
       category: selectedCategory !== 'All' ? selectedCategory : undefined,
@@ -395,12 +410,20 @@ export default function LearningPage() {
   const allResources: Resource[] = learningData?.resources?.length
     ? learningData.resources.map(backendToResource)
     : showDemoData ? DEMO_RESOURCES : [];
+  // A library that was not read is not an empty one: it said "No resources
+  // found. Try adjusting your search or filters" with no filter set (docs §90).
+  const showingSamples = !learningData?.resources?.length && showDemoData;
+  const readFailed = learningError && !learningData && !showingSamples;
+  const filtersOrSearch = searchQuery.trim() !== '' || typeFilter !== 'all' || selectedCategory !== 'All';
 
   const userRole = meData?.profile?.role ?? 'founder';
+  // "angel_investor", "cofounder" and the like are read by their family, as
+  // the role badge reads them; the map is keyed by the four families.
+  const userFamily = roleFamily(userRole);
   const userSkills = meData?.profile?.skills?.map((s) => s.skillName.toLowerCase()) ?? [];
 
   const recommendedResources = allResources.filter((r) => {
-    const roleCategories = ROLE_CATEGORY_MAP[userRole] ?? [];
+    const roleCategories = ROLE_CATEGORY_MAP[userFamily ?? userRole] ?? [];
     const matchesRole = roleCategories.includes(r.category);
     const matchesSkill = userSkills.some((skill) =>
       r.tags.some((tag) => tag.toLowerCase().includes(skill) || skill.includes(tag.toLowerCase()))
@@ -494,7 +517,7 @@ export default function LearningPage() {
         [r.title, r.type, r.category, r.duration, savedIds.includes(r.id) ? 'saved' : ''].filter(Boolean).join(' · '),
       ),
       total: allResources.length,
-      sample: !learningData?.resources?.length && showDemoData,
+      sample: showingSamples,
     },
   ]);
 
@@ -507,9 +530,10 @@ export default function LearningPage() {
       content: (
         <RailStats
           items={[
-            { key: 'resources', label: learningEn('stat_resources'), labelEl: learningEl('stat_resources'), value: totalResourceCount, icon: BookOpen, tone: 'bg-status-accent-bg text-status-accent' },
-            { key: 'courses', label: learningEn('stat_courses'), labelEl: learningEl('stat_courses'), value: courseCount, icon: Play, tone: 'bg-status-success-bg text-status-success' },
-            { key: 'hours', label: learningEn('stat_hours'), labelEl: learningEl('stat_hours'), value: `${totalHours}h`, icon: Clock, tone: 'bg-status-info-bg text-status-info' },
+            // A library that was not read is a dash, never 0 (docs §90).
+            { key: 'resources', label: learningEn('stat_resources'), labelEl: learningEl('stat_resources'), value: readFailed ? '—' : totalResourceCount, icon: BookOpen, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'courses', label: learningEn('stat_courses'), labelEl: learningEl('stat_courses'), value: readFailed ? '—' : courseCount, icon: Play, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'hours', label: learningEn('stat_hours'), labelEl: learningEl('stat_hours'), value: readFailed ? '—' : `${totalHours}h`, icon: Clock, tone: 'bg-status-info-bg text-status-info' },
             { key: 'progress', label: learningEn('stat_progress'), labelEl: learningEl('stat_progress'), value: inProgressPaths.length, icon: Flame, tone: 'bg-status-warning-bg text-status-warning' },
           ]}
         />
@@ -558,9 +582,46 @@ export default function LearningPage() {
     },
   ];
 
+  const familyLabel = userFamily ? ROLE_FAMILY_LABEL[userFamily] : null;
+  const showPath = (category: string) => {
+    setSelectedCategory(category);
+    setActiveTab('all');
+    // The paths stay at the top; take the reader to what the button narrowed.
+    requestAnimationFrame(() => document.getElementById('learning-results')?.scrollIntoView({ block: 'start', behavior: 'smooth' }));
+  };
+
   return (
     <AppShell showHelp rail={rail} askAi={ASK.learning}>
-      <div className="space-y-6 pb-10">
+      {/* The tabs lead the column: they choose what the whole page shows (the
+          paths and the recommendations belong to "All resources"), and sat
+          below them, so "Saved" moved the tabs to the top of the page. */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-4 pb-10">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <TabsList>
+            <TabsTrigger value="all">
+              <BilingualText en={learningEn('tab_all')} el={learningEl('tab_all')} compact />
+            </TabsTrigger>
+            <TabsTrigger value="saved">
+              <BilingualText en={learningEn('tab_saved')} el={learningEl('tab_saved')} compact />
+            </TabsTrigger>
+            {/* Nothing records a resource as completed yet, so the tab cannot
+                list any; it stays visible and says why rather than showing
+                every resource under "Completed". */}
+            <TabsTrigger
+              value="completed"
+              disabled
+              title={bilingualAria('Completion is not recorded yet', 'Η ολοκλήρωση δεν καταγράφεται ακόμη')}
+              aria-describedby={completedReasonId}
+            >
+              <BilingualText en={learningEn('tab_completed')} el={learningEl('tab_completed')} compact />
+            </TabsTrigger>
+          </TabsList>
+          <span id={completedReasonId} className="max-w-[16rem] text-2xs leading-snug text-muted-foreground sm:sr-only">
+            <BilingualText en="Completion is not recorded yet" el="Η ολοκλήρωση δεν καταγράφεται ακόμη" compact wrap />
+          </span>
+        </div>
+
+        <TabsContent value={activeTab} className="space-y-6">
       {/* Learning Paths */}
       {activeTab === 'all' && (
         <div className="space-y-3">
@@ -581,28 +642,31 @@ export default function LearningPage() {
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4">
             {paths.map((path) => (
-              <LearningPathCard
-                key={path.id}
-                path={path}
-                onSelect={(category) => {
-                  setSelectedCategory(category);
-                  setActiveTab('all');
-                }}
-              />
+              <LearningPathCard key={path.id} path={path} onSelect={showPath} />
             ))}
           </div>
         </div>
       )}
 
+      <div id="learning-results" className="scroll-mt-16 space-y-6">
       {/* Recommended for you */}
       {recommendedResources.length > 0 && activeTab === 'all' && (
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <Sparkles className="icon-sm text-muted-foreground" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               <BilingualText en={learningEn('recommended')} el={learningEl('recommended')} compact />
             </h2>
-            <Badge variant="secondary" className="text-2xs capitalize">{userRole}</Badge>
+            {/* The raw role in a badge ("founder", "angel_investor") said
+                neither why nor in Greek; the line says what the picks use. */}
+            <span className="text-xs text-muted-foreground">
+              <BilingualText
+                en={familyLabel ? `By your role, ${familyLabel.en}, and your skills` : 'By your skills'}
+                el={familyLabel ? `Με βάση τον ρόλο σας (${familyLabel.el}) και τις δεξιότητές σας` : 'Με βάση τις δεξιότητές σας'}
+                compact
+                wrap
+              />
+            </span>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {recommendedResources.map((resource) => (
@@ -612,34 +676,9 @@ export default function LearningPage() {
         </div>
       )}
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="all">
-            <BilingualText en={learningEn('tab_all')} el={learningEl('tab_all')} compact />
-          </TabsTrigger>
-          <TabsTrigger value="saved">
-            <BilingualText en={learningEn('tab_saved')} el={learningEl('tab_saved')} compact />
-          </TabsTrigger>
-          {/* Nothing records a resource as completed yet, so the tab cannot
-              list any; it stays visible and says why rather than showing
-              every resource under "Completed". */}
-          <TabsTrigger
-            value="completed"
-            disabled
-            title={bilingualAria('Completion is not recorded yet', 'Η ολοκλήρωση δεν καταγράφεται ακόμη')}
-            aria-describedby={completedReasonId}
-          >
-            <BilingualText en={learningEn('tab_completed')} el={learningEl('tab_completed')} compact />
-          </TabsTrigger>
-        </TabsList>
-        <span id={completedReasonId} className="max-w-[16rem] text-2xs leading-snug text-muted-foreground sm:sr-only">
-          <BilingualText en="Completion is not recorded yet" el="Η ολοκλήρωση δεν καταγράφεται ακόμη" compact wrap />
-        </span>
-
-        <TabsContent value={activeTab} className="space-y-4">
-          {/* Search & Filters */}
-          <div className="space-y-3">
+          {/* Search: over a library that was read and has rows, or while a
+              search is being typed (the server narrows by it). */}
+          {!readFailed && (allResources.length > 0 || searchQuery !== '') && (
             <div className="relative">
               <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -650,8 +689,7 @@ export default function LearningPage() {
                 className="pl-9"
               />
             </div>
-
-          </div>
+          )}
 
           {/* Loading skeleton */}
           {learningLoading && (
@@ -672,8 +710,23 @@ export default function LearningPage() {
             </div>
           )}
 
+          {!learningLoading && readFailed && (
+            <Card>
+              <CardContent className="space-y-3 text-sm text-muted-foreground">
+                <p role="alert">
+                  <BilingualText en="The library could not be read just now." el="Η βιβλιοθήκη δεν διαβάστηκε αυτή τη στιγμή." wrap />
+                </p>
+                <div>
+                  <Button size="sm" variant="outline" disabled={learningFetching} onClick={() => void refetchLearning()}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Featured Resources */}
-          {!learningLoading && featuredResources.length > 0 && activeTab === 'all' && (
+          {!learningLoading && !readFailed && featuredResources.length > 0 && activeTab === 'all' && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="icon-sm text-muted-foreground" />
@@ -690,7 +743,7 @@ export default function LearningPage() {
           )}
 
           {/* All Resources */}
-          {!learningLoading && regularResources.length > 0 && (
+          {!learningLoading && !readFailed && regularResources.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 {listedAbove ? (
@@ -708,7 +761,7 @@ export default function LearningPage() {
           )}
 
           {/* Empty State */}
-          {!learningLoading && filteredResources.length === 0 && (
+          {!learningLoading && !readFailed && filteredResources.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <BookOpen className="h-12 w-12 mb-4 text-muted-foreground/30" />
               {activeTab === 'saved' && savedIds.length === 0 ? (
@@ -719,6 +772,28 @@ export default function LearningPage() {
                   <p className="text-sm text-muted-foreground mt-1">
                     <BilingualText en="Use the bookmark on a resource to keep it here. Bookmarks are kept on this device." el="Πατήστε τον σελιδοδείκτη σε έναν πόρο για να τον κρατήσετε εδώ. Οι σελιδοδείκτες μένουν σε αυτή τη συσκευή." wrap />
                   </p>
+                  {allResources.length > 0 ? (
+                    <Button variant="outline" size="sm" className="mt-4" onClick={() => setActiveTab('all')}>
+                      <BilingualText en="See all resources" el="Δείτε όλους τους πόρους" compact />
+                    </Button>
+                  ) : null}
+                </>
+              ) : !filtersOrSearch ? (
+                // An empty library has no filter to adjust.
+                <>
+                  <p className="font-medium text-foreground">
+                    <BilingualText en="The library is empty" el="Η βιβλιοθήκη είναι κενή" compact />
+                  </p>
+                  <p className="card-body mt-1 max-w-prose text-muted-foreground">
+                    <BilingualText
+                      en="Courses, guides and templates appear here as the platform team adds them. Until then, the paths above and your mentors are the way in."
+                      el="Μαθήματα, οδηγοί και πρότυπα εμφανίζονται εδώ καθώς τα προσθέτει η ομάδα της πλατφόρμας. Μέχρι τότε, τα μονοπάτια πιο πάνω και οι μέντορές σας είναι ο δρόμος."
+                      wrap
+                    />
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-4" onClick={() => router.push('/mentoring')}>
+                    <BilingualText en="Find a mentor" el="Βρείτε μέντορα" compact />
+                  </Button>
                 </>
               ) : (
                 <>
@@ -726,47 +801,41 @@ export default function LearningPage() {
                     <BilingualText en={learningEn('empty')} el={learningEl('empty')} compact />
                   </p>
                   <p className="card-body mt-1 max-w-prose text-muted-foreground">
-                    {searchQuery.trim() || typeFilter !== 'all' || selectedCategory !== 'All' ? (
-                      <BilingualText
-                        en={`Nothing matched ${[
-                          searchQuery.trim() ? `“${searchQuery.trim()}”` : null,
-                          typeFilter !== 'all' ? typeFilter : null,
-                          selectedCategory !== 'All' ? selectedCategory : null,
-                        ].filter(Boolean).join(', ')}. Clear them to see every resource.`}
-                        el={`Τίποτα δεν ταιριάζει με ${[
-                          searchQuery.trim() ? `«${searchQuery.trim()}»` : null,
-                          typeFilter !== 'all' ? typeFilter : null,
-                          selectedCategory !== 'All' ? selectedCategory : null,
-                        ].filter(Boolean).join(', ')}. Καθαρίστε τα για να δείτε όλους τους πόρους.`}
-                        wrap
-                      />
-                    ) : (
-                      <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} wrap />
-                    )}
+                    <BilingualText
+                      en={`Nothing matched ${[
+                        searchQuery.trim() ? `“${searchQuery.trim()}”` : null,
+                        typeFilter !== 'all' ? learningEn(typeFilters.find((tf) => tf.key === typeFilter)?.labelKey ?? 'type_all') : null,
+                        selectedCategory !== 'All' ? selectedCategory : null,
+                      ].filter(Boolean).join(', ')}. Clear them to see every resource.`}
+                      el={`Τίποτα δεν ταιριάζει με ${[
+                        searchQuery.trim() ? `«${searchQuery.trim()}»` : null,
+                        typeFilter !== 'all' ? learningEl(typeFilters.find((tf) => tf.key === typeFilter)?.labelKey ?? 'type_all') : null,
+                        selectedCategory !== 'All' ? learningCategoryEl(selectedCategory) : null,
+                      ].filter(Boolean).join(', ')}. Καθαρίστε τα για να δείτε όλους τους πόρους.`}
+                      wrap
+                    />
                   </p>
-                  {(searchQuery.trim() !== '' || typeFilter !== 'all' || selectedCategory !== 'All') && (
-                    <div className="mt-4 flex flex-wrap justify-center gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => { setSearchQuery(''); setTypeFilter('all'); setSelectedCategory('All'); }}
-                      >
-                        <BilingualText en="Show all resources" el="Εμφάνιση όλων των πόρων" compact />
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => { setSearchQuery(''); setTypeFilter('all'); setSelectedCategory('All'); }}
+                    >
+                      <BilingualText en="Show all resources" el="Εμφάνιση όλων των πόρων" compact />
+                    </Button>
+                    {(typeFilter !== 'all' || selectedCategory !== 'All') && (
+                      <Button variant="ghost" size="sm" onClick={() => openRailSection('filters')}>
+                        <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
                       </Button>
-                      {(typeFilter !== 'all' || selectedCategory !== 'All') && (
-                        <Button variant="ghost" size="sm" onClick={() => openRailSection('filters')}>
-                          <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
-                        </Button>
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </>
               )}
             </div>
           )}
+      </div>
         </TabsContent>
       </Tabs>
-      </div>
     </AppShell>
   );
 }

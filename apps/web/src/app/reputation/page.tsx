@@ -344,7 +344,7 @@ export default function ReputationPage() {
                         <div className="flex items-center gap-2">
                           <Trophy className="icon-sm text-status-warning" aria-hidden />
                           <span className="text-sm font-medium tabular-nums">
-                            {badgeList.length} {t(badgeList.length === 1 ? 'badge_earned_one' : 'badges_earned')}
+                            {badges.isError && !badges.data ? '—' : badgeList.length} {t(badgeList.length === 1 ? 'badge_earned_one' : 'badges_earned')}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -354,9 +354,13 @@ export default function ReputationPage() {
                           </span>
                         </div>
                         {recentTotal > 0 && (
+                          // "+355 XP" said nothing of when: it is the sum of
+                          // the recent events grouped below.
                           <div className="flex items-center gap-2">
                             <TrendingUp className="icon-sm text-status-success" aria-hidden />
-                            <span className="text-sm font-medium tabular-nums">+{recentTotal} XP</span>
+                            <span className="text-sm font-medium tabular-nums">
+                              <BilingualText en={`+${recentTotal} XP recently`} el={`+${recentTotal} XP πρόσφατα`} compact />
+                            </span>
                           </div>
                         )}
                       </div>
@@ -368,20 +372,22 @@ export default function ReputationPage() {
 
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
               <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-none border-b bg-transparent p-0">
+                {/* Pairs, as every other label here: the tabs alone were in one
+                    language, chosen at render (docs §90). */}
                 {(
                   [
-                    ['overview', Shield, t('tab_overview')],
-                    ['badges', Award, `${t('tab_badges')}${badgeList.length ? ` (${badgeList.length})` : ''}`],
-                    ['history', TrendingUp, t('tab_history')],
+                    ['overview', Shield, reputationEn('tab_overview'), reputationEl('tab_overview')],
+                    ['badges', Award, `${reputationEn('tab_badges')}${badgeList.length ? ` (${badgeList.length})` : ''}`, `${reputationEl('tab_badges')}${badgeList.length ? ` (${badgeList.length})` : ''}`],
+                    ['history', TrendingUp, reputationEn('tab_history'), reputationEl('tab_history')],
                   ] as const
-                ).map(([value, Icon, label]) => (
+                ).map(([value, Icon, labelEn, labelEl]) => (
                   <TabsTrigger
                     key={value}
                     value={value}
                     className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent"
                   >
                     <Icon className="icon-sm" aria-hidden />
-                    {label}
+                    <BilingualText en={labelEn} el={labelEl} compact />
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -419,7 +425,17 @@ export default function ReputationPage() {
                       <CardDescription><BilingualText en={reputationEn('streak_desc')} el={reputationEl('streak_desc')} compact wrap /></CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {!streakData || (streakData.currentStreak === 0 && streakData.longestStreak === 0) ? (
+                      {streak.isError && !streakData ? (
+                        // Not "no streak yet" over a streak that was not read.
+                        <div className="space-y-3">
+                          <p role="alert" className="text-sm text-muted-foreground">
+                            <BilingualText en="Your streak could not be read just now." el="Το σερί σας δεν διαβάστηκε αυτή τη στιγμή." wrap />
+                          </p>
+                          <Button variant="outline" size="sm" disabled={streak.isFetching} onClick={() => void streak.refetch()}>
+                            <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                          </Button>
+                        </div>
+                      ) : !streakData || (streakData.currentStreak === 0 && streakData.longestStreak === 0) ? (
                         <p className="text-sm text-muted-foreground"><BilingualText en={reputationEn('streak_none')} el={reputationEl('streak_none')} compact /></p>
                       ) : (
                         <dl className="grid grid-cols-2 gap-4">
@@ -462,7 +478,17 @@ export default function ReputationPage() {
                     </Button>
                   )}
                 </div>
-                {badgeList.length === 0 ? (
+                {badges.isError && !badges.data ? (
+                  // Not "no badges yet" over a list that was not read.
+                  <Card><CardContent className="space-y-3">
+                    <p role="alert" className="text-sm text-muted-foreground">
+                      <BilingualText en="Your badges could not be read just now." el="Τα εμβλήματά σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                    </p>
+                    <Button variant="outline" size="sm" disabled={badges.isFetching} onClick={() => void badges.refetch()}>
+                      <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                    </Button>
+                  </CardContent></Card>
+                ) : badgeList.length === 0 ? (
                   <Card><CardContent>
                     <EmptyState
                       size="sm"

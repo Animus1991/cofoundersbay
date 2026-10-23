@@ -50,7 +50,7 @@ export const OPPORTUNITIES_STRINGS: Record<string, BilingualPair> = {
   count_one: { en: '1 opportunity', el: '1 ευκαιρία' },
   count_many: { en: '{n} opportunities', el: '{n} ευκαιρίες' },
 
-  load_failed: { en: 'Failed to load opportunities.', el: 'Οι ευκαιρίες δεν φορτώθηκαν.' },
+  load_failed: { en: 'The opportunities could not be read just now.', el: 'Οι ευκαιρίες δεν διαβάστηκαν αυτή τη στιγμή.' },
   jobs_failed: { en: 'Failed to load jobs.', el: 'Οι θέσεις δεν φορτώθηκαν.' },
   try_again: { en: 'Try again', el: 'Δοκιμάστε ξανά' },
 

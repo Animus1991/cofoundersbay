@@ -3,8 +3,15 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Mail, Users, Copy, Check, X, Clock,
-  Loader2, Link2, Sparkles, Trophy,
+  Mail,
+  Users,
+  Check,
+  X,
+  Clock,
+  Loader2,
+  Link2,
+  Sparkles,
+  Trophy,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -40,6 +47,9 @@ const STATUS_CONFIG: Record<InviteItem['status'], { key: InviteKey; color: strin
   cancelled: { key: 'status_cancelled', color: 'bg-muted text-muted-foreground' },
 };
 
+/** "17 Mar 2026", the platform's short date; "17/03/2026" reads two ways. */
+const SHORT_DATE: Intl.DateTimeFormatOptions = { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' };
+
 function InviteRow({ invite, onCancel, cancelling }: {
   invite: InviteItem;
   onCancel: (id: string) => void;
@@ -57,11 +67,11 @@ function InviteRow({ invite, onCancel, cancelling }: {
             rendered day cannot shift under the reader's clock. */}
         <p className="text-xs leading-snug text-muted-foreground">
           <BilingualText
-            en={[inviteEn('sent_on').replace('{date}', new Date(invite.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })),
-                invite.acceptedAt ? inviteEn('joined_on').replace('{date}', new Date(invite.acceptedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })) : null]
+            en={[inviteEn('sent_on').replace('{date}', new Date(invite.createdAt).toLocaleDateString('en-GB', SHORT_DATE)),
+                invite.acceptedAt ? inviteEn('joined_on').replace('{date}', new Date(invite.acceptedAt).toLocaleDateString('en-GB', SHORT_DATE)) : null]
               .filter(Boolean).join(' · ')}
-            el={[inviteEl('sent_on').replace('{date}', new Date(invite.createdAt).toLocaleDateString('el-GR', { timeZone: 'UTC' })),
-                invite.acceptedAt ? inviteEl('joined_on').replace('{date}', new Date(invite.acceptedAt).toLocaleDateString('el-GR', { timeZone: 'UTC' })) : null]
+            el={[inviteEl('sent_on').replace('{date}', new Date(invite.createdAt).toLocaleDateString('el-GR', SHORT_DATE)),
+                invite.acceptedAt ? inviteEl('joined_on').replace('{date}', new Date(invite.acceptedAt).toLocaleDateString('el-GR', SHORT_DATE)) : null]
               .filter(Boolean).join(' · ')}
             compact
             wrap
@@ -102,13 +112,13 @@ export default function InvitePage() {
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const { data: statsData, isLoading: statsLoading } = useQuery({
+  const { data: statsData, isLoading: statsLoading, isError: statsError, isFetching: statsFetching, refetch: refetchStats } = useQuery({
     queryKey: qk('invites', 'stats'),
     queryFn: getInviteStats,
     staleTime: 30_000,
   });
 
-  const { data: invitesData, isLoading: invitesLoading } = useQuery({
+  const { data: invitesData, isLoading: invitesLoading, isError: invitesError, isFetching: invitesFetching, refetch: refetchInvites } = useQuery({
     queryKey: qk('invites'),
     queryFn: () => listInvites({ limit: 50 }),
     staleTime: 30_000,
@@ -161,6 +171,16 @@ export default function InvitePage() {
             above the form. Each keeps what its tile's second line said. */}
         {statsLoading ? (
           <Skeleton className="h-5 w-full max-w-xl" />
+        ) : statsError && !statsData ? (
+          // "0 sent · 0 invites left" over figures that were not read (docs §90).
+          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <p role="alert">
+              <BilingualText en="Your invitation figures could not be read just now." el="Τα στοιχεία των προσκλήσεών σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+            </p>
+            <Button size="sm" variant="outline" disabled={statsFetching} onClick={() => void refetchStats()}>
+              <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+            </Button>
+          </div>
         ) : (
           <PageFacts
             labelEn="Your invitations in figures"
@@ -271,6 +291,16 @@ export default function InvitePage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            ) : invitesError && !invitesData ? (
+              // Not "No invitations yet" over a history that was not read.
+              <div className="space-y-3 pt-4 text-sm text-muted-foreground">
+                <p role="alert">
+                  <BilingualText en="Your invitations could not be read just now." el="Οι προσκλήσεις σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                </p>
+                <Button size="sm" variant="outline" disabled={invitesFetching} onClick={() => void refetchInvites()}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
               </div>
             ) : invites.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-10 text-center">

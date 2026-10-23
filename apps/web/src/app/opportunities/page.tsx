@@ -23,7 +23,6 @@ import {
   Rocket,
   TrendingUp,
   Globe,
-  AlertCircle,
   Store,
   GraduationCap,
 } from 'lucide-react';
@@ -101,12 +100,14 @@ interface Proposal {
 
 
 
+// From the demo world's own people, in the roles it gives them (AGENTS:
+// sample rows): "Alex Chen" and "Maria Santos" were nobody in it (docs §90).
 const DEMO_PROPOSALS: Proposal[] = attachDemoPhotos([
   {
     id: 'p1',
-    fromName: 'Alex Chen',
-    fromInitials: 'AC',
-    fromRole: 'Founder',
+    fromName: 'Marcus Chen',
+    fromInitials: 'MC',
+    fromRole: 'Technical cofounder',
     scope: 'Co-develop an AI validation tool. You handle product & UX, I handle engineering.',
     timeframe: '6 months',
     compensation: '50/50 equity split',
@@ -115,9 +116,9 @@ const DEMO_PROPOSALS: Proposal[] = attachDemoPhotos([
   },
   {
     id: 'p2',
-    fromName: 'Maria Santos',
-    fromInitials: 'MS',
-    fromRole: 'Angel Investor',
+    fromName: 'Nikos Andreou',
+    fromInitials: 'NA',
+    fromRole: 'Angel investor',
     scope: '€50k angel investment in exchange for advisory role and board observer seat.',
     timeframe: 'Ongoing',
     compensation: '5% equity',
@@ -218,7 +219,10 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
                 </span>
               );
             })() : null,
-            opportunity.createdBy.displayName,
+            // A bare name at the end of the line did not say who it was.
+            opportunity.createdBy.displayName ? (
+              <BilingualText key="by" en={`Posted by ${opportunity.createdBy.displayName}`} el={`Από ${opportunity.createdBy.displayName}`} compact />
+            ) : null,
           ]}
         />
 
@@ -910,7 +914,7 @@ export default function OpportunitiesPage() {
 
             {oppError ? (
               <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground">
+                <p role="alert" className="text-sm text-muted-foreground">
                   <BilingualText en={opportunitiesEn('load_failed')} el={opportunitiesEl('load_failed')} compact />
                 </p>
                 <Button variant="secondary" size="sm" onClick={() => refetchOpp()}>

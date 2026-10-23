@@ -103,7 +103,9 @@ export function NeedCardsSection({
       </div>
       <NeedCardAlertDialog open={isAlertOpen} onOpenChange={setAlertOpen} kinds={kinds} remoteOnly={remoteOnly} search={search} chips={chips} />
 
-      <div className="space-y-2">
+      {/* The chips narrow a board that was read; over a failed read they
+          narrowed nothing (docs §90). */}
+      <div className={cn('space-y-2', wall.isError && 'hidden')}>
         <div role="group" aria-label={bilingualInline('Narrow the need cards', 'Περιορισμός των καρτών ανάγκης')} className="flex flex-wrap items-center gap-2">
           {CHIP_KEYS.map((key) => {
             const chosen = options[key].find((o) => o.value === chips[key]);
@@ -187,8 +189,8 @@ export function NeedCardsSection({
         </div>
       ) : wall.isError ? (
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground">
-            <BilingualText en="The need cards could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των καρτών ανάγκης." wrap />
+          <p role="alert" className="text-sm text-muted-foreground">
+            <BilingualText en="The need cards could not be read just now." el="Οι κάρτες ανάγκης δεν διαβάστηκαν αυτή τη στιγμή." wrap />
           </p>
           <Button size="sm" variant="outline" onClick={() => wall.refetch()}>
             <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />

@@ -37,6 +37,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { bilingualAria } from '@/lib/i18n/format';
 import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
@@ -351,7 +353,7 @@ function AchievementCard({ achievement, meterSlot = 0 }: { achievement: Achievem
           items={[
             <span key="rarity">{achievement.rarity}% <BilingualText en={achievementsEn('have_this')} el={achievementsEl('have_this')} compact /></span>,
             achievement.unlocked && achievement.unlockedAt
-              ? <BilingualText key="unlocked" en={`Unlocked ${new Date(achievement.unlockedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}`} el={`Ξεκλειδώθηκε ${new Date(achievement.unlockedAt).toLocaleDateString('el-GR', { timeZone: 'UTC' })}`} compact />
+              ? <BilingualText key="unlocked" en={`Unlocked ${new Date(achievement.unlockedAt).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })}`} el={`Ξεκλειδώθηκε ${new Date(achievement.unlockedAt).toLocaleDateString('el-GR', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })}`} compact />
               : null,
           ]}
         />
@@ -360,7 +362,7 @@ function AchievementCard({ achievement, meterSlot = 0 }: { achievement: Achievem
   );
 }
 
-function UserStatsCard({ stats }: { stats: UserStats }) {
+function UserStatsCard({ stats, rank }: { stats: UserStats; rank: number | null }) {
   const levelProgress =
     ((stats.totalPoints - stats.currentLevelPoints) /
       (stats.nextLevelPoints - stats.currentLevelPoints)) *
@@ -385,21 +387,25 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
                     compact
                   />
                 </span>
-                <span className="font-medium">
-                  {stats.totalPoints} / {stats.nextLevelPoints} pts
+                <span className="font-medium tabular-nums">
+                  <BilingualText
+                    en={`${stats.totalPoints} / ${stats.nextLevelPoints} pts`}
+                    el={`${stats.totalPoints} / ${stats.nextLevelPoints} πόντοι`}
+                    compact
+                  />
                 </span>
               </div>
               <Progress value={levelProgress} data-meter-slot={0} className="h-2" />
             </div>
 
+            {/* The level's name, in both languages. "Top 70%" beside it was
+                100 minus the share of badges unlocked, not a place among
+                members, so it went (docs §90). */}
             <div className="flex items-center gap-2">
               <Badge variant="default" className="gap-1">
                 <Crown className="icon-sm" aria-hidden="true" />
-                {stats.rank}
+                <BilingualText en={stats.rank} el={LEVEL_LABEL_EL[stats.level] ?? stats.rank} compact />
               </Badge>
-              <span className="text-sm text-muted-foreground">
-                <BilingualText en={`Top ${100 - stats.percentile}%`} el={`Κορυφαίο ${100 - stats.percentile}%`} compact />
-              </span>
             </div>
           </div>
 
@@ -422,7 +428,9 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('rank')} el={achievementsEl('rank')} compact /></p>
-              <p className="page-stat text-xl font-bold">#{stats.percentile}</p>
+              {/* The reader's place on the XP leaderboard. It printed the share
+                  of badges unlocked with a "#" ("#30" beside "30%"). */}
+              <p className="page-stat text-xl font-bold">{rank != null ? `#${rank}` : '—'}</p>
             </div>
           </div>
         </div>
@@ -488,11 +496,11 @@ export default function AchievementsPage() {
   });
 
   const { showDemoData } = useDemoData();
-  const { data: board, isLoading: boardLoading, isError: boardError } = useQuery({
+  const { data: board, isLoading: boardLoading, isError: boardError, isFetching: boardFetching, refetch: refetchBoard } = useQuery({
     queryKey: qk('gamification', 'leaderboard'),
     queryFn: () => getLeaderboard(10),
     staleTime: 60_000,
-    enabled: activeTab === 'leaderboard',
+    // Read for the summary's rank too, not only for the Leaderboard view.
   });
 
   const { data: xpData } = useQuery<GamificationXPSummary>({
@@ -568,6 +576,9 @@ export default function AchievementsPage() {
   const RECENT_UNLOCKS = achievements.filter((a) => a.unlocked && a.unlockedAt).sort((a, b) => (b.unlockedAt?.getTime() ?? 0) - (a.unlockedAt?.getTime() ?? 0)).slice(0, 5);
 
   const listViews = activeTab === 'all' || activeTab === 'unlocked' || activeTab === 'locked';
+  // A list that was not read is not an empty one: it drew Level 1, 0 points
+  // and "No achievements found. Try adjusting your filters" (docs §90).
+  const listFailed = isError && !rawAchievements && !showDemoData;
 
   usePageList([
     {
@@ -605,13 +616,51 @@ export default function AchievementsPage() {
     ),
   ]);
 
+  /*
+   * The rail drew the same summary card the column opens with, so an open rail
+   * showed level, points and rank twice. It now lists what the card cannot:
+   * the three badges nearest to unlocking (docs §90).
+   */
+  const closest = achievements
+    .filter((a) => !a.unlocked && a.total > 0 && a.progress > 0)
+    .sort((a, b) => b.progress / b.total - a.progress / a.total)
+    .slice(0, 3);
   const rail: PageRailSection[] = [
     {
       id: 'progress',
       glyph: 'award',
-      labelEn: 'Your progress',
-      labelEl: 'Η πρόοδός σας',
-      content: stats ? <UserStatsCard stats={stats} /> : null,
+      labelEn: 'Closest to unlocking',
+      labelEl: 'Πιο κοντά στο ξεκλείδωμα',
+      content: listFailed ? (
+        <p className="text-xs text-muted-foreground">
+          <BilingualText en="Your badges could not be read just now." el="Τα εμβλήματά σας δεν διαβάστηκαν αυτή τη στιγμή." stacked wrap />
+        </p>
+      ) : closest.length === 0 ? (
+        <p className="text-xs text-muted-foreground">
+          <BilingualText
+            en="No badge is under way yet. A connection, a message or a post starts one."
+            el="Κανένα έμβλημα δεν είναι ακόμη σε εξέλιξη. Μια σύνδεση, ένα μήνυμα ή μια ανάρτηση ξεκινά ένα."
+            stacked
+            wrap
+          />
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {closest.map((a) => (
+            <li key={a.id} className="space-y-1">
+              <div className="flex items-baseline justify-between gap-2 text-xs">
+                <span className="min-w-0 truncate font-medium text-foreground">{a.title}</span>
+                <span className="shrink-0 tabular-nums text-muted-foreground">{a.progress}/{a.total}</span>
+              </div>
+              <Progress
+                value={(a.progress / a.total) * 100}
+                className="h-1.5"
+                aria-label={bilingualAria(`${a.title}: ${a.progress} of ${a.total}`, `${a.title}: ${a.progress} από ${a.total}`)}
+              />
+            </li>
+          ))}
+        </ul>
+      ),
     },
     {
       id: 'browse',
@@ -668,10 +717,21 @@ export default function AchievementsPage() {
       <div className="space-y-6 pb-10">
         {isLoading ? (
           <AchievementsSkeleton />
+        ) : listFailed ? (
+          <Card>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p role="alert">
+                <BilingualText en="Your achievements could not be read just now." el="Τα επιτεύγματά σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+              </p>
+              <Button size="sm" variant="outline" onClick={() => void refetch()}>
+                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <>
               <div data-tour="achievements-stats">
-                <UserStatsCard stats={stats} />
+                <UserStatsCard stats={stats} rank={board?.me.rank ?? null} />
               </div>
               {activeTab === 'all' && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2" data-tour="achievements-list">
@@ -744,9 +804,14 @@ export default function AchievementsPage() {
                             {[0, 1, 2].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
                           </div>
                         ) : boardError ? (
-                          <p className="card-body text-muted-foreground">
-                            <BilingualText en="The leaderboard could not be loaded. Try again in a moment." el="Ο πίνακας κατάταξης δεν φόρτωσε. Δοκιμάστε ξανά σε λίγο." />
-                          </p>
+                          <div className="space-y-3">
+                            <p role="alert" className="card-body text-muted-foreground">
+                              <BilingualText en="The leaderboard could not be read just now." el="Ο πίνακας κατάταξης δεν διαβάστηκε αυτή τη στιγμή." wrap />
+                            </p>
+                            <Button size="sm" variant="outline" disabled={boardFetching} onClick={() => void refetchBoard()}>
+                              <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                            </Button>
+                          </div>
                         ) : leaderboard.length === 0 ? (
                           <p className="card-body text-muted-foreground">
                             <BilingualText

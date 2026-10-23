@@ -240,6 +240,8 @@ export default function PerksPage() {
   const shown = category === 'all' ? all : all.filter((p) => p.category === category);
   const claimed = claimedQuery.data ?? [];
   const adminRows = managed.data ?? [];
+  const offersFailed = offers.isError && !offers.data;
+  const claimedFailed = claimedQuery.isError && !claimedQuery.data;
   const claimable = all.filter((p) => !p.claimed);
   const endingSoon = all.filter((p) => {
     const left = daysLeft(p, now);
@@ -393,9 +395,10 @@ export default function PerksPage() {
         content: (
           <RailStats
             items={[
-              { key: 'open', label: 'Open offers', labelEl: 'Ανοιχτές προσφορές', value: all.length },
-              { key: 'claimed', label: 'Claimed by you', labelEl: 'Διεκδικημένες από εσάς', value: claimed.length },
-              { key: 'ending', label: `Ending within ${ENDING_SOON_DAYS} days`, labelEl: `Λήγουν μέσα σε ${ENDING_SOON_DAYS} ημέρες`, value: endingSoon.length },
+              // A figure that was not read is a dash, never 0 (docs §90).
+              { key: 'open', label: 'Open offers', labelEl: 'Ανοιχτές προσφορές', value: offersFailed ? '—' : all.length },
+              { key: 'claimed', label: 'Claimed by you', labelEl: 'Διεκδικημένες από εσάς', value: claimedFailed ? '—' : claimed.length },
+              { key: 'ending', label: `Ending within ${ENDING_SOON_DAYS} days`, labelEl: `Λήγουν μέσα σε ${ENDING_SOON_DAYS} ημέρες`, value: offersFailed ? '—' : endingSoon.length },
             ]}
           />
         ),
@@ -403,8 +406,10 @@ export default function PerksPage() {
       {
         id: 'how',
         glyph: 'book',
-        labelEn: 'How perks work',
-        labelEl: 'Πώς λειτουργούν οι προσφορές',
+        // "How perks work" is the header help's title; the rail keeps the short
+        // version under its own name (pageRailContract, docs §90).
+        labelEn: 'Before you claim',
+        labelEl: 'Πριν διεκδικήσετε',
         content: (
           <ul className="list-disc space-y-1.5 pl-5 text-sm text-muted-foreground">
             <li><BilingualText en="Choose your stage: the offers named for it come first. Nothing is hidden." el="Επιλέξτε το στάδιό σας: οι προσφορές γι’ αυτό έρχονται πρώτες. Τίποτα δεν κρύβεται." wrap /></li>
@@ -414,16 +419,21 @@ export default function PerksPage() {
         ),
       },
     ],
-    [stage, category, all.length, claimed.length, endingSoon.length, counts, primary],
+    [stage, category, all.length, claimed.length, endingSoon.length, counts, primary, offersFailed, claimedFailed],
   );
 
-  const empty = (en: string, el: string, cta?: React.ReactNode) => (
+  // The words are a block of their own so the button sits under them, not
+  // glued to the end of the sentence.
+  const empty = (en: string, el: string, cta?: React.ReactNode, alert = false) => (
     <Card>
       <CardContent className="space-y-3 text-sm text-muted-foreground">
-        <BilingualText en={en} el={el} wrap />
-        {cta}
+        <p role={alert ? 'alert' : undefined}><BilingualText en={en} el={el} wrap /></p>
+        {cta ? <div>{cta}</div> : null}
       </CardContent>
     </Card>
+  );
+  const tryAgain = (q: { refetch: () => unknown; isFetching: boolean }) => (
+    <Button size="sm" variant="outline" disabled={q.isFetching} onClick={() => void q.refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
   );
   const stageOrNull = stage === 'any' ? null : stage;
   const busy = claim.isPending || toggle.isPending;
@@ -440,11 +450,12 @@ export default function PerksPage() {
           <TabsContent value="offers" className="space-y-4">
             {offers.isLoading ? (
               <Skeleton className="h-40 w-full rounded-2xl" />
-            ) : offers.isError ? (
-              empty('The perks could not be loaded. Try again in a moment.', 'Οι προσφορές δεν φορτώθηκαν. Δοκιμάστε ξανά σε λίγο.',
-                <Button size="sm" variant="outline" onClick={() => void offers.refetch()}><BilingualText en="Try again" el="Δοκιμή ξανά" compact /></Button>)
+            ) : offersFailed ? (
+              empty('The perks could not be read just now.', 'Οι προσφορές δεν διαβάστηκαν αυτή τη στιγμή.', tryAgain(offers), true)
             ) : all.length === 0 ? (
-              empty('No partner offers yet. The platform team adds them here as partners join.', 'Δεν υπάρχουν ακόμη προσφορές συνεργατών. Η ομάδα της πλατφόρμας τις προσθέτει εδώ καθώς μπαίνουν συνεργάτες.')
+              empty('No partner offers yet. The platform team adds them here as partners join.', 'Δεν υπάρχουν ακόμη προσφορές συνεργατών. Η ομάδα της πλατφόρμας τις προσθέτει εδώ καθώς μπαίνουν συνεργάτες.',
+                // The platform team is the reader when they are an admin.
+                isAdmin ? <Button size="sm" variant="outline" onClick={() => { setTab('manage'); setAdding(true); }}><BilingualText en="Add a perk" el="Προσθήκη προσφοράς" compact /></Button> : undefined)
             ) : shown.length === 0 ? (
               empty(
                 `No open perk in ${PERK_CATEGORY_COPY[category as PerkCategory]?.en ?? 'this category'} right now.`,
@@ -462,6 +473,9 @@ export default function PerksPage() {
           <TabsContent value="claimed" className="space-y-4">
             {claimedQuery.isLoading ? (
               <Skeleton className="h-40 w-full rounded-2xl" />
+            ) : claimedFailed ? (
+              // Not "You have not claimed a perk yet" over a list that was not read.
+              empty('Your claimed perks could not be read just now.', 'Οι διεκδικημένες προσφορές σας δεν διαβάστηκαν αυτή τη στιγμή.', tryAgain(claimedQuery), true)
             ) : claimed.length === 0 ? (
               empty('You have not claimed a perk yet. Claim one under Offers to see its code here.', 'Δεν έχετε διεκδικήσει ακόμη προσφορά. Διεκδικήστε μία στις Προσφορές για να δείτε εδώ τον κωδικό της.',
                 <Button size="sm" variant="outline" onClick={() => setTab('offers')}><BilingualText en="See the offers" el="Δείτε τις προσφορές" compact /></Button>)
@@ -481,6 +495,8 @@ export default function PerksPage() {
               </div>
               {managed.isLoading ? (
                 <Skeleton className="h-40 w-full rounded-2xl" />
+              ) : managed.isError && !managed.data ? (
+                empty('The perk list could not be read just now.', 'Η λίστα προσφορών δεν διαβάστηκε αυτή τη στιγμή.', tryAgain(managed), true)
               ) : adminRows.length === 0 ? (
                 empty('No perks yet. Add the first partner offer.', 'Δεν υπάρχουν ακόμη προσφορές. Προσθέστε την πρώτη.')
               ) : (

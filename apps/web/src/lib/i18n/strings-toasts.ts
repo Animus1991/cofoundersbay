@@ -85,6 +85,7 @@ export const TOAST_EL: Record<string, string> = {
   "Could not save the preferences": "Οι προτιμήσεις δεν αποθηκεύτηκαν",
   "Could not add the comment": "Το σχόλιο δεν προστέθηκε",
   "Could not post": "Η δημοσίευση απέτυχε",
+  "Could not post the role": "Η θέση δεν δημοσιεύτηκε",
   "Branch archived": "Ο κλάδος αρχειοθετήθηκε",
   "Branch deleted": "Ο κλάδος διαγράφηκε",
   "Branding saved": "Η ταυτότητα αποθηκεύτηκε",
