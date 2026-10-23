@@ -17,11 +17,10 @@ import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
-import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import {
-  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
-import { RelativeTime } from '@/components/common/RelativeTime';
+import { RelativeTime, useHydrated } from '@/components/common/RelativeTime';
 import { formatRelativeTime, initialsOf } from '@/lib/utils';
 import { listServiceInquiries, updateServiceInquiry, type ServiceInquiryItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
@@ -52,15 +51,18 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { FailedLine } from '@/components/dashboard/SectionCard';
 import { ASK } from '@/lib/page-questions';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { calendarDaysUntil } from '@/lib/calendar-days';
+import { Label } from '@/components/ui/label';
 
 /**
  * A project is an inquiry that was accepted — the same row /provider/inquiries
  * lists before the provider agrees to the work, which is why the two screens
  * cannot disagree about a piece of work.
  *
- * `progress` and `dueDate` have no field on the model: an inquiry records what
- * was agreed and when it was resolved, not a schedule. Progress reads 0 and
- * the due date reads a dash rather than a plausible-looking week from now.
+ * `progress` (0-100) and `dueDate` (a day) are fields the provider sets on
+ * agreed work (docs §97). Until one is set the card draws no bar and no date
+ * rather than "0%" or a dash; a completed project is at 100%.
  */
 function toProject(row: ServiceInquiryItem): Project {
   return {
@@ -70,11 +72,10 @@ function toProject(row: ServiceInquiryItem): Project {
     clientAvatar: row.client?.avatarUrl ?? undefined,
     service: row.offer?.title ?? '\u2014',
     status: row.status === 'completed' ? 'completed' : 'active',
-    // No progress field: -1 says "not tracked", so the card draws no bar
-    // rather than "0%" under every live project.
-    progress: row.status === 'completed' ? 100 : -1,
+    // -1 is "not tracked": no bar rather than "0%".
+    progress: row.progress ?? (row.status === 'completed' ? 100 : -1),
     startDate: row.createdAt,
-    dueDate: '',
+    dueDate: row.dueDate ?? '',
     lastUpdate: row.resolvedAt ?? row.createdAt,
     amount:
       row.agreedPrice != null
@@ -94,8 +95,10 @@ type Project = {
   clientCompany?: string;
   service: string;
   status: 'active' | 'completed' | 'on_hold';
+  /** 0-100, or -1 when not tracked. */
   progress: number;
   startDate: string;
+  /** `YYYY-MM-DD`, or '' when no date was agreed. */
   dueDate: string;
   lastUpdate: string;
   amount: string;
@@ -107,9 +110,29 @@ type ProjectActions = {
   onView: (p: Project) => void;
   /** Absent on sample rows. */
   onComplete?: (p: Project) => void;
+  /** Opens the progress form; absent on sample rows. */
+  onUpdateProgress?: (p: Project) => void;
 };
 
-function ProjectCard({ project, onView, onComplete }: { project: Project } & ProjectActions) {
+/** "Due 5 Nov", "Due tomorrow", "Overdue by 3 days" - calendar days where the reader is. */
+function DueFact({ project }: { project: Project }) {
+  const fmtDate = useDateFormat();
+  const hydrated = useHydrated();
+  if (!project.dueDate) return null;
+  const date = fmtDate(`${project.dueDate}T12:00:00`, { day: 'numeric', month: 'short' });
+  const days = hydrated ? calendarDaysUntil(project.dueDate) : null;
+  if (project.status !== 'completed' && days != null && days < 0) {
+    return (
+      <span className="font-medium text-status-warning">
+        <BilingualText en={`Overdue: due ${date}`} el={`Εκπρόθεσμο: προθεσμία ${date}`} compact />
+      </span>
+    );
+  }
+  if (project.status !== 'completed' && days === 0) return <BilingualText en="Due today" el="Προθεσμία σήμερα" compact />;
+  return <BilingualText en={`Due ${date}`} el={`Προθεσμία ${date}`} compact />;
+}
+
+function ProjectCard({ project, onView, onComplete, onUpdateProgress }: { project: Project } & ProjectActions) {
   const statusConfig: Record<string, { color: string; icon: React.ElementType }> = {
     active: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: Clock },
     completed: { color: 'bg-status-info-bg text-status-info border-status-info-border', icon: CheckCircle },
@@ -152,17 +175,10 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {/* All four had no handler. A project is an accepted service
-                    inquiry: it can be completed (status 'completed'), and
-                    its client messaged; it has no progress field to set. */}
+                    inquiry: it can be completed (status 'completed'), its
+                    client messaged, and its progress and due date set - in
+                    the card's foot, where they are seen (docs §95, §97). */}
                 <DropdownMenuItem onSelect={() => onView(project)}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></DropdownMenuItem>
-                <UnavailableMenuItem
-                  en="Update Progress"
-                  el="Ενημέρωση προόδου"
-                  reasonEn="Projects do not track progress yet."
-                  reasonEl="Τα έργα δεν καταγράφουν ακόμη πρόοδο."
-                />
-                {/* "Message Client" was the foot's Message; "Mark Complete"
-                    is in the foot now, where it is seen (docs §95). */}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -170,21 +186,20 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
 
         {project.service ? <p className="text-xs font-medium text-muted-foreground first-letter:uppercase">{project.service}</p> : null}
 
-        {/* Progress and the due date have no field on a live project: the
-            bar read 0% and the date a dash under every one of them. */}
+        {/* Drawn once a progress is set; never "0%" for "not tracked". */}
         {project.progress >= 0 ? (
           <div>
             <div className="mb-1 flex items-center justify-between text-xs">
               <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
               <span className="font-medium tabular-nums">{project.progress}%</span>
             </div>
-            <Progress value={project.progress} className="h-2" />
+            <Progress value={project.progress} className="h-2" aria-label={bilingualAria(`Progress for ${project.clientName}: ${project.progress}%`, `Πρόοδος για ${project.clientName}: ${project.progress}%`)} />
           </div>
         ) : null}
 
         <FactLine
           items={[
-            project.dueDate ? <BilingualText key="due" en={`Due: ${project.dueDate}`} el={`Προθεσμία: ${project.dueDate}`} compact /> : <span key="started"><BilingualText en="Started" el="Ξεκίνησε" compact /> <RelativeTime date={project.startDate} format={formatRelativeTime} /></span>,
+            project.dueDate ? <DueFact key="due" project={project} /> : <span key="started"><BilingualText en="Started" el="Ξεκίνησε" compact /> <RelativeTime date={project.startDate} format={formatRelativeTime} /></span>,
             <span key="updated"><BilingualText en="Updated:" el="Ενημέρωση:" compact /> <RelativeTime date={project.lastUpdate} format={formatRelativeTime} /></span>,
             project.amount ? <span key="amount" className="font-medium tabular-nums text-foreground">{project.amount}</span> : null,
           ]}
@@ -210,6 +225,19 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
           {/* "Update" (disabled) was the menu's "Update Progress" again. The
               move that exists - completing the work - was in the menu only. */}
           {project.status !== 'completed' ? (
+            onUpdateProgress ? (
+              <Button size="sm" variant="outline" onClick={() => onUpdateProgress(project)} aria-label={bilingualAria(`Update progress for ${project.clientName}`, `Ενημέρωση προόδου για ${project.clientName}`)}>
+                <BilingualText en="Update progress" el="Ενημέρωση προόδου" compact />
+              </Button>
+            ) : (
+              <WithDisabledReason reasonEn="A sample project has nothing to update" reasonEl="Ένα δείγμα έργου δεν ενημερώνεται">
+                <Button size="sm" variant="outline" disabled>
+                  <BilingualText en="Update progress" el="Ενημέρωση προόδου" compact />
+                </Button>
+              </WithDisabledReason>
+            )
+          ) : null}
+          {project.status !== 'completed' ? (
             <Button size="sm" variant="outline" disabled={!onComplete} onClick={() => onComplete?.(project)}>
               <BilingualText en="Mark complete" el="Σήμανση ως ολοκληρωμένο" compact />
             </Button>
@@ -220,69 +248,27 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
   );
 }
 
-/** Shown to a provider with no agreed work yet. */
-const SEED_PROJECTS: Project[] = [
-  {
-    id: '1',
-    clientName: 'TechStart Inc',
-    clientCompany: 'TechStart Inc',
-    service: 'Startup Legal Package',
-    status: 'active',
-    progress: 75,
-    startDate: '2026-03-10T09:00:00.000Z',
-    dueDate: 'Mar 25',
-    lastUpdate: '2026-09-04T08:00:00.000Z',
-    amount: '€2,500',
-  },
-  {
-    id: '2',
-    clientName: 'GreenTech Co',
-    clientCompany: 'GreenTech Co',
-    service: 'Financial Model Creation',
-    status: 'active',
-    progress: 40,
-    startDate: '2026-03-15T09:00:00.000Z',
-    dueDate: 'Mar 30',
-    lastUpdate: '2026-09-03T10:00:00.000Z',
-    amount: '€1,200',
-  },
-  {
-    id: '3',
-    clientName: 'DataFlow',
-    clientCompany: 'DataFlow',
-    service: 'Contract Review',
-    status: 'on_hold',
-    progress: 60,
-    startDate: '2026-03-05T09:00:00.000Z',
-    dueDate: 'Apr 5',
-    lastUpdate: '2026-09-01T10:00:00.000Z',
-    amount: '€450',
-  },
-  {
-    id: '4',
-    clientName: 'HealthPulse',
-    clientCompany: 'HealthPulse',
-    service: 'Startup Legal Package',
-    status: 'completed',
-    progress: 100,
-    startDate: '2026-02-20T09:00:00.000Z',
-    dueDate: 'Mar 10',
-    lastUpdate: '2026-03-10T09:00:00.000Z',
-    amount: '€2,500',
-  },
-  {
-    id: '5',
-    clientName: 'EduLearn',
-    clientCompany: 'EduLearn',
-    service: 'Financial Model Creation',
-    status: 'completed',
-    progress: 100,
-    startDate: '2026-02-15T09:00:00.000Z',
-    dueDate: 'Feb 28',
-    lastUpdate: '2026-02-28T09:00:00.000Z',
-    amount: '€1,200',
-  },
+/**
+ * Shown to a provider with no agreed work yet, with sample data on. Ages,
+ * not dates (AGENTS): the rows were "active" with due dates in March.
+ */
+const SEED_PROJECT_ROWS: Array<Omit<Project, 'startDate' | 'dueDate' | 'lastUpdate'> & { startedDays: number; dueInDays: number; updatedDays: number }> = [
+  { id: '1', clientName: 'TechStart Inc', clientCompany: 'TechStart Inc', service: 'Startup Legal Package', status: 'active', progress: 75, startedDays: -24, dueInDays: 9, updatedDays: -1, amount: '€2,500' },
+  { id: '2', clientName: 'GreenTech Co', clientCompany: 'GreenTech Co', service: 'Financial Model Creation', status: 'active', progress: 40, startedDays: -19, dueInDays: 14, updatedDays: -2, amount: '€1,200' },
+  { id: '3', clientName: 'DataFlow', clientCompany: 'DataFlow', service: 'Contract Review', status: 'on_hold', progress: 60, startedDays: -29, dueInDays: 20, updatedDays: -4, amount: '€450' },
+  { id: '4', clientName: 'HealthPulse', clientCompany: 'HealthPulse', service: 'Startup Legal Package', status: 'completed', progress: 100, startedDays: -60, dueInDays: -40, updatedDays: -40, amount: '€2,500' },
+  { id: '5', clientName: 'EduLearn', clientCompany: 'EduLearn', service: 'Financial Model Creation', status: 'completed', progress: 100, startedDays: -80, dueInDays: -65, updatedDays: -65, amount: '€1,200' },
 ];
+
+function seedProjects(now: number): Project[] {
+  const day = 86_400_000;
+  return SEED_PROJECT_ROWS.map(({ startedDays, dueInDays, updatedDays, ...row }) => ({
+    ...row,
+    startDate: new Date(now + startedDays * day).toISOString(),
+    dueDate: new Date(now + dueInDays * day).toISOString().slice(0, 10),
+    lastUpdate: new Date(now + updatedDays * day).toISOString(),
+  }));
+}
 
 export default function ProviderProjectsPage() {
   const sayOne = useBilingualString();
@@ -300,13 +286,47 @@ export default function ProviderProjectsPage() {
   });
 
   const live = useMemo(() => (data?.inquiries ?? []).map(toProject), [data]);
-  const projects: Project[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_PROJECTS;
+  const hydrated = useHydrated();
+  const seeds = useMemo(() => (hydrated ? seedProjects(Date.now()) : []), [hydrated]);
+  const projects: Project[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : seeds;
   const isSample = live.length === 0 && projects.length > 0;
   const failed = isError && !data;
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
   const confirm = useConfirm();
   const [viewing, setViewing] = useState<Project | null>(null);
+
+  /*
+   * The progress form (docs §97): a whole number 0-100 and a day, either of
+   * which can be cleared. Nothing is written until Save; the server checks
+   * the same rule (`readProjectDelivery`) and its refusal is shown as is.
+   */
+  const [editing, setEditing] = useState<Project | null>(null);
+  const [draftProgress, setDraftProgress] = useState('');
+  const [draftDue, setDraftDue] = useState('');
+  const [saving, setSaving] = useState(false);
+  const openProgress = (p: Project) => {
+    setEditing(p);
+    setDraftProgress(p.progress >= 0 ? String(p.progress) : '');
+    setDraftDue(p.dueDate);
+  };
+  const progressValue = draftProgress.trim() === '' ? null : Number(draftProgress);
+  const progressInvalid = progressValue != null && (!Number.isInteger(progressValue) || progressValue < 0 || progressValue > 100);
+  const saveProgress = async (): Promise<PageControlRunResult> => {
+    if (!editing || progressInvalid) return { error: 'Progress is a whole number from 0 to 100.' };
+    setSaving(true);
+    try {
+      await updateServiceInquiry(editing.id, { progress: progressValue, dueDate: draftDue || null });
+      success('Progress saved', editing.clientName);
+      setEditing(null);
+    } catch (e) {
+      toastError('Could not save the progress', e instanceof Error ? e.message : undefined);
+      return { error: e instanceof Error && e.message ? e.message : 'The progress was not saved.' };
+    } finally {
+      setSaving(false);
+      void queryClient.invalidateQueries({ queryKey: qk('provider', 'projects') });
+    }
+  };
   const complete = async (p: Project): Promise<PageControlRunResult> => {
     const ok = await confirm({
       title: <BilingualText en={`Mark the project for ${p.clientName} complete?`} el={`Ολοκλήρωση του έργου για ${p.clientName};`} />,
@@ -361,6 +381,17 @@ export default function ProviderProjectsPage() {
       { value: 'completed', en: 'Completed', el: 'Ολοκληρωμένα' },
     ], activeTab, setActiveTab),
     { id: 'view_project', labelEn: 'View project details', labelEl: 'Προβολή λεπτομερειών έργου', writes: false, options: byClient(filteredProjects), run: (v) => { const p = projects.find((x) => x.id === v); if (p) setViewing(p); } },
+    // Opens the form; nothing is saved until its Save is pressed.
+    {
+      id: 'open_progress_form',
+      labelEn: 'Open the progress form for a project',
+      labelEl: 'Άνοιγμα της φόρμας προόδου ενός έργου',
+      writes: false,
+      options: byClient(filteredProjects.filter((p) => p.status !== 'completed')),
+      unavailableEn: live.length > 0 ? undefined : 'These projects are samples; there is nothing behind them to update.',
+      unavailableEl: live.length > 0 ? undefined : 'Τα έργα είναι δείγματα· δεν υπάρχει κάτι πίσω τους για ενημέρωση.',
+      run: (v) => { const p = projects.find((x) => x.id === v); if (p) openProgress(p); },
+    },
     {
       id: 'complete_project',
       labelEn: 'Mark project complete',
@@ -423,7 +454,7 @@ export default function ProviderProjectsPage() {
 
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filteredProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} onView={setViewing} onComplete={live.length > 0 ? (pr) => void complete(pr) : undefined} />
+              <ProjectCard key={project.id} project={project} onView={setViewing} onComplete={live.length > 0 ? (pr) => void complete(pr) : undefined} onUpdateProgress={live.length > 0 ? openProgress : undefined} />
             ))}
             {filteredProjects.length === 0 && (
               <Card>
@@ -461,12 +492,61 @@ export default function ProviderProjectsPage() {
               <dd><StatusText value={viewing.status} /></dd>
               <dt className="text-muted-foreground"><BilingualText en="Agreed price" el="Συμφωνημένη τιμή" compact /></dt>
               <dd>{viewing.amount || '\u2014'}</dd>
+              <dt className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></dt>
+              <dd>{viewing.progress >= 0 ? `${viewing.progress}%` : <BilingualText en="Not tracked" el="Δεν καταγράφεται" compact />}</dd>
+              <dt className="text-muted-foreground"><BilingualText en="Due" el="Προθεσμία" compact /></dt>
+              <dd>{viewing.dueDate ? <DueFact project={viewing} /> : <BilingualText en="No date set" el="Χωρίς ημερομηνία" compact />}</dd>
               <dt className="text-muted-foreground"><BilingualText en="Started" el="Έναρξη" compact /></dt>
               <dd><RelativeTime date={viewing.startDate} format={formatRelativeTime} /></dd>
               <dt className="text-muted-foreground"><BilingualText en="Last update" el="Τελευταία ενημέρωση" compact /></dt>
               <dd><RelativeTime date={viewing.lastUpdate} format={formatRelativeTime} /></dd>
             </dl>
           )}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={editing !== null} onOpenChange={(o) => { if (!o && !saving) setEditing(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle><BilingualText en="Update progress" el="Ενημέρωση προόδου" compact /></DialogTitle>
+            <DialogDescription>{editing ? `${editing.clientName} · ${editing.service}` : ''}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="project-progress"><BilingualText en="Progress (%)" el="Πρόοδος (%)" compact /></Label>
+              <Input
+                id="project-progress"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={100}
+                step={5}
+                value={draftProgress}
+                onChange={(e) => setDraftProgress(e.target.value)}
+                placeholder={sayOne('Not tracked', 'Δεν καταγράφεται')}
+                aria-invalid={progressInvalid || undefined}
+                aria-describedby="project-progress-help"
+              />
+              <p id="project-progress-help" className={cn('text-xs', progressInvalid ? 'text-destructive-accessible' : 'text-muted-foreground')}>
+                <BilingualText
+                  en={progressInvalid ? 'A whole number from 0 to 100.' : 'A whole number from 0 to 100; leave it empty for "not tracked".'}
+                  el={progressInvalid ? 'Ακέραιος από 0 έως 100.' : 'Ακέραιος από 0 έως 100· αφήστε το κενό για «δεν καταγράφεται».'}
+                  wrap
+                />
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="project-due"><BilingualText en="Due date" el="Προθεσμία" compact /></Label>
+              <Input id="project-due" type="date" value={draftDue} onChange={(e) => setDraftDue(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" disabled={saving} onClick={() => setEditing(null)}>
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
+            </Button>
+            <Button disabled={saving || progressInvalid} onClick={() => void saveProgress()}>
+              {saving ? <BilingualText en="Saving…" el="Αποθήκευση…" compact /> : <BilingualText en="Save" el="Αποθήκευση" compact />}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </AppShell>

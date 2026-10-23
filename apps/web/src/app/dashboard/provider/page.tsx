@@ -42,6 +42,8 @@ import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { priceEl } from '@/lib/i18n/units';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { FactLine } from '@/components/common/FactLine';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
 
 /*
  * The provider's one home.
@@ -74,6 +76,10 @@ type Project = {
   status: 'active' | 'completed';
   agreedPrice: number | null;
   currency: string;
+  /** 0-100 once the provider sets it (docs §97). */
+  progress?: number | null;
+  /** `YYYY-MM-DD`. */
+  dueDate?: string | null;
 };
 
 type DashReview = { id: string; client: string; rating: number; comment: string };
@@ -109,9 +115,9 @@ function toInquiry(row: ServiceInquiryItem): Inquiry {
 }
 
 /*
- * An inquiry records what was agreed and when it was resolved, not a
- * schedule, so a project shows its agreed price rather than an invented
- * progress bar or due date.
+ * A project shows its agreed price, and - once the provider has set them on
+ * /provider/projects (docs §97) - how far it is and when it is due; never an
+ * invented bar or date.
  */
 function toProject(row: ServiceInquiryItem): Project {
   return {
@@ -122,6 +128,8 @@ function toProject(row: ServiceInquiryItem): Project {
     status: row.status === 'completed' ? 'completed' : 'active',
     agreedPrice: row.agreedPrice,
     currency: row.currency || 'EUR',
+    progress: row.progress ?? null,
+    dueDate: row.dueDate ?? null,
   };
 }
 
@@ -157,6 +165,7 @@ const DEMO_REVIEWS: DashReview[] = [
 ];
 
 export default function ProviderDashboard() {
+  const fmtDate = useDateFormat();
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
 
@@ -368,6 +377,14 @@ export default function ProviderDashboard() {
                     </span>
                   )}
                   subtitle={<span className="block truncate">{project.service}</span>}
+                  meta={project.status === 'active' && (project.progress != null || project.dueDate) ? (
+                    <FactLine
+                      items={[
+                        project.progress != null ? <BilingualText key="progress" en={`${project.progress}% done`} el={`${project.progress}% ολοκληρωμένο`} compact /> : null,
+                        project.dueDate ? <BilingualText key="due" en={`Due ${fmtDate(`${project.dueDate}T12:00:00`, { day: 'numeric', month: 'short' })}`} el={`Προθεσμία ${fmtDate(`${project.dueDate}T12:00:00`, { day: 'numeric', month: 'short' })}`} compact /> : null,
+                      ]}
+                    />
+                  ) : undefined}
                   aside={<span className="font-semibold tabular-nums text-foreground">{eur(project.agreedPrice, project.currency)}</span>}
                 />
               ))}

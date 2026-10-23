@@ -1554,6 +1554,10 @@ export type ServiceInquiryItem = {
   timelineExpected: string | null;
   rating: number | null;
   reviewComment: string | null;
+  /** 0-100 on agreed work, set by the provider; null or absent is "not tracked" (docs §97). */
+  progress?: number | null;
+  /** `YYYY-MM-DD`; null or absent when no date was agreed. */
+  dueDate?: string | null;
   createdAt: string;
   resolvedAt: string | null;
   offer: { id: string; title: string; category: string };
@@ -1670,6 +1674,10 @@ export async function updateServiceInquiry(
     responseMessage: string;
     agreedScope: string;
     agreedPrice: number;
+    /** Agreed work only; null clears it. */
+    progress: number | null;
+    /** `YYYY-MM-DD`; null clears it. */
+    dueDate: string | null;
   }>,
 ): Promise<{ ok: boolean; inquiryId: string }> {
   return apiRequest(`/api/services/inquiries/${inquiryId}`, {

@@ -30,7 +30,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { getAnalyticsOverview } from '@/lib/api';
+import { getAnalyticsOverview, listServiceInquiries } from '@/lib/api';
+import { averageRating, bookFigures, changeVs, serviceRows } from '@/lib/provider-book';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
@@ -41,11 +42,15 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 /** Metric names and funnel stages in Greek (the cards and stages were English only). */
 const LABEL_EL: Record<string, string> = {
   'Profile Views': 'Προβολές προφίλ',
-  Inquiries: 'Ερωτήματα',
+  Inquiries: 'Αιτήματα',
   'Active Projects': 'Ενεργά έργα',
   'Avg. Rating': 'Μέση βαθμολογία',
-  Revenue: 'Έσοδα',
+  'Agreed value': 'Συμφωνημένη αξία',
   'Response Rate': 'Ποσοστό απόκρισης',
+  'Inquiries received': 'Αιτήματα που ελήφθησαν',
+  Answered: 'Απαντήθηκαν',
+  'Became projects': 'Έγιναν έργα',
+  Completed: 'Ολοκληρώθηκαν',
   'New Connections': 'Νέες συνδέσεις',
   'Messages Sent': 'Μηνύματα που στάλθηκαν',
   'Search Appearances': 'Εμφανίσεις σε αναζητήσεις',
@@ -61,31 +66,22 @@ const DAYS_EL = ['Κυρ', 'Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σ
 
 // ── Mock analytics data ───────────────────────────────────────────────────────
 
-const MOCK_OVERVIEW = {
-  profileViews: { value: 342, change: 18, trend: 'up' as const },
-  inquiries: { value: 27, change: 35, trend: 'up' as const },
-  activeProjects: { value: 6, change: 0, trend: 'neutral' as const },
-  avgRating: { value: 4.8, change: -2, trend: 'down' as const },
-  revenue: { value: 8400, change: 22, trend: 'up' as const },
-  responseRate: { value: 94, change: 6, trend: 'up' as const },
-};
+/*
+ * The showcase's profile views and week: there is no profile-view record in
+ * the demo. Inquiries, projects, value, response, the funnel and the
+ * services are counted from the inquiries in both modes (docs §97); they
+ * were constants here (27 inquiries, $8,400, 94%, "Legal Consultation").
+ */
+const MOCK_PROFILE_VIEWS = { value: 342, change: 18, trend: 'up' as const };
 
 const MOCK_WEEKLY_VIEWS = [
-  { day: 'Mon', views: 42, inquiries: 3 },
-  { day: 'Tue', views: 58, inquiries: 5 },
-  { day: 'Wed', views: 35, inquiries: 2 },
-  { day: 'Thu', views: 71, inquiries: 7 },
-  { day: 'Fri', views: 63, inquiries: 6 },
-  { day: 'Sat', views: 28, inquiries: 2 },
-  { day: 'Sun', views: 19, inquiries: 1 },
-];
-
-const MOCK_CONVERSIONS = [
-  { stage: 'Profile Views', count: 342, pct: 100, color: 'bg-primary' },
-  { stage: 'Inquiry Sent', count: 27, pct: 7.9, color: 'bg-status-accent-mark' },
-  { stage: 'Response Given', count: 25, pct: 7.3, color: 'bg-status-info-mark' },
-  { stage: 'Project Started', count: 18, pct: 5.3, color: 'bg-status-success-mark' },
-  { stage: 'Project Completed', count: 14, pct: 4.1, color: 'bg-status-success-mark' },
+  { day: 'Mon', views: 42 },
+  { day: 'Tue', views: 58 },
+  { day: 'Wed', views: 35 },
+  { day: 'Thu', views: 71 },
+  { day: 'Fri', views: 63 },
+  { day: 'Sat', views: 28 },
+  { day: 'Sun', views: 19 },
 ];
 
 /** Where visits came from, in Greek; a source the API adds later shows as sent. */
@@ -103,13 +99,6 @@ const MOCK_TRAFFIC_SOURCES = [
   { source: 'Mentor Referrals', visits: 43, pct: 13 },
 ];
 
-const MOCK_TOP_SERVICES = [
-  { name: 'Legal Consultation', inquiries: 12, revenue: 3600, rating: 4.9 },
-  { name: 'Contract Drafting', inquiries: 8, revenue: 2800, rating: 4.7 },
-  { name: 'IP Registration', inquiries: 5, revenue: 2000, rating: 5.0 },
-  { name: 'Fundraising Legal', inquiries: 2, revenue: 0, rating: null },
-];
-
 /* The same four windows GET /analytics/overview accepts. */
 const PERIODS: { value: string; en: string; el: string }[] = [
   { value: '7d', en: 'Last 7 days', el: 'Τελευταίες 7 ημέρες' },
@@ -118,6 +107,12 @@ const PERIODS: { value: string; en: string; el: string }[] = [
   { value: '1y', en: 'Last year', el: 'Τελευταίο έτος' },
 ];
 const DEFAULT_PERIOD = '30d';
+const PERIOD_DAYS: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 };
+const DAY_MS = 86_400_000;
+
+function trendOf(change: number | null): 'up' | 'down' | 'neutral' {
+  return change == null || change === 0 ? 'neutral' : change > 0 ? 'up' : 'down';
+}
 
 function TrendIcon({ trend }: { trend: 'up' | 'down' | 'neutral' }) {
   if (trend === 'up') return <ArrowUp className="icon-sm text-status-success" />;
@@ -197,24 +192,81 @@ export default function ProviderAnalyticsPage() {
     retry: 0,
   });
   const live = overviewQuery.data ?? null;
+
+  /*
+   * The provider's book: every inquiry, counted for the window and the one
+   * before it (docs §97). Read in both modes - the showcase answers with its
+   * own inquiries, so these cards agree with the provider home.
+   */
+  const inquiriesQuery = useQuery({
+    queryKey: qk('provider', 'inquiries', 'analytics'),
+    queryFn: () => listServiceInquiries({ side: 'provider', limit: 100 }),
+    enabled: hasSession && mounted,
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const bookRows = inquiriesQuery.data?.inquiries ?? [];
+  const bookFailed = inquiriesQuery.isError && !inquiriesQuery.data;
+  const bookRead = Boolean(inquiriesQuery.data);
+  const windowMs = (PERIOD_DAYS[period] ?? 30) * DAY_MS;
+  const nowMs = mounted ? Date.now() : 0;
+  const book = bookFigures(bookRows, nowMs - windowMs, nowMs + 1);
+  const bookBefore = bookFigures(bookRows, nowMs - 2 * windowMs, nowMs - windowMs);
+  const rating = averageRating(bookRows);
+  const activeProjectCount = bookRows.filter((r) => r.status === 'accepted').length;
+  const services = serviceRows(bookRows, nowMs - windowMs, nowMs + 1);
+  const money = (amount: number | null, currency: string | null) => {
+    if (amount == null) return '—';
+    const fmt = (locale: string) => new Intl.NumberFormat(locale, { style: 'currency', currency: currency ?? 'EUR', maximumFractionDigits: 0 }).format(amount);
+    return sayOne(fmt('en-GB'), fmt('el-GR'));
+  };
+  const inquiryChange = changeVs(book.inquiries, bookBefore.inquiries);
+  const valueChange = changeVs(book.agreedValue, bookBefore.agreedValue);
+  // Relative, like the other cards ("N% vs last period"), not points.
+  const responseChange = changeVs(book.responseRate, bookBefore.responseRate);
+  const bookMetrics = bookRead
+    ? [
+        { icon: MessageCircle, label: 'Inquiries', value: book.inquiries as number | string, change: inquiryChange },
+        { icon: Users, label: 'Active Projects', value: activeProjectCount as number | string, change: null },
+        { icon: DollarSign, label: 'Agreed value', value: money(book.agreedValue, book.currency) as number | string, change: valueChange },
+        { icon: Clock, label: 'Response Rate', value: (book.responseRate == null ? '—' : `${book.responseRate}%`) as number | string, change: responseChange },
+        { icon: Star, label: 'Avg. Rating', value: (rating.value == null ? '—' : rating.value.toFixed(1)) as number | string, change: null },
+      ]
+    : [];
   // Unread, the page said "0 profile views" and "No profile views recorded
   // in this period" (docs §95).
   const failed = !showDemoData && overviewQuery.isError && !overviewQuery.data;
 
-  const overview = showDemoData ? MOCK_OVERVIEW : null;
-  const conversions = showDemoData ? MOCK_CONVERSIONS : [];
   const trafficSources = showDemoData ? MOCK_TRAFFIC_SOURCES : [];
-  const topServices = showDemoData ? MOCK_TOP_SERVICES : [];
+  // The funnel is the window's inquiries and what became of them; each bar
+  // is its share of those received.
+  const conversions = bookRead && book.inquiries > 0
+    ? [
+        { stage: 'Inquiries received', count: book.inquiries, color: 'bg-primary' },
+        { stage: 'Answered', count: book.answered, color: 'bg-status-accent-mark' },
+        { stage: 'Became projects', count: book.projects, color: 'bg-status-info-mark' },
+        { stage: 'Completed', count: book.completed, color: 'bg-status-success-mark' },
+      ].map((st) => ({ ...st, pct: Math.round((st.count / book.inquiries) * 100) }))
+    : [];
 
-  /* Daily profile views come from the same series either way: the demo week
-     or the API's per-day rows, labelled by weekday. */
+  /* Daily profile views: the demo week or the API's per-day rows, labelled
+     by weekday. Inquiries per day are counted from the book for those days
+     (the last seven in the demo). */
+  const inquiriesOn = (when: Date) =>
+    bookRows.filter((r) => {
+      const t = new Date(r.createdAt);
+      return t.getUTCFullYear() === when.getUTCFullYear() && t.getUTCMonth() === when.getUTCMonth() && t.getUTCDate() === when.getUTCDate();
+    }).length;
   const weeklyViews: { day: string; views: number; inquiries: number }[] = showDemoData
-    ? MOCK_WEEKLY_VIEWS
-    : (live?.profileViews ?? []).map((d) => ({
-        day: DAYS_EN[new Date(d.date).getUTCDay()],
-        views: d.views,
-        inquiries: 0,
-      }));
+    ? MOCK_WEEKLY_VIEWS.map((d) => {
+        // The sample day's most recent date (today counts as its own weekday).
+        const back = (7 + new Date(nowMs).getUTCDay() - DAYS_EN.indexOf(d.day)) % 7;
+        return { ...d, inquiries: mounted ? inquiriesOn(new Date(nowMs - back * DAY_MS)) : 0 };
+      })
+    : (live?.profileViews ?? []).map((d) => {
+        const date = new Date(d.date);
+        return { day: DAYS_EN[date.getUTCDay()], views: d.views, inquiries: inquiriesOn(date) };
+      });
   const maxViews = Math.max(1, ...weeklyViews.map(d => d.views));
   const maxInquiries = Math.max(1, ...weeklyViews.map(d => d.inquiries));
 
@@ -231,19 +283,14 @@ export default function ProviderAnalyticsPage() {
       ]
     : [];
 
-  /* One set of numbers for the rail's summary and the export: the live grid
-     when signed in, the authored demo tiles otherwise. */
-  const metricRows: { label: string; value: string | number; change: number | null }[] = showDemoData && overview
-    ? [
-        { label: 'Profile Views', value: overview.profileViews.value, change: overview.profileViews.change },
-        { label: 'Inquiries', value: overview.inquiries.value, change: overview.inquiries.change },
-        { label: 'Active Projects', value: overview.activeProjects.value, change: overview.activeProjects.change },
-        { label: 'Avg. Rating', value: overview.avgRating.value, change: overview.avgRating.change },
-        { label: 'Revenue', value: overview.revenue.value, change: overview.revenue.change },
-        { label: 'Response Rate', value: `${overview.responseRate.value}%`, change: overview.responseRate.change },
-      ]
-    : liveMetrics.map((m) => ({ label: m.label, value: m.value ?? '—', change: typeof m.change === 'number' ? m.change : null }));
-  const totalViews = weeklyViews.reduce((n, d) => n + d.views, 0);
+  /* One set of numbers for the export: the book's cards, then the profile
+     figures (the sample week's views in the demo, the API's otherwise). */
+  const metricRows: { label: string; value: string | number; change: number | null }[] = [
+    ...bookMetrics.map((m) => ({ label: m.label, value: m.value, change: m.change })),
+    ...(showDemoData
+      ? [{ label: 'Profile Views', value: MOCK_PROFILE_VIEWS.value, change: MOCK_PROFILE_VIEWS.change }]
+      : liveMetrics.map((m) => ({ label: m.label, value: m.value ?? '—', change: typeof m.change === 'number' ? m.change : null }))),
+  ];
 
   /* The week's shape: what the API summarises when live, and the same three
      readings taken from the sample week in demo mode. */
@@ -252,7 +299,7 @@ export default function ProviderAnalyticsPage() {
     ? [
         { id: 'day', en: 'Most active day', el: 'Πιο ενεργή ημέρα', value: busiest?.day ?? '—' },
         { id: 'interactions', en: 'Interactions', el: 'Αλληλεπιδράσεις', value: String(weeklyViews.reduce((n, d) => n + d.views + d.inquiries, 0)) },
-        { id: 'response', en: 'Response rate', el: 'Ποσοστό απόκρισης', value: `${MOCK_OVERVIEW.responseRate.value}%` },
+        { id: 'response', en: 'Response rate', el: 'Ποσοστό απόκρισης', value: book.responseRate == null ? '—' : `${book.responseRate}%` },
       ]
     : [
         { id: 'day', en: 'Most active day', el: 'Πιο ενεργή ημέρα', value: live?.weeklySummary?.mostActiveDay ?? '—' },
@@ -264,8 +311,8 @@ export default function ProviderAnalyticsPage() {
   const exportDaily = () =>
     downloadCsv(
       `provider-analytics-daily-${period}`,
-      showDemoData ? ['Day', 'Profile views', 'Inquiries'] : ['Day', 'Profile views'],
-      weeklyViews.map((d) => (showDemoData ? [d.day, d.views, d.inquiries] : [d.day, d.views])),
+      ['Day', 'Profile views', 'Inquiries'],
+      weeklyViews.map((d) => [d.day, d.views, d.inquiries]),
     );
   const exportMetrics = () =>
     downloadCsv(
@@ -402,7 +449,7 @@ export default function ProviderAnalyticsPage() {
         {showDemoData && (
           <SampleDataNotice
             surface="Provider analytics"
-            detail="The metric cards, traffic sources, funnel and service rows are illustrative - live analytics cover profile views, connections, messages and engagement."
+            detail="Profile views and traffic sources are illustrative; inquiries, projects, agreed value, response, the funnel and the services are counted from the demo's inquiries, as the provider home counts them."
             askAiPrompt={ASK.providerAnalyticsSample}
           />
         )}
@@ -417,25 +464,37 @@ export default function ProviderAnalyticsPage() {
           </Card>
         ) : (
         <p className="text-sm text-muted-foreground">
+          {/* The window only: "· 316 profile views" repeated the Profile
+              Views card beside it (docs §97). */}
           <BilingualText
-            en={`${activePeriod.en} · ${totalViews.toLocaleString('en-GB')} profile views`}
-            el={`${activePeriod.el} · ${totalViews.toLocaleString('el-GR')} προβολές προφίλ`}
+            en={`Period: ${activePeriod.en}`}
+            el={`Περίοδος: ${activePeriod.el}`}
             compact
             wrap
           />
         </p>
         )}
 
-        {/* Metric Grid */}
-        {overview && (
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3 lg:grid-cols-6">
-          <MetricCard icon={Eye} label="Profile Views" value={overview.profileViews.value} change={overview.profileViews.change} trend={overview.profileViews.trend} />
-          <MetricCard icon={MessageCircle} label="Inquiries" value={overview.inquiries.value} change={overview.inquiries.change} trend={overview.inquiries.trend} />
-          <MetricCard icon={Users} label="Active Projects" value={overview.activeProjects.value} change={overview.activeProjects.change} trend={overview.activeProjects.trend} />
-          <MetricCard icon={Star} label="Avg. Rating" value={overview.avgRating.value} change={overview.avgRating.change} trend={overview.avgRating.trend} />
-          <MetricCard icon={DollarSign} label="Revenue" value={overview.revenue.value} change={overview.revenue.change} trend={overview.revenue.trend} format="currency" />
-          <MetricCard icon={Clock} label="Response Rate" value={overview.responseRate.value} change={overview.responseRate.change} trend={overview.responseRate.trend} format="percent" />
-        </div>
+        {/* The book: counted from the inquiries in both modes (docs §97). */}
+        {bookFailed ? (
+          <Card>
+            <CardContent className="pt-6">
+              <FailedLine en="Your inquiries could not be read just now." el="Τα αιτήματά σας δεν διαβάστηκαν αυτή τη στιγμή." busy={inquiriesQuery.isFetching} onRetry={() => void inquiriesQuery.refetch()} />
+            </CardContent>
+          </Card>
+        ) : bookRead ? (
+          <div className={cn('grid grid-cols-2 gap-4 md:grid-cols-3', showDemoData ? 'kpi-odd-span-md lg:grid-cols-6' : 'kpi-odd-span-md lg:grid-cols-5')}>
+            {showDemoData && (
+              <MetricCard icon={Eye} label="Profile Views" value={MOCK_PROFILE_VIEWS.value} change={MOCK_PROFILE_VIEWS.change} trend={MOCK_PROFILE_VIEWS.trend} />
+            )}
+            {bookMetrics.map((m) => (
+              <MetricCard key={m.label} icon={m.icon} label={m.label} value={m.value} change={m.change} trend={trendOf(m.change)} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+            {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24" />)}
+          </div>
         )}
         {!showDemoData && live && (
           <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3 lg:grid-cols-6">
@@ -467,9 +526,7 @@ export default function ProviderAnalyticsPage() {
                 <CardHeader className="pb-3">
                   {/* Live rows carry views only: "& Inquiries" over a chart
                       with no inquiries in it. */}
-                  <CardTitle>{showDemoData
-                    ? <BilingualText en="Daily Views & Inquiries" el="Ημερήσιες προβολές & ερωτήματα" compact />
-                    : <BilingualText en="Daily profile views" el="Ημερήσιες προβολές προφίλ" compact />}</CardTitle>
+                  <CardTitle><BilingualText en="Daily profile views & inquiries" el="Ημερήσιες προβολές προφίλ & αιτήματα" compact /></CardTitle>
                 </CardHeader>
                 <CardContent>
                   {weeklyViews.length === 0 && (
@@ -498,9 +555,7 @@ export default function ProviderAnalyticsPage() {
                   </div>
                   <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary/80 inline-block" /><BilingualText en="Profile Views" el="Προβολές προφίλ" compact /></span>
-                    {showDemoData && (
-                      <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-status-accent-bg inline-block" /><BilingualText en="Inquiries" el="Ερωτήματα" compact /></span>
-                    )}
+                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-status-accent-bg inline-block" /><BilingualText en="Inquiries" el="Αιτήματα" compact /></span>
                   </div>
                 </CardContent>
               </Card>
@@ -539,8 +594,11 @@ export default function ProviderAnalyticsPage() {
                 <CardTitle><BilingualText en="Client Acquisition Funnel" el="Χοάνη απόκτησης πελατών" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {conversions.length === 0 && (
-                  <p className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="The acquisition funnel is not tracked yet." el="Η χοάνη απόκτησης δεν καταγράφεται ακόμα." wrap /></p>
+                {bookFailed && (
+                  <FailedLine en="Your inquiries could not be read just now." el="Τα αιτήματά σας δεν διαβάστηκαν αυτή τη στιγμή." busy={inquiriesQuery.isFetching} onRetry={() => void inquiriesQuery.refetch()} />
+                )}
+                {bookRead && conversions.length === 0 && (
+                  <p className="text-sm text-muted-foreground"><BilingualText en={`No inquiry arrived in this period (${activePeriod.en.toLowerCase()}).`} el={`Κανένα αίτημα δεν ήρθε σε αυτή την περίοδο (${activePeriod.el.toLowerCase()}).`} wrap /></p>
                 )}
                 {conversions.map((stage, i) => (
                   <div key={stage.stage} className="space-y-1">
@@ -563,8 +621,14 @@ export default function ProviderAnalyticsPage() {
                   </div>
                 ))}
                 {conversions.length > 0 && (
+                  // Was "4.1%, above the platform average of 2.8%" - two
+                  // constants. Counted now, with no average nobody measured.
                   <p className="text-xs text-muted-foreground pt-2">
-                    <BilingualText en="Overall conversion rate: 4.1%, above the platform average of 2.8%." el="Συνολικό ποσοστό μετατροπής: 4,1%, πάνω από τον μέσο όρο της πλατφόρμας (2,8%)." wrap />
+                    <BilingualText
+                      en={`${book.projects} of ${book.inquiries} ${book.inquiries === 1 ? 'inquiry' : 'inquiries'} in this period became projects (${book.conversionRate}%).`}
+                      el={`${book.projects} από ${book.inquiries} ${book.inquiries === 1 ? 'αίτημα' : 'αιτήματα'} αυτής της περιόδου έγιναν έργα (${book.conversionRate}%).`}
+                      wrap
+                    />
                   </p>
                 )}
               </CardContent>
@@ -579,20 +643,25 @@ export default function ProviderAnalyticsPage() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border">
-                  {topServices.length === 0 && (
-                    <p className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="Per-service performance is not tracked yet." el="Η απόδοση ανά υπηρεσία δεν καταγράφεται ακόμα." wrap /></p>
+                  {bookFailed && (
+                    <div className="px-4 py-4 sm:px-6">
+                      <FailedLine en="Your inquiries could not be read just now." el="Τα αιτήματά σας δεν διαβάστηκαν αυτή τη στιγμή." busy={inquiriesQuery.isFetching} onRetry={() => void inquiriesQuery.refetch()} />
+                    </div>
                   )}
-                  {topServices.map(svc => (
-                    <div key={svc.name} className="px-4 py-3 sm:px-6">
+                  {bookRead && services.length === 0 && (
+                    <p className="px-4 py-4 text-sm text-muted-foreground sm:px-6"><BilingualText en="No service was asked about in this period." el="Καμία υπηρεσία δεν ζητήθηκε σε αυτή την περίοδο." wrap /></p>
+                  )}
+                  {services.map(svc => (
+                    <div key={svc.id} className="px-4 py-3 sm:px-6">
                       <RowHead
-                        title={svc.name}
-                        subtitle={<BilingualText en={`${svc.inquiries} inquiries`} el={`${svc.inquiries} ερωτήματα`} compact />}
+                        title={svc.title}
+                        subtitle={<BilingualText en={`${svc.inquiries} ${svc.inquiries === 1 ? 'inquiry' : 'inquiries'} · ${svc.projects} became ${svc.projects === 1 ? 'a project' : 'projects'}`} el={`${svc.inquiries} ${svc.inquiries === 1 ? 'αίτημα' : 'αιτήματα'} · ${svc.projects} ${svc.projects === 1 ? 'έγινε έργο' : 'έγιναν έργα'}`} compact />}
                         asideStays
                         aside={(
                           <>
                             <span className="text-right">
-                              <span className="block card-body font-semibold tabular-nums text-foreground">${svc.revenue.toLocaleString('en-GB')}</span>
-                              <span className="block text-xs text-muted-foreground"><BilingualText en="Revenue" el="Έσοδα" compact /></span>
+                              <span className="block card-body font-semibold tabular-nums text-foreground">{money(svc.agreedValue, svc.currency)}</span>
+                              <span className="block text-xs text-muted-foreground"><BilingualText en="Agreed" el="Συμφωνημένα" compact /></span>
                             </span>
                             {svc.rating != null ? (
                               <span className="flex shrink-0 items-center gap-1">

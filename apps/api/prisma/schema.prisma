@@ -5126,6 +5126,11 @@ model ServiceInquiry {
   agreedScope      String?             @db.Text
   agreedPrice      Decimal?            @db.Decimal(10, 2)
 
+  // Delivery, once the work is agreed (docs §97): set by the provider,
+  // read by /provider/projects. Null is "not tracked", never 0%.
+  progress         Int?                // 0–100
+  dueDate          DateTime?           @db.Date
+
   // Outcome
   rating           Int?                // 1–5
   reviewComment    String?             @db.Text

@@ -394,6 +394,8 @@ export const TOAST_EL: Record<string, string> = {
   "Program archived": "Το πρόγραμμα αρχειοθετήθηκε",
   "Programme archived": "Το πρόγραμμα αρχειοθετήθηκε",
   "Project completed": "Το έργο ολοκληρώθηκε",
+  "Progress saved": "Η πρόοδος αποθηκεύτηκε",
+  "Could not save the progress": "Η πρόοδος δεν αποθηκεύτηκε",
   "Project created": "Το έργο δημιουργήθηκε",
   "Project deleted": "Το έργο διαγράφηκε",
   "Question added": "Η ερώτηση προστέθηκε",

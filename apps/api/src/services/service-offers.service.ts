@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { COMPLETED_PROJECT_PROGRESS, readProjectDelivery } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 
 /**
@@ -248,6 +249,9 @@ export class ServiceOffersService {
         timelineExpected: inquiry.timelineExpected,
         rating: inquiry.rating,
         reviewComment: inquiry.reviewComment,
+        // A day, not an instant: the column is a DATE.
+        progress: inquiry.progress ?? null,
+        dueDate: inquiry.dueDate ? inquiry.dueDate.toISOString().slice(0, 10) : null,
         createdAt: inquiry.createdAt.toISOString(),
         resolvedAt: inquiry.resolvedAt?.toISOString() ?? null,
         offer: inquiry.offer,
@@ -317,6 +321,8 @@ export class ServiceOffersService {
       responseMessage: string;
       agreedScope: string;
       agreedPrice: number;
+      progress: number | null;
+      dueDate: string | null;
     }>,
   ) {
     const inquiry = await this.prisma.serviceInquiry.findUnique({
@@ -331,12 +337,34 @@ export class ServiceOffersService {
       throw new BadRequestException('Unknown inquiry status');
     }
 
+    // Progress and the due date belong to agreed work, and a completed
+    // project is at 100% (docs §97).
+    const { progress: _progress, dueDate: _dueDate, ...rest } = dto;
+    void _progress;
+    void _dueDate;
+    const delivery = readProjectDelivery(dto as Record<string, unknown>, inquiry.status, dto.status);
+    if (!delivery.ok) {
+      throw new BadRequestException({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: delivery.reason.en,
+          details: { reason: 'project_delivery_invalid', field: delivery.field, messageEl: delivery.reason.el },
+        },
+      });
+    }
+
     const resolving = dto.status === 'completed' || dto.status === 'declined' || dto.status === 'cancelled';
     await this.prisma.serviceInquiry.update({
       where: { id: inquiryId },
       data: {
-        ...dto,
+        ...rest,
         status: dto.status as never,
+        ...('progress' in delivery.value ? { progress: delivery.value.progress } : {}),
+        ...('dueDate' in delivery.value
+          ? { dueDate: delivery.value.dueDate ? new Date(`${delivery.value.dueDate}T00:00:00.000Z`) : null }
+          : {}),
+        ...(dto.status === 'completed' ? { progress: COMPLETED_PROJECT_PROGRESS } : {}),
         ...(resolving ? { resolvedAt: new Date() } : {}),
       },
     });

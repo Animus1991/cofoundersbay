@@ -56,6 +56,9 @@ const updateInquirySchema = z
     responseMessage: z.string().trim().max(4000).optional(),
     agreedScope: z.string().trim().max(4000).optional(),
     agreedPrice: price.optional(),
+    // Checked again, with the status, by readProjectDelivery in the service.
+    progress: z.number().int().min(0).max(100).nullable().optional(),
+    dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   })
   .refine((body) => Object.keys(body).length > 0, { message: 'Nothing to update' });
 

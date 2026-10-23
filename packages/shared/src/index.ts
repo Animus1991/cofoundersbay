@@ -23,3 +23,4 @@ export * from './perks';
 export * from './profile-viewers';
 export * from './listings';
 export * from './compatibility';
+export * from './services';

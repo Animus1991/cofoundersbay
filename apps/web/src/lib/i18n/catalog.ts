@@ -494,6 +494,8 @@ const el: Record<string, string> = {
     'Οι εισερχόμενες προτάσεις συνεργασίας δεν λειτουργούν ακόμη ζωντανά. Αυτές οι δύο κάρτες δείχνουν τη διάταξη, για να γνωρίσετε την αποδοχή και την απόρριψη.',
   'This organisation and its members are illustrative until the directory responds; member actions are disabled on them.':
     'Ο οργανισμός και τα μέλη του είναι ενδεικτικά μέχρι να απαντήσει ο κατάλογος· οι ενέργειες για μέλη δεν εφαρμόζονται σε αυτά.',
+  "Profile views and traffic sources are illustrative; inquiries, projects, agreed value, response, the funnel and the services are counted from the demo's inquiries, as the provider home counts them.":
+    'Οι προβολές προφίλ και οι πηγές κίνησης είναι ενδεικτικές· αιτήματα, έργα, συμφωνημένη αξία, απόκριση, η χοάνη και οι υπηρεσίες μετρώνται από τα αιτήματα του demo, όπως τα μετρά η αρχική του παρόχου.',
   // The organisation pages' samples (docs §96).
   "Your organisation has no cohort yet, so these are the demo organisation's cohorts, shown because sample data is on.":
     'Ο οργανισμός σας δεν έχει ακόμη κύκλο, οπότε αυτοί είναι οι κύκλοι του οργανισμού του demo· εμφανίζονται επειδή τα δείγματα είναι ενεργά.',
@@ -507,8 +509,6 @@ const el: Record<string, string> = {
     'Η δεξαμενή μεντόρων σας είναι άδεια, οπότε αυτοί είναι δείγματα που δείχνουν τη διάταξη· δεν ανοίγουν προφίλ.',
   "This is a sample cohort from the demo organisation, shown because sample data is on and your organisation's cohort did not load.":
     'Αυτός είναι ένας δειγματικός κύκλος από τον οργανισμό του demo. Εμφανίζεται επειδή τα δείγματα είναι ενεργά και ο κύκλος του οργανισμού σας δεν φορτώθηκε.',
-  'The metric cards, traffic sources, funnel and service rows are illustrative - live analytics cover profile views, connections, messages and engagement.':
-    'Οι κάρτες μετρήσεων, οι πηγές επισκεψιμότητας, η χοάνη και οι γραμμές υπηρεσιών είναι ενδεικτικές· τα πραγματικά αναλυτικά καλύπτουν προβολές προφίλ, συνδέσεις, μηνύματα και αλληλεπίδραση.',
   'You have not invited anyone yet. These invitations are samples so you can see the layout.':
     'Δεν έχετε προσκαλέσει ακόμη κανέναν. Αυτές οι προσκλήσεις είναι δείγματα, για να δείτε τη διάταξη.',
   'These keys are illustrative - no key-issuing service exists yet, so none of them authenticate anything.':

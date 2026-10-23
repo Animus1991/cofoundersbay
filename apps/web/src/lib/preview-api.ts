@@ -25,7 +25,7 @@ import { previewLearningApi } from './demo/learning-world';
 import { previewTransparencyApi } from './demo/transparency-world';
 import { previewScoutApi } from './demo/scout-world';
 import { attachDemoPhotos } from './demo/photos';
-import { messageSnippet, textMatches } from '@cofounderbay/shared';
+import { messageSnippet, readProjectDelivery, textMatches } from '@cofounderbay/shared';
 import { PREVIEW_MESSAGE_EL } from './i18n/strings-messages';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis, placeVariants } from '@cofounderbay/shared';
@@ -2335,7 +2335,32 @@ function previewProviderServices() {
     createdAt: previewIsoInDays(-120 + i * 20, 9),
   }));
 }
+/*
+ * The provider's edits to inquiries in the demo (status, progress, due date),
+ * kept for the session so /provider/projects shows what was saved; checked
+ * with the API's own rule (`readProjectDelivery`, docs §97).
+ */
+const PREVIEW_INQUIRY_EDITS_KEY = 'cfb:demo-provider-inquiries:v1';
+type PreviewInquiryEdit = { status?: string; progress?: number | null; dueDate?: string | null; resolvedAt?: string | null };
+function readPreviewInquiryEdits(): Record<string, PreviewInquiryEdit> {
+  try {
+    return typeof window === 'undefined' ? {} : JSON.parse(window.sessionStorage.getItem(PREVIEW_INQUIRY_EDITS_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+function writePreviewInquiryEdits(state: Record<string, PreviewInquiryEdit>) {
+  try {
+    window.sessionStorage.setItem(PREVIEW_INQUIRY_EDITS_KEY, JSON.stringify(state));
+  } catch {
+    // storage blocked: the change lasts this page view
+  }
+}
 function previewProviderInquiries() {
+  const edits = readPreviewInquiryEdits();
+  return previewProviderInquiryRows().map((r) => ({ ...r, ...(edits[r.id] ?? {}) }) as typeof r);
+}
+function previewProviderInquiryRows() {
   const svc = (id: string) => {
     const s = PREVIEW_PROVIDER_SERVICES.find((x) => x.id === id)!;
     return { id: s.id, title: s.title, category: s.category };
@@ -2347,7 +2372,7 @@ function previewProviderInquiries() {
     status: 'open' | 'in_discussion' | 'accepted' | 'completed',
     days: number,
     message: string,
-    extra: { agreedPrice?: number; rating?: number; reviewComment?: string; budgetEstimate?: number } = {},
+    extra: { agreedPrice?: number; rating?: number; reviewComment?: string; budgetEstimate?: number; progress?: number; dueInDays?: number } = {},
   ) => ({
     id,
     status,
@@ -2360,6 +2385,8 @@ function previewProviderInquiries() {
     timelineExpected: status === 'open' ? 'Within a month' : null,
     rating: extra.rating ?? null,
     reviewComment: extra.reviewComment ?? null,
+    progress: status === 'completed' ? 100 : extra.progress ?? null,
+    dueDate: extra.dueInDays == null ? null : previewIsoInDays(extra.dueInDays, 12).slice(0, 10),
     createdAt: previewIsoInDays(-days, 10),
     resolvedAt: status === 'completed' ? previewIsoInDays(-Math.max(1, days - 20), 17) : null,
     offer: svc(offerId),
@@ -2372,9 +2399,9 @@ function previewProviderInquiries() {
     row('inq-giorgos', { id: 'user-giorgos', displayName: 'Giorgos Vlachos' }, 'svc-incorporation', 'in_discussion', 3,
       'Two founders, one angel committed. We need the company set up and a shareholder agreement before the money lands.'),
     row('inq-sofia', { id: 'user-sofia', displayName: 'Sofia Alexiou' }, 'svc-fractional-cfo', 'accepted', 18,
-      'Meltemi needs a monthly close and a runway view we can show the board.', { agreedPrice: 3800 }),
+      'Meltemi needs a monthly close and a runway view we can show the board.', { agreedPrice: 3800, progress: 40, dueInDays: 12 }),
     row('inq-yannis', { id: 'user-yannis', displayName: 'Yannis Petrou' }, 'svc-seed-model', 'completed', 45,
-      'Kolo Labs seed model, with the hardware revenue split out.', { agreedPrice: 1800, rating: 5, reviewComment: 'The model answered every question our lead asked before they asked it.' }),
+      'Kolo Labs seed model, with the hardware revenue split out.', { agreedPrice: 1800, dueInDays: -27, rating: 5, reviewComment: 'The model answered every question our lead asked before they asked it.' }),
     row('inq-maria', { id: 'user-maria', displayName: 'Maria Georgiou' }, 'svc-incorporation', 'completed', 70,
       'Thalia incorporation in Cyprus and a founders\' agreement.', { agreedPrice: 1200, rating: 4, reviewComment: 'Clear, fast, and the agreement held up in due diligence. Slightly slow on the Cyprus filing.' }),
     row('inq-dimitris', { id: 'user-dimitris', displayName: 'Dimitris Kostas' }, 'svc-fractional-cfo', 'completed', 110,
@@ -5215,6 +5242,30 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
         pendingReports: previewAdminReports().filter((r) => r.status === 'pending').length,
       },
     };
+  }
+  if (pathname.startsWith('/api/services/inquiries/') && method === 'PATCH') {
+    const id = decodeURIComponent(pathname.split('/')[4] ?? '');
+    const current = previewProviderInquiries().find((r) => r.id === id);
+    if (!current) throw new DemoRefusal(404, 'Inquiry not found', { messageEl: 'Το αίτημα δεν βρέθηκε.' });
+    const patch = (body ?? {}) as Record<string, unknown>;
+    const nextStatus = typeof patch.status === 'string' ? patch.status : undefined;
+    const delivery = readProjectDelivery(patch, current.status, nextStatus);
+    if (!delivery.ok) {
+      throw new DemoRefusal(400, delivery.reason.en, { messageEl: delivery.reason.el, reason: 'project_delivery_invalid', field: delivery.field });
+    }
+    const edits = readPreviewInquiryEdits();
+    const edit: PreviewInquiryEdit = { ...(edits[id] ?? {}) };
+    if (nextStatus) edit.status = nextStatus;
+    const { value: delivered } = delivery;
+    if ('progress' in delivered) edit.progress = delivered.progress === undefined ? null : delivered.progress;
+    if ('dueDate' in delivered) edit.dueDate = delivered.dueDate === undefined ? null : delivered.dueDate;
+    if (nextStatus === 'completed') {
+      edit.progress = 100;
+      edit.resolvedAt = new Date(previewNowMs()).toISOString();
+    }
+    edits[id] = edit;
+    writePreviewInquiryEdits(edits);
+    return { ok: true, inquiryId: id };
   }
   if (pathname === '/api/services/inquiries') {
     const params = new URLSearchParams(path.split('?')[1] ?? '');
