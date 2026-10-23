@@ -45,7 +45,7 @@ import {
 } from 'lucide-react';
 import { safeWebUrl } from '@/lib/web-url';
 import { profileEl, profileEn } from '@/lib/i18n/strings-profile';
-import { getMeProfile, listSkills, updateProfile, uploadAvatar, getAIProfileSuggestions, type Skill, type ProfileSuggestions } from '@/lib/api';
+import { getMeProfile, listSkills, updateProfile, uploadAvatar, getAIProfileSuggestions, type ProfileSuggestions } from '@/lib/api';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -670,7 +670,7 @@ export default function ProfileEditPage() {
     return (
       <AppShell title="Edit Profile" titleEl="Επεξεργασία προφίλ">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-center">
-          <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load your profile." el="Δεν ήταν δυνατή η φόρτωση του προφίλ σας." compact wrap /></p>
+          <p role="alert" className="text-sm text-muted-foreground"><BilingualText en="Your profile could not be read just now." el="Το προφίλ σας δεν διαβάστηκε αυτή τη στιγμή." compact wrap /></p>
           <Button variant="secondary" size="sm" onClick={() => void refetchProfile()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
         </div>
       </AppShell>
@@ -705,7 +705,7 @@ export default function ProfileEditPage() {
       descriptionEl="Ενημερώστε τα στοιχεία σας και το πώς σας βλέπουν οι άλλοι"
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="icon" className="sm:hidden" aria-label="Cancel" asChild>
+          <Button variant="outline" size="icon" className="sm:hidden" aria-label={bilingualAria('Cancel', 'Ακύρωση')} asChild>
             <Link href="/profile">
               <ArrowLeft className="icon-sm" />
             </Link>
@@ -716,7 +716,10 @@ export default function ProfileEditPage() {
               <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Link>
           </Button>
-          <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2">
+          {/* One Save per screen: here from lg, the bar at the foot of the
+              screen below lg (it stays in reach down a long form). The
+              Profile Strength card's own Save was a third (docs §89). */}
+          <Button onClick={handleSave} disabled={saving} size="sm" className="hidden gap-2 lg:inline-flex">
             {saving ? <Loader2 className="icon-sm animate-spin" /> : <Save className="icon-sm" />}
             <BilingualText en="Save changes" el="Αποθήκευση αλλαγών" compact secondaryClassName="text-primary-foreground" />
           </Button>
@@ -1478,24 +1481,10 @@ export default function ProfileEditPage() {
                 </ul>
               </div>
 
-              <div className="pt-4 border-t border-border space-y-3">
-                <Button onClick={handleSave} disabled={saving} className="w-full gap-2 font-medium">
-                  {saving ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Save className="icon-sm" aria-hidden="true" />}
-                  <BilingualText en="Save Changes" el="Αποθήκευση αλλαγών" compact />
-                </Button>
-                {/* Stacked: side by side in this ~250px card, the two bilingual
-                    labels pushed "Add Links" 116px past the page edge. */}
-                <div className="grid grid-cols-1 gap-2">
-                  <Button variant="outline" className="w-full text-xs h-9" asChild>
-                    <Link href="/profile">
-                      <BilingualText en="View Profile" el="Προβολή προφίλ" compact />
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full text-xs h-9" onClick={() => setActiveTab('links')}>
-                    <BilingualText en="Add Links" el="Προσθήκη συνδέσμων" compact />
-                  </Button>
-                </div>
-              </div>
+              {/* The card's Save, "View Profile" and "Add Links" went: the
+                  page's Save is in the header (the bar below lg), Cancel
+                  opens the same /profile, and "Social links" in the missing
+                  items, like the Social Links tab, opens the same tab. */}
             </CardContent>
           </Card>
         </div>
@@ -1503,7 +1492,7 @@ export default function ProfileEditPage() {
       <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-30 border-t border-border bg-card/95 p-3 backdrop-blur-md lg:hidden">
         <Button onClick={handleSave} disabled={saving} className="min-h-11 w-full gap-2">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Save changes
+          <BilingualText en="Save changes" el="Αποθήκευση αλλαγών" compact secondaryClassName="text-primary-foreground" />
         </Button>
       </div>
     </AppShell>

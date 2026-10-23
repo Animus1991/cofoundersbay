@@ -14,6 +14,10 @@ const STATUS_EL: Record<string, string> = {
   advanced: 'προχωρημένο επίπεδο',
   expert: 'επίπεδο ειδικού',
   active: 'ενεργό',
+  // Subscription states (Settings › Billing, docs §89).
+  free: 'δωρεάν',
+  trialing: 'σε δοκιμή',
+  'past due': 'ληξιπρόθεσμη πληρωμή',
   inactive: 'ανενεργό',
   pending: 'σε αναμονή',
   applied: 'υποβλήθηκε',

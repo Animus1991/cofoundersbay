@@ -138,7 +138,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
 
   // ── Account ──
   { path: '/profile', title: 'My Profile', description: 'This is exactly how others see you. Keep skills, headline, and bio current \u2014 it powers matches and search.', section: 'Account', status: 'complete' },
-  { path: '/profile/edit', title: 'Edit profile', description: 'Update photo, bio, skills, and visibility settings. Changes save automatically as you type.', section: 'Account', status: 'partial' },
+  { path: '/profile/edit', title: 'Edit profile', description: 'Update your photo, bio, skills and experience. Nothing is stored until you press Save.', section: 'Account', status: 'partial' },
   { path: '/settings', title: 'Settings', description: 'Language, appearance, billing, notifications, security and privacy.', helpId: 'settings', helpTitle: 'Settings overview', helpTitleEl: 'Επισκόπηση ρυθμίσεων', section: 'Account', priority: 'high', status: 'complete' },
   // Each settings sub-page previously inherited the hub's "Manage billing,
   // notifications, integrations, and privacy" line, so all four described the

@@ -29,7 +29,6 @@ import { getNotificationPreferences, updateNotificationPreferences } from '@/lib
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls } from '@/lib/page-controls';
 import {
-  AUTOMATION_KEYS,
   NOTIFICATION_CATEGORIES,
   categoryChannelOn,
   channelsOf,
@@ -83,10 +82,14 @@ export default function NotificationPreferencesPage() {
   const prefs = useNotificationPrefs();
   const [digest, setDigest] = useState<Digest>('weekly');
 
-  const { data: serverPrefs } = useQuery({
+  const { data: serverPrefs, isError: prefsFailed, isFetching: prefsFetching, refetch: refetchPrefs } = useQuery({
     queryKey: qk('notifications', 'preferences'),
     queryFn: getNotificationPreferences,
+    retry: 1,
   });
+  // Not read is not "Never": with the read failed the select showed the
+  // default and Save digest was live, ready to write it (docs §89).
+  const digestUnknown = prefsFailed && !serverPrefs;
 
   useEffect(() => {
     if (serverPrefs?.digestFrequency) setDigest(serverPrefs.digestFrequency as Digest);
@@ -100,7 +103,7 @@ export default function NotificationPreferencesPage() {
     },
     onError: () => toastError('Could not save the digest'),
   });
-  const digestDirty = (serverPrefs?.digestFrequency ?? 'never') !== digest;
+  const digestDirty = !!serverPrefs && (serverPrefs.digestFrequency ?? 'never') !== digest;
 
   const setQuietHours = (patch: Partial<typeof prefs.quietHours>) =>
     updateNotificationPrefs((prev) => ({ ...prev, quietHours: { ...prev.quietHours, ...patch } }));
@@ -178,7 +181,6 @@ export default function NotificationPreferencesPage() {
               <BilingualText en={settingsEn('settings')} el={settingsEl('settings')} compact />
             </Link>
           </Button>
-          {saveButton('hidden sm:inline-flex')}
         </div>
       }
     >
@@ -215,18 +217,34 @@ export default function NotificationPreferencesPage() {
                   <BilingualText en="A summary of activity, sent by email" el="Σύνοψη δραστηριότητας μέσω email" compact wrap />
                 </p>
               </div>
-              <Select value={digest} onValueChange={(v) => setDigest(v as Digest)}>
-                <SelectTrigger id="digest" className="ml-auto w-full sm:w-44" aria-label={bilingualAria('Email digest frequency', 'Συχνότητα email σύνοψης')}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DIGEST_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>
-                      <BilingualText en={o.en} el={o.el} compact />
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* The digest's Save sits beside its select: it was at the top
+                  right of the page, and a second copy at the foot on phones. */}
+              {digestUnknown ? (
+                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                  <p role="alert" className="text-sm text-muted-foreground">
+                    <BilingualText en="Your digest choice could not be read just now." el="Η επιλογή σύνοψης δεν διαβάστηκε αυτή τη στιγμή." wrap />
+                  </p>
+                  <Button variant="outline" size="sm" onClick={() => void refetchPrefs()} disabled={prefsFetching}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
+                  <Select value={digest} onValueChange={(v) => setDigest(v as Digest)} disabled={!serverPrefs}>
+                    <SelectTrigger id="digest" className="w-full sm:w-44" aria-label={bilingualAria('Email digest frequency', 'Συχνότητα email σύνοψης')}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DIGEST_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          <BilingualText en={o.en} el={o.el} compact />
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {saveButton('w-full shrink-0 sm:w-auto')}
+                </div>
+              )}
             </div>
 
             <div className="space-y-3 px-4 py-4 sm:px-6">
@@ -337,6 +355,27 @@ export default function NotificationPreferencesPage() {
                         <p className="text-xs text-muted-foreground">
                           <BilingualText en={category.descriptionEn} el={category.descriptionEl} compact wrap />
                         </p>
+                        {(() => {
+                          // A category switch is on only when every type is;
+                          // with some on it read "off" (Connections: push on
+                          // for two of three types). Say which are mixed.
+                          const mixed = CHANNELS.filter((ch) => {
+                            const on = category.settings.filter((st) => channelsOf(prefs, st)[ch.id]).length;
+                            return on > 0 && on < category.settings.length;
+                          });
+                          if (!mixed.length) return null;
+                          const join = (names: string[], and: string) => names.length > 1 ? `${names.slice(0, -1).join(', ')} ${and} ${names[names.length - 1]}` : names[0];
+                          return (
+                            <p className="text-xs text-muted-foreground">
+                              <BilingualText
+                                en={`${join(mixed.map((m) => m.en), 'and')}: on for some types`}
+                                el={`${join(mixed.map((m) => m.el), 'και')}: ενεργό σε μερικά είδη`}
+                                compact
+                                wrap
+                              />
+                            </p>
+                          );
+                        })()}
                       </div>
                     </div>
                     <ChannelSwitches
@@ -374,7 +413,6 @@ export default function NotificationPreferencesPage() {
           </CardContent>
         </Card>
 
-        <div className="sm:hidden">{saveButton('w-full')}</div>
       </div>
     </AppShell>
   );

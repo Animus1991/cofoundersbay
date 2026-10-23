@@ -89,6 +89,19 @@ export function OpenToCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
+        {mine.isError && !mine.data ? (
+          // An empty form here would save over a signal that was simply not
+          // read; a failed read is said as one (docs §89).
+          <div className="space-y-2">
+            <p role="alert" className="text-sm text-muted-foreground">
+              <BilingualText en="What you are open to could not be read just now." el="Το σε τι είστε ανοιχτός/ή δεν διαβάστηκε αυτή τη στιγμή." wrap />
+            </p>
+            <Button type="button" variant="outline" size="sm" onClick={() => void mine.refetch()} disabled={mine.isFetching}>
+              <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+            </Button>
+          </div>
+        ) : (
+        <>
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium text-foreground"><BilingualText en="I am open to" el="Είμαι ανοιχτός/ή σε" compact /></legend>
           <div className="flex flex-wrap gap-2">
@@ -128,7 +141,7 @@ export function OpenToCard() {
             {lapsed ? (
               <BilingualText en="Your signal lapsed; it no longer affects matching. Save to renew it." el="Το σήμα σας έληξε· δεν επηρεάζει πια τις αντιστοιχίσεις. Αποθηκεύστε για ανανέωση." wrap />
             ) : (
-              <BilingualText en={`Active until ${new Date(signal.expiresAt).toLocaleDateString('en-GB')}. Saving renews it.`} el={`Ενεργό ως ${new Date(signal.expiresAt).toLocaleDateString('el-GR')}. Η αποθήκευση το ανανεώνει.`} wrap />
+              <BilingualText en={`Active until ${new Date(signal.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}. Saving renews it.`} el={`Ενεργό ως ${new Date(signal.expiresAt).toLocaleDateString('el-GR', { day: 'numeric', month: 'short', year: 'numeric' })}. Η αποθήκευση το ανανεώνει.`} wrap />
             )}
           </p>
         ) : null}
@@ -147,6 +160,8 @@ export function OpenToCard() {
             </Button>
           ) : null}
         </div>
+        </>
+        )}
       </CardContent>
     </Card>
   );

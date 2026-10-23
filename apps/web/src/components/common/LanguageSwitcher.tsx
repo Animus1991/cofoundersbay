@@ -119,8 +119,10 @@ export function LanguageChipGrid({
             onClick={() => onChange(lang.value)}
             className={cn(
               'inline-flex min-h-10 items-center rounded-full border px-3 text-sm font-medium transition-colors',
+              // Chosen reads as chosen (edge and tint), not as a filled
+              // primary button beside the page's real one (docs §89).
               isActive
-                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                ? 'border-primary bg-primary/10 text-primary-accessible'
                 : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
             )}
           >

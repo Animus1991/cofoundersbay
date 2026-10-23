@@ -75,6 +75,18 @@ export function CompatibilityCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
+        {mine.isError && !mine.data ? (
+          // "0 of 10 answered" over answers that were not read (docs §89).
+          <div className="space-y-2">
+            <p role="alert" className="text-sm text-muted-foreground">
+              <BilingualText en="Your answers could not be read just now." el="Οι απαντήσεις σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+            </p>
+            <Button type="button" variant="outline" size="sm" onClick={() => void mine.refetch()} disabled={mine.isFetching}>
+              <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+            </Button>
+          </div>
+        ) : (
+        <>
         <p className="text-xs text-muted-foreground" role="status" aria-live="polite">
           <BilingualText
             en={`${answered} of ${total} answered${saved ? '. Saved.' : '. Each answer saves when you press it; press it again to clear it.'}`}
@@ -114,6 +126,8 @@ export function CompatibilityCard() {
             </fieldset>
           ))}
         </div>
+        </>
+        )}
       </CardContent>
     </Card>
   );

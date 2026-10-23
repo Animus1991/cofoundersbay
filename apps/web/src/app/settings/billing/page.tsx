@@ -9,7 +9,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { settingsEn, settingsEl } from '@/lib/i18n/strings-settings';
-import { bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -103,20 +103,30 @@ export default function UserBillingPage() {
     name: '', email: '', company: '', vatId: '', addressLine1: '', city: '', postalCode: '', country: 'US',
   });
 
-  const { data: subData, isLoading: subLoading } = useQuery({
+  // Each read keeps its failure: the page said "Free", "No billing contact
+  // set" and "No invoices yet" when none of the three had been read (docs §89).
+  const { data: subData, isLoading: subLoading, isError: subFailed, refetch: refetchSub } = useQuery({
     queryKey: qk('billing', 'subscription'),
     queryFn: getBillingSubscription,
+    retry: 1,
   });
 
-  const { data: invoicesData, isLoading: invoicesLoading } = useQuery({
+  const { data: invoicesData, isLoading: invoicesLoading, isError: invoicesFailed, refetch: refetchInvoices } = useQuery({
     queryKey: qk('billing', 'invoices'),
     queryFn: getUserInvoices,
+    retry: 1,
   });
 
-  const { data: contactData } = useQuery({
+  const { data: contactData, isError: contactFailed, refetch: refetchContact } = useQuery({
     queryKey: qk('billing', 'contact'),
     queryFn: getBillingContact,
+    retry: 1,
   });
+  const planUnknown = subFailed && !subData;
+  const contactUnknown = contactFailed && !contactData;
+  const invoicesUnknown = invoicesFailed && !invoicesData;
+  const shortDate = (iso: string, locale: 'en-GB' | 'el-GR') =>
+    new Date(iso).toLocaleDateString(locale, { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' });
 
   useEffect(() => {
     const bc = (contactData as { billingContact?: BillingContact | null })?.billingContact;
@@ -217,6 +227,15 @@ export default function UserBillingPage() {
                   <Loader2 className="icon-sm animate-spin" />
                   <span className="text-sm"><BilingualText en="Loading subscription…" el="Φόρτωση συνδρομής…" compact /></span>
                 </div>
+              ) : planUnknown ? (
+                <div className="space-y-2">
+                  <p role="alert" className="text-sm text-muted-foreground">
+                    <BilingualText en="Your plan could not be read just now." el="Το πλάνο σας δεν διαβάστηκε αυτή τη στιγμή." wrap />
+                  </p>
+                  <Button variant="outline" size="sm" onClick={() => void refetchSub()}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                </div>
               ) : sub ? (
                 <>
                   <div>
@@ -228,8 +247,8 @@ export default function UserBillingPage() {
                         : <BilingualText en="/mo" el="/μήνα" compact />}
                       {sub.currentPeriodEnd && (
                         <> · <BilingualText
-                          en={`Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}`}
-                          el={`Ανανεώνεται ${new Date(sub.currentPeriodEnd).toLocaleDateString('el-GR', { timeZone: 'UTC' })}`}
+                          en={`Renews ${shortDate(sub.currentPeriodEnd, 'en-GB')}`}
+                          el={`Ανανεώνεται ${shortDate(sub.currentPeriodEnd, 'el-GR')}`}
                           compact
                         /></>
                       )}
@@ -258,7 +277,7 @@ export default function UserBillingPage() {
             </CardContent>
           </Card>
 
-          {(sub?.plan?.name === 'free' || !sub) && (
+          {!subLoading && !planUnknown && (sub?.plan?.name === 'free' || !sub) && (
             <Card className="border-primary-muted bg-primary-subtle">
               <CardHeader className="pb-2">
                 <p className="text-2xs font-medium uppercase tracking-widest text-primary-accessible">
@@ -285,8 +304,8 @@ export default function UserBillingPage() {
         {sub?.cancelAtPeriodEnd && (
           <p className="text-sm text-status-warning">
             <BilingualText
-              en={`Subscription cancels on ${new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}.`}
-              el={`Η συνδρομή λήγει στις ${new Date(sub.currentPeriodEnd).toLocaleDateString('el-GR', { timeZone: 'UTC' })}.`}
+              en={`Subscription cancels on ${shortDate(sub.currentPeriodEnd, 'en-GB')}.`}
+              el={`Η συνδρομή λήγει στις ${shortDate(sub.currentPeriodEnd, 'el-GR')}.`}
               wrap
             />
           </p>
@@ -294,8 +313,8 @@ export default function UserBillingPage() {
         {sub?.status === 'trialing' && sub.trialEnd && (
           <p className="text-sm text-status-info">
             <BilingualText
-              en={`Free trial ends ${new Date(sub.trialEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}.`}
-              el={`Η δωρεάν δοκιμή λήγει στις ${new Date(sub.trialEnd).toLocaleDateString('el-GR', { timeZone: 'UTC' })}.`}
+              en={`Free trial ends ${shortDate(sub.trialEnd, 'en-GB')}.`}
+              el={`Η δωρεάν δοκιμή λήγει στις ${shortDate(sub.trialEnd, 'el-GR')}.`}
               wrap
             />
           </p>
@@ -332,13 +351,18 @@ export default function UserBillingPage() {
           <CardContent className="pt-2">
             <SettingsRow
               label={<BilingualText en="Payment method" el="Τρόπος πληρωμής" compact />}
-              helper={<BilingualText en="Opens the Stripe billing portal." el="Ανοίγει την πύλη χρεώσεων του Stripe." wrap />}
+              helper={sub
+                ? <BilingualText en="Opens the Stripe billing portal." el="Ανοίγει την πύλη χρεώσεων του Stripe." wrap />
+                // On the free plan the portal has nothing to show and the
+                // press ended in "Stripe portal unavailable".
+                : <BilingualText en="Opens the Stripe billing portal once you are on a paid plan." el="Ανοίγει την πύλη χρεώσεων του Stripe όταν έχετε πληρωμένο πλάνο." wrap />}
             >
               <button
                 type="button"
-                className="text-sm font-medium text-primary-accessible hover:underline"
+                className="text-sm font-medium text-primary-accessible hover:underline disabled:cursor-not-allowed disabled:text-muted-foreground disabled:no-underline"
                 onClick={() => openPortal(undefined)}
-                disabled={portalLoading}
+                disabled={portalLoading || !sub}
+                title={sub ? undefined : bilingualInline('There is no subscription to manage yet.', 'Δεν υπάρχει ακόμη συνδρομή για διαχείριση.')}
               >
                 {portalLoading
                   ? <BilingualText en="Opening…" el="Άνοιγμα…" compact />
@@ -357,17 +381,26 @@ export default function UserBillingPage() {
                 <CardTitle><BilingualText en="Billing Contact" el="Στοιχεία τιμολόγησης" compact /></CardTitle>
                 <CardDescription className="mt-0.5"><BilingualText en="Used on invoices and for tax compliance." el="Χρησιμοποιούνται σε τιμολόγια και για φορολογικούς σκοπούς." wrap /></CardDescription>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => setShowContactForm(!showContactForm)}>
+              {contactUnknown ? null : <Button variant="ghost" size="sm" onClick={() => setShowContactForm(!showContactForm)}>
                 {showContactForm
                   ? <BilingualText en="Cancel" el="Ακύρωση" compact />
                   : (contactData as { billingContact?: BillingContact | null })?.billingContact
                     ? <BilingualText en="Edit" el="Επεξεργασία" compact />
                     : <BilingualText en="Add" el="Προσθήκη" compact />}
-              </Button>
+              </Button>}
             </div>
           </CardHeader>
           <CardContent>
-            {!showContactForm && (contactData as { billingContact?: BillingContact | null })?.billingContact ? (
+            {contactUnknown ? (
+              <div className="space-y-2">
+                <p role="alert" className="text-sm text-muted-foreground">
+                  <BilingualText en="Your billing contact could not be read just now." el="Τα στοιχεία τιμολόγησης δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                </p>
+                <Button variant="outline" size="sm" onClick={() => void refetchContact()}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+              </div>
+            ) : !showContactForm && (contactData as { billingContact?: BillingContact | null })?.billingContact ? (
               <div className="space-y-1 text-sm text-muted-foreground">
                 {(() => { const bc = (contactData as { billingContact?: BillingContact | null }).billingContact!; return (<>
                 <p className="font-medium text-foreground">{bc.name}</p>
@@ -478,14 +511,27 @@ export default function UserBillingPage() {
                 <Loader2 className="icon-sm animate-spin" />
                 <span className="text-sm"><BilingualText en="Loading invoices…" el="Φόρτωση τιμολογίων…" compact /></span>
               </div>
+            ) : invoicesUnknown ? (
+              <div className="card-comfortable space-y-2">
+                <p role="alert" className="text-sm text-muted-foreground">
+                  <BilingualText en="Your invoices could not be read just now." el="Τα τιμολόγιά σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                </p>
+                <Button variant="outline" size="sm" onClick={() => void refetchInvoices()}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+              </div>
             ) : invoices.length === 0 ? (
               <div className="card-comfortable">
                 <FileText className="icon-xl mx-auto text-muted-foreground/40 mb-2" />
                 <p className="text-sm text-muted-foreground"><BilingualText en="No invoices yet" el="Δεν υπάρχουν τιμολόγια ακόμα" compact /></p>
                 <p className="mt-1 text-xs text-muted-foreground"><BilingualText en="Invoices appear here after each billing cycle." el="Τα τιμολόγια εμφανίζονται εδώ μετά από κάθε κύκλο χρέωσης." compact /></p>
-                <Link href="/pricing" className="mt-2 inline-block text-xs text-primary-accessible hover:underline">
-                  <BilingualText en="Compare plans" el="Σύγκριση πλάνων" compact />
-                </Link>
+                {/* "Compare plans" opens /pricing, as the Upgrade card beside
+                    it does; it stays only where that card is not shown. */}
+                {sub && sub.plan?.name !== 'free' ? (
+                  <Link href="/pricing" className="mt-2 inline-block text-xs text-primary-accessible hover:underline">
+                    <BilingualText en="Compare plans" el="Σύγκριση πλάνων" compact />
+                  </Link>
+                ) : null}
               </div>
             ) : (
               <div className="divide-y divide-border/50">

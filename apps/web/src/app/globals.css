@@ -4540,8 +4540,15 @@ html[data-theme="minimal"] [data-own-message] {
   [class~='bg-muted'],
   [class*='bg-muted/']
 ):not(.avatar-initials):not([aria-pressed='true']):not([data-state='active']),
-#main-content button[class*='rounded-full']:is([class~='bg-secondary'], [class~='bg-secondary/30'], [class~='bg-muted'], [class~='bg-muted/30'], [class~='bg-muted/40'], [class~='bg-primary/5'], [class~='bg-primary/10'], [class~='bg-primary/15'], [class~='bg-primary/20']) {
+#main-content button[class*='rounded-full']:is([class~='bg-secondary'], [class~='bg-secondary/30'], [class~='bg-muted'], [class~='bg-muted/30'], [class~='bg-muted/40'], [class~='bg-primary/5'], [class~='bg-primary/10'], [class~='bg-primary/15'], [class~='bg-primary/20']):not([aria-pressed='true']) {
   background-color: transparent;
+}
+/* A pressed chip keeps the edge and the tint its author gave it: the rule
+   above took the tint and the button rule set every edge to --input, so the
+   chosen language on /settings differed from the others by its ink alone.
+   Chosen reads as chosen (docs §89). */
+button[aria-pressed='true'][class~='border-primary']:not([role='combobox']):not([role='checkbox']):not([role='switch']) {
+  border-color: hsl(var(--primary));
 }
 
 /* A status chip that lost its wash and has no edge is a word, so its

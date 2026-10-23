@@ -265,14 +265,16 @@ export default function DataExportPage() {
               <p className="mb-1 text-sm font-medium text-foreground"><BilingualText en="Delete Your Account" el="Διαγραφή του λογαριασμού σας" compact /></p>
               <p className="mb-3 text-xs text-muted-foreground">
                 <BilingualText
-                  en="Account deletion is handled by support: start from account settings."
-                  el="Τη διαγραφή λογαριασμού τη χειρίζεται η υποστήριξη: ξεκινήστε από τις ρυθμίσεις λογαριασμού."
+                  en="Deletion is a request by email, sent from the Danger Zone in Settings and answered within 30 days."
+                  el="Η διαγραφή είναι αίτημα μέσω email, από την Επικίνδυνη ζώνη στις Ρυθμίσεις, και απαντάται μέσα σε 30 ημέρες."
                   wrap
                 />
               </p>
+              {/* To the Danger Zone itself: "Go to Account Settings" opened the
+                  top of /settings, where "Back to Settings" above already goes. */}
               <Button variant="outline" size="sm" className="border-destructive/30 text-destructive-accessible hover:bg-destructive/10" asChild>
-                <Link href="/settings">
-                  <BilingualText en="Go to Account Settings" el="Μετάβαση στις ρυθμίσεις λογαριασμού" compact />
+                <Link href="/settings#danger-zone">
+                  <BilingualText en="Open the Danger Zone" el="Άνοιγμα της Επικίνδυνης ζώνης" compact />
                 </Link>
               </Button>
             </div>

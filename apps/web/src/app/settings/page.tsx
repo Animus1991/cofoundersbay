@@ -1,16 +1,16 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
+import { StatusText } from '@/components/common/StatusText';
 import { useSearchParams } from 'next/navigation';
 import {
   CreditCard,
   Crown,
   ExternalLink,
   Loader2,
-  Mail,
   Bell,
   MessageCircle,
   UserPlus,
@@ -41,7 +41,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
-import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, getNotificationPreferences, updateNotificationPreferences, getMeProfile, updateProfile, type BillingSubscription } from '@/lib/api';
+import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, getNotificationPreferences, updateNotificationPreferences, getMeProfile, updateProfile } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
 import { VerificationCard } from '@/components/settings/VerificationCard';
 import { openCookieChoices } from '@/lib/cookie-consent';
@@ -93,9 +93,11 @@ function Toggle({
   checked,
   onChange,
   label,
+  disabled,
 }: {
   checked: boolean;
   onChange: (v: boolean) => void;
+  disabled?: boolean;
   /**
    * What this switch controls. The visible text sits in a sibling `<p>`, which
    * associates nothing: axe reported `button-name (critical) x11` here, and a
@@ -105,8 +107,15 @@ function Toggle({
    */
   label: string;
 }) {
-  return <Switch checked={checked} onCheckedChange={onChange} aria-label={label} />;
+  return <Switch checked={checked} onCheckedChange={onChange} aria-label={label} disabled={disabled} />;
 }
+
+/** The digest's cadence, said in the switch's line. */
+const DIGEST_CADENCE: Record<'daily' | 'weekly' | 'monthly', { en: string; el: string }> = {
+  daily: { en: 'daily', el: 'καθημερινά' },
+  weekly: { en: 'weekly', el: 'εβδομαδιαία' },
+  monthly: { en: 'monthly', el: 'μηνιαία' },
+};
 
 const PRIVACY_ITEMS = [
   { id: 'publicProfile',  icon: Eye,      label: 'Public profile',      desc: 'Anyone can view your profile page' },
@@ -206,12 +215,12 @@ function LanguageCard() {
                     className={cn(
                       'flex min-h-10 flex-col items-start gap-1 rounded-md border px-3 py-2 text-left text-sm font-medium transition-colors',
                       active
-                        ? 'border-primary bg-primary text-primary-foreground'
+                        ? 'border-primary bg-primary/10 text-primary-accessible'
                         : 'border-border bg-card text-foreground hover:border-primary/50',
                     )}
                   >
                     <BilingualText en={choice.en} el={choice.el} compact />
-                    <span className={cn('text-xs font-normal', active ? 'text-primary-foreground' : 'text-muted-foreground')}>
+                    <span className="text-xs font-normal text-muted-foreground">
                       <BilingualText en={choice.hintEn} el={choice.hintEl} wrap />
                     </span>
                   </button>
@@ -456,7 +465,11 @@ function ProfileViewsRow() {
           <BilingualText en={PROFILE_VIEWERS_COPY.setting.en} el={PROFILE_VIEWERS_COPY.setting.el} compact wrap />
         </p>
         <p className="text-xs text-muted-foreground">
-          <BilingualText en={PROFILE_VIEWERS_COPY.settingHelp.en} el={PROFILE_VIEWERS_COPY.settingHelp.el} wrap />
+          {setting.isError && !setting.data ? (
+            <BilingualText en="This choice could not be read just now." el="Αυτή η επιλογή δεν διαβάστηκε αυτή τη στιγμή." wrap />
+          ) : (
+            <BilingualText en={PROFILE_VIEWERS_COPY.settingHelp.en} el={PROFILE_VIEWERS_COPY.settingHelp.el} wrap />
+          )}
         </p>
       </div>
       <Switch
@@ -546,6 +559,20 @@ function PrivacyCard() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {me.isError && !me.data ? (
+          // The switches read "on" over a profile that was not read; a
+          // failed read says so, and the cookie choices (kept in this
+          // browser) stay below (docs §89).
+          <div className="space-y-2 pb-3">
+            <p role="alert" className="text-sm text-muted-foreground">
+              <BilingualText en="Your privacy choices could not be read just now." el="Οι επιλογές απορρήτου σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+            </p>
+            <Button variant="outline" size="sm" onClick={() => void me.refetch()} disabled={me.isFetching}>
+              <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+            </Button>
+          </div>
+        ) : (
+        <>
         <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
         {PRIVACY_ITEMS.map(({ id, label, desc }) => {
           const readOnly = PRIVACY_READ_ONLY[id];
@@ -622,6 +649,8 @@ function PrivacyCard() {
           </div>
         </div>
         <ProfileViewsRow />
+        </>
+        )}
         <div className="mt-1 flex items-center justify-between gap-4 border-t border-border pt-3">
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground"><BilingualText en="Cookie choices" el="Επιλογές cookies" compact /></p>
@@ -656,27 +685,30 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [working, setWorking] = useState<'checkout' | 'portal' | null>(null);
 
-  const { data: subData, isLoading: loading } = useQuery({
+  const { data: subData, isLoading: loading, isError: subFailed, refetch: refetchSub } = useQuery({
     queryKey: qk('billing', 'subscription'),
     queryFn: getBillingSubscription,
     staleTime: 60_000,
     enabled: hasToken,
+    retry: 1,
   });
   const subscription = subData?.subscription ?? null;
 
-  const { data: twoFaData } = useQuery({
+  const { data: twoFaData, isError: twoFaFailed, refetch: refetchTwoFa } = useQuery({
     queryKey: qk('auth', '2fa', 'status'),
     queryFn: getTwoFactorStatus,
     staleTime: 30_000,
     enabled: hasToken,
+    retry: 1,
   });
   const twoFaEnabled = twoFaData?.enabled ?? false;
 
-  const { data: linkedAccountsData } = useQuery({
+  const { data: linkedAccountsData, isError: linkedFailed, refetch: refetchLinked } = useQuery({
     queryKey: qk('auth', 'linked-accounts'),
     queryFn: getLinkedAccounts,
     staleTime: 60_000,
     enabled: hasToken,
+    retry: 1,
   });
 
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
@@ -688,10 +720,11 @@ export default function SettingsPage() {
     setChannel(category.settings.map((st) => st.id), 'inApp', value);
 
   // The email digest is the one notification choice the server keeps.
-  const { data: digestPrefs } = useQuery({
+  const { data: digestPrefs, isError: digestFailed } = useQuery({
     queryKey: qk('notifications', 'preferences'),
     queryFn: getNotificationPreferences,
     enabled: hasToken,
+    retry: 1,
   });
   const [preferredDigestCadence, setPreferredDigestCadence] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
   useEffect(() => {
@@ -724,7 +757,7 @@ export default function SettingsPage() {
       success('Password changed', 'You have been signed out of all other sessions.');
       setPwForm({ current: '', next: '', confirm: '' });
     } catch (err) {
-      showError('Failed', err instanceof Error ? err.message : 'Please try again.');
+      showError('Could not change the password', err instanceof Error ? err.message : 'Please try again.');
     } finally {
       setPwWorking(false);
     }
@@ -747,8 +780,9 @@ export default function SettingsPage() {
   }, [searchParams]);
 
   const status = subscription?.status ?? 'free';
-  const statusLabel = status === 'free' ? 'Free' : status.replaceAll('_', ' ');
   const isPremium = ['trialing', 'active', 'past_due', 'paused'].includes(status);
+  // A read that failed is not the free plan (docs §89).
+  const planUnknown = subFailed && !subData;
 
   const startCheckout = async () => {
     try {
@@ -974,14 +1008,32 @@ export default function SettingsPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {planUnknown ? (
+                    <div className="space-y-2">
+                      <p role="alert" className="text-sm text-muted-foreground">
+                        <BilingualText en="Your plan could not be read just now." el="Το πλάνο σας δεν διαβάστηκε αυτή τη στιγμή." wrap />
+                      </p>
+                      <Button variant="outline" size="sm" onClick={() => void refetchSub()}>
+                        <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                      </Button>
+                    </div>
+                  ) : (
+                  <>
                   <div className="flex flex-wrap items-center gap-2">
+                    {/* The plan's state in both languages ("Free" was English
+                        only, and "past due" a raw enum), the date as every
+                        card writes one. */}
                     <Badge variant={isPremium ? 'default' : 'secondary'} className="gap-1.5">
                       {isPremium && <Crown className="icon-sm" />}
-                      {statusLabel}
+                      <StatusText value={status.replaceAll('_', ' ')} />
                     </Badge>
                     {subscription?.currentPeriodEnd && (
                       <span className="text-xs text-muted-foreground">
-                        Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
+                        <BilingualText
+                          en={`Renews ${new Date(subscription.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })}`}
+                          el={`Ανανεώνεται ${new Date(subscription.currentPeriodEnd).toLocaleDateString('el-GR', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })}`}
+                          compact
+                        />
                       </span>
                     )}
                   </div>
@@ -1003,7 +1055,11 @@ export default function SettingsPage() {
                   )}
 
                   <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    {/* Outline: on Settings the filled button is kept for a
+                        form the reader filled (Update password, Save). Upgrade
+                        starts the checkout; the plan page leads with it. */}
                     <Button
+                      variant="outline"
                       className="gap-2"
                       disabled={working !== null || isPremium}
                       onClick={startCheckout}
@@ -1019,7 +1075,7 @@ export default function SettingsPage() {
                         onClick={openPortal}
                       >
                         {working === 'portal' ? <Loader2 className="icon-sm animate-spin" /> : <ExternalLink className="icon-sm" />}
-                        Manage subscription
+                        <BilingualText en="Manage subscription" el="Διαχείριση συνδρομής" compact />
                       </Button>
                     )}
                     <Button variant="outline" asChild>
@@ -1028,6 +1084,8 @@ export default function SettingsPage() {
                       </Link>
                     </Button>
                   </div>
+                  </>
+                  )}
                 </CardContent>
               </Card>
 
@@ -1044,6 +1102,18 @@ export default function SettingsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {linkedFailed && !linkedAccountsData ? (
+                    // "Not connected" and Connect for an account that may well
+                    // be linked: a failed read is said as one (docs §89).
+                    <div className="space-y-2 py-1">
+                      <p role="alert" className="text-sm text-muted-foreground">
+                        <BilingualText en="Your linked accounts could not be read just now." el="Οι συνδεδεμένοι λογαριασμοί σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                      </p>
+                      <Button variant="outline" size="sm" onClick={() => void refetchLinked()}>
+                        <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                      </Button>
+                    </div>
+                  ) : (
                   <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
                   {[
                     {
@@ -1086,9 +1156,9 @@ export default function SettingsPage() {
                           </p>
                         </div>
                       </div>
-                      {connected ? (
-                        <Badge variant="secondary" className="text-xs"><BilingualText en="Connected" el="Συνδεδεμένος" compact /></Badge>
-                      ) : (
+                      {/* "Connected" is the line under the name; the badge
+                          that said it again at the right is gone. */}
+                      {connected ? null : (
                         <Button
                           variant="outline"
                           size="sm"
@@ -1100,6 +1170,7 @@ export default function SettingsPage() {
                     </div>
                   ))}
                   </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -1123,7 +1194,8 @@ export default function SettingsPage() {
                     <Button variant="outline" className="gap-2" asChild>
                       <Link href="/profile">
                         <Shield className="icon-sm" />
-                        <BilingualText en="View public profile" el="Προβολή δημόσιου προφίλ" compact />
+                        {/* /profile is your own page, not the public /p/ one. */}
+                        <BilingualText en="View your profile" el="Προβολή του προφίλ σας" compact />
                       </Link>
                     </Button>
                     <Button
@@ -1231,12 +1303,24 @@ export default function SettingsPage() {
                   <CardDescription><BilingualText en="Two-factor authentication and account security." el="Έλεγχος ταυτότητας δύο παραγόντων και ασφάλεια λογαριασμού." wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <TwoFactorManagement
-                    isEnabled={twoFaEnabled}
-                    onStatusChange={(enabled) =>
-                      queryClient.setQueryData(qk('auth', '2fa', 'status'), { enabled })
-                    }
-                  />
+                  {twoFaFailed && !twoFaData ? (
+                    // Not "disabled" with Enable: the state was not read.
+                    <div className="space-y-2">
+                      <p role="alert" className="text-sm text-muted-foreground">
+                        <BilingualText en="Your two-factor setting could not be read just now." el="Η ρύθμιση δύο παραγόντων δεν διαβάστηκε αυτή τη στιγμή." wrap />
+                      </p>
+                      <Button variant="outline" size="sm" onClick={() => void refetchTwoFa()}>
+                        <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                      </Button>
+                    </div>
+                  ) : (
+                    <TwoFactorManagement
+                      isEnabled={twoFaEnabled}
+                      onStatusChange={(enabled) =>
+                        queryClient.setQueryData(qk('auth', '2fa', 'status'), { enabled })
+                      }
+                    />
+                  )}
                 </CardContent>
               </Card>
 
@@ -1297,17 +1381,29 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between gap-4 py-2.5">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="min-w-0">
+                        {/* "Weekly" was the label whatever the cadence: a
+                            daily digest read as weekly here. */}
                         <p className="text-sm font-medium text-foreground">
-                          <BilingualText en="Weekly email digest" el="Εβδομαδιαία email σύνοψη" compact />
+                          <BilingualText en="Email digest" el="Email σύνοψη" compact />
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          <BilingualText en="A summary of activity by email" el="Σύνοψη δραστηριότητας μέσω email" compact wrap />
+                          {digestFailed && !digestPrefs ? (
+                            <BilingualText en="Your digest choice could not be read just now." el="Η επιλογή σύνοψης δεν διαβάστηκε αυτή τη στιγμή." compact wrap />
+                          ) : (
+                            <BilingualText
+                              en={`A summary of activity by email, ${DIGEST_CADENCE[preferredDigestCadence].en}`}
+                              el={`Σύνοψη δραστηριότητας μέσω email, ${DIGEST_CADENCE[preferredDigestCadence].el}`}
+                              compact
+                              wrap
+                            />
+                          )}
                         </p>
                       </div>
                     </div>
                     <Toggle
-                      label={bilingualAria('Weekly email digest', 'Εβδομαδιαία email σύνοψη')}
+                      label={bilingualAria('Email digest', 'Email σύνοψη')}
                       checked={digestOn}
+                      disabled={!digestPrefs || saveDigest.isPending}
                       onChange={(v) => saveDigest.mutate(v)}
                     />
                   </div>

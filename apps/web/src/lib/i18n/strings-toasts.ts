@@ -341,6 +341,7 @@ export const TOAST_EL: Record<string, string> = {
   "This member is not taking new conversations": "Αυτό το μέλος δεν δέχεται νέες συνομιλίες",
   "This member takes new conversations from connections only": "Αυτό το μέλος δέχεται νέες συνομιλίες μόνο από τις συνδέσεις του",
   "Password changed": "Ο κωδικός άλλαξε",
+  "Could not change the password": "Ο κωδικός δεν άλλαξε",
   "Passwords do not match": "Οι κωδικοί δεν ταιριάζουν",
   "Payment successful": "Η πληρωμή ολοκληρώθηκε",
   "Pipeline and Kanban stay in lockstep.": "Το Pipeline και το Kanban μένουν συγχρονισμένα.",

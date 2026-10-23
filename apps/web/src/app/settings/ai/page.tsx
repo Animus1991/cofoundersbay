@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   Sparkles,
@@ -13,7 +13,6 @@ import {
   ThermometerSun,
   ArrowLeft,
   Save,
-  Loader2,
   Info,
   CheckCircle2,
   Bot,
@@ -23,8 +22,6 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -39,7 +36,6 @@ import { demoAgentPhoto } from '@/lib/demo/photos';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { applyLocale, getStoredLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
-import { useI18n } from '@/components/common/I18nProvider';
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { choiceControl, usePageControls, type PageControlRunResult } from '@/lib/page-controls';
@@ -110,7 +106,6 @@ function Toggle({ checked, onChange, disabled, label }: { checked: boolean; onCh
 export default function AISettingsPage() {
   const sayOne = useBilingualString();
   const { success, error: showError } = useToast();
-  const { t } = useI18n();
   const queryClient = useQueryClient();
   const [prefs, setPrefs] = useState<AIPreferences>(DEFAULT_PREFS);
   const [hasChanges, setHasChanges] = useState(false);
@@ -129,11 +124,13 @@ export default function AISettingsPage() {
     staleTime: 60000,
   });
 
-  // Fetch available agents
-  const { data: agentsData } = useQuery({
+  // Fetch available agents. A failed read is kept as one: the catalogue
+  // below used to fill itself with six agents that do not exist (docs §89).
+  const { data: agentsData, isError: agentsFailed, isFetching: agentsFetching, refetch: refetchAgents } = useQuery({
     queryKey: qk('ai', 'agents'),
-    queryFn: () => getAIAgents().catch(() => ({ agents: [] })),
+    queryFn: getAIAgents,
     staleTime: 60000,
+    retry: 1,
   });
 
   const models = modelsData?.models || [];
@@ -267,7 +264,10 @@ export default function AISettingsPage() {
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="icon-sm" />
-            {t('Back to Settings')}
+            {/* A pair, not t(): the page hydrates after the language applies,
+                so t() rendered Greek where the server wrote English (React
+                #418 on every Greek visit, docs §89). */}
+            <BilingualText en="Back to Settings" el="Πίσω στις Ρυθμίσεις" compact />
           </Link>
           <div className="flex flex-wrap items-center gap-2">
             <Button asChild variant="outline" className="gap-2">
@@ -284,7 +284,9 @@ export default function AISettingsPage() {
             </Button>
             <Button onClick={() => void handleSave()} disabled={!hasChanges} className="gap-2">
               {hasChanges ? <Save className="icon-sm" /> : <CheckCircle2 className="icon-sm" />}
-              {hasChanges ? 'Save Changes' : 'Saved'}
+              {hasChanges
+                ? <BilingualText en="Save changes" el="Αποθήκευση αλλαγών" compact />
+                : <BilingualText en="Saved" el="Αποθηκεύτηκαν" compact />}
             </Button>
           </div>
         </div>
@@ -369,7 +371,7 @@ export default function AISettingsPage() {
                     value={prefs.preferredModel}
                     onValueChange={(v) => updatePref('preferredModel', v)}
                   >
-                    <SelectTrigger id="preferredModel" aria-label="Preferred Model">
+                    <SelectTrigger id="preferredModel" aria-label={bilingualAria('Preferred model', 'Προτιμώμενο μοντέλο')}>
                       <SelectValue placeholder={sayOne("Select model", "Επιλογή μοντέλου")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -405,7 +407,7 @@ export default function AISettingsPage() {
                     value={prefs.defaultAgent}
                     onValueChange={(v) => updatePref('defaultAgent', v)}
                   >
-                    <SelectTrigger id="defaultAgent" aria-label="Default Agent">
+                    <SelectTrigger id="defaultAgent" aria-label={bilingualAria('Default agent', 'Προεπιλεγμένος πράκτορας')}>
                       <SelectValue placeholder={sayOne("Select agent", "Επιλογή βοηθού")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -416,12 +418,10 @@ export default function AISettingsPage() {
                           </SelectItem>
                         ))
                       ) : (
-                        <>
-                          <SelectItem value="general"><BilingualText en="General Assistant" el="Γενικός βοηθός" compact /></SelectItem>
-                          <SelectItem value="matching"><BilingualText en="Co-Founder Matching" el="Αντιστοίχιση συνιδρυτών" compact /></SelectItem>
-                          <SelectItem value="pitch-coach"><BilingualText en="Pitch Coach" el="Προπονητής pitch" compact /></SelectItem>
-                          <SelectItem value="research"><BilingualText en="Research Assistant" el="Βοηθός έρευνας" compact /></SelectItem>
-                        </>
+                        // Without the agent list, only the assistant that always
+                        // answers: three more names here were agents the server
+                        // does not have (docs §89).
+                        <SelectItem value="general"><BilingualText en="CoFounderBay Assistant" el="Βοηθός CoFounderBay" compact /></SelectItem>
                       )}
                     </SelectContent>
                   </Select>
@@ -466,7 +466,7 @@ export default function AISettingsPage() {
                     value={String(prefs.maxTokens)}
                     onValueChange={(v) => updatePref('maxTokens', parseInt(v))}
                   >
-                    <SelectTrigger id="prefs-2" aria-label="Max Response Length" className="w-full">
+                    <SelectTrigger id="prefs-2" aria-label={bilingualAria('Max response length', 'Μέγιστο μήκος απάντησης')} className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -498,6 +498,8 @@ export default function AISettingsPage() {
                 {RESPONSE_STYLES.map((style) => (
                   <button
                     key={style.value}
+                    type="button"
+                    aria-pressed={prefs.responseStyle === style.value}
                     onClick={() => updatePref('responseStyle', style.value as AIPreferences['responseStyle'])}
                     className={cn(
                       'flex flex-col items-start rounded-lg border-2 p-4 text-left transition-all',
@@ -516,10 +518,14 @@ export default function AISettingsPage() {
               <div className="space-y-2">
                 <p id="page-cap5-cap" className="flex items-center gap-2 text-sm font-medium">
                   <Languages className="icon-sm text-muted-foreground" />
-                  {t('Response Language')}
+                  <BilingualText en="Response language" el="Γλώσσα απαντήσεων" compact />
                 </p>
                 <p className="card-body text-muted-foreground">
-                  {t('Tap a language. The same setting is in the header globe and in Settings.')}
+                  <BilingualText
+                    en="Tap a language. The same setting is in the header globe and in Settings."
+                    el="Πατήστε μια γλώσσα. Η ίδια ρύθμιση υπάρχει στην υδρόγειο της επάνω μπάρας και στις Ρυθμίσεις."
+                    wrap
+                  />
                 </p>
                 <LanguageChipGrid
                   value={prefs.responseLanguage}
@@ -539,7 +545,7 @@ export default function AISettingsPage() {
                   </p>
                 </div>
                 <Toggle
-                  label="Use Emojis"
+                  label={bilingualAria('Use emojis', 'Χρήση emoji')}
                   checked={prefs.useEmoji}
                   onChange={(v) => updatePref('useEmoji', v)}
                 />
@@ -625,15 +631,26 @@ export default function AISettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {agentsFailed && !agentsData ? (
+                <div className="space-y-2">
+                  <p role="alert" className="text-sm text-muted-foreground">
+                    <BilingualText en="The agents could not be read just now." el="Οι πράκτορες δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                  </p>
+                  <Button variant="outline" size="sm" onClick={() => void refetchAgents()} disabled={agentsFetching}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                </div>
+              ) : agents.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText
+                    en={agentsData ? 'No agents are set up on this server; the built-in assistant answers.' : 'Reading the agents…'}
+                    el={agentsData ? 'Δεν έχουν ρυθμιστεί πράκτορες σε αυτόν τον διακομιστή· απαντά ο ενσωματωμένος βοηθός.' : 'Ανάγνωση πρακτόρων…'}
+                    wrap
+                  />
+                </p>
+              ) : (
               <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
-                {(agents.length > 0 ? agents : [
-                  { id: 'general', name: 'General Assistant', description: 'Platform help and FAQs' },
-                  { id: 'matching', name: 'Co-Founder Matching', description: 'Find the right co-founder' },
-                  { id: 'pitch-coach', name: 'Pitch Coach', description: 'Improve your pitch deck' },
-                  { id: 'research', name: 'Research Assistant', description: 'Market research & analysis' },
-                  { id: 'fundraising', name: 'Fundraising Advisor', description: 'Raise capital effectively' },
-                  { id: 'growth-strategist', name: 'Growth Strategist', description: 'Scale your startup' },
-                ]).map((agent) => (
+                {agents.map((agent) => (
                   <div
                     key={agent.id}
                     className="flex items-start gap-3"
@@ -657,6 +674,7 @@ export default function AISettingsPage() {
                   </div>
                 ))}
               </div>
+              )}
             </CardContent>
           </Card>
         </div>

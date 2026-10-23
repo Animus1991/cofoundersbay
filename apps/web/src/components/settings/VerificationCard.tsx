@@ -107,6 +107,19 @@ export function VerificationCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
+        {status.isError && !me ? (
+          // "Not verified yet" and a form to start again, for verifications
+          // that were simply not read (docs §89).
+          <div className="space-y-2">
+            <p role="alert" className="text-sm text-muted-foreground">
+              <BilingualText en="Your verifications could not be read just now." el="Οι επαληθεύσεις σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+            </p>
+            <Button type="button" variant="outline" size="sm" onClick={() => void status.refetch()} disabled={status.isFetching}>
+              <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+            </Button>
+          </div>
+        ) : (
+        <>
         {signals.length ? (
           <ul className="card-rows" aria-label="Your verifications · Οι επαληθεύσεις σας">
             {signals.map((s) => (
@@ -209,6 +222,8 @@ export function VerificationCard() {
           </Button>
         </div>
         </div>
+        </>
+        )}
       </CardContent>
     </Card>
   );
