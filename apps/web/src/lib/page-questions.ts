@@ -185,11 +185,6 @@ export const ASK = {
     el: 'Δεν έχω προτάσεις στην Ανακάλυψη. Τι να προσθέσω στο προφίλ μου για να εμφανιστούν;',
     tool: 'get_profile',
   },
-  discoverMatchesEmpty: {
-    en: 'Discover matches tab is empty. Help me find complementary people from the network.',
-    el: 'Η καρτέλα αντιστοιχίσεων στην Ανακάλυψη είναι άδεια. Βοήθησέ με να βρω ανθρώπους που με συμπληρώνουν.',
-    tool: 'get_recommendations',
-  },
   eventsEmpty: {
     en: 'I have no events. Suggest how to use Events and Calendar to meet cofounders this month.',
     el: 'Δεν έχω εκδηλώσεις. Πρότεινε πώς να χρησιμοποιήσω τις Εκδηλώσεις και το Ημερολόγιο για να γνωρίσω συνιδρυτές αυτόν τον μήνα.',

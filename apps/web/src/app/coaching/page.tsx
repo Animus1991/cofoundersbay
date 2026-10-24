@@ -61,6 +61,7 @@ import {
   type MentorProfileItem,
 } from '@/lib/api';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { formatFee } from '@/lib/mentor-fee';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -522,11 +523,7 @@ function CoachCard({ coach, sample }: { coach: CoachProfile; sample: boolean }) 
             <span className="font-semibold tabular-nums text-foreground">
               {/* The dollar sign used to be written in. A mentor records a
                   currency beside the rate; bill them in it. */}
-              {new Intl.NumberFormat('en-GB', {
-                style: 'currency',
-                currency: coach.currency || 'USD',
-                maximumFractionDigits: 0,
-              }).format(coach.pricePerHour)}
+              {formatFee(coach.pricePerHour, coach.currency)}
               <BilingualText en="/hr" el="/ώρα" compact />
             </span>
           ) : undefined}

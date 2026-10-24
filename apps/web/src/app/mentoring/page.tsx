@@ -68,6 +68,7 @@ import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
 import { expertiseFacets, withExpertise } from '@/lib/mentoring/expertise';
+import { formatFee } from '@/lib/mentor-fee';
 
 interface Mentor {
   id: string;
@@ -219,7 +220,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
             <span className="flex flex-wrap items-center gap-2">
               {mentor.hourlyRate ? (
                 <span className="font-semibold tabular-nums text-foreground">
-                  ${mentor.hourlyRate}
+                  {formatFee(mentor.hourlyRate)}
                   <BilingualText en="/hr" el="/ώρα" compact />
                 </span>
               ) : (
@@ -376,7 +377,7 @@ function BookingModal({
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground"><BilingualText en="Estimated cost" el="Εκτιμώμενο κόστος" compact /></span>
                 <span className="font-semibold text-foreground">
-                  ${((mentor.hourlyRate * parseInt(duration)) / 60).toFixed(0)}
+                  {formatFee(Math.round((mentor.hourlyRate * parseInt(duration)) / 60))}
                 </span>
               </div>
             </div>
@@ -697,7 +698,7 @@ export default function MentoringPage() {
       labelEn: 'Mentors',
       labelEl: 'Μέντορες',
       rows: mentorsQueryLoading ? undefined : filteredMentors.map((m) =>
-        `${m.displayName}${m.location ? ` · ${m.location}` : ''}${m.expertise.length ? ` · ${m.expertise.join(', ')}` : ''} · ${m.hourlyRate ? `$${m.hourlyRate}/hr` : 'free'}${m.rating > 0 ? ` · ${m.rating.toFixed(1)}★` : ''}`,
+        `${m.displayName}${m.location ? ` · ${m.location}` : ''}${m.expertise.length ? ` · ${m.expertise.join(', ')}` : ''} · ${m.hourlyRate ? `${formatFee(m.hourlyRate)}/hr` : 'free'}${m.rating > 0 ? ` · ${m.rating.toFixed(1)}★` : ''}`,
       ),
     },
     {

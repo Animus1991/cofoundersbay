@@ -886,7 +886,7 @@ model MentorBooking {
   notes                 String?       @db.Text
   status                BookingStatus @default(requested)
   priceCents            Int?
-  currency              String?       @default("USD")
+  currency              String?       @default("EUR")
   stripePaymentIntentId String?       @unique
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
@@ -3979,7 +3979,7 @@ model MentorProfile {
   // Pricing
   isFree              Boolean                 @default(true)
   hourlyRate          Int?                    // in cents
-  currency            String                  @default("USD")
+  currency            String                  @default("EUR") // mentor fees are in euros (docs §101)
   
   // Ratings
   avgRating           Float?

@@ -14,12 +14,17 @@ import { qk } from '@/lib/query-keys';
  * follower's /updates and notifications. Signed out, it is a sign-in link
  * that returns to the profile; on one's own profile it is not shown.
  */
-export function FollowButton({ userId, className }: { userId: string; className?: string }) {
+/**
+ * Whether the reader follows this person's updates, and the switch: shared by
+ * the button and the profile's "More" menu (docs §101).
+ */
+export function useFollowPerson(userId: string) {
   const me = useStoredUser();
   const queryClient = useQueryClient();
   const { error: showError } = useToast();
   const signedIn = Boolean(me?.id);
-  const status = useQuery({ queryKey: qk('follows', userId), queryFn: () => getFollowStatus(userId), enabled: signedIn && !!userId && me?.id !== userId });
+  const self = Boolean(me?.id && me.id === userId);
+  const status = useQuery({ queryKey: qk('follows', userId), queryFn: () => getFollowStatus(userId), enabled: signedIn && !!userId && !self });
   const toggle = useMutation({
     mutationFn: () => (status.data?.following ? unfollowPerson(userId) : followPerson(userId)),
     onSuccess: (next) => {
@@ -28,8 +33,19 @@ export function FollowButton({ userId, className }: { userId: string; className?
     },
     onError: () => showError('Could not change following'),
   });
+  return {
+    signedIn,
+    self,
+    following: status.data?.following === true,
+    busy: status.isLoading || toggle.isPending,
+    toggle: () => toggle.mutate(),
+  };
+}
 
-  if (!userId || (me?.id && me.id === userId)) return null;
+export function FollowButton({ userId, className }: { userId: string; className?: string }) {
+  const { signedIn, self, following, busy, toggle } = useFollowPerson(userId);
+
+  if (!userId || self) return null;
   if (!signedIn) {
     const here = typeof window !== 'undefined' ? window.location.pathname : '/';
     return (
@@ -38,9 +54,8 @@ export function FollowButton({ userId, className }: { userId: string; className?
       </Button>
     );
   }
-  const following = status.data?.following === true;
   return (
-    <Button size="sm" variant={following ? 'secondary' : 'outline'} className={className} disabled={status.isLoading || toggle.isPending} aria-pressed={following} onClick={() => toggle.mutate()}>
+    <Button size="sm" variant={following ? 'secondary' : 'outline'} className={className} disabled={busy} aria-pressed={following} onClick={toggle}>
       <BilingualText en={following ? 'Following' : 'Follow updates'} el={following ? 'Ακολουθείτε' : 'Ακολουθήστε'} compact />
     </Button>
   );

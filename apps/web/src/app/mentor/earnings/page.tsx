@@ -32,6 +32,7 @@ import { MENTOR_DEMO_EARNINGS } from '@/lib/demo/mentor-world';
 import { demoPortrait } from '@/lib/demo/photos';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 import { ASK } from '@/lib/page-questions';
+import { formatFee } from '@/lib/mentor-fee';
 
 // ── Mock data (replace with real API calls) ──────────────────────────────────
 
@@ -52,7 +53,7 @@ function mockTransactions() {
     type: 'session',
     duration: r.duration,
     amount: r.amount,
-    currency: 'USD',
+    currency: 'EUR',
     date: daysAgo(r.ago),
     status: r.status as 'paid' | 'pending',
     topic: r.topic,
@@ -86,8 +87,9 @@ const PERIODS: { value: string; en: string; el: string; days: number }[] = [
 ];
 
 
-function formatCurrency(cents: number, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(cents);
+// Mentor fees are in euros (docs §101).
+function formatCurrency(amount: number, currency = 'EUR') {
+  return formatFee(amount, currency, 2);
 }
 
 export default function MentorEarningsPage() {
@@ -133,7 +135,7 @@ export default function MentorEarningsPage() {
       id: 'sessions',
       labelEn: 'Paid sessions',
       labelEl: 'Πληρωμένες συνεδρίες',
-      rows: transactions.map((t) => `${t.date.slice(0, 10)} · ${t.mentee.name} · ${t.topic} · ${t.duration} min · $${t.amount} · ${t.status}`),
+      rows: transactions.map((t) => `${t.date.slice(0, 10)} · ${t.mentee.name} · ${t.topic} · ${t.duration} min · ${formatFee(t.amount, t.currency, 2)} · ${t.status}`),
       total: allTransactions.length,
       sample: showDemoData,
     },

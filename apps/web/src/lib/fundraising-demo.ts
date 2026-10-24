@@ -1,4 +1,4 @@
-import { attachDemoPhotos } from '@/lib/demo/photos';
+import { attachDemoPhotos, demoPortrait } from '@/lib/demo/photos';
 import { previewClockOffsetMs } from '@/lib/preview-api';
 import { calendarDaysUntil } from '@/lib/calendar-days';
 
@@ -98,35 +98,39 @@ export const FUNDRAISING_SEED_LEADS: InvestorLead[] = [
     notes: 'Lead investor — committed the full €375K raised so far.',
     notesEl: 'Κύριος επενδυτής — δεσμεύτηκε και τα €375K που έχουν συγκεντρωθεί.',
   },
+  // Two investors from the demo's directory (`lib/demo/investors-world.ts`),
+  // so Profile and Message reach someone. The pipeline listed "Warm intro
+  // from Athens founder networks" and "Remaining €375K of the €750K seed" as
+  // contacts: an introduction still to come and the round's open amount,
+  // neither of them an investor (docs §101). The intro is now how Irini was
+  // met; the open amount is what the round card already shows.
   {
-    id: 'athens-network',
-    name: 'Warm intro from Athens founder networks',
-    nameEl: 'Ζεστή γνωριμία μέσω δικτύων ιδρυτών στην Αθήνα',
+    id: 'irini-kosta',
+    name: 'Irini Kosta',
+    firm: 'Kosta Angels',
     type: 'Angel',
     stage: 'Pre-Seed / Seed',
-    checkSize: 'Warm intro',
-    checkSizeEl: 'Ζεστή γνωριμία',
-    status: 'contacted',
-    lastContact: '2026-09-02T10:00:00.000Z',
-    isVerified: false,
-    href: '/projects/3',
-    notes: 'Waiting on a warm intro from Athens and EU founder networks.',
-    notesEl: 'Αναμονή ζεστής γνωριμίας μέσω δικτύων ιδρυτών στην Αθήνα και την ΕΕ.',
-  },
-  {
-    id: 'remaining-close',
-    name: 'Remaining €375K of the €750K seed',
-    nameEl: 'Υπόλοιπα €375K του γύρου €750K',
-    type: 'Syndicate',
-    stage: 'Pre-Seed / Seed',
-    checkSize: '€375K remaining',
-    checkSizeEl: 'Υπόλοιπα €375K',
+    checkSize: '€25K–€150K',
     status: 'meeting',
     lastContact: '2026-09-04T10:00:00.000Z',
-    isVerified: false,
-    href: '/builder/pitch-deck',
-    notes: 'Open ask to close the remaining €375K.',
-    notesEl: 'Ανοιχτό αίτημα για τα υπόλοιπα €375K.',
+    isVerified: true,
+    href: '/profiles/user-irini-kosta',
+    notes: 'Met through the Athens founder network; second call on the remaining €375K.',
+    notesEl: 'Γνωριμία μέσω του δικτύου ιδρυτών της Αθήνας· δεύτερη κλήση για τα υπόλοιπα €375K.',
+  },
+  {
+    id: 'michalis-theodorou',
+    name: 'Michalis Theodorou',
+    firm: 'Levant Capital',
+    type: 'VC',
+    stage: 'Seed / Series A',
+    checkSize: '€500K–€3M',
+    status: 'contacted',
+    lastContact: '2026-09-02T10:00:00.000Z',
+    isVerified: true,
+    href: '/profiles/user-michalis-theodorou',
+    notes: 'Deck sent; waiting to hear whether a €750K seed fits their cheque.',
+    notesEl: 'Στάλθηκε το deck· αναμονή για το αν ένας γύρος €750K ταιριάζει στο εισιτήριό τους.',
   },
 ];
 
@@ -142,6 +146,16 @@ export const FUNDRAISING_SEED_DOCS: DataRoomDoc[] = [
   { id: 'd9', name: 'Data room note for Athens Tech Angels', nameEl: 'Σημείωμα data room για τους Athens Tech Angels', category: 'Legal', status: 'shared', isRequired: false, lastUpdated: '2026-09-03T12:00:00.000Z' },
   { id: 'd10', name: 'Remaining €375K close checklist', nameEl: 'Λίστα κλεισίματος υπόλοιπων €375K', category: 'Traction', status: 'draft', isRequired: false, lastUpdated: undefined },
 ];
+
+/**
+ * A lead is a person when it names their firm, or is an angel or a scout;
+ * a syndicate, fund or family office with no firm beside it is the
+ * organisation itself. People are drawn as circles, organisations as
+ * rounded squares.
+ */
+export function isPersonLead(lead: Pick<InvestorLead, 'firm' | 'type'>): boolean {
+  return Boolean(lead.firm?.trim()) || lead.type === 'Angel' || lead.type === 'Scout';
+}
 
 export const PIPELINE_STAGES: InvestorStatus[] = ['prospect', 'contacted', 'meeting', 'dd', 'committed', 'passed'];
 export const DOC_CATEGORIES = ['All', 'Pitch', 'Financials', 'Legal', 'Product', 'Market', 'Team', 'Traction'] as const;
@@ -229,6 +243,8 @@ export function resolveFundraisingLeads(overlay: Partial<FundraisingOverlay> = e
   // warm intro in Athens); leads a member adds are theirs and keep initials.
   const fromSeed = attachDemoPhotos(FUNDRAISING_SEED_LEADS.map((l) => ({
     ...l,
+    // A person at a firm gets their portrait, as on /investors.
+    ...(isPersonLead(l) ? { logoUrl: demoPortrait(l.name) ?? undefined } : {}),
     status: resolved.status[l.id] ?? l.status,
   })), { logoKey: 'logoUrl' });
   const created = resolved.created.map((l) => ({

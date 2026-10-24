@@ -58,6 +58,7 @@ import {
   readFundraisingOverlay,
   resolveFundraisingLeads,
   resolveFundraisingDocs,
+  isPersonLead,
   type InvestorLead,
   type InvestorStatus,
   type DataRoomDoc,
@@ -465,9 +466,9 @@ function PipelineView({
                     <div className="card-compact space-y-2">
                       <CardHead
                         mark={(
-                          <Avatar className="h-8 w-8 rounded-xl">
-                            <AvatarImage src={lead.logoUrl} alt="" className="rounded-xl" />
-                            <AvatarFallback className="rounded-xl bg-primary/10 text-xs font-semibold text-primary-accessible">
+                          <Avatar className={cn('h-8 w-8', !isPersonLead(lead) && 'rounded-xl')}>
+                            <AvatarImage src={lead.logoUrl} alt="" className={cn(!isPersonLead(lead) && 'rounded-xl')} />
+                            <AvatarFallback className={cn('bg-primary/10 text-xs font-semibold text-primary-accessible', !isPersonLead(lead) && 'rounded-xl')}>
                               {initialsOf(lead.name)}
                             </AvatarFallback>
                           </Avatar>
@@ -745,9 +746,9 @@ function InvestorListView({
             <CardContent className="space-y-3">
               <CardHead
                 mark={(
-                  <Avatar className="h-10 w-10 rounded-xl">
-                    <AvatarImage src={lead.logoUrl} alt="" className="rounded-xl" />
-                    <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initialsOf(lead.name)}</AvatarFallback>
+                  <Avatar className={cn('h-10 w-10', !isPersonLead(lead) && 'rounded-xl')}>
+                    <AvatarImage src={lead.logoUrl} alt="" className={cn(!isPersonLead(lead) && 'rounded-xl')} />
+                    <AvatarFallback className={cn('bg-primary/10 font-semibold text-primary-accessible', !isPersonLead(lead) && 'rounded-xl')}>{initialsOf(lead.name)}</AvatarFallback>
                   </Avatar>
                 )}
                 title={<LeadName lead={lead} as="span" />}

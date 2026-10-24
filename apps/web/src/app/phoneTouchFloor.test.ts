@@ -23,7 +23,11 @@ describe('phone touch floor', () => {
     expect(rule).toContain('.w-7');
     expect(rule).toContain('.w-11');
     const phone = css.slice(mediaStart, css.indexOf('Reading measure', start));
-    expect(phone).toContain('select');
-    expect(phone).toMatch(/select[\s\S]*min-height:\s*44px/);
+    // Choice lists stand as tall as the buttons (owner, 2026-10-24, docs
+    // §101): native selects were 44px and select triggers 33px beside
+    // 28.9px buttons.
+    const choice = phone.slice(phone.indexOf("html:root select:not([multiple]):not([size])"));
+    expect(choice).toMatch(/^html:root select:not\(\[multiple\]\):not\(\[size\]\),\s*html:root button\[role='combobox'\] \{\s*height: calc\(30\.458px \* var\(--button-y\)\);\s*min-height: calc\(30\.458px \* var\(--button-y\)\);/);
+    expect(phone).not.toMatch(/\bselect \{\s*min-height:\s*44px/);
   });
 });

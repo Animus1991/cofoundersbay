@@ -1219,11 +1219,11 @@ export default function ProfileEditPage() {
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="pe-f3" className="text-sm font-medium"><BilingualText en="Hourly Rate (optional)" el="Ωριαία αμοιβή (προαιρετικά)" compact /></label>
+                        <label htmlFor="pe-f3" className="text-sm font-medium"><BilingualText en="Hourly rate in euros (optional)" el="Ωριαία αμοιβή σε ευρώ (προαιρετικά)" compact /></label>
                         <Input id="pe-f3"
                           value={form.hourlyRate}
                           onChange={(e) => updateField('hourlyRate', e.target.value)}
-                          placeholder={sayOne('e.g., $100/hour or Free', 'π.χ. 100$/ώρα ή Δωρεάν')}
+                          placeholder={sayOne('e.g., €100/hour or Free', 'π.χ. 100 €/ώρα ή Δωρεάν')}
                         />
                       </div>
                     </div>

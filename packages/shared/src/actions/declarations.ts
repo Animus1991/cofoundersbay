@@ -2180,7 +2180,7 @@ export const ACTION_DECLARATIONS = [
       { name: 'sessionDuration', type: 'number', required: false, description: { en: 'Default session length in minutes (15 to 120).', el: 'Προεπιλεγμένη διάρκεια συνεδρίας σε λεπτά (15 έως 120).' } },
       { name: 'yearsExperience', type: 'number', required: false, description: { en: 'Years of experience.', el: 'Χρόνια εμπειρίας.' } },
       { name: 'isFree', type: 'boolean', required: false, description: { en: 'Whether sessions are free.', el: 'Αν οι συνεδρίες είναι δωρεάν.' } },
-      { name: 'hourlyRateUsd', type: 'number', required: false, description: { en: 'Hourly rate in USD when sessions are paid.', el: 'Ωριαία αμοιβή σε USD όταν οι συνεδρίες χρεώνονται.' } },
+      { name: 'hourlyRateEur', type: 'number', required: false, description: { en: 'Hourly rate in euros when sessions are paid.', el: 'Ωριαία αμοιβή σε ευρώ όταν οι συνεδρίες χρεώνονται.' } },
     ],
     writes: false,
     invalidates: [],

@@ -57,7 +57,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
 
   // ── Discovery ──
   { path: '/matches', title: 'Matches', description: 'AI-ranked co-founder and team matches based on your profile compatibility.', helpId: 'matches', helpTitle: 'How matching works', helpTitleEl: 'Πώς γίνεται η αντιστοίχιση', section: 'Explore', priority: 'critical', status: 'complete' },
-  { path: '/matches/compare', title: 'Compare profiles', description: 'Side-by-side comparison of skills, stage, and fit.', section: 'Explore', status: 'partial' },
+  { path: '/matches/compare', title: 'Compare matches', description: 'Up to three of your matches on the matching dimensions: who leads where, strengths and considerations.', section: 'Explore', status: 'complete' },
   { path: '/discover', title: 'Explore', description: 'Discover founders, mentors, investors, and team members with filters for role, skills, and location.', helpId: 'discover', helpTitle: 'How discovery works', helpTitleEl: 'Πώς λειτουργεί η εξερεύνηση', section: 'Explore', status: 'complete' },
   { path: '/recommendations', title: 'For you', description: 'Personalized suggestions based on your profile and activity.', helpId: 'recommendations', helpTitle: 'How these picks are ranked', helpTitleEl: 'Πώς κατατάσσονται αυτές οι προτάσεις', section: 'Explore', status: 'complete' },
   { path: '/search', title: 'Search', description: 'Find people, mentors, jobs, events, groups and opportunities.', helpId: 'search', helpTitle: 'What you can find here', helpTitleEl: 'Τι μπορείτε να βρείτε εδώ', section: 'Explore', status: 'complete' },

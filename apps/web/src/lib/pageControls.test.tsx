@@ -512,6 +512,7 @@ describe('pages that offer controls', () => {
     const COVERED_BY: Record<string, string> = {
       'src/components/messaging/ConversationList.tsx': 'src/app/messages/page.tsx',
       'src/components/messaging/ChatWindow.tsx': 'src/app/messages/page.tsx',
+      'src/components/profile/ProfileMoreMenu.tsx': 'src/app/profiles/[userId]/ProfileContent.tsx',
     };
     const EXEMPT: Record<string, string> = {
       'src/app/research/[boardId]/page.tsx': 'the canvas; board work is the canvas_command capability',

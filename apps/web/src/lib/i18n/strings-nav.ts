@@ -312,7 +312,7 @@ export const NAV_DESCRIPTION_EL: Record<string, string> = {
   '/endorsements':
     'Δεξιότητες που επικυρώθηκαν από άλλους',
   '/matches/compare':
-    'Σύγκριση δύο προφίλ παράλληλα',
+    'Οι αντιστοιχίσεις σας στις διαστάσεις της αντιστοίχισης',
   '/learning':
     'Μαθήματα και διαδρομές μάθησης',
   '/marketplace':

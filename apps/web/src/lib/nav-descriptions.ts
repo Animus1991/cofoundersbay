@@ -63,7 +63,7 @@ export const NAV_LINK_DESCRIPTIONS: Record<string, string> = {
   '/connections': 'Pending and active connections',
   '/shortlist': 'Profiles you saved',
   '/endorsements': 'Skills others validated for you',
-  '/matches/compare': 'Compare two profiles side by side',
+  '/matches/compare': 'Your matches on the matching dimensions',
   '/learning': 'Courses and learning paths',
   '/marketplace': 'Legal, design, and growth services',
   '/jobs': 'Open roles at startups',

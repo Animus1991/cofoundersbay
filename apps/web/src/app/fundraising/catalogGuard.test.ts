@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEMO_INVESTORS } from '@/lib/demo/investors-world';
 import {
   FUNDRAISING_SEED_DOCS,
   FUNDRAISING_SEED_LEADS,
@@ -22,7 +23,18 @@ describe('fundraising catalogue lockstep', () => {
     expect(stats.active).toBe(2);
     expect(stats.committed).toBe(1);
     expect(stats.conversion).toBe(33);
-    expect(FUNDRAISING_SEED_LEADS.map((l) => l.id)).toEqual(['ata', 'athens-network', 'remaining-close']);
+    expect(FUNDRAISING_SEED_LEADS.map((l) => l.id)).toEqual(['ata', 'irini-kosta', 'michalis-theodorou']);
+  });
+
+  it('lists only investors as contacts, people from the demo directory', () => {
+    // An introduction still to come and the round's open amount were listed
+    // as contacts (docs §101).
+    expect(FUNDRAISING_SEED_LEADS.some((l) => /intro|remaining/i.test(l.name))).toBe(false);
+    for (const lead of FUNDRAISING_SEED_LEADS.filter((l) => l.firm)) {
+      const person = DEMO_INVESTORS.find((i) => i.displayName === lead.name);
+      expect(person?.firmName).toBe(lead.firm);
+      expect(lead.href).toBe(`/profiles/${person?.userId}`);
+    }
   });
 
   it('never shows a round investor count that disagrees with committed leads', () => {

@@ -91,6 +91,9 @@ export default function MentorProfilePage() {
   const [sessionFormats, setSessionFormats] = useState<string[]>(['video']);
   const [isFree, setIsFree] = useState(true);
   const [hourlyRate, setHourlyRate] = useState('');
+  // The currency the rate was last saved in. Mentor fees are in euros (docs
+  // §101); a rate saved in another currency says so before it is resaved.
+  const [savedCurrency, setSavedCurrency] = useState<string | null>(null);
   const [isAccepting, setIsAccepting] = useState(true);
   const [headline, setHeadline] = useState('');
   const [bio, setBio] = useState('');
@@ -153,6 +156,7 @@ export default function MentorProfilePage() {
     if (saved.sessionFormats?.length) setSessionFormats(saved.sessionFormats);
     if (typeof saved.isFree === 'boolean') setIsFree(saved.isFree);
     setHourlyRate(centsToDollars(saved.hourlyRate));
+    setSavedCurrency(saved.hourlyRate ? (saved.currency ?? null) : null);
     if (typeof saved.isAcceptingRequests === 'boolean') setIsAccepting(saved.isAcceptingRequests);
     setYearsExp(yearsToOption(saved.yearsExperience));
     setSessionDuration(stepToOption(saved.sessionDuration, DURATION_STEPS, '30'));
@@ -181,7 +185,7 @@ export default function MentorProfilePage() {
       const years = readNumber(f.yearsExperience);
       if (years !== null) setYearsExp(yearsToOption(years));
       const free = readFlag(f.isFree);
-      const rate = readNumber(f.hourlyRateUsd);
+      const rate = readNumber(f.hourlyRateEur);
       if (free !== null) setIsFree(free);
       if (rate !== null && rate > 0) {
         setHourlyRate(String(rate));
@@ -207,6 +211,7 @@ export default function MentorProfilePage() {
         sessionFormats: sessionFormats.filter((f): f is 'video' | 'in_person' | 'async' => SESSION_FORMATS.includes(f)),
         isFree,
         hourlyRate: isFree ? null : dollarsToCents(hourlyRate),
+        currency: 'EUR',
         isAcceptingRequests: isAccepting,
         yearsExperience: yearsExp === '20+' ? 20 : Number(yearsExp),
         sessionDuration: Number(sessionDuration),
@@ -293,7 +298,7 @@ export default function MentorProfilePage() {
                 <BilingualText key="len" en={`${sessionDuration} min sessions`} el={`Συνεδρίες ${sessionDuration} λεπτών`} compact />,
                 <BilingualText key="hours" en={`${hoursPerWeek}h/week`} el={`${hoursPerWeek} ώρες/εβδομάδα`} compact />,
                 <span key="price" className={cn(isFree && 'text-status-success')}>
-                  {isFree ? <BilingualText en="Free" el="Δωρεάν" compact /> : <BilingualText en={`$${hourlyRate}/hr`} el={`$${hourlyRate}/ώρα`} compact />}
+                  {isFree ? <BilingualText en="Free" el="Δωρεάν" compact /> : <BilingualText en={`€${hourlyRate}/hr`} el={`€${hourlyRate}/ώρα`} compact />}
                 </span>,
               ]}
             />
@@ -498,9 +503,9 @@ export default function MentorProfilePage() {
                 </div>
                 {!isFree && (
                   <div className="space-y-2">
-                    <Label htmlFor="hourlyRate"><BilingualText en="Hourly Rate (USD)" el="Ωριαία αμοιβή (USD)" compact /></Label>
+                    <Label htmlFor="hourlyRate"><BilingualText en="Hourly Rate (EUR)" el="Ωριαία αμοιβή (EUR)" compact /></Label>
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground text-sm">$</span>
+                      <span className="text-muted-foreground text-sm">€</span>
                       <Input id="hourlyRate"
                         type="number"
                         value={hourlyRate}
@@ -511,6 +516,15 @@ export default function MentorProfilePage() {
                       />
                       <span className="text-sm text-muted-foreground"><BilingualText en="per hour" el="την ώρα" compact /></span>
                     </div>
+                    {savedCurrency && savedCurrency !== 'EUR' ? (
+                      <p className="text-xs text-status-warning">
+                        <BilingualText
+                          en={`Your rate was saved in ${savedCurrency}. Rates are in euros now: check the amount, then save.`}
+                          el={`Η αμοιβή σας είχε αποθηκευτεί σε ${savedCurrency}. Οι αμοιβές είναι πλέον σε ευρώ: ελέγξτε το ποσό και αποθηκεύστε.`}
+                          wrap
+                        />
+                      </p>
+                    ) : null}
                   </div>
                 )}
                 <div className="space-y-2">

@@ -6,8 +6,6 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Activity,
   AlertTriangle,
-  BarChart3,
-  Building2,
   ChevronRight,
   CreditCard,
   Database,
@@ -499,14 +497,16 @@ export default function AdminDashboardPage() {
               )}
             </SectionCard>
 
+{/* The admin pages this overview does not already open: Console and
+                Organisations are in the bar above, Analytics on "Users by
+                role". Security and User management have no other entry here
+                (docs §101). */}
             <QuickLinks
-              label="Admin sections"
+              label="More admin pages"
+              labelEl="Περισσότερες σελίδες διαχείρισης"
               links={[
-                { href: '/admin', icon: Flag, label: 'Moderation console', labelEl: 'Κονσόλα ελέγχου' },
-                { href: '/admin/user-management', icon: Users, label: 'User management', labelEl: 'Διαχείριση χρηστών' },
-                { href: '/admin/tenants', icon: Building2, label: 'Organisations', labelEl: 'Οργανισμοί' },
                 { href: '/admin/security-monitoring', icon: Shield, label: 'Security', labelEl: 'Ασφάλεια' },
-                { href: '/admin/analytics', icon: BarChart3, label: 'Analytics', labelEl: 'Αναλυτικά' },
+                { href: '/admin/user-management', icon: Users, label: 'User management', labelEl: 'Διαχείριση χρηστών' },
                 { href: '/admin/audit-log', icon: ScrollText, label: 'Audit log', labelEl: 'Αρχείο ελέγχου' },
                 { href: '/admin/billing', icon: CreditCard, label: 'Billing', labelEl: 'Χρεώσεις' },
               ]}

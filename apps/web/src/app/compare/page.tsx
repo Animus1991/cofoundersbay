@@ -15,6 +15,7 @@ import {
   Share2,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
@@ -460,6 +461,24 @@ export default function ComparePage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <ComparisonChart profiles={profiles} />
             <SkillsComparison profiles={profiles} />
+          </div>
+        )}
+
+        {/* The other comparison: this page puts profiles side by side (any
+            member); Compare matches puts your matches on the engine's
+            dimensions. Two pages, two different readings (docs §101). */}
+        {profiles && profiles.length >= 2 && (
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <p>
+              <BilingualText
+                en="Compare matches puts your matches among these people on the matching dimensions: who leads where, with strengths and considerations."
+                el="Η Σύγκριση αντιστοιχίσεων βάζει όσους από αυτούς είναι αντιστοιχίσεις σας στις διαστάσεις της αντιστοίχισης: ποιος προηγείται πού, με δυνατά σημεία και επιφυλάξεις."
+                wrap
+              />
+            </p>
+            <Link href={`/matches/compare?ids=${profiles.slice(0, 3).map((p) => encodeURIComponent(p.id)).join(',')}`} className="inline-block text-primary-accessible hover:underline">
+              <BilingualText en="Open Compare matches" el="Άνοιγμα Σύγκρισης αντιστοιχίσεων" compact />
+            </Link>
           </div>
         )}
       </div>

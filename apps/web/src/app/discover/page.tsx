@@ -11,7 +11,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   LayoutGrid,
   List,
-  Sparkles,
   TrendingUp,
   Users,
   ArrowRight,
@@ -44,6 +43,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { AnimatedList } from '@/components/common/AnimatedList';
 import { SearchFilters, type SearchFiltersValues } from '@/components/discover/SearchFilters';
 import { ProfileCard, ProfileCardSkeleton, type ProfileCardData } from '@/components/discover/ProfileCard';
+import { FailedLine } from '@/components/dashboard/SectionCard';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { discoverEn, discoverEl } from '@/lib/i18n/strings-discover';
@@ -92,7 +92,6 @@ const PLATFORM_STAT_SLOTS = [
 ];
 
 type MatchReasonType = 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
-type MatchReason = { type: MatchReasonType; text: string; score: number };
 
 /*
  * `buildMatchReasons` used to turn one score into a list of specific claims:
@@ -152,7 +151,10 @@ export default function DiscoverPage() {
   // toast that went away (docs §86).
   const [searchFailed, setSearchFailed] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [activeTab, setActiveTab] = useState<'search' | 'suggestions' | 'matches'>('search');
+  // Two tabs: "For You" and "Top Matches" listed the same eight people
+  // from the same read (`getRecommendations`), one as profile cards, one as
+  // match cards; they are one tab now (docs §101).
+  const [activeTab, setActiveTab] = useState<'search' | 'matches'>('search');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
 
   // Connection request dialog
@@ -198,13 +200,13 @@ export default function DiscoverPage() {
   }, [router]);
 
   const hasToken = useIsAuthenticated();
-  const { data: recommendationsData, isLoading: suggestionsLoading } = useQuery({
+  const { data: recommendationsData, isLoading: suggestionsLoading, isError: suggestionsFailed, isFetching: suggestionsFetching, refetch: refetchSuggestions } = useQuery({
     queryKey: qk('recommendations', { limit: 8 }),
     queryFn: () => getRecommendations({ limit: 8 }),
     staleTime: 3 * 60_000,
     enabled: hasToken,
   });
-  const suggestions: SearchHit[] = (recommendationsData?.suggestions ?? []) as SearchHit[];
+  const suggestions = useMemo(() => (recommendationsData?.suggestions ?? []) as SearchHit[], [recommendationsData]);
 
   // The matches tab explains each person as /matches does (lib/match-explain),
   // from the reader's own profile, on the key the dashboards share.
@@ -261,6 +263,12 @@ export default function DiscoverPage() {
     retry: 0,
   });
   const suggestionsLoaded = !suggestionsLoading;
+  // The match cards, best score first: "Top Matches" promised the highest
+  // compatibility and listed them in the order they came.
+  const matchList = useMemo(
+    () => suggestions.filter((hit) => !passedMatchIds.has(hit.id)).sort((a, b) => (b.matchScore ?? -1) - (a.matchScore ?? -1)),
+    [suggestions, passedMatchIds],
+  );
 
   // Search function
   const runSearch = useCallback(async () => {
@@ -441,22 +449,22 @@ export default function DiscoverPage() {
   const { promoted: promotedHits, organic: filteredHits } = splitPromoted(roleHits, activeTab === 'search' ? promotedIds : []);
 
   const askAi = {
-    en: `Discover (${activeTab === 'suggestions' ? 'For You' : activeTab === 'matches' ? 'Top Matches' : 'Search'}): ${roleHits.length} search results${roleFilter !== 'all' ? `, role filter ${roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} recommendations. Who should I shortlist or message next, and which filters would find a complementary technical cofounder?`,
-    el: `Ανακάλυψη (${activeTab === 'suggestions' ? 'Για εσάς' : activeTab === 'matches' ? 'Κορυφαίες αντιστοιχίσεις' : 'Αναζήτηση'}): ${roleHits.length} αποτελέσματα αναζήτησης${roleFilter !== 'all' ? `, φίλτρο ρόλου ${statusEl(roleFilter) ?? roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} προτάσεις. Ποιον να κρατήσω ή σε ποιον να γράψω μετά, και ποια φίλτρα θα έβρισκαν συμπληρωματικό τεχνικό συνιδρυτή;`,
+    en: `Discover (${activeTab === 'matches' ? 'Top Matches' : 'Search'}): ${roleHits.length} search results${roleFilter !== 'all' ? `, role filter ${roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} recommendations. Who should I shortlist or message next, and which filters would find a complementary technical cofounder?`,
+    el: `Ανακάλυψη (${activeTab === 'matches' ? 'Κορυφαίες αντιστοιχίσεις' : 'Αναζήτηση'}): ${roleHits.length} αποτελέσματα αναζήτησης${roleFilter !== 'all' ? `, φίλτρο ρόλου ${statusEl(roleFilter) ?? roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} προτάσεις. Ποιον να κρατήσω ή σε ποιον να γράψω μετά, και ποια φίλτρα θα έβρισκαν συμπληρωματικό τεχνικό συνιδρυτή;`,
   };
 
 
   // Offered to the assistant: the tab, role, sort, layout and reset, and
   // each result's Connect (which opens the same request dialog), Message
   // and Save - over the people on the tab that is showing.
-  const shown = activeTab === 'search' ? roleHits : suggestions;
+  const shown = activeTab === 'search' ? roleHits : matchList;
   const byName = (list: SearchHit[]) => rowOptions(list, (h) => h.id, (h) => h.displayName);
   const hitById = (id?: string) => shown.find((h) => h.id === id);
   usePageList([
     {
       id: 'people',
-      labelEn: activeTab === 'search' ? 'Search results' : 'Suggested people',
-      labelEl: activeTab === 'search' ? 'Αποτελέσματα αναζήτησης' : 'Προτεινόμενα άτομα',
+      labelEn: activeTab === 'search' ? 'Search results' : 'Top matches',
+      labelEl: activeTab === 'search' ? 'Αποτελέσματα αναζήτησης' : 'Κορυφαίες αντιστοιχίσεις',
       rows: (activeTab === 'search' ? loading : suggestionsLoading) ? undefined : shown.map((h) =>
         `${h.displayName}${h.role ? ` · ${h.role}` : ''}${h.headline ? ` · ${h.headline}` : ''}${h.location ? ` · ${h.location}` : ''}${h.matchScore != null ? ` · match ${h.matchScore}%` : ''}`,
       ),
@@ -466,9 +474,8 @@ export default function DiscoverPage() {
   usePageControls([
     choiceControl('discover_tab', 'Discover section', 'Ενότητα ανακάλυψης', [
       { value: 'search', en: 'Search', el: 'Αναζήτηση' },
-      { value: 'suggestions', en: 'Suggestions', el: 'Προτάσεις' },
-      { value: 'matches', en: 'Matches', el: 'Αντιστοιχίσεις' },
-    ], activeTab, (v) => { setActiveTab(v as typeof activeTab); setRoleFilter('all'); }),
+      { value: 'matches', en: 'Top matches', el: 'Κορυφαίες αντιστοιχίσεις' },
+    ], activeTab, (v) => { setActiveTab(v === 'search' ? 'search' : 'matches'); setRoleFilter('all'); }),
     choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', ROLE_FILTERS.map((r) => ({ value: r.value, en: r.labelEn, el: r.labelEl })), roleFilter, (v) => setRoleFilter(v as RoleFilter)),
     choiceControl('sort', 'Sort results', 'Ταξινόμηση αποτελεσμάτων', [
       { value: 'relevance', en: 'Most relevant', el: 'Πιο σχετικά' },
@@ -499,7 +506,7 @@ export default function DiscoverPage() {
     // "Featured profiles · Top matches for your profile" strip listed the
     // first four search results, the same four cards drawn right under it
     // (docs §86).
-    ...(bestMatches.length ? [{
+    ...(bestMatches.length && activeTab === 'search' ? [{
       id: 'best',
       glyph: 'matches' as const,
       labelEn: 'Best matches',
@@ -598,10 +605,6 @@ export default function DiscoverPage() {
               <TabsTrigger value="search" className="min-h-10 flex-1 gap-1.5 px-2.5 text-xs sm:flex-none sm:gap-2 sm:px-3 sm:text-sm">
                 <Users className="icon-sm hidden sm:block" />
                 <BilingualText en={discoverEn('search')} el={discoverEl('search')} compact />
-              </TabsTrigger>
-              <TabsTrigger value="suggestions" className="min-h-10 flex-1 gap-1.5 px-2.5 text-xs sm:flex-none sm:gap-2 sm:px-3 sm:text-sm">
-                <Sparkles className="icon-sm hidden sm:block" />
-                <BilingualText en={discoverEn('for_you')} el={discoverEl('for_you')} compact />
               </TabsTrigger>
               <TabsTrigger value="matches" className="min-h-10 flex-1 gap-1.5 px-2.5 text-xs sm:flex-none sm:gap-2 sm:px-3 sm:text-sm">
                 <TrendingUp className="icon-sm hidden sm:block" />
@@ -740,48 +743,56 @@ export default function DiscoverPage() {
           )}
         </TabsContent>
 
-        {/* Suggestions Tab */}
-        <TabsContent value="suggestions" className="space-y-6 mt-6">
+        {/* Top Matches: the people the engine suggests, best score first,
+            each with its reasons, Pass and the person's one action. */}
+        <TabsContent value="matches" className="space-y-6 mt-6">
           <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="min-w-0">
-                <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
-                  <Sparkles className="icon-md shrink-0 text-muted-foreground" />
-                  <BilingualText en="Suggested for you" el="Προτάσεις για εσάς" compact />
+                <h2 className="text-base font-semibold text-foreground">
+                  <BilingualText en="Your top matches" el="Οι κορυφαίες αντιστοιχίσεις σας" compact />
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  <BilingualText en="Based on your profile and preferences" el="Με βάση το προφίλ και τις προτιμήσεις σας" compact wrap />
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  <BilingualText
-                    en="Score breakdown and feedback live in the full view"
-                    el="Αναλυτική βαθμολογία και σχόλια στην πλήρη προβολή"
-                    compact
-                  />
+                  <BilingualText en="From your profile and preferences, highest compatibility first" el="Από το προφίλ και τις προτιμήσεις σας, πρώτα η υψηλότερη συμβατότητα" wrap />
                 </p>
               </div>
-              <Button variant="outline" size="sm" className="shrink-0 gap-1.5" asChild>
-                <Link href="/recommendations">
-                  <BilingualText en="Open full view" el="Πλήρης προβολή" compact />
-                  <ArrowRight className="icon-sm" aria-hidden="true" />
-                </Link>
-              </Button>
+              {matchList.length > 0 ? (
+                <Button variant="outline" size="sm" className="shrink-0 gap-1.5" asChild>
+                  <Link href="/matches">
+                    <BilingualText en="All matches" el="Όλες οι αντιστοιχίσεις" compact />
+                    <ArrowRight className="icon-sm" aria-hidden="true" />
+                  </Link>
+                </Button>
+              ) : null}
           </div>
 
           {!suggestionsLoaded && (
-            <div className={cn(
-              'grid grid-cols-1 gap-4',
-              viewMode === 'grid' ? 'md:grid-cols-2' : 'grid-cols-1'
-            )}>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {[...Array(4)].map((_, i) => (
                 <ProfileCardSkeleton key={i} variant="featured" />
               ))}
             </div>
           )}
 
-          {suggestionsLoaded && suggestions.length === 0 && (
+          {suggestionsLoaded && suggestionsFailed && !recommendationsData && (
+            <FailedLine
+              en="Your matches could not be read just now."
+              el="Οι αντιστοιχίσεις σας δεν διαβάστηκαν αυτή τη στιγμή."
+              busy={suggestionsFetching}
+              onRetry={() => void refetchSuggestions()}
+            />
+          )}
+
+          {suggestionsLoaded && !suggestionsFailed && matchList.length === 0 && (
             <EmptyState
-              title={<BilingualText en="No suggestions yet" el="Καμία πρόταση ακόμη" compact wrap />}
-              illustration="rocket"
+              title={<BilingualText en={suggestions.length ? 'You passed on every match' : 'No matches yet'} el={suggestions.length ? 'Παραλείψατε όλες τις αντιστοιχίσεις' : 'Καμία αντιστοίχιση ακόμη'} compact wrap />}
+              description={
+                <BilingualText
+                  en="Matches come from your profile: what you build, what you look for, your stage and commitment. The more it says, the better they are; Search finds anyone meanwhile."
+                  el="Οι αντιστοιχίσεις βγαίνουν από το προφίλ σας: τι φτιάχνετε, τι ψάχνετε, το στάδιο και τη δέσμευσή σας. Όσο περισσότερα λέει, τόσο καλύτερες· η Αναζήτηση βρίσκει οποιονδήποτε στο μεταξύ."
+                  wrap
+                />
+              }
+              illustration="connection"
               askAiPrompt={ASK.discoverNoSuggestions}
               action={
                 <Button className="gap-2" asChild>
@@ -794,88 +805,13 @@ export default function DiscoverPage() {
             />
           )}
 
-          {suggestionsLoaded && suggestions.length > 0 && (
-            <AnimatedList
-              animation="fade-in-up"
-              staggerDelay={75}
-              className={cn(
-                'grid grid-cols-1 gap-6',
-                viewMode === 'grid' ? 'md:grid-cols-2' : 'grid-cols-1'
-              )}
-            >
-              {suggestions.map((hit) => {
-                const profile = hitToProfile(hit);
-                return (
-                  <ProfileCard
-                    key={hit.id}
-                    profile={profile}
-                    variant="featured"
-                    onConnect={() => handleConnect(profile)}
-                    onMessage={() => handleMessage(profile)}
-                    onBookmark={() => handleBookmark(profile)}
-                    {...personActions(profile.userId)}
-                  />
-                );
-              })}
-            </AnimatedList>
-          )}
-        </TabsContent>
-
-        {/* Top Matches Tab */}
-        <TabsContent value="matches" className="space-y-6 mt-6">
-          <div className="flex min-w-0 items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
-                  <TrendingUp className="icon-md shrink-0 text-muted-foreground" />
-                  <BilingualText en="Your top matches" el="Οι κορυφαίες αντιστοιχίσεις σας" compact />
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  <BilingualText en="People with the highest compatibility" el="Άτομα με την υψηλότερη συμβατότητα" compact wrap />
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  <BilingualText
-                    en="The full list and each score's reasoning live in the full view"
-                    el="Η πλήρης λίστα και η αιτιολόγηση κάθε βαθμού στην πλήρη προβολή"
-                    compact
-                  />
-                </p>
-              </div>
-              <Button variant="outline" size="sm" className="shrink-0 gap-1.5" asChild>
-                <Link href="/matches">
-                  <BilingualText en="Open full view" el="Πλήρης προβολή" compact />
-                  <ArrowRight className="icon-sm" aria-hidden="true" />
-                </Link>
-              </Button>
-          </div>
-
-          {!suggestionsLoaded && (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {[...Array(4)].map((_, i) => (
-                <ProfileCardSkeleton key={i} variant="featured" />
-              ))}
-            </div>
-          )}
-
-          {suggestionsLoaded && suggestions.length === 0 && (
-            <EmptyState
-              title={<BilingualText en="No matches yet" el="Καμία αντιστοίχιση ακόμη" compact wrap />}
-              illustration="connection"
-              askAiPrompt={ASK.discoverMatchesEmpty}
-              action={
-                <Button onClick={() => setActiveTab('search')}>
-                  <BilingualText en="Explore profiles" el="Εξερεύνηση προφίλ" compact />
-                </Button>
-              }
-            />
-          )}
-
-          {suggestionsLoaded && suggestions.length > 0 && (
+          {suggestionsLoaded && matchList.length > 0 && (
             <AnimatedList
               animation="scale-in"
               staggerDelay={100}
               className="grid grid-cols-1 gap-6 md:grid-cols-2"
             >
-              {suggestions.filter((hit) => !passedMatchIds.has(hit.id)).slice(0, 6).map((hit) => {
+              {matchList.map((hit) => {
                 const profile = hitToProfile(hit);
                 const matchReasons = (hit.matchReasons ?? [])
                   .map((text) => ({ type: 'skills' as MatchReasonType, text, score: 0 }));
@@ -886,6 +822,7 @@ export default function DiscoverPage() {
                     userId={hit.userId}
                     displayName={hit.displayName}
                     headline={hit.headline}
+                    bio={hit.bio}
                     avatarUrl={hit.avatarUrl}
                     role={hit.role}
                     location={hit.location}
