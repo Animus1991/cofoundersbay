@@ -16,6 +16,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailQueueService } from '../mailer/email-queue.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { OrganizationService } from './organization.service';
+import { assertOrgSeat } from '../billing/org-billing.service';
 
 const DAY = 86_400_000;
 
@@ -97,6 +98,8 @@ export class OrganizationInvitationsService {
       select: { id: true },
     });
     if (open) throw refusal('already_invited');
+    // A plan with seats counts the invitations still waiting (docs §104).
+    await assertOrgSeat(this.prisma, orgId, true);
 
     const token = randomBytes(24).toString('base64url');
     const row = await this.prisma.organizationInvitation.create({
@@ -178,6 +181,7 @@ export class OrganizationInvitationsService {
         where: { organizationId_userId: { organizationId: row.organizationId, userId } },
       });
       if (existing?.isActive) throw refusal('already_member');
+      await assertOrgSeat(tx, row.organizationId);
       if (existing && !existing.isActive) {
         await tx.organizationMembership.update({ where: { id: existing.id }, data: { isActive: true, role: row.role as never, invitedBy: row.invitedById } });
       } else if (!existing) {

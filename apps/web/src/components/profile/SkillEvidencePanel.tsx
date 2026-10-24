@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { X } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, X } from 'lucide-react';
 import { SKILL_EVIDENCE_COPY, SKILL_EVIDENCE_LIMITS } from '@cofounderbay/shared';
 import { BilingualText } from '@/components/common/BilingualText';
+import { StatusText } from '@/components/common/StatusText';
+import { bilingualAria } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -25,6 +28,8 @@ export function SkillEvidencePanel({
   userId,
   editable = false,
   declared,
+  levels,
+  addHref,
 }: {
   userId: string;
   editable?: boolean;
@@ -34,6 +39,14 @@ export function SkillEvidencePanel({
    * under it, "Skills with evidence" naming the same skills again (docs §75).
    */
   declared?: readonly string[];
+  /**
+   * The level each declared skill was given, by name. The own profile had a
+   * second card, "Top Skills & Proficiency", that listed the same skills with
+   * their level (docs §101); the level now sits on the skill's row here.
+   */
+  levels?: Readonly<Record<string, string | null | undefined>>;
+  /** Where skills are added or changed (the own profile's editor). */
+  addHref?: string;
 }) {
   const queryClient = useQueryClient();
   const { error: showError } = useToast();
@@ -73,6 +86,11 @@ export function SkillEvidencePanel({
       ]
     : shown;
   const anyBacked = list.some((s) => s.evidence.length > 0 || s.endorsements > 0);
+  const levelOf = (name: string) => {
+    if (!levels) return null;
+    const key = Object.keys(levels).find((k) => k.toLowerCase() === name.toLowerCase());
+    return key ? levels[key] || null : null;
+  };
   if (!skills.isLoading && !list.length && !editable) return null;
 
   const summary = (s: SkillWithEvidence) => {
@@ -89,16 +107,25 @@ export function SkillEvidencePanel({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          {declared
-            ? <BilingualText en="Skills" el="Δεξιότητες" compact />
-            : <BilingualText en="Skills with evidence" el="Δεξιότητες με τεκμήρια" compact />}
-        </CardTitle>
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle>
+            {declared
+              ? <BilingualText en="Skills" el="Δεξιότητες" compact />
+              : <BilingualText en="Skills with evidence" el="Δεξιότητες με τεκμήρια" compact />}
+          </CardTitle>
+          {addHref ? (
+            <Button variant="ghost" size="sm" className="h-8 shrink-0 gap-1 text-xs text-primary-accessible" asChild>
+              <Link href={addHref} aria-label={bilingualAria('Add or change skills', 'Προσθήκη ή αλλαγή δεξιοτήτων')}>
+                <Plus className="icon-sm" aria-hidden="true" /> <BilingualText en="Add" el="Προσθήκη" compact />
+              </Link>
+            </Button>
+          ) : null}
+        </div>
         {editable || !declared || anyBacked ? (
           <CardDescription>
             <BilingualText
-              en={editable ? 'Show where each skill was applied here. Only your own completed work can be linked.' : 'Where each skill was applied on CoFounderBay.'}
-              el={editable ? 'Δείξτε πού εφαρμόστηκε κάθε δεξιότητα εδώ. Συνδέεται μόνο δική σας ολοκληρωμένη δουλειά.' : 'Πού εφαρμόστηκε κάθε δεξιότητα στο CoFounderBay.'}
+              en={editable ? `${levels ? 'Each skill with its level, and ' : 'Show '}where it was applied here. Only your own completed work can be linked.` : 'Where each skill was applied on CoFounderBay.'}
+              el={editable ? `${levels ? 'Κάθε δεξιότητα με το επίπεδό της, και ' : 'Δείξτε '}πού εφαρμόστηκε εδώ. Συνδέεται μόνο δική σας ολοκληρωμένη δουλειά.` : 'Πού εφαρμόστηκε κάθε δεξιότητα στο CoFounderBay.'}
               wrap
             />
           </CardDescription>
@@ -112,7 +139,10 @@ export function SkillEvidencePanel({
             {list.map((s) => (
               <li key={s.name} className="space-y-1.5 py-3 first:pt-0 last:pb-0">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <span className="min-w-0 break-words text-sm font-medium text-foreground">{s.name}</span>
+                  <span className="min-w-0 break-words text-sm font-medium text-foreground">
+                    {s.name}
+                    {levelOf(s.name) ? <span className="font-normal text-muted-foreground"> · <StatusText value={levelOf(s.name) as string} /></span> : null}
+                  </span>
                   <span className="text-xs text-muted-foreground">{summary(s)}</span>
                 </div>
                 {s.evidence.length ? (

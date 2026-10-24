@@ -4,6 +4,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { BillingService } from './billing.service';
+import { OrgBillingService } from './org-billing.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -15,7 +16,10 @@ type RawBodyRequest = Request & { rawBody?: Buffer };
 
 @Controller('billing')
 export class BillingController {
-  constructor(private readonly billing: BillingService) {}
+  constructor(
+    private readonly billing: BillingService,
+    private readonly orgBilling: OrgBillingService,
+  ) {}
 
   // ── Public ─────────────────────────────────────────────────────────────────
 
@@ -54,6 +58,26 @@ export class BillingController {
   @UseGuards(JwtAuthGuard)
   async createPortal(@CurrentUser() user: { id: string }) {
     return this.billing.createPortalSession(user.id);
+  }
+
+  // ── An organisation's plan (docs §104) ─────────────────────────────────────
+
+  @Get('organization/:orgId')
+  @UseGuards(JwtAuthGuard)
+  async getOrganizationBilling(@CurrentUser() user: { id: string }, @Param('orgId') orgId: string) {
+    return this.orgBilling.overview(orgId, user.id);
+  }
+
+  @Post('organization/:orgId/checkout')
+  @UseGuards(JwtAuthGuard)
+  async createOrganizationCheckout(@CurrentUser() user: { id: string }, @Param('orgId') orgId: string, @Body() body?: Record<string, unknown>) {
+    return this.orgBilling.checkout(orgId, user.id, body ?? {});
+  }
+
+  @Post('organization/:orgId/portal')
+  @UseGuards(JwtAuthGuard)
+  async createOrganizationPortal(@CurrentUser() user: { id: string }, @Param('orgId') orgId: string) {
+    return this.orgBilling.portal(orgId, user.id);
   }
 
   // ── Billing contact (user-level subscription) ──────────────────────────────

@@ -41,8 +41,6 @@ import {
   Award,
   Activity,
   FolderOpen,
-  Plus,
-  BarChart3,
   Calendar,
   MessageSquare,
   User,
@@ -59,7 +57,6 @@ import { useMyBadges } from '@/hooks/useGamification';
 import { formatDate } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -299,7 +296,6 @@ export default function ProfilePage() {
   const { success } = useToast();
   // The skills card showed six and offered to show all of them; the rest were
   // unreachable because the offer had no handler behind it.
-  const [showAllSkills, setShowAllSkills] = React.useState(false);
 
   // Verification and "Open to" as Settings holds them (shared cache keys).
   const trust = useMyTrust();
@@ -396,9 +392,7 @@ export default function ProfilePage() {
     { id: 'edit_profile', labelEn: profileEn('edit_profile'), labelEl: profileEl('edit_profile'), writes: false, run: () => router.push('/profile/edit') },
     { id: 'open_settings', labelEn: 'Open account settings', labelEl: 'Άνοιγμα ρυθμίσεων λογαριασμού', writes: false, run: () => router.push('/settings') },
     { id: 'open_reputation', labelEn: profileEn('view_reputation'), labelEl: profileEl('view_reputation'), writes: false, run: () => router.push('/reputation') },
-    ...(profile?.skills && profile.skills.length > 6
-      ? [{ id: 'toggle_all_skills', labelEn: 'Show all skills', labelEl: 'Εμφάνιση όλων των δεξιοτήτων', writes: false, run: () => setShowAllSkills((v: boolean) => !v) }]
-      : []),
+    // The one skills card shows every skill, so there is no "Show all skills" to press (docs §101).
   ]);
   // What the page shows, so "what is my profile missing?" is answered from
   // the same list the rail draws rather than from a guess.
@@ -691,8 +685,18 @@ export default function ProfilePage() {
           <ProfileActivity userId={profile.userId} own />
           <ProfileExperience payload={rolePayload} own />
 
-          {/* Skills tied to the work that shows them */}
-          {meId ? <SkillEvidencePanel userId={meId} editable /> : null}
+          {/* The one skills card: each skill once, with its level and the
+              work that shows it. "Top Skills & Proficiency" listed the same
+              skills again with their level (docs §101). */}
+          {meId ? (
+            <SkillEvidencePanel
+              userId={meId}
+              editable
+              declared={(profile.skills ?? []).map((sk) => sk.skillName).filter((n): n is string => typeof n === 'string' && n.trim() !== '')}
+              levels={Object.fromEntries((profile.skills ?? []).map((sk) => [sk.skillName ?? '', sk.level]))}
+              addHref="/profile/edit#skills"
+            />
+          ) : null}
 
           {/* Portfolio placeholder. It used to stretch to the right column's
               height, which drew a 550px dashed box around one line of text;
@@ -810,59 +814,6 @@ export default function ProfilePage() {
             <div className="animate-fade-in stagger-2">
               <RoleDetails role={profile.role} payload={rolePayload} />
             </div>
-          )}
-
-          {/* Skill proficiency bars */}
-          {profile.skills && profile.skills.length > 0 && (
-            <Card className="animate-fade-in stagger-3">
-              <CardHeader>
-                <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="icon-md text-muted-foreground" aria-hidden="true" />
-                    <BilingualText en={profileEn('top_skills')} el={profileEl('top_skills')} />
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible" asChild>
-                    <Link href="/profile/edit#skills">
-                      <Plus className="icon-sm" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {/* A level shows only when the person declared one. The bars
-                    used to invent both a level and a percentage from the
-                    skill's place in the list. */}
-                <ul className="grid grid-cols-1 gap-x-8 sm:grid-cols-2 [@container(min-width:72rem)]:grid-cols-1">
-                  {(showAllSkills ? profile.skills : profile.skills.slice(0, 6)).map((s, i) => (
-                    <li key={s.skillId ?? s.skillName ?? i} className="flex min-w-0 items-center justify-between gap-3 border-b border-border py-2.5">
-                      <span className="min-w-0 truncate text-sm font-medium text-foreground">{s.skillName}</span>
-                      {s.level ? (
-                        <Badge variant="secondary" size="sm" className="shrink-0 bg-background"><StatusText value={s.level} /></Badge>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-                {profile.skills.length > 6 && (
-                  <div className="mt-4 pt-4 border-t border-border">
-                    {/* It offered to show all of them and did nothing; the six
-                        after the sixth were simply unreachable. */}
-                    <Button
-                      variant="link"
-                      size="sm"
-                      className="text-muted-foreground h-auto p-0"
-                      aria-expanded={showAllSkills}
-                      onClick={() => setShowAllSkills((shown: boolean) => !shown)}
-                    >
-                      {showAllSkills ? (
-                        <BilingualText en="Show fewer" el="Εμφάνιση λιγότερων" />
-                      ) : (
-                        <BilingualText en={`${profileEn('show_all_skills')} ${profile.skills.length} ${profileEn('skills_suffix')}`} el={`${profileEl('show_all_skills')} ${profile.skills.length} ${profileEl('skills_suffix')}`} />
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           )}
 
           </div>

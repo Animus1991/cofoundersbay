@@ -13,7 +13,6 @@ export const DISCOVER_STRINGS: Record<string, BilingualPair> = {
 
   // tabs
   search: { en: 'Search', el: 'Αναζήτηση' },
-  for_you: { en: 'For You', el: 'Για εσάς' },
   top_matches: { en: 'Top Matches', el: 'Κορυφαίες αντιστοιχίσεις' },
 
   // role filters

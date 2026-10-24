@@ -442,13 +442,12 @@ export default function IncubatorDashboard() {
           </div>
 
           <div className="space-y-6">
+{/* The role's pages this home does not already open from a tile or a section: the rest were listed twice on one screen (docs §101). */}
             <QuickLinks
               label="Organisation pages"
               labelEl="Σελίδες οργανισμού"
               links={[
-                { href: '/org/applications', icon: UserPlus, label: 'Review applications', labelEl: 'Αξιολόγηση αιτήσεων' },
                 { href: '/org/cohorts', icon: Users, label: 'Cohorts', labelEl: 'Κύκλοι' },
-                { href: '/org/mentors', icon: GraduationCap, label: 'Manage mentors', labelEl: 'Μέντορες' },
                 { href: '/org/analytics', icon: BarChart3, label: 'Cohort reports', labelEl: 'Αναφορές' },
                 { href: '/org/settings', icon: Settings, label: 'Organisation settings', labelEl: 'Ρυθμίσεις οργανισμού' },
               ]}

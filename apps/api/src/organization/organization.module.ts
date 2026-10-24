@@ -9,11 +9,12 @@ import { MailerModule } from '../mailer/mailer.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { OrganizationInvitationsService } from './organization-invitations.service';
 import { OrganizationInvitationsController } from './organization-invitations.controller';
+import { OrganizationPoliciesService } from './organization-policies.service';
 
 @Module({
   imports: [PrismaModule, ConfigModule, MailerModule, NotificationsModule],
   controllers: [OrganizationController, ProgramController, OrganizationInvitationsController],
-  providers: [OrganizationService, ProgramService, OrganizationInvitationsService],
-  exports: [OrganizationService, ProgramService],
+  providers: [OrganizationService, ProgramService, OrganizationInvitationsService, OrganizationPoliciesService],
+  exports: [OrganizationService, ProgramService, OrganizationPoliciesService],
 })
 export class OrganizationModule {}

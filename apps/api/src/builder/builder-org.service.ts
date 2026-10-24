@@ -5,6 +5,8 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { readOrgPolicies } from '@cofounderbay/shared';
+import { orgPolicyRefusal } from '../organization/organization-policies.service';
 
 export interface OrgWorkspaceStats {
   totalWorkspaces: number;
@@ -53,6 +55,11 @@ export class BuilderOrgService {
     if (!membership) {
       throw new ForbiddenException('Not a member of this organization');
     }
+
+    // The same switch as getCohortWorkspaces (docs §103): off, the org's
+    // admins do not open the founders' Builder workspaces, including this list.
+    const orgs = await this.prisma.organization.findMany({ where: { tenantId }, select: { settings: true } });
+    if (orgs.some((o) => !readOrgPolicies(o.settings).workspaceAccess)) throw orgPolicyRefusal('workspace_access_off');
 
     const page = params?.page || 1;
     const limit = params?.limit || 20;
@@ -554,6 +561,11 @@ export class BuilderOrgService {
     if (!membership) {
       throw new ForbiddenException('Not a member of this organization');
     }
+
+    // "Startup workspace access" off on the organisation of this tenant: its
+    // admins do not open the founders' own workspaces (docs §103).
+    const orgs = await this.prisma.organization.findMany({ where: { tenantId }, select: { settings: true } });
+    if (orgs.some((o) => !readOrgPolicies(o.settings).workspaceAccess)) throw orgPolicyRefusal('workspace_access_off');
 
     // Get cohort members
     const cohort = await this.prisma.cohort.findUnique({

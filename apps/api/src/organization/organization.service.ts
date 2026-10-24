@@ -1,5 +1,7 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, ConflictException } from '@nestjs/common';
+import { readOrgPolicies } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
+import { assertOrgSeat } from '../billing/org-billing.service';
 import { Prisma } from '@prisma/client';
 
 const PUBLIC_ORGANIZATION_SELECT = {
@@ -127,10 +129,7 @@ export class OrganizationService {
             _count: { select: { memberships: true, programs: true } },
           },
         })
-      : await this.prisma.organization.findFirst({
-          where: { id, isActive: true },
-          select: PUBLIC_ORGANIZATION_SELECT,
-        });
+      : await this.publicOrganization({ id, isActive: true }, PUBLIC_ORGANIZATION_SELECT);
 
     if (!org) {
       throw new NotFoundException('Organization not found');
@@ -162,9 +161,7 @@ export class OrganizationService {
             _count: { select: { memberships: true, programs: true } },
           },
         })
-      : await this.prisma.organization.findFirst({
-          where: { id: organization.id, isActive: true },
-          select: {
+      : await this.publicOrganization({ id: organization.id, isActive: true }, {
             ...PUBLIC_ORGANIZATION_SELECT,
             programs: {
               where: { isPublic: true, status: { in: ['upcoming', 'active', 'completed'] } },
@@ -184,8 +181,7 @@ export class OrganizationService {
                 coverImageUrl: true,
               },
             },
-          },
-        });
+          });
 
     if (!org) {
       throw new NotFoundException('Organization not found');
@@ -204,8 +200,14 @@ export class OrganizationService {
   }) {
     const { type, isVerified, isFeatured, search, page = 1, limit = 20 } = filters;
 
+    // "Public profile" off keeps an organisation out of the directory (docs §103).
+    const hidden = (await this.prisma.organization.findMany({
+      where: { settings: { path: ['policies', 'publicProfile'], equals: false } },
+      select: { id: true },
+    })).map((o) => o.id);
     const where: Prisma.OrganizationWhereInput = {
       isActive: true,
+      ...(hidden.length && { id: { notIn: hidden } }),
       ...(type && { type: type as any }),
       ...(isVerified !== undefined && { isVerified }),
       ...(isFeatured !== undefined && { isFeatured }),
@@ -326,6 +328,8 @@ export class OrganizationService {
     if (existing) {
       throw new BadRequestException('User is already a member');
     }
+    // A plan with seats: no member past them (docs §104).
+    await assertOrgSeat(this.prisma, orgId);
 
     return this.prisma.organizationMembership.create({
       data: {
@@ -381,6 +385,10 @@ export class OrganizationService {
 
       if (removesActiveOwner) {
         await this.assertNotLastOwner(tx, orgId);
+      }
+      // Bringing a member back takes a seat of the plan (docs §104).
+      if (data.isActive === true && !membership.isActive) {
+        await assertOrgSeat(tx, orgId);
       }
 
       const updateData: Prisma.OrganizationMembershipUpdateInput = {};
@@ -483,14 +491,29 @@ export class OrganizationService {
   }) {
     await this.checkAdminAccess(orgId, adminUserId);
 
+    // A pending request already owns the unique (organisation, user) row
+    // (docs §103). Creating a second one is a 500. An admin adding that
+    // person accepts the request; someone already active is a conflict.
+    const existing = await this.prisma.organizationMentor.findUnique({
+      where: { organizationId_userId: { organizationId: orgId, userId: data.userId } },
+    });
+    if (existing?.isActive) {
+      throw new ConflictException('This person is already in the mentor pool');
+    }
+    const assignment = {
+      isActive: true,
+      expertiseAreas: data.expertiseAreas || existing?.expertiseAreas || [],
+      maxMentees: data.maxMentees ?? existing?.maxMentees ?? null,
+      assignedBy: adminUserId,
+      assignedAt: new Date(),
+      requestedAt: null,
+      requestNote: null,
+    };
+    if (existing) {
+      return this.prisma.organizationMentor.update({ where: { id: existing.id }, data: assignment });
+    }
     return this.prisma.organizationMentor.create({
-      data: {
-        organizationId: orgId,
-        userId: data.userId,
-        expertiseAreas: data.expertiseAreas || [],
-        maxMentees: data.maxMentees,
-        assignedBy: adminUserId,
-      },
+      data: { organizationId: orgId, userId: data.userId, ...assignment },
     });
   }
 
@@ -535,6 +558,18 @@ export class OrganizationService {
   }
 
   // Helper methods
+  /**
+   * An organisation as someone outside it reads it: none at all when its
+   * "Public profile" policy is off (docs §103), so a hidden organisation is
+   * indistinguishable from a missing one.
+   */
+  private async publicOrganization(where: Prisma.OrganizationWhereInput, select: Prisma.OrganizationSelect): Promise<Record<string, unknown> | null> {
+    const row = (await this.prisma.organization.findFirst({ where, select: { ...select, settings: true } })) as Record<string, unknown> | null;
+    if (!row || !readOrgPolicies(row.settings).publicProfile) return null;
+    const { settings: _settings, ...rest } = row;
+    return rest;
+  }
+
   async checkAdminAccess(orgId: string, userId: string) {
     const membership = await this.prisma.organizationMembership.findFirst({
       where: {

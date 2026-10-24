@@ -21,7 +21,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { listBillingPlans, createBillingCheckout } from '@/lib/api';
+import { listBillingPlans, createBillingCheckout, getUserOrganizations } from '@/lib/api';
 import { annualSavingsPct, PLAN_HIGHLIGHTS } from '@/lib/billing';
 import { useSession } from '@/hooks/useSession';
 import { LandingNav } from '@/components/layout/LandingNav';
@@ -175,6 +175,12 @@ export default function PricingPage() {
   async function handleCheckout(plan: typeof PLANS[0]) {
     if (plan.id === 'enterprise') { window.location.href = 'mailto:enterprise@cofounderbay.com?subject=Enterprise%20plan'; return; }
     if (!hasSession) { window.location.href = '/register'; return; }
+    // Team is the organisation's plan (docs §104): someone in an organisation
+    // buys it for the organisation, from its settings, not for themselves.
+    if (plan.id === 'team') {
+      const memberships = await getUserOrganizations().then((r) => r?.memberships ?? []).catch(() => []);
+      if (memberships.length) { window.location.href = '/org/settings?tab=billing'; return; }
+    }
     const apiPlan = apiPlans.find(p => p.name === plan.apiName);
     const priceId = annual ? apiPlan?.stripePriceIdAnnual : apiPlan?.stripePriceIdMonthly;
     setCheckoutLoading(plan.id);

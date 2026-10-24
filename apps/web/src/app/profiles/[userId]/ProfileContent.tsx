@@ -5,11 +5,11 @@ import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { useRecordProfileView } from '@/hooks/useRecordProfileView';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FollowButton } from '@/components/updates/FollowButton';
-import { AskIntroButton } from '@/components/intros/AskIntroDialog';
+import { ProfileMoreMenu } from '@/components/profile/ProfileMoreMenu';
+import { AskIntroDialog } from '@/components/intros/AskIntroDialog';
+import { useFollowPerson } from '@/components/updates/FollowButton';
 import { OpenToLine } from '@/components/intros/OpenToLine';
 import { SkillEvidencePanel } from '@/components/profile/SkillEvidencePanel';
 import { IntroVideoLink } from '@/components/profile/IntroVideoLink';
@@ -136,6 +136,11 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
 
   const [connecting, setConnecting] = useState(false);
   const [messaging, setMessaging] = useState(false);
+  // "Ask for an introduction" and "Follow updates" moved into the profile's
+  // More menu (docs §101); the page keeps their state so the assistant can
+  // press them too.
+  const [introOpen, setIntroOpen] = useState(false);
+  const follow = useFollowPerson(userId);
 
   // Read after mount, so the server and the first client render agree on
   // whether this is the reader's own profile.
@@ -270,6 +275,24 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       run: handleMessage,
     },
     { id: 'copy_profile_link', labelEn: 'Copy the profile link', labelEl: 'Αντιγραφή συνδέσμου προφίλ', writes: false, run: handleShare },
+    {
+      id: 'follow_updates',
+      labelEn: follow.following ? 'Stop following their updates' : 'Follow their updates',
+      labelEl: follow.following ? 'Διακοπή παρακολούθησης των ενημερώσεών τους' : 'Παρακολούθηση των ενημερώσεών τους',
+      writes: true,
+      unavailableEn: noActor,
+      unavailableEl: noActorEl,
+      run: () => follow.toggle(),
+    },
+    {
+      id: 'ask_for_introduction',
+      labelEn: 'Ask someone you both know for an introduction',
+      labelEl: 'Ζητήστε σύσταση από κάποιον που γνωρίζετε και οι δύο',
+      writes: false,
+      unavailableEn: noActor,
+      unavailableEl: noActorEl,
+      run: () => setIntroOpen(true),
+    },
   ]);
 
   // The skeleton has the page's own shape: the top card, then the story
@@ -474,8 +497,6 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                     </Button>
                   </>
                 ) : null}
-                <FollowButton userId={userId} />
-                <AskIntroButton targetId={userId} targetName={profile.displayName} />
                 {viewerId ? (
                   // The full comparison - match reasons, and where the two of
                   // you agree on the compatibility questions - lives on the
@@ -486,29 +507,19 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                     </Link>
                   </Button>
                 ) : null}
-                {viewerId ? (
-                  <AIInsightButton
-                    prompt={{
-                      en: `Analyze this ${profile.role} profile for collaboration potential:\n${profile.displayName} — ${profile.headline ?? 'No headline'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}\nBio: ${profile.bio ?? 'No bio'}`,
-                      el: `Ανάλυσε αυτό το προφίλ (${statusEl(profile.role) ?? profile.role}) για δυνατότητα συνεργασίας:\n${profile.displayName} — ${profile.headline ?? 'Χωρίς τίτλο'}\nΔεξιότητες: ${profile.skills?.map((s) => s.skillName).join(', ') || 'Καμία'}\nΒιογραφικό: ${profile.bio ?? 'Κανένα'}`,
-                    }}
-                    agentId="matching"
-                    cacheKey={`profile-match-${userId}`}
-                    variant="outline"
-                    size="sm"
-                    label="AI Match Analysis"
-                    labelEl="Ανάλυση αντιστοίχισης με AI"
-                  />
-                ) : null}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleShare}
-                  title={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
-                  aria-label={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
-                >
-                  <Share2 className="icon-sm" />
-                </Button>
+                {/* Follow updates, Ask for an introduction, the AI's read of
+                    the fit and Copy link: one press away (docs §101). */}
+                <ProfileMoreMenu
+                  userId={userId}
+                  name={profile.displayName}
+                  signedIn={Boolean(viewerId)}
+                  onCopyLink={handleShare}
+                  onAskIntro={() => setIntroOpen(true)}
+                  askAboutFit={{
+                    en: `Analyze this ${profile.role} profile for collaboration potential:\n${profile.displayName} — ${profile.headline ?? 'No headline'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}\nBio: ${profile.bio ?? 'No bio'}`,
+                    el: `Ανάλυσε αυτό το προφίλ (${statusEl(profile.role) ?? profile.role}) για δυνατότητα συνεργασίας:\n${profile.displayName} — ${profile.headline ?? 'Χωρίς τίτλο'}\nΔεξιότητες: ${profile.skills?.map((s) => s.skillName).join(', ') || 'Καμία'}\nΒιογραφικό: ${profile.bio ?? 'Κανένα'}`,
+                  }}
+                />
               </>
             )
           }
@@ -543,7 +554,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             named the same skills (docs §75). Signed out there is no evidence
             to read, so the names stand alone. */}
         {viewerId ? (
-          <SkillEvidencePanel userId={userId} declared={skillNames} />
+          <SkillEvidencePanel userId={userId} declared={skillNames} levels={Object.fromEntries((profile.skills ?? []).map((sk) => [sk.skillName ?? '', sk.level]))} />
         ) : skillNames.length ? (
           <Card>
             <CardHeader>
@@ -610,6 +621,9 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
         </div>
         </div>
       </div>
+      {introOpen && viewerId && !isOwnProfile ? (
+        <AskIntroDialog open={introOpen} onOpenChange={setIntroOpen} targetId={userId} targetName={profile.displayName} />
+      ) : null}
     </AppShell>
   );
 }

@@ -158,7 +158,7 @@ export default function MatchComparePage() {
   ]);
 
   return (
-    <AppShell title="Compare matches" titleEl="Σύγκριση αντιστοιχιών" description="Open two or more match profiles side by side to weigh fit." descriptionEl="Ανοίξτε δύο ή περισσότερα προφίλ δίπλα-δίπλα για να κρίνετε πόσο ταιριάζουν.">
+    <AppShell title="Compare matches" titleEl="Σύγκριση αντιστοιχίσεων" description="Open two or more match profiles side by side to weigh fit." descriptionEl="Ανοίξτε δύο ή περισσότερα προφίλ δίπλα-δίπλα για να κρίνετε πόσο ταιριάζουν.">
       <div className="space-y-6">
         <div className="flex flex-wrap items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back. Πίσω">
@@ -193,7 +193,12 @@ export default function MatchComparePage() {
               en={`${notMatched.length === 1 ? 'One person you picked is' : `${notMatched.length} people you picked are`} not among your current matches, so there is no breakdown to compare.`}
               el={`${notMatched.length === 1 ? 'Ένα πρόσωπο που επιλέξατε δεν είναι' : `${notMatched.length} πρόσωπα που επιλέξατε δεν είναι`} στις τρέχουσες αντιστοιχίσεις σας, οπότε δεν υπάρχει ανάλυση για σύγκριση.`}
               wrap
-            />
+            />{' '}
+            {/* Anyone can be compared as a profile (skills, sectors, stage):
+                the shortlist sends people who are not matches too. */}
+            <Link href={`/compare?ids=${requested.slice(0, 4).map(encodeURIComponent).join(',')}`} className="text-primary-accessible hover:underline">
+              <BilingualText en="Compare them as profiles" el="Σύγκριση ως προφίλ" compact />
+            </Link>
           </p>
         )}
 

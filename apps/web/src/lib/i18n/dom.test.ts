@@ -25,6 +25,12 @@ describe('translateDom', () => {
     expect(document.body.textContent).toBe('Configuración');
   });
 
+  it('leaves a name marked translate="no" as it is (a plan called "Settings" stays "Settings")', () => {
+    document.body.innerHTML = '<p><span translate="no">Settings</span> <span>Save</span></p>';
+    translateDom(document.body, t, false, true);
+    expect(document.body.textContent).toBe('Settings Guardar');
+  });
+
   it('leaves server HTML React has not hydrated yet', () => {
     // React is running (body is claimed) but this page has not hydrated:
     // rewriting it would make React find different text than it rendered.

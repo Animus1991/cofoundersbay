@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import {
   Calendar,
-  Clock,
   DollarSign,
   MessageCircle,
   Star,
@@ -42,6 +41,7 @@ import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { formatFee } from '@/lib/mentor-fee';
 
 type MenteeRow = { id: string; name: string; startup: string | null; sessionsCompleted: number; avatarUrl: string | null };
 type SessionRow = { id: string; menteeName: string; scheduledAt: string; duration: number; meetingUrl?: string | null };
@@ -273,7 +273,7 @@ export default function MentorDashboard() {
     avgRating: averageRating == null ? '\u2014' : averageRating.toFixed(1),
     hoursThisMonth: month ? Math.round((month.paidMinutes / 60) * 10) / 10 : null,
     pendingThisMonth: month?.pending ?? 0,
-    earningsThisMonth: month ? `$${month.amount.toLocaleString('en-US')}` : null,
+    earningsThisMonth: month ? formatFee(month.amount) : null,
   };
 
   const nextSession = upcomingAll[0];
@@ -443,15 +443,13 @@ export default function MentorDashboard() {
           </div>
 
           <div className="space-y-6">
+{/* The role's pages this home does not already open from a tile or a section: the rest were listed twice on one screen (docs §101). */}
             <QuickLinks
               label="Mentor pages"
               labelEl="Σελίδες μέντορα"
               links={[
-                { href: '/mentor/availability', icon: Clock, label: 'Set availability', labelEl: 'Διαθεσιμότητα' },
-                { href: '/mentor/requests', icon: UserCheck, label: 'Mentorship requests', labelEl: 'Αιτήματα' },
-                { href: '/mentor/sessions', icon: Video, label: 'Sessions', labelEl: 'Συνεδρίες' },
-                { href: '/mentor/reviews', icon: Star, label: 'My reviews', labelEl: 'Αξιολογήσεις' },
-                { href: '/mentor/earnings', icon: DollarSign, label: 'Earnings', labelEl: 'Έσοδα' },
+                // Requests open from their own section while any wait.
+                ...(pendingRequests.length ? [] : [{ href: '/mentor/requests', icon: UserCheck, label: 'Mentorship requests', labelEl: 'Αιτήματα' }]),
                 { href: '/mentor/profile', icon: TrendingUp, label: 'Mentor profile', labelEl: 'Προφίλ μέντορα' },
               ]}
             />

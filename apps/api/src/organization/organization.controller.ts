@@ -13,6 +13,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OrganizationService } from './organization.service';
 import { OrganizationInvitationsService } from './organization-invitations.service';
+import { OrganizationPoliciesService } from './organization-policies.service';
 
 @Controller('organizations')
 @UseGuards(JwtAuthGuard)
@@ -20,6 +21,7 @@ export class OrganizationController {
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly invitations: OrganizationInvitationsService,
+    private readonly policies: OrganizationPoliciesService,
   ) {}
 
   @Post()
@@ -81,6 +83,12 @@ export class OrganizationController {
     @Param('id') id: string,
   ) {
     return this.organizationService.findById(id, req.user.id);
+  }
+
+  /** Where the signed-in mentor stands with this organisation's mentor pool (docs §103). */
+  @Get('slug/:slug/mentor-pool/me')
+  async mentorPoolStanding(@Request() req: { user: { id: string } }, @Param('slug') slug: string) {
+    return this.policies.standing(slug, req.user.id);
   }
 
   @Get('slug/:slug')
@@ -169,6 +177,44 @@ export class OrganizationController {
   @Delete(':id/invitations/:invitationId')
   async cancelInvitation(@Request() req: { user: { id: string } }, @Param('id') id: string, @Param('invitationId') invitationId: string) {
     return this.invitations.cancel(id, req.user.id, invitationId);
+  }
+
+  // Access policies (docs §103): members read them, owners and admins change them.
+  @Get(':id/policies')
+  async getPolicies(@Request() req: { user: { id: string } }, @Param('id') id: string) {
+    return this.policies.read(id, req.user.id);
+  }
+
+  @Patch(':id/policies')
+  async updatePolicies(@Request() req: { user: { id: string } }, @Param('id') id: string, @Body() body: Record<string, unknown>) {
+    return this.policies.update(id, req.user.id, body);
+  }
+
+  // Mentors asking to join the pool (docs §103). "mine" is declared before
+  // ":requestId" so it is not read as an id.
+  @Post(':id/mentors/requests')
+  async requestToJoinMentorPool(@Request() req: { user: { id: string } }, @Param('id') id: string, @Body() body: Record<string, unknown>) {
+    return this.policies.requestToJoin(id, req.user.id, body ?? {});
+  }
+
+  @Delete(':id/mentors/requests/mine')
+  async withdrawMentorPoolRequest(@Request() req: { user: { id: string } }, @Param('id') id: string) {
+    return this.policies.withdraw(id, req.user.id);
+  }
+
+  @Get(':id/mentors/requests')
+  async listMentorPoolRequests(@Request() req: { user: { id: string } }, @Param('id') id: string) {
+    return this.policies.listRequests(id, req.user.id);
+  }
+
+  @Post(':id/mentors/requests/:requestId/accept')
+  async acceptMentorPoolRequest(@Request() req: { user: { id: string } }, @Param('id') id: string, @Param('requestId') requestId: string) {
+    return this.policies.answer(id, req.user.id, requestId, true);
+  }
+
+  @Delete(':id/mentors/requests/:requestId')
+  async declineMentorPoolRequest(@Request() req: { user: { id: string } }, @Param('id') id: string, @Param('requestId') requestId: string) {
+    return this.policies.answer(id, req.user.id, requestId, false);
   }
 
   // Mentor pool

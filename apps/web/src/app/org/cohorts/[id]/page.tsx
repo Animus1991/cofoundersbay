@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { COHORT_MATCH_MIN_SCORE, cohortRunSummary, matchReasonCopy, type CohortRunResult } from '@cofounderbay/shared';
+import { useToast } from '@/components/ui/toast';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useHydrated } from '@/components/common/RelativeTime';
@@ -13,6 +15,7 @@ import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/p
 import { useRouter } from 'next/navigation';
 import {
   getOrgCohortDetail,
+  runCohortMatching,
   type CohortParticipant,
   type CohortMatch,
   type CohortSession,
@@ -104,6 +107,8 @@ interface Match {
   matchedDate: string;
   interactions: number;
   lastInteraction?: string;
+  /** Why the engine suggested the pair, as stored (English; Greek through `matchReasonCopy`). */
+  reasons: string[];
 }
 
 interface MentoringSession {
@@ -191,6 +196,7 @@ function toMatch(row: CohortMatch): Match {
     // Nothing counts interactions per pair, so the card shows none rather than
     // a number nobody measured.
     interactions: 0,
+    reasons: Array.isArray(row.reasons) ? row.reasons : [],
   };
 }
 
@@ -393,6 +399,36 @@ export default function CohortDetailPage() {
       participants.map((pt) => [pt.name, pt.email, pt.role, pt.startup, pt.status, pt.joinDate, pt.location, pt.progress]),
     );
   const copyLink = () => void navigator.clipboard?.writeText(window.location.href);
+
+  /*
+   * Matching for the whole cohort (docs §102): the engine scores its founders
+   * with each other and with its mentors and investors, and the pairs worth
+   * an introduction are listed here. It was "Generate Matches" with nothing
+   * behind it, then a link to the reader's own Matches page. Nobody in the
+   * cohort is notified; the organiser decides whom to introduce.
+   */
+  const queryClient = useQueryClient();
+  const { success, error: showError } = useToast();
+  const [lastRun, setLastRun] = useState<CohortRunResult | null>(null);
+  const [runProblem, setRunProblem] = useState<{ en: string; el: string } | null>(null);
+  const runMatching = useMutation({
+    mutationFn: () => runCohortMatching(slug as string, cohortId),
+    onSuccess: (result) => {
+      setLastRun(result);
+      setRunProblem(null);
+      const summary = cohortRunSummary(result);
+      success('Matching ran', summary.en);
+      void queryClient.invalidateQueries({ queryKey: qk('org', slug, 'cohort', cohortId) });
+    },
+    onError: (err) => {
+      const e = err as { message?: string; details?: { messageEl?: string } };
+      const en = e?.message || 'Matching did not run.';
+      setRunProblem({ en, el: e?.details?.messageEl ?? en });
+      showError('Could not run matching', en);
+    },
+  });
+  const runUnavailableEn = isSample ? 'These are sample people: matching runs on a cohort that was read.' : !slug ? 'Your organisation has not been read yet.' : runMatching.isPending ? 'Matching is running.' : undefined;
+  const runUnavailableEl = isSample ? 'Είναι δείγματα: η αντιστοίχιση τρέχει σε κύκλο που διαβάστηκε.' : !slug ? 'Ο οργανισμός σας δεν έχει διαβαστεί ακόμη.' : runMatching.isPending ? 'Η αντιστοίχιση εκτελείται.' : undefined;
   usePageControls([
     choiceControl('cohort_tab', 'Cohort tab', 'Καρτέλα κύκλου', [
       { value: 'overview', en: 'Overview', el: 'Επισκόπηση' },
@@ -410,6 +446,21 @@ export default function CohortDetailPage() {
       run: exportParticipants,
     },
     { id: 'copy_cohort_link', labelEn: 'Copy the cohort link', labelEl: 'Αντιγραφή συνδέσμου κύκλου', writes: false, run: copyLink },
+    {
+      id: 'run_cohort_matching',
+      labelEn: 'Run matching for the whole cohort',
+      labelEl: 'Εκτέλεση αντιστοίχισης για όλο τον κύκλο',
+      writes: true,
+      unavailableEn: runUnavailableEn,
+      unavailableEl: runUnavailableEl,
+      run: async () => {
+        try {
+          await runMatching.mutateAsync();
+        } catch (err) {
+          return { error: err instanceof Error && err.message ? err.message : 'Matching did not run.' };
+        }
+      },
+    },
     {
       id: 'open_participant',
       labelEn: 'Open a participant\'s profile',
@@ -906,20 +957,56 @@ export default function CohortDetailPage() {
         <TabsContent value="matches">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle><BilingualText en="Matches" el="Αντιστοιχίσεις" compact /></CardTitle>
-              <Button size="sm" asChild>
-                <Link href="/matches">
-                  <Target className="icon-sm mr-2" aria-hidden="true" />
-                  {/* It was "Generate Matches": nothing runs matching for a
-                      cohort; the link opens the Matches page (docs §96). */}
-                  <BilingualText en="Open Matches" el="Άνοιγμα αντιστοιχίσεων" compact />
-                </Link>
-              </Button>
+              <div className="min-w-0 space-y-1">
+                <CardTitle><BilingualText en="Matches" el="Αντιστοιχίσεις" compact /></CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  <BilingualText
+                    en="Founders with each other, and with the cohort's mentors and investors, scored by the matching engine. Nobody is notified."
+                    el="Ιδρυτές μεταξύ τους, και με τους μέντορες και τους επενδυτές του κύκλου, βαθμολογημένοι από τη μηχανή αντιστοίχισης. Δεν ειδοποιείται κανείς."
+                    wrap
+                  />
+                </p>
+              </div>
+              {(() => {
+                const button = (
+                  <Button size="sm" className="shrink-0" disabled={runMatching.isPending} onClick={() => runMatching.mutate()}>
+                    <Target className="icon-sm mr-2" aria-hidden="true" />
+                    {runMatching.isPending
+                      ? <BilingualText en="Running…" el="Εκτελείται…" compact />
+                      : <BilingualText en="Run matching" el="Εκτέλεση αντιστοίχισης" compact />}
+                  </Button>
+                );
+                // Sample people or no organisation yet: the button stays and says why.
+                return runUnavailableEn && !runMatching.isPending
+                  ? <WithDisabledReason reasonEn={runUnavailableEn} reasonEl={runUnavailableEl ?? runUnavailableEn}>{button}</WithDisabledReason>
+                  : button;
+              })()}
             </CardHeader>
             <CardContent>
+              {lastRun ? (
+                <p role="status" className="mb-3 text-sm text-foreground">
+                  <BilingualText en={cohortRunSummary(lastRun).en} el={cohortRunSummary(lastRun).el} wrap />
+                  {lastRun.belowThreshold ? (
+                    <span className="text-muted-foreground">
+                      {' '}
+                      <BilingualText
+                        en={`${lastRun.belowThreshold} new ${lastRun.belowThreshold === 1 ? 'pair' : 'pairs'} under ${COHORT_MATCH_MIN_SCORE}% not kept.`}
+                        el={`${lastRun.belowThreshold} ${lastRun.belowThreshold === 1 ? 'νέο ζεύγος' : 'νέα ζεύγη'} κάτω από ${COHORT_MATCH_MIN_SCORE}% δεν κρατήθηκαν.`}
+                        wrap
+                      />
+                    </span>
+                  ) : null}
+                </p>
+              ) : null}
+              {runProblem ? (
+                <p role="alert" className="mb-3 text-sm text-destructive-accessible"><BilingualText en={runProblem.en} el={runProblem.el} wrap /></p>
+              ) : null}
               <div className="card-rows">
                 {matches.length === 0 && (
-                  <EmptyLine en="No match has been suggested inside this cohort yet." el="Δεν έχει προταθεί ακόμη αντιστοίχιση μέσα σε αυτόν τον κύκλο." />
+                  <EmptyLine
+                    en="No match has been suggested inside this cohort yet. Run matching to score its founders with each other and with its mentors and investors."
+                    el="Δεν έχει προταθεί ακόμη αντιστοίχιση μέσα σε αυτόν τον κύκλο. Εκτελέστε την αντιστοίχιση για να βαθμολογηθούν οι ιδρυτές μεταξύ τους και με τους μέντορες και τους επενδυτές του."
+                  />
                 )}
                 {/* The pair, their names over their roles, the dates as one
                     caption line; the score is a fact under the title, not a
@@ -951,6 +1038,12 @@ export default function CohortDetailPage() {
                         match.lastInteraction ? <BilingualText key="last" en={`Last: ${formatDate(match.lastInteraction)}`} el={`Τελευταία: ${formatDate(match.lastInteraction)}`} compact /> : null,
                       ]}
                     />
+                    {match.reasons.length ? (
+                      <FactLine
+                        className="text-muted-foreground"
+                        items={match.reasons.slice(0, 4).map((r) => <BilingualText key={r} en={matchReasonCopy(r).en} el={matchReasonCopy(r).el} compact />)}
+                      />
+                    ) : null}
                   </div>
                 ))}
               </div>

@@ -367,7 +367,9 @@ function ProgramCard({
               nothing to press (docs §77). */}
           {!accepting && !isEnrolled ? (
             <span className="text-xs text-muted-foreground">
-              <BilingualText en="Not taking applications" el="Δεν δέχεται αιτήσεις" compact />
+              {program.byInvitation
+                ? <BilingualText en="By invitation only" el="Μόνο με πρόσκληση" compact />
+                : <BilingualText en="Not taking applications" el="Δεν δέχεται αιτήσεις" compact />}
             </span>
           ) : null}
         </div>

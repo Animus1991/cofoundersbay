@@ -626,7 +626,7 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     openDraft(
       'mentor_listing',
       payload,
-      ['headline', 'bio', 'industries', 'stages', 'expertise', 'sessionFormats', 'hoursPerWeek', 'sessionDuration', 'yearsExperience', 'isFree', 'hourlyRateUsd'],
+      ['headline', 'bio', 'industries', 'stages', 'expertise', 'sessionFormats', 'hoursPerWeek', 'sessionDuration', 'yearsExperience', 'isFree', 'hourlyRateEur'],
       null,
     ),
   draft_provider_listing: async (payload) =>

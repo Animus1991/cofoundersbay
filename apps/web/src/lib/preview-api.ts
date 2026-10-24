@@ -2828,7 +2828,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   const invitationsAnswer = previewOrgInvitationsApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
   if (invitationsAnswer !== undefined) return invitationsAnswer;
   // The organisation, its programs and its tenant: one world, one module.
-  const orgAnswer = previewOrgApi(pathname, path, method, previewIsoInDays);
+  const orgAnswer = previewOrgApi(pathname, path, method, previewIsoInDays, previewNowMs(), (body ?? {}) as Record<string, unknown>);
   if (orgAnswer !== undefined) return orgAnswer;
   // Need cards and the commitment ladder: the demo world applies the same
   // shared rules as the API, and throws its refusals in the API's shape.

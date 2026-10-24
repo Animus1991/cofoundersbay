@@ -40,6 +40,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, NavIcon, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { formatFee } from '@/lib/mentor-fee';
 
 function getTimeBasedGreeting(): { en: string; el: string } {
   const hour = new Date().getHours();
@@ -151,7 +152,7 @@ function MentorSuggestionCard({ mentor }: { mentor: MentorProfileItem }) {
       {mentor.isFree ? (
         <span className="shrink-0 text-2xs font-medium text-status-success bg-status-success-bg px-1.5 py-0.5 rounded">Free</span>
       ) : mentor.hourlyRate ? (
-        <span className="shrink-0 text-2xs text-muted-foreground">${mentor.hourlyRate}/h</span>
+        <span className="shrink-0 text-2xs text-muted-foreground">{formatFee(mentor.hourlyRate, mentor.currency)}/h</span>
       ) : null}
     </Link>
   );

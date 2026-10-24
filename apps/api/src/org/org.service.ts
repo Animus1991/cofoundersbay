@@ -1,9 +1,173 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Optional, UnauthorizedException } from '@nestjs/common';
+import {
+  COHORT_MATCH_MAX_MEMBERS,
+  COHORT_MATCH_MIN_SCORE,
+  COHORT_MATCH_PROBLEM_COPY,
+  cohortMatchPairs,
+  readOrgPolicies,
+  toCohortScore,
+  type CohortMatchMember,
+  type CohortMatchProblem,
+  type CohortRunResult,
+} from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
+import { MatchingService } from '../matching/matching.service';
+
+/** Organisation roles that run a programme (and read its people). */
+export const ORG_STAFF_ROLES = ['owner', 'admin', 'program_manager'] as const;
+
+function cohortRefusal(problem: CohortMatchProblem) {
+  const copy = COHORT_MATCH_PROBLEM_COPY[problem];
+  return new BadRequestException({
+    success: false,
+    error: { code: 'VALIDATION_ERROR', message: copy.en, details: { reason: 'cohort_match_invalid', problem, messageEl: copy.el } },
+  });
+}
 
 @Injectable()
 export class OrgService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly matching?: MatchingService,
+  ) {}
+
+  /**
+   * Whether this person runs the organisation behind `slug`: its own account,
+   * an owner, admin or programme manager of the organisation with that slug,
+   * or a platform admin. Throws 403 otherwise.
+   */
+  async assertOrgStaff(slug: string, userId: string | undefined | null): Promise<{ orgUserId: string }> {
+    const org = await this.prisma.user.findFirst({ where: { slug, role: 'org' }, select: { id: true } });
+    if (!org) throw new NotFoundException('Organization not found');
+    if (!userId) throw new ForbiddenException('Sign in as a member of this organisation');
+    if (userId === org.id) return { orgUserId: org.id };
+    const [actor, membership] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+      this.prisma.organizationMembership.findFirst({
+        where: { userId, isActive: true, role: { in: [...ORG_STAFF_ROLES] }, organization: { slug } },
+        select: { id: true },
+      }),
+    ]);
+    if (membership || actor?.role === 'admin' || actor?.role === 'super_admin') return { orgUserId: org.id };
+    throw new ForbiddenException('Only the people who run this organisation can do that');
+  }
+
+  /**
+   * Whether this person belongs to the organisation behind `slug`: its own
+   * account, any active member of the organisation with that slug, or a
+   * platform admin.
+   */
+  private async belongs(slug: string, orgUserId: string | null, userId: string | null | undefined): Promise<boolean> {
+    if (!userId) return false;
+    if (orgUserId && userId === orgUserId) return true;
+    const [actor, membership] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+      this.prisma.organizationMembership.findFirst({ where: { userId, isActive: true, organization: { slug } }, select: { id: true } }),
+    ]);
+    return Boolean(membership) || actor?.role === 'admin' || actor?.role === 'super_admin';
+  }
+
+  /**
+   * The public reads (profile, opportunities, cohorts, members) answer
+   * outsiders only while the organisation's "Public profile" policy is on
+   * (docs §103); otherwise a hidden organisation reads as a missing one.
+   */
+  async assertOrgVisible(slug: string, userId?: string | null): Promise<void> {
+    const organization = await this.prisma.organization.findUnique({ where: { slug }, select: { settings: true } });
+    if (!organization || readOrgPolicies(organization.settings).publicProfile) return;
+    const org = await this.prisma.user.findFirst({ where: { slug, role: 'org' }, select: { id: true } });
+    if (await this.belongs(slug, org?.id ?? null, userId)) return;
+    throw new NotFoundException('Organization not found');
+  }
+
+  /**
+   * A cohort's participants (with their emails), matches and sessions are
+   * the organisation's to read, not the public's: the detail route answered
+   * anyone, signed in or not (docs §103).
+   */
+  async assertOrgMember(slug: string, userId?: string | null): Promise<void> {
+    const org = await this.prisma.user.findFirst({ where: { slug, role: 'org' }, select: { id: true } });
+    if (!org) throw new NotFoundException('Organization not found');
+    if (!userId) throw new UnauthorizedException('Sign in as a member of this organisation');
+    if (await this.belongs(slug, org.id, userId)) return;
+    throw new ForbiddenException('Only members of this organisation can read its cohorts');
+  }
+
+  /**
+   * Scores every pair of the cohort the programme would introduce
+   * (`cohortMatchPairs`) with the matching engine, and keeps the suggestions:
+   * a new pair from `COHORT_MATCH_MIN_SCORE` up, a pair already suggested
+   * always rescored with its status kept (viewed, saved, connected stay so).
+   * Two founders are scored from both sides and averaged; a founder with a
+   * mentor or an investor from the founder's side. Nobody is notified.
+   */
+  async runCohortMatching(slug: string, cohortId: string, actorId: string): Promise<CohortRunResult> {
+    const { orgUserId } = await this.assertOrgStaff(slug, actorId);
+    const cohort = await this.prisma.cohort.findUnique({ where: { id: cohortId }, select: { id: true, organizerId: true } });
+    if (!cohort || cohort.organizerId !== orgUserId) throw new NotFoundException('Cohort not found');
+    if (!this.matching) throw new BadRequestException('Matching is not available on this server');
+
+    const rows = await this.prisma.cohortMember.findMany({
+      where: { cohortId },
+      select: { userId: true, role: true, user: { select: { role: true, moderationStatus: true } } },
+    });
+    const members: CohortMatchMember[] = rows
+      .filter((m) => m.user?.moderationStatus === 'active')
+      .map((m) => ({
+        userId: m.userId,
+        role: m.role === 'mentor' || m.user?.role === 'mentor' ? 'mentor' : m.user?.role === 'investor' ? 'investor' : 'founder',
+      }));
+    if (members.length > COHORT_MATCH_MAX_MEMBERS) throw cohortRefusal('too_many_members');
+    if (!members.some((m) => m.role === 'founder')) throw cohortRefusal('no_founders');
+
+    const pairs = cohortMatchPairs(members);
+    // Every score a source needs, in one engine call per source.
+    const bySource = new Map<string, Set<string>>();
+    const want = (s: string, t: string) => {
+      if (!bySource.has(s)) bySource.set(s, new Set());
+      bySource.get(s)!.add(t);
+    };
+    for (const p of pairs) {
+      want(p.source, p.target);
+      if (p.kind === 'founders') want(p.target, p.source);
+    }
+    const scores = new Map<string, { score: number; confidence: number; reasons: string[] }>();
+    for (const [source, targets] of bySource) {
+      const scored = await this.matching.scorePairs(source, [...targets]);
+      for (const m of scored) scores.set(`${source}>${m.userId}`, { score: m.score, confidence: m.confidence, reasons: m.reasons });
+    }
+
+    const result: CohortRunResult = { scored: 0, created: 0, updated: 0, belowThreshold: 0, ranAt: new Date().toISOString() };
+    for (const p of pairs) {
+      const ab = scores.get(`${p.source}>${p.target}`);
+      if (!ab) continue; // a member who could not be scored (suspended, gone)
+      const ba = p.kind === 'founders' ? scores.get(`${p.target}>${p.source}`) : undefined;
+      const score = toCohortScore(ba ? (ab.score + ba.score) / 2 : ab.score);
+      const confidence = Math.round(((ba ? (ab.confidence + ba.confidence) / 2 : ab.confidence) || 0) * 100) / 100;
+      const reasons = [...new Set([...ab.reasons, ...(ba?.reasons ?? [])])];
+      result.scored += 1;
+      const existing = await this.prisma.matchSuggestion.findFirst({
+        where: {
+          OR: [
+            { sourceUserId: p.source, targetUserId: p.target },
+            { sourceUserId: p.target, targetUserId: p.source },
+          ],
+        },
+        select: { id: true },
+      });
+      const data = { overallScore: score, confidenceScore: confidence, reasons, algorithmVersion: 'cohort-v1', generatedAt: new Date() };
+      if (existing) {
+        await this.prisma.matchSuggestion.update({ where: { id: existing.id }, data });
+        result.updated += 1;
+      } else if (score >= COHORT_MATCH_MIN_SCORE) {
+        await this.prisma.matchSuggestion.create({ data: { sourceUserId: p.source, targetUserId: p.target, ...data } });
+        result.created += 1;
+      } else {
+        result.belowThreshold += 1;
+      }
+    }
+    return result;
+  }
 
   async getUserMemberships(userId: string) {
     const memberships = await this.prisma.organizationMembership.findMany({

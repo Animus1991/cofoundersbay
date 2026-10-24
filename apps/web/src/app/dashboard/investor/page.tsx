@@ -6,7 +6,6 @@ import {
   Briefcase,
   Building2,
   Eye,
-  LineChart,
   PieChart,
   Rocket,
   Search,
@@ -351,15 +350,14 @@ export default function InvestorDashboard() {
           </div>
 
           <div className="space-y-6">
+{/* The role's pages this home does not already open from a tile or a section: the rest were listed twice on one screen (docs §101). */}
             <QuickLinks
               label="Investor pages"
               labelEl="Σελίδες επενδυτή"
               links={[
-                { href: '/investor/scouting', icon: Search, label: 'Scout startups', labelEl: 'Ανίχνευση startups' },
+                // "Recently discovered" opens Scouting unless the deals were not read.
+                ...(dealsFailed ? [{ href: '/investor/scouting', icon: Search, label: 'Scout startups', labelEl: 'Ανίχνευση startups' }] : []),
                 { href: '/investor/watchlist', icon: Star, label: 'Watchlist', labelEl: 'Λίστα παρακολούθησης' },
-                { href: '/investor/pipeline', icon: Target, label: 'Deal pipeline', labelEl: 'Pipeline συμφωνιών' },
-                { href: '/investor/portfolio', icon: LineChart, label: 'Portfolio', labelEl: 'Χαρτοφυλάκιο' },
-                { href: '/investor/analytics', icon: BarChart3, label: 'Analytics', labelEl: 'Αναλυτικά' },
               ]}
             />
 

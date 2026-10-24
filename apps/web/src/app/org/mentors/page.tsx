@@ -11,9 +11,14 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { OrgReadFailed } from '@/components/org/OrgReadFailed';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/toast';
+import { useScrollToHash } from '@/hooks/useScrollToHash';
+import { statusOf } from '@/lib/read-status';
+import { EmptyLine, FailedLine, RowHead } from '@/components/dashboard/SectionCard';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
-import { getOrgMentorPool, type OrgMentorPoolItem } from '@/lib/api';
+import { acceptMentorPoolRequest, declineMentorPoolRequest, getOrganizationPolicies, getOrgMentorPool, listMentorPoolRequests, type OrgMentorPoolItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,10 +32,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { EmptyOrgMentors, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
-import { cn } from '@/lib/utils';
+import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
-import { usePageControls, usePageList } from '@/lib/page-controls';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
@@ -39,6 +44,7 @@ import { StatusText } from '@/components/common/StatusText';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { ORG_MENTORS } from '@/lib/demo/org-world';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ASK } from '@/lib/page-questions';
@@ -163,8 +169,9 @@ function MentorCard({ mentor, sample = false }: { mentor: Mentor; /** A sample m
             items={[
               <BilingualText
                 key="mentees"
-                en={`${mentor.activeMentees}/${mentor.maxMentees} mentees`}
-                el={`${mentor.activeMentees}/${mentor.maxMentees} καθοδηγούμενοι`}
+                // No cap set (a mentor who joined by request): the count alone, not "0/0".
+                en={mentor.maxMentees ? `${mentor.activeMentees}/${mentor.maxMentees} mentees` : `${mentor.activeMentees} ${mentor.activeMentees === 1 ? 'mentee' : 'mentees'}`}
+                el={mentor.maxMentees ? `${mentor.activeMentees}/${mentor.maxMentees} καθοδηγούμενοι` : `${mentor.activeMentees} ${mentor.activeMentees === 1 ? 'καθοδηγούμενος' : 'καθοδηγούμενοι'}`}
                 compact
               />,
               mentor.totalSessions != null ? <BilingualText key="sessions" en={`${mentor.totalSessions} sessions`} el={`${mentor.totalSessions} συνεδρίες`} compact /> : null,
@@ -177,60 +184,23 @@ function MentorCard({ mentor, sample = false }: { mentor: Mentor; /** A sample m
   );
 }
 
-/** Shown to an organisation whose mentor pool is empty. */
-const SEED_MENTORS: Mentor[] = attachDemoPhotos([
-  {
-    id: '1',
-    userId: 'mentor1',
-    name: 'Sarah Chen',
-    headline: 'Former product manager, AI/ML expert',
-    expertise: ['Product Strategy', 'AI/ML', 'Go-to-Market'],
-    activeMentees: 3,
-    maxMentees: 5,
-    totalSessions: 45,
-    rating: 4.9,
-    status: 'active',
-    isVerified: true,
-  },
-  {
-    id: '2',
-    userId: 'mentor2',
-    name: 'Michael Torres',
-    headline: 'Serial Entrepreneur, 2x Exit',
-    expertise: ['Fundraising', 'Sales', 'Team Building'],
-    activeMentees: 4,
-    maxMentees: 4,
-    totalSessions: 62,
-    rating: 4.8,
-    status: 'active',
-    isVerified: true,
-  },
-  {
-    id: '3',
-    userId: 'mentor3',
-    name: 'Emma Williams',
-    headline: 'FinTech expert, former payments lead',
-    expertise: ['FinTech', 'Payments', 'Compliance'],
-    activeMentees: 2,
-    maxMentees: 3,
-    totalSessions: 28,
-    rating: 4.7,
-    status: 'active',
-    isVerified: false,
-  },
-  {
-    id: '4',
-    userId: 'mentor4',
-    name: 'David Kim',
-    headline: 'Technical Architect',
-    expertise: ['Engineering', 'Architecture', 'Scaling'],
-    activeMentees: 0,
-    maxMentees: 3,
-    totalSessions: 15,
-    status: 'inactive',
-    isVerified: true,
-  },
-], { portraitKey: 'avatar' });
+/**
+ * Shown to an organisation whose mentor pool is empty, with sample data on:
+ * the demo world's mentors in the roles it gives them (they were four
+ * invented people with invented session counts and ratings).
+ */
+const SEED_MENTORS: Mentor[] = attachDemoPhotos(ORG_MENTORS.map((m) => ({
+  id: `sample-${m.id}`,
+  userId: m.id,
+  name: m.name,
+  headline: m.headline,
+  expertise: m.expertise,
+  activeMentees: m.mentees.length,
+  maxMentees: m.maxMentees,
+  totalSessions: null,
+  status: 'active' as const,
+  isVerified: false,
+})), { portraitKey: 'avatar' });
 
 export default function OrgMentorsPage() {
   const sayOne = useBilingualString();
@@ -254,6 +224,44 @@ export default function OrgMentorsPage() {
   });
 
   const live = useMemo(() => (data?.mentors ?? []).map(toPageMentor), [data]);
+/*
+   * Mentors asking to join (docs §103): with "Mentor self-registration" on,
+   * a mentor asks from the organisation's page and an owner or admin answers
+   * here. A member who is not an admin is refused the list (403), and the
+   * section is left out for them.
+   */
+  const queryClient = useQueryClient();
+  const { success, error: showError } = useToast();
+  useScrollToHash();
+  const requestsQuery = useQuery({
+    queryKey: qk('org', 'mentor-requests', organizationId),
+    queryFn: () => listMentorPoolRequests(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 30_000,
+    retry: 0,
+  });
+  const policiesQuery = useQuery({
+    queryKey: qk('org', 'policies', organizationId),
+    queryFn: () => getOrganizationPolicies(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 30_000,
+    retry: 0,
+  });
+  const requests = requestsQuery.data?.requests ?? [];
+  const requestsForbidden = requestsQuery.isError && statusOf(requestsQuery.error) === 403;
+  const requestsFailed = requestsQuery.isError && !requestsForbidden && !requestsQuery.data;
+  const selfRegistration = policiesQuery.data?.policies.mentorSelfRegistration ?? false;
+  const showRequests = !requestsForbidden && (requests.length > 0 || requestsFailed || selfRegistration);
+  const answer = useMutation({
+    mutationFn: ({ id, accept }: { id: string; accept: boolean }) => (accept ? acceptMentorPoolRequest(organizationId!, id) : declineMentorPoolRequest(organizationId!, id)),
+    onSuccess: (res, vars) => {
+      const who = requests.find((r) => r.id === vars.id)?.displayName ?? undefined;
+      success(res.accepted ? 'Added to your mentor pool' : 'Request declined', who);
+      void queryClient.invalidateQueries({ queryKey: qk('org', 'mentor-requests', organizationId) });
+      void queryClient.invalidateQueries({ queryKey: qk('org', 'mentor-pool', organizationId) });
+    },
+    onError: (err) => showError('Could not answer the request', err instanceof Error ? err.message : undefined),
+  });
   const mentors: Mentor[] = live.length > 0 ? live : isLoading || orgLoading || !showDemoData ? [] : SEED_MENTORS;
   const isSample = live.length === 0 && mentors.length > 0;
   const reading = orgLoading || isLoading;
@@ -274,15 +282,42 @@ export default function OrgMentorsPage() {
 
   usePageList([
     {
+      id: 'mentor_requests',
+      labelEn: 'Mentors asking to join',
+      labelEl: 'Μέντορες που ζητούν ένταξη',
+      rows: requestsQuery.isLoading ? undefined : requests.map((r) => `${r.displayName ?? 'A mentor'}${r.headline ? ` · ${r.headline}` : ''}${r.note ? ` · "${r.note}"` : ''}`),
+      total: requests.length,
+    },
+    {
       id: 'mentors',
       labelEn: 'Mentor pool',
       labelEl: 'Δεξαμενή μεντόρων',
       rows: reading ? undefined : filteredMentors.map((m) => `${m.name}${m.headline ? ` · ${m.headline}` : ''} · ${m.expertise.slice(0, 3).join(', ')} · ${m.activeMentees}/${m.maxMentees} mentees · ${m.status}`),
       total: mentors.length,
-      sample: live.length === 0,
+      sample: !reading && live.length === 0,
     },
   ]);
   usePageControls([
+    {
+      id: 'accept_mentor_request',
+      labelEn: 'Add a mentor who asked to join to the pool',
+      labelEl: 'Προσθήκη στη δεξαμενή μέντορα που ζήτησε ένταξη',
+      writes: true,
+      options: rowOptions(requests, (r) => r.id, (r) => r.displayName ?? 'A mentor'),
+      unavailableEn: requests.length ? undefined : 'No mentor is waiting.',
+      unavailableEl: requests.length ? undefined : 'Δεν περιμένει κανένας μέντορας.',
+      run: async (v) => { if (v) await answer.mutateAsync({ id: v, accept: true }); },
+    },
+    {
+      id: 'decline_mentor_request',
+      labelEn: 'Decline a request to join the pool',
+      labelEl: 'Απόρριψη αιτήματος ένταξης στη δεξαμενή',
+      writes: true,
+      options: rowOptions(requests, (r) => r.id, (r) => r.displayName ?? 'A mentor'),
+      unavailableEn: requests.length ? undefined : 'No mentor is waiting.',
+      unavailableEl: requests.length ? undefined : 'Δεν περιμένει κανένας μέντορας.',
+      run: async (v) => { if (v) await answer.mutateAsync({ id: v, accept: false }); },
+    },
     { id: 'clear_search', labelEn: 'Clear the mentor search', labelEl: 'Καθαρισμός αναζήτησης μεντόρων', writes: false, unavailableEn: search ? undefined : 'No search is set.', unavailableEl: search ? undefined : 'Δεν υπάρχει αναζήτηση.', run: () => setSearch('') },
   ]);
 
@@ -321,6 +356,56 @@ export default function OrgMentorsPage() {
             askAiPrompt={ASK.orgMentorsSample}
           />
         )}
+
+        {showRequests ? (
+          <Card id="requests">
+            <CardContent className="space-y-3">
+              <div>
+                <h2 className="card-title"><BilingualText en="Asking to join" el="Αιτήματα ένταξης" compact /></h2>
+                <p className="text-xs text-muted-foreground">
+                  <BilingualText
+                    en="Mentors who asked from your organisation's page. Accepting adds them to the pool; they are told either way."
+                    el="Μέντορες που ζήτησαν ένταξη από τη σελίδα του οργανισμού σας. Η αποδοχή τους προσθέτει στη δεξαμενή· ενημερώνονται σε κάθε περίπτωση."
+                    wrap
+                  />
+                </p>
+              </div>
+              {requestsFailed ? (
+                <FailedLine en="The requests could not be read just now." el="Τα αιτήματα δεν διαβάστηκαν αυτή τη στιγμή." busy={requestsQuery.isFetching} onRetry={() => void requestsQuery.refetch()} />
+              ) : requests.length === 0 ? (
+                <EmptyLine en="No mentor has asked to join yet." el="Κανένας μέντορας δεν έχει ζητήσει ένταξη ακόμη." />
+              ) : (
+                <div className="card-rows">
+                  {requests.map((r) => (
+                    <div key={r.id} className="space-y-2">
+                      <RowHead
+                        mark={(
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={r.avatarUrl ?? undefined} alt="" />
+                            <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(r.displayName ?? '?')}</AvatarFallback>
+                          </Avatar>
+                        )}
+                        title={<Link href={`/profiles/${r.userId}`} className="hover:text-primary-accessible">{r.displayName ?? 'A mentor'}</Link>}
+                        subtitle={r.headline ? <span className="line-clamp-1">{r.headline}</span> : undefined}
+                        meta={r.requestedAt ? <><BilingualText en="asked" el="ζήτησε" compact /> <RelativeTime date={r.requestedAt} format={formatRelativeTime} /></> : undefined}
+                      />
+                      {r.expertise.length ? <FactLine items={r.expertise} /> : null}
+                      {r.note ? <p className="card-body text-muted-foreground first-letter:uppercase">{r.note}</p> : null}
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" disabled={answer.isPending} onClick={() => answer.mutate({ id: r.id, accept: true })} aria-label={bilingualAria(`Add ${r.displayName ?? 'this mentor'} to the pool`, `Προσθήκη στη δεξαμενή: ${r.displayName ?? 'μέντορας'}`)}>
+                          <BilingualText en="Add to pool" el="Προσθήκη" compact />
+                        </Button>
+                        <Button size="sm" variant="outline" disabled={answer.isPending} onClick={() => answer.mutate({ id: r.id, accept: false })} aria-label={bilingualAria(`Decline ${r.displayName ?? 'this mentor'}'s request`, `Απόρριψη αιτήματος: ${r.displayName ?? 'μέντορας'}`)}>
+                          <BilingualText en="Decline" el="Απόρριψη" compact />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ) : null}
 
         {mentors.length > 0 && (<>
         <div className={cn('grid grid-cols-2 gap-4', sessionsCounted ? 'kpi-odd-span-md md:grid-cols-4' : 'md:grid-cols-3')}>

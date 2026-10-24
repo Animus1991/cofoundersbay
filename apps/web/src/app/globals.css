@@ -1914,8 +1914,8 @@ html {
        targets (`tap-target-y`, 24px), native selects (32px), and switches
        (26px). A switch keeps its slim track; the area around it answers. */
     /* Rows that declare themselves targets are 5% shorter like every
-       button (41.8px, far above the 24px floor); a native select is a
-       field and stays 44px. */
+       button (41.8px, far above the 24px floor). Choice lists match that
+       height (docs §101); a text field stays 44px. */
     /* Row links used to sit at 41.8px while the buttons beside them were
        30.458px. One phone height, so a name or a "Try again" is not a tall
        empty bar. The hit area stays the button floor, not the old 44px. */
@@ -1932,8 +1932,18 @@ html {
       height: auto;
       min-height: calc(30.458px * var(--button-y));
     }
-    select {
-      min-height: 44px;
+    /* A choice list stands as tall as the buttons beside it (owner,
+       2026-10-24, docs §101): native selects were 44px and select triggers
+       33px beside 28.9px buttons, so a filter row read as three heights.
+       html:root outranks the h-9/h-10 the call sites carry; the padding
+       goes so the value keeps its line. A reduction only; text sizes are
+       untouched, and fields keep their 44px. */
+    html:root select:not([multiple]):not([size]),
+    html:root button[role='combobox'] {
+      height: calc(30.458px * var(--button-y));
+      min-height: calc(30.458px * var(--button-y));
+      padding-top: 0;
+      padding-bottom: 0;
     }
     .tap-target-phone {
       min-height: calc(30.458px * var(--button-y));
@@ -2590,8 +2600,9 @@ img[data-img-failed] {
    at 1440px: fields were 35.7px, select triggers 36.8, tab strips 37.1 and
    segmented groups about 36, beside 31.35px buttons, so one toolbar read
    as four heights. Every value here is a reduction; nothing grows. Below
-   640px the touch floors stay as they are (fields and native selects
-   44px, phoneTouchFloor.test.ts). Text sizes are untouched. */
+   640px fields keep their 44px floor and choice lists take the phone
+   button height (phoneTouchFloor.test.ts, docs §101). Text sizes are
+   untouched. */
 @media (min-width: 640px) {
   :root { --control-h: calc(32.997px * var(--button-y)); }
   /* html:root outranks the rules that sized them (h-11, the search-bar

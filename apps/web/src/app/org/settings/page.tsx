@@ -17,8 +17,10 @@ import { useToast } from '@/components/ui/toast';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import {
   getOrgProfile,
+  getOrganizationPolicies,
   listOrganizationMembers,
   updateOrganization,
+  updateOrganizationPolicies,
   updateOrganizationMember,
   type OrgAdminMember,
 } from '@/lib/api';
@@ -31,8 +33,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { qk } from '@/lib/query-keys';
+import { OrgBillingCard } from '@/components/org/OrgBillingCard';
+import { ORG_POLICY_COPY, ORG_POLICY_KEYS, type OrgPolicies, type OrgPolicyKey } from '@cofounderbay/shared';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   Select,
   SelectContent,
@@ -108,15 +111,35 @@ export default function OrgSettingsPage() {
   const [country, setCountry] = useState('');
   const [timezone, setTimezone] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#6756dc');
-  /* Access policies persist under `settings.policies` on the organisation. */
-  const [policies, setPolicies] = useState<Record<string, boolean>>({
-    publicProfile: true,
-    openApplications: true,
-    mentorSelfRegistration: false,
-    workspaceAccess: true,
+  /*
+   * Access policies (docs §103): read from the organisation itself and
+   * applied by the API. The page read them from the public profile, which
+   * has no settings, so the switches always showed the defaults; and it
+   * saved the whole settings object rebuilt from that empty read.
+   */
+  const policiesQuery = useQuery({
+    queryKey: qk('org', 'policies', organizationId),
+    queryFn: () => getOrganizationPolicies(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 30_000,
+    retry: 0,
   });
-  const savedSettings = profileData?.org?.settings ?? null;
-  const { showDemoData } = useDemoData();
+  const [policies, setPolicies] = useState<OrgPolicies | null>(null);
+  useEffect(() => {
+    if (policiesQuery.data?.policies) setPolicies(policiesQuery.data.policies);
+  }, [policiesQuery.data]);
+  const policiesFailed = policiesQuery.isError && !policiesQuery.data;
+  // `?tab=billing` opens a tab (Checkout comes back with it, and with
+  // `billing=success|cancel`), read once after mount.
+  const [tab, setTab] = useState('general');
+  const [billingNotice, setBillingNotice] = useState<'success' | 'cancel' | null>(null);
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const t = q.get('tab');
+    if (t && ['general', 'branding', 'team', 'permissions', 'billing'].includes(t)) setTab(t);
+    const b = q.get('billing');
+    if (b === 'success' || b === 'cancel') setBillingNotice(b);
+  }, []);
 
   const membersQuery = useQuery({
     queryKey: qk('org', 'admin-members', organizationId),
@@ -139,8 +162,6 @@ export default function OrgSettingsPage() {
     setCountry(normalCountry(org?.country));
     setTimezone(normalTimezone(org?.timezone));
     if (org?.primaryColor) setPrimaryColor(org.primaryColor);
-    const saved = (org?.settings as { policies?: Record<string, boolean> } | null)?.policies;
-    if (saved) setPolicies((prev) => ({ ...prev, ...saved }));
     setSeeded(true);
   }, [profileData, seeded]);
 
@@ -173,21 +194,24 @@ export default function OrgSettingsPage() {
   });
 
   const savePolicies = useMutation({
-    mutationFn: (next: Record<string, boolean>) =>
-      updateOrganization(organizationId!, {
-        settings: { ...(savedSettings ?? {}), policies: next },
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: qk('org') });
+    // Only the switch that changed is sent; the server keeps the rest of the
+    // organisation's settings.
+    mutationFn: (patch: Partial<OrgPolicies>) => updateOrganizationPolicies(organizationId!, patch),
+    onSuccess: (res) => {
+      setPolicies(res.policies);
+      void qc.invalidateQueries({ queryKey: qk('org', 'policies', organizationId) });
       success('Access policies saved');
     },
-    onError: (err) =>
-      showError('Could not save the policies', err instanceof Error ? err.message : undefined),
+    onError: (err) => {
+      // Back to what is stored.
+      if (policiesQuery.data?.policies) setPolicies(policiesQuery.data.policies);
+      showError('Could not save the policies', err instanceof Error ? err.message : undefined);
+    },
   });
-  const setPolicy = (key: string, value: boolean) => {
-    const next = { ...policies, [key]: value };
-    setPolicies(next);
-    if (organizationId) savePolicies.mutate(next);
+  const setPolicy = (key: OrgPolicyKey, value: boolean) => {
+    if (!policies) return;
+    setPolicies({ ...policies, [key]: value });
+    if (organizationId) savePolicies.mutate({ [key]: value });
   };
 
   const changeMemberRole = useMutation({
@@ -224,7 +248,7 @@ export default function OrgSettingsPage() {
     >
       <div className="space-y-6">
 
-        <Tabs defaultValue="general" className="space-y-6">
+        <Tabs value={tab} onValueChange={setTab} className="space-y-6">
           <TabsList className="w-full lg:grid lg:grid-cols-5">
             <TabsTrigger value="general"><BilingualText en="General" el="Γενικά" compact /></TabsTrigger>
             <TabsTrigger value="branding"><BilingualText en="Branding" el="Εμφάνιση" compact /></TabsTrigger>
@@ -498,35 +522,36 @@ export default function OrgSettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Each switch is stored with the organisation, but nothing on
-                    the platform reads them yet; the card says so rather than
-                    implying they take effect (docs §96). */}
-                <p className="text-xs text-muted-foreground">
-                  <BilingualText
-                    en="These choices are saved with your organisation. The platform does not apply them yet."
-                    el="Οι επιλογές αποθηκεύονται με τον οργανισμό σας. Η πλατφόρμα δεν τις εφαρμόζει ακόμη."
-                    wrap
+                {/* Applied by the API since docs §103: each hint says what the
+                    switch does there. A switch shows only once its stored
+                    value is read - a default shown over an unread one could be
+                    saved over it. */}
+                {policiesFailed ? (
+                  <FailedLine
+                    en="Your access policies could not be read just now."
+                    el="Οι πολιτικές πρόσβασης δεν διαβάστηκαν αυτή τη στιγμή."
+                    busy={policiesQuery.isFetching}
+                    onRetry={() => void policiesQuery.refetch()}
                   />
-                </p>
-                {[
-                  { key: 'publicProfile', label: 'Public Profile', labelEl: 'Δημόσιο προφίλ', hint: 'Allow your organization to be discovered publicly', hintEl: 'Ο οργανισμός σας εμφανίζεται δημόσια στην αναζήτηση' },
-                  { key: 'openApplications', label: 'Open Applications', labelEl: 'Ανοιχτές αιτήσεις', hint: 'Accept applications from any startup', hintEl: 'Δεχτείτε αιτήσεις από οποιαδήποτε startup' },
-                  { key: 'mentorSelfRegistration', label: 'Mentor Self-Registration', labelEl: 'Αυτοεγγραφή μεντόρων', hint: 'Allow mentors to request to join your pool', hintEl: 'Οι μέντορες μπορούν να ζητήσουν ένταξη στη δεξαμενή σας' },
-                  { key: 'workspaceAccess', label: 'Startup Workspace Access', labelEl: 'Πρόσβαση στους χώρους startups', hint: 'Org admins can view all startup workspaces', hintEl: 'Οι διαχειριστές βλέπουν όλους τους χώρους εργασίας των startups' },
-                ].map((p) => (
-                  <div key={p.key} className="flex items-center justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium"><BilingualText en={p.label} el={p.labelEl} compact wrap /></p>
-                      <p className="text-xs text-muted-foreground"><BilingualText en={p.hint} el={p.hintEl} wrap /></p>
+                ) : !policies ? (
+                  [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)
+                ) : ORG_POLICY_KEYS.map((key) => {
+                  const copy = ORG_POLICY_COPY[key];
+                  return (
+                    <div key={key} className="flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium"><BilingualText en={copy.label.en} el={copy.label.el} compact wrap /></p>
+                        <p className="text-xs text-muted-foreground"><BilingualText en={copy.hint.en} el={copy.hint.el} wrap /></p>
+                      </div>
+                      <Switch
+                        aria-label={bilingualAria(copy.label.en, copy.label.el)}
+                        checked={policies[key]}
+                        onCheckedChange={(v) => setPolicy(key, v)}
+                        disabled={!organizationId || savePolicies.isPending}
+                      />
                     </div>
-                    <Switch
-                      aria-label={bilingualAria(p.label, p.labelEl)}
-                      checked={policies[p.key]}
-                      onCheckedChange={(v) => setPolicy(p.key, v)}
-                      disabled={!organizationId || !seeded || savePolicies.isPending}
-                    />
-                  </div>
-                ))}
+                  );
+                })}
               </CardContent>
             </Card>
           </TabsContent>
@@ -544,56 +569,13 @@ export default function OrgSettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* A plan, usage limits and a card ending 4242 were shown to
-                    every organisation; they are the showcase's, so they show
-                    only with sample data on (docs §96). */}
-                <p className="text-xs text-muted-foreground">
-                  {showDemoData
-                    ? <BilingualText en="Plan and payment details are illustrative — billing is not connected to the organisation yet." el="Τα στοιχεία πλάνου και πληρωμής είναι ενδεικτικά — οι χρεώσεις δεν έχουν συνδεθεί ακόμη με τον οργανισμό." wrap />
-                    : <BilingualText en="Billing is not connected to organisations yet, so there is no plan or payment method to show." el="Οι χρεώσεις δεν έχουν συνδεθεί ακόμη με τους οργανισμούς, οπότε δεν υπάρχει πλάνο ή τρόπος πληρωμής για προβολή." wrap />}
-                </p>
-                {/* The plan, the usage and the payment method as rows of the
-                    card, not as cards drawn inside it. */}
-                {showDemoData && (
-                <div className="card-rows">
-                  <RowHead
-                    titleAs="h4"
-                    title="Organization Pro"
-                    subtitle={<BilingualText en="$299/month · Billed annually" el="$299/μήνα · Ετήσια χρέωση" compact />}
-                    aside={(
-                      <WithDisabledReason reasonEn="Billing is not connected yet" reasonEl="Η χρέωση δεν έχει συνδεθεί ακόμη">
-                        <Button size="sm" variant="outline" disabled><BilingualText en="Change Plan" el="Αλλαγή πλάνου" compact /></Button>
-                      </WithDisabledReason>
-                    )}
-                  />
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium"><BilingualText en="Usage" el="Χρήση" compact /></p>
-                    <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                      <div>
-                        <dt className="text-xs text-muted-foreground"><BilingualText en="Startups" el="Startups" compact /></dt>
-                        <dd className="card-body font-semibold tabular-nums">32 / 50</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground"><BilingualText en="Team Members" el="Μέλη ομάδας" compact /></dt>
-                        <dd className="card-body font-semibold tabular-nums">5 / 10</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground"><BilingualText en="Programs" el="Προγράμματα" compact /></dt>
-                        <dd className="card-body font-semibold tabular-nums">4 / <BilingualText en="Unlimited" el="Απεριόριστα" compact /></dd>
-                      </div>
-                    </dl>
-                  </div>
-                  <RowHead
-                    titleAs="h4"
-                    title={<BilingualText en="Payment Method" el="Τρόπος πληρωμής" compact />}
-                    subtitle={<span className="tabular-nums">•••• •••• •••• 4242</span>}
-                    aside={(
-                      <WithDisabledReason reasonEn="Billing is not connected yet" reasonEl="Η χρέωση δεν έχει συνδεθεί ακόμη">
-                        <Button variant="outline" size="sm" disabled><BilingualText en="Update" el="Ενημέρωση" compact /></Button>
-                      </WithDisabledReason>
-                    )}
-                  />
-                </div>
+                {/* The organisation's own plan (docs §104): it was an
+                    illustrative "Organization Pro" and a card ending 4242,
+                    shown with sample data on. */}
+                {organizationId ? (
+                  <OrgBillingCard organizationId={organizationId} notice={billingNotice} />
+                ) : (
+                  [0, 1].map((i) => <Skeleton key={i} className="h-12" />)
                 )}
               </CardContent>
             </Card>

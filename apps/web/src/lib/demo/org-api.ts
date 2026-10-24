@@ -28,6 +28,10 @@ import {
   type OrgProgram,
 } from './org-world';
 import type { CohortDetail, CohortItem } from '@/lib/api';
+import { COHORT_MATCH_PROBLEM_COPY, ORG_POLICY_KEYS, ORG_POLICY_PROBLEM_COPY, ORG_TEAM_PLAN_DEFAULTS, orgSeats, readOrgPolicies, type CohortMatchMember, type OrgPolicies } from '@cofounderbay/shared';
+import { DEMO_INVESTORS } from './investors-world';
+import { DemoRefusal } from './demo-refusal';
+import { demoCohortRun, runDemoCohortMatching, type DemoCohortMatch } from './cohort-matching-world';
 
 type Iso = (days: number, hour?: number) => string;
 
@@ -226,7 +230,7 @@ function cohortDetail(prog: OrgProgram, iso: Iso) {
   );
   // Suggested introductions inside the cohort: founders who sell to the same
   // buyers, and each founder with the investor partner.
-  const matches = founders.slice(0, -1).map((part, i) => {
+  const seeded = founders.slice(0, -1).map((part, i) => {
     const a = orgPerson(part.userId);
     const next = founders[i + 1];
     const b = orgPerson(next.userId);
@@ -240,6 +244,9 @@ function cohortDetail(prog: OrgProgram, iso: Iso) {
       reasons: ['Sell to the same operations teams', 'Both hiring a first salesperson'],
     };
   });
+  // After a run this session, its suggestions (docs §102).
+  const run = demoCohortRun(prog.cohortId);
+  const matches = run ? run.matches : seeded;
   const done = sessions.filter((s) => s.status === 'completed');
   const rated = done.filter((s) => s.rating != null);
   return {
@@ -362,7 +369,130 @@ export function demoCohortDetail(cohortId: string, now: number): CohortDetail | 
   return prog ? cohortDetail(prog, isoFrom(now)) as CohortDetail : null;
 }
 
-export function previewOrgApi(pathname: string, path: string, method: string, iso: Iso): unknown {
+/** The members a run scores, in the cohort's own roles. */
+function runMembers(prog: OrgProgram): CohortMatchMember[] {
+  const detail = cohortDetail(prog, () => '');
+  // Everyone in the cohort, as the API reads it (a finished cohort's people are still its people).
+  return detail.participants.map((p) => ({ userId: p.userId, role: p.role }));
+}
+
+/**
+ * `nowMs` is "now" on the demo's own calendar (`previewNowMs`): a stamp made
+ * at request time is moved to the reader's week with the rest of the payload.
+ */
+// ── Access policies and mentors asking to join (docs §103) ───────────────
+const POLICY_KEY = 'cfb:demo-org-policy:v1';
+type PolicyStore = { policies?: Partial<OrgPolicies>; answered?: Record<string, 'accepted' | 'declined'> };
+function readPolicyStore(): PolicyStore {
+  try {
+    const raw = typeof window === 'undefined' ? null : window.sessionStorage.getItem(POLICY_KEY);
+    return raw ? (JSON.parse(raw) as PolicyStore) : {};
+  } catch {
+    return {};
+  }
+}
+function writePolicyStore(next: PolicyStore) {
+  try {
+    window.sessionStorage.setItem(POLICY_KEY, JSON.stringify(next));
+  } catch {
+    // storage blocked: the change lasts this page view
+  }
+}
+export function demoOrgPolicies(): OrgPolicies {
+  return readOrgPolicies({ policies: readPolicyStore().policies ?? {} });
+}
+/** One mentor from the demo's directory waits to join the pool. */
+function demoPoolRequests(iso: Iso) {
+  const helena = DEMO_INVESTORS.find((i) => i.userId === 'user-helena-brandt');
+  const answered = readPolicyStore().answered ?? {};
+  return helena
+    ? [{
+        id: 'omr-helena',
+        userId: helena.userId,
+        displayName: helena.displayName,
+        avatarUrl: null,
+        headline: [helena.firmRole, helena.location].filter(Boolean).join(' · '),
+        expertise: helena.industries,
+        note: 'I mentor fintech founders on pricing and their first raise; Thursdays work best.',
+        requestedAt: iso(-2, 9),
+        answer: answered['omr-helena'] ?? null,
+      }]
+    : [];
+}
+
+/**
+ * `nowMs` is "now" on the demo's own calendar (`previewNowMs`): a stamp made
+ * at request time is moved to the reader's week with the rest of the payload.
+ */
+export function previewOrgApi(pathname: string, path: string, method: string, iso: Iso, nowMs: number = Date.now(), body: Record<string, unknown> = {}): unknown {
+  if (pathname === `/api/organizations/${ORG_ID}/policies`) {
+    if (method === 'PATCH') {
+      const store = readPolicyStore();
+      const next = { ...demoOrgPolicies() };
+      for (const key of ORG_POLICY_KEYS) if (typeof body[key] === 'boolean') next[key] = body[key] as boolean;
+      writePolicyStore({ ...store, policies: next });
+      return { policies: next };
+    }
+    if (method === 'GET') return { policies: demoOrgPolicies() };
+  }
+  // The organisation's plan (docs §104): Team, yearly, in the demo; nothing is charged.
+  if (pathname === `/api/billing/organization/${ORG_ID}` && method === 'GET') {
+    const team = { id: 'plan-team', name: ORG_TEAM_PLAN_DEFAULTS.name, displayName: ORG_TEAM_PLAN_DEFAULTS.displayName, description: ORG_TEAM_PLAN_DEFAULTS.description, priceMonthly: ORG_TEAM_PLAN_DEFAULTS.priceMonthly, priceAnnual: ORG_TEAM_PLAN_DEFAULTS.priceAnnual, currency: ORG_TEAM_PLAN_DEFAULTS.currency, seatLimit: ORG_TEAM_PLAN_DEFAULTS.seatLimit, purchasable: { monthly: false, annual: false } };
+    const members = new Set([...ORG_STAFF.map((s) => s.id), ...ORG_MENTORS.map((m) => m.id)]).size;
+    return {
+      subscription: {
+        id: 'sub-demo-org',
+        status: 'active',
+        billingCycle: 'annual',
+        currentPeriodEnd: iso(160, 10),
+        cancelAtPeriodEnd: false,
+        hasPaymentAccount: true,
+        plan: { id: team.id, name: team.name, displayName: team.displayName, priceMonthly: team.priceMonthly, priceAnnual: team.priceAnnual, currency: team.currency, seatLimit: team.seatLimit },
+      },
+      seats: orgSeats(members, team.seatLimit),
+      plans: [team, { id: 'plan-enterprise', name: 'enterprise', displayName: 'Enterprise', description: 'For large institutions', priceMonthly: 0, priceAnnual: 0, currency: 'USD', seatLimit: null, purchasable: { monthly: false, annual: false } }],
+      billingConfigured: false,
+      canManage: true,
+    };
+  }
+  if (pathname.startsWith(`/api/billing/organization/${ORG_ID}/`) && method === 'POST') {
+    throw new DemoRefusal(400, 'In the demo nothing is charged.', { messageEl: 'Στο demo δεν χρεώνεται τίποτα.' });
+  }
+  if (pathname === `/api/organizations/slug/${ORG_SLUG}/mentor-pool/me` && method === 'GET') {
+    // The demo reader is in the pool already (ORG_MENTORS).
+    return { organizationId: ORG_ID, name: ORG.name, standing: 'in_pool', isMentor: true };
+  }
+  const poolReq = /^\/api\/organizations\/([^/]+)\/mentors\/requests(?:\/([^/]+))?(?:\/(accept))?$/.exec(pathname);
+  if (poolReq && poolReq[1] === ORG_ID) {
+    const pending = demoPoolRequests(iso).filter((r) => !r.answer);
+    if (!poolReq[2] && method === 'GET') return { requests: pending.map((r) => ({ id: r.id, userId: r.userId, displayName: r.displayName, avatarUrl: r.avatarUrl, headline: r.headline, expertise: r.expertise, note: r.note, requestedAt: r.requestedAt })) };
+    if (!poolReq[2] && method === 'POST') {
+      const copy = ORG_POLICY_PROBLEM_COPY.already_in_pool;
+      throw new DemoRefusal(409, copy.en, { reason: 'org_policy', problem: 'already_in_pool', messageEl: copy.el });
+    }
+    if (poolReq[2] === 'mine' && method === 'DELETE') throw new DemoRefusal(404, 'No request is waiting', { messageEl: 'Δεν περιμένει κανένα αίτημα.' });
+    const row = pending.find((r) => r.id === poolReq[2]);
+    if (!row) throw new DemoRefusal(404, 'No request is waiting', { messageEl: 'Δεν περιμένει κανένα αίτημα.' });
+    const accept = poolReq[3] === 'accept' && method === 'POST';
+    if (accept || method === 'DELETE') {
+      const store = readPolicyStore();
+      writePolicyStore({ ...store, answered: { ...(store.answered ?? {}), [row.id]: accept ? 'accepted' : 'declined' } });
+      return { ok: true, accepted: accept };
+    }
+  }
+  // A cohort-wide match run (docs §102); the demo reader is an admin.
+  const run = /^\/api\/org\/([^/]+)\/cohorts\/([^/]+)\/matches\/run$/.exec(pathname);
+  if (method === 'POST' && run) {
+    if (run[1] !== ORG_SLUG) throw new DemoRefusal(404, 'Organization not found', { messageEl: 'Ο οργανισμός δεν βρέθηκε.' });
+    const prog = ORG_PROGRAMS.find((p) => p.cohortId === run[2] || p.cohortId.replace(/^cohort-/, '') === run[2]);
+    if (!prog) throw new DemoRefusal(404, 'Cohort not found', { messageEl: 'Ο κύκλος δεν βρέθηκε.' });
+    const members = runMembers(prog);
+    if (!members.some((m) => m.role === 'founder')) {
+      const copy = COHORT_MATCH_PROBLEM_COPY.no_founders;
+      throw new DemoRefusal(400, copy.en, { reason: 'cohort_match_invalid', problem: 'no_founders', messageEl: copy.el });
+    }
+    return runDemoCohortMatching(prog.cohortId, members, cohortDetail(prog, iso).matches as DemoCohortMatch[], nowMs);
+  }
   if (method !== 'GET') return undefined;
   const params = new URLSearchParams(path.split('?')[1] ?? '');
   const parts = pathname.split('/').filter(Boolean); // ['api', ...]
@@ -444,8 +574,20 @@ export function previewOrgApi(pathname: string, path: string, method: string, is
       }));
     }
     if (parts[3] === 'mentors') {
+      const joined = demoPoolRequests(iso).filter((r) => r.answer === 'accepted').map((r) => ({
+        id: `mp-${r.userId}`,
+        userId: r.userId,
+        displayName: r.displayName,
+        avatarUrl: null,
+        headline: r.headline,
+        expertiseAreas: r.expertise,
+        maxMentees: null,
+        currentMentees: 0,
+        isActive: true,
+        assignedAt: iso(0, 10),
+      }));
       return {
-        mentors: ORG_MENTORS.map((m) => ({
+        mentors: [...joined, ...ORG_MENTORS.map((m) => ({
           id: `mp-${m.id}`,
           userId: m.id,
           displayName: m.name,
@@ -456,7 +598,7 @@ export function previewOrgApi(pathname: string, path: string, method: string, is
           currentMentees: m.mentees.length,
           isActive: true,
           assignedAt: iso(-m.joined, 10),
-        })),
+        }))],
       };
     }
     return undefined;

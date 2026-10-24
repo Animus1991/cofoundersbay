@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { ApiError, acceptsApplications, applyToProgram, getMyPrograms, getProgram } from '@/lib/api';
+import { ORG_POLICY_PROBLEM_COPY } from '@cofounderbay/shared';
 import { useCoverFailed } from '@/hooks/useCoverFailed';
 import { programsEl, programsEn } from '@/lib/i18n/strings-programs';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -94,8 +95,8 @@ export default function ProgramDetailPage() {
       labelEn: 'Apply to this programme',
       labelEl: 'Αίτηση στο πρόγραμμα',
       writes: true,
-      unavailableEn: !program ? 'The programme has not loaded.' : enrolled ? 'You have already applied.' : !open ? 'This programme is not taking applications.' : undefined,
-      unavailableEl: !program ? 'Το πρόγραμμα δεν έχει φορτωθεί.' : enrolled ? 'Έχετε ήδη κάνει αίτηση.' : !open ? 'Το πρόγραμμα δεν δέχεται αιτήσεις.' : undefined,
+      unavailableEn: !program ? 'The programme has not loaded.' : enrolled ? 'You have already applied.' : program.byInvitation ? ORG_POLICY_PROBLEM_COPY.applications_closed.en : !open ? 'This programme is not taking applications.' : undefined,
+      unavailableEl: !program ? 'Το πρόγραμμα δεν έχει φορτωθεί.' : enrolled ? 'Έχετε ήδη κάνει αίτηση.' : program.byInvitation ? ORG_POLICY_PROBLEM_COPY.applications_closed.el : !open ? 'Το πρόγραμμα δεν δέχεται αιτήσεις.' : undefined,
       run: async () => { await apply.mutateAsync(); },
     },
   ]);
@@ -287,8 +288,8 @@ export default function ProgramDetailPage() {
               ) : closed ? (
                 <p className="card-body text-muted-foreground">
                   <BilingualText
-                    en={full ? 'The programme is full.' : deadlinePassed ? 'Applications have closed.' : 'This programme is not taking applications.'}
-                    el={full ? 'Το πρόγραμμα είναι πλήρες.' : deadlinePassed ? 'Οι αιτήσεις έκλεισαν.' : 'Το πρόγραμμα δεν δέχεται αιτήσεις.'}
+                    en={program.byInvitation ? ORG_POLICY_PROBLEM_COPY.applications_closed.en : full ? 'The programme is full.' : deadlinePassed ? 'Applications have closed.' : 'This programme is not taking applications.'}
+                    el={program.byInvitation ? ORG_POLICY_PROBLEM_COPY.applications_closed.el : full ? 'Το πρόγραμμα είναι πλήρες.' : deadlinePassed ? 'Οι αιτήσεις έκλεισαν.' : 'Το πρόγραμμα δεν δέχεται αιτήσεις.'}
                     compact
                     wrap
                   />

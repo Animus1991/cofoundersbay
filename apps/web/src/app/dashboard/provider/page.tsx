@@ -433,14 +433,11 @@ export default function ProviderDashboard() {
           </div>
 
           <div className="space-y-6">
+{/* The role's pages this home does not already open from a tile or a section: the rest were listed twice on one screen (docs §101). */}
             <QuickLinks
               label="Provider pages"
               labelEl="Σελίδες παρόχου"
               links={[
-                { href: '/provider/services', icon: Store, label: 'Services', labelEl: 'Υπηρεσίες' },
-                { href: '/provider/inquiries', icon: MessageSquare, label: 'Inquiries', labelEl: 'Αιτήματα' },
-                { href: '/provider/projects', icon: FolderKanban, label: 'Projects', labelEl: 'Έργα' },
-                { href: '/provider/reviews', icon: Star, label: 'Reviews', labelEl: 'Αξιολογήσεις' },
                 { href: '/provider/analytics', icon: BarChart3, label: 'Analytics', labelEl: 'Αναλυτικά' },
                 { href: '/provider/profile', icon: UserCog, label: 'Provider profile', labelEl: 'Προφίλ παρόχου' },
               ]}
