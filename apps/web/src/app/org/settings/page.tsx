@@ -17,8 +17,10 @@ import { useToast } from '@/components/ui/toast';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import {
   getOrgProfile,
+  getOrganizationPolicies,
   listOrganizationMembers,
   updateOrganization,
+  updateOrganizationPolicies,
   updateOrganizationMember,
   type OrgAdminMember,
 } from '@/lib/api';
@@ -31,6 +33,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { qk } from '@/lib/query-keys';
+import { ORG_POLICY_COPY, ORG_POLICY_KEYS, type OrgPolicies, type OrgPolicyKey } from '@cofounderbay/shared';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
@@ -108,14 +111,24 @@ export default function OrgSettingsPage() {
   const [country, setCountry] = useState('');
   const [timezone, setTimezone] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#6756dc');
-  /* Access policies persist under `settings.policies` on the organisation. */
-  const [policies, setPolicies] = useState<Record<string, boolean>>({
-    publicProfile: true,
-    openApplications: true,
-    mentorSelfRegistration: false,
-    workspaceAccess: true,
+  /*
+   * Access policies (docs §103): read from the organisation itself and
+   * applied by the API. The page read them from the public profile, which
+   * has no settings, so the switches always showed the defaults; and it
+   * saved the whole settings object rebuilt from that empty read.
+   */
+  const policiesQuery = useQuery({
+    queryKey: qk('org', 'policies', organizationId),
+    queryFn: () => getOrganizationPolicies(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 30_000,
+    retry: 0,
   });
-  const savedSettings = profileData?.org?.settings ?? null;
+  const [policies, setPolicies] = useState<OrgPolicies | null>(null);
+  useEffect(() => {
+    if (policiesQuery.data?.policies) setPolicies(policiesQuery.data.policies);
+  }, [policiesQuery.data]);
+  const policiesFailed = policiesQuery.isError && !policiesQuery.data;
   const { showDemoData } = useDemoData();
 
   const membersQuery = useQuery({
@@ -139,8 +152,6 @@ export default function OrgSettingsPage() {
     setCountry(normalCountry(org?.country));
     setTimezone(normalTimezone(org?.timezone));
     if (org?.primaryColor) setPrimaryColor(org.primaryColor);
-    const saved = (org?.settings as { policies?: Record<string, boolean> } | null)?.policies;
-    if (saved) setPolicies((prev) => ({ ...prev, ...saved }));
     setSeeded(true);
   }, [profileData, seeded]);
 
@@ -173,21 +184,24 @@ export default function OrgSettingsPage() {
   });
 
   const savePolicies = useMutation({
-    mutationFn: (next: Record<string, boolean>) =>
-      updateOrganization(organizationId!, {
-        settings: { ...(savedSettings ?? {}), policies: next },
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: qk('org') });
+    // Only the switch that changed is sent; the server keeps the rest of the
+    // organisation's settings.
+    mutationFn: (patch: Partial<OrgPolicies>) => updateOrganizationPolicies(organizationId!, patch),
+    onSuccess: (res) => {
+      setPolicies(res.policies);
+      void qc.invalidateQueries({ queryKey: qk('org', 'policies', organizationId) });
       success('Access policies saved');
     },
-    onError: (err) =>
-      showError('Could not save the policies', err instanceof Error ? err.message : undefined),
+    onError: (err) => {
+      // Back to what is stored.
+      if (policiesQuery.data?.policies) setPolicies(policiesQuery.data.policies);
+      showError('Could not save the policies', err instanceof Error ? err.message : undefined);
+    },
   });
-  const setPolicy = (key: string, value: boolean) => {
-    const next = { ...policies, [key]: value };
-    setPolicies(next);
-    if (organizationId) savePolicies.mutate(next);
+  const setPolicy = (key: OrgPolicyKey, value: boolean) => {
+    if (!policies) return;
+    setPolicies({ ...policies, [key]: value });
+    if (organizationId) savePolicies.mutate({ [key]: value });
   };
 
   const changeMemberRole = useMutation({
@@ -498,35 +512,36 @@ export default function OrgSettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Each switch is stored with the organisation, but nothing on
-                    the platform reads them yet; the card says so rather than
-                    implying they take effect (docs §96). */}
-                <p className="text-xs text-muted-foreground">
-                  <BilingualText
-                    en="These choices are saved with your organisation. The platform does not apply them yet."
-                    el="Οι επιλογές αποθηκεύονται με τον οργανισμό σας. Η πλατφόρμα δεν τις εφαρμόζει ακόμη."
-                    wrap
+                {/* Applied by the API since docs §103: each hint says what the
+                    switch does there. A switch shows only once its stored
+                    value is read - a default shown over an unread one could be
+                    saved over it. */}
+                {policiesFailed ? (
+                  <FailedLine
+                    en="Your access policies could not be read just now."
+                    el="Οι πολιτικές πρόσβασης δεν διαβάστηκαν αυτή τη στιγμή."
+                    busy={policiesQuery.isFetching}
+                    onRetry={() => void policiesQuery.refetch()}
                   />
-                </p>
-                {[
-                  { key: 'publicProfile', label: 'Public Profile', labelEl: 'Δημόσιο προφίλ', hint: 'Allow your organization to be discovered publicly', hintEl: 'Ο οργανισμός σας εμφανίζεται δημόσια στην αναζήτηση' },
-                  { key: 'openApplications', label: 'Open Applications', labelEl: 'Ανοιχτές αιτήσεις', hint: 'Accept applications from any startup', hintEl: 'Δεχτείτε αιτήσεις από οποιαδήποτε startup' },
-                  { key: 'mentorSelfRegistration', label: 'Mentor Self-Registration', labelEl: 'Αυτοεγγραφή μεντόρων', hint: 'Allow mentors to request to join your pool', hintEl: 'Οι μέντορες μπορούν να ζητήσουν ένταξη στη δεξαμενή σας' },
-                  { key: 'workspaceAccess', label: 'Startup Workspace Access', labelEl: 'Πρόσβαση στους χώρους startups', hint: 'Org admins can view all startup workspaces', hintEl: 'Οι διαχειριστές βλέπουν όλους τους χώρους εργασίας των startups' },
-                ].map((p) => (
-                  <div key={p.key} className="flex items-center justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium"><BilingualText en={p.label} el={p.labelEl} compact wrap /></p>
-                      <p className="text-xs text-muted-foreground"><BilingualText en={p.hint} el={p.hintEl} wrap /></p>
+                ) : !policies ? (
+                  [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)
+                ) : ORG_POLICY_KEYS.map((key) => {
+                  const copy = ORG_POLICY_COPY[key];
+                  return (
+                    <div key={key} className="flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium"><BilingualText en={copy.label.en} el={copy.label.el} compact wrap /></p>
+                        <p className="text-xs text-muted-foreground"><BilingualText en={copy.hint.en} el={copy.hint.el} wrap /></p>
+                      </div>
+                      <Switch
+                        aria-label={bilingualAria(copy.label.en, copy.label.el)}
+                        checked={policies[key]}
+                        onCheckedChange={(v) => setPolicy(key, v)}
+                        disabled={!organizationId || savePolicies.isPending}
+                      />
                     </div>
-                    <Switch
-                      aria-label={bilingualAria(p.label, p.labelEl)}
-                      checked={policies[p.key]}
-                      onCheckedChange={(v) => setPolicy(p.key, v)}
-                      disabled={!organizationId || !seeded || savePolicies.isPending}
-                    />
-                  </div>
-                ))}
+                  );
+                })}
               </CardContent>
             </Card>
           </TabsContent>

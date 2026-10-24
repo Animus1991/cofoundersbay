@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { readOrgPolicies } from '@cofounderbay/shared';
+import { orgPolicyRefusal } from './organization-policies.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { OrganizationService } from './organization.service';
 import { Prisma } from '@prisma/client';
@@ -32,7 +34,8 @@ const PUBLIC_PROGRAM_SELECT = {
   createdAt: true,
   updatedAt: true,
   organization: {
-    select: { id: true, type: true, name: true, displayName: true, slug: true, logoUrl: true },
+    // `settings` is read for its policies and never sent (`toPublicProgram`).
+    select: { id: true, type: true, name: true, displayName: true, slug: true, logoUrl: true, settings: true },
   },
   milestones: {
     orderBy: { sortOrder: 'asc' as const },
@@ -47,6 +50,19 @@ const PUBLIC_PROGRAM_SELECT = {
   },
   _count: { select: { participants: true } },
 } satisfies Prisma.ProgramSelect;
+
+/**
+ * A programme as someone outside its organisation reads it: the
+ * organisation's settings never leave the server, and `applicationsByInvitation`
+ * says whether its "Open applications" policy is off (docs §103), so the page
+ * can say so before anyone writes an application.
+ */
+function toPublicProgram<T extends { organization?: { settings?: unknown } | null }>(row: T) {
+  const { organization, ...rest } = row;
+  if (!organization) return { ...rest, organization, applicationsByInvitation: false };
+  const { settings, ...org } = organization;
+  return { ...rest, organization: org, applicationsByInvitation: !readOrgPolicies(settings).openApplications };
+}
 
 @Injectable()
 export class ProgramService {
@@ -159,7 +175,7 @@ export class ProgramService {
       : await this.prisma.program.findUnique({
           where: { id },
           select: PUBLIC_PROGRAM_SELECT,
-        });
+        }).then((row) => (row ? toPublicProgram(row) : null));
 
     if (!program) {
       throw new NotFoundException('Program not found');
@@ -209,7 +225,7 @@ export class ProgramService {
       },
       select: PUBLIC_PROGRAM_SELECT,
       orderBy: { startDate: 'desc' },
-    });
+    }).then((rows) => rows.map(toPublicProgram));
   }
 
   async findPublicPrograms(filters?: {
@@ -240,7 +256,7 @@ export class ProgramService {
         orderBy: [{ isFeatured: 'desc' }, { startDate: 'asc' }],
         skip: (page - 1) * limit,
         take: limit,
-      }),
+      }).then((rows) => rows.map(toPublicProgram)),
       this.prisma.program.count({ where }),
     ]);
 
@@ -344,6 +360,16 @@ export class ProgramService {
 
     if (program.applicationDeadline && new Date() > program.applicationDeadline) {
       throw new BadRequestException('Application deadline has passed');
+    }
+
+    // "Open applications" off: only the organisation's own members apply (docs §103).
+    const org = await this.prisma.organization.findUnique({ where: { id: program.organizationId }, select: { settings: true } });
+    if (!readOrgPolicies(org?.settings).openApplications) {
+      const member = await this.prisma.organizationMembership.findFirst({
+        where: { organizationId: program.organizationId, userId, isActive: true },
+        select: { id: true },
+      });
+      if (!member) throw orgPolicyRefusal('applications_closed');
     }
 
     const existing = await this.prisma.programParticipant.findFirst({

@@ -31,18 +31,35 @@ describe('program read boundaries', () => {
         .mockResolvedValueOnce({
           organizationId: 'org-1', isPublic: true, status: 'active', organization: { isActive: true },
         })
-        .mockResolvedValueOnce(publicProgram),
+        .mockResolvedValueOnce({ ...publicProgram, organization: { id: 'org-1', name: 'Org', settings: { policies: { openApplications: false }, secret: 'x' } } }),
     };
     const organizationMembership = { findUnique: vi.fn().mockResolvedValue(null) };
     const { service } = setup({ program, organizationMembership });
 
-    await expect(service.findById('program-1', 'outsider')).resolves.toEqual(publicProgram);
+    // The organisation's settings are read for its policies and never sent;
+    // what they say is one flag (docs §103).
+    await expect(service.findById('program-1', 'outsider')).resolves.toEqual({ ...publicProgram, organization: { id: 'org-1', name: 'Org' }, applicationsByInvitation: true });
     const publicQuery = program.findUnique.mock.calls[1][0];
     expect(publicQuery.select).not.toHaveProperty('participants');
     expect(publicQuery.select).not.toHaveProperty('settings');
     expect(publicQuery.select).not.toHaveProperty('tenantId');
     expect(publicQuery.select).not.toHaveProperty('createdById');
     expect(JSON.stringify(publicQuery.select)).not.toContain('email');
+  });
+
+  it('takes applications only from members while "Open applications" is off (docs §103)', async () => {
+    const program = { findUnique: vi.fn().mockResolvedValue({ id: 'p1', organizationId: 'org-1', isPublic: true, status: 'active', applicationDeadline: null }) };
+    const organization = { findUnique: vi.fn().mockResolvedValue({ settings: { policies: { openApplications: false } } }) };
+    const outsider = setup({ program, organization, organizationMembership: { findUnique: vi.fn(), findFirst: vi.fn().mockResolvedValue(null) } });
+    await expect(outsider.service.applyToProgram('p1', 'outsider')).rejects.toMatchObject({ response: { error: { details: { problem: 'applications_closed' } } } });
+    const member = setup({ program, organization, organizationMembership: { findUnique: vi.fn(), findFirst: vi.fn().mockResolvedValue({ id: 'm1' }) } });
+    member.prisma.programParticipant.findFirst.mockResolvedValue(null);
+    member.prisma.programParticipant.create.mockResolvedValue({ id: 'pp1' });
+    await expect(member.service.applyToProgram('p1', 'member')).resolves.toEqual({ id: 'pp1' });
+    const open = setup({ program, organization: { findUnique: vi.fn().mockResolvedValue({ settings: null }) } });
+    open.prisma.programParticipant.findFirst.mockResolvedValue(null);
+    open.prisma.programParticipant.create.mockResolvedValue({ id: 'pp2' });
+    await expect(open.service.applyToProgram('p1', 'anyone')).resolves.toEqual({ id: 'pp2' });
   });
 
   it('makes a private program indistinguishable from a missing program to a non-member', async () => {

@@ -28,8 +28,9 @@ function transactionalPrisma(membershipOverrides: Record<string, any> = {}) {
 describe('organization read boundaries', () => {
   it('returns only a public projection to an authenticated non-member', async () => {
     const publicOrganization = { id: 'org-1', name: 'Public org' };
+    // Settings are read for the "Public profile" policy (docs §103) and never sent.
     const organization = {
-      findFirst: vi.fn().mockResolvedValue(publicOrganization),
+      findFirst: vi.fn().mockResolvedValue({ ...publicOrganization, settings: { policies: { publicProfile: true }, billingEmail: 'x@y.example' } }),
       findUnique: vi.fn(),
     };
     const organizationMembership = { findUnique: vi.fn().mockResolvedValue(null) };
@@ -41,9 +42,30 @@ describe('organization read boundaries', () => {
     expect(query.select).not.toHaveProperty('email');
     expect(query.select).not.toHaveProperty('phone');
     expect(query.select).not.toHaveProperty('address');
-    expect(query.select).not.toHaveProperty('settings');
     expect(query.select).not.toHaveProperty('memberships');
     expect(query.select).not.toHaveProperty('createdById');
+  });
+
+  it('reads a non-public organisation as a missing one to a non-member (docs §103)', async () => {
+    const organization = {
+      findFirst: vi.fn().mockResolvedValue({ id: 'org-1', name: 'Quiet org', settings: { policies: { publicProfile: false } } }),
+      findUnique: vi.fn().mockResolvedValue({ id: 'org-1' }),
+    };
+    const organizationMembership = { findUnique: vi.fn().mockResolvedValue(null) };
+    const service = makeService({ organization, organizationMembership });
+    await expect(service.findById('org-1', 'outsider')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.findBySlug('quiet', 'outsider')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('keeps a non-public organisation out of the directory (docs §103)', async () => {
+    const organization = {
+      findMany: vi.fn().mockResolvedValueOnce([{ id: 'hidden-1' }]).mockResolvedValueOnce([]),
+      count: vi.fn().mockResolvedValue(0),
+    };
+    const service = makeService({ organization });
+    await service.findAll({});
+    const listQuery = organization.findMany.mock.calls[1][0];
+    expect(listQuery.where.id).toEqual({ notIn: ['hidden-1'] });
   });
 
   it('allows an active member to read the member projection', async () => {

@@ -3813,6 +3813,10 @@ model OrganizationMentor {
   isActive        Boolean      @default(true)
   assignedAt      DateTime     @default(now())
   assignedBy      String?
+  /// A mentor's own request to join the pool (docs §103): set with isActive
+  /// false while it waits; accepting makes the row active.
+  requestedAt     DateTime?
+  requestNote     String?
   
   @@unique([organizationId, userId])
   @@index([organizationId])

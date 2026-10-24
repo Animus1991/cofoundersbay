@@ -1,9 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Optional, UnauthorizedException } from '@nestjs/common';
 import {
   COHORT_MATCH_MAX_MEMBERS,
   COHORT_MATCH_MIN_SCORE,
   COHORT_MATCH_PROBLEM_COPY,
   cohortMatchPairs,
+  readOrgPolicies,
   toCohortScore,
   type CohortMatchMember,
   type CohortMatchProblem,
@@ -49,6 +50,47 @@ export class OrgService {
     ]);
     if (membership || actor?.role === 'admin' || actor?.role === 'super_admin') return { orgUserId: org.id };
     throw new ForbiddenException('Only the people who run this organisation can do that');
+  }
+
+  /**
+   * Whether this person belongs to the organisation behind `slug`: its own
+   * account, any active member of the organisation with that slug, or a
+   * platform admin.
+   */
+  private async belongs(slug: string, orgUserId: string | null, userId: string | null | undefined): Promise<boolean> {
+    if (!userId) return false;
+    if (orgUserId && userId === orgUserId) return true;
+    const [actor, membership] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+      this.prisma.organizationMembership.findFirst({ where: { userId, isActive: true, organization: { slug } }, select: { id: true } }),
+    ]);
+    return Boolean(membership) || actor?.role === 'admin' || actor?.role === 'super_admin';
+  }
+
+  /**
+   * The public reads (profile, opportunities, cohorts, members) answer
+   * outsiders only while the organisation's "Public profile" policy is on
+   * (docs §103); otherwise a hidden organisation reads as a missing one.
+   */
+  async assertOrgVisible(slug: string, userId?: string | null): Promise<void> {
+    const organization = await this.prisma.organization.findUnique({ where: { slug }, select: { settings: true } });
+    if (!organization || readOrgPolicies(organization.settings).publicProfile) return;
+    const org = await this.prisma.user.findFirst({ where: { slug, role: 'org' }, select: { id: true } });
+    if (await this.belongs(slug, org?.id ?? null, userId)) return;
+    throw new NotFoundException('Organization not found');
+  }
+
+  /**
+   * A cohort's participants (with their emails), matches and sessions are
+   * the organisation's to read, not the public's: the detail route answered
+   * anyone, signed in or not (docs §103).
+   */
+  async assertOrgMember(slug: string, userId?: string | null): Promise<void> {
+    const org = await this.prisma.user.findFirst({ where: { slug, role: 'org' }, select: { id: true } });
+    if (!org) throw new NotFoundException('Organization not found');
+    if (!userId) throw new UnauthorizedException('Sign in as a member of this organisation');
+    if (await this.belongs(slug, org.id, userId)) return;
+    throw new ForbiddenException('Only members of this organisation can read its cohorts');
   }
 
   /**

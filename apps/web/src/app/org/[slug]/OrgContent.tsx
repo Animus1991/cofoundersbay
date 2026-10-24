@@ -23,6 +23,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { ProfileHero } from '@/components/profile/ProfileHero';
 import { FollowButton } from '@/components/updates/FollowButton';
+import { MentorPoolAction } from '@/components/org/MentorPoolAction';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { Counter } from '@/components/ui/counter';
@@ -132,6 +133,9 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                   reader's /updates, and unfollowing removes the row. It was a
                   disabled button that said following was not supported. */}
               <FollowButton userId={org.id} />
+              {/* A mentor asks to join the pool here when the organisation
+                  allows it (docs §103); nothing shows otherwise. */}
+              <MentorPoolAction slug={slug} />
               {org.email || org.website ? (
                 <Button size="sm" variant="outline" className="gap-1.5" asChild>
                   <a href={org.email ? `mailto:${org.email}` : org.website!} target={org.email ? undefined : '_blank'} rel="noopener noreferrer">

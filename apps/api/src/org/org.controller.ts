@@ -17,7 +17,8 @@ export class OrgController {
   }
 
   @Get(':slug')
-  async getOrgProfile(@Param('slug') slug: string) {
+  async getOrgProfile(@Param('slug') slug: string, @CurrentUser() user?: { id: string }) {
+    await this.orgService.assertOrgVisible(slug, user?.id);
     return this.orgService.getOrgProfile(slug);
   }
 
@@ -26,7 +27,9 @@ export class OrgController {
     @Param('slug') slug: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
+    @CurrentUser() user?: { id: string },
   ) {
+    await this.orgService.assertOrgVisible(slug, user?.id);
     return this.orgService.getOrgOpportunities(slug, {
       limit: limit ? parseInt(limit) : undefined,
       offset: offset ? parseInt(offset) : undefined,
@@ -38,7 +41,9 @@ export class OrgController {
     @Param('slug') slug: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
+    @CurrentUser() user?: { id: string },
   ) {
+    await this.orgService.assertOrgVisible(slug, user?.id);
     return this.orgService.getOrgCohorts(slug, {
       limit: limit ? parseInt(limit) : undefined,
       offset: offset ? parseInt(offset) : undefined,
@@ -49,7 +54,9 @@ export class OrgController {
   async getOrgCohortDetail(
     @Param('slug') slug: string,
     @Param('cohortId') cohortId: string,
+    @CurrentUser() user?: { id: string },
   ) {
+    await this.orgService.assertOrgMember(slug, user?.id);
     return this.orgService.getOrgCohortDetail(slug, cohortId);
   }
 
@@ -70,7 +77,9 @@ export class OrgController {
     @Param('slug') slug: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
+    @CurrentUser() user?: { id: string },
   ) {
+    await this.orgService.assertOrgVisible(slug, user?.id);
     return this.orgService.getOrgMembers(slug, {
       limit: limit ? parseInt(limit) : undefined,
       offset: offset ? parseInt(offset) : undefined,

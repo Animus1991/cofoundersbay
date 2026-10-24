@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { readOrgPolicies } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 
@@ -127,10 +128,7 @@ export class OrganizationService {
             _count: { select: { memberships: true, programs: true } },
           },
         })
-      : await this.prisma.organization.findFirst({
-          where: { id, isActive: true },
-          select: PUBLIC_ORGANIZATION_SELECT,
-        });
+      : await this.publicOrganization({ id, isActive: true }, PUBLIC_ORGANIZATION_SELECT);
 
     if (!org) {
       throw new NotFoundException('Organization not found');
@@ -162,9 +160,7 @@ export class OrganizationService {
             _count: { select: { memberships: true, programs: true } },
           },
         })
-      : await this.prisma.organization.findFirst({
-          where: { id: organization.id, isActive: true },
-          select: {
+      : await this.publicOrganization({ id: organization.id, isActive: true }, {
             ...PUBLIC_ORGANIZATION_SELECT,
             programs: {
               where: { isPublic: true, status: { in: ['upcoming', 'active', 'completed'] } },
@@ -184,8 +180,7 @@ export class OrganizationService {
                 coverImageUrl: true,
               },
             },
-          },
-        });
+          });
 
     if (!org) {
       throw new NotFoundException('Organization not found');
@@ -204,8 +199,14 @@ export class OrganizationService {
   }) {
     const { type, isVerified, isFeatured, search, page = 1, limit = 20 } = filters;
 
+    // "Public profile" off keeps an organisation out of the directory (docs §103).
+    const hidden = (await this.prisma.organization.findMany({
+      where: { settings: { path: ['policies', 'publicProfile'], equals: false } },
+      select: { id: true },
+    })).map((o) => o.id);
     const where: Prisma.OrganizationWhereInput = {
       isActive: true,
+      ...(hidden.length && { id: { notIn: hidden } }),
       ...(type && { type: type as any }),
       ...(isVerified !== undefined && { isVerified }),
       ...(isFeatured !== undefined && { isFeatured }),
@@ -535,6 +536,18 @@ export class OrganizationService {
   }
 
   // Helper methods
+  /**
+   * An organisation as someone outside it reads it: none at all when its
+   * "Public profile" policy is off (docs §103), so a hidden organisation is
+   * indistinguishable from a missing one.
+   */
+  private async publicOrganization(where: Prisma.OrganizationWhereInput, select: Prisma.OrganizationSelect): Promise<Record<string, unknown> | null> {
+    const row = (await this.prisma.organization.findFirst({ where, select: { ...select, settings: true } })) as Record<string, unknown> | null;
+    if (!row || !readOrgPolicies(row.settings).publicProfile) return null;
+    const { settings: _settings, ...rest } = row;
+    return rest;
+  }
+
   async checkAdminAccess(orgId: string, userId: string) {
     const membership = await this.prisma.organizationMembership.findFirst({
       where: {

@@ -5466,6 +5466,11 @@ export interface ProgramItem {
   updatedAt: string;
   /** From `getMyPrograms`: the caller's own participant status in this program. */
   myStatus?: string;
+  /**
+   * The organisation takes applications by invitation ("Open applications"
+   * off) and the reader is not one of its members (docs §103).
+   */
+  byInvitation?: boolean;
 }
 
 export interface ProgramParticipantItem {
@@ -5518,6 +5523,7 @@ export async function updateProgramParticipant(
  */
 type RawProgram = Omit<Partial<ProgramItem>, 'organization' | 'benefits' | 'status' | 'programType'> & {
   name?: string;
+  applicationsByInvitation?: boolean;
   status?: string;
   programType?: string;
   benefits?: unknown;
@@ -5565,11 +5571,17 @@ export function toProgramItem(raw: RawProgram): ProgramItem {
     createdAt: raw.createdAt ?? '',
     updatedAt: raw.updatedAt ?? '',
     ...(raw.myStatus ? { myStatus: raw.myStatus } : {}),
+    ...(raw.applicationsByInvitation === true ? { byInvitation: true } : {}),
   };
 }
 
-/** Upcoming and running programs take applications until their deadline (program.service `apply`). */
-export function acceptsApplications(program: Pick<ProgramItem, 'status' | 'applicationDeadline'>, now = Date.now()): boolean {
+/**
+ * Upcoming and running programs take applications until their deadline
+ * (program.service `apply`), from anyone unless the organisation takes them
+ * by invitation (docs §103).
+ */
+export function acceptsApplications(program: Pick<ProgramItem, 'status' | 'applicationDeadline'> & { byInvitation?: boolean }, now = Date.now()): boolean {
+  if (program.byInvitation) return false;
   if (program.status !== 'upcoming' && program.status !== 'active') return false;
   return !program.applicationDeadline || Date.parse(program.applicationDeadline) > now;
 }
@@ -5843,6 +5855,61 @@ export async function getOrgMentorPool(
   return apiRequest(`/api/organizations/${organizationId}/mentors`, undefined, {
     retryOn401: false,
   });
+}
+
+// --- Organisation access policies and mentor pool requests (docs §103) ---
+
+export type OrgPoliciesRead = { policies: import('@cofounderbay/shared').OrgPolicies };
+
+export async function getOrganizationPolicies(organizationId: string): Promise<OrgPoliciesRead> {
+  return apiRequest(`/api/organizations/${encodeURIComponent(organizationId)}/policies`);
+}
+
+export async function updateOrganizationPolicies(organizationId: string, patch: Partial<import('@cofounderbay/shared').OrgPolicies>): Promise<OrgPoliciesRead> {
+  return apiRequest(`/api/organizations/${encodeURIComponent(organizationId)}/policies`, { method: 'PATCH', body: JSON.stringify(patch) });
+}
+
+export type MentorPoolStandingRead = {
+  organizationId: string;
+  name: string;
+  standing: import('@cofounderbay/shared').MentorPoolStanding;
+  isMentor: boolean;
+};
+
+/** Where the signed-in person stands with an organisation's mentor pool. */
+export async function getMentorPoolStanding(slug: string): Promise<MentorPoolStandingRead> {
+  return apiRequest(`/api/organizations/slug/${encodeURIComponent(slug)}/mentor-pool/me`, undefined, { retryOn401: false });
+}
+
+export async function requestToJoinMentorPool(organizationId: string, note?: string): Promise<{ request: { id: string; requestedAt: string | null; note: string | null } }> {
+  return apiRequest(`/api/organizations/${encodeURIComponent(organizationId)}/mentors/requests`, { method: 'POST', body: JSON.stringify({ note: note ?? '' }) });
+}
+
+export async function withdrawMentorPoolRequest(organizationId: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/organizations/${encodeURIComponent(organizationId)}/mentors/requests/mine`, { method: 'DELETE' });
+}
+
+export type MentorPoolRequestItem = {
+  id: string;
+  userId: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  headline: string | null;
+  expertise: string[];
+  note: string | null;
+  requestedAt: string | null;
+};
+
+export async function listMentorPoolRequests(organizationId: string): Promise<{ requests: MentorPoolRequestItem[] }> {
+  return apiRequest(`/api/organizations/${encodeURIComponent(organizationId)}/mentors/requests`);
+}
+
+export async function acceptMentorPoolRequest(organizationId: string, requestId: string): Promise<{ ok: boolean; accepted: boolean }> {
+  return apiRequest(`/api/organizations/${encodeURIComponent(organizationId)}/mentors/requests/${encodeURIComponent(requestId)}/accept`, { method: 'POST' });
+}
+
+export async function declineMentorPoolRequest(organizationId: string, requestId: string): Promise<{ ok: boolean; accepted: boolean }> {
+  return apiRequest(`/api/organizations/${encodeURIComponent(organizationId)}/mentors/requests/${encodeURIComponent(requestId)}`, { method: 'DELETE' });
 }
 
 export async function updateProgram(

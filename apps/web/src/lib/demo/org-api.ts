@@ -28,7 +28,8 @@ import {
   type OrgProgram,
 } from './org-world';
 import type { CohortDetail, CohortItem } from '@/lib/api';
-import { COHORT_MATCH_PROBLEM_COPY, type CohortMatchMember } from '@cofounderbay/shared';
+import { COHORT_MATCH_PROBLEM_COPY, ORG_POLICY_KEYS, ORG_POLICY_PROBLEM_COPY, readOrgPolicies, type CohortMatchMember, type OrgPolicies } from '@cofounderbay/shared';
+import { DEMO_INVESTORS } from './investors-world';
 import { DemoRefusal } from './demo-refusal';
 import { demoCohortRun, runDemoCohortMatching, type DemoCohortMatch } from './cohort-matching-world';
 
@@ -379,7 +380,83 @@ function runMembers(prog: OrgProgram): CohortMatchMember[] {
  * `nowMs` is "now" on the demo's own calendar (`previewNowMs`): a stamp made
  * at request time is moved to the reader's week with the rest of the payload.
  */
-export function previewOrgApi(pathname: string, path: string, method: string, iso: Iso, nowMs: number = Date.now()): unknown {
+// ── Access policies and mentors asking to join (docs §103) ───────────────
+const POLICY_KEY = 'cfb:demo-org-policy:v1';
+type PolicyStore = { policies?: Partial<OrgPolicies>; answered?: Record<string, 'accepted' | 'declined'> };
+function readPolicyStore(): PolicyStore {
+  try {
+    const raw = typeof window === 'undefined' ? null : window.sessionStorage.getItem(POLICY_KEY);
+    return raw ? (JSON.parse(raw) as PolicyStore) : {};
+  } catch {
+    return {};
+  }
+}
+function writePolicyStore(next: PolicyStore) {
+  try {
+    window.sessionStorage.setItem(POLICY_KEY, JSON.stringify(next));
+  } catch {
+    // storage blocked: the change lasts this page view
+  }
+}
+export function demoOrgPolicies(): OrgPolicies {
+  return readOrgPolicies({ policies: readPolicyStore().policies ?? {} });
+}
+/** One mentor from the demo's directory waits to join the pool. */
+function demoPoolRequests(iso: Iso) {
+  const helena = DEMO_INVESTORS.find((i) => i.userId === 'user-helena-brandt');
+  const answered = readPolicyStore().answered ?? {};
+  return helena
+    ? [{
+        id: 'omr-helena',
+        userId: helena.userId,
+        displayName: helena.displayName,
+        avatarUrl: null,
+        headline: [helena.firmRole, helena.location].filter(Boolean).join(' · '),
+        expertise: helena.industries,
+        note: 'I mentor fintech founders on pricing and their first raise; Thursdays work best.',
+        requestedAt: iso(-2, 9),
+        answer: answered['omr-helena'] ?? null,
+      }]
+    : [];
+}
+
+/**
+ * `nowMs` is "now" on the demo's own calendar (`previewNowMs`): a stamp made
+ * at request time is moved to the reader's week with the rest of the payload.
+ */
+export function previewOrgApi(pathname: string, path: string, method: string, iso: Iso, nowMs: number = Date.now(), body: Record<string, unknown> = {}): unknown {
+  if (pathname === `/api/organizations/${ORG_ID}/policies`) {
+    if (method === 'PATCH') {
+      const store = readPolicyStore();
+      const next = { ...demoOrgPolicies() };
+      for (const key of ORG_POLICY_KEYS) if (typeof body[key] === 'boolean') next[key] = body[key] as boolean;
+      writePolicyStore({ ...store, policies: next });
+      return { policies: next };
+    }
+    if (method === 'GET') return { policies: demoOrgPolicies() };
+  }
+  if (pathname === `/api/organizations/slug/${ORG_SLUG}/mentor-pool/me` && method === 'GET') {
+    // The demo reader is in the pool already (ORG_MENTORS).
+    return { organizationId: ORG_ID, name: ORG.name, standing: 'in_pool', isMentor: true };
+  }
+  const poolReq = /^\/api\/organizations\/([^/]+)\/mentors\/requests(?:\/([^/]+))?(?:\/(accept))?$/.exec(pathname);
+  if (poolReq && poolReq[1] === ORG_ID) {
+    const pending = demoPoolRequests(iso).filter((r) => !r.answer);
+    if (!poolReq[2] && method === 'GET') return { requests: pending.map((r) => ({ id: r.id, userId: r.userId, displayName: r.displayName, avatarUrl: r.avatarUrl, headline: r.headline, expertise: r.expertise, note: r.note, requestedAt: r.requestedAt })) };
+    if (!poolReq[2] && method === 'POST') {
+      const copy = ORG_POLICY_PROBLEM_COPY.already_in_pool;
+      throw new DemoRefusal(409, copy.en, { reason: 'org_policy', problem: 'already_in_pool', messageEl: copy.el });
+    }
+    if (poolReq[2] === 'mine' && method === 'DELETE') throw new DemoRefusal(404, 'No request is waiting', { messageEl: 'Δεν περιμένει κανένα αίτημα.' });
+    const row = pending.find((r) => r.id === poolReq[2]);
+    if (!row) throw new DemoRefusal(404, 'No request is waiting', { messageEl: 'Δεν περιμένει κανένα αίτημα.' });
+    const accept = poolReq[3] === 'accept' && method === 'POST';
+    if (accept || method === 'DELETE') {
+      const store = readPolicyStore();
+      writePolicyStore({ ...store, answered: { ...(store.answered ?? {}), [row.id]: accept ? 'accepted' : 'declined' } });
+      return { ok: true, accepted: accept };
+    }
+  }
   // A cohort-wide match run (docs §102); the demo reader is an admin.
   const run = /^\/api\/org\/([^/]+)\/cohorts\/([^/]+)\/matches\/run$/.exec(pathname);
   if (method === 'POST' && run) {
@@ -474,8 +551,20 @@ export function previewOrgApi(pathname: string, path: string, method: string, is
       }));
     }
     if (parts[3] === 'mentors') {
+      const joined = demoPoolRequests(iso).filter((r) => r.answer === 'accepted').map((r) => ({
+        id: `mp-${r.userId}`,
+        userId: r.userId,
+        displayName: r.displayName,
+        avatarUrl: null,
+        headline: r.headline,
+        expertiseAreas: r.expertise,
+        maxMentees: null,
+        currentMentees: 0,
+        isActive: true,
+        assignedAt: iso(0, 10),
+      }));
       return {
-        mentors: ORG_MENTORS.map((m) => ({
+        mentors: [...joined, ...ORG_MENTORS.map((m) => ({
           id: `mp-${m.id}`,
           userId: m.id,
           displayName: m.name,
@@ -486,7 +575,7 @@ export function previewOrgApi(pathname: string, path: string, method: string, is
           currentMentees: m.mentees.length,
           isActive: true,
           assignedAt: iso(-m.joined, 10),
-        })),
+        }))],
       };
     }
     return undefined;
