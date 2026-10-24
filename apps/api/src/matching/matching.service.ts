@@ -119,6 +119,29 @@ export class MatchingService {
     }, { ttl: 3600 });
   }
 
+  /**
+   * One person scored against named others with the engine's own score
+   * (`calculateMatchScore`), for a cohort run (docs §102). Nothing is cached
+   * or logged as an inference, and "Open to" signals are not applied: they
+   * are shown to the people a member chose, and the reader here is the
+   * programme.
+   */
+  async scorePairs(sourceUserId: string, targetUserIds: readonly string[]): Promise<MatchScore[]> {
+    if (!targetUserIds.length) return [];
+    const include = { profile: { include: { skills: { include: { skill: true } } } } } as const;
+    const [user, candidates, weights, outcomeMap, behavioralMap] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: sourceUserId }, include }),
+      this.prisma.user.findMany({ where: { id: { in: [...targetUserIds] }, moderationStatus: 'active' }, include }),
+      this.getActiveWeights(),
+      this.getOutcomePriorMap(sourceUserId),
+      this.getBehavioralMap(sourceUserId),
+    ]);
+    if (!user) return [];
+    const userVector = await this.getOrBuildFeatureVector(user);
+    const criteria: MatchingCriteria = { userId: sourceUserId, remote: true };
+    return Promise.all(candidates.map((c) => this.calculateMatchScore(user, userVector, c, criteria, weights, outcomeMap, behavioralMap)));
+  }
+
   async getRecommendations(userId: string, limit = 10): Promise<MatchScore[]> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },

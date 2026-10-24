@@ -396,6 +396,8 @@ export const TOAST_EL: Record<string, string> = {
   "Project completed": "Το έργο ολοκληρώθηκε",
   "Progress saved": "Η πρόοδος αποθηκεύτηκε",
   "Invitation sent": "Η πρόσκληση στάλθηκε",
+  "Matching ran": "Η αντιστοίχιση εκτελέστηκε",
+  "Could not run matching": "Η αντιστοίχιση δεν εκτελέστηκε",
   "Invitation sent again": "Η πρόσκληση στάλθηκε ξανά",
   "Could not send the invitation": "Η πρόσκληση δεν στάλθηκε",
   "Invitation cancelled": "Η πρόσκληση ακυρώθηκε",

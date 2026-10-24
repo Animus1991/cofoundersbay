@@ -3819,6 +3819,11 @@ export async function getOrgCohortDetail(
   return apiRequest(`/api/org/${slug}/cohorts/${cohortId}`);
 }
 
+/** Score the cohort's pairs with the matching engine and keep the suggestions (docs §102). */
+export async function runCohortMatching(slug: string, cohortId: string): Promise<import('@cofounderbay/shared').CohortRunResult> {
+  return apiRequest(`/api/org/${encodeURIComponent(slug)}/cohorts/${encodeURIComponent(cohortId)}/matches/run`, { method: 'POST' });
+}
+
 export type OrgMember = {
   id: string;
   displayName: string;

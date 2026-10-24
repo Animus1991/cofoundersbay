@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { OrgService } from './org.service';
 import { OptionalJwtAuthGuard } from '../auth/guards/jwt-optional.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -51,6 +51,18 @@ export class OrgController {
     @Param('cohortId') cohortId: string,
   ) {
     return this.orgService.getOrgCohortDetail(slug, cohortId);
+  }
+
+  /** Score the cohort's pairs with the matching engine and keep the suggestions (docs §102). */
+  @Post(':slug/cohorts/:cohortId/matches/run')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  async runCohortMatching(
+    @Param('slug') slug: string,
+    @Param('cohortId') cohortId: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.orgService.runCohortMatching(slug, cohortId, user.id);
   }
 
   @Get(':slug/members')

@@ -25,3 +25,4 @@ export * from './listings';
 export * from './compatibility';
 export * from './services';
 export * from './org-invitations';
+export * from './cohort-matching';

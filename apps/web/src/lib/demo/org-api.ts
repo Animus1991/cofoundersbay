@@ -28,6 +28,9 @@ import {
   type OrgProgram,
 } from './org-world';
 import type { CohortDetail, CohortItem } from '@/lib/api';
+import { COHORT_MATCH_PROBLEM_COPY, type CohortMatchMember } from '@cofounderbay/shared';
+import { DemoRefusal } from './demo-refusal';
+import { demoCohortRun, runDemoCohortMatching, type DemoCohortMatch } from './cohort-matching-world';
 
 type Iso = (days: number, hour?: number) => string;
 
@@ -226,7 +229,7 @@ function cohortDetail(prog: OrgProgram, iso: Iso) {
   );
   // Suggested introductions inside the cohort: founders who sell to the same
   // buyers, and each founder with the investor partner.
-  const matches = founders.slice(0, -1).map((part, i) => {
+  const seeded = founders.slice(0, -1).map((part, i) => {
     const a = orgPerson(part.userId);
     const next = founders[i + 1];
     const b = orgPerson(next.userId);
@@ -240,6 +243,9 @@ function cohortDetail(prog: OrgProgram, iso: Iso) {
       reasons: ['Sell to the same operations teams', 'Both hiring a first salesperson'],
     };
   });
+  // After a run this session, its suggestions (docs §102).
+  const run = demoCohortRun(prog.cohortId);
+  const matches = run ? run.matches : seeded;
   const done = sessions.filter((s) => s.status === 'completed');
   const rated = done.filter((s) => s.rating != null);
   return {
@@ -362,7 +368,31 @@ export function demoCohortDetail(cohortId: string, now: number): CohortDetail | 
   return prog ? cohortDetail(prog, isoFrom(now)) as CohortDetail : null;
 }
 
-export function previewOrgApi(pathname: string, path: string, method: string, iso: Iso): unknown {
+/** The members a run scores, in the cohort's own roles. */
+function runMembers(prog: OrgProgram): CohortMatchMember[] {
+  const detail = cohortDetail(prog, () => '');
+  // Everyone in the cohort, as the API reads it (a finished cohort's people are still its people).
+  return detail.participants.map((p) => ({ userId: p.userId, role: p.role }));
+}
+
+/**
+ * `nowMs` is "now" on the demo's own calendar (`previewNowMs`): a stamp made
+ * at request time is moved to the reader's week with the rest of the payload.
+ */
+export function previewOrgApi(pathname: string, path: string, method: string, iso: Iso, nowMs: number = Date.now()): unknown {
+  // A cohort-wide match run (docs §102); the demo reader is an admin.
+  const run = /^\/api\/org\/([^/]+)\/cohorts\/([^/]+)\/matches\/run$/.exec(pathname);
+  if (method === 'POST' && run) {
+    if (run[1] !== ORG_SLUG) throw new DemoRefusal(404, 'Organization not found', { messageEl: 'Ο οργανισμός δεν βρέθηκε.' });
+    const prog = ORG_PROGRAMS.find((p) => p.cohortId === run[2] || p.cohortId.replace(/^cohort-/, '') === run[2]);
+    if (!prog) throw new DemoRefusal(404, 'Cohort not found', { messageEl: 'Ο κύκλος δεν βρέθηκε.' });
+    const members = runMembers(prog);
+    if (!members.some((m) => m.role === 'founder')) {
+      const copy = COHORT_MATCH_PROBLEM_COPY.no_founders;
+      throw new DemoRefusal(400, copy.en, { reason: 'cohort_match_invalid', problem: 'no_founders', messageEl: copy.el });
+    }
+    return runDemoCohortMatching(prog.cohortId, members, cohortDetail(prog, iso).matches as DemoCohortMatch[], nowMs);
+  }
   if (method !== 'GET') return undefined;
   const params = new URLSearchParams(path.split('?')[1] ?? '');
   const parts = pathname.split('/').filter(Boolean); // ['api', ...]
