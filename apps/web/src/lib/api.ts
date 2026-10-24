@@ -5857,6 +5857,48 @@ export async function getOrgMentorPool(
   });
 }
 
+// --- An organisation's own plan (docs §104) ---
+
+export type OrgBillingPlan = {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string | null;
+  priceMonthly: number;
+  priceAnnual: number;
+  currency: string;
+  seatLimit: number | null;
+  purchasable: { monthly: boolean; annual: boolean };
+};
+
+export type OrgBillingOverview = {
+  subscription: {
+    id: string;
+    status: string;
+    billingCycle: 'monthly' | 'annual';
+    currentPeriodEnd: string;
+    cancelAtPeriodEnd: boolean;
+    hasPaymentAccount: boolean;
+    plan: { id: string; name: string; displayName: string; priceMonthly: number; priceAnnual: number; currency: string; seatLimit: number | null };
+  } | null;
+  seats: { used: number; limit: number | null; full: boolean; left: number | null };
+  plans: OrgBillingPlan[];
+  billingConfigured: boolean;
+  canManage: boolean;
+};
+
+export async function getOrgBilling(organizationId: string): Promise<OrgBillingOverview> {
+  return apiRequest(`/api/billing/organization/${encodeURIComponent(organizationId)}`);
+}
+
+export async function startOrgCheckout(organizationId: string, planId: string, cycle: 'monthly' | 'annual'): Promise<{ url: string | null; id: string }> {
+  return apiRequest(`/api/billing/organization/${encodeURIComponent(organizationId)}/checkout`, { method: 'POST', body: JSON.stringify({ planId, cycle }) });
+}
+
+export async function openOrgBillingPortal(organizationId: string): Promise<{ url: string }> {
+  return apiRequest(`/api/billing/organization/${encodeURIComponent(organizationId)}/portal`, { method: 'POST' });
+}
+
 // --- Organisation access policies and mentor pool requests (docs §103) ---
 
 export type OrgPoliciesRead = { policies: import('@cofounderbay/shared').OrgPolicies };

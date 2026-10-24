@@ -1850,6 +1850,9 @@ model Subscription {
   user     User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   tenantId String?
   tenant   Tenant? @relation("TenantSubscriptions", fields: [tenantId], references: [id], onDelete: Cascade)
+  /// An organisation's own plan (docs §104): Team, by seats.
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Plan
   planId       String
@@ -1892,6 +1895,7 @@ model Subscription {
 
   @@index([userId])
   @@index([tenantId])
+  @@index([organizationId])
   @@index([planId])
   @@index([status])
   @@index([currentPeriodEnd])
@@ -3745,6 +3749,7 @@ model Organization {
   @@index([isActive])
   @@index([isFeatured])
   @@index([createdAt])
+  subscriptions  Subscription[]
 }
 
 /// An invitation into an organisation by email (docs §100). Schema-only like

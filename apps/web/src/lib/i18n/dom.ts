@@ -28,6 +28,9 @@ function shouldSkipElement(el: Element | null): boolean {
     // The second language of a BilingualText pair is shown on purpose; under the
     // Greek locale the pass would turn its English into a copy of the Greek beside it.
     if (el.classList.contains('bilingual-secondary')) return true;
+    // A name that is not a word (a plan, a product): the HTML attribute every
+    // translator honours. "Team" the plan read «Ομάδα» (docs §104).
+    if (el.getAttribute('translate') === 'no') return true;
     el = el.parentElement;
   }
   return false;

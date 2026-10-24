@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { readOrgPolicies } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
+import { assertOrgSeat } from '../billing/org-billing.service';
 import { Prisma } from '@prisma/client';
 
 const PUBLIC_ORGANIZATION_SELECT = {
@@ -327,6 +328,8 @@ export class OrganizationService {
     if (existing) {
       throw new BadRequestException('User is already a member');
     }
+    // A plan with seats: no member past them (docs §104).
+    await assertOrgSeat(this.prisma, orgId);
 
     return this.prisma.organizationMembership.create({
       data: {
@@ -382,6 +385,10 @@ export class OrganizationService {
 
       if (removesActiveOwner) {
         await this.assertNotLastOwner(tx, orgId);
+      }
+      // Bringing a member back takes a seat of the plan (docs §104).
+      if (data.isActive === true && !membership.isActive) {
+        await assertOrgSeat(tx, orgId);
       }
 
       const updateData: Prisma.OrganizationMembershipUpdateInput = {};

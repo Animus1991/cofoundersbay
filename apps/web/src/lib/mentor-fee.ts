@@ -10,6 +10,8 @@ export function formatFee(amount: number, currency?: string | null, decimals = 0
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
     currency: currency || MENTOR_FEE_CURRENCY,
+    // "$150", not en-GB's "US$150", as the pricing page writes money.
+    currencyDisplay: 'narrowSymbol',
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(amount);

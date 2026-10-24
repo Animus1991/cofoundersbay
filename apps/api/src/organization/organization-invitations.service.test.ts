@@ -11,7 +11,7 @@ import { OrganizationInvitationsService } from './organization-invitations.servi
 
 type Row = Record<string, any>;
 
-function setup(opts: { admin?: boolean; members?: Row[]; users?: Row[] } = {}) {
+function setup(opts: { admin?: boolean; members?: Row[]; users?: Row[]; seatLimit?: number } = {}) {
   const invitations: Row[] = [];
   const memberships: Row[] = [...(opts.members ?? [])];
   const users: Row[] = opts.users ?? [{ id: 'u-invitee', email: 'Sofia@Meltemi.example' }, { id: 'u-other', email: 'other@x.example' }];
@@ -26,6 +26,11 @@ function setup(opts: { admin?: boolean; members?: Row[]; users?: Row[] } = {}) {
       findUnique: vi.fn(async ({ where }: any) => memberships.find((m) => m.organizationId === where.organizationId_userId.organizationId && m.userId === where.organizationId_userId.userId) ?? null),
       create: vi.fn(async ({ data }: any) => { memberships.push({ id: `m${memberships.length}`, isActive: true, ...data }); return data; }),
       update: vi.fn(async ({ where, data }: any) => Object.assign(memberships.find((m) => m.id === where.id)!, data)),
+      count: vi.fn(async () => memberships.filter((m) => m.isActive).length),
+    },
+    // An organisation's plan (docs §104): a seat limit only when the test gives one.
+    subscription: {
+      findFirst: vi.fn(async () => (opts.seatLimit ? { seatLimit: opts.seatLimit, plan: { seatLimit: opts.seatLimit } } : null)),
     },
     organizationInvitation: {
       findFirst: vi.fn(async ({ where }: any) => invitations.find((i) =>
@@ -50,6 +55,7 @@ function setup(opts: { admin?: boolean; members?: Row[]; users?: Row[] } = {}) {
         Object.assign(row, data);
         return { ...row, invitedBy: { profile: { displayName: 'Alex Demo' } } };
       }),
+      count: vi.fn(async () => invitations.filter((i) => i.status === 'pending').length),
     },
     organization: {
       findUnique: vi.fn(async () => ({ id: 'org-1', name: 'Aegean Venture Lab', slug: 'aegean-lab' })),
@@ -143,5 +149,13 @@ describe('organisation invitations', () => {
     const second = tokenOf(emails[1]);
     expect(second).not.toBe(first);
     await expect(service.preview(first)).rejects.toThrow(/not found/);
+  });
+
+  it('counts the seats of the plan: members and invitations still waiting (docs §104)', async () => {
+    const full = setup({ seatLimit: 2, members: [{ id: 'm0', organizationId: 'org-1', userId: 'a', isActive: true }, { id: 'm1', organizationId: 'org-1', userId: 'b', isActive: true }] });
+    await expect(full.service.create('org-1', 'u-admin', { email: 'sofia@meltemi.example' })).rejects.toMatchObject({ response: { error: { details: { problem: 'seats_full' } } } });
+    const oneLeft = setup({ seatLimit: 2, members: [{ id: 'm0', organizationId: 'org-1', userId: 'a', isActive: true }] });
+    await oneLeft.service.create('org-1', 'u-admin', { email: 'sofia@meltemi.example' });
+    await expect(oneLeft.service.create('org-1', 'u-admin', { email: 'nikos@andreou.example' })).rejects.toMatchObject({ response: { error: { details: { problem: 'seats_full' } } } });
   });
 });

@@ -35,3 +35,13 @@ describe('demo organisation policies', () => {
     expect(() => api(`/api/organizations/${ORG_ID}/mentors/requests`, 'POST')).toThrow(/already in this organisation's mentor pool/);
   });
 });
+
+describe('demo organisation plan (docs §104)', () => {
+  it('is Team, yearly, with its seats; nothing is charged', () => {
+    const out = api(`/api/billing/organization/${ORG_ID}`);
+    expect(out.subscription).toMatchObject({ status: 'active', billingCycle: 'annual', plan: { name: 'team', seatLimit: 25 } });
+    expect(out.seats).toMatchObject({ limit: 25, full: false });
+    expect(out.billingConfigured).toBe(false);
+    expect(() => api(`/api/billing/organization/${ORG_ID}/portal`, 'POST')).toThrow(/nothing is charged/);
+  });
+});

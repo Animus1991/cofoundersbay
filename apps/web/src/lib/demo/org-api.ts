@@ -28,7 +28,7 @@ import {
   type OrgProgram,
 } from './org-world';
 import type { CohortDetail, CohortItem } from '@/lib/api';
-import { COHORT_MATCH_PROBLEM_COPY, ORG_POLICY_KEYS, ORG_POLICY_PROBLEM_COPY, readOrgPolicies, type CohortMatchMember, type OrgPolicies } from '@cofounderbay/shared';
+import { COHORT_MATCH_PROBLEM_COPY, ORG_POLICY_KEYS, ORG_POLICY_PROBLEM_COPY, ORG_TEAM_PLAN_DEFAULTS, orgSeats, readOrgPolicies, type CohortMatchMember, type OrgPolicies } from '@cofounderbay/shared';
 import { DEMO_INVESTORS } from './investors-world';
 import { DemoRefusal } from './demo-refusal';
 import { demoCohortRun, runDemoCohortMatching, type DemoCohortMatch } from './cohort-matching-world';
@@ -434,6 +434,29 @@ export function previewOrgApi(pathname: string, path: string, method: string, is
       return { policies: next };
     }
     if (method === 'GET') return { policies: demoOrgPolicies() };
+  }
+  // The organisation's plan (docs §104): Team, yearly, in the demo; nothing is charged.
+  if (pathname === `/api/billing/organization/${ORG_ID}` && method === 'GET') {
+    const team = { id: 'plan-team', name: ORG_TEAM_PLAN_DEFAULTS.name, displayName: ORG_TEAM_PLAN_DEFAULTS.displayName, description: ORG_TEAM_PLAN_DEFAULTS.description, priceMonthly: ORG_TEAM_PLAN_DEFAULTS.priceMonthly, priceAnnual: ORG_TEAM_PLAN_DEFAULTS.priceAnnual, currency: ORG_TEAM_PLAN_DEFAULTS.currency, seatLimit: ORG_TEAM_PLAN_DEFAULTS.seatLimit, purchasable: { monthly: false, annual: false } };
+    const members = new Set([...ORG_STAFF.map((s) => s.id), ...ORG_MENTORS.map((m) => m.id)]).size;
+    return {
+      subscription: {
+        id: 'sub-demo-org',
+        status: 'active',
+        billingCycle: 'annual',
+        currentPeriodEnd: iso(160, 10),
+        cancelAtPeriodEnd: false,
+        hasPaymentAccount: true,
+        plan: { id: team.id, name: team.name, displayName: team.displayName, priceMonthly: team.priceMonthly, priceAnnual: team.priceAnnual, currency: team.currency, seatLimit: team.seatLimit },
+      },
+      seats: orgSeats(members, team.seatLimit),
+      plans: [team, { id: 'plan-enterprise', name: 'enterprise', displayName: 'Enterprise', description: 'For large institutions', priceMonthly: 0, priceAnnual: 0, currency: 'USD', seatLimit: null, purchasable: { monthly: false, annual: false } }],
+      billingConfigured: false,
+      canManage: true,
+    };
+  }
+  if (pathname.startsWith(`/api/billing/organization/${ORG_ID}/`) && method === 'POST') {
+    throw new DemoRefusal(400, 'In the demo nothing is charged.', { messageEl: 'Στο demo δεν χρεώνεται τίποτα.' });
   }
   if (pathname === `/api/organizations/slug/${ORG_SLUG}/mentor-pool/me` && method === 'GET') {
     // The demo reader is in the pool already (ORG_MENTORS).

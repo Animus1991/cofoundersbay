@@ -33,9 +33,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { qk } from '@/lib/query-keys';
+import { OrgBillingCard } from '@/components/org/OrgBillingCard';
 import { ORG_POLICY_COPY, ORG_POLICY_KEYS, type OrgPolicies, type OrgPolicyKey } from '@cofounderbay/shared';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   Select,
   SelectContent,
@@ -129,7 +129,17 @@ export default function OrgSettingsPage() {
     if (policiesQuery.data?.policies) setPolicies(policiesQuery.data.policies);
   }, [policiesQuery.data]);
   const policiesFailed = policiesQuery.isError && !policiesQuery.data;
-  const { showDemoData } = useDemoData();
+  // `?tab=billing` opens a tab (Checkout comes back with it, and with
+  // `billing=success|cancel`), read once after mount.
+  const [tab, setTab] = useState('general');
+  const [billingNotice, setBillingNotice] = useState<'success' | 'cancel' | null>(null);
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const t = q.get('tab');
+    if (t && ['general', 'branding', 'team', 'permissions', 'billing'].includes(t)) setTab(t);
+    const b = q.get('billing');
+    if (b === 'success' || b === 'cancel') setBillingNotice(b);
+  }, []);
 
   const membersQuery = useQuery({
     queryKey: qk('org', 'admin-members', organizationId),
@@ -238,7 +248,7 @@ export default function OrgSettingsPage() {
     >
       <div className="space-y-6">
 
-        <Tabs defaultValue="general" className="space-y-6">
+        <Tabs value={tab} onValueChange={setTab} className="space-y-6">
           <TabsList className="w-full lg:grid lg:grid-cols-5">
             <TabsTrigger value="general"><BilingualText en="General" el="Γενικά" compact /></TabsTrigger>
             <TabsTrigger value="branding"><BilingualText en="Branding" el="Εμφάνιση" compact /></TabsTrigger>
@@ -559,56 +569,13 @@ export default function OrgSettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* A plan, usage limits and a card ending 4242 were shown to
-                    every organisation; they are the showcase's, so they show
-                    only with sample data on (docs §96). */}
-                <p className="text-xs text-muted-foreground">
-                  {showDemoData
-                    ? <BilingualText en="Plan and payment details are illustrative — billing is not connected to the organisation yet." el="Τα στοιχεία πλάνου και πληρωμής είναι ενδεικτικά — οι χρεώσεις δεν έχουν συνδεθεί ακόμη με τον οργανισμό." wrap />
-                    : <BilingualText en="Billing is not connected to organisations yet, so there is no plan or payment method to show." el="Οι χρεώσεις δεν έχουν συνδεθεί ακόμη με τους οργανισμούς, οπότε δεν υπάρχει πλάνο ή τρόπος πληρωμής για προβολή." wrap />}
-                </p>
-                {/* The plan, the usage and the payment method as rows of the
-                    card, not as cards drawn inside it. */}
-                {showDemoData && (
-                <div className="card-rows">
-                  <RowHead
-                    titleAs="h4"
-                    title="Organization Pro"
-                    subtitle={<BilingualText en="$299/month · Billed annually" el="$299/μήνα · Ετήσια χρέωση" compact />}
-                    aside={(
-                      <WithDisabledReason reasonEn="Billing is not connected yet" reasonEl="Η χρέωση δεν έχει συνδεθεί ακόμη">
-                        <Button size="sm" variant="outline" disabled><BilingualText en="Change Plan" el="Αλλαγή πλάνου" compact /></Button>
-                      </WithDisabledReason>
-                    )}
-                  />
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium"><BilingualText en="Usage" el="Χρήση" compact /></p>
-                    <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                      <div>
-                        <dt className="text-xs text-muted-foreground"><BilingualText en="Startups" el="Startups" compact /></dt>
-                        <dd className="card-body font-semibold tabular-nums">32 / 50</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground"><BilingualText en="Team Members" el="Μέλη ομάδας" compact /></dt>
-                        <dd className="card-body font-semibold tabular-nums">5 / 10</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground"><BilingualText en="Programs" el="Προγράμματα" compact /></dt>
-                        <dd className="card-body font-semibold tabular-nums">4 / <BilingualText en="Unlimited" el="Απεριόριστα" compact /></dd>
-                      </div>
-                    </dl>
-                  </div>
-                  <RowHead
-                    titleAs="h4"
-                    title={<BilingualText en="Payment Method" el="Τρόπος πληρωμής" compact />}
-                    subtitle={<span className="tabular-nums">•••• •••• •••• 4242</span>}
-                    aside={(
-                      <WithDisabledReason reasonEn="Billing is not connected yet" reasonEl="Η χρέωση δεν έχει συνδεθεί ακόμη">
-                        <Button variant="outline" size="sm" disabled><BilingualText en="Update" el="Ενημέρωση" compact /></Button>
-                      </WithDisabledReason>
-                    )}
-                  />
-                </div>
+                {/* The organisation's own plan (docs §104): it was an
+                    illustrative "Organization Pro" and a card ending 4242,
+                    shown with sample data on. */}
+                {organizationId ? (
+                  <OrgBillingCard organizationId={organizationId} notice={billingNotice} />
+                ) : (
+                  [0, 1].map((i) => <Skeleton key={i} className="h-12" />)
                 )}
               </CardContent>
             </Card>

@@ -5,6 +5,7 @@ import Stripe from 'stripe';
 import { PrismaService } from '../prisma/prisma.service';
 import { StripeService } from './stripe.service';
 import { AutomationService } from '../automation/automation.service';
+import { OrgBillingService } from './org-billing.service';
 
 export type BillingActor = { id: string; role?: Role };
 
@@ -22,6 +23,7 @@ export class BillingService {
     private readonly config: ConfigService,
     private readonly stripeSvc: StripeService,
     @Optional() private readonly automation?: AutomationService,
+    @Optional() private readonly orgBilling?: OrgBillingService,
   ) {}
 
   private webBaseUrl(): string {
@@ -227,6 +229,8 @@ export class BillingService {
 
   private async syncFromCheckoutSession(session: Stripe.Checkout.Session) {
     if (session.mode !== 'subscription') return;
+    // An organisation's plan (docs §104) is kept on its own row.
+    if (this.orgBilling && (await this.orgBilling.syncCheckout(session))) return;
 
     const stripeCustomerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
     const stripeSubscriptionId =
@@ -651,6 +655,8 @@ export class BillingService {
   }
 
   private async syncFromStripeSubscription(sub: Stripe.Subscription) {
+    // An organisation's subscription keeps its own plan; the rest of this is a person's (docs §104).
+    if (this.orgBilling && (await this.orgBilling.syncSubscription(sub, this.mapStripeStatus(sub.status)))) return;
     const stripeCustomerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id;
     const stripeSubscriptionId = sub.id;
 
