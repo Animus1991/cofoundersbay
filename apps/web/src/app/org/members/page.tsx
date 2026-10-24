@@ -234,9 +234,9 @@ export default function OrgMembersPage() {
       id: 'members',
       labelEn: 'Team members',
       labelEl: 'Μέλη ομάδας',
-      rows: isLoading ? undefined : filtered.map((m) => `${m.name} · ${m.email} · ${m.role}${m.department ? ` · ${m.department}` : ''} · ${m.status}`),
+      rows: reading ? undefined : filtered.map((m) => `${m.name} · ${m.email} · ${m.role}${m.department ? ` · ${m.department}` : ''} · ${m.status}`),
       total: members.length,
-      sample: live.length === 0,
+      sample: !reading && live.length === 0,
     },
   ]);
   usePageControls([

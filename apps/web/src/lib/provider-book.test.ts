@@ -58,16 +58,28 @@ describe('provider book', () => {
     expect(changeVs(null, 3)).toBeNull();
   });
 
-  it('lists the services asked about, with their all-time rating', () => {
+  it('lists the services asked about in the window, with that window’s rating', () => {
     const list = serviceRows(rows, NOW - 30 * DAY, NOW + 1);
     expect(list.map((s) => [s.title, s.inquiries, s.agreedValue, s.rating])).toEqual([
-      ['Model', 3, 3800, 4],
+      ['Model', 3, 3800, null],
       ['CFO', 1, 1800, 5],
     ]);
   });
 
-  it('averages every rating given', () => {
+  it('does not add a service’s prices across two currencies', () => {
+    const list = serviceRows(
+      [...rows, row('6', 'accepted', 1, { agreedPrice: 500, currency: 'USD' })],
+      NOW - 30 * DAY,
+      NOW + 1,
+    );
+    const model = list.find((s) => s.title === 'Model');
+    expect(model?.agreedValue).toBeNull();
+    expect(model?.projects).toBe(2);
+  });
+
+  it('averages every rating given, or only the window when one is named', () => {
     expect(averageRating(rows)).toEqual({ value: 4.5, count: 2 });
+    expect(averageRating(rows, NOW - 30 * DAY, NOW + 1)).toEqual({ value: 5, count: 1 });
     expect(averageRating([])).toEqual({ value: null, count: 0 });
   });
 });

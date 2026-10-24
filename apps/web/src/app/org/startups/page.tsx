@@ -310,7 +310,7 @@ export default function OrgStartupsPage() {
     () => (data?.members ?? []).filter((m) => m.role === 'founder').map((m) => toStartup(m, graduatedCohorts)),
     [data, graduatedCohorts],
   );
-  const startups: Startup[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_STARTUPS;
+  const startups: Startup[] = live.length > 0 ? live : isLoading || orgLoading || !showDemoData ? [] : SEED_STARTUPS;
   const isSample = live.length === 0 && startups.length > 0;
   const reading = orgLoading || isLoading;
 
@@ -336,7 +336,7 @@ export default function OrgStartupsPage() {
       id: 'startups',
       labelEn: 'Portfolio startups',
       labelEl: 'Startups οργανισμού',
-      rows: isLoading ? undefined : filteredStartups.map((s) => `${s.name} · ${s.industry}, ${s.stage} · ${s.program} · ${s.status} · progress ${s.progress}%`),
+      rows: reading ? undefined : filteredStartups.map((s) => `${s.name} · ${s.industry}, ${s.stage} · ${s.program} · ${s.status} · progress ${s.progress}%`),
       total: startups.length,
       sample: live.length === 0,
     },

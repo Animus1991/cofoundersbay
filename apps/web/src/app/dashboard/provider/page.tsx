@@ -229,6 +229,9 @@ export default function ProviderDashboard() {
   // Counted from the book, never written in: the summary when it answers,
   // otherwise the rows on screen.
   const counts = summary?.inquiryCounts;
+  const inquiriesKnown = summary != null || inquiryPage != null;
+  const projectsKnown = projectPage != null;
+  const servicesKnown = summary?.offers != null || servicePage != null;
   const totalInquiries = counts ? Object.values(counts).reduce((a, b) => a + b, 0) : inquiries.length;
   const answered = counts ? totalInquiries - counts.open : inquiries.filter((i) => i.status !== 'open').length;
   const converted = summary?.projects ?? projects.length;
@@ -281,27 +284,27 @@ export default function ProviderDashboard() {
             icon={MessageSquare}
             label="Open inquiries"
             labelEl="Ανοιχτά αιτήματα"
-            value={summary?.openInquiries ?? (bookUnread ? EM_DASH : waiting.length)}
-            caption={bookUnread ? undefined : `${totalInquiries} in all`}
-            captionEl={bookUnread ? undefined : `${totalInquiries} συνολικά`}
+            value={summary?.openInquiries ?? (!inquiriesKnown || bookUnread ? EM_DASH : waiting.length)}
+            caption={!inquiriesKnown || bookUnread ? undefined : `${totalInquiries} in all`}
+            captionEl={!inquiriesKnown || bookUnread ? undefined : `${totalInquiries} συνολικά`}
             href="/provider/inquiries"
           />
           <MetricTile
             icon={FolderKanban}
             label="Active projects"
             labelEl="Ενεργά έργα"
-            value={projectsFailed ? EM_DASH : activeProjects.length}
-            caption={projectsFailed ? undefined : agreedValue ? `${eur(agreedValue)} agreed in all` : 'Accepted inquiries'}
-            captionEl={projectsFailed ? undefined : agreedValue ? `${eur(agreedValue)} συμφωνημένα συνολικά` : 'Αποδεκτά αιτήματα'}
+            value={!projectsKnown || projectsFailed ? EM_DASH : activeProjects.length}
+            caption={!projectsKnown || projectsFailed ? undefined : agreedValue ? `${eur(agreedValue)} agreed in all` : 'Accepted inquiries'}
+            captionEl={!projectsKnown || projectsFailed ? undefined : agreedValue ? `${eur(agreedValue)} συμφωνημένα συνολικά` : 'Αποδεκτά αιτήματα'}
             href="/provider/projects"
           />
           <MetricTile
             icon={Store}
             label="Live services"
             labelEl="Ενεργές υπηρεσίες"
-            value={summary?.offers.active ?? (servicesFailed ? EM_DASH : services.filter((s) => s.isActive !== false).length)}
-            caption={!summary && servicesFailed ? undefined : `${summary?.offers.total ?? services.length} listed`}
-            captionEl={!summary && servicesFailed ? undefined : `${summary?.offers.total ?? services.length} καταχωρημένες`}
+            value={summary?.offers.active ?? (!servicesKnown || servicesFailed ? EM_DASH : services.filter((s) => s.isActive !== false).length)}
+            caption={!servicesKnown || (!summary && servicesFailed) ? undefined : `${summary?.offers.total ?? services.length} listed`}
+            captionEl={!servicesKnown || (!summary && servicesFailed) ? undefined : `${summary?.offers.total ?? services.length} καταχωρημένες`}
             href="/provider/services"
           />
           <MetricTile
@@ -444,7 +447,9 @@ export default function ProviderDashboard() {
             />
 
             <SectionCard title="Performance" titleEl="Απόδοση" contentClassName="space-y-4">
-              {bookUnread ? (
+              {!inquiriesKnown && !bookUnread ? (
+                <p className="text-sm text-muted-foreground">{EM_DASH}</p>
+              ) : bookUnread ? (
                 <p className="text-sm text-muted-foreground"><BilingualText en="Counted from your inquiries, which could not be read just now." el="Μετριέται από τα αιτήματά σας, που δεν διαβάστηκαν αυτή τη στιγμή." stacked wrap /></p>
               ) : (<>
               {[

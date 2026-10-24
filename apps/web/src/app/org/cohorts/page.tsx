@@ -259,7 +259,7 @@ export default function OrgCohortsPage() {
     () => (hydrated && showDemoData ? demoCohortItems(Date.now()).map(toPageCohort) : []),
     [hydrated, showDemoData],
   );
-  const cohorts: Cohort[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : samples;
+  const cohorts: Cohort[] = live.length > 0 ? live : isLoading || orgLoading || !showDemoData ? [] : samples;
   const isSample = live.length === 0 && cohorts.length > 0;
   const reading = orgLoading || isLoading;
   const filtersOn = !!search || statusFilter !== 'all';
@@ -315,7 +315,7 @@ export default function OrgCohortsPage() {
       id: 'cohorts',
       labelEn: 'Cohorts',
       labelEl: 'Κύκλοι',
-      rows: isLoading ? undefined : filteredCohorts.map((c) =>
+      rows: reading ? undefined : filteredCohorts.map((c) =>
         `${c.name} · ${c.program} · ${c.status} · ${c.startups} ${c.mentors == null ? 'members' : 'startups'} · ${c.startDate} – ${c.endDate} · ${c.progress}%`,
       ),
       total: cohorts.length,

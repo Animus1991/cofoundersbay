@@ -64,39 +64,67 @@ export type ServiceRow = {
   title: string;
   inquiries: number;
   projects: number;
-  agreedValue: number;
-  currency: string;
-  /** Mean of the ratings given for this service, all time; null when none. */
+  /** Null when the projects in the window are priced in more than one currency. */
+  agreedValue: number | null;
+  currency: string | null;
+  /** Mean of the ratings on inquiries received in the window; null when none. */
   rating: number | null;
 };
 
 /** One row per service asked about in [from, to), most asked first. */
 export function serviceRows(rows: readonly ServiceInquiryItem[], from: number, to: number): ServiceRow[] {
-  const byOffer = new Map<string, ServiceRow & { ratings: number[] }>();
+  const byOffer = new Map<string, ServiceRow & { ratings: number[]; currencies: Set<string> }>();
   for (const r of rows) {
     const id = r.offer?.id;
     if (!id) continue;
-    const row = byOffer.get(id) ?? { id, title: r.offer?.title ?? '—', inquiries: 0, projects: 0, agreedValue: 0, currency: r.currency || 'EUR', rating: null, ratings: [] };
-    if (r.rating != null) row.ratings.push(r.rating);
     const t = Date.parse(r.createdAt);
-    if (t >= from && t < to) {
-      row.inquiries += 1;
-      if (PROJECT.has(r.status)) {
-        row.projects += 1;
-        row.agreedValue += r.agreedPrice ?? 0;
-      }
+    if (!(t >= from && t < to)) continue;
+    const row = byOffer.get(id) ?? {
+      id,
+      title: r.offer?.title ?? '—',
+      inquiries: 0,
+      projects: 0,
+      agreedValue: 0,
+      currency: r.currency || 'EUR',
+      rating: null,
+      ratings: [],
+      currencies: new Set<string>(),
+    };
+    row.inquiries += 1;
+    if (r.rating != null) row.ratings.push(r.rating);
+    if (PROJECT.has(r.status)) {
+      row.projects += 1;
+      if (r.agreedPrice != null) row.currencies.add(r.currency || 'EUR');
+      if (row.currencies.size > 1) row.agreedValue = null;
+      else if (row.agreedValue != null) row.agreedValue += r.agreedPrice ?? 0;
     }
     byOffer.set(id, row);
   }
   return [...byOffer.values()]
     .filter((r) => r.inquiries > 0)
-    .map(({ ratings, ...r }) => ({ ...r, rating: ratings.length ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10 : null }))
-    .sort((a, b) => b.inquiries - a.inquiries || b.agreedValue - a.agreedValue);
+    .map(({ ratings, currencies, ...r }) => ({
+      ...r,
+      currency: currencies.size === 1 ? [...currencies][0] : r.agreedValue == null ? null : r.currency,
+      rating: ratings.length ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10 : null,
+    }))
+    .sort((a, b) => b.inquiries - a.inquiries || (b.agreedValue ?? 0) - (a.agreedValue ?? 0));
 }
 
-/** Mean rating over every rated inquiry, one decimal; null when none is rated. */
-export function averageRating(rows: readonly ServiceInquiryItem[]): { value: number | null; count: number } {
-  const rated = rows.filter((r) => r.rating != null);
+/**
+ * Mean rating, one decimal; null when none is rated.
+ * With `from` and `to`, only inquiries received in [from, to).
+ */
+export function averageRating(
+  rows: readonly ServiceInquiryItem[],
+  from?: number,
+  to?: number,
+): { value: number | null; count: number } {
+  const rated = rows.filter((r) => {
+    if (r.rating == null) return false;
+    if (from == null || to == null) return true;
+    const t = Date.parse(r.createdAt);
+    return t >= from && t < to;
+  });
   return {
     value: rated.length ? Math.round((rated.reduce((a, r) => a + (r.rating ?? 0), 0) / rated.length) * 10) / 10 : null,
     count: rated.length,

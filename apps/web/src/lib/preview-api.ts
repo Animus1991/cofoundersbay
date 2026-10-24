@@ -5276,10 +5276,12 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     const kind = params.get('kind');
     const status = params.get('status');
     const limit = Number(params.get('limit') ?? 50);
+    const since = Date.parse(params.get('since') ?? '');
     const rows = previewProviderInquiries()
       .filter((r) => kind !== 'projects' || r.status === 'accepted' || r.status === 'completed')
       .filter((r) => kind !== 'reviews' || r.rating != null)
-      .filter((r) => !status || r.status === status);
+      .filter((r) => !status || r.status === status)
+      .filter((r) => Number.isNaN(since) || Date.parse(r.createdAt) >= since);
     return { inquiries: rows.slice(0, limit), total: rows.length };
   }
   if (pathname === '/api/services/summary') {

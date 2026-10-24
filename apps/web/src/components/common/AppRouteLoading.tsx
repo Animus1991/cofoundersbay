@@ -61,7 +61,7 @@ export function AppRouteLoading({
     return (
       <div className="mx-auto max-w-2xl space-y-6" aria-busy="true" aria-live="polite">
         <Skeleton className="h-7 w-48" />
-        <Skeleton className="h-4 w-80" />
+        <Skeleton className="h-4 w-80 max-w-full" />
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="space-y-2">
             <Skeleton className="h-4 w-24" />
@@ -81,9 +81,9 @@ export function AppRouteLoading({
       <div className="space-y-6" aria-busy="true" aria-live="polite">
         <div className="flex items-start gap-4">
           <Skeleton className="h-16 w-16 rounded-full shrink-0" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-7 w-56" />
-            <Skeleton className="h-4 w-80" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-7 w-56 max-w-full" />
+            <Skeleton className="h-4 w-80 max-w-full" />
           </div>
         </div>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">

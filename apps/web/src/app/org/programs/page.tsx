@@ -267,7 +267,7 @@ export default function OrgProgramsPage() {
   const live = useMemo(() => (data ?? []).map(toPageProgram), [data]);
   const hydrated = useHydrated();
   const seeds = useMemo(() => (hydrated ? seedPrograms(Date.now()) : []), [hydrated]);
-  const programs: Program[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : seeds;
+  const programs: Program[] = live.length > 0 ? live : isLoading || orgLoading || !showDemoData ? [] : seeds;
   const isSample = live.length === 0 && programs.length > 0;
   const reading = orgLoading || isLoading;
 
@@ -299,7 +299,7 @@ export default function OrgProgramsPage() {
       id: 'programs',
       labelEn: 'Programs',
       labelEl: 'Προγράμματα',
-      rows: isLoading ? undefined : filteredPrograms.map((p) => `${p.name} · ${p.type} · ${p.status} · ${p.enrolled}/${p.capacity} enrolled`),
+      rows: reading ? undefined : filteredPrograms.map((p) => `${p.name} · ${p.type} · ${p.status} · ${p.enrolled}/${p.capacity} enrolled`),
       total: programs.length,
       sample: live.length === 0,
     },

@@ -1640,12 +1640,15 @@ export async function listServiceInquiries(params?: {
   /** Two named views over the same rows, so pages do not invent their own. */
   kind?: 'projects' | 'reviews';
   limit?: number;
+  /** ISO time: only inquiries received at or after this moment. */
+  since?: string;
 }): Promise<{ inquiries: ServiceInquiryItem[]; total: number }> {
   const sp = new URLSearchParams();
   if (params?.side) sp.set('side', params.side);
   if (params?.status) sp.set('status', params.status);
   if (params?.kind) sp.set('kind', params.kind);
   if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.since) sp.set('since', params.since);
   const qs = sp.toString();
   return apiRequest(`/api/services/inquiries${qs ? `?${qs}` : ''}`, undefined, {
     retryOn401: false,

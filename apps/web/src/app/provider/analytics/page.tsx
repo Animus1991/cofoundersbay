@@ -199,8 +199,12 @@ export default function ProviderAnalyticsPage() {
    * own inquiries, so these cards agree with the provider home.
    */
   const inquiriesQuery = useQuery({
-    queryKey: qk('provider', 'inquiries', 'analytics'),
-    queryFn: () => listServiceInquiries({ side: 'provider', limit: 100 }),
+    queryKey: qk('provider', 'inquiries', 'analytics', period),
+    queryFn: () => {
+      const span = (PERIOD_DAYS[period] ?? 30) * 2;
+      const since = new Date(Date.now() - span * DAY_MS).toISOString();
+      return listServiceInquiries({ side: 'provider', limit: 100, since });
+    },
     enabled: hasSession && mounted,
     staleTime: 60_000,
     retry: 0,
@@ -210,10 +214,15 @@ export default function ProviderAnalyticsPage() {
   const bookRead = Boolean(inquiriesQuery.data);
   const windowMs = (PERIOD_DAYS[period] ?? 30) * DAY_MS;
   const nowMs = mounted ? Date.now() : 0;
-  const book = bookFigures(bookRows, nowMs - windowMs, nowMs + 1);
-  const bookBefore = bookFigures(bookRows, nowMs - 2 * windowMs, nowMs - windowMs);
-  const rating = averageRating(bookRows);
-  const activeProjectCount = bookRows.filter((r) => r.status === 'accepted').length;
+  const from = nowMs - windowMs;
+  const book = bookFigures(bookRows, from, nowMs + 1);
+  const bookBefore = bookFigures(bookRows, nowMs - 2 * windowMs, from);
+  const rating = averageRating(bookRows, from, nowMs + 1);
+  const activeProjectCount = bookRows.filter((r) => {
+    const t = Date.parse(r.createdAt);
+    return r.status === 'accepted' && t >= from && t < nowMs + 1;
+  }).length;
+  const bookTruncated = (inquiriesQuery.data?.total ?? 0) > bookRows.length;
   const services = serviceRows(bookRows, nowMs - windowMs, nowMs + 1);
   const money = (amount: number | null, currency: string | null) => {
     if (amount == null) return '—';
@@ -495,6 +504,15 @@ export default function ProviderAnalyticsPage() {
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
             {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24" />)}
           </div>
+        )}
+        {bookTruncated && (
+          <p className="text-xs text-muted-foreground">
+            <BilingualText
+              en="This period has more than 100 inquiries, so these figures count the latest 100."
+              el="Αυτή η περίοδος έχει πάνω από 100 αιτήματα, οπότε οι αριθμοί μετρούν τα 100 πιο πρόσφατα."
+              wrap
+            />
+          </p>
         )}
         {!showDemoData && live && (
           <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3 lg:grid-cols-6">

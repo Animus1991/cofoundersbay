@@ -161,7 +161,7 @@ export default function InvestorDashboard() {
     staleTime: 60_000,
     retry: 0,
   });
-  const { data: activityPage, isError: activityError, isFetching: activityFetching, refetch: refetchActivity } = useQuery({
+  const { data: activityPage, isLoading: activityLoading, isError: activityError, isFetching: activityFetching, refetch: refetchActivity } = useQuery({
     queryKey: qk('investor', 'activity'),
     queryFn: () => getInvestorActivity(20),
     staleTime: 60_000,
@@ -364,7 +364,9 @@ export default function InvestorDashboard() {
             />
 
             <SectionCard title="Board mix" titleEl="Σύνθεση πίνακα" contentClassName="space-y-4">
-              {dealsFailed ? (
+              {dealsLoading ? (
+                <Skeleton className="h-16" />
+              ) : dealsFailed ? (
                 // Two "—" under "Counted from the deals on your board".
                 <p className="text-sm text-muted-foreground">
                   <BilingualText en="Your deals could not be read just now." el="Οι συμφωνίες σας δεν διαβάστηκαν αυτή τη στιγμή." stacked wrap />
@@ -401,7 +403,9 @@ export default function InvestorDashboard() {
                   />
                 </Link>
               ))}
-              {activityFailed ? (
+              {activityLoading ? (
+                <Skeleton className="h-12" />
+              ) : activityFailed ? (
                 <FailedLine en="Recent activity could not be read just now." el="Η πρόσφατη δραστηριότητα δεν διαβάστηκε αυτή τη στιγμή." busy={activityFetching} onRetry={() => void refetchActivity()} />
               ) : activity.length === 0 && (
                 <EmptyLine en="Moves, notes and meetings on your deals show up here." el="Κινήσεις, σημειώσεις και συναντήσεις στις συμφωνίες σας εμφανίζονται εδώ." />

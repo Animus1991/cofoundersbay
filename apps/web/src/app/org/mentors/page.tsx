@@ -254,7 +254,7 @@ export default function OrgMentorsPage() {
   });
 
   const live = useMemo(() => (data?.mentors ?? []).map(toPageMentor), [data]);
-  const mentors: Mentor[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_MENTORS;
+  const mentors: Mentor[] = live.length > 0 ? live : isLoading || orgLoading || !showDemoData ? [] : SEED_MENTORS;
   const isSample = live.length === 0 && mentors.length > 0;
   const reading = orgLoading || isLoading;
   // The pool records no sessions, so a live pool's "Total Sessions" read "—"
@@ -277,7 +277,7 @@ export default function OrgMentorsPage() {
       id: 'mentors',
       labelEn: 'Mentor pool',
       labelEl: 'Δεξαμενή μεντόρων',
-      rows: isLoading ? undefined : filteredMentors.map((m) => `${m.name}${m.headline ? ` · ${m.headline}` : ''} · ${m.expertise.slice(0, 3).join(', ')} · ${m.activeMentees}/${m.maxMentees} mentees · ${m.status}`),
+      rows: reading ? undefined : filteredMentors.map((m) => `${m.name}${m.headline ? ` · ${m.headline}` : ''} · ${m.expertise.slice(0, 3).join(', ')} · ${m.activeMentees}/${m.maxMentees} mentees · ${m.status}`),
       total: mentors.length,
       sample: live.length === 0,
     },

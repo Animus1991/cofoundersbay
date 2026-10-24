@@ -209,11 +209,13 @@ export class ServiceOffersService {
    */
   async listInquiries(
     userId: string,
-    params: { side?: 'provider' | 'client'; status?: string; kind?: 'projects' | 'reviews'; limit?: number },
+    params: { side?: 'provider' | 'client'; status?: string; kind?: 'projects' | 'reviews'; limit?: number; since?: string },
   ) {
     const limit = Math.min(Math.max(params.limit ?? 50, 1), 100);
     const where: Prisma.ServiceInquiryWhereInput =
       params.side === 'client' ? { clientId: userId } : { providerId: userId };
+    const since = params.since ? new Date(params.since) : null;
+    if (since && !Number.isNaN(since.getTime())) where.createdAt = { gte: since };
 
     if (params.status) {
       if (!INQUIRY_STATUSES.includes(params.status as InquiryStatus)) {
@@ -225,16 +227,19 @@ export class ServiceOffersService {
     if (params.kind === 'projects') where.status = { in: PROJECT_STATUSES as never };
     if (params.kind === 'reviews') where.rating = { not: null };
 
-    const inquiries = await this.prisma.serviceInquiry.findMany({
-      where,
-      include: {
-        offer: { select: { id: true, title: true, category: true } },
-        client: { select: personSelect },
-        provider: { select: personSelect },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
+    const [inquiries, total] = await Promise.all([
+      this.prisma.serviceInquiry.findMany({
+        where,
+        include: {
+          offer: { select: { id: true, title: true, category: true } },
+          client: { select: personSelect },
+          provider: { select: personSelect },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+      this.prisma.serviceInquiry.count({ where }),
+    ]);
 
     return {
       inquiries: inquiries.map((inquiry) => ({
@@ -266,7 +271,7 @@ export class ServiceOffersService {
           avatarUrl: inquiry.provider.profile?.avatarUrl ?? null,
         },
       })),
-      total: inquiries.length,
+      total,
     };
   }
 

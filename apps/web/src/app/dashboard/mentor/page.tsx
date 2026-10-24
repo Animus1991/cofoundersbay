@@ -175,13 +175,13 @@ export default function MentorDashboard() {
     enabled,
     retry: 0,
   });
-  const { data: relData, isError: relError, isFetching: relFetching, refetch: refetchRel } = useQuery({
+  const { data: relData, isLoading: relLoading, isError: relError, isFetching: relFetching, refetch: refetchRel } = useQuery({
     queryKey: qk('mentorships', 'mentor'),
     queryFn: () => getMyMentorships('mentor'),
     enabled,
     retry: 0,
   });
-  const { data: sessionData, isError: sessionError, isFetching: sessionFetching, refetch: refetchSessions } = useQuery({
+  const { data: sessionData, isLoading: sessionLoading, isError: sessionError, isFetching: sessionFetching, refetch: refetchSessions } = useQuery({
     queryKey: qk('mentorships', 'sessions-upcoming'),
     queryFn: getUpcomingMentorshipSessions,
     enabled,
@@ -202,7 +202,7 @@ export default function MentorDashboard() {
   });
   // Founders' direct bookings (the /mentoring store) count on the mentor's
   // calendar too - before this read they were invisible here.
-  const { data: bookingData, isError: bookingError, refetch: refetchBookings } = useQuery({
+  const { data: bookingData, isLoading: bookingLoading, isError: bookingError, refetch: refetchBookings } = useQuery({
     queryKey: qk('mentorships', 'bookings', 'mentor'),
     queryFn: () => listMentorBookings('mentor'),
     enabled,
@@ -258,6 +258,8 @@ export default function MentorDashboard() {
    */
   const relFailed = relError && !relData;
   const sessionsFailed = (sessionError && !sessionData) || (bookingError && !bookingData);
+  const menteesKnown = !relLoading && (stats != null || relData != null || relFailed);
+  const sessionsKnown = !sessionLoading && !bookingLoading && (sessionData != null || sessionError) && (bookingData != null || bookingError);
   const accepting = listing ? listing.isAcceptingRequests !== false : listingError ? null : listing === null ? true : null;
 
   const month = showDemoData ? mentorDemoMonthEarnings() : null;
@@ -369,18 +371,18 @@ export default function MentorDashboard() {
             icon={Users}
             label="Active mentees"
             labelEl="Ενεργοί καθοδηγούμενοι"
-            value={relFailed && !stats ? '\u2014' : mentorStats.activeMentees}
-            caption={relFailed && !stats ? undefined : mentorStats.completedMentorships ? `${mentorStats.completedMentorships} completed before` : 'In progress now'}
-            captionEl={relFailed && !stats ? undefined : mentorStats.completedMentorships ? `${mentorStats.completedMentorships} ολοκληρωμένες πριν` : 'Σε εξέλιξη τώρα'}
+            value={!menteesKnown || (relFailed && !stats) ? '\u2014' : mentorStats.activeMentees}
+            caption={!menteesKnown || (relFailed && !stats) ? undefined : mentorStats.completedMentorships ? `${mentorStats.completedMentorships} completed before` : 'In progress now'}
+            captionEl={!menteesKnown || (relFailed && !stats) ? undefined : mentorStats.completedMentorships ? `${mentorStats.completedMentorships} ολοκληρωμένες πριν` : 'Σε εξέλιξη τώρα'}
             href="/mentor/mentees"
           />
           <MetricTile
             icon={Calendar}
             label="Upcoming sessions"
             labelEl="Επόμενες συνεδρίες"
-            value={sessionsFailed ? '\u2014' : mentorStats.upcomingSessions}
-            caption={sessionsFailed ? undefined : nextSession ? `Next ${sessionWhen(nextSession.scheduledAt)}` : 'Nothing scheduled'}
-            captionEl={sessionsFailed ? undefined : nextSession ? `Επόμενη ${sessionWhen(nextSession.scheduledAt, 'el-GR')}` : 'Τίποτα προγραμματισμένο'}
+            value={!sessionsKnown || sessionsFailed ? '\u2014' : mentorStats.upcomingSessions}
+            caption={!sessionsKnown || sessionsFailed ? undefined : nextSession ? `Next ${sessionWhen(nextSession.scheduledAt)}` : 'Nothing scheduled'}
+            captionEl={!sessionsKnown || sessionsFailed ? undefined : nextSession ? `Επόμενη ${sessionWhen(nextSession.scheduledAt, 'el-GR')}` : 'Τίποτα προγραμματισμένο'}
             href="/mentor/sessions"
           />
           <MetricTile
@@ -427,7 +429,7 @@ export default function MentorDashboard() {
               ))}
               {sessionsFailed ? (
                 <FailedLine en="Your sessions could not be read just now." el="Οι συνεδρίες σας δεν διαβάστηκαν αυτή τη στιγμή." busy={sessionFetching} onRetry={() => { void refetchSessions(); void refetchBookings(); }} />
-              ) : upcomingAll.length === 0 && <EmptyLine en="No upcoming sessions scheduled." el="Δεν υπάρχουν προγραμματισμένες συνεδρίες." />}
+              ) : sessionsKnown && upcomingAll.length === 0 && <EmptyLine en="No upcoming sessions scheduled." el="Δεν υπάρχουν προγραμματισμένες συνεδρίες." />}
             </SectionCard>
 
             <SectionCard title="Your mentees" titleEl="Οι καθοδηγούμενοί σας" icon={UserCheck} action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }} contentClassName="card-rows">
@@ -436,7 +438,7 @@ export default function MentorDashboard() {
               ))}
               {relFailed ? (
                 <FailedLine en="Your mentees could not be read just now." el="Οι καθοδηγούμενοί σας δεν διαβάστηκαν αυτή τη στιγμή." busy={relFetching} onRetry={() => void refetchRel()} />
-              ) : mentees.length === 0 && <EmptyLine en="Accepted requests become mentees here." el="Τα αιτήματα που αποδέχεστε εμφανίζονται εδώ ως καθοδηγούμενοι." />}
+              ) : menteesKnown && mentees.length === 0 && <EmptyLine en="Accepted requests become mentees here." el="Τα αιτήματα που αποδέχεστε εμφανίζονται εδώ ως καθοδηγούμενοι." />}
             </SectionCard>
           </div>
 
@@ -455,7 +457,9 @@ export default function MentorDashboard() {
             />
 
             <SectionCard title="Your impact" titleEl="Ο αντίκτυπός σας" contentClassName="space-y-2">
-              {relFailed && !stats ? (
+              {!menteesKnown ? (
+                <p className="text-sm text-muted-foreground">{'\u2014'}</p>
+              ) : relFailed && !stats ? (
                 // 0 · 0 · 0 for figures that were not read.
                 <p className="text-sm text-muted-foreground"><BilingualText en="Your mentorships could not be read just now." el="Οι καθοδηγήσεις σας δεν διαβάστηκαν αυτή τη στιγμή." stacked wrap /></p>
               ) : [

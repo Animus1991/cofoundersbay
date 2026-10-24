@@ -140,12 +140,14 @@ export class ServiceOffersController {
     @Query('status') status?: string,
     @Query('kind') kind?: string,
     @Query('limit') limit?: string,
+    @Query('since') since?: string,
   ) {
     return this.offers.listInquiries(user.id, {
       side: side === 'client' ? 'client' : 'provider',
       status: status?.trim() || undefined,
       kind: kind === 'projects' || kind === 'reviews' ? kind : undefined,
       limit: limit ? Number(limit) : undefined,
+      since: since?.trim() || undefined,
     });
   }
 
