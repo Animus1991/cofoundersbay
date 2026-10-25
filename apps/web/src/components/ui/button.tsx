@@ -13,7 +13,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors duration-150 focus-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium text-center transition-colors duration-150 focus-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -29,13 +29,13 @@ const buttonVariants = cva(
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-foreground/[0.06]',
         ghost:
-          'bg-transparent text-foreground/70 hover:text-foreground hover:bg-secondary/60',
+          'bg-transparent text-foreground/80 hover:text-foreground hover:bg-secondary/60',
         outline:
           'border border-input bg-transparent text-foreground hover:bg-secondary/50 hover:border-foreground/25',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         link:
-          'text-primary-accessible underline-offset-4 hover:underline p-0 h-auto font-medium',
+          'text-primary-accessible underline underline-offset-4 decoration-primary-accessible/40 hover:decoration-current p-0 h-auto font-medium',
       },
       /*
        * Heights and horizontal padding are re-stated in pixels from `lg` up.

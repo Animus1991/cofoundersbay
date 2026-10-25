@@ -1,10 +1,14 @@
 import type { NextConfig } from 'next';
 
-const allowedDevOrigins = ['localhost', '127.0.0.1', '*.trycloudflare.com', '*.replit.dev'];
+// Next's single-star wildcard matches only one hostname segment. Replit's
+// preview can use nested hosts such as <workspace>.picard.replit.dev.
+const allowedDevOrigins = ['localhost', '127.0.0.1', '*.trycloudflare.com', '**.replit.dev'];
 
 const isProduction = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
+  // Publishing must not overwrite the active dev server's manifests/cache.
+  distDir: process.env.CFB_NEXT_DIST_DIR || '.next',
   reactStrictMode: true,
   transpilePackages: ['@cofounderbay/shared'],
   eslint: {
@@ -42,6 +46,11 @@ const nextConfig: NextConfig = {
   
   // Experimental features for better performance
   experimental: {
+    ...(process.env.CFB_NEXT_DIST_DIR ? {
+      cpus: 1,
+      webpackBuildWorker: true,
+      webpackMemoryOptimizations: true,
+    } : {}),
     optimizePackageImports: [
       'lucide-react',
       'framer-motion',

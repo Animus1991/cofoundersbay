@@ -148,9 +148,10 @@ describe('NeedCard', () => {
       stage: 'validating',
       commitment: 'part_time',
     };
-    const { rerender } = render(<NeedCard card={base} />);
+    const { rerender, container } = render(<NeedCard card={base} />);
     for (const label of ['What already exists', 'The outcome it is for', 'Who is missing']) expect(screen.getByText(label)).toBeTruthy();
-    expect(screen.getByText('A pilot in four clinics.').className).toMatch(/text-muted-foreground/);
+    expect(screen.getByText('A pilot in four clinics.').className).toMatch(/text-foreground/);
+    expect(screen.getByText('A pilot in four clinics.').className).not.toMatch(/text-muted-foreground/);
     expect(screen.getByText('A pilot in four clinics.').className).not.toMatch(/italic/);
     expect(screen.getByText('A growth lead from regulated sales.').className).toMatch(/font-medium/);
     expect(screen.getByText('A growth lead from regulated sales.').className).not.toMatch(/italic/);
@@ -159,6 +160,9 @@ describe('NeedCard', () => {
     expect(screen.getByText('Clinic acquisition').className).not.toMatch(/italic/);
     expect(screen.getByText(/1–2% · 30 h\/week/)).toBeTruthy();
     expect(screen.getByText(/does not promise funding/)).toBeTruthy();
+    expect(container.querySelector('[data-need-card-group="context"]')?.className).toMatch(/md:grid-cols-2/);
+    expect(container.querySelector('[data-need-card-group="needs-and-offer"]')?.className).toMatch(/md:grid-cols-2/);
+    expect(container.querySelector('[data-card-field="offer"]')?.className).toMatch(/bg-primary\/5/);
     rerender(<NeedCard card={{ ...base, kind: 'cofounder', offer: { ...base.offer, equity: null } }} />);
     expect(screen.queryByText(/does not promise funding/)).toBeNull();
   });

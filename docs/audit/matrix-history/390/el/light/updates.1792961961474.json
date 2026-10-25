@@ -1,0 +1,56 @@
+{
+  "requestedRoute": "/updates",
+  "sourceFile": "updates/page.tsx",
+  "fixtureRevision": null,
+  "routeType": "static",
+  "fixture": null,
+  "width": 390,
+  "locale": "el",
+  "theme": "light",
+  "motion": "no-preference",
+  "viewportType": "baseline",
+  "requestedRole": "existing_founder",
+  "mode": "synthetic preview demo (read-only navigation; no form submission)",
+  "startedAt": "2026-10-25T20:49:26.059Z",
+  "status": "preference_mismatch",
+  "actualFinalUrl": "http://localhost/updates",
+  "httpStatus": 200,
+  "renderedRole": "existing_founder (preview-demo fixed role, not authorization proof)",
+  "axe": {
+    "status": "completed",
+    "violations": [],
+    "incompleteCount": 2
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "finalPath": "/updates",
+  "measurement": {
+    "title": "CoFounderBay",
+    "headings": [
+      "Updates"
+    ],
+    "wordCount": 147,
+    "textExcerpt": "Updates\n\nUpdates from founders you follow, and the ones you send to your followers or publicly, with a link made for LinkedIn.\n\nFrom people you follow\nMy updates\nHarbor: four clinics live\nElena Papadopoulos · 2d ago\nFoun",
+    "loadingElements": [],
+    "bodyBusy": null,
+    "htmlLang": "en",
+    "activeTheme": "light",
+    "themeClass": "scroll-smooth inter_a2b4a97d-module__yIjsia__variable commissioner_e36c47b0-module__f2uf1G__variable jetbrains_mono_ae75af70-module__nN5KOq__variable manrope_48ac7470-module__pLOQUq__variable role-founder light",
+    "dataTheme": "studio",
+    "activeLocale": "en",
+    "languageDisplay": "primary-only",
+    "reducedMotionRequested": false,
+    "greekCharacters": 0,
+    "horizontalOverflowPx": 0,
+    "unnamedVisibleControls": [],
+    "renderedRoleCookie": "existing_founder",
+    "roleSignals": []
+  },
+  "preferenceApplied": {
+    "locale": false,
+    "theme": false,
+    "reducedMotion": true
+  },
+  "loadingState": false,
+  "finishedAt": "2026-10-25T20:49:36.216Z"
+}

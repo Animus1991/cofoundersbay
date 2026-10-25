@@ -1,0 +1,77 @@
+/* Isolated copy of the CoFounderBay theme values needed by this card preview. */
+:root {
+  --background: 232 7% 96.6%;
+  --foreground: 232 10% 21%;
+  --card: 232 12% 99.4%;
+  --card-foreground: 232 10% 21%;
+  --primary: 250 74% 63.9%;
+  --primary-foreground: 0 0% 100%;
+  --primary-accessible: 250 40.7% 50%;
+  --muted: 232 7% 94.8%;
+  --muted-foreground: 232 6% 42%;
+  --border: 232 5% 91.6%;
+  --status-success-fg: 158 30.4% 34.5%;
+  --status-success-bg: 158 45.5% 95.6%;
+  --status-success-border: 158 26.3% 88.6%;
+  --radius: 1rem;
+}
+
+.dark {
+  --background: 222 28% 7.4%;
+  --foreground: 220 10% 93%;
+  --card: 222 22% 10.2%;
+  --card-foreground: 220 10% 93%;
+  --primary: 248 47% 59.6%;
+  --primary-foreground: 0 0% 100%;
+  --primary-accessible: 248 50% 82%;
+  --muted: 232 16% 13%;
+  --muted-foreground: 232 8% 62%;
+  --border: 232 12% 16.8%;
+  --status-success-fg: 158 30.4% 34.5%;
+  --status-success-bg: 158 45.5% 95.6%;
+  --status-success-border: 158 26.3% 88.6%;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.card-title {
+  font-size: 13.582px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.card-subtitle {
+  font-size: 13.044px;
+  line-height: 1.45;
+  color: hsl(var(--muted-foreground));
+}
+
+.card-subtitle.card-byline {
+  color: hsl(var(--foreground));
+  font-weight: 500;
+}
+
+.card-body,
+.text-xs {
+  font-size: 12.663px;
+  line-height: 1.45;
+}
+
+.text-primary-accessible {
+  color: hsl(var(--primary-accessible));
+}
+
+.text-status-success {
+  color: hsl(var(--status-success-fg));
+}

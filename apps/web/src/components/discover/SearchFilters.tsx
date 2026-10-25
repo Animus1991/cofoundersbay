@@ -640,9 +640,9 @@ export function SearchFilters({
             className="h-8 rounded-md border border-input bg-background/60 px-2 text-xs text-foreground backdrop-blur"
             data-filter-field=""
           >
-            <option value="relevance">{sayOne('Most relevant', 'Πιο σχετικά')}</option>
-            <option value="recent">{sayOne('Recently active', 'Πρόσφατα ενεργοί')}</option>
-            <option value="active">{sayOne('Most active', 'Πιο ενεργοί')}</option>
+            <option style={{ fontSize: '11px', lineHeight: '16px' }} value="relevance">{sayOne('Most relevant', 'Πιο σχετικά')}</option>
+            <option style={{ fontSize: '11px', lineHeight: '16px' }} value="recent">{sayOne('Recently active', 'Πρόσφατα ενεργοί')}</option>
+            <option style={{ fontSize: '11px', lineHeight: '16px' }} value="active">{sayOne('Most active', 'Πιο ενεργοί')}</option>
           </select>
         </div>
       )}

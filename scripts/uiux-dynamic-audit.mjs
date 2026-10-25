@@ -29,9 +29,12 @@ if (!/^http:\/\/localhost(?::\d+)?$/.test(base) || widths.some(w => ![390, 1440]
 // Missing IDs are explicitly absent, not guessed from search suggestions.
 const fixtures = [
   { template: '/admin/user-detail/[id]', source: 'admin/user-detail/[id]/page.tsx', known: 'user-elena', evidence: 'lib/preview-api.ts PREVIEW_ADMIN_USERS id user-elena' },
+  { template: '/c/[token]', source: 'c/[token]/page.tsx', known: 'harbor-commercial-demo', evidence: 'lib/demo/commitments-world.ts seeded need-harbor shareToken; public GET lookup' },
+  { template: '/commitments/[id]', source: 'commitments/[id]/page.tsx', known: 'need-athens-intros', evidence: 'lib/demo/commitments-world.ts seeded card id owned by the demo founder; GET detail lookup' },
   { template: '/data-room/[id]', source: 'data-room/[id]/page.tsx', blocked: 'No verified persisted data-room ID in preview' },
   { template: '/events/[id]', source: 'events/[id]/page.tsx', known: 'ev-demo-day', evidence: 'lib/preview-api.ts PREVIEW_EVENTS id ev-demo-day' },
   { template: '/groups/[groupId]', source: 'groups/[groupId]/page.tsx', known: 'grp-athens-founders', evidence: 'lib/preview-api.ts PREVIEW_GROUPS id grp-athens-founders; getGroup(id)' },
+  { template: '/join/[token]', source: 'join/[token]/page.tsx', known: 'demo-invite-katerina', evidence: 'lib/demo/org-invitations-world.ts seeded, unexpired invitation; synthetic session is not the invited recipient' },
   { template: '/matches/[userId]', source: 'matches/[userId]/page.tsx', blocked: 'Directory user ID is not proof of a matching-vs detail fixture' },
   { template: '/org/[slug]', source: 'org/[slug]/page.tsx', blocked: 'Server-side fetch requires backend; previewOrgApi fixture alone does not validate SSR fetch' },
   { template: '/org/[slug]/admin', source: 'org/[slug]/admin/page.tsx', known: 'aegean-lab', evidence: 'lib/demo/org-world.ts ORG_SLUG; lib/demo/org-api.ts previewOrgApi' },
@@ -45,6 +48,7 @@ const fixtures = [
   { template: '/share/[token]', source: 'share/[token]/page.tsx', blocked: 'No source-confirmed active share token/password fixture' },
   { template: '/startups/[id]', source: 'startups/[id]/page.tsx', known: 'deal-harbor', evidence: 'lib/preview-api.ts PREVIEW_DEALS id deal-harbor; /api/investor/deals/{id}' },
   { template: '/t/[slug]', source: 't/[slug]/page.tsx', known: 'aegean-lab', evidence: 'lib/demo/org-world.ts ORG_SLUG; lib/demo/org-api.ts previewOrgApi tenant' },
+  { template: '/u/[token]', source: 'u/[token]/page.tsx', known: 'demo-alex-sept', evidence: 'lib/demo/updates-world.ts seeded public founder-update token; GET public-update lookup' },
 ];
 const discovered = [];
 function walk(dir) {
@@ -56,7 +60,7 @@ function walk(dir) {
   }
 }
 walk(app);
-if (fixtures.length !== 17 || discovered.some(f => !fixtures.some(x => x.source === f)) || discovered.length !== 17)
+if (discovered.some(f => !fixtures.some(x => x.source === f)) || discovered.length !== fixtures.length)
   throw new Error(`Dynamic inventory drift: ${JSON.stringify(discovered)}`);
 mkdirSync(out, { recursive: true });
 function atomic(path, value) {

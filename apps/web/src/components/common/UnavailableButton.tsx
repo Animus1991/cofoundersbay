@@ -41,7 +41,7 @@ export function WithDisabledReason({
         variant: honestVariant,
         disabled: true,
         title: bilingualAria(reasonEn, reasonEl),
-        'aria-describedby': reasonId,
+        'aria-describedby': [children.props['aria-describedby'], reasonId].filter(Boolean).join(' '),
       })}
       <span id={reasonId} className="max-w-[16rem] text-2xs leading-snug text-muted-foreground sm:sr-only">
         <BilingualText en={reasonEn} el={reasonEl} compact wrap />

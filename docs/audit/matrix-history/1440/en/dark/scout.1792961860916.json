@@ -1,0 +1,71 @@
+{
+  "requestedRoute": "/scout",
+  "sourceFile": "scout/page.tsx",
+  "fixtureRevision": null,
+  "routeType": "static",
+  "fixture": null,
+  "width": 1440,
+  "locale": "en",
+  "theme": "dark",
+  "motion": "no-preference",
+  "viewportType": "baseline",
+  "requestedRole": "existing_founder",
+  "mode": "synthetic preview demo (read-only navigation; no form submission)",
+  "startedAt": "2026-10-25T20:47:36.480Z",
+  "status": "issue",
+  "actualFinalUrl": "http://localhost/scout",
+  "httpStatus": 200,
+  "renderedRole": "existing_founder (preview-demo fixed role, not authorization proof)",
+  "axe": {
+    "status": "completed",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Elements must meet minimum color contrast ratio thresholds",
+        "count": 1,
+        "nodes": [
+          {
+            "target": [
+              ".text-primary"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #7468c8, background color: #0e1118, font size: 12.2pt (16.3215px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ],
+    "incompleteCount": 1
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "finalPath": "/scout",
+  "measurement": {
+    "title": "CoFounderBay",
+    "headings": [
+      "Co-founder scout"
+    ],
+    "wordCount": 309,
+    "textExcerpt": "Co-founder scout\n\nWrite who you are looking for; the scout proposes people with its reasons and a first note. It never sends anything or tells anyone.\n\nYour brief\n\nWho you are looking for. The scout reads the member base",
+    "loadingElements": [],
+    "bodyBusy": null,
+    "htmlLang": "en",
+    "activeTheme": "dark",
+    "themeClass": "scroll-smooth inter_a2b4a97d-module__yIjsia__variable commissioner_e36c47b0-module__f2uf1G__variable jetbrains_mono_ae75af70-module__nN5KOq__variable manrope_48ac7470-module__pLOQUq__variable role-founder dark",
+    "dataTheme": null,
+    "activeLocale": "en",
+    "languageDisplay": "primary-only",
+    "reducedMotionRequested": false,
+    "greekCharacters": 24,
+    "horizontalOverflowPx": 0,
+    "unnamedVisibleControls": [],
+    "renderedRoleCookie": "existing_founder",
+    "roleSignals": []
+  },
+  "preferenceApplied": {
+    "locale": true,
+    "theme": true,
+    "reducedMotion": true
+  },
+  "loadingState": false,
+  "finishedAt": "2026-10-25T20:47:47.760Z"
+}

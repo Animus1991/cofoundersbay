@@ -1,0 +1,4 @@
+.cfb-updated input:not([type='checkbox']), .cfb-updated textarea { font-size: 16px; }
+@media (min-width: 640px) { .cfb-updated input:not([type='checkbox']), .cfb-updated textarea { font-size: 0.9375rem; } .cfb-updated input { min-height: 36px; height: 36px; } }
+.cfb-updated input[aria-invalid="true"], .cfb-updated textarea[aria-invalid="true"] { border-color: hsl(var(--destructive-accessible)); }
+.cfb-updated input:disabled, .cfb-updated textarea:disabled { border-style: dashed; background-color: hsl(var(--muted)); cursor: not-allowed; }

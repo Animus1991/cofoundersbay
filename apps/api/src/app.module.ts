@@ -93,6 +93,9 @@ function findEnvFiles(): string[] {
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      // The disposable integration runner supplies a clean environment. Never
+      // merge developer/provider credentials into that test process from disk.
+      ignoreEnvFile: process.env.NODE_ENV === 'test' && process.env.CFB_ISOLATED_TEST === '1',
       envFilePath: findEnvFiles(),
       load: [appConfig],
     }),

@@ -213,7 +213,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                   reasonEn="Already on your board, past the watchlist."
                   reasonEl="Είναι ήδη στον πίνακα, πέρα από τη λίστα παρακολούθησης."
                 >
-                  <Button variant="ghost" size="icon" className="h-7 w-7 gap-1 sm:w-auto sm:px-2" aria-label={bilingualAria(`${startup.name} is already on your board`, `${startup.name}: είναι ήδη στον πίνακα`)}>
+                  <Button disabled variant="ghost" size="icon" className="h-7 w-7 gap-1 sm:w-auto sm:px-2" aria-label={bilingualAria(`${startup.name} is already on your board`, `${startup.name}: είναι ήδη στον πίνακα`)}>
                     <Eye className="icon-sm text-muted-foreground" />
                     <span className="hidden sm:inline text-xs"><BilingualText en="On board" el="Στον πίνακα" compact /></span>
                   </Button>

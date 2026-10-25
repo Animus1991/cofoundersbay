@@ -38,21 +38,28 @@ function Field({
   children,
 }: {
   label: { en: string; el: string };
-  /** lead: the ask, body step, medium. aside: context, muted and upright. meta: a count line, the facts step. */
-  tone?: 'lead' | 'aside' | 'meta';
+  /** lead: the ask; aside: project context; offer: the terms; meta: proof. */
+  tone?: 'lead' | 'aside' | 'offer' | 'meta';
   children: ReactNode;
 }) {
   return (
-    <div>
-      <dt className="text-xs text-muted-foreground">
+    <div
+      data-card-field={tone}
+      className={cn(tone === 'offer' && 'rounded-md bg-primary/5')}
+    >
+      <dt className={cn(
+        'text-xs font-medium text-muted-foreground',
+        tone === 'offer' && 'text-primary-accessible',
+      )}>
         <BilingualText en={label.en} el={label.el} compact wrap />
       </dt>
       <dd
         className={cn(
           'mt-0.5',
           tone === 'meta' ? 'text-xs text-muted-foreground' : 'card-body',
-          tone === 'aside' && 'text-muted-foreground',
+          tone === 'aside' && 'text-foreground',
           tone === 'lead' && 'font-medium text-foreground',
+          tone === 'offer' && 'font-medium text-primary-accessible',
         )}
       >
         {children}
@@ -74,9 +81,9 @@ function Field({
  *   meta     kind · version as plain text, the outcome as the card's only pill
  *   title    .card-title
  *   byline   avatar, name on the subtitle step (medium, foreground), headline under it in the caption step
- *   fields   a caption over the sentence. Who is missing, and the offer's role
- *            and terms, are medium; what exists and the goal recede (muted,
- *            upright); evidence is a caption line
+  *   fields   a caption over the sentence. The context is foreground-readable;
+  *            the missing role stays medium, and offered terms use a restrained
+  *            accessible accent. Evidence remains a caption line.
  *   facts    one muted line, dot-separated (category, remote, place, stage, commitment)
  *   footer   above a hairline: the non-guarantee sentence, the page's footer, actions
  * A phone sets captions a full step under the body, so a label never reads
@@ -147,17 +154,25 @@ export function NeedCard({
 
       <dl className="space-y-3">
         {!compact && (card.exists || card.goal) ? (
-          <div className="space-y-2">
+          <div
+            data-need-card-group="context"
+            className="grid grid-cols-1 gap-y-2 md:grid-cols-2 md:gap-x-4"
+          >
             {card.exists ? <Field label={CMT.exists} tone="aside">{card.exists}</Field> : null}
             {card.goal ? <Field label={CMT.goal} tone="aside">{card.goal}</Field> : null}
           </div>
         ) : null}
-        {card.missing ? <Field label={CMT.missing}>{card.missing}</Field> : null}
-        <Field label={CMT.offer}>
-          <span className="block font-medium">{card.offer?.role || '—'}</span>
-          {offerLine.length ? <span className="block font-medium tabular-nums">{offerLine.join(' · ')}</span> : null}
-          {!compact && card.offer.scope ? <span className="mt-1 block font-normal text-muted-foreground">{card.offer.scope}</span> : null}
-        </Field>
+        <div
+          data-need-card-group="needs-and-offer"
+          className="grid grid-cols-1 gap-y-3 md:grid-cols-2 md:gap-x-4 md:gap-y-0"
+        >
+          {card.missing ? <Field label={CMT.missing}>{card.missing}</Field> : null}
+          <Field label={CMT.offer} tone="offer">
+            <span className="block font-medium">{card.offer?.role || '—'}</span>
+            {offerLine.length ? <span className="block font-medium tabular-nums">{offerLine.join(' · ')}</span> : null}
+            {!compact && card.offer.scope ? <span className="mt-1 block font-normal text-muted-foreground">{card.offer.scope}</span> : null}
+          </Field>
+        </div>
         {!compact && evidence.length ? (
           <Field label={CMT.evidence} tone="meta">
             <ul className="facts-dotted flex flex-wrap gap-x-2">

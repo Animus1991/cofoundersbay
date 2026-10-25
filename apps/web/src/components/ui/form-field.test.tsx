@@ -27,7 +27,8 @@ describe('FormField self-explanation', () => {
     const input = screen.getByRole('textbox');
     expect(input.getAttribute('aria-invalid')).toBe('true');
     expect(input.getAttribute('aria-describedby')).toBe('email-error');
-    expect(screen.getByRole('alert').textContent).toBe('Enter a valid email');
+    expect(screen.getByRole('alert').textContent).toContain('Enter a valid email');
+    expect(screen.getByRole('alert').querySelector('.sr-only')?.textContent).toContain('Error:');
     expect(screen.queryByText('We never share this')).toBeNull();
   });
 
@@ -45,4 +46,22 @@ describe('FormField self-explanation', () => {
     );
     expect(screen.getByRole('textbox').getAttribute('aria-describedby')).toBe('privacy-note name-error');
   });
+});
+
+import { render as renderClarity, screen as clarityScreen } from '@testing-library/react';
+import { it as clarityIt, expect as clarityExpect } from 'vitest';
+import { FormField as ClarityField } from './form-field';
+import { Textarea as ClarityTextarea } from './textarea';
+
+clarityIt('keeps error text announced and fields distinguishable when invalid', () => {
+  renderClarity(
+    <ClarityField label="Title" htmlFor="t" error="Add a title">
+      <ClarityTextarea />
+    </ClarityField>,
+  );
+  const field = clarityScreen.getByRole('textbox');
+  clarityExpect(field.getAttribute('aria-invalid')).toBe('true');
+  clarityExpect(field.className).toContain('border-destructive');
+  clarityExpect(field.className).not.toContain('placeholder:text-muted-foreground/70');
+  clarityExpect(clarityScreen.getByRole('alert').textContent).toContain('Add a title');
 });

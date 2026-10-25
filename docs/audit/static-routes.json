@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-27T18:13:42.308Z",
+  "generatedAt": "2026-10-25T20:57:57.098Z",
   "source": "apps/web/src/app/**/page.[jt]sx?",
-  "count": 143,
+  "count": 150,
   "routes": {
     "/forgot-password": "(auth)/forgot-password/page.tsx",
     "/login": "(auth)/login/page.tsx",
@@ -42,6 +42,8 @@
     "/builder/pitch-deck": "builder/pitch-deck/page.tsx",
     "/calendar": "calendar/page.tsx",
     "/coaching": "coaching/page.tsx",
+    "/commitments/new": "commitments/new/page.tsx",
+    "/commitments": "commitments/page.tsx",
     "/compare": "compare/page.tsx",
     "/connections": "connections/page.tsx",
     "/dashboard/founder": "dashboard/founder/page.tsx",
@@ -62,6 +64,7 @@
     "/groups/moderation": "groups/moderation/page.tsx",
     "/groups": "groups/page.tsx",
     "/help": "help/page.tsx",
+    "/intros": "intros/page.tsx",
     "/investor/analytics": "investor/analytics/page.tsx",
     "/investor/dashboard": "investor/dashboard/page.tsx",
     "/investor/pipeline": "investor/pipeline/page.tsx",
@@ -102,6 +105,7 @@
     "/org/settings": "org/settings/page.tsx",
     "/org/startups": "org/startups/page.tsx",
     "/": "page.tsx",
+    "/perks": "perks/page.tsx",
     "/pricing": "pricing/page.tsx",
     "/privacy": "privacy/page.tsx",
     "/profile/edit": "profile/edit/page.tsx",
@@ -123,6 +127,7 @@
     "/research/canvas": "research/canvas/page.tsx",
     "/research": "research/page.tsx",
     "/saved-searches": "saved-searches/page.tsx",
+    "/scout": "scout/page.tsx",
     "/search": "search/page.tsx",
     "/settings/ai": "settings/ai/page.tsx",
     "/settings/billing": "settings/billing/page.tsx",
@@ -145,6 +150,8 @@
     "/terms": "terms/page.tsx",
     "/test-onboarding": "test-onboarding/page.tsx",
     "/themes/alliance": "themes/alliance/page.tsx",
-    "/unauthorized": "unauthorized/page.tsx"
+    "/transparency": "transparency/page.tsx",
+    "/unauthorized": "unauthorized/page.tsx",
+    "/updates": "updates/page.tsx"
   }
 }

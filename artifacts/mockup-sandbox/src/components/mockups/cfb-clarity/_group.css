@@ -1,0 +1,220 @@
+:root {
+    /* ── Light theme ──
+       Surfaces step the way cursor.com's do: page, card and inset sit a few
+       points of lightness apart (card/page 1.07:1 here, 1.06 measured on
+       cursor.com), so a card reads as a place rather than as a box. Every
+       theme below holds the same three ratios:
+         card on page   1.05-1.09
+         --border       ~1.20 on its card. cursor.com draws 1.15-1.18 and we
+                        sat at 1.14, which the dark themes rendered at 1.09-1.12:
+                        measured invisible on common panels (§55). Primer's
+                        two tiers are 1.28 (muted) and 1.43 (default); we take
+                        the step that registers without doubling the surface
+                        step into a frame.
+         --input        ~1.32 on its card — the edge of a control (a field, an
+                        outline button), one tier firmer than a card's, as
+                        Primer's control-borderColor-rest is its default tier */
+    --background:       232 7% 96.6%;
+    --foreground:       232 10% 21%;
+    --card:             232 12% 99.4%;
+    --card-foreground:  232 10% 21%;
+    --popover:          0 0% 100%;
+    --popover-foreground: 232 10% 21%;
+
+    /* One tone recipe, four hues (lilac here; cyan, mint and apricot in the
+       named themes). Lilac, mint and apricot carry chroma 30 and the same
+       relative luminance as the reference buttons (0.49: Windsurf #34e8bb,
+       Windsurf #f09f6d). Cyan's tint is #66bce1; its solid fill is #207da5
+       so a white label clears 4.6:1.
+       Read from the reference pixels, then solved for contrast:
+       .probes/sample_pixels.mjs, .probes/tone_solver2.cjs.
+
+       --primary        the accent wherever it is solid: buttons, active pills,
+                        rings, bars, avatars, badges, chart series. The fill
+                        is deep enough for a white label (--primary-foreground,
+                        >=4.6:1), except Mint, whose solid fill is the pastel
+                        #bce3bd and whose label is a dark green of that hue.
+       --primary-mid    the deeper tone, only for faint tints (/5../40), which
+                        a pastel cannot carry
+       --primary-accessible  link and emphasis text, >=5:1 on a card
+       --ink            the label on any lively status mark */
+    --primary: 250 74% 63.9%;             /* white label, 4.62:1 */
+    --primary-foreground: 0 0% 100%;
+    --primary-mid: 250 45.9% 59%;             /* tints only (/5../40) */
+    /* 50%, not 55%: the accent's text tone also sits on the accent's own
+       tints (bg-primary/10..20 draw from --primary-mid), on 38 avatars,
+       badges and active chips. 55% measured 3.7-4.4:1 there under axe; 50%
+       holds >=4.67:1 up to /20 and 6.6:1 on cards, and reads as the same
+       lilac. A tint nested in a tint (a count inside an active chip) keeps
+       the inner one at /10. */
+    --primary-accessible: 250 40.7% 50%;
+    --ink:              232 20% 10%;
+
+    /* Secondary / muted sit a couple of points off the card, not a new colour. */
+    --secondary:        232 7% 95.4%;
+    --secondary-foreground: 232 8% 24%;
+
+    --muted:            232 7% 94.8%;
+    /* 42%, not 45%: helper text also sits on tinted surfaces (a highlighted
+       plan, a selected role card on bg-primary/10), where 45% measured
+       4.38-4.42:1 and 43% 4.49:1 under axe. ~5.8 on card, >=4.6 there. */
+    --muted-foreground: 232 6% 42%;
+
+    /* Accent is the hover surface (shadcn's meaning: every `hover:bg-accent`
+       row, menu item and toolbar button). It followed primary, so hovering a
+       list row painted it solid lilac — the loudest thing on the page for as
+       long as the pointer rested there. A quiet step off the card instead,
+       as on cursor.com and windsurf.com. */
+    --accent:           232 10% 94.2%;
+    --accent-foreground: 232 10% 21%;
+
+    --destructive:      4 32.5% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 4 33.5% 38.8%;
+
+    /* Borders: a hairline, spent sparingly.
+       cursor.com draws its card edge at 1.15:1 and its button edge at 1.18:1,
+       with no shadow behind either -- the surface step does most of the
+       separating and the line only confirms it. At 1.44:1 every card here
+       was outlined rather than placed, and that line was repeated on chips,
+       tiles and rows inside the card. `--border` now sits in cursor.com's
+       band, so `/60` and `/40` fade toward nothing, which is what an inner
+       divider should do. A control's own boundary is `--input`, kept firmer
+       than a card edge because it is the only thing that marks the field. */
+    --border:           232 5% 91.6%;  /* 1.20 on card — a hairline that registers, not a frame */
+    /* Fields share the card's whisper (1.19, was 1.22-3.14 by theme). The
+       field is found by its fill, label and placeholder; focus is the strong
+       signal: a 2px --ring outline (globals "Shared keyboard indicator") and
+       the edge taking --ring while typing. */
+    --input:            232 5% 87.7%;  /* 1.32 on card — the edge of a control, one tier up */
+    --ring:             250 40.7% 55%; /* the link tone: 4.9:1 on the page */
+
+    /* Score/progress rings — the brand-banner gold on its quiet brown
+       (#e89a3c on #483822). `ink` carries the ring's % and tier text; dark
+       themes lift track and ink so the ring stays legible. */
+    --ring-gold:        33 82% 55%;
+    --ring-gold-track:  31 37% 21%;
+    --ring-gold-ink:    31 37% 21%;
+    /* Base radius = the card corner. Tailwind steps (tailwind.config.ts):
+       sm/DEFAULT 6 · md/lg 10 · xl 12 · 2xl 14 · 3xl 18.
+       Softer than cursor.com (cards ~12, buttons ~8) by one notch, same
+       proportions: inner corners still step down from the container. */
+    --radius:           14px;
+
+    /* Typography scale — Cursor.com steps, then +2% on the UI/copy half
+       (2xs–base; two requested +1% passes). Display steps (lg+) stay. */
+    --font-size-2xs:    0.765075rem; /* 12.24px captions */
+    --font-size-xs:     0.82883125rem;/* 13.26px helpers */
+    --font-size-sm:     0.8925875rem; /* 14.28px nav / UI */
+    --font-size-base:   1.0201rem;    /* 16.32px body / titles */
+    --font-size-lg:     1.125rem;   /* 18px */
+    --font-size-xl:     1.25rem;    /* 20px */
+    --font-size-2xl:    1.5rem;     /* 24px  page titles */
+    --font-size-3xl:    1.625rem;   /* 26px  cursor.com h1 */
+    --font-size-4xl:    2.25rem;    /* 36px  heading-lg */
+
+    /* Gradients. The hero is one flat dark tone carrying white type; a
+       surface that shifts hue across its width pulls the eye off the words. */
+    --gradient-hero:    linear-gradient(hsl(222 26% 10%), hsl(222 26% 10%));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(252 34% 70%));
+    --gradient-card:    linear-gradient(hsl(var(--card)), hsl(var(--card)));
+
+    /* ── Shadows ──────────────────────────────────────────────────────────
+       Nothing in the page flow casts one: cursor.com's cards, tiles and
+       buttons carry none, and a shadow under a hairline is a second edge.
+       Only what floats over the page -- menus, popovers, dialogs, toasts --
+       gets a soft, wide, low-opacity spread (cursor.com's flyout is 2-5%
+       black), and it is tinted with the ground's hue so it reads as depth
+       rather than haze. `--shadow-strength` scales it for the dark themes,
+       where the same opacity would not register. Both are read by the
+       box-shadow ladder in tailwind.config.ts, so every theme declares them. */
+    --shadow-color:     232 28% 18%;
+    --shadow-strength:  1;
+
+    --shadow-glow:      none;
+    --shadow-card:      none;
+    --shadow-elevated:  0 4px 20px -4px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 7%));
+    --shadow-modal:     0 12px 40px -8px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 12%));
+
+    /* ── Standardized spacing scale ── */
+    --spacing-card-compact: 1rem;      /* 16px - p-4 */
+    --spacing-card-comfortable: 1.5rem; /* 24px - p-6 */
+    --spacing-section: 2rem;            /* 32px - space-y-8 */
+    --spacing-section-sm: 1.5rem;       /* 24px - space-y-6 */
+    --spacing-section-xs: 1rem;         /* 16px - space-y-4 */
+
+    /* ── Standardized icon sizes ── */
+    --icon-2xs: 12px; /* h-3 w-3 */
+    --icon-xs: 14px;  /* h-3.5 w-3.5 */
+    --icon-sm: 16px;  /* h-4 w-4 */
+    --icon-md: 20px;  /* h-5 w-5 */
+    --icon-lg: 24px;  /* h-6 w-6 */
+    --icon-xl: 32px;  /* h-8 w-8 */
+  }
+.dark {
+    --gradient-hero: linear-gradient(hsl(222 22% 10.2%), hsl(222 22% 10.2%));
+    --shadow-color: 222 60% 2%;
+    --shadow-strength: 3;
+    /* card/page 1.06 (cursor.com dark 1.07); the popover sits one step above
+       the card so a menu over a card still separates without a heavy shadow. */
+    --background: 222 28% 7.4%;
+    --foreground: 220 10% 93%;
+    --card: 222 22% 10.2%;
+    --card-foreground: 220 10% 93%;
+    --popover: 222 20% 11.4%;
+    --popover-foreground: 220 10% 93%;
+    --primary: 248 47% 59.6%;             /* white label, 4.62:1 */
+    --primary-foreground: 0 0% 100%;
+    --primary-accessible: 248 50% 82%;
+    --secondary: 232 16% 13.8%;
+    --secondary-foreground: 232 10% 93%;
+    --muted: 232 16% 13%;
+    --muted-foreground: 232 8% 62%;
+    --accent: 232 14% 15.5%;           /* hover surface, not a lilac fill */
+    --accent-foreground: 220 10% 93%;
+    --destructive: 4 23.5% 47%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 4 30% 70%;
+    --border: 232 12% 16.8%;           /* ~1.20 on card */
+    --input: 232 12% 19.8%;            /* ~1.32 on card */
+    --ring: 248 47% 76.6%;
+    --ring-gold-track:  30 22% 38%;   /* quiet on the dark card */
+    --ring-gold-ink:    36 55% 80%;   /* the banner's pale-gold text */
+    color-scheme: dark;
+  }
+
+.cfb-source { font-family: Inter, system-ui, sans-serif; color:hsl(var(--foreground)); background:hsl(var(--background)); --chrome-y:0.99; --button-y:0.95; }
+@media(min-width:1024px){html{font-size:82%;}}
+
+/* Exact active Light theme tokens from the application. */
+.cfb-source {
+    --shadow-color: 24 10% 10%;
+    --shadow-strength: 1;
+    --background: 60 9.1% 97.8%;          /* stone-50 #fafaf9, the page */
+    --foreground: 24 9.8% 10%;            /* stone-900 #1c1917 */
+    --card: 0 0% 100%;
+    --card-foreground: 24 9.8% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 24 9.8% 10%;
+    --primary: 12 6.5% 15.1%;             /* stone-800 #292524, white label 15.2:1 */
+    --primary-foreground: 0 0% 100%;
+    --primary-mid: 24 8% 30%;             /* tints only (/5../40): warm greys, not a hue */
+    --primary-accessible: 12 6.5% 15.1%;  /* links and kickers, 14.5:1 on the page */
+    --secondary: 60 4.8% 95.9%;           /* stone-100 */
+    --secondary-foreground: 24 9.8% 10%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 6% 41%;        /* 5.51 on card, 5.27 on page, 5.05 on muted */
+    --accent: 60 4.8% 95.9%;              /* hover surface */
+    --accent-foreground: 24 9.8% 10%;
+    --destructive: 2 30.5% 42.6%;         /* white on it 6.31 */
+    --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 2 33.5% 38.8%;
+    --border: 30 6% 92%;                  /* 1.19 on card, a hairline */
+    --input: 20 5.9% 88%;                 /* 1.32 on card, a control's edge */
+    --ring: 25 6% 41%;                    /* 5.27 on the page */
+    --radius: 16px;                       /* cards 16, controls and rows 12, tiles 14 */
+    --brand: 250 74% 63.9%;               /* #765fe7, the mark */
+    --gradient-primary: linear-gradient(hsl(var(--primary)), hsl(var(--primary)));
+    --gradient-hero: linear-gradient(hsl(24 9.8% 10%), hsl(24 9.8% 10%));
+    color-scheme: light;
+  }

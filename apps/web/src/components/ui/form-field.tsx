@@ -43,7 +43,7 @@ export function FormField({
 
   return (
     <div className={cn('space-y-1.5', className)}>
-      <Label htmlFor={htmlFor} className="inline-flex items-center gap-1 text-sm font-medium">
+      <Label htmlFor={htmlFor} className="inline-flex flex-wrap items-center gap-1 text-sm font-medium">
         {label}
         {required && (
           <span className="text-destructive-accessible" aria-hidden="true">
@@ -58,12 +58,13 @@ export function FormField({
       </Label>
       {control}
       {hint && !error && (
-        <p id={hintId} className="text-xs leading-relaxed text-muted-foreground">
+        <p id={hintId} data-field-help="" className="text-xs leading-relaxed text-muted-foreground">
           {hint}
         </p>
       )}
       {error && (
-        <p id={errorId} className="text-xs leading-relaxed text-destructive-accessible" role="alert">
+        <p id={errorId} data-field-error="" className="text-xs font-medium leading-relaxed text-destructive-accessible" role="alert">
+          <span className="sr-only">{bilingualAria('Error:', 'Σφάλμα:')} </span>
           {error}
         </p>
       )}

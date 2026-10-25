@@ -310,18 +310,24 @@ if (down) {
         if (matrix) {
           const cls = row.measurement.themeClass.split(/\s+/);
           const expectedClass = ['light', 'alliance', 'minimal'].includes(theme) ? 'light' : 'dark';
+          // The app's `light` preference uses the `studio` palette token, not
+          // `data-theme="light"`; `dark` is the role-default with no data-theme.
+          const expectedDataTheme = theme === 'light' ? 'studio' : theme === 'dark' ? null : theme;
           row.preferenceApplied = {
             locale: row.measurement.htmlLang === locale,
-            theme: cls.includes(expectedClass) && (
-              ['dark', 'light'].includes(theme) ? row.measurement.dataTheme === null : row.measurement.dataTheme === theme
-            ),
+            theme: cls.includes(expectedClass) && row.measurement.dataTheme === expectedDataTheme,
             reducedMotion: row.measurement.reducedMotionRequested === (motion === 'reduce'),
           };
         }
         row.loadingState = row.measurement.wordCount < 20 || !!row.measurement.bodyBusy || (row.measurement.loadingElements.length > 0 && row.measurement.wordCount < 45);
         if (row.httpStatus === 200 && !row.loadingState && AxeBuilder) {
           try {
-            const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
+            // Use the same explicit WCAG logotype exemption as e2e/axe-scope.ts.
+            // Do not disable color-contrast: every other painted label stays in scope.
+            const result = await new AxeBuilder({ page })
+              .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+              .exclude('[data-logotype]')
+              .analyze();
             row.axe = { status: 'completed', violations: result.violations.map((v) => ({
               id: v.id, impact: v.impact, description: v.help, count: v.nodes.length,
               nodes: v.nodes.slice(0, 4).map((n) => ({ target: n.target, failureSummary: n.failureSummary?.slice(0, 250) })),

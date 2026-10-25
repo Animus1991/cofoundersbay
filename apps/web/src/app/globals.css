@@ -2604,15 +2604,15 @@ img[data-img-failed] {
    button height (phoneTouchFloor.test.ts, docs §101). Text sizes are
    untouched. */
 @media (min-width: 640px) {
-  :root { --control-h: calc(32.997px * var(--button-y)); }
+  :root { --control-h: calc(32.997px * var(--button-y)); --field-h: 36px; }
   /* html:root outranks the rules that sized them (h-11, the search-bar
      rule, the py-2 restatement). */
   html:root input.input-clean,
   html:root select:not([multiple]):not([size]),
   html:root button[role='combobox'],
   html:root form[data-ask-ai] {
-    height: var(--control-h);
-    min-height: var(--control-h);
+    height: var(--field-h);
+    min-height: var(--field-h);
     padding-top: 0;
     padding-bottom: 0;
   }
@@ -2630,14 +2630,14 @@ img[data-img-failed] {
     [aria-label*='Αναζήτηση'],
     [aria-label*='αναζήτηση']
   ):not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']) {
-    height: var(--control-h);
-    min-height: var(--control-h);
+    height: var(--field-h);
+    min-height: var(--field-h);
   }
   /* An icon button laid inside a field (show password, clear search) is
      the field's height, not a 44px box hanging over its edges. */
   html:root button.absolute.tap-target[class~='top-1/2'] {
-    height: var(--control-h);
-    min-height: var(--control-h);
+    height: var(--field-h);
+    min-height: var(--field-h);
   }
   /* From 640px every icon button is the control height, including a
      tap-target (on a phone that class is already the button floor). A
@@ -3980,7 +3980,7 @@ input[data-search-field][class~="border-input"]:focus-visible {
     /* The discover query and its sort control sit on the field step
        (12.410): under the field title (text-sm, 13.603) and under the
        field subtitle (text-xs, 12.663). */
-    font-size: 12.410px !important;
+    font-size: 16px !important; /* the iOS no-zoom floor, was 12.41px */
   }
 
   /* A paragraph or a card title a card cuts with an ellipsis wraps on a
@@ -4777,8 +4777,8 @@ input:is(
   [aria-label*='Αναζήτηση'],
   [aria-label*='αναζήτηση']
 ):not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']) {
-  height: calc(2.75rem * var(--chrome-y));
-  min-height: calc(2.75rem * var(--chrome-y));
+  height: max(40px, calc(2.75rem * var(--chrome-y)));
+  min-height: max(40px, calc(2.75rem * var(--chrome-y)));
 }
 /* Phones only: the same search fields, 5% shorter. Desktop stays the
    directory height above. Ask AI is still not a search field. */
@@ -4794,8 +4794,8 @@ input:is(
     [aria-label*='Αναζήτηση'],
     [aria-label*='αναζήτηση']
   ):not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']) {
-    height: calc(2.75rem * var(--chrome-y) * 0.95);
-    min-height: calc(2.75rem * var(--chrome-y) * 0.95);
+    height: 40px; /* a real touch minimum (was 5% under 44px) */
+    min-height: 40px;
   }
 }
 
@@ -5019,4 +5019,43 @@ html[data-theme="studio"] ::selection {
    the greeting the header shows the title alone (docs §64). */
 #main-content:has([data-home-ask]) [data-page-header] .page-lead {
   display: none;
+}
+
+/* ── Clarity pass: field help, errors and plain-field placeholders ──
+   Helper and error lines sat at text-xs (about 10px under the 82% desktop
+   root). Floor them at the support size, scoped to FormField's own
+   markers so dense tool surfaces and canvas controls are untouched. */
+[data-field-help],
+[data-field-error] {
+  overflow-wrap: anywhere;
+}
+[data-field-error] {
+  border-inline-start: 2px solid hsl(var(--destructive-accessible));
+  padding-inline-start: 0.5rem;
+}
+input::placeholder,
+textarea::placeholder {
+  color: hsl(var(--muted-foreground));
+  opacity: 1;
+}
+
+/* ── Invalid and disabled fields, last word ──
+   The border-input attribute rules above (0,1,1) outrank the component's
+   border-destructive utility, including while focused. Restating the two
+   states by attribute keeps them visible in every theme. */
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"],
+[role="combobox"][aria-invalid="true"],
+input[aria-invalid="true"]:focus,
+textarea[aria-invalid="true"]:focus {
+  border-color: hsl(var(--destructive-accessible));
+}
+input:disabled:not([type='checkbox']):not([type='radio']),
+textarea:disabled,
+select:disabled {
+  border-style: dashed;
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  cursor: not-allowed;
 }
