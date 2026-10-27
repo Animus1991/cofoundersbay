@@ -2604,15 +2604,15 @@ img[data-img-failed] {
    button height (phoneTouchFloor.test.ts, docs §101). Text sizes are
    untouched. */
 @media (min-width: 640px) {
-  :root { --control-h: calc(32.997px * var(--button-y)); --field-h: 36px; }
+  :root { --control-h: calc(32.997px * var(--button-y)); }
   /* html:root outranks the rules that sized them (h-11, the search-bar
      rule, the py-2 restatement). */
   html:root input.input-clean,
   html:root select:not([multiple]):not([size]),
   html:root button[role='combobox'],
   html:root form[data-ask-ai] {
-    height: var(--field-h);
-    min-height: var(--field-h);
+    height: var(--control-h);
+    min-height: var(--control-h);
     padding-top: 0;
     padding-bottom: 0;
   }
@@ -2630,14 +2630,14 @@ img[data-img-failed] {
     [aria-label*='Αναζήτηση'],
     [aria-label*='αναζήτηση']
   ):not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']) {
-    height: var(--field-h);
-    min-height: var(--field-h);
+    height: var(--control-h);
+    min-height: var(--control-h);
   }
   /* An icon button laid inside a field (show password, clear search) is
      the field's height, not a 44px box hanging over its edges. */
   html:root button.absolute.tap-target[class~='top-1/2'] {
-    height: var(--field-h);
-    min-height: var(--field-h);
+    height: var(--control-h);
+    min-height: var(--control-h);
   }
   /* From 640px every icon button is the control height, including a
      tap-target (on a phone that class is already the button floor). A
@@ -3980,7 +3980,7 @@ input[data-search-field][class~="border-input"]:focus-visible {
     /* The discover query and its sort control sit on the field step
        (12.410): under the field title (text-sm, 13.603) and under the
        field subtitle (text-xs, 12.663). */
-    font-size: 16px !important; /* the iOS no-zoom floor, was 12.41px */
+    font-size: 12.410px !important;
   }
 
   /* A paragraph or a card title a card cuts with an ellipsis wraps on a
@@ -4777,8 +4777,8 @@ input:is(
   [aria-label*='Αναζήτηση'],
   [aria-label*='αναζήτηση']
 ):not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']) {
-  height: max(40px, calc(2.75rem * var(--chrome-y)));
-  min-height: max(40px, calc(2.75rem * var(--chrome-y)));
+  height: calc(2.75rem * var(--chrome-y));
+  min-height: calc(2.75rem * var(--chrome-y));
 }
 /* Phones only: the same search fields, 5% shorter. Desktop stays the
    directory height above. Ask AI is still not a search field. */
@@ -4794,8 +4794,8 @@ input:is(
     [aria-label*='Αναζήτηση'],
     [aria-label*='αναζήτηση']
   ):not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']) {
-    height: 40px; /* a real touch minimum (was 5% under 44px) */
-    min-height: 40px;
+    height: calc(2.75rem * var(--chrome-y) * 0.95);
+    min-height: calc(2.75rem * var(--chrome-y) * 0.95);
   }
 }
 

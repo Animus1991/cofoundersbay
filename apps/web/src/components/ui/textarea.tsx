@@ -20,7 +20,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         className={cn(
           'flex min-h-[calc(96px*var(--chrome-y))] w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm text-foreground transition-colors',
           'placeholder:text-muted-foreground placeholder:opacity-100 hover:border-foreground/15 focus-visible:border-ring',
-                    'disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-muted disabled:border-dashed disabled:text-muted-foreground resize-y',
+          'disabled:cursor-not-allowed disabled:bg-muted disabled:border-dashed disabled:text-muted-foreground resize-y',
           isInvalid && 'border-destructive ring-1 ring-destructive/60',
           className,
         )}

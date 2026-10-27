@@ -33,7 +33,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           // Their 44px minimum height (tap target) plus our hover affordance.
           'flex h-11 min-h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm text-foreground transition-colors',
           'placeholder:text-muted-foreground placeholder:opacity-100 input-clean focus-visible:border-ring',
-          'disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-muted disabled:border-dashed disabled:text-muted-foreground read-only:bg-muted/30',
+          'disabled:cursor-not-allowed disabled:bg-muted disabled:border-dashed disabled:text-muted-foreground read-only:bg-muted/30',
           'file:border-0 file:bg-transparent file:text-sm file:font-medium',
           isInvalid && 'border-destructive ring-1 ring-destructive/60',
           className,
