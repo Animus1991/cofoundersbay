@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Save,
@@ -44,6 +44,8 @@ import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { FailedLine } from '@/components/dashboard/SectionCard';
+import { useUnsavedForm } from '@/hooks/useUnsavedForm';
+import { DraftOffer, UnsavedMark } from '@/components/common/UnsavedNotice';
 const SERVICE_TYPES: { value: ServiceProviderKind; label: string; labelEl: string }[] = [
   { value: 'legal', label: 'Legal', labelEl: 'Νομικές υπηρεσίες' },
   { value: 'accounting', label: 'Accounting & Finance', labelEl: 'Λογιστική & οικονομικά' },
@@ -136,9 +138,11 @@ export default function ProviderProfilePage() {
    */
   const listingFailed = listing.isError && listing.data === undefined;
   const filledFromSaved = useRef(false);
+  const [openedFromSaved, setOpenedFromSaved] = useState(false);
   useEffect(() => {
     if (filledFromSaved.current || !listing.isFetched) return;
     filledFromSaved.current = true;
+    setOpenedFromSaved(true);
     const saved: ProviderListing | null | undefined = listing.data;
     if (!saved) return;
     if (isServiceType(saved.serviceType)) setServiceType(saved.serviceType);
@@ -181,6 +185,38 @@ export default function ProviderProfilePage() {
     mounted && (!hasSession || listing.isFetched),
   );
 
+  // What is changed and not saved: asked about before leaving, kept as a
+  // draft in this tab and offered back (docs §105). The saved state is the
+  // listing as read; what the assistant filled in is unsaved.
+  const fields = useMemo(() => ({
+    serviceType, companyName, companyWebsite, headline, description, pricingModel, startingPrice,
+    yearsInBusiness, clientsServed, isAccepting, selectedIndustries, selectedStages,
+  }), [serviceType, companyName, companyWebsite, headline, description, pricingModel, startingPrice, yearsInBusiness, clientsServed, isAccepting, selectedIndustries, selectedStages]);
+  const restoreFields = useCallback((d: Partial<typeof fields>) => {
+    const str = (v: unknown) => (typeof v === 'string' ? v : '');
+    const list = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
+    if (isServiceType(d.serviceType)) setServiceType(d.serviceType);
+    setCompanyName(str(d.companyName));
+    setCompanyWebsite(str(d.companyWebsite));
+    setHeadline(str(d.headline));
+    setDescription(str(d.description));
+    if (isPricingModel(d.pricingModel)) setPricingModel(d.pricingModel);
+    setStartingPrice(str(d.startingPrice));
+    if (typeof d.yearsInBusiness === 'string') setYearsInBusiness(d.yearsInBusiness);
+    setClientsServed(str(d.clientsServed));
+    if (typeof d.isAccepting === 'boolean') setIsAccepting(d.isAccepting);
+    setSelectedIndustries(list(d.selectedIndustries));
+    setSelectedStages(list(d.selectedStages));
+  }, []);
+  const unsaved = useUnsavedForm({
+    id: 'provider-listing',
+    ready: openedFromSaved && !listingFailed,
+    value: fields,
+    restore: restoreFields,
+    label: { en: 'Provider listing', el: 'Καταχώριση παρόχου' },
+    forceDirty: draft.filled.length > 0,
+  });
+
   async function handleSave() {
     if (listingFailed || !listing.isFetched) return;
     setIsSaving(true);
@@ -200,6 +236,7 @@ export default function ProviderProfilePage() {
         industries: selectedIndustries,
         startupStages: selectedStages,
       });
+      unsaved.markSaved();
       await queryClient.invalidateQueries({ queryKey: qk('provider') });
       draft.dismiss();
       success('Provider listing saved', 'Founders browsing services see these details.');
@@ -227,6 +264,7 @@ export default function ProviderProfilePage() {
     <AppShell
       actions={
         <>
+          <UnsavedMark dirty={unsaved.dirty} className="self-center" />
           <Button onClick={handleSave} disabled={isSaving || listingFailed || (hasSession && !listing.isFetched)}>
             {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
             <BilingualText en="Save Profile" el="Αποθήκευση προφίλ" compact />
@@ -247,6 +285,7 @@ export default function ProviderProfilePage() {
             </CardContent>
           </Card>
         ) : null}
+        <DraftOffer offer={unsaved.offer} onRestore={unsaved.restore} onDiscard={unsaved.discard} />
         <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         {/* Preview Card */}
         {/* The card others meet, on the card anatomy: the company's mark and

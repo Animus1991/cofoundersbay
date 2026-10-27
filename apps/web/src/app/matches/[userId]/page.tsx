@@ -29,6 +29,8 @@ import { cn, initialsOf } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { SectionCard } from '@/components/dashboard/SectionCard';
 import { CompatibilityList } from '@/components/matches/CompatibilityList';
+import { axisCopy, badgeCopy, completenessCopy, frictionParts, strengthTerms } from '@/lib/match-vs-copy';
+import { matchReasonCopy } from '@/lib/match-reason';
 import { StatusText } from '@/components/common/StatusText';
 import {
   getMatchVs,
@@ -48,7 +50,7 @@ function FactorRow({ item }: { item: MatchVsBreakdownItem }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between gap-3 text-sm">
-        <span className="text-muted-foreground">{item.label}</span>
+        <span className="text-muted-foreground"><BilingualText en={axisCopy(item.key, item.label).en} el={axisCopy(item.key, item.label).el} compact /></span>
         <span className="font-semibold tabular-nums text-foreground">{item.score}%</span>
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
@@ -363,18 +365,15 @@ export default function MatchDetailPage() {
             <DonutScore score={overall.score} />
             <PersonBlock name={targetProfile.displayName} role={targetProfile.role} avatarUrl={targetProfile.avatarUrl} href={`/profiles/${targetProfile.id}`} accent />
           </div>
-          <div className="mt-5 flex flex-col items-center gap-1.5">
-            <p className="text-xs text-muted-foreground">
-              <BilingualText en={`${overall.confidence}% confidence`} el={`${overall.confidence}% βεβαιότητα`} />
+          {completenessCopy(overall.confidence) ? (
+            <p className="mt-5 text-center text-xs text-muted-foreground">
+              <BilingualText en={completenessCopy(overall.confidence)!.en} el={completenessCopy(overall.confidence)!.el} wrap />
             </p>
-            <div className="h-1 w-32 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-              <div className="h-full rounded-full bg-muted-foreground/60" style={{ width: `${overall.confidence}%` }} />
-            </div>
-          </div>
+          ) : null}
           {badges.length > 0 && (
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               {badges.map((b) => (
-                <Badge key={b} variant="info" className="gap-1"><Sparkles className="h-3 w-3" aria-hidden="true" />{b}</Badge>
+                <Badge key={b} variant="info" className="gap-1"><Sparkles className="h-3 w-3" aria-hidden="true" /><BilingualText en={badgeCopy(b).en} el={badgeCopy(b).el} compact /></Badge>
               ))}
             </div>
           )}
@@ -397,7 +396,7 @@ export default function MatchDetailPage() {
                 {data.reasons.map((r) => (
                   <p key={r} className="card-body flex items-start gap-2.5 text-muted-foreground">
                     <CheckCircle className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
-                    <span>{r}</span>
+                    <span><BilingualText en={matchReasonCopy(r).en} el={matchReasonCopy(r).el} compact wrap /></span>
                   </p>
                 ))}
               </SectionCard>
@@ -405,10 +404,10 @@ export default function MatchDetailPage() {
             {sharedStrengths.length > 0 && (
               <SectionCard title="Shared strengths" titleEl="Κοινά δυνατά σημεία">
                 <div className="flex flex-wrap gap-2">
-                  {sharedStrengths.map((st) => (
-                    <Badge key={st.label} variant="success" className="gap-1">
+                  {strengthTerms(sharedStrengths).map((term) => (
+                    <Badge key={term.en} variant="success" className="gap-1">
                       <CheckCircle className="h-3 w-3" aria-hidden="true" />
-                      {st.label}
+                      <BilingualText en={term.en} el={term.el} compact />
                     </Badge>
                   ))}
                 </div>
@@ -419,15 +418,21 @@ export default function MatchDetailPage() {
                 {/* Rows on the card, not warning tiles in it: the glyph in
                     front of the title, the advice under it on the card's
                     axis. */}
-                {frictionPoints.map((point) => (
-                  <div key={point.title} className="space-y-1 py-3 first:pt-0 last:pb-0">
-                    <p className="flex items-center gap-2 text-sm font-medium text-status-warning">
-                      <FrictionIcon icon={point.icon} />
-                      <span className="min-w-0">{point.title}</span>
-                    </p>
-                    <p className="card-body text-muted-foreground">{point.description}</p>
-                  </div>
-                ))}
+                {frictionPoints.map((point) => {
+                  // The engine writes these in English; said in the reader's
+                  // language from the point's key and both sides' values.
+                  const parts = frictionParts(point);
+                  if (!parts) return null;
+                  return (
+                    <div key={point.title} className="space-y-1 py-3 first:pt-0 last:pb-0">
+                      <p className="flex items-center gap-2 text-sm font-medium text-status-warning">
+                        <FrictionIcon icon={point.icon} />
+                        <span className="min-w-0"><BilingualText en={parts.title.en} el={parts.title.el} compact wrap /></span>
+                      </p>
+                      {parts.advice ? <p className="card-body text-muted-foreground"><BilingualText en={parts.advice.en} el={parts.advice.el} wrap /></p> : null}
+                    </div>
+                  );
+                })}
               </SectionCard>
             )}
           </div>

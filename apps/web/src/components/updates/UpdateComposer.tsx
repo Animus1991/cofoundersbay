@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
+import { useUnsavedForm } from '@/hooks/useUnsavedForm';
+import { DraftOffer, UnsavedMark } from '@/components/common/UnsavedNotice';
 
 export interface UpdateDraft {
   title: string;
@@ -30,6 +32,15 @@ export function UpdateComposer({ initial, busy, onSend }: { initial?: Partial<Up
   useEffect(() => {
     if (initial) setDraft((d) => ({ ...d, ...initial }));
   }, [initial]);
+  // What is written and not sent: asked about before leaving, kept as a
+  // draft in this tab and offered back (docs §105).
+  const unsaved = useUnsavedForm({
+    id: 'founder-update-new',
+    ready: true,
+    value: draft,
+    restore: (d) => setDraft({ ...EMPTY_UPDATE, ...d }),
+    label: { en: 'Founder update', el: 'Ενημέρωση ιδρυτή' },
+  });
   const check = readFounderUpdate(draft);
   const problems = check.ok ? [] : check.problems.filter((p) => !(p === 'title' && !draft.title) && !(p === 'body' && !draft.body));
   const L = FOUNDER_UPDATE_LIMITS;
@@ -42,10 +53,13 @@ export function UpdateComposer({ initial, busy, onSend }: { initial?: Partial<Up
         e.preventDefault();
         if (!check.ok) return;
         void onSend(draft).then((sent) => {
-          if (sent) setDraft(EMPTY_UPDATE);
+          if (!sent) return;
+          setDraft(EMPTY_UPDATE);
+          unsaved.markSaved(EMPTY_UPDATE);
         });
       }}
     >
+      <DraftOffer offer={unsaved.offer} onRestore={unsaved.restore} onDiscard={unsaved.discard} />
       <div className="space-y-1.5">
         <Label htmlFor="update-title"><BilingualText en="Title" el="Τίτλος" compact /></Label>
         <Input id="update-title" maxLength={L.title} placeholder="September: two pilots live" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
@@ -110,7 +124,8 @@ export function UpdateComposer({ initial, busy, onSend }: { initial?: Partial<Up
           <BilingualText en={problems.map((p) => FOUNDER_UPDATE_PROBLEM_COPY[p].en).join(' ')} el={problems.map((p) => FOUNDER_UPDATE_PROBLEM_COPY[p].el).join(' ')} wrap />
         </p>
       ) : null}
-      <div className="flex justify-end">
+      <div className="flex items-center justify-end gap-3">
+        <UnsavedMark dirty={unsaved.dirty} />
         <Button type="submit" disabled={!check.ok || busy}>
           <BilingualText en="Send update" el="Αποστολή ενημέρωσης" compact />
         </Button>

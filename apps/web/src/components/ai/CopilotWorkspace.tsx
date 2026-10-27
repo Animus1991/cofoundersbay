@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useGuardedRouter } from '@/hooks/useGuardedRouter';
 import {
   Check,
   Copy,
@@ -169,7 +169,8 @@ export function CopilotWorkspace({
   autoPrompt,
   onAutoPromptSent,
 }: CopilotWorkspaceProps) {
-  const router = useRouter();
+  // Asks first when a form on the page holds unsaved work (docs §105).
+  const router = useGuardedRouter();
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
   const isPage = variant === 'page';

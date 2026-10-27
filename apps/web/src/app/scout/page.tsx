@@ -33,6 +33,9 @@ import { dismissScoutProposal, getScout, restoreScoutProposal, runScout, saveSco
 import { translate } from '@/lib/i18n/translate';
 import { useI18n } from '@/components/common/I18nProvider';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { useUnsavedForm } from '@/hooks/useUnsavedForm';
+import { DraftOffer, UnsavedMark } from '@/components/common/UnsavedNotice';
+import { sameValue } from '@/lib/unsaved-changes';
 
 const TABS = [
   { value: 'proposed', en: 'Proposed', el: 'Προτάσεις' },
@@ -178,6 +181,26 @@ function ScoutContent() {
     !scout.isLoading,
   );
 
+  // What is written and not saved: asked about before leaving, kept as a
+  // draft in this tab and offered back (docs §105). The saved state is the
+  // brief as read, once the form has been filled from it; what the
+  // assistant filled in is unsaved.
+  const [synced, setSynced] = useState(false);
+  useEffect(() => {
+    if (!synced && !scout.isLoading && !scout.isError && sameValue(draft, fromBrief(brief))) setSynced(true);
+  }, [synced, scout.isLoading, scout.isError, draft, brief]);
+  const unsaved = useUnsavedForm({
+    id: 'scout-brief',
+    ready: synced || formDraft.filled.length > 0,
+    value: draft,
+    restore: (d) => {
+      setEditing(true);
+      setDraft({ ...EMPTY, ...d });
+    },
+    label: { en: 'Scout brief', el: 'Σημείωμα ανιχνευτή' },
+    forceDirty: formDraft.filled.length > 0,
+  });
+
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: qk('scout') });
     void queryClient.invalidateQueries({ queryKey: qk('shortlist') });
@@ -185,6 +208,7 @@ function ScoutContent() {
   const saveBrief = useMutation({
     mutationFn: () => setScoutBrief({ ...draft, skills: draft.skills.split(',').map((s) => s.trim()).filter(Boolean), commitment: (draft.commitment || null) as ScoutBrief['commitment'], stage: (draft.stage || null) as ScoutBrief['stage'] }),
     onSuccess: () => {
+      unsaved.markSaved();
       setProblem(null);
       setEditing(false);
       refresh();
@@ -327,6 +351,7 @@ function ScoutContent() {
                 </Button>
               </div>
             ) : null}
+            <DraftOffer offer={unsaved.offer} onRestore={unsaved.restore} onDiscard={unsaved.discard} />
             <form
               className="grid grid-cols-1 gap-4 sm:grid-cols-2"
               onSubmit={(e) => {
@@ -378,6 +403,7 @@ function ScoutContent() {
                 <Button type="button" variant="outline" disabled={!brief || run.isPending} title={brief ? undefined : 'Write a brief first · Γράψτε πρώτα ένα σημείωμα'} onClick={() => void runNow()}>
                   <BilingualText en="Run now" el="Εκτέλεση τώρα" compact />
                 </Button>
+                <UnsavedMark dirty={unsaved.dirty} className="self-center" />
               </div>
             </form>
           </CardContent>

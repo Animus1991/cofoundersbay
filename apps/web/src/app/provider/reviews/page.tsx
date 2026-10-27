@@ -338,6 +338,24 @@ export default function ProviderReviewsPage() {
                   </div>
                 ) : null}
               </div>
+              {/* What the rate is made of, and what is still to do: the card
+                  stood half empty beside the ratings (docs §105). */}
+              {reviews.length > 0 ? (() => {
+                const answered = reviews.filter((r) => r.response).length;
+                const waiting = reviews.length - answered;
+                return (
+                  <div className="mt-4 space-y-1.5">
+                    <Progress value={(answered / reviews.length) * 100} className="h-2" aria-hidden="true" />
+                    <p className="text-xs text-muted-foreground">
+                      <BilingualText
+                        en={`${answered} of ${reviews.length} reviews have your reply${waiting ? `; ${waiting} ${waiting === 1 ? 'waits' : 'wait'} for one` : ''}.`}
+                        el={`${answered} από ${reviews.length} αξιολογήσεις έχουν την απάντησή σας${waiting ? `· ${waiting} ${waiting === 1 ? 'περιμένει' : 'περιμένουν'} απάντηση` : ''}.`}
+                        wrap
+                      />
+                    </p>
+                  </div>
+                );
+              })() : null}
             </CardContent>
           </Card>
         </div>

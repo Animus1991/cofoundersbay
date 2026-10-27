@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import type { AskPrompt } from '@/lib/page-questions';
+import { confirmLeave, hasUnsavedChanges } from '@/lib/unsaved-changes';
 
 /** The router, or null where none is mounted (a card rendered on its own, in a test or a preview). */
 function useSafeRouter() {
@@ -45,7 +46,9 @@ export function useAskAssistant() {
       const text = textOf(prompt);
       const href = `/ai?q=${encodeURIComponent(text)}`;
       if (popup && !pathname?.startsWith('/ai')) popup.ask(text);
-      else if (router) router.push(href);
+      // Opening /ai leaves the page: a form with unsaved work asks first (docs §105).
+      else if (router && !hasUnsavedChanges()) router.push(href);
+      else if (router) void confirmLeave(href).then((ok) => { if (ok) router.push(href); });
       else if (typeof window !== 'undefined') window.location.href = href;
     },
     [popup, pathname, router, textOf],

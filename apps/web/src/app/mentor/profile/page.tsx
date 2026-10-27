@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Star,
@@ -45,6 +45,8 @@ import { pressableProps } from '@/lib/pressable';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { FailedLine } from '@/components/dashboard/SectionCard';
+import { useUnsavedForm } from '@/hooks/useUnsavedForm';
+import { DraftOffer, UnsavedMark } from '@/components/common/UnsavedNotice';
 const INDUSTRIES = [
   'SaaS', 'Fintech', 'Healthtech', 'Edtech', 'Deep Tech', 'AI/ML',
   'E-commerce', 'Marketplace', 'Web3/Crypto', 'Climate Tech', 'AgriTech',
@@ -143,9 +145,11 @@ export default function MentorProfilePage() {
    */
   const listingFailed = listing.isError && listing.data === undefined;
   const filledFromSaved = useRef(false);
+  const [openedFromSaved, setOpenedFromSaved] = useState(false);
   useEffect(() => {
     if (filledFromSaved.current || !listing.isFetched) return;
     filledFromSaved.current = true;
+    setOpenedFromSaved(true);
     const saved: MentorListing | null | undefined = listing.data;
     if (!saved) return;
     setHeadline(saved.headline ?? '');
@@ -196,6 +200,38 @@ export default function MentorProfilePage() {
     mounted && (!hasSession || listing.isFetched),
   );
 
+  // What is changed and not saved: asked about before leaving, kept as a
+  // draft in this tab and offered back (docs §105). The saved state is the
+  // listing as read; what the assistant filled in is unsaved.
+  const fields = useMemo(() => ({
+    headline, bio, selectedIndustries, selectedStages, selectedExpertise, sessionFormats,
+    isFree, hourlyRate, isAccepting, yearsExp, sessionDuration, hoursPerWeek,
+  }), [headline, bio, selectedIndustries, selectedStages, selectedExpertise, sessionFormats, isFree, hourlyRate, isAccepting, yearsExp, sessionDuration, hoursPerWeek]);
+  const restoreFields = useCallback((d: Partial<typeof fields>) => {
+    const str = (v: unknown, fallback: string) => (typeof v === 'string' ? v : fallback);
+    const list = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
+    setHeadline(str(d.headline, ''));
+    setBio(str(d.bio, ''));
+    setSelectedIndustries(list(d.selectedIndustries));
+    setSelectedStages(list(d.selectedStages));
+    setSelectedExpertise(list(d.selectedExpertise));
+    if (Array.isArray(d.sessionFormats)) setSessionFormats(list(d.sessionFormats));
+    if (typeof d.isFree === 'boolean') setIsFree(d.isFree);
+    setHourlyRate(str(d.hourlyRate, ''));
+    if (typeof d.isAccepting === 'boolean') setIsAccepting(d.isAccepting);
+    if (typeof d.yearsExp === 'string') setYearsExp(d.yearsExp);
+    if (typeof d.sessionDuration === 'string') setSessionDuration(d.sessionDuration);
+    if (typeof d.hoursPerWeek === 'string') setHoursPerWeek(d.hoursPerWeek);
+  }, []);
+  const unsaved = useUnsavedForm({
+    id: 'mentor-listing',
+    ready: openedFromSaved && !listingFailed,
+    value: fields,
+    restore: restoreFields,
+    label: { en: 'Mentor listing', el: 'Καταχώριση μέντορα' },
+    forceDirty: draft.filled.length > 0,
+  });
+
   async function handleSave() {
     if (listingFailed || !listing.isFetched) return;
     setIsSaving(true);
@@ -217,6 +253,7 @@ export default function MentorProfilePage() {
         sessionDuration: Number(sessionDuration),
         hoursPerWeek: Number(hoursPerWeek),
       });
+      unsaved.markSaved();
       await queryClient.invalidateQueries({ queryKey: qk('mentors') });
       draft.dismiss();
       success('Mentor listing saved', 'Founders searching for mentors see these details.');
@@ -242,6 +279,7 @@ export default function MentorProfilePage() {
     <AppShell showHelp
       actions={
         <>
+          <UnsavedMark dirty={unsaved.dirty} className="self-center" />
           <Button onClick={handleSave} disabled={isSaving || listingFailed || (hasSession && !listing.isFetched)}>
             {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
             <BilingualText en="Save Profile" el="Αποθήκευση προφίλ" compact />
@@ -262,6 +300,7 @@ export default function MentorProfilePage() {
             </CardContent>
           </Card>
         ) : null}
+        <DraftOffer offer={unsaved.offer} onRestore={unsaved.restore} onDiscard={unsaved.discard} />
         <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         {/* Preview Card */}
         <Card className="border-primary-muted bg-primary-subtle">

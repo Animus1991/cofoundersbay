@@ -124,7 +124,9 @@ export default function ApiStatusPage() {
       <div className="mb-6">
         <Button onClick={checkAllEndpoints} disabled={isChecking} className="gap-2">
           <RefreshCw className={`icon-sm ${isChecking ? 'animate-spin' : ''}`} />
-          {isChecking ? 'Checking...' : 'Check All Endpoints'}
+          {isChecking
+            ? <BilingualText en="Checking…" el="Έλεγχος…" compact />
+            : <BilingualText en="Check all endpoints" el="Έλεγχος όλων των endpoints" compact />}
         </Button>
       </div>
 

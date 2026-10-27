@@ -79,6 +79,7 @@ import { PostHogProvider } from '@/components/providers/PostHogProvider';
 import { LanguagePreferenceProvider } from '@/lib/i18n/LanguagePreferenceContext';
 import { LocaleSync } from '@/components/common/LocaleSync';
 import { PreviewSessionGuard } from '@/components/common/PreviewSessionGuard';
+import { UnsavedChangesGuard } from '@/components/common/UnsavedChangesGuard';
 import { I18nProvider } from '@/components/common/I18nProvider';
 import { DomI18n } from '@/components/common/DomI18n';
 import { PhonePlaceholderFit } from '@/components/layout/PhonePlaceholderFit';
@@ -187,6 +188,8 @@ export default function RootLayout({
                                 <DemoDataProvider>
                                   <RoleTheme>
                                     <PreviewSessionGuard />
+                                    {/* Asks before a link leaves a form with unsaved work. */}
+                                    <UnsavedChangesGuard />
                                     <DomI18n>
                                     <PhonePlaceholderFit />
                                     <IosFieldZoom />

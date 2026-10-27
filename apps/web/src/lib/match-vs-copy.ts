@@ -80,46 +80,92 @@ function both(values: { mine?: unknown; theirs?: unknown } | undefined, word: (v
 }
 
 /**
- * One point worth discussing, in both languages: what differs, then what to
- * agree on. A friction this table does not know keeps the engine's words in
- * both places rather than disappearing.
+ * One point worth discussing, as a heading (what differs, with both sides'
+ * values) and the advice under it. A friction this table does not know keeps
+ * the engine's own title and description rather than disappearing.
  */
-export function frictionCopy(item: unknown): Pair | null {
-  if (typeof item === 'string') return item.trim() ? { en: item, el: item } : null;
+export function frictionParts(item: unknown): { title: Pair; advice: Pair | null; known: boolean } | null {
+  if (typeof item === 'string') return item.trim() ? { title: { en: item, el: item }, advice: null, known: false } : null;
   if (!item || typeof item !== 'object') return null;
   const o = item as { key?: unknown; icon?: unknown; title?: unknown; description?: unknown; values?: { mine?: unknown; theirs?: unknown } };
   const key = (typeof o.key === 'string' ? o.key : typeof o.icon === 'string' ? KEY_BY_ICON[o.icon] : undefined) as FrictionKey | undefined;
   if (key === 'location') {
     const places = both(o.values, (v) => ({ en: v, el: placeEl(v) }));
     return {
-      en: `${places ? `Different places: ${places.en}.` : 'Different places.'} Agree early on how you will work across the distance.`,
-      el: `${places ? `Διαφορετικές τοποθεσίες: ${places.el}.` : 'Διαφορετικές τοποθεσίες.'} Συμφωνήστε νωρίς πώς θα συνεργάζεστε από απόσταση.`,
+      title: { en: places ? `Different places: ${places.en}` : 'Different places', el: places ? `Διαφορετικές τοποθεσίες: ${places.el}` : 'Διαφορετικές τοποθεσίες' },
+      advice: { en: 'Agree early on how you will work across the distance.', el: 'Συμφωνήστε νωρίς πώς θα συνεργάζεστε από απόσταση.' },
+      known: true,
     };
   }
   if (key === 'stage') {
     const stages = both(o.values, stageWord);
     return {
-      en: `${stages ? `Different stages: ${stages.en}.` : 'Different stages.'} Agree early on which milestones come first.`,
-      el: `${stages ? `Διαφορετικά στάδια: ${stages.el}.` : 'Διαφορετικά στάδια.'} Συμφωνήστε νωρίς ποια ορόσημα προηγούνται.`,
+      title: { en: stages ? `Different stages: ${stages.en}` : 'Different stages', el: stages ? `Διαφορετικά στάδια: ${stages.el}` : 'Διαφορετικά στάδια' },
+      advice: { en: 'Agree early on which milestones come first.', el: 'Συμφωνήστε νωρίς ποια ορόσημα προηγούνται.' },
+      known: true,
     };
   }
   if (key === 'commitment') {
     const commitments = both(o.values, commitmentWord);
     return {
-      en: `${commitments ? `Different time commitment: ${commitments.en}.` : 'Different time commitment.'} Agree on hours and milestones.`,
-      el: `${commitments ? `Διαφορετική δέσμευση χρόνου: ${commitments.el}.` : 'Διαφορετική δέσμευση χρόνου.'} Συμφωνήστε σε ώρες και ορόσημα.`,
+      title: {
+        en: commitments ? `Different time commitment: ${commitments.en}` : 'Different time commitment',
+        el: commitments ? `Διαφορετική δέσμευση χρόνου: ${commitments.el}` : 'Διαφορετική δέσμευση χρόνου',
+      },
+      advice: { en: 'Agree on hours and milestones.', el: 'Συμφωνήστε σε ώρες και ορόσημα.' },
+      known: true,
     };
   }
   if (key === 'tech_overlap') {
     return {
-      en: 'You both lean technical. Decide early who covers sales, business and growth.',
-      el: 'Έχετε και οι δύο τεχνικό προφίλ. Αποφασίστε νωρίς πώς θα καλυφθούν οι πωλήσεις, η επιχειρηματική πλευρά και η ανάπτυξη.',
+      title: { en: 'You both lean technical', el: 'Έχετε και οι δύο τεχνικό προφίλ' },
+      advice: {
+        en: 'Decide early who covers sales, business and growth.',
+        el: 'Αποφασίστε νωρίς πώς θα καλυφθούν οι πωλήσεις, η επιχειρηματική πλευρά και η ανάπτυξη.',
+      },
+      known: true,
     };
   }
   const title = typeof o.title === 'string' ? o.title.trim() : '';
   const description = typeof o.description === 'string' ? o.description.trim() : '';
-  const words = title && description ? `${title}: ${description}` : title || description;
-  return words ? { en: words, el: words } : null;
+  if (!title && !description) return null;
+  return {
+    title: { en: title || description, el: title || description },
+    advice: title && description ? { en: description, el: description } : null,
+    known: false,
+  };
+}
+
+/**
+ * One point worth discussing as one sentence pair: the heading, then the
+ * advice. An unknown friction keeps "Title: description", as the engine
+ * wrote it.
+ */
+export function frictionCopy(item: unknown): Pair | null {
+  const parts = frictionParts(item);
+  if (!parts) return null;
+  if (!parts.advice) return parts.title;
+  const sep = parts.known ? '. ' : ': ';
+  return { en: `${parts.title.en}${sep}${parts.advice.en}`, el: `${parts.title.el}${sep}${parts.advice.el}` };
+}
+
+/*
+ * The engine's badges over the score ("Strong Role Complement", "Execution
+ * Match"), said in both languages; one this table does not know keeps its
+ * words.
+ */
+const BADGE: Record<string, Pair> = {
+  'High Vision Alignment': { en: 'Goals line up', el: 'Κοινοί στόχοι' },
+  'Strong Role Complement': { en: 'Roles complement', el: 'Συμπληρωματικοί ρόλοι' },
+  'Execution Match': { en: 'Skills fit the work', el: 'Δεξιότητες που ταιριάζουν' },
+  'Same Ecosystem': { en: 'Same place', el: 'Ίδιος τόπος' },
+  'Industry Fit': { en: 'Same industry', el: 'Ίδιος κλάδος' },
+  'Highly Active': { en: 'Very active', el: 'Πολύ ενεργό μέλος' },
+  'Potential Match': { en: 'Potential match', el: 'Δυνητική αντιστοίχιση' },
+};
+
+export function badgeCopy(badge: string): Pair {
+  return BADGE[badge] ?? { en: badge, el: badge };
 }
 
 /**

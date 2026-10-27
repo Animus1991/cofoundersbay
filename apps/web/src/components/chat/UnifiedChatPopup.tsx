@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { overlayOpener } from '@/components/ui/use-return-focus';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { useGuardedRouter } from '@/hooks/useGuardedRouter';
 import { useSession } from '@/hooks/useSession';
 import {
   MessageSquare,
@@ -175,7 +176,8 @@ function TypingIndicator() {
 
 export function UnifiedChatPopup() {
   const pathname = usePathname();
-  const router = useRouter();
+  // Asks first when a form on the page holds unsaved work (docs §105).
+  const router = useGuardedRouter();
   const { hasSession, mounted: sessionReady } = useSession();
   const { isOpen, isMinimized, initialUserId, preferredTab, pendingPrompt, consumePrompt, close, minimize, restore } = usePopupChat();
   const { setActiveConversationId, markConversationRead } = useMessaging();

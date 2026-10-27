@@ -19,7 +19,7 @@ import { getMatchBreakdown, getRecommendations, type MatchBreakdown, type Search
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { cn, initialsOf } from '@/lib/utils';
-import { matchAxisEl } from '@/lib/i18n/strings-matches';
+import { axisCopy, frictionCopy, strengthTerms } from '@/lib/match-vs-copy';
 import { bilingualAria } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
@@ -102,11 +102,11 @@ export default function MatchComparePage() {
 
   // The summary: who leads overall, and on which dimensions each leads.
   const overallLeader = leaderOf(people.map((_, i) => scoreOf(i)));
-  const leads = people.map((_, i) => axes.filter(([key]) => leaderOf(people.map((__, j) => axisScore(j, key))) === i).map(([, label]) => label));
+  const leads = people.map((_, i) => axes.filter(([key]) => leaderOf(people.map((__, j) => axisScore(j, key))) === i).map(([key, label]) => axisCopy(key, label)));
   // One sentence per language, written whole rather than stitched from parts.
   const summary = (() => {
-    const listEn = (labels: string[]) => labels.join(', ').toLowerCase();
-    const listEl = (labels: string[]) => labels.map((l) => matchAxisEl(l) ?? l).join(', ').toLowerCase();
+    const listEn = (labels: Array<{ en: string }>) => labels.map((l) => l.en).join(', ').toLowerCase();
+    const listEl = (labels: Array<{ el: string }>) => labels.map((l) => l.el).join(', ').toLowerCase();
     const en: string[] = [];
     const el: string[] = [];
     if (overallLeader >= 0) {
@@ -274,7 +274,7 @@ export default function MatchComparePage() {
                   const lead = leaderOf(values);
                   return (
                     <tr key={key} className="border-t border-border">
-                      <th scope="row" className="p-4 text-left text-xs font-medium text-muted-foreground"><BilingualText en={label} el={matchAxisEl(label)} compact wrap /></th>
+                      <th scope="row" className="p-4 text-left text-xs font-medium text-muted-foreground"><BilingualText en={axisCopy(key, label).en} el={axisCopy(key, label).el} compact wrap /></th>
                       {values.map((value, i) => (
                         <td key={people[i].userId} className="p-4 align-middle">
                           <div className="flex items-center gap-3">
@@ -305,8 +305,8 @@ export default function MatchComparePage() {
                   {people.map((person, i) => (
                     <td key={person.userId} className="p-4 align-top">
                       <ul className="space-y-1.5 text-muted-foreground">
-                        {(breakdowns[i]?.sharedStrengths ?? []).slice(0, 4).map((s) => <li key={s}>{s}</li>)}
-                        {!breakdownQueries[i]?.isLoading && !(breakdowns[i]?.sharedStrengths ?? []).length && <li>{'—'}</li>}
+                        {strengthTerms(breakdowns[i]?.strengthItems).slice(0, 4).map((t) => <li key={t.en}><BilingualText en={t.en} el={t.el} compact wrap /></li>)}
+                        {!breakdownQueries[i]?.isLoading && !strengthTerms(breakdowns[i]?.strengthItems).length && <li>{'—'}</li>}
                       </ul>
                     </td>
                   ))}
@@ -318,8 +318,8 @@ export default function MatchComparePage() {
                   {people.map((person, i) => (
                     <td key={person.userId} className="p-4 align-top">
                       <ul className="space-y-1.5 text-muted-foreground">
-                        {(breakdowns[i]?.frictionPoints ?? []).slice(0, 4).map((s) => <li key={s}>{s}</li>)}
-                        {!breakdownQueries[i]?.isLoading && !(breakdowns[i]?.frictionPoints ?? []).length && <li>{'—'}</li>}
+                        {(breakdowns[i]?.frictionItems ?? []).map(frictionCopy).filter((f): f is { en: string; el: string } => f !== null).slice(0, 4).map((f) => <li key={f.en}><BilingualText en={f.en} el={f.el} compact wrap /></li>)}
+                        {!breakdownQueries[i]?.isLoading && !(breakdowns[i]?.frictionItems ?? []).length && <li>{'—'}</li>}
                       </ul>
                     </td>
                   ))}

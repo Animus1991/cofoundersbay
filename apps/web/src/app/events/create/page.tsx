@@ -31,6 +31,8 @@ import { isPitchPractice } from '@/lib/pitch-practice';
 import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useUnsavedForm } from '@/hooks/useUnsavedForm';
+import { DraftOffer, UnsavedMark } from '@/components/common/UnsavedNotice';
 
 const EVENT_TYPES = [
   { value: 'networking', label: 'Networking', labelEl: 'Δικτύωση' },
@@ -138,6 +140,21 @@ export default function CreateEventPage() {
     setForm((prev) => (prev.title || prev.description ? prev : { ...prev, type: 'workshop', isOnline: true }));
   }, []);
 
+  // What is typed and not created yet: asked about before leaving, kept as a
+  // draft in this tab and offered back (docs §105). The form is "as opened"
+  // once the two prefills above have run, so a date from the calendar is not
+  // a change of yours; what the assistant filled in is.
+  const [opened, setOpened] = useState(false);
+  useEffect(() => setOpened(true), []);
+  const unsaved = useUnsavedForm({
+    id: 'event-new',
+    ready: opened,
+    value: form,
+    restore: (d) => setForm((prev) => ({ ...prev, ...d })),
+    label: { en: 'New event', el: 'Νέα εκδήλωση' },
+    forceDirty: draft.filled.length > 0,
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) return;
@@ -160,6 +177,7 @@ export default function CreateEventPage() {
         meetingUrl: form.meetingUrl.trim() || undefined,
         capacity: form.capacity ? parseInt(form.capacity, 10) : undefined,
       });
+      unsaved.markSaved();
       success('Event created', form.title.trim());
       // To the event just made, where it can be shared and its RSVPs seen;
       // the list when the answer carries no id.
@@ -197,6 +215,7 @@ export default function CreateEventPage() {
     >
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,44rem)_22rem]">
         <form onSubmit={handleSubmit} className="min-w-0 space-y-6">
+          <DraftOffer offer={unsaved.offer} onRestore={unsaved.restore} onDiscard={unsaved.discard} />
           <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
           {pitchPractice ? (
             <p className="text-sm text-muted-foreground">
@@ -271,7 +290,7 @@ export default function CreateEventPage() {
                 </span>
               }
             >
-              <Input value={form.timezone} onChange={(e) => set('timezone', e.target.value)} placeholder="e.g. Europe/Athens" />
+              <Input value={form.timezone} onChange={(e) => set('timezone', e.target.value)} placeholder={sayOne('e.g. Europe/Athens', 'π.χ. Europe/Athens')} />
             </FormField>
           </FormSection>
 
@@ -350,6 +369,7 @@ export default function CreateEventPage() {
                 <BilingualText en="Cancel" el="Ακύρωση" compact />
               </Link>
             </Button>
+            <UnsavedMark dirty={unsaved.dirty} />
           </div>
         </form>
 

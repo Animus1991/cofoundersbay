@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { axisCopy, compatSummary, completenessCopy, frictionCopy, strengthTerms } from './match-vs-copy';
+import { axisCopy, badgeCopy, compatSummary, completenessCopy, frictionCopy, frictionParts, strengthTerms } from './match-vs-copy';
 
 describe('the compatibility dialog in both languages', () => {
   it('names each axis by its key, briefly', () => {
@@ -55,5 +56,33 @@ describe('the compatibility dialog in both languages', () => {
     expect(few.enough).toBe(false);
     expect(few.text.el).toMatch(/^Λιγότερες από 3 ερωτήσεις/);
     expect(compatSummary(undefined).enough).toBe(false);
+  });
+
+  it('splits a point into its heading and its advice, for pages that lay them out apart', () => {
+    expect(frictionParts({ key: 'stage', values: { mine: 'idea', theirs: 'mvp' } })).toEqual({
+      title: { en: 'Different stages: MVP and Idea', el: 'Διαφορετικά στάδια: MVP και Ιδέα' },
+      advice: { en: 'Agree early on which milestones come first.', el: 'Συμφωνήστε νωρίς ποια ορόσημα προηγούνται.' },
+      known: true,
+    });
+    expect(frictionParts({ title: 'Pace', description: 'Different speeds.' })).toEqual({
+      title: { en: 'Pace', el: 'Pace' },
+      advice: { en: 'Different speeds.', el: 'Different speeds.' },
+      known: false,
+    });
+  });
+
+  it('says the engine badges in Greek, and keeps one it does not know', () => {
+    expect(badgeCopy('Strong Role Complement').el).toBe('Συμπληρωματικοί ρόλοι');
+    expect(badgeCopy('Potential Match').el).toBe('Δυνητική αντιστοίχιση');
+    expect(badgeCopy('Brand new badge')).toEqual({ en: 'Brand new badge', el: 'Brand new badge' });
+  });
+
+  // Read from the engine's source, so a badge added there fails here until
+  // it is named (the same guard the reasons have).
+  it('has Greek for every badge the engine writes', () => {
+    const source = readFileSync('../api/src/matching/matching.service.ts', 'utf8');
+    const written = [...source.matchAll(/badges\.push\('([^']+)'\)/g)].map((m) => m[1]);
+    expect(written.length).toBeGreaterThanOrEqual(7);
+    expect(written.filter((b) => badgeCopy(b).el === b)).toEqual([]);
   });
 });

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { useGuardedRouter } from '@/hooks/useGuardedRouter';
 
 /**
  * Global keyboard shortcuts: Ctrl/Cmd+K and `/` open the command palette,
@@ -12,7 +13,8 @@ import { usePathname, useRouter } from 'next/navigation';
  * bare-letter bindings (v/n/c/g/s/?), so this hub stands down there.
  */
 export function useCommandPalette() {
-  const router = useRouter();
+  // Asks first when a form on the page holds unsaved work (docs §105).
+  const router = useGuardedRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);

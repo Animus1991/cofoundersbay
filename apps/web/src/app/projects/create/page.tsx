@@ -2,7 +2,7 @@
 
 import { useFormDraft } from '@/lib/form-draft';
 import { FormDraftNotice } from '@/components/common/FormDraftNotice';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -43,6 +43,9 @@ import {
   type ProjectStatus,
 } from '@/lib/projects-demo';
 import { ASK } from '@/lib/page-questions';
+import { useUnsavedForm } from '@/hooks/useUnsavedForm';
+import { useGuardedRouter } from '@/hooks/useGuardedRouter';
+import { DraftOffer, UnsavedMark } from '@/components/common/UnsavedNotice';
 
 const STATUS_OPTIONS: { value: ProjectStatus; hintKey: 'stage_idea_hint' | 'stage_validating_hint' | 'stage_building_hint' | 'stage_launched_hint' | 'stage_scaling_hint' }[] = [
   { value: 'idea', hintKey: 'stage_idea_hint' },
@@ -104,6 +107,36 @@ export default function CreateProjectPage() {
     }
   });
 
+  // What is entered and not created yet, across the four steps: asked about
+  // before leaving, kept as a draft in this tab and offered back (docs §105).
+  const fields = useMemo(
+    () => ({ name, tagline, description, status, industry, location, website, maxTeamSize, rolesNeeded, tags }),
+    [name, tagline, description, status, industry, location, website, maxTeamSize, rolesNeeded, tags],
+  );
+  const restoreFields = useCallback((d: Partial<typeof fields>) => {
+    const str = (v: unknown) => (typeof v === 'string' ? v : '');
+    const list = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
+    setName(str(d.name));
+    setTagline(str(d.tagline));
+    setDescription(str(d.description));
+    if (typeof d.status === 'string') setStatus(d.status as ProjectStatus);
+    setIndustry(str(d.industry));
+    setLocation(str(d.location));
+    setWebsite(str(d.website));
+    if (typeof d.maxTeamSize === 'string' && d.maxTeamSize) setMaxTeamSize(d.maxTeamSize);
+    setRolesNeeded(list(d.rolesNeeded));
+    setTags(list(d.tags));
+  }, []);
+  const unsaved = useUnsavedForm({
+    id: 'project-new',
+    ready: true,
+    value: fields,
+    restore: restoreFields,
+    label: { en: 'New project', el: 'Νέο έργο' },
+  });
+  // The arrow back to the list is a button, not a link: it asks the same way.
+  const guarded = useGuardedRouter();
+
   const addRole = (role: string) => {
     if (role && !rolesNeeded.includes(role)) {
       setRolesNeeded([...rolesNeeded, role]);
@@ -151,6 +184,7 @@ export default function CreateProjectPage() {
         rolesNeeded,
         tags,
       });
+      unsaved.markSaved();
       success('Project created', 'It is now visible to potential co-founders.');
       router.push(`/projects/${created.id}`);
     } catch {
@@ -185,13 +219,14 @@ export default function CreateProjectPage() {
             size="icon"
             className={BUILDER_BTN}
             type="button"
-            onClick={() => router.push('/projects')}
+            onClick={() => guarded.push('/projects')}
             aria-label={bilingualAria(projectEn('back_projects'), projectEl('back_projects'))}
           >
             <ArrowLeft className="icon-md" />
           </Button>
           <CfbGlyph name="briefcase" className="icon-md text-muted-foreground" />
         </div>
+        <DraftOffer offer={unsaved.offer} onRestore={unsaved.restore} onDiscard={unsaved.discard} />
         <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         <p className="text-sm text-muted-foreground">
           <BilingualText en={projectEn('link_into')} el={projectEl('link_into')} compact />
@@ -498,6 +533,7 @@ export default function CreateProjectPage() {
             <ArrowLeft className="icon-sm mr-2" />
             <BilingualText en={projectEn('back')} el={projectEl('back')} compact />
           </Button>
+          <UnsavedMark dirty={unsaved.dirty} className="mx-3 min-w-0 flex-1 text-center" />
           {step < 4 ? (
             <Button type="button" className={BUILDER_BTN} onClick={() => setStep(step + 1)} disabled={!canProceed()}>
               <BilingualText en={projectEn('next')} el={projectEl('next')} compact />

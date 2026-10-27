@@ -2,7 +2,7 @@
 
 import { useFormDraft } from '@/lib/form-draft';
 import { FormDraftNotice } from '@/components/common/FormDraftNotice';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
@@ -28,6 +28,8 @@ import {
   MILESTONE_PRIORITY_KEYS,
 } from '@/lib/i18n/strings-milestones';
 import { ASK } from '@/lib/page-questions';
+import { useUnsavedForm } from '@/hooks/useUnsavedForm';
+import { DraftOffer, UnsavedMark } from '@/components/common/UnsavedNotice';
 
 const CATEGORIES = ['product', 'fundraising', 'hiring', 'partnerships', 'growth', 'other'] as const;
 const PRIORITIES: { value: MilestonePriority; color: string }[] = [
@@ -63,6 +65,28 @@ export default function NewMilestonePage() {
     if (f.priority === 'low' || f.priority === 'medium' || f.priority === 'high') setPriority(f.priority);
   });
 
+  // What is typed and not created yet: asked about before leaving, kept as a
+  // draft in this tab and offered back (docs §105).
+  const fields = useMemo(
+    () => ({ title, description, priority, category, dueDate, notes }),
+    [title, description, priority, category, dueDate, notes],
+  );
+  const restoreFields = useCallback((d: Partial<typeof fields>) => {
+    setTitle(typeof d.title === 'string' ? d.title : '');
+    setDescription(typeof d.description === 'string' ? d.description : '');
+    if (d.priority === 'low' || d.priority === 'medium' || d.priority === 'high') setPriority(d.priority);
+    if (typeof d.category === 'string' && (CATEGORIES as readonly string[]).includes(d.category)) setCategory(d.category);
+    setDueDate(typeof d.dueDate === 'string' ? d.dueDate : '');
+    setNotes(typeof d.notes === 'string' ? d.notes : '');
+  }, []);
+  const unsaved = useUnsavedForm({
+    id: collaboratorId ? `milestone-new:${collaboratorId}` : 'milestone-new',
+    ready: true,
+    value: fields,
+    restore: restoreFields,
+    label: { en: 'New milestone', el: 'Νέο ορόσημο' },
+  });
+
   const mutation = useMutation({
     mutationFn: () =>
       createMilestone({
@@ -76,6 +100,7 @@ export default function NewMilestonePage() {
         collaboratorId: collaboratorId || undefined,
       }),
     onSuccess: () => {
+      unsaved.markSaved();
       queryClient.invalidateQueries({ queryKey: qk('milestones') });
       success('Milestone created', 'Added to your tracker.');
       router.push('/milestones');
@@ -107,6 +132,7 @@ export default function NewMilestonePage() {
       contentClassName="builder-copy overflow-x-clip"
     >
       <div className="max-w-2xl space-y-6">
+        <DraftOffer offer={unsaved.offer} onRestore={unsaved.restore} onDiscard={unsaved.discard} />
         <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         <Card>
           <CardHeader>
@@ -231,6 +257,7 @@ export default function NewMilestonePage() {
               </div>
 
               <div className="flex items-center justify-end gap-3 border-t border-border pt-2">
+                <UnsavedMark dirty={unsaved.dirty} className="mr-auto" />
                 <Button type="button" variant="ghost" className="rounded-xl" asChild>
                   <Link href="/milestones">
                     <BilingualText en={milestoneEn('cancel')} el={milestoneEl('cancel')} compact />

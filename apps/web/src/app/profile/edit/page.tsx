@@ -59,6 +59,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { calculateProfileCompletion } from '@/components/common/ProfileCompletion';
 import { useToast } from '@/components/ui/toast';
+import { useUnsavedForm } from '@/hooks/useUnsavedForm';
+import { DraftOffer, UnsavedMark } from '@/components/common/UnsavedNotice';
 import { ImageCropperTrigger } from '@/components/ui/image-cropper';
 import { analytics } from '@/lib/analytics';
 import { cn, initialsOf } from '@/lib/utils';
@@ -541,6 +543,16 @@ export default function ProfileEditPage() {
     });
   }, formInitialized);
 
+  // What is typed and not saved: asked about before leaving, kept as a draft
+  // in this tab, offered back if the page is left another way (docs §105).
+  const unsaved = useUnsavedForm({
+    id: 'profile-edit',
+    ready: formInitialized,
+    value: form,
+    restore: setForm,
+    label: { en: 'Profile', el: 'Προφίλ' },
+  });
+
   // Import from LinkedIn: the dialog fills the form; Save is still the person's.
   const [importOpen, setImportOpen] = useState(false);
   const [importInitial, setImportInitial] = useState<LinkedInImport | null>(null);
@@ -641,6 +653,7 @@ export default function ProfileEditPage() {
         rolePayload: Object.keys(rolePayload).length || hadHistory.current ? rolePayload : undefined,
         skillIds,
       });
+      unsaved.markSaved(form);
       queryClient.invalidateQueries({ queryKey: queryKeys.me.profile() });
       // Sync updated name/avatar to localStorage so TopNav UserMenu reflects changes immediately
       if (typeof window !== 'undefined') {
@@ -653,14 +666,14 @@ export default function ProfileEditPage() {
           }));
         } catch { /* silent */ }
       }
-      success('Profile saved', 'Your changes have been saved successfully');
+      success(sayOne('Profile saved', 'Το προφίλ αποθηκεύτηκε'), sayOne('Your changes are saved.', 'Οι αλλαγές σας αποθηκεύτηκαν.'));
       
       // Analytics
       void analytics.track('profile_updated', {
         fields_changed: Object.keys(rolePayload).concat(['displayName', 'headline', 'bio', 'location', 'languages']),
       });
     } catch {
-      showError('Save failed', 'Please try again');
+      showError(sayOne('Save failed', 'Η αποθήκευση απέτυχε'), sayOne('Your changes are still here. Please try again.', 'Οι αλλαγές σας είναι ακόμη εδώ. Δοκιμάστε ξανά.'));
     } finally {
       setSaving(false);
     }
@@ -719,6 +732,7 @@ export default function ProfileEditPage() {
           {/* One Save per screen: here from lg, the bar at the foot of the
               screen below lg (it stays in reach down a long form). The
               Profile Strength card's own Save was a third (docs §89). */}
+          <UnsavedMark dirty={unsaved.dirty} className="hidden lg:inline-flex" />
           <Button onClick={handleSave} disabled={saving} size="sm" className="hidden gap-2 lg:inline-flex">
             {saving ? <Loader2 className="icon-sm animate-spin" /> : <Save className="icon-sm" />}
             <BilingualText en="Save changes" el="Αποθήκευση αλλαγών" compact secondaryClassName="text-primary-foreground" />
@@ -726,9 +740,10 @@ export default function ProfileEditPage() {
         </div>
       }
     >
-      <div className="grid grid-cols-1 gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_320px] lg:pb-10">
+      <div className="grid grid-cols-1 gap-6 pb-28 lg:grid-cols-[minmax(0,1fr)_320px] lg:pb-10">
         {/* Main content */}
         <div className="space-y-6">
+          <div className="mb-4 empty:hidden"><DraftOffer offer={unsaved.offer} onRestore={unsaved.restore} onDiscard={unsaved.discard} /></div>
           <div className="mb-4 empty:hidden"><FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} /></div>
           {importedNotice ? (
             <div className="mb-4 flex items-start justify-between gap-3 rounded-xl border border-primary-muted bg-primary-subtle p-3 text-sm" role="status">
@@ -804,10 +819,12 @@ export default function ProfileEditPage() {
                           const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
                           const { upload } = await uploadAvatar(file);
                           updateField('avatarUrl', upload.url);
-                          success('Avatar updated', 'Your photo has been cropped and uploaded');
+                          // Uploaded, not yet on the profile: the photo is
+                          // stored with the other fields on Save.
+                          success(sayOne('Photo uploaded', 'Η φωτογραφία ανέβηκε'), sayOne('Press Save changes to put it on your profile.', 'Πατήστε «Αποθήκευση αλλαγών» για να μπει στο προφίλ σας.'));
                           void analytics.track('avatar_uploaded');
                         } catch (err) {
-                          showError('Upload failed', err instanceof Error ? err.message : 'Please try again');
+                          showError(sayOne('Upload failed', 'Η μεταφόρτωση απέτυχε'), err instanceof Error ? err.message : sayOne('Please try again.', 'Δοκιμάστε ξανά.'));
                         } finally {
                           setUploadingAvatar(false);
                         }
@@ -1490,6 +1507,7 @@ export default function ProfileEditPage() {
         </div>
       </div>
       <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-30 border-t border-border bg-card/95 p-3 backdrop-blur-md lg:hidden">
+        <UnsavedMark dirty={unsaved.dirty} className="mb-2 flex justify-center empty:hidden" />
         <Button onClick={handleSave} disabled={saving} className="min-h-11 w-full gap-2">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           <BilingualText en="Save changes" el="Αποθήκευση αλλαγών" compact secondaryClassName="text-primary-foreground" />

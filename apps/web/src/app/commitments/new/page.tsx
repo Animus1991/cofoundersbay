@@ -43,6 +43,8 @@ import { cn } from '@/lib/utils';
 import { isOwnedProject, readProjectsOverlay, resolveDemoProjects, type DemoProject, type ProjectStatus } from '@/lib/projects-demo';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 import { ASK } from '@/lib/page-questions';
+import { useUnsavedForm } from '@/hooks/useUnsavedForm';
+import { DraftOffer, UnsavedMark } from '@/components/common/UnsavedNotice';
 
 const CATEGORIES = [
   'AI/ML', 'B2B SaaS', 'CleanTech', 'Community', 'Consumer', 'Developer Tools', 'E-commerce',
@@ -212,6 +214,20 @@ function PostingGuide() {
     loaded,
   );
 
+  // What is written and not published: asked about before leaving, kept as a
+  // draft in this tab and offered back (docs §105). A new card is "as
+  // opened" once a project's fields are in; an edit, once the card is read.
+  const [opened, setOpened] = useState(false);
+  useEffect(() => setOpened(true), []);
+  const unsaved = useUnsavedForm({
+    id: editId ? `need-card-edit:${editId}` : `need-card-new:${projectParam || 'blank'}`,
+    ready: editId ? original !== null : opened,
+    value: form,
+    restore: (d) => setForm((f) => ({ ...f, ...d })),
+    label: { en: 'Need card', el: 'Κάρτα ανάγκης' },
+    forceDirty: draft.filled.length > 0,
+  });
+
   const assessment = useMemo(() => assessNeedCard(form), [form]);
   const failing = assessment.checks.filter((c) => c.required && !c.ok);
   const newVersion = original ? cardOfferChanges(original, form).length > 0 : false;
@@ -229,11 +245,13 @@ function PostingGuide() {
     try {
       if (editId) {
         const { card } = await updateCommitmentCard(editId, form);
+        unsaved.markSaved();
         success('Card updated', newVersion ? 'The offer changed, so this is a new version.' : undefined);
         await qc.invalidateQueries({ queryKey: qk('commitments') });
         router.push(`/commitments/${encodeURIComponent(card.id || editId)}`);
       } else {
         const card = await createCommitmentCard(form);
+        unsaved.markSaved();
         success('Need card published');
         await qc.invalidateQueries({ queryKey: qk('commitments') });
         router.push(`/commitments/${encodeURIComponent(card.id)}`);
@@ -266,6 +284,7 @@ function PostingGuide() {
         <p className="max-w-2xl text-sm text-muted-foreground">
           <BilingualText en={CMT.guide_intro.en} el={CMT.guide_intro.el} wrap />
         </p>
+        <DraftOffer offer={unsaved.offer} onRestore={unsaved.restore} onDiscard={unsaved.discard} />
         <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
 
         {loadFailed ? (
@@ -464,6 +483,7 @@ function PostingGuide() {
                     <BilingualText en={`${failing.length} ${CMT.checks_left.en}`} el={`${failing.length} ${CMT.checks_left.el}`} compact />
                   )}
                 </p>
+                <UnsavedMark dirty={unsaved.dirty} />
               </div>
             </div>
           </form>

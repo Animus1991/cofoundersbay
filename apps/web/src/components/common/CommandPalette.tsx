@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useGuardedRouter } from '@/hooks/useGuardedRouter';
 import {
   Search,
   Home,
@@ -74,7 +74,8 @@ type CommandPaletteProps = {
 
 export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandPaletteProps) {
   const sayOne = useBilingualString();
-  const router = useRouter();
+  // Asks first when a form on the page holds unsaved work (docs §105).
+  const router = useGuardedRouter();
   const { setTheme } = useTheme();
   const popup = usePopupChatOptional();
   const openAssistant = popup?.open;
