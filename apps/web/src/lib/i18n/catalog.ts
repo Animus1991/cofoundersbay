@@ -155,6 +155,7 @@ const el: Record<string, string> = {
   'Soft sky blue, cool and clear': 'Απαλό γαλάζιο, δροσερό και καθαρό',
   'Warm cream with a soft mint': 'Ζεστή κρέμα με απαλή μέντα',
   'Warm neutral with a soft apricot': 'Ζεστό ουδέτερο με απαλό βερικοκί',
+  'Warm rose with a dusty terracotta': 'Ζεστή ροζ με σκονισμένη τερακότα',
   'Command palette': 'Παλέτα εντολών',
   'Command palette (Ctrl+K)': 'Παλέτα εντολών (Ctrl+K)',
   'Hide sample data': 'Απόκρυψη δειγμάτων',

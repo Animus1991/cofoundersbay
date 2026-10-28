@@ -2,7 +2,7 @@
 
 import { useEffect, useState, createContext, useContext, useCallback } from 'react';
 
-type Theme = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot';
+type Theme = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot' | 'terra';
 type Role = 'founder' | 'mentor' | 'investor' | 'org' | null;
 
 const roleClasses = ['role-founder', 'role-mentor', 'role-investor', 'role-org'];
@@ -38,7 +38,7 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
     // Named palettes live on data-theme. Do not clear it for alliance /
     // cofounder / system — those are first-class themes on this line.
     root.classList.remove('dark', 'light');
-    if (newTheme === 'minimal' || newTheme === 'apricot') {
+    if (newTheme === 'minimal' || newTheme === 'apricot' || newTheme === 'terra') {
       root.classList.add('light');
       root.setAttribute('data-theme', newTheme);
     } else if (newTheme === 'alliance') {

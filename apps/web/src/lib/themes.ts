@@ -1,4 +1,4 @@
-export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot';
+export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot' | 'terra';
 
 /**
  * Which class and `data-theme` each theme puts on <html>. One table for the
@@ -15,6 +15,7 @@ export const THEME_ROOT: Record<Exclude<ThemeName, 'system'>, { mode: 'light' | 
   cofounder: { mode: 'dark', dataTheme: 'cofounder' },
   minimal: { mode: 'light', dataTheme: 'minimal' },
   apricot: { mode: 'light', dataTheme: 'apricot' },
+  terra: { mode: 'light', dataTheme: 'terra' },
 };
 
 export interface ThemeColors {
@@ -215,6 +216,28 @@ export const themes: Record<ThemeName, ThemeColors> = {
     input: '30 10% 92%',
     ring: '24 24.7% 42.5%',
   },
+  terra: {
+    // "Terracotta" — legacy inline fallback only; globals.css owns the live tokens.
+    background: '12 18% 95.8%',
+    foreground: '12 12% 12%',
+    card: '12 26% 98.6%',
+    cardForeground: '12 12% 13%',
+    popover: '0 0% 100%',
+    popoverForeground: '12 12% 13%',
+    primary: '6.88 27.11% 44.12%',
+    primaryForeground: '0 0% 100%',
+    secondary: '12 14% 93%',
+    secondaryForeground: '12 10% 17%',
+    muted: '12 14% 92.5%',
+    mutedForeground: '12 7% 38%',
+    accent: '12 18% 92.5%',
+    accentForeground: '12 10% 12%',
+    destructive: '335 30% 42.6%',
+    destructiveForeground: '0 0% 100%',
+    border: '12 16% 91%',
+    input: '12 16% 87%',
+    ring: '6.88 30% 43.5%',
+  },
 };
 
 export function applyTheme(themeName: ThemeName) {
@@ -260,6 +283,10 @@ export function applyTheme(themeName: ThemeName) {
     case 'apricot':
       root.classList.add('light');
       root.setAttribute('data-theme', 'apricot');
+      break;
+    case 'terra':
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'terra');
       break;
     case 'minimal':
       // Light-first: the `light` class supplies the base, and data-theme

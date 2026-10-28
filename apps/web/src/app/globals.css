@@ -380,6 +380,33 @@ html {
     color-scheme: light;
   }
 
+  /* ── "Terracotta" (id: terra) — a dusty clay rose (#8F5952) on a faint
+     warm-rose page, same tone recipe as the other light accents. Destructive
+     leans rose (335) so a delete never reads as the brand. ── */
+  [data-theme="terra"] {
+    --shadow-color: 12 25% 18%;
+    --shadow-strength: 1;
+    --background: 12 18% 95.8%;
+    --foreground: 12 12% 12%;
+    --card: 12 26% 98.6%;
+    --card-foreground: 12 12% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 12 12% 13%;
+    --secondary: 12 14% 93%;
+    --secondary-foreground: 12 10% 17%;
+    --muted: 12 14% 92.5%;
+    --muted-foreground: 12 7% 38%;
+    --accent: 12 18% 92.5%;            /* hover surface */
+    --accent-foreground: 12 10% 12%;
+    --destructive: 335 30% 42.6%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 335 33% 38.8%;
+    --border: 12 16% 91%;              /* ~1.20 on card */
+    --input: 12 16% 87%;               /* ~1.32 on card */
+    --gradient-hero: linear-gradient(hsl(12 12% 13%), hsl(12 12% 13%));
+    color-scheme: light;
+  }
+
   .role-founder {
     --primary: 250 74% 63.9%;             /* white label, 4.62:1 */
     --primary-foreground: 0 0% 100%;
@@ -493,6 +520,15 @@ html {
     --accent: 30 22% 92.6%;
     --accent-foreground: 24 10% 12%;
     --ring: 23 44.8% 41.5%;
+  }
+  html[data-theme="terra"] {
+    --primary: 6.88 27.11% 44.12%;        /* #8F5952, white label 5.65:1 */
+    --primary-foreground: 0 0% 100%;
+    --primary-mid: 6.88 30.2% 50.25%;         /* tints only (/5../40) */
+    --primary-accessible: 6.88 30% 38%;   /* links, >=5:1 on a card */
+    --accent: 12 18% 92.5%;
+    --accent-foreground: 12 10% 12%;
+    --ring: 6.88 30% 43.5%;
   }
   /* ── "Light" (data-theme="studio") — the AI Studio prototype's look,
      adopted 2026-10-20 (docs §63). Warm stone neutrals (Tailwind's stone),
@@ -689,6 +725,41 @@ html {
     --chart-2: 165 35% 55%;   /* mint */
     --chart-3: 255 35% 74%;   /* violet */
     --chart-4: 335 35% 72%;   /* rose */
+    --chart-5: 205 39% 65%;   /* blue */
+    --chart-6: 120 28% 52%;   /* green */
+  }
+  /* Terracotta moves the two tones that would collide with its own accent
+     (danger to rose 335, warning to ochre 46) and tints status-accent with
+     the clay hue. Same band as the other accents. */
+  html[data-theme="terra"] {
+    --status-success-fg: 158 30.4% 34.5%;   /* 5.02 on tint, 5.34 on card */
+    --status-success-bg: 158 37% 94.6%;
+    --status-success-border: 158 24.2% 87.6%;
+    --status-success-mark: 158 46% 56.75%;   /* 2.07 on card, ink 8.44 */
+    --status-warning-fg: 46 29.8% 35.25%;   /* 5.01 on tint, 5.33 on card */
+    --status-warning-bg: 46 37% 94.6%;
+    --status-warning-border: 46 24.2% 87.6%;
+    --status-warning-mark: 46 46% 59%;   /* 2.07 on card, ink 8.45 */
+    --status-danger-fg:  335 23.9% 44%;   /* 5.02 on tint, 5.61 on card */
+    --status-danger-bg:  335 37% 94.6%;
+    --status-danger-border: 335 24.2% 87.6%;
+    --status-danger-mark: 335 46% 74.75%;   /* 2.06 on card, ink 8.47 */
+    --status-info-fg:    212 25.1% 41.75%;   /* 5.01 on tint, 5.51 on card */
+    --status-info-bg:    212 37% 94.6%;
+    --status-info-border: 212 24.2% 87.6%;
+    --status-info-mark:  212 46% 71.5%;   /* 2.07 on card, ink 8.43 */
+    --status-accent-fg:  6.88 24.3% 43.25%;   /* 5.02 on tint, 5.58 on card */
+    --status-accent-bg:  6.88 37% 94.6%;
+    --status-accent-border: 6.88 24.2% 87.6%;
+    --status-accent-mark: 6.88 46% 73.75%;   /* 2.07 on card, ink 8.45 */
+    --status-neutral-fg:     12 6% 40%;
+    --status-neutral-bg:     12 6% 94.0%;
+    --status-neutral-border: 12 4.5% 90.0%;
+    --status-neutral-mark:   12 8% 66%;
+
+    --chart-2: 165 35% 55%;   /* mint */
+    --chart-3: 255 35% 74%;   /* violet */
+    --chart-4: 55 42% 55%;    /* gold — rose 335 sat 32 deg from this accent */
     --chart-5: 205 39% 65%;   /* blue */
     --chart-6: 120 28% 52%;   /* green */
   }
@@ -4518,6 +4589,23 @@ html[data-theme="alliance"] #main-content [data-meter-slot='2'][role='progressba
 }
 html[data-theme="alliance"] :not(button):not(a)[class~='h-full']:is([class~='bg-primary'], [class~='bg-primary/50'], [class~='bg-primary/60'], [class~='bg-primary/70'], [class~='bg-primary/80']) {
   background-color: hsl(var(--meter-apricot));
+}
+/* Terracotta bars borrow mint, lilac and cyan — apricot's hue sits ~16 deg
+   from the clay accent, so it would read as the theme's own colour. */
+html[data-theme="terra"] #main-content [role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html[data-theme="terra"] #main-content [data-meter-slot='0'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html[data-theme="terra"] #main-content [data-meter-slot='1'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-lilac));
+}
+html[data-theme="terra"] #main-content [data-meter-slot='2'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-cyan));
+}
+html[data-theme="terra"] :not(button):not(a)[class~='h-full']:is([class~='bg-primary'], [class~='bg-primary/50'], [class~='bg-primary/60'], [class~='bg-primary/70'], [class~='bg-primary/80']) {
+  background-color: hsl(var(--meter-lilac));
 }
 html[data-theme="minimal"] .avatar-initials[class*='bg-primary/10'] {
   background-color: hsl(var(--mint-mark) / 0.38);

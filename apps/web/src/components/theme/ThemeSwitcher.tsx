@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise, Flower2 } from 'lucide-react';
+import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise, Flower2, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -74,6 +74,13 @@ export const THEME_OPTIONS = [
     description: 'Warm neutral with a soft apricot',
     icon: Sunrise,
     swatch: ['#f7f6f5', '#b16018', '#876752'],
+  },
+  {
+    name: 'terra' as ThemeName,
+    label: 'Terracotta',
+    description: 'Warm rose with a dusty terracotta',
+    icon: Flame,
+    swatch: ['#f6efee', '#8f5952', '#6e403b'],
   },
 ];
 
