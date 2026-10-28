@@ -280,8 +280,21 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
     const main = document.getElementById('main-content');
     const observer = main ? new ResizeObserver(run) : null;
     if (main && observer) observer.observe(main);
+    // Scrolled, the page passes under the icon: it takes a backdrop then, so
+    // it reads as a floating button and not as a mark drawn over the text
+    // (docs §107; a transparent icon sat on the ask field's Send arrow).
+    const floating = () => {
+      const scrolled = (window.scrollY || 0) > 8 || (main ? main.scrollTop > 8 : false);
+      if (scrolled) button.setAttribute('data-floating', '');
+      else button.removeAttribute('data-floating');
+    };
+    floating();
+    window.addEventListener('scroll', floating, { passive: true });
+    main?.addEventListener('scroll', floating, { passive: true });
     return () => {
       window.removeEventListener('resize', run);
+      window.removeEventListener('scroll', floating);
+      main?.removeEventListener('scroll', floating);
       observer?.disconnect();
     };
   }, [threadTools, pathname]);

@@ -1042,6 +1042,20 @@ const el: Record<string, string> = {
   'Weekly founder office hours': 'Εβδομαδιαίες ώρες γραφείου για ιδρυτές',
   'Customer interview playbook': 'Οδηγός συνεντεύξεων πελατών',
   'Priority review for the seed accelerator': 'Προτεραιότητα αξιολόγησης για τον επιταχυντή seed',
+  // Your pages and the assistant's usage read (docs §107).
+  'Arrange your pages': 'Διαμόρφωση των σελίδων σας',
+  'Pin, order or hide them, or turn counting off.': 'Καρφιτσώστε, ταξινομήστε ή κρύψτε τες, ή σταματήστε τη μέτρηση.',
+  'Pin {page}': 'Καρφίτσωμα: {page}',
+  'Pin': 'Καρφίτσωμα',
+  'Your pages on this device: {list}.': 'Οι σελίδες σας σε αυτή τη συσκευή: {list}.',
+  'Most opened this week: {list}.': 'Πιο συχνές αυτή την εβδομάδα: {list}.',
+  'Counting is off in Settings, so only your pinned pages are known.': 'Η μέτρηση είναι κλειστή στις Ρυθμίσεις, οπότε είναι γνωστές μόνο οι καρφιτσωμένες σελίδες σας.',
+  'Nothing is counted yet on this device. Open a few pages and ask again, or pin the pages you want.': 'Δεν έχει μετρηθεί τίποτα ακόμη σε αυτή τη συσκευή. Ανοίξτε μερικές σελίδες και ρωτήστε ξανά, ή καρφιτσώστε όσες θέλετε.',
+  'Quicker ways:': 'Πιο σύντομοι δρόμοι:',
+  'That page cannot be one of your pages: pin a page from the menus, not a home or one person’s page.': 'Αυτή η σελίδα δεν μπορεί να γίνει μία από τις σελίδες σας: καρφιτσώστε μια σελίδα από τα μενού, όχι αρχική ή σελίδα ενός ατόμου.',
+  'That page is already pinned.': 'Η σελίδα είναι ήδη καρφιτσωμένη.',
+  'All six places are taken. Unpin one first.': 'Και οι έξι θέσεις είναι πιασμένες. Ξεκαρφιτσώστε πρώτα μία.',
+  'That page is not pinned.': 'Η σελίδα δεν είναι καρφιτσωμένη.',
 };
 
 const es: Record<string, string> = {
@@ -1623,6 +1637,20 @@ const es: Record<string, string> = {
   'other': 'otro',
   'Name it and I will prepare it — put the name in quotes if it has several words.': 'Dime el nombre y lo preparo; ponlo entre comillas si tiene varias palabras.',
   'That is only available to platform administrators.': 'Eso solo está disponible para los administradores de la plataforma.',
+  // Your pages and the assistant's usage read (docs §107).
+  'Arrange your pages': 'Organiza tus páginas',
+  'Pin, order or hide them, or turn counting off.': 'Fíjalas, ordénalas u ocúltalas, o desactiva el recuento.',
+  'Pin {page}': 'Fijar {page}',
+  'Pin': 'Fijar',
+  'Your pages on this device: {list}.': 'Tus páginas en este dispositivo: {list}.',
+  'Most opened this week: {list}.': 'Más abiertas esta semana: {list}.',
+  'Counting is off in Settings, so only your pinned pages are known.': 'El recuento está desactivado en Ajustes, así que solo se conocen tus páginas fijadas.',
+  'Nothing is counted yet on this device. Open a few pages and ask again, or pin the pages you want.': 'Aún no se ha contado nada en este dispositivo. Abre algunas páginas y vuelve a preguntar, o fija las páginas que quieras.',
+  'Quicker ways:': 'Caminos más rápidos:',
+  'That page cannot be one of your pages: pin a page from the menus, not a home or one person’s page.': 'Esa página no puede ser una de tus páginas: fija una página de los menús, no un inicio ni la página de una persona.',
+  'That page is already pinned.': 'Esa página ya está fijada.',
+  'All six places are taken. Unpin one first.': 'Los seis lugares están ocupados. Quita una primero.',
+  'That page is not pinned.': 'Esa página no está fijada.',
 };
 
 const fr: Record<string, string> = {
@@ -2184,6 +2212,20 @@ const fr: Record<string, string> = {
   'other': 'autre',
   'Name it and I will prepare it — put the name in quotes if it has several words.': 'Donnez-moi le nom et je le prépare — entre guillemets s’il compte plusieurs mots.',
   'That is only available to platform administrators.': 'Ceci est réservé aux administrateurs de la plateforme.',
+  // Your pages and the assistant's usage read (docs §107).
+  'Arrange your pages': 'Organiser vos pages',
+  'Pin, order or hide them, or turn counting off.': 'Épinglez-les, ordonnez-les ou masquez-les, ou désactivez le comptage.',
+  'Pin {page}': 'Épingler {page}',
+  'Pin': 'Épingler',
+  'Your pages on this device: {list}.': 'Vos pages sur cet appareil : {list}.',
+  'Most opened this week: {list}.': 'Les plus ouvertes cette semaine : {list}.',
+  'Counting is off in Settings, so only your pinned pages are known.': 'Le comptage est désactivé dans les Paramètres : seules vos pages épinglées sont connues.',
+  'Nothing is counted yet on this device. Open a few pages and ask again, or pin the pages you want.': 'Rien n’est encore compté sur cet appareil. Ouvrez quelques pages et redemandez, ou épinglez les pages voulues.',
+  'Quicker ways:': 'Chemins plus rapides :',
+  'That page cannot be one of your pages: pin a page from the menus, not a home or one person’s page.': 'Cette page ne peut pas faire partie de vos pages : épinglez une page des menus, pas un accueil ni la page d’une personne.',
+  'That page is already pinned.': 'Cette page est déjà épinglée.',
+  'All six places are taken. Unpin one first.': 'Les six places sont prises. Désépinglez-en une d’abord.',
+  'That page is not pinned.': 'Cette page n’est pas épinglée.',
 };
 
 const de: Record<string, string> = {
@@ -2745,6 +2787,20 @@ const de: Record<string, string> = {
   'other': 'Sonstiges',
   'Name it and I will prepare it — put the name in quotes if it has several words.': 'Nennen Sie den Namen, dann bereite ich es vor – in Anführungszeichen, wenn er aus mehreren Wörtern besteht.',
   'That is only available to platform administrators.': 'Das ist nur für Plattform-Administratoren verfügbar.',
+  // Your pages and the assistant's usage read (docs §107).
+  'Arrange your pages': 'Ihre Seiten ordnen',
+  'Pin, order or hide them, or turn counting off.': 'Anheften, sortieren oder ausblenden, oder das Zählen ausschalten.',
+  'Pin {page}': '{page} anheften',
+  'Pin': 'Anheften',
+  'Your pages on this device: {list}.': 'Ihre Seiten auf diesem Gerät: {list}.',
+  'Most opened this week: {list}.': 'Diese Woche am häufigsten geöffnet: {list}.',
+  'Counting is off in Settings, so only your pinned pages are known.': 'Das Zählen ist in den Einstellungen ausgeschaltet, daher sind nur Ihre angehefteten Seiten bekannt.',
+  'Nothing is counted yet on this device. Open a few pages and ask again, or pin the pages you want.': 'Auf diesem Gerät wurde noch nichts gezählt. Öffnen Sie einige Seiten und fragen Sie erneut, oder heften Sie die gewünschten Seiten an.',
+  'Quicker ways:': 'Schnellere Wege:',
+  'That page cannot be one of your pages: pin a page from the menus, not a home or one person’s page.': 'Diese Seite kann keine Ihrer Seiten sein: Heften Sie eine Seite aus den Menüs an, keine Startseite und keine Personenseite.',
+  'That page is already pinned.': 'Diese Seite ist bereits angeheftet.',
+  'All six places are taken. Unpin one first.': 'Alle sechs Plätze sind belegt. Lösen Sie zuerst eine.',
+  'That page is not pinned.': 'Diese Seite ist nicht angeheftet.',
 };
 
 const it: Record<string, string> = {
@@ -3298,6 +3354,20 @@ const it: Record<string, string> = {
   'other': 'altro',
   'Name it and I will prepare it — put the name in quotes if it has several words.': 'Dimmi il nome e lo preparo: mettilo tra virgolette se ha più parole.',
   'That is only available to platform administrators.': 'È disponibile solo per gli amministratori della piattaforma.',
+  // Your pages and the assistant's usage read (docs §107).
+  'Arrange your pages': 'Organizza le tue pagine',
+  'Pin, order or hide them, or turn counting off.': 'Fissale, ordinale o nascondile, oppure disattiva il conteggio.',
+  'Pin {page}': 'Fissa {page}',
+  'Pin': 'Fissa',
+  'Your pages on this device: {list}.': 'Le tue pagine su questo dispositivo: {list}.',
+  'Most opened this week: {list}.': 'Le più aperte questa settimana: {list}.',
+  'Counting is off in Settings, so only your pinned pages are known.': 'Il conteggio è disattivato nelle Impostazioni, quindi si conoscono solo le pagine fissate.',
+  'Nothing is counted yet on this device. Open a few pages and ask again, or pin the pages you want.': 'Su questo dispositivo non è ancora stato contato nulla. Apri qualche pagina e chiedi di nuovo, oppure fissa le pagine che vuoi.',
+  'Quicker ways:': 'Strade più rapide:',
+  'That page cannot be one of your pages: pin a page from the menus, not a home or one person’s page.': 'Questa pagina non può essere una delle tue pagine: fissa una pagina dei menu, non una home né la pagina di una persona.',
+  'That page is already pinned.': 'Questa pagina è già fissata.',
+  'All six places are taken. Unpin one first.': 'Tutti e sei i posti sono occupati. Togline prima una.',
+  'That page is not pinned.': 'Questa pagina non è fissata.',
 };
 
 const pt: Record<string, string> = {
@@ -3848,6 +3918,20 @@ const pt: Record<string, string> = {
   'other': 'outro',
   'Name it and I will prepare it — put the name in quotes if it has several words.': 'Diga-me o nome e eu preparo — entre aspas se tiver várias palavras.',
   'That is only available to platform administrators.': 'Isso só está disponível para administradores da plataforma.',
+  // Your pages and the assistant's usage read (docs §107).
+  'Arrange your pages': 'Organize as suas páginas',
+  'Pin, order or hide them, or turn counting off.': 'Fixe, ordene ou oculte-as, ou desative a contagem.',
+  'Pin {page}': 'Fixar {page}',
+  'Pin': 'Fixar',
+  'Your pages on this device: {list}.': 'As suas páginas neste dispositivo: {list}.',
+  'Most opened this week: {list}.': 'Mais abertas esta semana: {list}.',
+  'Counting is off in Settings, so only your pinned pages are known.': 'A contagem está desativada nas Definições, por isso só são conhecidas as páginas fixadas.',
+  'Nothing is counted yet on this device. Open a few pages and ask again, or pin the pages you want.': 'Ainda nada foi contado neste dispositivo. Abra algumas páginas e pergunte de novo, ou fixe as páginas que quiser.',
+  'Quicker ways:': 'Caminhos mais rápidos:',
+  'That page cannot be one of your pages: pin a page from the menus, not a home or one person’s page.': 'Essa página não pode ser uma das suas páginas: fixe uma página dos menus, não um início nem a página de uma pessoa.',
+  'That page is already pinned.': 'Essa página já está fixada.',
+  'All six places are taken. Unpin one first.': 'Os seis lugares estão ocupados. Desafixe uma primeiro.',
+  'That page is not pinned.': 'Essa página não está fixada.',
 };
 
 const zh: Record<string, string> = {
@@ -4416,6 +4500,20 @@ const zh: Record<string, string> = {
   'other': '其他',
   'Name it and I will prepare it — put the name in quotes if it has several words.': '告诉我名称，我来准备——如果有多个词，请加上引号。',
   'That is only available to platform administrators.': '这仅对平台管理员开放。',
+  // Your pages and the assistant's usage read (docs §107).
+  'Arrange your pages': '整理你的页面',
+  'Pin, order or hide them, or turn counting off.': '固定、排序或隐藏它们，或关闭统计。',
+  'Pin {page}': '固定 {page}',
+  'Pin': '固定',
+  'Your pages on this device: {list}.': '你在此设备上的页面：{list}。',
+  'Most opened this week: {list}.': '本周最常打开：{list}。',
+  'Counting is off in Settings, so only your pinned pages are known.': '统计已在设置中关闭，因此只知道你固定的页面。',
+  'Nothing is counted yet on this device. Open a few pages and ask again, or pin the pages you want.': '此设备上还没有任何统计。先打开几个页面再问，或固定你想要的页面。',
+  'Quicker ways:': '更快的方式：',
+  'That page cannot be one of your pages: pin a page from the menus, not a home or one person’s page.': '该页面不能成为你的页面：请从菜单固定页面，不能是首页或某个人的页面。',
+  'That page is already pinned.': '该页面已固定。',
+  'All six places are taken. Unpin one first.': '六个位置都已占用。请先取消固定一个。',
+  'That page is not pinned.': '该页面未固定。',
 };
 
 const ja: Record<string, string> = {
@@ -4984,6 +5082,20 @@ const ja: Record<string, string> = {
   'other': 'その他',
   'Name it and I will prepare it — put the name in quotes if it has several words.': '名前を教えてください。準備します。複数の単語なら引用符で囲んでください。',
   'That is only available to platform administrators.': 'これはプラットフォーム管理者のみが利用できます。',
+  // Your pages and the assistant's usage read (docs §107).
+  'Arrange your pages': 'ページを整理',
+  'Pin, order or hide them, or turn counting off.': '固定・並べ替え・非表示、またはカウントをオフにします。',
+  'Pin {page}': '{page} を固定',
+  'Pin': '固定',
+  'Your pages on this device: {list}.': 'このデバイスでのあなたのページ：{list}。',
+  'Most opened this week: {list}.': '今週よく開いたページ：{list}。',
+  'Counting is off in Settings, so only your pinned pages are known.': '設定でカウントがオフのため、固定したページだけが分かります。',
+  'Nothing is counted yet on this device. Open a few pages and ask again, or pin the pages you want.': 'このデバイスではまだ何もカウントされていません。いくつかページを開いてからもう一度聞くか、使いたいページを固定してください。',
+  'Quicker ways:': 'より速い方法：',
+  'That page cannot be one of your pages: pin a page from the menus, not a home or one person’s page.': 'そのページはあなたのページにできません。ホームや個人のページではなく、メニューのページを固定してください。',
+  'That page is already pinned.': 'そのページはすでに固定されています。',
+  'All six places are taken. Unpin one first.': '6つの枠がすべて使用中です。先に1つ固定を外してください。',
+  'That page is not pinned.': 'そのページは固定されていません。',
 };
 
 export const CATALOG: Record<Exclude<AppLocale, 'en'>, Record<string, string>> = {

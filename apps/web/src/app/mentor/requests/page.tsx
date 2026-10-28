@@ -84,7 +84,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
             </Link>
           )}
           title={(
-            <PersonHovercard userId={request.requesterId}><Link href={`/profiles/${request.requesterId}`} className="hover:text-primary-accessible transition-colors">{displayName}</Link></PersonHovercard>
+            <PersonHovercard userId={request.requesterId}><Link href={`/profiles/${request.requesterId}`} className="tap-extend-y hover:text-primary-accessible transition-colors">{displayName}</Link></PersonHovercard>
           )}
           subtitle={request.requester?.headline ? <span className="line-clamp-1">{request.requester.headline}</span> : undefined}
           aside={(

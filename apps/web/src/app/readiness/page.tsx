@@ -1374,7 +1374,7 @@ export default function ReadinessPage() {
                   </p>
                   <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-1 text-xs">
                     {weakDims.slice().sort((a, b) => a.score / a.maxScore - b.score / b.maxScore).map((d) => (
-                      <Link key={d.key} href={`#dim-${d.key}`} className="rounded-sm font-medium underline-offset-2 hover:underline focus-ring">
+                      <Link key={d.key} href={`#dim-${d.key}`} className="tap-extend-y rounded-sm font-medium underline-offset-2 hover:underline focus-ring">
                         <BilingualText en={d.labelEn} el={d.labelEl} compact />
                         {' '}
                         <span className="font-normal tabular-nums text-muted-foreground">{Math.round((d.score / d.maxScore) * 100)}%</span>

@@ -78,6 +78,7 @@ import { waitsOnMe } from '@/lib/commitments-next';
 import { getMyUpdates, getUpdatesFeed, type FounderUpdate } from '@/lib/updates-api';
 import { getIntroPaths, listIntros, type Intro } from '@/lib/intros-api';
 import { INTRO_RELATION_COPY, INTRO_STATUS_COPY, SKILL_EVIDENCE_COPY } from '@cofounderbay/shared';
+import { canShortcut, hasKeyboardPointer, hasUsage, pageLabel, pageUse, readUsage, usageSuggestions, yourPages } from '@/lib/usage-profile';
 import { getEvidenceCandidates, getSkillEvidence } from '@/lib/skill-evidence-api';
 import { getScout, scoutReasonEl } from '@/lib/scout-api';
 import { listClaimedPerks, listPerks } from '@/lib/perks-api';
@@ -1544,6 +1545,49 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
       return `• **${t(REPORT_TYPE[report.type] ?? report.type)}** — ${who}: ${report.reason} · ${formatWhen(report.createdAt, locale, false)}`;
     });
     return { section: `${t('Oldest open reports:')}\n${lines.join('\n')}`, citations: [], actions };
+  },
+
+  /**
+   * How the reader moves around, from the counts kept on this device
+   * (`lib/usage-profile`, docs §107): their pages, the most opened, and the
+   * quicker ways the platform sees, each with the numbers behind it. A pin
+   * it suggests comes back as a card to confirm; nothing changes unasked.
+   */
+  async get_usage_insights(_args, { t, locale }) {
+    const now = Date.now();
+    const store = readUsage();
+    const name = (label: { en: string; el: string }) => (locale === 'el' ? label.el : label.en);
+    const pages = yourPages(store, now);
+    // Pages a reader can do something with: the homes are where they start, not a shortcut.
+    const most = pageUse(store, now).filter((page) => page.week > 0 && canShortcut(page.key)).slice(0, LIMIT);
+    const suggestions = usageSuggestions(store, now, { keyboard: hasKeyboardPointer() });
+    const actions: CopilotAction[] = [
+      openArea(t, '/settings#your-pages', t('Arrange your pages'), t('Pin, order or hide them, or turn counting off.')),
+    ];
+    for (const suggestion of suggestions) {
+      if (suggestion.kind !== 'pin' || !suggestion.page) continue;
+      const label = name(pageLabel(suggestion.page));
+      actions.unshift({
+        id: newId('pin'),
+        tool: 'pin_shortcut',
+        title: t('Pin {page}', { page: label }),
+        description: name(suggestion.evidence),
+        confirmLabel: t('Pin'),
+        payload: { href: suggestion.page, label },
+        status: 'pending',
+      });
+    }
+    const sep = listSeparator(locale);
+    const lines: string[] = [];
+    if (pages.length) lines.push(t('Your pages on this device: {list}.', { list: pages.map((page) => name(page.label)).join(sep) }));
+    if (most.length) lines.push(t('Most opened this week: {list}.', { list: most.map((page) => `${name(page.label)} (${page.week})`).join(sep) }));
+    if (!store.enabled) lines.push(t('Counting is off in Settings, so only your pinned pages are known.'));
+    else if (!hasUsage(store, now)) lines.push(t('Nothing is counted yet on this device. Open a few pages and ask again, or pin the pages you want.'));
+    if (suggestions.length) {
+      lines.push(t('Quicker ways:'));
+      for (const suggestion of suggestions) lines.push(`• ${name(suggestion.title)} (${name(suggestion.evidence)})`);
+    }
+    return { section: lines.join('\n'), citations: [], actions };
   },
 };
 

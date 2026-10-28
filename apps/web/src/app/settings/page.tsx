@@ -43,6 +43,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, getNotificationPreferences, updateNotificationPreferences, getMeProfile, updateProfile } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
+import { YourPagesSettingsCard } from '@/components/settings/YourPagesSettingsCard';
 import { openCookieChoices } from '@/lib/cookie-consent';
 import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { MOVED_SETTINGS_ANCHORS, PROFILE_HOW_YOU_WORK_HREF, PROFILE_OPEN_TO_HREF, PROFILE_VERIFICATION_HREF } from '@/lib/profile-anchors';
@@ -369,6 +370,7 @@ const MORE_SETTINGS = [
 const PAGE_SECTIONS = [
   { id: 'language', en: 'Language', el: 'Γλώσσα' },
   { id: 'appearance', en: 'Appearance', el: 'Εμφάνιση' },
+  { id: 'your-pages', en: 'Your pages', el: 'Οι σελίδες σας' },
   { id: 'billing', en: 'Billing', el: 'Χρέωση' },
   { id: 'connected-accounts', en: 'Connected accounts', el: 'Συνδεδεμένοι λογαριασμοί' },
   { id: 'account', en: 'Account', el: 'Λογαριασμός' },
@@ -999,6 +1001,8 @@ export default function SettingsPage() {
           </nav>
           <LanguageCard />
           <AppearanceCard />
+          {/* Pins, counts and suggestions (docs §107). */}
+          <YourPagesSettingsCard />
           {/* Short account cards in two explicit columns. A flowing grid would
               stretch every row to its taller half. The long sections
               (notifications, verification, open to, privacy, danger zone)

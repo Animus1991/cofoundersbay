@@ -143,7 +143,7 @@ function CommunityCard({
             </Link>
           )}
           title={(
-            <Link href={`/groups/${community.id}`} className="transition-colors hover:text-primary-accessible">
+            <Link href={`/groups/${community.id}`} className="tap-extend-y transition-colors hover:text-primary-accessible">
               {community.name}
             </Link>
           )}

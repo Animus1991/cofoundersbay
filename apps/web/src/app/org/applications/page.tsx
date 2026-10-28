@@ -180,7 +180,7 @@ function ApplicationCard({
               type="button"
               onClick={() => onReview(application)}
               aria-label={bilingualAria(`Review ${application.startupName}`, `Αξιολόγηση: ${application.startupName}`)}
-              className="text-left transition-colors hover:text-primary-accessible"
+              className="tap-extend-y text-left transition-colors hover:text-primary-accessible"
             >
               {application.startupName}
             </button>

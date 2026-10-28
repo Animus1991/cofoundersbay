@@ -1828,6 +1828,30 @@ html {
     min-height: max(1.5rem, 24px);
   }
 
+  /* The hit area without the box (docs §107). An invisible band 4px above
+     and below (and beside, for `tap-extend`) takes a 16-20px name link or a
+     16px checkbox to the 24px target 2.5.8 asks for, while the text, the row
+     and its spacing stay exactly as they were. For inline links in rows,
+     where `tap-target-y` does nothing (min-height has no effect on an inline
+     box) and an inline-flex box would make every row taller. */
+  .tap-extend-y,
+  .tap-extend {
+    position: relative;
+  }
+  .tap-extend-y::after,
+  .tap-extend::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+  }
+  .tap-extend::after {
+    left: -4px;
+    right: -4px;
+  }
+
   /* ── Phones: one language on the inline variants ──
      Both languages on a single line makes every string roughly twice as long.
      Measured on a 360px viewport, that was the single biggest source of broken
@@ -4855,6 +4879,14 @@ input:is(
     background-color: transparent;
     box-shadow: none;
     color: hsl(var(--foreground) / 0.7);
+  }
+  /* Scrolled: the page passes under it, so it takes the page's own ground
+     and a hairline, like the top bar it sits under (docs §107). */
+  button[data-page-tools].h-11[data-floating] {
+    border-color: hsl(var(--border));
+    background-color: hsl(var(--background) / 0.92);
+    box-shadow: 0 1px 2px hsl(var(--foreground) / 0.08);
+    backdrop-filter: blur(6px);
   }
 }
 

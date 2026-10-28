@@ -58,7 +58,8 @@ export default function AllianceThemePage() {
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
               <BilingualText en="Join the premier network for startup founders, investors, and innovators" el="Μπείτε στο δίκτυο για ιδρυτές startups, επενδυτές και καινοτόμους" wrap />
             </p>
-            <div className="flex items-center justify-center gap-4">
+            {/* Wraps on a 320px phone instead of pushing the second button past the edge (docs §107). */}
+            <div className="flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" className="bg-white text-slate-900 hover:bg-white/90" asChild>
                 <Link href="/register">
                   <BilingualText en="Get Started" el="Ξεκινήστε" compact secondaryClassName="text-slate-700" />

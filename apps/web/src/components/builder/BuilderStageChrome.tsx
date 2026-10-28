@@ -39,9 +39,11 @@ export function BuilderAskAiButton({
   className?: string;
 }) {
   const { ask, hrefFor, inPlace } = useAskAssistant();
-  const buttonClass = cn('h-8 gap-1.5 text-xs', className);
+  // One line where it fits, at the same 32px; a long Greek label wraps in
+  // the button instead of running past a 320px screen (docs §107).
+  const buttonClass = cn('h-auto min-h-8 max-w-full gap-1.5 whitespace-normal py-1 text-xs', className);
   const label = (
-    <BilingualText en={labelEn ?? builderEn('ask_ai')} el={labelEl ?? builderEl('ask_ai')} compact />
+    <BilingualText en={labelEn ?? builderEn('ask_ai')} el={labelEl ?? builderEl('ask_ai')} compact wrap />
   );
   if (inPlace && prompt) {
     return (

@@ -29,6 +29,7 @@ import {
   getVentureReadiness,
   type SearchHit,
   getAnalyticsMetrics,
+  getAnalyticsProfileViews,
   listMilestones,
   getDashboardActivity,
 } from '@/lib/api';
@@ -60,6 +61,8 @@ import { FounderPhoneHome } from '@/components/dashboard/FounderPhoneHome';
 import { listCommitmentThreads } from '@/lib/commitments-api';
 import { nextAction as ladderNextAction, waitsOnMe } from '@/lib/commitments-next';
 import { MetricTile } from '@/components/dashboard/MetricTile';
+import { ProgressSegments } from '@/components/dashboard/ProgressSegments';
+import { Sparkline } from '@/components/charts/Sparkline';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
@@ -480,6 +483,22 @@ export default function FounderDashboardContent() {
     typeof change === 'number'
       ? { value: Math.abs(change), positive: change >= 0, en: dashboardEn('this_week'), el: dashboardEl('this_week') }
       : undefined;
+  /*
+   * The days behind "Profile views": the same series the Analytics page
+   * charts on its Growth tab, drawn small beside the change (docs §107).
+   * Only a real series is drawn; a missing or one-day answer draws nothing.
+   */
+  const { data: profileViewSeries } = useQuery({
+    queryKey: qk('analytics', 'profile-views', '7d'),
+    queryFn: () => getAnalyticsProfileViews('7d'),
+    enabled: hasSession && mounted,
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const profileViewPoints = (Array.isArray(profileViewSeries) ? profileViewSeries : [])
+    .filter((day) => typeof day?.date === 'string' && typeof day?.views === 'number')
+    .map((day) => ({ label: formatShortDate(day.date, primary === 'el' ? 'el' : 'en'), value: day.views }));
+
   const profileViewsTrend = (() => {
     const trend = trendOf(userMetrics?.profileViewsChange);
     if (!trend) return undefined;
@@ -625,6 +644,8 @@ export default function FounderDashboardContent() {
   // home and the page agree on "Overdue" on the due day itself.
   const isPastDue = (m: DemoMilestone) => isMilestoneOverdue({ status: m.status, dueDate: m.dueDate || null });
   const overdueMilestoneCount = openMilestones.filter(isPastDue).length;
+  // Under way and on time: started (in progress, or some progress) and not past its date.
+  const activeMilestoneCount = openMilestones.filter((m) => !isPastDue(m) && (m.status === 'in_progress' || m.progress > 0)).length;
   const nextIsOverdue = !!nextOpenMilestone && isPastDue(nextOpenMilestone);
   const messageCaption = unreadMessages === 0
     ? { en: dashboardEn('inbox_clear'), el: dashboardEl('inbox_clear') }
@@ -1367,6 +1388,7 @@ export default function FounderDashboardContent() {
               label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
               value={userMetrics?.profileViews ?? '—'}
               trend={profileViewsTrend}
+              trendVisual={profileViewPoints.length > 1 ? <Sparkline points={profileViewPoints} /> : undefined}
               caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
               captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
               href="/analytics"
@@ -1387,6 +1409,17 @@ export default function FounderDashboardContent() {
                 label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
                 value={milestonesFailed && milestones.length === 0 ? '—' : `${completedMilestoneCount}/${milestones.length}`}
                 href="/milestones"
+                // Finished, under way, late, and the open rest, along the tile's edge (docs §107).
+                edge={milestones.length > 0 ? (
+                  <ProgressSegments
+                    total={milestones.length}
+                    segments={[
+                      { key: 'done', value: completedMilestoneCount, tone: 'done' },
+                      { key: 'active', value: activeMilestoneCount, tone: 'active' },
+                      { key: 'late', value: overdueMilestoneCount, tone: 'late' },
+                    ]}
+                  />
+                ) : undefined}
                 caption={milestonesFailed && milestones.length === 0 ? 'Not read: the server is unavailable. Opens milestones' : milestoneCaption.en}
                 captionEl={milestonesFailed && milestones.length === 0 ? 'Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα ορόσημα' : milestoneCaption.el}
               />

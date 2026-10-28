@@ -31,7 +31,9 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { foldText, searchPages } from '@/lib/page-search';
-import { FileText } from 'lucide-react';
+import { FileText, History, Pin } from 'lucide-react';
+import { useUsageProfile } from '@/hooks/useUsageProfile';
+import { recordVia } from '@/lib/usage-profile';
 import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 import { searchProfiles, type SearchHit } from '@/lib/api';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
@@ -47,7 +49,7 @@ type CommandItem = {
   path?: string;
   shortcut?: string[];
   action: () => void;
-  category: 'assistant' | 'people' | 'navigation' | 'pages' | 'actions' | 'settings' | 'help';
+  category: 'assistant' | 'yours' | 'people' | 'navigation' | 'pages' | 'actions' | 'settings' | 'help';
 };
 
 /**
@@ -299,6 +301,24 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
   // Filter commands in either language, accents ignored; then every page that
   // fits the words, for this reader's role; then hand the words to the assistant.
   const reader = useStoredUser();
+  // The reader's own pages, under the first row of an empty palette, each
+  // with its key (G then 1-6). The fixed lists below keep their order.
+  const usage = useUsageProfile();
+  const yours: CommandItem[] = useMemo(() => usage.pages.map((page, index) => ({
+    id: `yours:${page.key}`,
+    label: page.label.en,
+    labelEl: page.label.el,
+    description: page.pinned ? 'Pinned' : `Opened ${page.week} ${page.week === 1 ? 'time' : 'times'} this week`,
+    descriptionEl: page.pinned ? 'Καρφιτσωμένη' : `Την ανοίξατε ${page.week} ${page.week === 1 ? 'φορά' : 'φορές'} αυτή την εβδομάδα`,
+    icon: page.pinned ? Pin : History,
+    shortcut: ['G', String(index + 1)],
+    path: page.key,
+    action: () => {
+      recordVia('shortcut');
+      router.push(page.key);
+    },
+    category: 'yours' as const,
+  })), [usage.pages, router]);
   const filteredCommands = useMemo(() => {
     if (mode === 'people') {
       const found: CommandItem[] = people.map((p) => ({
@@ -324,7 +344,9 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
         },
       ];
     }
-    if (mode === 'all' && !term) return commands;
+    if (mode === 'all' && !term) {
+      return [...commands.filter((cmd) => cmd.category === 'assistant'), ...yours, ...commands.filter((cmd) => cmd.category !== 'assistant')];
+    }
     if (mode === 'commands' && !term) return commands.filter((cmd) => cmd.category !== 'assistant');
     const q = foldText(term);
     const own = mode === 'pages' ? [] : commands.filter((cmd) =>
@@ -359,12 +381,13 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       category: 'assistant',
     };
     return [...own, ...pages, ask];
-  }, [commands, search, mode, term, people, reader?.role, router, popup]);
+  }, [commands, yours, search, mode, term, people, reader?.role, router, popup]);
 
   // Group commands by category
   const groupedCommands = useMemo(() => {
     const groups: Record<string, CommandItem[]> = {
       assistant: [],
+      yours: [],
       people: [],
       navigation: [],
       pages: [],
@@ -393,6 +416,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
         case 'Enter':
           e.preventDefault();
           if (filteredCommands[selectedIndex]) {
+            recordVia('palette');
             filteredCommands[selectedIndex].action();
             onOpenChange(false);
           }
@@ -420,6 +444,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
 
   const categoryLabels: Record<string, { en: string; el: string }> = {
     assistant: { en: 'Assistant', el: 'Βοηθός' },
+    yours: { en: 'Your pages', el: 'Οι σελίδες σας' },
     people: { en: 'People', el: 'Άτομα' },
     navigation: { en: 'Navigation', el: 'Πλοήγηση' },
     pages: { en: 'Pages', el: 'Σελίδες' },
@@ -490,6 +515,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
                       <button
                         key={cmd.id}
                         onClick={() => {
+                          recordVia('palette');
                           cmd.action();
                           onOpenChange(false);
                         }}

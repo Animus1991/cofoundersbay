@@ -1,5 +1,6 @@
 import { readNaturalSearch } from '@cofounderbay/shared';
 import { resolveRouteTarget } from '@/lib/action-registry';
+import { canShortcut } from '@/lib/usage-profile';
 import { namesCanvasSurface, planCanvasCommandArgs } from '@/lib/canvas/plan-canvas-command';
 import type { AreaReadId } from './copilot-reads';
 import type { CopilotToolName, PlannedTool } from './copilot-types';
@@ -248,6 +249,14 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   {
     keys: ['moderation queue', 'open report*', 'pending report*', 'reported user*', 'reports waiting', 'reports to review', 'reports for review', 'ουρα ελεγχου', 'αναφορες σε αναμονη', 'ανοιχτες αναφορες', 'αναφορες για ελεγχο'],
     tool: 'get_moderation_queue',
+  },
+  // How the reader uses the platform, and the quicker ways it suggests (docs §107).
+  {
+    keys: [
+      'how i use', 'how do i use', 'my usage', 'work faster', 'faster way*', 'quicker way*', 'shortcut*', 'personali*', 'my pages', 'pinned', 'pages i open',
+      'πως χρησιμοποιω', 'πως δουλευω', 'πιο γρηγορα', 'πιο συντομ', 'συντομευσ', 'εξατομικ', 'οι σελιδες μου', 'σελιδες που ανοιγω', 'καρφιτσωμεν',
+    ],
+    tool: 'get_usage_insights',
   },
 ];
 
@@ -580,6 +589,17 @@ function withNaturalFilters(args: Record<string, string>, rawMessage: string): R
     else delete args.q;
   }
   return args;
+}
+
+/**
+ * The page a pin names, with or without a navigation verb: "pin messages",
+ * «καρφίτσωσε τα μηνύματα». Only a page that can be one of the reader's
+ * pages (not a home), so the planner never proposes a pin it would refuse.
+ */
+function detectPinTarget(message: string): { href: string; label: string } | undefined {
+  const hit = ROUTE_ALIASES.find((alias) => includesAny(message, alias.keys));
+  const target = hit ? { href: hit.href, label: hit.label } : resolveRouteTarget(message);
+  return target && canShortcut(target.href) ? { href: target.href, label: target.label } : undefined;
 }
 
 export function detectNavigateHref(message: string): { href: string; label: string } | undefined {
@@ -1093,7 +1113,15 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     add('draft_profile', quoted ? { [field]: quoted } : {});
   }
 
+  // The reader's own pages (docs §107): "pin messages", «ξεκαρφίτσωσε τα
+  // μηνύματα». Unpin first: its Greek stem contains the pin stem.
+  const wantsUnpin = includesWord(message, ['unpin', 'ξεκαρφιτσ']);
+  const wantsPin = !wantsUnpin && includesWord(message, ['pin', 'καρφιτσωσ', 'καρφιτσωμα']);
+  const pinTarget = wantsPin || wantsUnpin ? detectPinTarget(message) : undefined;
+  if (pinTarget) add(wantsUnpin ? 'unpin_shortcut' : 'pin_shortcut', { href: pinTarget.href, label: pinTarget.label });
+
   const replacedReads = new Set<string>([
+    ...(pinTarget ? ['get_usage_insights'] : []),
     ...(draftKind === 'draft_milestone' ? ['get_milestones'] : []),
     ...(draftKind === 'draft_event' ? ['get_events'] : []),
     ...(draftKind === 'draft_profile' ? ['get_profile'] : []),
@@ -1112,7 +1140,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const canvasArgs = planCanvasCommandArgs(rawMessage);
   if (canvasArgs?.op) add('canvas_command', canvasArgs);
 
-  if (nav && !tools.some((t) => t.name === 'canvas_command')) add('navigate', { href: nav.href, label: nav.label });
+  if (nav && !pinTarget && !tools.some((t) => t.name === 'canvas_command')) add('navigate', { href: nav.href, label: nav.label });
 
   if (tools.length === 0) {
     const natural = readNaturalSearch(rawMessage);

@@ -1007,9 +1007,12 @@ export default function MessagesPage() {
     <AppShell fullHeight contentClassName="min-h-0" rail={rail}>
       <div className="flex h-full min-h-0 flex-col p-0 sm:p-3 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:p-4 lg:pb-4">
         <div className="flex min-h-0 flex-1 overflow-hidden bg-background sm:rounded-2xl sm:border sm:border-border sm:bg-card sm:shadow-[0_24px_64px_-28px_hsl(var(--foreground)/0.35)]">
+          {/* One column that may shrink: an implicit `auto` column took the
+              width of the longest message preview (479px at 320), and the
+              pane cut its cards, tabs and search at the right edge (docs §107). */}
           <div
             className={cn(
-              'grid h-full min-h-0 min-w-0 w-full shrink-0 grid-rows-[auto_minmax(0,1fr)] overflow-hidden border-border bg-background max-sm:border-0 sm:border-r sm:bg-muted/40 md:w-[340px] md:max-w-[340px] lg:w-[392px] lg:max-w-[392px]',
+              'grid h-full min-h-0 min-w-0 w-full shrink-0 grid-cols-[minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)] overflow-hidden border-border bg-background max-sm:border-0 sm:border-r sm:bg-muted/40 md:w-[340px] md:max-w-[340px] lg:w-[392px] lg:max-w-[392px]',
               isMobileViewingChat && 'hidden md:grid',
             )}
           >
@@ -1040,8 +1043,10 @@ export default function MessagesPage() {
                   aria-label={bilingualAria(messagesEn('new_message'), messagesEl('new_message'))}
                 >
                   <span className="text-sm font-medium">{t(messagesEn('new_message'), messagesEl('new_message'))}</span>
+                  {/* Wraps rather than cuts: at 320-375px a half-width card holds
+                      «Γράψτε σε μια σύνδε» and stopped there (docs §107). */}
                   <span className="text-xs font-normal leading-snug sm:hidden">
-                    <BilingualText en={messagesEn('new_message_short')} el={messagesEl('new_message_short')} compact />
+                    <BilingualText en={messagesEn('new_message_short')} el={messagesEl('new_message_short')} compact wrap />
                   </span>
                 </Button>
                 <button
@@ -1053,7 +1058,7 @@ export default function MessagesPage() {
                     {t(messagesEn('ask_ai'), messagesEl('ask_ai'))}
                   </span>
                   <span className="block text-xs leading-snug text-muted-foreground sm:hidden">
-                    <BilingualText en={messagesEn('ask_ai_short')} el={messagesEl('ask_ai_short')} compact />
+                    <BilingualText en={messagesEn('ask_ai_short')} el={messagesEl('ask_ai_short')} compact wrap />
                   </span>
                   {/* line-clamp, not truncate: this hint is a sentence, and one
                       line cut it by a third. Two lines still bound the height. */}

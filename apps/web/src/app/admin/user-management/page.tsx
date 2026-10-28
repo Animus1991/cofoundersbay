@@ -703,7 +703,7 @@ export default function AdminUserManagementPage() {
                     )}
                     title={(
                       <span className="inline-flex max-w-full items-center gap-1.5">
-                        <Link href={`/admin/user-detail/${user.id}`} className="min-w-0 break-words hover:text-primary-accessible">
+                        <Link href={`/admin/user-detail/${user.id}`} className="tap-extend-y min-w-0 break-words hover:text-primary-accessible">
                           {user.name}
                         </Link>
                         {user.verified && <CheckCircle2 className="icon-sm shrink-0 text-primary-accessible" aria-label="Verified. Επαληθευμένος" />}

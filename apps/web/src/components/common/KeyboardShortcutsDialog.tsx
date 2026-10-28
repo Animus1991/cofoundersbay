@@ -3,6 +3,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Keyboard } from 'lucide-react';
+import { useUsageProfile } from '@/hooks/useUsageProfile';
 
 type ShortcutRow = { keys: string[]; en: string; el: string; seq?: boolean };
 
@@ -65,6 +66,14 @@ function Row({ keys, en, el, seq }: ShortcutRow) {
  * palette can never disagree.
  */
 export function KeyboardShortcutsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  // G then 1–6: the reader's own pages, as the homes list them (docs §107).
+  const { pages } = useUsageProfile();
+  const yours: ShortcutRow[] = pages.map((page, index) => ({
+    keys: ['G', String(index + 1)],
+    seq: true,
+    en: `Go to ${page.label.en}`,
+    el: `Μετάβαση: ${page.label.el}`,
+  }));
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -89,6 +98,14 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: { open: boolean;
           <ul className="mt-1 divide-y divide-border/60">
             {NAV_SHORTCUTS.map((s) => <Row key={s.en} {...s} />)}
           </ul>
+          {yours.length > 0 ? (
+            <>
+              <p className="mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Your pages" el="Οι σελίδες σας" compact /></p>
+              <ul className="mt-1 divide-y divide-border/60">
+                {yours.map((s) => <Row key={s.keys.join('')} {...s} />)}
+              </ul>
+            </>
+          ) : null}
           <p className="mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="In the command palette, type first" el="Στην παλέτα εντολών, πληκτρολογήστε πρώτα" compact /></p>
           <ul className="mt-1 divide-y divide-border/60">
             {PALETTE_PREFIXES.map((s) => <Row key={s.en} {...s} />)}

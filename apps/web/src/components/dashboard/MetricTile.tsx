@@ -46,9 +46,21 @@ export type MetricTileProps = {
    * the four founder-dashboard figures that were asked to sit in the middle.
    */
   align?: 'start' | 'center';
+  /**
+   * The shape behind the change, on the change's own line (a `Sparkline`).
+   * Only where a real series exists; a tile with one is as tall as one
+   * without (docs §107).
+   */
+  trendVisual?: ReactNode;
+  /**
+   * A strip along the tile's bottom edge, inside the card's own padding (a
+   * `ProgressSegments`), for a figure that is a part of a whole. Decorative:
+   * the caption says the same in words. Adds no height.
+   */
+  edge?: ReactNode;
 };
 
-export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, captionEl, trend, href, className, labelClassName, valueClassName, metaClassName, align = 'start' }: MetricTileProps) {
+export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, captionEl, trend, href, className, labelClassName, valueClassName, metaClassName, align = 'start', trendVisual, edge }: MetricTileProps) {
   const centered = align === 'center';
   const mark = glyph ? (
     <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
@@ -71,8 +83,9 @@ export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, 
         <div className={cn('mt-auto min-h-[2.75rem] pt-2', centered && 'w-full')}>
           {trend ? (
             <div className="space-y-0.5">
-              <p className={cn('page-stat-meta font-medium tabular-nums leading-snug', trend.positive ? TREND.up : TREND.down, metaClassName)}>
-                {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%
+              <p className={cn('page-stat-meta font-medium tabular-nums leading-snug', trend.positive ? TREND.up : TREND.down, metaClassName, trendVisual ? 'flex items-center gap-2' : null, trendVisual && centered ? 'justify-center' : null)}>
+                <span>{trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%</span>
+                {trendVisual ?? null}
               </p>
               {trend.en ? (
                 <p className={cn('page-stat-meta leading-snug text-muted-foreground', metaClassName)}>
@@ -87,6 +100,11 @@ export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, 
           ) : null}
         </div>
       </CardContent>
+      {edge ? (
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-4 bottom-2 sm:inset-x-6">
+          {edge}
+        </div>
+      ) : null}
     </Card>
   );
   const destination = href && caption

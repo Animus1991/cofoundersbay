@@ -183,7 +183,9 @@ export default function NewMilestonePage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* One column on a phone: half of a 320-430px card could not hold
+                  the three priorities, and «Υψηλή» ran 17-52px past the edge (docs §107). */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <p id="page-cap1-cap" className="text-sm font-medium leading-tight"><BilingualText en={milestoneEn('field_category')} el={milestoneEl('field_category')} compact /></p>
                   <div role="group" aria-labelledby="page-cap1-cap" className="flex flex-wrap gap-1.5">

@@ -136,7 +136,7 @@ function ProjectCard({
   );
   const title = (
     <span className="inline-flex max-w-full items-center gap-1.5">
-      <Link href={`/projects/${project.id}`} className="min-w-0 break-words transition-colors hover:text-primary-accessible">
+      <Link href={`/projects/${project.id}`} className="tap-extend-y min-w-0 break-words transition-colors hover:text-primary-accessible">
         {project.name}
       </Link>
       {project.isStarred && <Star className="icon-sm shrink-0 fill-status-warning text-status-warning" />}

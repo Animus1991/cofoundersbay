@@ -72,6 +72,7 @@ import { requestIntro, withdrawIntro } from '@/lib/intros-api';
 import { clearOpenTo, getMyOpenTo, setOpenTo } from '@/lib/open-to-api';
 import { linkSkillEvidence, unlinkSkillEvidence } from '@/lib/skill-evidence-api';
 import { runScout } from '@/lib/scout-api';
+import { canShortcut, pinPage, unpinPage } from '@/lib/usage-profile';
 import { isLinkableEvidenceKind, isOpenToKind, type OpenToKind, type OpenToVisibility } from '@cofounderbay/shared';
 
 /**
@@ -227,8 +228,44 @@ function internalRoute(value: string): string | null {
   }
 }
 
+/**
+ * The page a pin names: an internal path the reader's pages can hold (a
+ * static page, not a home, not one person's page). Query and hash dropped.
+ */
+function shortcutKey(payload: Record<string, unknown>): string | null {
+  const route = internalRoute(requireString(payload, 'href'));
+  if (!route) return null;
+  const path = route.split(/[?#]/)[0].replace(/\/+$/, '') || '/';
+  return canShortcut(path) ? path : null;
+}
+
+const PIN_REFUSAL: Record<string, string> = {
+  not_a_page: 'That page cannot be one of your pages: pin a page from the menus, not a home or one person’s page.',
+  already: 'That page is already pinned.',
+  full: 'All six places are taken. Unpin one first.',
+  not_pinned: 'That page is not pinned.',
+};
+
 /** Exhaustive over every declared mutation. Adding one without an arm fails to compile. */
 const EXECUTORS: Record<MutationActionId, Executor> = {
+  // The reader's own pages (docs §107). Local, so nothing waits on the API;
+  // the outcome hands the undo the place the page had.
+  pin_shortcut: async (payload) => {
+    const key = shortcutKey(payload);
+    if (!key) return { ok: false, error: PIN_REFUSAL.not_a_page };
+    const result = pinPage(key);
+    if (!result.ok) return { ok: false, error: PIN_REFUSAL[result.reason] };
+    return { ok: true, undo: { key, index: result.index } };
+  },
+
+  unpin_shortcut: async (payload) => {
+    const key = shortcutKey(payload);
+    if (!key) return { ok: false, error: PIN_REFUSAL.not_pinned };
+    const result = unpinPage(key);
+    if (!result.ok) return { ok: false, error: PIN_REFUSAL[result.reason] };
+    return { ok: true, undo: { key, index: result.index } };
+  },
+
   navigate: async (payload) => {
     const requested = requireString(payload, 'href');
     if (!requested) return { ok: true, href: '/dashboard' };
@@ -778,6 +815,24 @@ async function resolveMilestoneId(payload: Record<string, unknown>): Promise<str
  * deleted, so there is nothing honest to reverse.
  */
 const UNDOS: Record<UndoableActionId, Undo> = {
+  // Takes back exactly the pin this made: the executor refused a page that
+  // was already pinned, so this never unpins one the reader chose.
+  pin_shortcut: async (_payload, context) => {
+    const key = typeof context.key === 'string' ? context.key : '';
+    if (!key) return { ok: false, error: 'Not reversible' };
+    const result = unpinPage(key);
+    return result.ok ? { ok: true } : { ok: false, error: PIN_REFUSAL[result.reason] };
+  },
+
+  // Puts the page back in the place it had.
+  unpin_shortcut: async (_payload, context) => {
+    const key = typeof context.key === 'string' ? context.key : '';
+    if (!key) return { ok: false, error: 'Not reversible' };
+    const index = typeof context.index === 'number' ? context.index : undefined;
+    const result = pinPage(key, index);
+    return result.ok ? { ok: true } : { ok: false, error: PIN_REFUSAL[result.reason] };
+  },
+
   // The page named the opposite before the command ran, from the row's state
   // at that moment; the executor handed it over as the outcome's `undo`. No
   // opposite, no undo - `undoAvailable` keeps the button off such a card.

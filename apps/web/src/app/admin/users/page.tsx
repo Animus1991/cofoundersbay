@@ -138,7 +138,7 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <Link href={`/p/${user.id}`} className="text-sm font-medium hover:text-primary-accessible transition-colors">
+          <Link href={`/p/${user.id}`} className="tap-extend-y text-sm font-medium hover:text-primary-accessible transition-colors">
             {user.name}
           </Link>
           {user.verified && <CheckCircle2 className="icon-sm text-primary-accessible" />}

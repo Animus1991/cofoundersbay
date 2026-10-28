@@ -637,6 +637,19 @@ export const ACTION_DECLARATIONS = [
     roles: ['admin', 'super_admin'],
   },
   {
+    // Read in the browser: the counts never leave the reader's device
+    // (apps/web/src/lib/usage-profile.ts, docs §107).
+    id: 'get_usage_insights',
+    kind: 'read',
+    label: { en: 'Read how I use the platform', el: 'Ανάγνωση του τρόπου που χρησιμοποιώ την πλατφόρμα' },
+    description: {
+      en: 'Read how the signed-in user moves around the product on this device: the pages they open most this week and month, their pinned pages, and suggestions for quicker ways (a pin, a keyboard key, the assistant drafting a form they fill by hand). Use it when they ask how to work faster, for shortcuts, or to personalise their home.',
+      el: 'Διαβάζει πώς κινείται ο χρήστης στο προϊόν σε αυτή τη συσκευή: τις σελίδες που ανοίγει συχνότερα αυτή την εβδομάδα και τον μήνα, τις καρφιτσωμένες σελίδες του, και προτάσεις για πιο σύντομους δρόμους (καρφίτσωμα, πλήκτρο, ο βοηθός να συντάσσει μια φόρμα που συμπληρώνει με το χέρι). Χρησιμοποίησέ το όταν ρωτά πώς να δουλεύει πιο γρήγορα, για συντομεύσεις ή για να προσαρμόσει την αρχική του.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     id: 'navigate',
     kind: 'mutation',
     label: { en: 'Open a page', el: 'Άνοιγμα σελίδας' },
@@ -2353,6 +2366,86 @@ export const ACTION_DECLARATIONS = [
     auditSubject: { param: 'op', entityType: 'research_canvas' },
     navigatesOnSuccess: true,
     confirmLabel: { en: 'Run on canvas', el: 'Εκτέλεση στον καμβά' },
+  },
+  {
+    // The reader's pinned pages live in this browser (docs §107); nothing
+    // reaches the API, so `writes` is false and nothing goes stale.
+    id: 'pin_shortcut',
+    kind: 'mutation',
+    label: { en: 'Pin a page to your pages', el: 'Καρφίτσωμα σελίδας στις σελίδες σας' },
+    description: {
+      en: 'Pin a product page to the user’s own pages: it then stays first on every home and in the command palette, with the key G then its number. Up to six. Proposes the pin; the user confirms.',
+      el: 'Καρφιτσώνει μια σελίδα του προϊόντος στις σελίδες του χρήστη: μένει πρώτη σε κάθε αρχική και στην παλέτα εντολών, με το πλήκτρο G και μετά τον αριθμό της. Έως έξι. Προτείνει το καρφίτσωμα· ο χρήστης επιβεβαιώνει.',
+    },
+    params: [
+      {
+        name: 'href',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'The page’s path inside the product, e.g. "/messages". Not a home and not a page about one person.',
+          el: 'Η διαδρομή της σελίδας μέσα στο προϊόν, π.χ. «/messages». Όχι αρχική και όχι σελίδα ενός συγκεκριμένου ατόμου.',
+        },
+      },
+      {
+        name: 'label',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Human-readable name of the page, used in the proposal.',
+          el: 'Αναγνώσιμο όνομα της σελίδας, για την πρόταση.',
+        },
+      },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible: undo unpins it, and nothing else changes. A page that was already pinned is refused, so an undo never unpins one you pinned yourself.',
+        el: 'Πλήρως αναστρέψιμο: η αναίρεση το ξεκαρφιτσώνει και τίποτε άλλο δεν αλλάζει. Μια σελίδα ήδη καρφιτσωμένη απορρίπτεται, ώστε η αναίρεση να μην ξεκαρφιτσώσει ποτέ μία που καρφιτσώσατε εσείς.',
+      },
+    },
+    confirmLabel: { en: 'Pin', el: 'Καρφίτσωμα' },
+  },
+  {
+    id: 'unpin_shortcut',
+    kind: 'mutation',
+    label: { en: 'Unpin a page from your pages', el: 'Ξεκαρφίτσωμα σελίδας από τις σελίδες σας' },
+    description: {
+      en: 'Unpin one of the user’s pinned pages. The page itself is untouched; it may still appear under the pages they open most. Proposes it; the user confirms.',
+      el: 'Ξεκαρφιτσώνει μία από τις καρφιτσωμένες σελίδες του χρήστη. Η ίδια η σελίδα δεν αλλάζει· μπορεί να εμφανίζεται ακόμη στις σελίδες που ανοίγει συχνότερα. Το προτείνει· ο χρήστης επιβεβαιώνει.',
+    },
+    params: [
+      {
+        name: 'href',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'Path of the pinned page, e.g. "/messages".',
+          el: 'Διαδρομή της καρφιτσωμένης σελίδας, π.χ. «/messages».',
+        },
+      },
+      {
+        name: 'label',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Human-readable name of the page, used in the proposal.',
+          el: 'Αναγνώσιμο όνομα της σελίδας, για την πρόταση.',
+        },
+      },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible: undo pins it again in the place it had.',
+        el: 'Πλήρως αναστρέψιμο: η αναίρεση το καρφιτσώνει ξανά στη θέση που είχε.',
+      },
+    },
+    confirmLabel: { en: 'Unpin', el: 'Ξεκαρφίτσωμα' },
   },
 ] as const satisfies readonly ActionDeclaration[];
 

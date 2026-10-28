@@ -13,7 +13,8 @@ const Checkbox = React.forwardRef<
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      "peer h-4 w-4 shrink-0 rounded-sm border border-border",
+      // 16px box, 24px target: `tap-extend` adds the band around it (WCAG 2.5.8, docs §107).
+      "peer tap-extend h-4 w-4 shrink-0 rounded-sm border border-border",
       "focus-visible:outline-none",
       "disabled:cursor-not-allowed disabled:opacity-50",
       "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",

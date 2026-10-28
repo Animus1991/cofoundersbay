@@ -24,10 +24,12 @@ const tabClasses = 'relative flex min-h-[3.75rem] min-w-0 flex-col items-center 
  * A soft hyphen where a Greek tab name can outgrow its column. At 360px a
  * tab is 68px and «Εξερεύνηση» is 72px at this size: without one it broke as
  * «Εξερεύνησ / η»; with one it breaks «Εξερεύ- / νηση», and from 375px up
- * it stays on one line.
+ * it stays on one line. At 320px a tab is 64px and the active one's pill
+ * left «Μηνύματα» as «Μηνύματ / α»; it breaks «Μηνύ- / ματα» now (docs §107).
  */
 const TAB_EL_BREAKS: Record<string, string> = {
   Εξερεύνηση: 'Εξερεύ\u00ADνηση',
+  Μηνύματα: 'Μηνύ\u00ADματα',
 };
 
 function TabLabel({ en, el }: { en: string; el: string }) {

@@ -15,6 +15,7 @@ import {
   type StarterAudience,
 } from '@/lib/copilot-starters';
 import { cn } from '@/lib/utils';
+import { useUsageProfile } from '@/hooks/useUsageProfile';
 
 const INTRO: Record<StarterAudience, { en: string; el: string }> = {
   founder: {
@@ -68,6 +69,9 @@ export function CopilotEmptyState({
   const audience = starterAudience(role);
   const { reads, writes } = copilotStartersFor(surface, { pathname, role });
   const intro = INTRO[audience];
+  // The platform's best suggestion from how the reader moves around (docs
+  // §107), when it has one; the question it asks is get_usage_insights'.
+  const tip = useUsageProfile().suggestions[0];
 
   return (
     <div
@@ -87,6 +91,21 @@ export function CopilotEmptyState({
           {sayOne('Look up, or change after you confirm.', 'Αναζήτηση, ή αλλαγή μετά από επιβεβαίωση.')}
         </p>
       )}
+      {tip ? (
+        <div data-usage-tip="" className={cn('rounded-lg border border-primary-muted bg-primary-subtle p-3', isPage ? 'mb-5 max-w-prose' : null)}>
+          <p className="type-caption text-muted-foreground">
+            {sayOne('For you, from how you use the platform', 'Για εσάς, από τον τρόπο που χρησιμοποιείτε την πλατφόρμα')}
+          </p>
+          <p className="type-ui mt-0.5 text-foreground">{sayOne(tip.title.en, tip.title.el)}</p>
+          <button
+            type="button"
+            className="tap-target-y mt-1 inline-flex items-center text-sm font-medium text-primary-accessible underline-offset-2 hover:underline"
+            onClick={() => onAsk('How can I work faster here?')}
+          >
+            {sayOne('Show me quicker ways', 'Δείξε μου πιο σύντομους δρόμους')}
+          </button>
+        </div>
+      ) : null}
       <div
         className={cn(
           'grid w-full grid-cols-1',

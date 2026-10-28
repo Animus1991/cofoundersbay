@@ -84,6 +84,7 @@ import { I18nProvider } from '@/components/common/I18nProvider';
 import { DomI18n } from '@/components/common/DomI18n';
 import { PhonePlaceholderFit } from '@/components/layout/PhonePlaceholderFit';
 import { IosFieldZoom } from '@/components/layout/IosFieldZoom';
+import { UsageTracker } from '@/components/layout/UsageTracker';
 import { ConfirmProvider } from '@/components/ui/confirm-dialog';
 import { THEME_ROOT } from '@/lib/themes';
 
@@ -193,6 +194,8 @@ export default function RootLayout({
                                     <DomI18n>
                                     <PhonePlaceholderFit />
                                     <IosFieldZoom />
+                                    {/* The reader's own pages and suggestions, counted on this device (docs §107). */}
+                                    <UsageTracker />
                                       {/* Above both the page and the floating
                                           assistant, because the page writes
                                           what is on screen and the assistant

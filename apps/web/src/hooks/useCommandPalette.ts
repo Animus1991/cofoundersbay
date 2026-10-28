@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useGuardedRouter } from '@/hooks/useGuardedRouter';
+import { readUsage, recordVia, yourPages } from '@/lib/usage-profile';
 
 /**
  * Global keyboard shortcuts: Ctrl/Cmd+K and `/` open the command palette,
  * `?` opens the shortcut reference, and `g` followed by a nav letter
  * (vim-style: h home, d discover, p profile, a ai, m messages, s settings)
- * navigates. Bare-letter bindings never fire while typing in an editable
+ * navigates; `g` followed by 1–6 opens the reader's own pages, in the order
+ * the homes show them (docs §107). Bare-letter bindings never fire while typing in an editable
  * target or with a modifier held. The research canvas owns its own
  * bare-letter bindings (v/n/c/g/s/?), so this hub stands down there.
  */
@@ -47,7 +49,18 @@ export function useCommandPalette() {
         const dest = GO[key.toLowerCase()];
         if (dest && !event.shiftKey) {
           event.preventDefault();
+          recordVia('chord');
           router.push(dest);
+          return;
+        }
+        // The reader's own pages: g 1 is the first of them.
+        if (/^[1-6]$/.test(key)) {
+          const page = yourPages(readUsage(), Date.now())[Number(key) - 1];
+          if (page) {
+            event.preventDefault();
+            recordVia('shortcut');
+            router.push(page.key);
+          }
         }
         return;
       }

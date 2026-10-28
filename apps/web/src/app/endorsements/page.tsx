@@ -171,7 +171,7 @@ function EndorsementCard({
             </Link>
           )}
           title={(
-            <Link href={`/profiles/${user.id}`} className="transition-colors hover:text-primary-accessible">
+            <Link href={`/profiles/${user.id}`} className="tap-extend-y transition-colors hover:text-primary-accessible">
               {user.name}
             </Link>
           )}

@@ -124,7 +124,7 @@ function MentorCard({ mentor, sample = false }: { mentor: Mentor; /** A sample m
           title={(
             <span className="flex items-center gap-1.5">
               {sample ? mentor.name : (
-                <Link href={`/profiles/${mentor.userId}`} className="hover:text-primary-accessible transition-colors">
+                <Link href={`/profiles/${mentor.userId}`} className="tap-extend-y hover:text-primary-accessible transition-colors">
                   {mentor.name}
                 </Link>
               )}
@@ -385,7 +385,7 @@ export default function OrgMentorsPage() {
                             <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(r.displayName ?? '?')}</AvatarFallback>
                           </Avatar>
                         )}
-                        title={<Link href={`/profiles/${r.userId}`} className="hover:text-primary-accessible">{r.displayName ?? 'A mentor'}</Link>}
+                        title={<Link href={`/profiles/${r.userId}`} className="tap-extend-y hover:text-primary-accessible">{r.displayName ?? 'A mentor'}</Link>}
                         subtitle={r.headline ? <span className="line-clamp-1">{r.headline}</span> : undefined}
                         meta={r.requestedAt ? <><BilingualText en="asked" el="ζήτησε" compact /> <RelativeTime date={r.requestedAt} format={formatRelativeTime} /></> : undefined}
                       />

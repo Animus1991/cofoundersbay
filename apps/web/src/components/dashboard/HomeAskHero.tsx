@@ -21,6 +21,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { cn } from '@/lib/utils';
+import { YourPagesRow } from '@/components/dashboard/YourPages';
 
 type Part = { en: string; el: string };
 
@@ -56,6 +57,8 @@ export function partOfDay(hour: number): Part {
  * - "/" at the start of the box lists the same starting points as commands,
  *   narrowed as you type (Copilot Chat's slash commands): arrows move, Enter
  *   runs the highlighted one, Escape clears.
+ * - Under them, "Your pages": what the reader pinned and opens most, each
+ *   with its `G` number (`YourPagesRow`, docs §107).
  */
 export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: string | null; lead?: Part }) {
   const sayOne = useBilingualString();
@@ -284,6 +287,9 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: strin
           </li>
         ))}
       </ul>
+
+      {/* The reader's own pages: pinned, then the most opened (docs §107). */}
+      <YourPagesRow />
     </section>
   );
 }
