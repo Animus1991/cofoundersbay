@@ -98,7 +98,7 @@ export default function MentorshipManagementPage() {
       </HelpCallout>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <MetricTile icon={GraduationCap} label="Mentors" labelEl="Μέντορες" value={isLoading ? dash : mentors.length} caption="Listed mentors. Opens coaching" captionEl="Καταχωρημένοι μέντορες. Ανοίγει την καθοδήγηση" href="/coaching" />
+        <MetricTile icon={GraduationCap} label="Mentors" labelEl="Μέντορες" value={isLoading ? dash : mentors.length} caption="Listed mentors. Opens the mentor directory" captionEl="Καταχωρημένοι μέντορες. Ανοίγει τον κατάλογο μεντόρων" href="/mentoring" />
         <MetricTile icon={Calendar} label="Sessions held" labelEl="Συνεδρίες" value={isLoading ? dash : sessions} caption="All time, across the directory" captionEl="Συνολικά, σε όλο τον κατάλογο" />
         <MetricTile
           icon={Star}
@@ -118,7 +118,7 @@ export default function MentorshipManagementPage() {
         />
       </div>
 
-      <SectionCard title="Mentor roster" titleEl="Κατάλογος μεντόρων" icon={GraduationCap} className="mt-6" contentClassName="card-rows" action={{ href: '/coaching', label: 'Public directory', labelEl: 'Δημόσιος κατάλογος' }}>
+      <SectionCard title="Mentor roster" titleEl="Κατάλογος μεντόρων" icon={GraduationCap} className="mt-6" contentClassName="card-rows" action={{ href: '/mentoring', label: 'Public directory', labelEl: 'Δημόσιος κατάλογος' }}>
         {isLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-16" />)}
         {!isLoading && isError && mentors.length === 0 && (
           <EmptyLine en="The mentor directory could not be loaded." el="Ο κατάλογος μεντόρων δεν φορτώθηκε." />

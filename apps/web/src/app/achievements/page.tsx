@@ -36,6 +36,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import { orderAchievements } from '@/lib/achievement-order';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -550,12 +551,13 @@ export default function AchievementsPage() {
     };
   }, [achievements, xpData]);
 
-  const filteredAchievements = achievements?.filter((achievement) => {
+  // Earned first, then the closest to done (docs §90.5, §111).
+  const filteredAchievements = orderAchievements(achievements.filter((achievement) => {
     if (activeTab === 'unlocked' && !achievement.unlocked) return false;
     if (activeTab === 'locked' && achievement.unlocked) return false;
     if (categoryFilter !== 'all' && achievement.category !== categoryFilter) return false;
     return true;
-  });
+  }));
 
   const categories = [
     { value: 'all', labelEn: 'All', labelEl: 'Όλες', icon: undefined as (typeof Users | undefined) },

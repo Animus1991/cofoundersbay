@@ -176,7 +176,7 @@ const PERSONAS: Array<{ icon: LucideIcon; role: Pair; headline: Pair; bullets: P
     headline: { en: 'Meet founders through people you trust', el: 'Γνωρίστε ιδρυτές μέσα από ανθρώπους που εμπιστεύεστε' },
     bullets: [
       { en: 'Filter by stage, sector and place', el: 'Φίλτρα ανά στάδιο, κλάδο και τόπο' },
-      { en: 'Warm introductions from someone who knows both', el: 'Ζεστές συστάσεις από κάποιον που γνωρίζει και τους δύο' },
+      { en: 'Warm introductions from someone who knows both', el: 'Γνωριμίες μέσω κάποιου που γνωρίζει και τους δύο' },
       { en: 'Follow founders and read their monthly updates', el: 'Ακολουθήστε ιδρυτές και διαβάστε τις μηνιαίες ενημερώσεις τους' },
     ],
   },
@@ -197,7 +197,7 @@ const PERSONAS: Array<{ icon: LucideIcon; role: Pair; headline: Pair; bullets: P
 const FEATURES: Item[] = [
   { icon: Compass, title: { en: 'Matching that explains itself', el: 'Αντιστοιχίσεις που εξηγούνται' }, desc: { en: 'Scores across skills, stage, industry, place and goals, with the reasons behind each one.', el: 'Βαθμολογία σε δεξιότητες, στάδιο, κλάδο, τόπο και στόχους, με τους λόγους πίσω από την καθεμία.' } },
   { icon: Search, title: { en: 'Search in plain words', el: 'Αναζήτηση με απλά λόγια' }, desc: { en: 'Type “co-founder SaaS Athens full-time”; the words become filters you can see and undo.', el: 'Γράψτε «συνιδρυτής SaaS Αθήνα πλήρης απασχόληση»· οι λέξεις γίνονται φίλτρα που βλέπετε και αναιρείτε.' } },
-  { icon: Handshake, title: { en: 'Warm introductions', el: 'Ζεστές συστάσεις' }, desc: { en: 'Ask someone who knows both of you; they decide whether to forward.', el: 'Ζητήστε από κάποιον που γνωρίζει και τους δύο· εκείνος αποφασίζει αν θα προωθήσει.' } },
+  { icon: Handshake, title: { en: 'Warm introductions', el: 'Γνωριμίες μέσω κοινών γνωστών' }, desc: { en: 'Ask someone who knows both of you; they decide whether to forward.', el: 'Ζητήστε από κάποιον που γνωρίζει και τους δύο· εκείνος αποφασίζει αν θα προωθήσει.' } },
   { icon: Newspaper, title: { en: 'Founder updates', el: 'Ενημερώσεις ιδρυτών' }, desc: { en: 'A monthly update for the people who follow you, or as a public link.', el: 'Μηνιαία ενημέρωση για όσους σας ακολουθούν, ή ως δημόσιος σύνδεσμος.' } },
   { icon: Users, title: { en: 'Co-founder scout', el: 'Ανιχνευτής συνιδρυτών' }, desc: { en: 'Proposes people for your brief, with its reasons. It never contacts anyone.', el: 'Προτείνει ανθρώπους για το σημείωμά σας, με τους λόγους του. Δεν επικοινωνεί ποτέ με κανέναν.' } },
   { icon: MessageCircle, title: { en: 'Messages', el: 'Μηνύματα' }, desc: { en: 'Conversations that stay, can be searched and take attachments.', el: 'Συνομιλίες που μένουν, αναζητούνται και δέχονται συνημμένα.' } },
@@ -378,7 +378,7 @@ export function LandingHome() {
           <SectionHeading
             eyebrow={{ en: 'How it works', el: 'Πώς λειτουργεί' }}
             title={{ en: 'From a card to agreed terms', el: 'Από την κάρτα σε συμφωνημένους όρους' }}
-            lead={{ en: 'Mentoring and simple introductions keep ordinary messages; co-founder roles, equity roles and investor introductions use these three steps.', el: 'Η καθοδήγηση και οι απλές συστάσεις κρατούν τα συνηθισμένα μηνύματα· θέσεις συνιδρυτή, ρόλοι με equity και συστάσεις σε επενδυτές ακολουθούν αυτά τα τρία βήματα.' }}
+            lead={{ en: 'Mentoring and simple introductions keep ordinary messages; co-founder roles, equity roles and investor introductions use these three steps.', el: 'Η καθοδήγηση και οι απλές γνωριμίες κρατούν τα συνηθισμένα μηνύματα· θέσεις συνιδρυτή, ρόλοι με equity και γνωριμίες με επενδυτές ακολουθούν αυτά τα τρία βήματα.' }}
           />
           <ol className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {MOVES.map(({ title, note }, index) => (

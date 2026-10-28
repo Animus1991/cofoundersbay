@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
   listExpertReviews,
-  listExperts,
   type ExpertReviewItem,
-  type ExpertDirectoryItem,
 } from '@/lib/api';
+import { REVIEW_AREAS, areaKeys, directoryHref } from '@/lib/mentoring/services';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   AlertTriangle,
@@ -31,12 +30,10 @@ import {
   Target,
   TrendingUp,
   XCircle,
-  X,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
-import { usePageRail } from '@/components/layout/PageRailContext';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +41,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, scoreTenPointClass, type StatusTone } from '@/lib/semantic-colors';
@@ -53,10 +49,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
-import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
-import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { ASK } from '@/lib/page-questions';
 
@@ -95,25 +89,6 @@ interface ExpertReview {
   rating?: number;
 }
 
-interface ExpertProfile {
-  id: string;
-  name: string;
-  title: string;
-  avatar?: string;
-  domains: ReviewType[];
-  completedReviews: number;
-  /* Null until somebody has rated a review this expert delivered. Zero would
-     read as a bad expert rather than a new one. */
-  rating: number | null;
-  bio: string;
-  feeFrom?: number;
-  currency?: string;
-  /* Nothing records how fast an expert replies. */
-  responseTime?: string;
-  isVerified: boolean;
-  badges?: string[];
-}
-
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const REVIEW_TYPE_TONE: Record<ReviewType, StatusTone> = {
@@ -128,16 +103,19 @@ const REVIEW_TYPE_TONE: Record<ReviewType, StatusTone> = {
   general: 'neutral',
 };
 
+/** An area's two names, from the directory's vocabulary, so both pages say the same. */
+const areaNames = (key: ReviewType) => ({ label: REVIEW_AREAS[key].en, labelEl: REVIEW_AREAS[key].el });
+
 const REVIEW_TYPE_CONFIG: Record<ReviewType, { label: string; labelEl: string; icon: React.ElementType; tone: StatusTone }> = {
-  pitch_deck:             { label: 'Pitch Deck',        labelEl: 'Pitch deck',                icon: FileText,    tone: 'info' },
-  business_model:         { label: 'Business Model',    labelEl: 'Επιχειρηματικό μοντέλο',    icon: Target,      tone: 'accent' },
-  financial_model:        { label: 'Financial Model',   labelEl: 'Οικονομικό μοντέλο',        icon: DollarSign,  tone: 'success' },
-  legal_structure:        { label: 'Legal Structure',   labelEl: 'Νομική δομή',               icon: Scale,       tone: 'warning' },
-  market_analysis:        { label: 'Market Analysis',   labelEl: 'Ανάλυση αγοράς',            icon: BarChart3,   tone: 'info' },
-  go_to_market:           { label: 'Go-to-Market',      labelEl: 'Είσοδος στην αγορά',        icon: TrendingUp,  tone: 'warning' },
-  technical_architecture: { label: 'Tech Architecture', labelEl: 'Τεχνική αρχιτεκτονική',     icon: Code2,       tone: 'accent' },
-  product_strategy:       { label: 'Product Strategy',  labelEl: 'Στρατηγική προϊόντος',      icon: Lightbulb,   tone: 'accent' },
-  general:                { label: 'General Review',    labelEl: 'Γενική αξιολόγηση',         icon: Eye,         tone: 'neutral' },
+  pitch_deck:             { ...areaNames('pitch_deck'),             icon: FileText,    tone: 'info' },
+  business_model:         { ...areaNames('business_model'),         icon: Target,      tone: 'accent' },
+  financial_model:        { ...areaNames('financial_model'),        icon: DollarSign,  tone: 'success' },
+  legal_structure:        { ...areaNames('legal_structure'),        icon: Scale,       tone: 'warning' },
+  market_analysis:        { ...areaNames('market_analysis'),        icon: BarChart3,   tone: 'info' },
+  go_to_market:           { ...areaNames('go_to_market'),           icon: TrendingUp,  tone: 'warning' },
+  technical_architecture: { ...areaNames('technical_architecture'), icon: Code2,       tone: 'accent' },
+  product_strategy:       { ...areaNames('product_strategy'),       icon: Lightbulb,   tone: 'accent' },
+  general:                { ...areaNames('general'),                icon: Eye,         tone: 'neutral' },
 };
 
 const REVIEW_STATUS_TONE: Record<ReviewStatus, StatusTone> = {
@@ -206,61 +184,6 @@ const DEMO_REVIEWS: ExpertReview[] = attachDemoPhotos([
     isPaid: false,
   },
 ]);
-
-const DEMO_EXPERTS: ExpertProfile[] = attachDemoPhotos([
-  {
-    id: 'e1',
-    name: 'Stavros Nikolaou',
-    title: 'Serial Founder & Pitch Coach',
-    domains: ['pitch_deck', 'business_model', 'go_to_market'],
-    completedReviews: 89,
-    rating: 4.9,
-    bio: '3× founder, 2 exits. Has reviewed 89+ decks across pre-seed to Series B. Former pitch coach at Athens Startup Weekend.',
-    feeFrom: 180,
-    responseTime: '48 hrs',
-    isVerified: true,
-    badges: ['Top Reviewer', 'Pitch Specialist'],
-  },
-  {
-    id: 'e2',
-    name: 'Katerina Vassiliou',
-    title: 'CFO Advisor & Financial Modelling Expert',
-    domains: ['financial_model', 'legal_structure'],
-    completedReviews: 54,
-    rating: 4.8,
-    bio: 'Chartered accountant with 12 years in startup finance. Specializes in SaaS unit economics, fundraising models, and financial due diligence readiness.',
-    feeFrom: 300,
-    responseTime: '24 hrs',
-    isVerified: true,
-    badges: ['Finance Expert'],
-  },
-  {
-    id: 'e3',
-    name: 'Nikos Papadakis',
-    title: 'GTM Strategist & Growth Advisor',
-    domains: ['go_to_market', 'market_analysis', 'product_strategy'],
-    completedReviews: 37,
-    rating: 4.7,
-    bio: 'Former VP Growth at 2 B2B SaaS companies. Advises early-stage startups on positioning, channel strategy, and EU market expansion.',
-    feeFrom: 120,
-    responseTime: '72 hrs',
-    isVerified: false,
-    badges: [],
-  },
-  {
-    id: 'e4',
-    name: 'Alexis Petridis',
-    title: 'CTO & Technical Architecture Reviewer',
-    domains: ['technical_architecture', 'product_strategy'],
-    completedReviews: 28,
-    rating: 4.6,
-    bio: 'Ex-CTO of Series A fintech. Reviews technical architecture, scalability plans, and build-vs-buy decisions for early-stage startups.',
-    feeFrom: 200,
-    responseTime: '48 hrs',
-    isVerified: true,
-    badges: ['Tech Expert'],
-  },
-], { portraitKey: 'avatar' });
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -344,6 +267,15 @@ function ReviewCard({ review }: { review: ExpertReview }) {
             ) : null}
           </div>
         </div>
+
+        {/* What was asked, while the review is open: the expert reads it,
+            and the card never showed it to the one who sent it (docs §111). */}
+        {review.requestMessage && review.status !== 'submitted' ? (
+          <p className="card-body line-clamp-3 text-muted-foreground">
+            <BilingualText en="Your request:" el="Το αίτημά σας:" compact />{' '}
+            <span className="text-foreground">{review.requestMessage}</span>
+          </p>
+        ) : null}
 
         {review.summaryFeedback && (
           <p className="card-body line-clamp-2 italic text-muted-foreground">
@@ -466,142 +398,7 @@ function FailedRead({ en, el, onRetry, busy = false }: { en: string; el: string;
   );
 }
 
-function ExpertCard({ expert, sample }: { expert: ExpertProfile; sample: boolean }) {
-  return (
-    <Card className="transition-all hover:border-primary/20">
-      <CardContent className="space-y-3">
-        <CardHead
-          mark={(
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={expert.avatar} alt="" />
-              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
-                {initialsOf(expert.name)}
-              </AvatarFallback>
-            </Avatar>
-          )}
-          title={(
-            <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-              <span>{expert.name}</span>
-              {expert.isVerified && (
-                <Badge size="sm" className="rounded-full border-primary/20 bg-primary/10 px-1.5 text-primary-accessible">
-                  <BilingualText en="Verified" el="Επαληθευμένος" compact />
-                </Badge>
-              )}
-            </span>
-          )}
-          subtitle={expert.title}
-          meta={expert.badges?.length ? <FactLine items={expert.badges} /> : undefined}
-          aside={expert.feeFrom != null ? (
-            <span className="font-semibold tabular-nums text-foreground">
-              {/* The euro sign used to be written in, whatever the expert
-                  charges in. */}
-              <BilingualText en="From" el="Από" compact />{' '}
-              {new Intl.NumberFormat('en-GB', {
-                style: 'currency',
-                currency: expert.currency || 'USD',
-                maximumFractionDigits: 0,
-              }).format(expert.feeFrom)}
-            </span>
-          ) : undefined}
-        />
-
-        <p className="card-body line-clamp-2 text-muted-foreground">{expert.bio}</p>
-
-        {/* What they review, then how they are rated and how fast: facts,
-            not tinted pills. */}
-        <div className="space-y-1">
-          <FactLine
-            items={(expert.domains ?? []).slice(0, 3).map((d) => {
-              const cfg = REVIEW_TYPE_CONFIG[d];
-              return <BilingualText key={d} en={cfg.label} el={cfg.labelEl} compact />;
-            })}
-          />
-          <FactLine
-            items={[
-              <span key="rating" data-keep-icon="" className="inline-flex items-center gap-1">
-                <Star className={cn('icon-sm fill-current', STATUS.warning.icon)} aria-hidden="true" />
-                {expert.rating ?? '—'}{' '}
-                <BilingualText
-                  en={`(${expert.completedReviews} ${expert.completedReviews === 1 ? 'review' : 'reviews'})`}
-                  el={`(${expert.completedReviews} ${expert.completedReviews === 1 ? 'αξιολόγηση' : 'αξιολογήσεις'})`}
-                  compact
-                />
-              </span>,
-              expert.responseTime ? (
-                <span key="turnaround">
-                  <BilingualText en="Turnaround:" el="Χρόνος παράδοσης:" compact /> {expert.responseTime}
-                </span>
-              ) : null,
-            ]}
-          />
-        </div>
-
-        {/* A structured review is booked through Mentoring, against the same
-            people. "Browse" went there too; a listed expert is a member, so
-            the second button opens their profile, and a sample expert has
-            none (docs §90). */}
-        <CardFoot>
-          <Button size="sm" className="gap-1" asChild>
-            <Link href="/mentoring">
-              <Plus className="icon-sm shrink-0" aria-hidden="true" />
-              <BilingualText en="Request a review" el="Αίτημα αξιολόγησης" compact wrap />
-            </Link>
-          </Button>
-          {sample ? null : (
-            <Button size="sm" variant="outline" className="gap-1" asChild>
-              <Link
-                href={`/profiles/${encodeURIComponent(expert.id)}`}
-                aria-label={bilingualAria(`View profile: ${expert.name}`, `Προβολή προφίλ: ${expert.name}`)}
-              >
-                <BilingualText en="View profile" el="Προβολή προφίλ" compact wrap />
-              </Link>
-            </Button>
-          )}
-        </CardFoot>
-      </CardContent>
-    </Card>
-  );
-}
-
 // ── Main Page ─────────────────────────────────────────────────────────────────
-
-/**
- * Which review domains a free-text list of skills names.
- *
- * An expert records the words they typed; this page files them under nine
- * review types. Matching is the honest join, and no match means no chip rather
- * than filing everyone under "general".
- */
-const DOMAIN_KEYWORDS: Record<ReviewType, string[]> = {
-  pitch_deck: ['pitch', 'deck', 'storytelling', 'narrative'],
-  business_model: ['business model', 'bmc', 'monetisation', 'monetization', 'pricing'],
-  financial_model: ['financial', 'finance', 'unit economics', 'cfo', 'accounting'],
-  legal_structure: ['legal', 'counsel', 'incorporation', 'contract', 'compliance'],
-  market_analysis: ['market', 'research', 'tam', 'competitive', 'analysis'],
-  go_to_market: ['go-to-market', 'gtm', 'growth', 'sales', 'marketing', 'demand'],
-  technical_architecture: ['architecture', 'engineering', 'infrastructure', 'cto', 'platform'],
-  product_strategy: ['product', 'roadmap', 'discovery', 'ux', 'design'],
-  general: [],
-};
-
-function domainsFrom(words: readonly string[]): ReviewType[] {
-  /*
-   * Whole words, not substrings.
-   *
-   * Plain `includes` filed a mentor under Legal Structure because the
-   * keyword "ip" sits inside "Leadership". Every non-letter becomes a
-   * space and both sides are padded, so a keyword matches only where a word
-   * actually starts and ends - and a multi-word keyword like
-   * "go-to-market" still matches, because it is normalised the same way.
-   */
-  const normalise = (text: string) => ` ${text.toLowerCase().replace(/[^a-z]+/g, ' ').trim()} `;
-  const haystack = normalise(words.join(' '));
-  return (Object.keys(DOMAIN_KEYWORDS) as ReviewType[]).filter(
-    (type) =>
-      DOMAIN_KEYWORDS[type].length > 0 &&
-      DOMAIN_KEYWORDS[type].some((keyword) => haystack.includes(normalise(keyword))),
-  );
-}
 
 /** `[{ area, comment }]` out of a free JSON column, defensively. */
 function notes(raw: Record<string, unknown>[], key: 'comment' | 'recommendation') {
@@ -643,33 +440,10 @@ function toPageReview(row: ExpertReviewItem): ExpertReview {
 }
 
 /** One expert, from the directory the module serves. */
-function toPageExpert(row: ExpertDirectoryItem): ExpertProfile {
-  return {
-    id: row.userId,
-    name: row.displayName ?? 'An expert',
-    title: row.headline ?? '',
-    avatar: row.avatarUrl ?? undefined,
-    domains: domainsFrom([...row.specializations, ...row.skills, ...row.industries]),
-    completedReviews: row.completedReviews,
-    rating: row.rating,
-    bio: row.bio ?? '',
-    feeFrom: row.isFree ? undefined : (row.feeFrom ?? undefined),
-    currency: row.currency,
-    // No column records a turnaround, and none records a verification badge
-    // beyond the one the mentor profile already carries.
-    responseTime: undefined,
-    isVerified: row.isVerified,
-  };
-}
-
 export default function ExpertReviewsPage() {
-  const sayOne = useBilingualString();
   const [activeTab, setActiveTab] = useState('my-reviews');
-  const [searchExperts, setSearchExperts] = useState('');
-  const [selectedDomain, setSelectedDomain] = useState<ReviewType | 'all'>('all');
   const { showDemoData } = useDemoData();
   const router = useRouter();
-  const { openRailSection } = usePageRail();
 
   /*
    * The founder's own reviews, from the module that now reads ExpertReview.
@@ -698,62 +472,41 @@ export default function ExpertReviewsPage() {
           : [];
 
   /*
-   * The expert directory. This list used to render unconditionally, so a real
-   * founder browsed four experts who do not exist.
+   * The expert list was the mentor directory again - the same people, read
+   * a second time, and its "Request a review" opened Mentors without the
+   * person. Experts are found in the one directory now, with "An expert
+   * review" chosen, where the request is sent to the person on the card
+   * (owner, 2026-10-28; docs §90.5, §111).
    */
-  const { data: expertData, isLoading: expertsLoading, isError: expertsError, isFetching: expertsFetching, refetch: refetchExperts } = useQuery({
-    queryKey: qk('expert-reviews', 'experts'),
-    queryFn: () => listExperts({ limit: 24 }),
-    staleTime: 5 * 60_000,
-    retry: 0,
-  });
-
-  const liveExperts = useMemo(
-    () => (expertData?.experts ?? []).map(toPageExpert),
-    [expertData],
-  );
-
-  const experts =
-    liveExperts.length > 0
-      ? liveExperts
-      : expertsLoading
-        ? []
-        : showDemoData
-          ? DEMO_EXPERTS
-          : [];
   // A list not yet read is not empty (docs §90).
   const sampleReviews = liveReviews.length === 0 && !reviewsLoading && showDemoData;
   const reviewsFailed = reviewsError && !reviewData && !sampleReviews;
-  const sampleExperts = liveExperts.length === 0 && !expertsLoading && showDemoData;
-  const expertsFailed = expertsError && !expertData && !sampleExperts;
   const submitted = myReviews.filter((r) => r.status === 'submitted');
   const pending = myReviews.filter((r) => r.status !== 'submitted' && r.status !== 'declined');
 
   const reviewsEmpty = !reviewsLoading && !reviewsFailed && myReviews.length === 0;
 
-  const filteredExperts = experts.filter((e) => {
-    const q = searchExperts.toLowerCase();
-    const matchesSearch = !q || e.name.toLowerCase().includes(q) || e.title.toLowerCase().includes(q) || e.bio.toLowerCase().includes(q);
-    const matchesDomain = selectedDomain === 'all' || e.domains.includes(selectedDomain);
-    return matchesSearch && matchesDomain;
-  });
-
-  // Offered to the assistant: the tab and the expertise filter; the reviews
-  // and the experts on screen go out as lists.
+  // Offered to the assistant: the tab, and finding an expert by area, which
+  // opens the one directory with "An expert review" and the area chosen.
   usePageList([
     { id: 'my_reviews', labelEn: 'My reviews', labelEl: 'Οι αξιολογήσεις μου', rows: reviewsLoading ? undefined : myReviews.map((r) => `${r.expertName} · ${REVIEW_TYPE_CONFIG[r.reviewType]?.label ?? r.reviewType} · ${r.status}${r.scoreOverall != null ? ` · score ${r.scoreOverall}` : ''}${r.dueDate ? ` · due ${r.dueDate.slice(0, 10)}` : ''}`), sample: sampleReviews },
-    { id: 'experts', labelEn: 'Experts', labelEl: 'Ειδικοί', rows: expertsLoading ? undefined : filteredExperts.map((e) => `${e.name} · ${e.title} · ${e.domains.map((d) => REVIEW_TYPE_CONFIG[d]?.label ?? d).join(', ')} · ${e.completedReviews} reviews${e.rating != null ? ` · ${e.rating.toFixed(1)}★` : ''}`), total: experts.length, sample: sampleExperts },
   ]);
   usePageControls([
     choiceControl('expert_tab', 'Expert reviews section', 'Ενότητα αξιολογήσεων', [
       { value: 'my-reviews', en: 'My reviews', el: 'Οι αξιολογήσεις μου' },
-      { value: 'find-experts', en: 'Find experts', el: 'Εύρεση ειδικών' },
       { value: 'insights', en: 'Insights', el: 'Αναλύσεις' },
     ], activeTab, setActiveTab),
-    choiceControl('expertise', 'Expertise filter', 'Φίλτρο ειδίκευσης', [
-      { value: 'all', en: 'All areas', el: 'Όλοι οι τομείς' },
-      ...(Object.entries(REVIEW_TYPE_CONFIG) as [ReviewType, (typeof REVIEW_TYPE_CONFIG)[ReviewType]][]).map(([key, cfg]) => ({ value: key, en: cfg.label, el: cfg.labelEl })),
-    ], selectedDomain, (v) => { setSelectedDomain(v as ReviewType | 'all'); setActiveTab('find-experts'); }),
+    {
+      id: 'find_expert',
+      labelEn: 'Find an expert in the mentor directory, for',
+      labelEl: 'Εύρεση ειδικού στον κατάλογο μεντόρων, για',
+      writes: false,
+      options: [
+        { value: 'any', labelEn: 'Any area', labelEl: 'Οποιοσδήποτε τομέας' },
+        ...areaKeys('review').map((key) => ({ value: key, labelEn: REVIEW_TYPE_CONFIG[key as ReviewType].label, labelEl: REVIEW_TYPE_CONFIG[key as ReviewType].labelEl })),
+      ],
+      run: (v) => router.push(directoryHref('review', v && v !== 'any' ? v : null)),
+    },
   ]);
 
   // Over the scored reviews only: a submitted review without a score made it 0/0.
@@ -767,7 +520,6 @@ export default function ExpertReviewsPage() {
    * domain chips sat above the first card; they live in the rail now. Request
    * review stays: it is this page's next step, not another surface.
    */
-  const listingFilters = selectedDomain !== 'all' ? 1 : 0;
   const rail: PageRailSection[] = [
     {
       id: 'summary',
@@ -787,31 +539,21 @@ export default function ExpertReviewsPage() {
       ),
     },
     {
-      id: 'filters',
+      id: 'request',
       glyph: 'sliders',
-      labelEn: 'Expertise',
-      labelEl: 'Εξειδίκευση',
-      badge: listingFilters || null,
+      labelEn: 'Request a review',
+      labelEl: 'Αίτημα αξιολόγησης',
       content: (
-        <div className="space-y-4">
-          <RailOptions
-            title="Domain"
-            titleEl="Τομέας"
-            options={[
-              { value: 'all', en: 'All areas', el: 'Όλοι οι τομείς' },
-              ...(Object.entries(REVIEW_TYPE_CONFIG) as [ReviewType, (typeof REVIEW_TYPE_CONFIG)[ReviewType]][]).map(([key, cfg]) => ({
-                value: key,
-                en: cfg.label,
-                el: cfg.labelEl,
-                icon: cfg.icon,
-              })),
-            ]}
-            value={selectedDomain}
-            onChange={(v) => { setSelectedDomain(v as ReviewType | 'all'); setActiveTab('find-experts'); }}
-          />
-          {listingFilters > 0 && (
-            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => setSelectedDomain('all')} />
-          )}
+        // The areas filtered an expert list here; the list is the mentor
+        // directory now, so each opens it narrowed to that area (docs §111).
+        <div className="space-y-1">
+          {areaKeys('review').map((key) => {
+            const cfg = REVIEW_TYPE_CONFIG[key as ReviewType];
+            return (
+              <RailAction key={key} icon={cfg.icon} en={cfg.label} el={cfg.labelEl} onClick={() => router.push(directoryHref('review', key))} />
+            );
+          })}
+          <RailAction icon={Search} en="All experts" el="Όλοι οι ειδικοί" onClick={() => router.push(directoryHref('review'))} />
         </div>
       ),
     },
@@ -840,19 +582,18 @@ export default function ExpertReviewsPage() {
               <TabsTrigger value="my-reviews" className="text-xs">
                 <BilingualText en="My Reviews" el="Οι αξιολογήσεις μου" compact />
               </TabsTrigger>
-              <TabsTrigger value="find-experts" className="text-xs">
-                <BilingualText en="Find Experts" el="Εύρεση ειδικών" compact />
-              </TabsTrigger>
               <TabsTrigger value="insights" className="text-xs">
                 <BilingualText en="Insights" el="Αναλύσεις" compact />
               </TabsTrigger>
             </TabsList>
-            {/* It opens Find Experts: on that tab it did nothing, and the empty
-                My Reviews carries its own "Find an expert". */}
-            {activeTab === 'find-experts' || (activeTab === 'my-reviews' && reviewsEmpty) ? null : (
-              <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setActiveTab('find-experts')}>
-                <Plus className="icon-sm" />{' '}
-                <BilingualText en="Request review" el="Αίτημα αξιολόγησης" compact wrap />
+            {/* It opens the mentor directory with "An expert review" chosen;
+                the empty My Reviews carries its own "Find an expert". */}
+            {activeTab === 'my-reviews' && reviewsEmpty ? null : (
+              <Button size="sm" className="h-8 gap-1.5 text-xs" asChild>
+                <Link href={directoryHref('review')}>
+                  <Plus className="icon-sm" aria-hidden="true" />{' '}
+                  <BilingualText en="Request review" el="Αίτημα αξιολόγησης" compact wrap />
+                </Link>
               </Button>
             )}
           </div>
@@ -898,90 +639,11 @@ export default function ExpertReviewsPage() {
                   <p className="font-medium text-foreground"><BilingualText en="No reviews yet" el="Δεν υπάρχουν κριτικές ακόμα" compact /></p>
                   <p className="mt-1 text-sm text-muted-foreground"><BilingualText en="Request expert feedback on your pitch, financials, or strategy." el="Ζητήστε γνώμη ειδικού για το pitch, τα οικονομικά ή τη στρατηγική σας." wrap /></p>
                 </div>
-                <Button size="sm" onClick={() => setActiveTab('find-experts')}><BilingualText en="Find an expert" el="Βρείτε ειδικό" compact /></Button>
+                <Button size="sm" asChild>
+                  <Link href={directoryHref('review')}><BilingualText en="Find an expert" el="Βρείτε ειδικό" compact /></Link>
+                </Button>
               </div>
             )}
-          </TabsContent>
-
-          {/* Find Experts */}
-          <TabsContent value="find-experts" className="mt-4 space-y-4">
-            {/* Search — domain lives in the rail. Shown over a directory that
-                was read and has people in it. */}
-            {experts.length > 0 ? (
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-                <Input
-                  aria-label={bilingualInline('Search experts', 'Αναζήτηση ειδικών')}
-                  placeholder={sayOne("Search experts…", "Αναζήτηση ειδικών…")}
-                  value={searchExperts}
-                  onChange={(e) => setSearchExperts(e.target.value)}
-                  className="pl-9 h-9 text-sm"
-                />
-              </div>
-            ) : null}
-
-            <div className="space-y-3">
-              {expertsLoading ? (
-                <>
-                  <Skeleton className="h-36 w-full rounded-2xl" />
-                  <Skeleton className="h-36 w-full rounded-2xl" />
-                </>
-              ) : null}
-              {expertsFailed ? (
-                <FailedRead
-                  en="The experts could not be read just now."
-                  el="Οι ειδικοί δεν διαβάστηκαν αυτή τη στιγμή."
-                  onRetry={() => void refetchExperts()}
-                  busy={expertsFetching}
-                />
-              ) : null}
-              {filteredExperts.map((e) => <ExpertCard key={e.id} expert={e} sample={sampleExperts} />)}
-              {!expertsLoading && !expertsFailed && experts.length === 0 && (
-                // "No experts match your search" with "Clear search" over an
-                // empty search, when the directory itself is empty.
-                <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-                  <BilingualText
-                    en="No experts are listed yet. Mentors who review pitches, models and plans appear here; you can apply as one below."
-                    el="Δεν εμφανίζονται ακόμη ειδικοί. Οι μέντορες που αξιολογούν pitch, μοντέλα και σχέδια εμφανίζονται εδώ· μπορείτε να κάνετε αίτηση πιο κάτω."
-                    wrap
-                  />
-                </div>
-              )}
-              {experts.length > 0 && filteredExperts.length === 0 && (
-                <div className="text-center py-10 text-sm text-muted-foreground">
-                  <BilingualText en="No experts match your search." el="Κανένας ειδικός δεν ταιριάζει με την αναζήτηση." compact wrap />{' '}
-                  {listingFilters > 0 ? (
-                    <button className="text-primary-accessible hover:underline" onClick={() => openRailSection('filters')}>
-                      <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
-                    </button>
-                  ) : (
-                    <button className="text-primary-accessible hover:underline" onClick={() => setSearchExperts('')}>
-                      <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* CTA for becoming an expert */}
-            <div className="rounded-xl border border-dashed border-border bg-card/50 p-6 text-center">
-              <Award className="icon-xl text-muted-foreground/50 mx-auto mb-3" />
-              <p className="mb-1 text-sm font-medium text-foreground">
-                <BilingualText en="Are you a domain expert?" el="Είστε ειδικός στον τομέα σας;" />
-              </p>
-              <p className="mb-3 text-xs leading-snug text-muted-foreground">
-                <BilingualText
-                  en="Join as an expert reviewer and earn while helping founders."
-                  el="Γίνετε αξιολογητής και κερδίστε βοηθώντας ιδρυτές."
-                />
-              </p>
-              {/* Mentor signup is the form that exists and is wired. */}
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/mentor/profile">
-                  <BilingualText en="Apply as expert" el="Αίτηση ως ειδικός" compact wrap />
-                </Link>
-              </Button>
-            </div>
           </TabsContent>
 
           {/* Insights */}

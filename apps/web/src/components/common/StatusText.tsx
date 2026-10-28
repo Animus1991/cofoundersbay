@@ -149,7 +149,7 @@ const STATUS_EL: Record<string, string> = {
   flexible: 'ευέλικτη',
   // Commitments: card kinds, outcomes, ladder steps and close reasons
   'equity role': 'ρόλος με equity',
-  'investor intro': 'σύσταση σε επενδυτή',
+  'investor intro': 'γνωριμία με επενδυτή',
   'in discussion': 'σε συζήτηση',
   agreed: 'συμφωνήθηκε',
   interest: 'ενδιαφέρον',

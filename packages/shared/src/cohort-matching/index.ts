@@ -65,7 +65,7 @@ export const COHORT_MATCH_PROBLEM_COPY = {
   },
   no_founders: {
     en: 'There is no founder in this cohort yet: matches are introductions for founders.',
-    el: 'Δεν υπάρχει ακόμη ιδρυτής σε αυτόν τον κύκλο: οι αντιστοιχίσεις είναι συστάσεις για ιδρυτές.',
+    el: 'Δεν υπάρχει ακόμη ιδρυτής σε αυτόν τον κύκλο: οι αντιστοιχίσεις είναι γνωριμίες για ιδρυτές.',
   },
 } as const;
 export type CohortMatchProblem = keyof typeof COHORT_MATCH_PROBLEM_COPY;

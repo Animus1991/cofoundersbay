@@ -168,9 +168,9 @@ export const INTRO_STATUS_COPY: Record<IntroStatus | 'not_forwarded', { en: stri
 
 export const INTRO_PROBLEM_COPY: Record<IntroProblem, { en: string; el: string }> = {
   people: { en: 'Choose who introduces you, and to whom.', el: 'Επιλέξτε ποιος θα σας συστήσει και σε ποιον.' },
-  self: { en: 'The three people in an introduction must be different.', el: 'Τα τρία πρόσωπα μιας σύστασης πρέπει να είναι διαφορετικά.' },
-  card: { en: 'Choose the need card the introduction is for.', el: 'Επιλέξτε την κάρτα ανάγκης για την οποία είναι η σύσταση.' },
-  note: { en: 'Say in a sentence or two why this introduction, and why now.', el: 'Πείτε σε μία-δύο προτάσεις γιατί αυτή η σύσταση και γιατί τώρα.' },
+  self: { en: 'The three people in an introduction must be different.', el: 'Τα τρία πρόσωπα μιας γνωριμίας πρέπει να είναι διαφορετικά.' },
+  card: { en: 'Choose the need card the introduction is for.', el: 'Επιλέξτε την κάρτα ανάγκης για την οποία είναι η γνωριμία.' },
+  note: { en: 'Say in a sentence or two why this introduction, and why now.', el: 'Πείτε σε μία-δύο προτάσεις γιατί αυτή η γνωριμία και γιατί τώρα.' },
   note_too_long: { en: 'Keep the note short.', el: 'Κρατήστε τη σημείωση σύντομη.' },
   contact: { en: 'Leave contact details out; the conversation continues on the platform.', el: 'Χωρίς στοιχεία επικοινωνίας· η συζήτηση συνεχίζει μέσα στην πλατφόρμα.' },
   promise: { en: 'Remove promised returns from the note.', el: 'Αφαιρέστε τις υποσχέσεις αποδόσεων από τη σημείωση.' },

@@ -16,7 +16,7 @@ describe('where a commitment stands, in one line', () => {
     expect(threadLine({ ...base, step: 'interest', role: 'owner' })).toMatchObject({ yourTurn: true });
     expect(threadLine({ ...base, step: 'interest' }).el).toBe('Θέση συνιδρυτή: το ενδιαφέρον σας περιμένει απάντηση');
     expect(threadLine({ ...base, step: 'conversation', myConfirmed: false }).yourTurn).toBe(true);
-    expect(threadLine({ ...base, step: 'agreed', cardKind: 'investor_intro' }).el).toBe('Σύσταση σε επενδυτή: συμφωνήθηκε');
+    expect(threadLine({ ...base, step: 'agreed', cardKind: 'investor_intro' }).el).toBe('Γνωριμία με επενδυτή: συμφωνήθηκε');
     expect(threadLine({ ...base, step: 'closed', cardKind: 'equity_role' }).el).toBe('Ρόλος με equity: έκλεισε');
   });
 });

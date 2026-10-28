@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQueries, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -19,7 +19,7 @@ import {
   MessageCircle,
   CalendarDays,
 } from 'lucide-react';
-import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, getMyMentorships, getMentorshipSessions, type MentorBookingItem, type MentorshipRelationshipItem, type MentorshipSessionItem, type SearchHit } from '@/lib/api';
+import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, getMyMentorships, getMentorshipSessions, discoverMentors, listExperts, type MentorBookingItem, type MentorshipRelationshipItem, type MentorshipSessionItem } from '@/lib/api';
 import { BookingCard, MEETING_TYPE_LABEL } from '@/components/mentoring/BookingCard';
 import { SessionDateTile } from '@/components/mentoring/SessionDateTile';
 import { StatusText } from '@/components/common/StatusText';
@@ -69,44 +69,9 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
 import { expertiseFacets, withExpertise } from '@/lib/mentoring/expertise';
 import { formatFee } from '@/lib/mentor-fee';
-
-interface Mentor {
-  id: string;
-  displayName: string;
-  avatarUrl: string | null;
-  bio: string;
-  expertise: string[];
-  hourlyRate?: number;
-  rating: number;
-  totalSessions: number;
-  location?: string;
-  isFeatured?: boolean;
-  matchScore?: number;       // 0-100
-  availabilityStatus?: 'available' | 'busy' | 'limited'; // derived
-  isVerified?: boolean;
-  isRemote?: boolean;
-  responseTime?: string;     // e.g. "Responds in 2h"
-}
-
-function hitToMentor(hit: SearchHit): Mentor {
-  const rp = (hit as unknown as { rolePayload?: Record<string, unknown> }).rolePayload ?? {};
-  const expertise = Array.isArray(rp.expertiseAreas)
-    ? (rp.expertiseAreas as string[])
-    : hit.skillNames ?? [];
-  const hourlyRate = typeof rp.hourlyRate === 'string' ? parseFloat(rp.hourlyRate) : undefined;
-  return {
-    id: hit.userId,
-    displayName: hit.displayName,
-    avatarUrl: hit.avatarUrl ?? null,
-    bio: hit.bio ?? '',
-    expertise: expertise.slice(0, 5),
-    hourlyRate: hourlyRate && !isNaN(hourlyRate) ? hourlyRate : undefined,
-    rating: 0,
-    totalSessions: 0,
-    location: hit.location ?? undefined,
-    isFeatured: false,
-  };
-}
+import { RequestReviewDialog } from '@/components/mentoring/RequestReviewDialog';
+import { areaChips, areasOf, hitToMentor, mergeDirectory, offers, priceOf, type Mentor } from '@/lib/mentoring/directory';
+import { MENTOR_SERVICES, areaKeys, areaLabel, directoryFromParams, type MentorService } from '@/lib/mentoring/services';
 
 const AVAIL_CONFIG = {
   available: { en: 'Available', el: 'Διαθέσιμος', color: 'text-status-success ', bg: 'bg-status-success-bg', dot: 'bg-status-success-mark' },
@@ -141,13 +106,32 @@ const EXPERTISE_EL: Record<string, string> = {
   'User Research': 'Έρευνα χρηστών',
 };
 
-function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) {
+function MentorCard({
+  mentor,
+  service,
+  isMe,
+  onBook,
+  onRequestReview,
+}: {
+  mentor: Mentor;
+  service: MentorService;
+  isMe: boolean;
+  onBook: () => void;
+  onRequestReview: () => void;
+}) {
   // Shown only when known: search results carry no availability, and a green
   // "Available" on every card was a claim nothing had checked.
   const availCfg = mentor.availabilityStatus ? AVAIL_CONFIG[mentor.availabilityStatus] : null;
   // No invented fallback: a mentor the engine has not scored shows no pill,
   // rather than a number between 70 and 95 that changes on every render.
   const matchPct = mentor.matchScore ?? null;
+  // What the reader came for leads the card (docs §111): a reviewer's
+  // standing, fee and review areas, or the coaching areas, or the mentor's
+  // own words.
+  const asReviewer = service === 'review' ? mentor.review ?? null : null;
+  const areas = areasOf(mentor, service)
+    .map((key) => areaLabel(service, key))
+    .filter((label): label is { en: string; el: string } => label != null);
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300">
@@ -182,7 +166,23 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           meta={(
             <FactLine
               items={[
-                mentor.rating > 0 ? (
+                asReviewer ? (
+                  asReviewer.rating != null || asReviewer.completed > 0 ? (
+                    <span key="reviews" data-keep-icon="" className="inline-flex items-center gap-0.5">
+                      {asReviewer.rating != null ? (
+                        <>
+                          <Star className="icon-sm fill-status-warning text-status-warning" aria-hidden="true" />
+                          <span className="font-semibold text-foreground">{asReviewer.rating.toFixed(1)}</span>
+                        </>
+                      ) : null}
+                      <BilingualText
+                        en={`${asReviewer.rating != null ? '(' : ''}${asReviewer.completed} ${asReviewer.completed === 1 ? 'review' : 'reviews'}${asReviewer.rating != null ? ')' : ''}`}
+                        el={`${asReviewer.rating != null ? '(' : ''}${asReviewer.completed} ${asReviewer.completed === 1 ? 'αξιολόγηση' : 'αξιολογήσεις'}${asReviewer.rating != null ? ')' : ''}`}
+                        compact
+                      />
+                    </span>
+                  ) : null
+                ) : mentor.rating > 0 ? (
                   <span key="rating" data-keep-icon="" className="inline-flex items-center gap-0.5">
                     <Star className="icon-sm fill-status-warning text-status-warning" aria-hidden="true" />
                     <span className="font-semibold text-foreground">{mentor.rating.toFixed(1)}</span>
@@ -212,15 +212,31 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
 
         <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{mentor.bio}</p>
 
-        {/* Expertise: one fact line */}
-        <FactLine items={[...mentor.expertise.slice(0, 4), mentor.expertise.length > 4 ? `+${mentor.expertise.length - 4}` : null]} />
+        {/* What they help with: the service's areas when the person names
+            any, else their own words, on one fact line. */}
+        {areas.length > 0 ? (
+          <FactLine items={areas.slice(0, 4).map((label) => <BilingualText key={label.en} en={label.en} el={label.el} compact />)} />
+        ) : (
+          <FactLine items={[...mentor.expertise.slice(0, 4), mentor.expertise.length > 4 ? `+${mentor.expertise.length - 4}` : null]} />
+        )}
 
         <CardFoot
           meta={(
             <span className="flex flex-wrap items-center gap-2">
-              {mentor.hourlyRate ? (
+              {asReviewer ? (
+                asReviewer.feeFrom != null ? (
+                  <span className="font-semibold tabular-nums text-foreground">
+                    <BilingualText en="From" el="Από" compact /> {formatFee(asReviewer.feeFrom, asReviewer.currency)}
+                  </span>
+                ) : (
+                  <Badge variant="outline" className="text-xs border-status-success-border text-status-success bg-status-success-bg">
+                    <BilingualText en="Free" el="Δωρεάν" compact />
+                  </Badge>
+                )
+              ) : mentor.hourlyRate ? (
                 <span className="font-semibold tabular-nums text-foreground">
-                  {formatFee(mentor.hourlyRate)}
+                  {/* In the currency the mentor bills in, when known. */}
+                  {formatFee(mentor.hourlyRate, mentor.currency)}
                   <BilingualText en="/hr" el="/ώρα" compact />
                 </span>
               ) : (
@@ -236,10 +252,21 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
             </span>
           )}
         >
-          <Button size="sm" onClick={onBook} className="gap-1.5" aria-label={bilingualInline(`Book a session with ${mentor.displayName}`, `Κράτηση συνεδρίας με ${mentor.displayName}`)}>
-            <Calendar className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Book" el="Κράτηση" compact />
-          </Button>
+          {asReviewer ? (
+            // A review request goes to the person on the card; asking
+            // oneself is refused by the API, so the button is not offered.
+            isMe ? null : (
+              <Button size="sm" onClick={onRequestReview} className="gap-1.5" aria-label={bilingualInline(`Request a review from ${mentor.displayName}`, `Αίτημα αξιολόγησης προς ${mentor.displayName}`)}>
+                <Award className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Request a review" el="Αίτημα αξιολόγησης" compact />
+              </Button>
+            )
+          ) : (
+            <Button size="sm" onClick={onBook} className="gap-1.5" aria-label={bilingualInline(`Book a session with ${mentor.displayName}`, `Κράτηση συνεδρίας με ${mentor.displayName}`)}>
+              <Calendar className="icon-sm" aria-hidden="true" />
+              <BilingualText en="Book" el="Κράτηση" compact />
+            </Button>
+          )}
         </CardFoot>
       </CardContent>
     </Card>
@@ -254,11 +281,14 @@ function localIsoDate(): string {
 function BookingModal({
   mentor,
   open,
+  initialNotes = '',
   onClose,
   onBook,
 }: {
   mentor: Mentor | null;
   open: boolean;
+  /** The request's first line, e.g. the coaching area the directory is narrowed to. */
+  initialNotes?: string;
   onClose: () => void;
   onBook: (mentorId: string, startAt: string, endAt: string, meetingType: 'video' | 'in_person' | 'chat', notes: string) => Promise<void>;
 }) {
@@ -270,6 +300,9 @@ function BookingModal({
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { error: showError } = useToast();
+  useEffect(() => {
+    if (open) setNotes(initialNotes);
+  }, [open, initialNotes]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -517,9 +550,48 @@ export default function MentoringPage() {
   // the first client render different answers for "am I the mentor here?".
   const userId = useStoredUser()?.id ?? null;
 
-  // Load real mentors from search API
+  /*
+   * What the reader needs: a mentor, coaching or an expert review, and the
+   * area within it. Coaching and Expert reviews listed the same people and
+   * link here now with both set (owner, 2026-10-28; docs §90.5, §111); the
+   * address bar mirrors them so a narrowed list can be linked.
+   */
+  const [service, setServiceState] = useState<MentorService>('mentoring');
+  const [area, setAreaState] = useState<string | null>(null);
+  const [reviewTarget, setReviewTarget] = useState<Mentor | null>(null);
+  const [bookingNotes, setBookingNotes] = useState('');
+  useEffect(() => {
+    const fromLink = directoryFromParams(new URLSearchParams(window.location.search));
+    setServiceState(fromLink.service);
+    setAreaState(fromLink.area);
+  }, []);
+  const mirrorDirectory = (nextService: MentorService, nextArea: string | null) => {
+    try {
+      const url = new URL(window.location.href);
+      if (nextService === 'mentoring') url.searchParams.delete('service');
+      else url.searchParams.set('service', nextService);
+      if (nextArea) url.searchParams.set('area', nextArea);
+      else url.searchParams.delete('area');
+      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+    } catch { /* the address bar is a convenience */ }
+  };
+  const setService = (next: MentorService) => {
+    setServiceState(next);
+    setAreaState(null);
+    setSelectedExpertise('All');
+    setMainTab('find');
+    mirrorDirectory(next, null);
+  };
+  const setArea = (next: string | null) => {
+    setAreaState(next);
+    mirrorDirectory(service, next);
+  };
+
+  // Load real mentors from search API. The search words sit under their own
+  // segment: as the second segment, a search for "admin" or "directory" read
+  // another screen's cached list (docs §111).
   const { isLoading: mentorsQueryLoading, isError: mentorsError } = useQuery({
-    queryKey: qk('mentors', searchQuery),
+    queryKey: qk('mentors', 'search', searchQuery),
     queryFn: async () => {
       const res = await searchProfiles({
         q: searchQuery.trim() || undefined,
@@ -530,6 +602,23 @@ export default function MentoringPage() {
       return res;
     },
     staleTime: 60_000,
+    enabled: mainTab === 'find',
+  });
+  // What the mentorship directory knows about the same people (ratings,
+  // sessions, availability, currency), and who takes review requests: the
+  // reads Coaching and Expert reviews made for their own lists (docs §111).
+  const { data: profileData } = useQuery({
+    queryKey: qk('mentors', 'directory'),
+    queryFn: () => discoverMentors({ limit: 50 }),
+    staleTime: 5 * 60_000,
+    retry: 0,
+    enabled: mainTab === 'find',
+  });
+  const { data: expertData, isLoading: expertsLoading, isError: expertsError, refetch: refetchExperts } = useQuery({
+    queryKey: qk('expert-reviews', 'experts'),
+    queryFn: () => listExperts({ limit: 50 }),
+    staleTime: 5 * 60_000,
+    retry: 0,
     enabled: mainTab === 'find',
   });
 
@@ -590,14 +679,32 @@ export default function MentoringPage() {
     onError: (err) => showError(bilingualInline('Action failed', 'Η ενέργεια απέτυχε'), err instanceof Error ? err.message : bilingualInline('Please try again', 'Δοκιμάστε ξανά')),
   });
 
-  const pricedMentors = mentorHits.filter((m) => {
-    if (priceFilter === 'Free') return !m.hourlyRate;
-    if (priceFilter === 'Paid') return !!m.hourlyRate;
+  const directory = useMemo(
+    () => mergeDirectory({
+      hits: mentorHits,
+      profiles: profileData?.mentors ?? [],
+      experts: expertData?.experts ?? [],
+      searching: searchQuery.trim() !== '',
+    }),
+    [mentorHits, profileData, expertData, searchQuery],
+  );
+  const pricedMentors = directory.filter((m) => {
+    if (!offers(m, service)) return false;
+    const price = priceOf(m, service);
+    if (priceFilter === 'Free') return !price;
+    if (priceFilter === 'Paid') return !!price;
     return true;
   });
-  // The areas the mentors on screen name, most common first, with counts.
-  const facets = expertiseFacets(pricedMentors, selectedExpertise, MAX_EXPERTISE_CHIPS);
-  const filteredMentors = withExpertise(pricedMentors, selectedExpertise);
+  // A mentor is chosen by the areas they name, most common first, with
+  // counts; coaching and reviews by the service's own areas (docs §111).
+  const facets = service === 'mentoring' ? expertiseFacets(pricedMentors, selectedExpertise, MAX_EXPERTISE_CHIPS) : [];
+  const chips = areaChips(pricedMentors, service, areaKeys(service), area);
+  const filteredMentors = service === 'mentoring'
+    ? withExpertise(pricedMentors, selectedExpertise)
+    : area ? pricedMentors.filter((m) => areasOf(m, service).includes(area)) : pricedMentors;
+  // Reviewers come from their own read; a list not yet read is not empty.
+  const directoryLoading = mentorsQueryLoading || (service === 'review' && expertsLoading);
+  const reviewersFailed = service === 'review' && expertsError && !expertData;
 
   // Counted from the mentors on screen, not asserted. A directory that has not
   // been rated yet says so rather than borrowing a plausible-looking 4.8.
@@ -651,6 +758,15 @@ export default function MentoringPage() {
 
   const handleBookMentor = (mentor: Mentor) => {
     setSelectedMentor(mentor);
+    // Coaching asked for by area says so in the request's first line, which
+    // the reader can change before sending.
+    const coachingArea = service === 'coaching' ? (area ?? areasOf(mentor, 'coaching')[0] ?? null) : null;
+    const label = coachingArea ? areaLabel('coaching', coachingArea) : null;
+    setBookingNotes(
+      service !== 'coaching' ? ''
+      : label ? sayOne(`Coaching on ${label.en.toLowerCase()}. `, `Καθοδήγηση: ${label.el.toLowerCase()}. `)
+      : sayOne('Coaching session. ', 'Συνεδρία καθοδήγησης. '),
+    );
     setBookingModalOpen(true);
   };
 
@@ -663,8 +779,9 @@ export default function MentoringPage() {
   // Offered to the assistant: the two sections, the session filter and the
   // rail's filters through the same setters, and Book, which opens the same
   // booking form the card's button opens (the request itself is sent there).
-  const activeFilters = (priceFilter !== 'Any' ? 1 : 0) + (selectedExpertise !== 'All' ? 1 : 0);
-  const clearFilters = () => { setPriceFilter('Any'); setSelectedExpertise('All'); };
+  const activeFilters = (priceFilter !== 'Any' ? 1 : 0) + (selectedExpertise !== 'All' ? 1 : 0) + (area ? 1 : 0);
+  const clearFilters = () => { setPriceFilter('Any'); setSelectedExpertise('All'); setArea(null); };
+  const reviewers = directory.filter((m) => m.review && m.id !== userId);
   usePageControls([
     choiceControl('mentoring_section', 'Mentoring section', 'Ενότητα καθοδήγησης', [
       { value: 'find', en: 'Find mentors', el: 'Εύρεση μεντόρων' },
@@ -676,10 +793,25 @@ export default function MentoringPage() {
       { value: 'all', en: 'All', el: 'Όλες' },
     ], sessionsTab, (v) => setSessionsTab(v as typeof sessionsTab)),
     choiceControl('mentor_price', 'Mentor price', 'Τιμή μέντορα', [...PRICE_OPTIONS], priceFilter, (v) => setPriceFilter(v as PriceFilter)),
-    choiceControl('mentor_expertise', 'Mentor expertise', 'Εξειδίκευση μέντορα', [
-      { value: 'All', en: 'All areas', el: 'Όλοι οι τομείς' },
-      ...facets.map((f) => ({ value: f.label, en: f.label, el: EXPERTISE_EL[f.label] ?? f.label })),
-    ], selectedExpertise, setSelectedExpertise),
+    choiceControl('mentor_service', 'What you need', 'Τι χρειάζεστε', MENTOR_SERVICES.map((o) => ({ value: o.value, en: o.en, el: o.el })), service, (v) => setService(v as MentorService)),
+    ...(service === 'mentoring' ? [
+      choiceControl('mentor_expertise', 'Mentor expertise', 'Εξειδίκευση μέντορα', [
+        { value: 'All', en: 'All areas', el: 'Όλοι οι τομείς' },
+        ...facets.map((f) => ({ value: f.label, en: f.label, el: EXPERTISE_EL[f.label] ?? f.label })),
+      ], selectedExpertise, setSelectedExpertise),
+    ] : [
+      choiceControl(
+        'mentor_area',
+        service === 'coaching' ? 'Coaching area' : 'Review area',
+        service === 'coaching' ? 'Τομέας καθοδήγησης' : 'Τομέας αξιολόγησης',
+        [
+          { value: 'any', en: 'All areas', el: 'Όλοι οι τομείς' },
+          ...chips.map((c) => ({ value: c.key, en: `${areaLabel(service, c.key)?.en ?? c.key} (${c.count})`, el: `${areaLabel(service, c.key)?.el ?? c.key} (${c.count})` })),
+        ],
+        area ?? 'any',
+        (v) => setArea(v === 'any' ? null : v),
+      ),
+    ]),
     {
       id: 'open_booking',
       labelEn: 'Open the booking form for mentor',
@@ -691,15 +823,38 @@ export default function MentoringPage() {
         if (mentor) handleBookMentor(mentor);
       },
     },
+    {
+      // The same form the card's "Request a review" opens; the request is sent there.
+      id: 'open_review_request',
+      labelEn: 'Open the review request form for expert',
+      labelEl: 'Άνοιγμα φόρμας αιτήματος αξιολόγησης για ειδικό',
+      writes: false,
+      options: rowOptions(reviewers, (m) => m.id, (m) => m.displayName),
+      unavailableEn: reviewers.length ? undefined : 'No expert on this screen takes review requests.',
+      unavailableEl: reviewers.length ? undefined : 'Κανένας ειδικός σε αυτή την οθόνη δεν δέχεται αιτήματα αξιολόγησης.',
+      run: (v) => {
+        const mentor = reviewers.find((m) => m.id === v);
+        if (!mentor) return;
+        if (service !== 'review') setService('review');
+        setReviewTarget(mentor);
+      },
+    },
   ]);
   usePageList([
     {
       id: 'mentors',
       labelEn: 'Mentors',
       labelEl: 'Μέντορες',
-      rows: mentorsQueryLoading ? undefined : filteredMentors.map((m) =>
-        `${m.displayName}${m.location ? ` · ${m.location}` : ''}${m.expertise.length ? ` · ${m.expertise.join(', ')}` : ''} · ${m.hourlyRate ? `${formatFee(m.hourlyRate)}/hr` : 'free'}${m.rating > 0 ? ` · ${m.rating.toFixed(1)}★` : ''}`,
-      ),
+      rows: directoryLoading ? undefined : filteredMentors.map((m) => {
+        const named = service === 'mentoring' ? m.expertise : areasOf(m, service).map((key) => areaLabel(service, key)?.en ?? key);
+        const price = service === 'review'
+          ? (m.review?.feeFrom != null ? `reviews from ${formatFee(m.review.feeFrom, m.review.currency)}` : 'free reviews')
+          : (m.hourlyRate ? `${formatFee(m.hourlyRate, m.currency)}/hr` : 'free');
+        const standing = service === 'review'
+          ? ` · ${m.review?.completed ?? 0} reviews done${m.review?.rating != null ? ` · ${m.review.rating.toFixed(1)}★` : ''}`
+          : (m.rating > 0 ? ` · ${m.rating.toFixed(1)}★` : '');
+        return `${m.displayName}${m.location ? ` · ${m.location}` : ''}${named.length ? ` · ${named.join(', ')}` : ''} · ${price}${standing}`;
+      }),
     },
     {
       id: 'sessions',
@@ -805,6 +960,53 @@ export default function MentoringPage() {
                 className="pl-9"
               />
             </div>
+            {/* What the reader needs leads: it picks the chips below, what
+                each card stresses and its button (docs §90.5, §111). */}
+            <div className="flex flex-wrap items-center gap-1.5" role="group" aria-labelledby="mentor-service-label">
+              <span id="mentor-service-label" className="mr-1 text-xs font-medium text-muted-foreground">
+                <BilingualText en="What you need" el="Τι χρειάζεστε" compact />
+              </span>
+              {MENTOR_SERVICES.map((option) => {
+                const on = service === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setService(option.value)}
+                    className={cn(
+                      'tap-target-y inline-flex shrink-0 items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                      on ? 'border-primary bg-primary text-primary-foreground' : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                    )}
+                  >
+                    <BilingualText en={option.en} el={option.el} compact />
+                  </button>
+                );
+              })}
+            </div>
+            {service !== 'mentoring' ? (
+              <div className="flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label={service === 'coaching' ? bilingualInline('Coaching area', 'Τομέας καθοδήγησης') : bilingualInline('Review area', 'Τομέας αξιολόγησης')}>
+                {([{ key: null, count: pricedMentors.length }] as Array<{ key: string | null; count: number }>).concat(chips).map(({ key, count }) => {
+                  const on = area === key;
+                  const label = key ? areaLabel(service, key) : null;
+                  return (
+                    <button
+                      key={key ?? 'all'}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => setArea(key)}
+                      className={cn(
+                        'tap-target-y inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                        on ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                      )}
+                    >
+                      <BilingualText en={label?.en ?? 'All areas'} el={label?.el ?? 'Όλοι οι τομείς'} compact />
+                      {!directoryLoading ? <span className="tabular-nums opacity-70">{count}</span> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
             <div className="flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label={bilingualInline('Expertise', 'Εξειδίκευση')}>
               {[{ label: 'All', n: pricedMentors.length }, ...facets].map(({ label, n }) => {
                 const on = selectedExpertise.toLocaleLowerCase() === label.toLocaleLowerCase();
@@ -825,18 +1027,23 @@ export default function MentoringPage() {
                 );
               })}
             </div>
+            )}
           </div>
 
-          {mentorsError ? (
+          {mentorsError || reviewersFailed ? (
             <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
               <p className="text-sm text-muted-foreground">
-                <BilingualText en="Mentors could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των μεντόρων." wrap />
+                {mentorsError ? (
+                  <BilingualText en="Mentors could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των μεντόρων." wrap />
+                ) : (
+                  <BilingualText en="The reviewers could not be read just now." el="Οι αξιολογητές δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                )}
               </p>
-              <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: qk('mentors') })}>
+              <Button variant="outline" size="sm" onClick={() => { void queryClient.invalidateQueries({ queryKey: qk('mentors') }); if (reviewersFailed) void refetchExperts(); }}>
                 <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
               </Button>
             </CardContent></Card>
-          ) : mentorsQueryLoading ? (
+          ) : directoryLoading ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {Array.from({ length: 4 }).map((_, i) => <MentorSkeleton key={i} />)}
             </div>
@@ -852,7 +1059,7 @@ export default function MentoringPage() {
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {featuredMentors.map((mentor) => (
-                      <MentorCard key={mentor.id} mentor={mentor} onBook={() => handleBookMentor(mentor)} />
+                      <MentorCard key={mentor.id} mentor={mentor} service={service} isMe={mentor.id === userId} onBook={() => handleBookMentor(mentor)} onRequestReview={() => setReviewTarget(mentor)} />
                     ))}
                   </div>
                 </div>
@@ -867,7 +1074,7 @@ export default function MentoringPage() {
                   )}
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {regularMentors.map((mentor) => (
-                      <MentorCard key={mentor.id} mentor={mentor} onBook={() => handleBookMentor(mentor)} />
+                      <MentorCard key={mentor.id} mentor={mentor} service={service} isMe={mentor.id === userId} onBook={() => handleBookMentor(mentor)} onRequestReview={() => setReviewTarget(mentor)} />
                     ))}
                   </div>
                 </div>
@@ -880,7 +1087,10 @@ export default function MentoringPage() {
                   description={
                     // Expertise is the chips above; only price is in the side
                     // panel. The line sent people to the panel for both.
-                    selectedExpertise !== 'All'
+                    area ? <BilingualText en={`No one here lists ${areaLabel(service, area)?.en ?? area}. Show all areas, or search.`} el={`Κανείς εδώ δεν αναφέρει: ${areaLabel(service, area)?.el ?? area}. Δείτε όλους τους τομείς ή κάντε αναζήτηση.`} />
+                    : service === 'review' && !searchQuery.trim() && activeFilters === 0
+                      ? <BilingualText en="No mentor takes review requests yet. Mentors who accept requests appear here." el="Κανένας μέντορας δεν δέχεται ακόμη αιτήματα αξιολόγησης. Όσοι δέχονται αιτήματα εμφανίζονται εδώ." />
+                    : selectedExpertise !== 'All'
                       ? <BilingualText en={`No mentor here names “${selectedExpertise}”. Show all areas, or search for it.`} el={`Κανένας μέντορας εδώ δεν αναφέρει «${EXPERTISE_EL[selectedExpertise] ?? selectedExpertise}». Δείτε όλους τους τομείς ή αναζητήστε το.`} />
                       : activeFilters > 0
                       ? <BilingualText en="The price filter in the side panel may be hiding mentors." el="Το φίλτρο τιμής στο πλευρικό πάνελ ίσως κρύβει μέντορες." />
@@ -890,7 +1100,11 @@ export default function MentoringPage() {
                   }
                   askAiPrompt={ASK.mentorsEmpty}
                   action={
-                    selectedExpertise !== 'All' ? (
+                    area ? (
+                      <Button variant="secondary" onClick={() => setArea(null)}>
+                        <BilingualText en="Show all areas" el="Όλοι οι τομείς" compact />
+                      </Button>
+                    ) : selectedExpertise !== 'All' ? (
                       <Button variant="secondary" onClick={() => setSelectedExpertise('All')}>
                         <BilingualText en="Show all areas" el="Όλοι οι τομείς" compact />
                       </Button>
@@ -908,6 +1122,58 @@ export default function MentoringPage() {
               )}
             </>
           )}
+
+          {/* Where the rest of each service lives (docs §111). */}
+          {service === 'coaching' ? (
+            <>
+              <p className="text-xs text-muted-foreground">
+                <BilingualText en="Your coaching sessions, action items and insights are on" el="Οι συνεδρίες, οι ενέργειες και τα στοιχεία της καθοδήγησής σας είναι στη σελίδα" wrap />{' '}
+                <Link href="/coaching" className="font-medium text-primary-accessible hover:underline">
+                  <BilingualText en="Coaching" el="Καθοδήγηση" compact />
+                </Link>
+              </p>
+              {/* For becoming a coach: it stood under Coaching's own list,
+                  which this one replaces. */}
+              <div className="rounded-xl border border-dashed border-border bg-card/50 p-6 text-center">
+                <BookOpen className="icon-xl mx-auto mb-3 text-muted-foreground/50" aria-hidden="true" />
+                <p className="mb-1 text-sm font-semibold text-foreground"><BilingualText en="Become a coach on CoFounderBay" el="Γίνετε coach στο CoFounderBay" /></p>
+                <p className="mb-3 text-xs text-muted-foreground"><BilingualText en="Share your expertise and earn while helping founders grow." el="Μοιραστείτε την εμπειρογνωμοσύνη σας και κερδίστε βοηθώντας ιδρυτές να αναπτυχθούν." /></p>
+                {/* Mentor signup is the form that exists and is wired. */}
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/mentor/profile">
+                    <BilingualText en="Apply as coach" el="Αίτηση ως coach" compact wrap />
+                  </Link>
+                </Button>
+              </div>
+            </>
+          ) : null}
+          {service === 'review' ? (
+            <>
+              <p className="text-xs text-muted-foreground">
+                <BilingualText en="Your requests and the reviews you received are on" el="Τα αιτήματά σας και οι αξιολογήσεις που λάβατε είναι στη σελίδα" wrap />{' '}
+                <Link href="/expert-reviews" className="font-medium text-primary-accessible hover:underline">
+                  <BilingualText en="Expert reviews" el="Αξιολογήσεις ειδικών" compact />
+                </Link>
+              </p>
+              {/* For becoming a reviewer: it stood under Expert reviews' own
+                  list, which this one replaces. */}
+              <div className="rounded-xl border border-dashed border-border bg-card/50 p-6 text-center">
+                <Award className="icon-xl mx-auto mb-3 text-muted-foreground/50" aria-hidden="true" />
+                <p className="mb-1 text-sm font-medium text-foreground">
+                  <BilingualText en="Are you a domain expert?" el="Είστε ειδικός στον τομέα σας;" />
+                </p>
+                <p className="mb-3 text-xs leading-snug text-muted-foreground">
+                  <BilingualText en="Join as an expert reviewer and earn while helping founders." el="Γίνετε αξιολογητής και κερδίστε βοηθώντας ιδρυτές." />
+                </p>
+                {/* Mentor signup is the form that exists and is wired. */}
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/mentor/profile">
+                    <BilingualText en="Apply as expert" el="Αίτηση ως ειδικός" compact wrap />
+                  </Link>
+                </Button>
+              </div>
+            </>
+          ) : null}
         </TabsContent>
 
         <TabsContent value="sessions" className="space-y-4">
@@ -998,12 +1264,14 @@ export default function MentoringPage() {
       <BookingModal
         mentor={selectedMentor}
         open={bookingModalOpen}
+        initialNotes={bookingNotes}
         onClose={() => {
           setBookingModalOpen(false);
           setSelectedMentor(null);
         }}
         onBook={handleCreateBooking}
       />
+      <RequestReviewDialog expert={reviewTarget} defaultArea={service === 'review' ? area : null} onClose={() => setReviewTarget(null)} />
       </div>
     </AppShell>
   );

@@ -89,7 +89,7 @@ const SOURCE_EL: Record<string, string> = {
   'Direct Search': 'Άμεση αναζήτηση',
   Recommendations: 'Προτάσεις',
   'Community Posts': 'Αναρτήσεις κοινότητας',
-  'Mentor Referrals': 'Συστάσεις μεντόρων',
+  'Mentor Referrals': 'Παραπομπές από μέντορες',
 };
 
 const MOCK_TRAFFIC_SOURCES = [

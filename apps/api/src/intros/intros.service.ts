@@ -228,7 +228,7 @@ export class IntrosService {
       throw refusal(
         'too_many_open',
         `You have ${INTRO_LIMITS.openPerRequester} introductions waiting. Wait for an answer or withdraw one first.`,
-        `Έχετε ${INTRO_LIMITS.openPerRequester} συστάσεις σε αναμονή. Περιμένετε μια απάντηση ή αποσύρετε μία πρώτα.`,
+        `Έχετε ${INTRO_LIMITS.openPerRequester} γνωριμίες σε αναμονή. Περιμένετε μια απάντηση ή αποσύρετε μία πρώτα.`,
       );
     }
     const onLadder = await this.prisma.commitmentThread.findUnique({ where: { cardId_candidateId: { cardId, candidateId: targetId } } });

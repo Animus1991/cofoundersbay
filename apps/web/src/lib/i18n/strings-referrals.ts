@@ -3,9 +3,9 @@ import type { BilingualPair } from './types';
 /**
  * /referrals — inviting people you know, and what you get when they stay.
  *
- * «Σύσταση» is the word for a referral in the sense this page means it: one
- * person putting another forward. It is the same word endorsements use, and
- * that is right — both are vouching. The tier names are translated rather than
+ * «Παραπομπή» is the word for a referral, as the menu names the page: one
+ * person putting another forward. «Σύσταση» is an endorsement and «γνωριμία»
+ * an introduction; one word per idea (owner, 2026-10-28; docs §111). The tier names are translated rather than
  * left in English, because they are read as ranks and a rank in a foreign
  * language reads as jargon: «Πρεσβευτής» says what Ambassador says.
  *
@@ -51,20 +51,20 @@ export const REFERRALS_STRINGS: Record<string, BilingualPair> = {
   progress_to: { en: 'Progress to {tier}', el: 'Πρόοδος προς {tier}' },
   more_to_unlock: {
     en: '{n} more referrals to unlock {tier}',
-    el: '{n} ακόμη συστάσεις για {tier}',
+    el: '{n} ακόμη παραπομπές για {tier}',
   },
   perks_title: { en: 'Your Perks', el: 'Τα προνόμιά σας' },
-  perk_credit: { en: '€{n} credit per referral', el: 'πίστωση €{n} ανά σύσταση' },
+  perk_credit: { en: '€{n} credit per referral', el: 'πίστωση €{n} ανά παραπομπή' },
   perk_priority_support: { en: 'Priority support', el: 'Υποστήριξη κατά προτεραιότητα' },
   perk_exclusive_events: { en: 'Exclusive events', el: 'Αποκλειστικές εκδηλώσεις' },
   perk_featured_profile: { en: 'Featured profile', el: 'Προβεβλημένο προφίλ' },
 
   // ── The list and its statuses ──
-  list_title: { en: 'Your Referrals', el: 'Οι συστάσεις σας' },
+  list_title: { en: 'Your Referrals', el: 'Οι παραπομπές σας' },
   tab_all: { en: 'All', el: 'Όλες' },
   tab_pending: { en: 'Pending', el: 'Σε εκκρεμότητα' },
   tab_rewarded: { en: 'Rewarded', el: 'Ανταμείφθηκαν' },
-  empty_list: { en: 'No referrals in this category', el: 'Καμία σύσταση σε αυτή την κατηγορία' },
+  empty_list: { en: 'No referrals in this category', el: 'Καμία παραπομπή σε αυτή την κατηγορία' },
   status_pending: { en: 'Pending', el: 'Σε εκκρεμότητα' },
   status_signed_up: { en: 'Signed Up', el: 'Εγγράφηκε' },
   status_active: { en: 'Active', el: 'Ενεργός' },

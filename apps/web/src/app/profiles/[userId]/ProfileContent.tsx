@@ -287,7 +287,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     {
       id: 'ask_for_introduction',
       labelEn: 'Ask someone you both know for an introduction',
-      labelEl: 'Ζητήστε σύσταση από κάποιον που γνωρίζετε και οι δύο',
+      labelEl: 'Ζητήστε γνωριμία μέσω κάποιου που γνωρίζετε και οι δύο',
       writes: false,
       unavailableEn: noActor,
       unavailableEl: noActorEl,

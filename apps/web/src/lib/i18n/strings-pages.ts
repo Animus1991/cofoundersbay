@@ -103,8 +103,8 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     section: 'Εργασία',
   },
   '/intros': {
-    title: 'Συστάσεις γνωριμίας',
-    description: 'Ζητήστε σύσταση μέσω κάποιου που γνωρίζετε και οι δύο. Ο ενδιάμεσος αποφασίζει αν θα την προωθήσει· η αποδοχή απαντά στην κάρτα ανάγκης σας.',
+    title: 'Γνωριμίες',
+    description: 'Ζητήστε γνωριμία μέσω κάποιου που γνωρίζετε και οι δύο. Ο ενδιάμεσος αποφασίζει αν θα την προωθήσει· η αποδοχή απαντά στην κάρτα ανάγκης σας.',
     section: 'Δίκτυο',
   },
   '/updates': {
@@ -208,7 +208,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
   '/mentoring': {
     title: 'Εύρεση μεντόρων',
     description:
-      'Κατάλογος μεντόρων — φιλτράρισμα κατά εξειδίκευση και τιμή, και κράτηση συνεδρίας.',
+      'Ένας κατάλογος μεντόρων, coaches και αξιολογητών — επιλέξτε τι χρειάζεστε, και κλείστε συνεδρία ή ζητήστε αξιολόγηση.',
     section: 'Εξερεύνηση',
   },
 
@@ -560,9 +560,9 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
   // ── Ten routes whose English header had no Greek half ──
   //    «Επιταχυντής» and «θερμοκοιτίδα» are what the Greek ecosystem calls an
   //    accelerator and an incubator; «bootcamp» is used untranslated, as it is
-  //    in practice. A referral is «σύσταση» here in its networking sense — the
-  //    same word endorsements use, which is correct: both are one person
-  //    vouching for another.
+  //    in practice. A referral is «παραπομπή», as the menu names the page:
+  //    «σύσταση» is an endorsement and «γνωριμία» an introduction, one word
+  //    per idea (owner, 2026-10-28; docs §111).
   '/activity': {
     title: 'Ροή δραστηριότητας',
     description: 'Παρακολουθήστε τη δραστηριότητα του δικτύου σας, τις ειδοποιήσεις και τις εκδηλώσεις.',
@@ -606,7 +606,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     section: 'Πόροι',
   },
   '/referrals': {
-    title: 'Πρόγραμμα συστάσεων',
+    title: 'Πρόγραμμα παραπομπών',
     description: 'Προσκαλέστε γνωστούς σας και κερδίστε ανταμοιβές όταν εγγραφούν στο CoFounderBay.',
     section: 'Κοινότητα',
   },

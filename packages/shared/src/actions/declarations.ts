@@ -20,7 +20,7 @@ export const ACTION_DECLARATIONS = [
     label: { en: 'Read your workspace state', el: 'Ανάγνωση της κατάστασης του χώρου σου' },
     description: {
       en: 'Read the signed-in user’s own summary: unread messages, pending intros, unread notifications, venture readiness and the single next action.',
-      el: 'Διαβάζει τη σύνοψη του συνδεδεμένου χρήστη: αδιάβαστα μηνύματα, εκκρεμείς συστάσεις, αδιάβαστες ειδοποιήσεις, ετοιμότητα και το επόμενο βήμα.',
+      el: 'Διαβάζει τη σύνοψη του συνδεδεμένου χρήστη: αδιάβαστα μηνύματα, εκκρεμείς γνωριμίες, αδιάβαστες ειδοποιήσεις, ετοιμότητα και το επόμενο βήμα.',
     },
     params: [],
     writes: false,
@@ -236,10 +236,10 @@ export const ACTION_DECLARATIONS = [
   {
     id: 'get_intros',
     kind: 'read',
-    label: { en: 'Read introductions', el: 'Ανάγνωση συστάσεων γνωριμίας' },
+    label: { en: 'Read introductions', el: 'Ανάγνωση γνωριμιών' },
     description: {
       en: 'Read the signed-in user\u2019s warm introductions: requests waiting for them to forward, introductions forwarded to them, and the ones they asked for, with each status. With targetId, also who could introduce them to that person (intermediary ids and how each knows both) and which of their open need cards it could be for.',
-      el: 'Διαβάζει τις συστάσεις γνωριμίας του χρήστη: αιτήματα που περιμένουν να τα προωθήσει, συστάσεις που του προωθήθηκαν και όσες ζήτησε, με την κατάσταση της καθεμίας. Με targetId, επίσης ποιος μπορεί να τον συστήσει σε αυτό το πρόσωπο (id ενδιαμέσων και πώς γνωρίζει τον καθένα) και για ποιες ανοιχτές κάρτες ανάγκης του.',
+      el: 'Διαβάζει τις γνωριμίες του χρήστη: αιτήματα που περιμένουν να τα προωθήσει, γνωριμίες που του προωθήθηκαν και όσες ζήτησε, με την κατάσταση της καθεμίας. Με targetId, επίσης ποιος μπορεί να τον συστήσει σε αυτό το πρόσωπο (id ενδιαμέσων και πώς γνωρίζει τον καθένα) και για ποιες ανοιχτές κάρτες ανάγκης του.',
     },
     params: [
       { name: 'targetId', type: 'string', required: false, description: { en: 'Optional id of the person the user wants to meet, from a prior search or recommendation.', el: 'Προαιρετικό id του προσώπου που θέλει να γνωρίσει ο χρήστης, από προηγούμενη αναζήτηση ή πρόταση.' } },
@@ -969,7 +969,7 @@ export const ACTION_DECLARATIONS = [
         el: 'Ανακαλεί το αίτημα, ώστε να φύγει από τα εκκρεμή τους. Ειδοποιήθηκαν όταν στάλθηκε, οπότε μπορεί να το έχουν ήδη δει, και δεν ανακαλείται πια αν το έχουν αποδεχτεί ή απορρίψει.',
       },
     },
-    confirmLabel: { en: 'Send intro', el: 'Αποστολή σύστασης' },
+    confirmLabel: { en: 'Send intro', el: 'Αποστολή αιτήματος γνωριμίας' },
   },
   {
     id: 'start_or_send_message',
@@ -1797,7 +1797,7 @@ export const ACTION_DECLARATIONS = [
     label: { en: 'Answer a need card', el: 'Απάντηση σε κάρτα ανάγκης' },
     description: {
       en: 'Send interest in someone else\u2019s need card (a co-founder seat, a role with equity or an investor introduction), with an optional one-line note. The note may not carry contact details. Writes only after confirmation.',
-      el: 'Στέλνει ενδιαφέρον για την κάρτα ανάγκης κάποιου άλλου (θέση συνιδρυτή, ρόλος με equity ή σύσταση σε επενδυτή), με προαιρετικό σημείωμα μίας γραμμής χωρίς στοιχεία επικοινωνίας. Γράφει μόνο μετά από επιβεβαίωση.',
+      el: 'Στέλνει ενδιαφέρον για την κάρτα ανάγκης κάποιου άλλου (θέση συνιδρυτή, ρόλος με equity ή γνωριμία με επενδυτή), με προαιρετικό σημείωμα μίας γραμμής χωρίς στοιχεία επικοινωνίας. Γράφει μόνο μετά από επιβεβαίωση.',
     },
     params: [
       {
@@ -2088,16 +2088,16 @@ export const ACTION_DECLARATIONS = [
   {
     id: 'request_intro',
     kind: 'mutation',
-    label: { en: 'Ask for an introduction', el: 'Αίτημα σύστασης γνωριμίας' },
+    label: { en: 'Ask for an introduction', el: 'Αίτημα γνωριμίας' },
     description: {
       en: 'Ask someone the user knows to introduce them to a person that intermediary also knows, for one of the user\u2019s open need cards. Use the intermediary and card ids get_intros returned for that target. The intermediary is notified and decides whether to forward it; nothing reaches the target until they do.',
       el: 'Ζητά από κάποιον που γνωρίζει ο χρήστης να τον συστήσει σε πρόσωπο που γνωρίζει κι εκείνος, για μία από τις ανοιχτές κάρτες ανάγκης του χρήστη. Χρησιμοποιήστε τα id ενδιαμέσου και κάρτας που επέστρεψε το get_intros. Ο ενδιάμεσος ειδοποιείται και αποφασίζει αν θα την προωθήσει.',
     },
     params: [
-      { name: 'targetId', type: 'string', required: true, description: { en: 'Id of the person to be introduced to.', el: 'Το id του προσώπου στο οποίο ζητείται η σύσταση.' } },
+      { name: 'targetId', type: 'string', required: true, description: { en: 'Id of the person to be introduced to.', el: 'Το id του προσώπου με το οποίο ζητείται γνωριμία.' } },
       { name: 'intermediaryId', type: 'string', required: true, description: { en: 'Id of the person who would introduce them, from get_intros.', el: 'Το id του ενδιαμέσου, από το get_intros.' } },
       { name: 'cardId', type: 'string', required: true, description: { en: 'Id of the user\u2019s own open need card, from get_intros.', el: 'Το id της ανοιχτής κάρτας ανάγκης του χρήστη, από το get_intros.' } },
-      { name: 'note', type: 'string', required: true, description: { en: 'One or two sentences: why this introduction, and why now. No email, phone or promised returns.', el: 'Μία-δύο προτάσεις: γιατί αυτή η σύσταση και γιατί τώρα. Χωρίς email, τηλέφωνο ή υποσχέσεις αποδόσεων.' } },
+      { name: 'note', type: 'string', required: true, description: { en: 'One or two sentences: why this introduction, and why now. No email, phone or promised returns.', el: 'Μία-δύο προτάσεις: γιατί αυτή η γνωριμία και γιατί τώρα. Χωρίς email, τηλέφωνο ή υποσχέσεις αποδόσεων.' } },
     ],
     writes: true,
     invalidates: ['intros'],

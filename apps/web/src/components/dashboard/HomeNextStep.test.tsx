@@ -2,7 +2,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { HomeNextStep } from './HomeNextStep';
 
-afterEach(cleanup);
+const { askSpy } = vi.hoisted(() => ({ askSpy: vi.fn() }));
+vi.mock('@/hooks/useAskAssistant', () => ({ useAskAssistant: () => ({ ask: askSpy }) }));
+
+afterEach(() => {
+  cleanup();
+  askSpy.mockReset();
+});
 
 describe('HomeNextStep, the one anatomy of a home screen’s next move', () => {
   it('draws what comes up on the brand tint, with the glyph of the page it opens', () => {
@@ -26,17 +32,25 @@ describe('HomeNextStep, the one anatomy of a home screen’s next move', () => {
     expect(box.getAttribute('aria-label')).toBe('Waiting on you · Σας περιμένει');
   });
 
-  it('asks about the step beside the action, and stays quiet when there is no question', async () => {
+  it('asks about the step beside the action: its own question, or the step itself', async () => {
     const onAsk = vi.fn();
     const { unmount } = render(
       <HomeNextStep kickerEn="Next session" kickerEl="Επόμενη συνεδρία" title="Sofia Alexiou" href="/mentor/sessions" actionEn="Open" actionEl="Άνοιγμα" askEn="Ask" askEl="Ρωτήστε" onAsk={onAsk} />,
     );
     fireEvent.click(screen.getByRole('button', { name: /Ask/ }));
     expect(onAsk).toHaveBeenCalledOnce();
+    expect(askSpy).not.toHaveBeenCalled();
     unmount();
+    // Without a question of its own, Ask puts the step to the assistant: the
+    // prototype's next move always carries one (E1, 2026-10-28;
+    // docs/audit/COMPARATIVE_HOME_AI_2026-10-28.md). It was hidden before.
     render(
-      <HomeNextStep kickerEn="Next session" kickerEl="Επόμενη συνεδρία" title="Sofia Alexiou" href="/mentor/sessions" actionEn="Open" actionEl="Άνοιγμα" />,
+      <HomeNextStep kickerEn="Next session" kickerEl="Επόμενη συνεδρία" title="Sofia Alexiou" reasonEn="Starts in 20 minutes" reasonEl="Ξεκινά σε 20 λεπτά" href="/mentor/sessions" actionEn="Open" actionEl="Άνοιγμα" />,
     );
-    expect(screen.queryByRole('button', { name: /Ask/ })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Ask/ }));
+    expect(askSpy).toHaveBeenCalledWith({
+      en: 'What should I do here? Next session: Sofia Alexiou. Starts in 20 minutes',
+      el: 'Τι κάνω εδώ; Επόμενη συνεδρία: Sofia Alexiou. Ξεκινά σε 20 λεπτά',
+    });
   });
 });

@@ -98,7 +98,8 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'Who could introduce me to Nikos?', tool: 'get_intros', args: { name: 'Nikos' }, read: true },
   { message: 'Ποιος μπορεί να με συστήσει στον Νίκο;', tool: 'get_intros', args: { name: 'Nikos' }, read: true },
   { message: 'Show my warm introductions', tool: 'get_intros', read: true },
-  { message: 'Δείξε μου τις συστάσεις γνωριμίας', tool: 'get_intros', read: true },
+  // The page's word since §111; the older «συστάσεις γνωριμίας» is held by introsOpenTo.test.
+  { message: 'Δείξε μου τις γνωριμίες μου', tool: 'get_intros', read: true },
   { message: 'What evidence backs my skills?', tool: 'get_skill_evidence', read: true },
   { message: 'Ποια τεκμήρια στηρίζουν τις δεξιότητές μου;', tool: 'get_skill_evidence', read: true },
   { message: 'What did my co-founder scout find?', tool: 'get_scout', read: true },

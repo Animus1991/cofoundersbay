@@ -39,6 +39,13 @@ export const OPPORTUNITIES_STRINGS: Record<string, BilingualPair> = {
   type_mentorship: { en: 'Mentorship', el: 'Mentorship' },
   type_other: { en: 'Other', el: 'Άλλο' },
 
+  field_type: { en: 'Type', el: 'Τύπος' },
+  field_title: { en: 'Title', el: 'Τίτλος' },
+  field_role: { en: 'Role or function', el: 'Ρόλος ή λειτουργία' },
+  field_location: { en: 'Location', el: 'Τοποθεσία' },
+  cancel: { en: 'Cancel', el: 'Ακύρωση' },
+  submit_post: { en: 'Post', el: 'Δημοσίευση' },
+
   apply_now: { en: 'Apply now', el: 'Κάντε αίτηση' },
   save: { en: 'Save', el: 'Αποθήκευση' },
   saved: { en: 'Saved', el: 'Αποθηκεύτηκε' },

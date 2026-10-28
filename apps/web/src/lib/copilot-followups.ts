@@ -16,7 +16,7 @@ const AFTER_PEOPLE = new Set(['search_people', 'get_recommendations', 'get_short
 
 const PLAIN: Record<string, FollowUp[]> = {
   get_profile_viewers: [{ en: 'What evidence backs my skills?', el: 'Ποια τεκμήρια στηρίζουν τις δεξιότητές μου;' }],
-  get_commitments: [{ en: 'Show my warm introductions', el: 'Δείξε μου τις συστάσεις γνωριμίας' }],
+  get_commitments: [{ en: 'Show my warm introductions', el: 'Δείξε μου τις γνωριμίες μου' }],
   get_intros: [{ en: 'Where do my commitments stand and what is waiting on me?', el: 'Τι γίνεται με τις δεσμεύσεις μου;' }],
   get_milestones: [{ en: 'What should I do next?', el: 'Τι να κάνω μετά;' }],
   get_scout: [{ en: 'Show my best matches', el: 'Δείξε τις καλύτερες αντιστοιχίσεις' }],

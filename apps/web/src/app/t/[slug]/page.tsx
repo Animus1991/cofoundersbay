@@ -204,40 +204,11 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
         </div>
       </section>
 
-      {/* CTA band: a sign-up for visitors. A member has the way in above;
-          the band said "Ready to join" and sent them to register. */}
-      {member && !custom && !(sso?.ssoAvailable && sso.provider) ? null : (
-      <section className="mx-auto max-w-3xl px-6 pb-16">
-        <Card className="bg-primary-subtle border-primary-muted">
-          <CardContent>
-            <h2 className="card-title mb-1">
-              {b?.dashboardWelcomeText || <BilingualText en={`Ready to join ${tenantName}?`} el={`Έτοιμοι να μπείτε στο ${tenantName};`} wrap />}
-            </h2>
-            <p className="card-body text-muted-foreground mb-4">
-              <BilingualText en="Connect with the right people and build something great." el="Συνδεθείτε με τους σωστούς ανθρώπους και φτιάξτε κάτι σπουδαίο." wrap />
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {sso?.ssoAvailable && sso.provider && (
-                <Button onClick={handleSSOLogin} variant="outline" className="gap-2">
-                  <Building2 className="icon-sm" />
-                  {sso.provider?.loginButtonText || <BilingualText en="SSO Login" el="Σύνδεση SSO" compact />}
-                </Button>
-              )}
-              {/* Default size: a large button's label outranked the card's
-                  own title. */}
-              {member && !custom ? null : (
-                <Button className="gap-2" asChild>
-                  <Link href={b?.ctaUrl || '/register'}>
-                    {b?.ctaLabel || <BilingualText en="Join Now" el="Εγγραφή τώρα" compact />}
-                    <ChevronRight className="icon-sm" />
-                  </Link>
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-      )}
+      {/* One way in (owner, 2026-10-28; docs §92.4, §111). A band here
+          repeated the hero's sign-up as "Join Now" and its SSO button, to the
+          same places; the hero keeps both, with Sign in beside them. The
+          band's title was the tenant's dashboard welcome, which the branded
+          sign-in page shows. */}
       </MainLandmark>
 
       {/* Footer */}

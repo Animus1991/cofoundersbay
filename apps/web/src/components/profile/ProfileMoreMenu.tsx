@@ -73,7 +73,7 @@ export function ProfileMoreMenu({
           )}
           {signedIn ? (
             <DropdownMenuItem onSelect={onAskIntro}>
-              <BilingualText en="Ask for an introduction" el="Ζητήστε σύσταση" compact />
+              <BilingualText en="Ask for an introduction" el="Ζητήστε γνωριμία" compact />
             </DropdownMenuItem>
           ) : null}
           {signedIn ? (

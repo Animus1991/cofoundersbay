@@ -714,10 +714,10 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Την κλίμακα τη χρησιμοποιούν μόνο οι δεσμεύσεις που δεσμεύουν ανθρώπους: θέση συνιδρυτή, ρόλος με equity,
-          σύσταση σε επενδυτή. Το ενδιαφέρον ανοίγει μια <strong>προστατευμένη συζήτηση</strong> χωρίς στοιχεία
+          γνωριμία με επενδυτή. Το ενδιαφέρον ανοίγει μια <strong>προστατευμένη συζήτηση</strong> χωρίς στοιχεία
           επικοινωνίας· ο καθένας επιβεβαιώνει χωριστά· μετά οι όροι γράφονται σε εκδόσεις, με τρεις αναθεωρήσεις μετά την
           πρώτη πρόταση. Οι συμφωνημένοι όροι ανοίγουν την αίθουσα συμφωνίας και μένουν παγωμένοι όσο είναι ανοιχτή. Το
-          mentoring και οι απλές συστάσεις κρατούν τα συνηθισμένα μηνύματα.
+          mentoring και οι απλές γνωριμίες κρατούν τα συνηθισμένα μηνύματα.
         </p>
         <p>
           Ο δημόσιος σύνδεσμος μοιράζεται την κάρτα χωρίς email ή τηλέφωνο. Η πλατφόρμα οργανώνει την απόφαση· δεν
@@ -826,7 +826,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           <strong>Προτείνει και δεν στέλνει ποτέ</strong>. Κανείς από όσους προτείνει δεν λαμβάνει μήνυμα, αίτημα σύνδεσης ή
-          ειδοποίηση. Το επόμενο βήμα είναι δικό σας: άνοιγμα προφίλ, αποθήκευση στη λίστα, αίτημα σύστασης ή απόρριψη·
+          ειδοποίηση. Το επόμενο βήμα είναι δικό σας: άνοιγμα προφίλ, αποθήκευση στη λίστα, αίτημα γνωριμίας ή απόρριψη·
           όποιος απορρίπτεται δεν ξαναπροτείνεται, και όσοι είναι ήδη συνδέσεις σας εξαιρούνται.
         </p>
         <p>
@@ -858,7 +858,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     el: (
       <>
         <p>
-          Στο προφίλ κάποιου, το <strong>«Ζητήστε σύσταση»</strong> δείχνει ποιοι από τις συνδέσεις σας, τον μέντορα ή
+          Στο προφίλ κάποιου, το <strong>«Ζητήστε γνωριμία»</strong> δείχνει ποιοι από τις συνδέσεις σας, τον μέντορα ή
           τους καθοδηγούμενούς σας και τον κύκλο σας τον γνωρίζουν επίσης. Επιλέγετε έναν, λέτε γιατί σε μία-δύο
           προτάσεις και διαλέγετε την κάρτα ανάγκης για την οποία είναι.
         </p>
@@ -1342,12 +1342,14 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Request structured feedback on a specific artefact — <strong>pitch deck, financial model, market analysis,</strong>{' '}
-          or go-to-market. <strong>My reviews</strong> tracks what you requested; <strong>Find experts</strong> is the
-          reviewer directory, filtered by domain; <strong>Insights</strong> aggregates scores once a review is submitted.
+          or go-to-market. <strong>My reviews</strong> tracks what you requested; <strong>Insights</strong> aggregates
+          scores once a review is submitted.
         </p>
         <p>
-          Reviewers are the platform&rsquo;s vetted mentors, so requesting a review and messaging a reviewer both go through{' '}
-          <Link href="/mentoring">Mentoring</Link>. A dash in a score means it was not rated yet, not zero.
+          Reviewers are the platform&rsquo;s mentors, so they are found in the{' '}
+          <Link href="/mentoring?service=review">mentor directory</Link> with &ldquo;An expert review&rdquo; chosen:
+          &ldquo;Request a review&rdquo; there sends the request to that person, and it appears here. A dash in a score
+          means it was not rated yet, not zero.
         </p>
       </>
     ),
@@ -1355,14 +1357,14 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Ζητήστε δομημένη ανατροφοδότηση για ένα συγκεκριμένο παραδοτέο — <strong>pitch deck, οικονομικό μοντέλο,
-          ανάλυση αγοράς</strong> ή στρατηγική εισόδου. Οι <strong>αξιολογήσεις μου</strong> δείχνουν όσα ζητήσατε· η{' '}
-          <strong>Εύρεση ειδικών</strong> είναι ο κατάλογος αξιολογητών ανά τομέα· οι <strong>Αναλύσεις</strong>{' '}
-          συγκεντρώνουν τις βαθμολογίες μόλις υποβληθεί μια αξιολόγηση.
+          ανάλυση αγοράς</strong> ή στρατηγική εισόδου. Οι <strong>αξιολογήσεις μου</strong> δείχνουν όσα ζητήσατε· οι{' '}
+          <strong>Αναλύσεις</strong> συγκεντρώνουν τις βαθμολογίες μόλις υποβληθεί μια αξιολόγηση.
         </p>
         <p>
-          Οι αξιολογητές είναι οι ελεγμένοι mentors της πλατφόρμας, οπότε τόσο το αίτημα αξιολόγησης όσο και το μήνυμα
-          σε αξιολογητή περνούν από το <Link href="/mentoring">Mentoring</Link>. Μια παύλα σε βαθμολογία σημαίνει ότι δεν
-          έχει βαθμολογηθεί ακόμη, όχι μηδέν.
+          Οι αξιολογητές είναι μέντορες της πλατφόρμας, οπότε βρίσκονται στον{' '}
+          <Link href="/mentoring?service=review">κατάλογο μεντόρων</Link> με επιλεγμένο το «Αξιολόγηση ειδικού»: το
+          «Αίτημα αξιολόγησης» εκεί στέλνει το αίτημα σε αυτόν τον άνθρωπο, και εμφανίζεται εδώ. Μια παύλα σε βαθμολογία
+          σημαίνει ότι δεν έχει βαθμολογηθεί ακόμη, όχι μηδέν.
         </p>
       </>
     ),
@@ -1581,24 +1583,28 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          This is the public mentor directory — filter by expertise, timezone, and rate. Booking writes a real
-          request or session; it is not a silent apply.
+          This is the one directory of mentors, coaches and expert reviewers. Choose what you need: a mentor or
+          coaching books a session, and an expert review sends a review request to the person on the card. Then narrow
+          by area and price. Booking writes a real request or session; it is not a silent apply.
         </p>
         <p>
-          Mentors set their own hours on Availability. Expert reviews of a pitch or model go through{' '}
-          <Link href="/expert-reviews">Expert reviews</Link>, not this list.
+          Mentors set their own hours on Availability. Your coaching sessions are on{' '}
+          <Link href="/coaching">Coaching</Link>, and your review requests on{' '}
+          <Link href="/expert-reviews">Expert reviews</Link>.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Αυτός είναι ο δημόσιος κατάλογος μεντόρων — φιλτράρετε κατά εξειδίκευση, ζώνη ώρας και χρέωση. Η κράτηση
-          γράφει πραγματικό αίτημα ή συνεδρία· δεν είναι σιωπηλή αίτηση.
+          Αυτός είναι ο ενιαίος κατάλογος μεντόρων, coaches και αξιολογητών. Διαλέξτε τι χρειάζεστε: ο μέντορας και η
+          καθοδήγηση κλείνουν συνεδρία, η αξιολόγηση ειδικού στέλνει αίτημα αξιολόγησης στον άνθρωπο της κάρτας. Μετά
+          περιορίστε κατά τομέα και τιμή. Η κράτηση γράφει πραγματικό αίτημα ή συνεδρία· δεν είναι σιωπηλή αίτηση.
         </p>
         <p>
-          Οι μέντορες ορίζουν τις ώρες τους στη Διαθεσιμότητα. Οι αξιολογήσεις pitch ή μοντέλου περνούν από τις{' '}
-          <Link href="/expert-reviews">Αξιολογήσεις ειδικών</Link>, όχι από αυτή τη λίστα.
+          Οι μέντορες ορίζουν τις ώρες τους στη Διαθεσιμότητα. Οι συνεδρίες καθοδήγησής σας είναι στην{' '}
+          <Link href="/coaching">Καθοδήγηση</Link>, και τα αιτήματα αξιολόγησης στις{' '}
+          <Link href="/expert-reviews">Αξιολογήσεις ειδικών</Link>.
         </p>
       </>
     ),

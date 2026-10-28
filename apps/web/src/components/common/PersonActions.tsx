@@ -143,7 +143,7 @@ export function ConnectButton({
           await sendConnectionRequest({ receiverId: userId });
           setState('sent');
           success(
-            bilingualInline('Intro sent', 'Η σύσταση στάλθηκε'),
+            bilingualInline('Intro sent', 'Το αίτημα γνωριμίας στάλθηκε'),
             displayName
               ? bilingualInline(`${displayName} will see your request.`, `Το αίτημά σας θα σταλεί προς ${displayName}.`)
               : undefined,

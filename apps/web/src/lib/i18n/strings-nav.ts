@@ -142,7 +142,7 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/projects': 'Έργα',
   '/commitments': 'Δεσμεύσεις',
   '/updates': 'Ενημερώσεις',
-  '/intros': 'Συστάσεις γνωριμίας',
+  '/intros': 'Γνωριμίες',
   '/scout': 'Ανιχνευτής συνιδρυτών',
   '/perks': 'Προσφορές',
   '/legal': 'Νομικός κόμβος',
@@ -217,7 +217,7 @@ export const NAV_DESCRIPTION_EL: Record<string, string> = {
   '/updates':
     'Ενημερώσεις ιδρυτών που ακολουθείτε και όσες στέλνετε',
   '/intros':
-    'Ζεστές συστάσεις μέσω κοινών γνωστών, με συναίνεση σε κάθε βήμα',
+    'Γνωριμίες μέσω κοινών γνωστών, με συναίνεση σε κάθε βήμα',
   '/scout':
     'Προτείνει συνιδρυτές για το σημείωμά σας· δεν στέλνει τίποτα',
   '/perks':
@@ -297,7 +297,7 @@ export const NAV_DESCRIPTION_EL: Record<string, string> = {
   '/members':
     'Πλήρης κατάλογος μελών',
   '/mentoring':
-    'Βρείτε μέντορα και κλείστε συνεδρία',
+    'Βρείτε μέντορα, coach ή αξιολογητή',
   '/investors':
     'Κατάλογος angels και VCs',
   '/opportunities':
@@ -383,7 +383,7 @@ export const NAV_DESCRIPTION_EL: Record<string, string> = {
   '/admin/tenants':
     'Δημιουργία, αναστολή και έλεγχος οργανισμών',
   '/coaching':
-    'Κλείστε χρόνο με μέντορες',
+    'Οι συνεδρίες και οι ενέργειες της καθοδήγησής σας',
   '/compare':
     'Σύγκριση προφίλ δίπλα-δίπλα',
   '/dashboard':

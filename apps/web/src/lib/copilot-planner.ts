@@ -131,7 +131,7 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   {
     // «Αιτήματα γνωριμίας» is what the Connections page calls a pending
     // request, as "intro request" is in English; warm introductions are
-    // «συστάσεις γνωριμίας» (get_intros).
+    // «γνωριμίες» (get_intros), once «συστάσεις γνωριμίας».
     keys: ['connection', 'my network', 'intro request', 'συνδεσ', 'αιτημα συνδεσ', 'αιτηματα γνωριμιας', 'αιτημα γνωριμιας', 'δικτυο μου'],
     tool: 'get_connections',
   },
@@ -156,10 +156,11 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     keys: ['why do i match', 'why we match', 'why are we matched', 'how well do i fit', 'how well do we fit', 'how do we fit', 'compatibility with', 'my match with', 'γιατι ταιριαζ', 'ποσο ταιριαζ', 'πως ταιριαζουμε', 'συμβατοτητα με'],
     tool: 'get_match_detail',
   },
-  // Warm introductions. «Συστάσεις» alone is endorsements here, so the Greek
-  // keys carry «γνωριμ»; "introduce me" alone is a connection request.
+  // Warm introductions: «γνωριμίες» on the page since §111. «Συστάσεις»
+  // alone is endorsements, so the older «συστάσεις γνωριμίας» keeps its own
+  // keys; "introduce me" alone is a connection request.
   {
-    keys: ['introductions', 'warm intro*', 'my intros', 'who could introduce', 'who can introduce', 'συστασεις γνωριμιας', 'συσταση γνωριμιας', 'ζεστη συσταση', 'ζεστες συστασεις', 'να με συστησει'],
+    keys: ['introductions', 'warm intro*', 'my intros', 'who could introduce', 'who can introduce', 'γνωριμιες', 'γνωριμια μεσω', 'συστασεις γνωριμιας', 'συσταση γνωριμιας', 'ζεστη συσταση', 'ζεστες συστασεις', 'να με συστησει'],
     tool: 'get_intros',
   },
   // Partner perks: «προσφορές» alone is a provider's own services, so the

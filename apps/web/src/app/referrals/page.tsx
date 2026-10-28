@@ -413,7 +413,7 @@ export default function ReferralsPage() {
 
   const copyRef = useRef<(() => void) | null>(null);
   usePageControls([
-    choiceControl('referrals_tab', 'Referrals shown', 'Συστάσεις που εμφανίζονται', [
+    choiceControl('referrals_tab', 'Referrals shown', 'Παραπομπές που εμφανίζονται', [
       { value: 'all', en: referralsEn('tab_all'), el: referralsEl('tab_all') },
       { value: 'pending', en: referralsEn('tab_pending'), el: referralsEl('tab_pending') },
       { value: 'rewarded', en: referralsEn('tab_rewarded'), el: referralsEl('tab_rewarded') },

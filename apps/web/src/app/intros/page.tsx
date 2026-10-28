@@ -218,7 +218,7 @@ function IntrosContent() {
     settle(() => act.mutateAsync({ kind, id: i.id, note }));
   const confirmDecline = async (i: Intro): Promise<PageControlRunResult> => {
     const ok = await confirm({
-      title: <BilingualText en="Not forward this introduction?" el="Να μην προωθηθεί αυτή η σύσταση;" compact />,
+      title: <BilingualText en="Not forward this introduction?" el="Να μην προωθηθεί αυτή η γνωριμία;" compact />,
       description: (
         <BilingualText
           en={`${i.requester.displayName} is told only that it was not forwarded, and ${i.target.displayName} never hears of it.`}
@@ -259,19 +259,19 @@ function IntrosContent() {
   });
 
   usePageControls([
-    choiceControl('intros_tab', 'Show introductions to forward, for you, or asked by you', 'Συστάσεις για προώθηση, για εσάς ή δικά σας αιτήματα', TABS, tab, (v) => setTab(v === 'sent' || v === 'received' ? v : 'forward')),
+    choiceControl('intros_tab', 'Show introductions to forward, for you, or asked by you', 'Γνωριμίες για προώθηση, για εσάς ή δικά σας αιτήματα', TABS, tab, (v) => setTab(v === 'sent' || v === 'received' ? v : 'forward')),
     // None has an opposite: each one notifies someone who cannot be un-told.
-    rowCommand('forward_intro', 'Forward an introduction', 'Προώθηση σύστασης', waitingOnMe, (i) => run('forward', i), 'Nothing waits for you to forward.', 'Δεν περιμένει τίποτα προώθηση από εσάς.'),
-    rowCommand('decline_intro', 'Not forward an introduction', 'Μη προώθηση σύστασης', waitingOnMe, confirmDecline, 'Nothing waits for you to forward.', 'Δεν περιμένει τίποτα προώθηση από εσάς.'),
-    rowCommand('accept_intro', 'Accept an introduction (answers their need card)', 'Αποδοχή σύστασης (απαντά στην κάρτα ανάγκης)', forMe, (i) => run('accept', i), 'No introduction waits for your answer.', 'Καμία σύσταση δεν περιμένει την απάντησή σας.'),
-    rowCommand('not_now_intro', 'Say not now to an introduction', 'Όχι τώρα σε μια σύσταση', forMe, (i) => run('not_now', i), 'No introduction waits for your answer.', 'Καμία σύσταση δεν περιμένει την απάντησή σας.'),
-    rowCommand('withdraw_intro', 'Withdraw an introduction you asked for', 'Απόσυρση αιτήματος σύστασης', sent.filter((i) => i.status === 'pending'), (i) => run('withdraw', i), 'None of your requests is still waiting on the intermediary.', 'Κανένα αίτημά σας δεν περιμένει πια τον ενδιάμεσο.'),
+    rowCommand('forward_intro', 'Forward an introduction', 'Προώθηση γνωριμίας', waitingOnMe, (i) => run('forward', i), 'Nothing waits for you to forward.', 'Δεν περιμένει τίποτα προώθηση από εσάς.'),
+    rowCommand('decline_intro', 'Not forward an introduction', 'Μη προώθηση γνωριμίας', waitingOnMe, confirmDecline, 'Nothing waits for you to forward.', 'Δεν περιμένει τίποτα προώθηση από εσάς.'),
+    rowCommand('accept_intro', 'Accept an introduction (answers their need card)', 'Αποδοχή γνωριμίας (απαντά στην κάρτα ανάγκης)', forMe, (i) => run('accept', i), 'No introduction waits for your answer.', 'Καμία γνωριμία δεν περιμένει την απάντησή σας.'),
+    rowCommand('not_now_intro', 'Say not now to an introduction', 'Όχι τώρα σε μια γνωριμία', forMe, (i) => run('not_now', i), 'No introduction waits for your answer.', 'Καμία γνωριμία δεν περιμένει την απάντησή σας.'),
+    rowCommand('withdraw_intro', 'Withdraw an introduction you asked for', 'Απόσυρση αιτήματος γνωριμίας', sent.filter((i) => i.status === 'pending'), (i) => run('withdraw', i), 'None of your requests is still waiting on the intermediary.', 'Κανένα αίτημά σας δεν περιμένει πια τον ενδιάμεσο.'),
   ]);
   const line = (i: Intro) => `${i.requester.displayName} → ${i.intermediary.displayName} → ${i.target.displayName}: ${i.card.title} (${INTRO_STATUS_COPY[i.status].en})`;
   usePageList([
-    { id: 'intros_to_forward', labelEn: 'Introductions to forward', labelEl: 'Συστάσεις για προώθηση', rows: tab === 'forward' ? toForward.map(line) : undefined },
-    { id: 'intros_for_you', labelEn: 'Introductions for you', labelEl: 'Συστάσεις για εσάς', rows: tab === 'received' ? received.map(line) : undefined },
-    { id: 'intros_sent', labelEn: 'Introductions you asked for', labelEl: 'Συστάσεις που ζητήσατε', rows: tab === 'sent' ? sent.map(line) : undefined },
+    { id: 'intros_to_forward', labelEn: 'Introductions to forward', labelEl: 'Γνωριμίες για προώθηση', rows: tab === 'forward' ? toForward.map(line) : undefined },
+    { id: 'intros_for_you', labelEn: 'Introductions for you', labelEl: 'Γνωριμίες για εσάς', rows: tab === 'received' ? received.map(line) : undefined },
+    { id: 'intros_sent', labelEn: 'Introductions you asked for', labelEl: 'Γνωριμίες που ζητήσατε', rows: tab === 'sent' ? sent.map(line) : undefined },
   ]);
 
   const rail: PageRailSection[] = useMemo(
@@ -295,7 +295,7 @@ function IntrosContent() {
         id: 'how',
         glyph: 'book',
         labelEn: 'How introductions work',
-        labelEl: 'Πώς λειτουργούν οι συστάσεις',
+        labelEl: 'Πώς λειτουργούν οι γνωριμίες',
         content: (
           <ul className="list-disc space-y-1.5 pl-5 text-sm text-muted-foreground">
             <li><BilingualText en="Ask from someone’s profile. Only people who know you both can introduce you." el="Ζητήστε από το προφίλ κάποιου. Μόνο όσοι γνωρίζουν και τους δύο μπορούν να σας συστήσουν." wrap /></li>
@@ -335,7 +335,7 @@ function IntrosContent() {
             <Card>
               <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
                 <p role="alert" className="text-sm text-muted-foreground">
-                  <BilingualText en="Your introductions could not be read just now." el="Οι συστάσεις γνωριμίας σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
+                  <BilingualText en="Your introductions could not be read just now." el="Οι γνωριμίες σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
                 </p>
                 <Button size="sm" variant="outline" onClick={() => void intros.refetch()} disabled={intros.isFetching}>
                   <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
@@ -346,7 +346,7 @@ function IntrosContent() {
             <>
               <TabsContent value="forward" className="space-y-4">
                 {toForward.length === 0
-                  ? empty('Nobody has asked you for an introduction yet.', 'Κανείς δεν σας έχει ζητήσει ακόμη σύσταση.')
+                  ? empty('Nobody has asked you for an introduction yet.', 'Κανείς δεν σας έχει ζητήσει ακόμη γνωριμία.')
                   : toForward.map((i) => (
                       <IntroCard
                         key={i.id}
@@ -397,7 +397,7 @@ function IntrosContent() {
                   </div>
                 ) : null}
                 {received.length === 0
-                  ? empty('No introductions for you yet. They reach you only after someone you know forwards them.', 'Καμία σύσταση για εσάς ακόμη. Φτάνουν μόνο αφού τις προωθήσει κάποιος που γνωρίζετε.')
+                  ? empty('No introductions for you yet. They reach you only after someone you know forwards them.', 'Καμία γνωριμία για εσάς ακόμη. Φτάνουν μόνο αφού τις προωθήσει κάποιος που γνωρίζετε.')
                   : received.map((i) => (
                       <IntroCard
                         key={i.id}
@@ -422,7 +422,7 @@ function IntrosContent() {
                 {sent.length === 0
                   ? empty(
                       'You have not asked for an introduction yet. Open the profile of someone you want to meet and choose “Ask for an introduction”.',
-                      'Δεν έχετε ζητήσει ακόμη σύσταση. Ανοίξτε το προφίλ κάποιου που θέλετε να γνωρίσετε και επιλέξτε «Ζητήστε σύσταση».',
+                      'Δεν έχετε ζητήσει ακόμη γνωριμία. Ανοίξτε το προφίλ κάποιου που θέλετε να γνωρίσετε και επιλέξτε «Ζητήστε γνωριμία».',
                       <Button asChild size="sm" variant="outline"><Link href="/discover"><BilingualText en="Find people" el="Βρείτε ανθρώπους" compact /></Link></Button>,
                     )
                   : sent.map((i) => (

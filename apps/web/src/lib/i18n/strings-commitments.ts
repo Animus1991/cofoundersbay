@@ -28,10 +28,10 @@ export const CMT = {
   // Card kinds
   kind_cofounder: { en: 'Co-founder seat', el: 'Θέση συνιδρυτή' },
   kind_equity_role: { en: 'Role with equity', el: 'Ρόλος με equity' },
-  kind_investor_intro: { en: 'Investor introduction', el: 'Σύσταση σε επενδυτή' },
+  kind_investor_intro: { en: 'Investor introduction', el: 'Γνωριμία με επενδυτή' },
   kind_cofounder_hint: { en: 'A partner who shares ownership and the work.', el: 'Συνέταιρος που μοιράζεται την ιδιοκτησία και τη δουλειά.' },
   kind_equity_role_hint: { en: 'A role paid partly or wholly in equity.', el: 'Ρόλος που αμείβεται εν μέρει ή εξ ολοκλήρου με equity.' },
-  kind_investor_intro_hint: { en: 'An investor, or an introduction to one.', el: 'Επενδυτής ή μια σύσταση σε επενδυτή.' },
+  kind_investor_intro_hint: { en: 'An investor, or an introduction to one.', el: 'Επενδυτής ή μια γνωριμία με επενδυτή.' },
 
   // The three sentences
   exists: { en: 'What already exists', el: 'Τι υπάρχει ήδη' },

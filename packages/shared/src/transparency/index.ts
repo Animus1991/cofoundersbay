@@ -84,7 +84,7 @@ export const TRANSPARENCY_COPY = {
     terms: { en: 'Terms', el: 'Όροι' },
     founder_update: { en: 'Founder updates', el: 'Ενημερώσεις ιδρυτών' },
     scout_brief: { en: 'Scout briefs', el: 'Σημειώματα ανιχνευτή' },
-    intro: { en: 'Introduction requests', el: 'Αιτήματα σύστασης' },
+    intro: { en: 'Introduction requests', el: 'Αιτήματα γνωριμίας' },
   } as Record<TransparencySurface, { en: string; el: string }>,
   notCounted: {
     en: 'Not counted here: drafts the browser warned about before they were sent, and anything outside the platform.',

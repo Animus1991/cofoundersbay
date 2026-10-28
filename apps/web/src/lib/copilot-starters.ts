@@ -120,7 +120,7 @@ export const PAGE_STARTERS: Record<string, PageStarter[]> = {
   '/analytics': [read('Who viewed my profile this month?', 'Ποιοι είδαν το προφίλ μου;', 'people', 'get_profile_viewers')],
   '/commitments': [read('Where do my commitments stand and what is waiting on me?', 'Τι γίνεται με τις δεσμεύσεις μου;', 'pact', 'get_commitments')],
   '/intros': [
-    read('Show my warm introductions', 'Δείξε μου τις συστάσεις γνωριμίας', 'intro', 'get_intros'),
+    read('Show my warm introductions', 'Δείξε μου τις γνωριμίες μου', 'intro', 'get_intros'),
     read('Who could introduce me to Nikos?', 'Ποιος μπορεί να με συστήσει στον Νίκο;', 'intro', 'get_intros'),
   ],
   '/scout': [read('What did my co-founder scout find?', 'Τι βρήκε ο ανιχνευτής συνιδρυτών;', 'scout', 'get_scout')],

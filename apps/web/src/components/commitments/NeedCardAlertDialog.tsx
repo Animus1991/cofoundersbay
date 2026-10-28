@@ -22,7 +22,7 @@ const FREQUENCIES: Array<{ value: SavedSearch['alertFrequency']; en: string; el:
 const KIND_NAME: Record<CommitmentKind, { en: string; el: string }> = {
   cofounder: { en: 'Co-founder cards', el: 'Κάρτες συνιδρυτή' },
   equity_role: { en: 'Equity-role cards', el: 'Κάρτες ρόλου με μετοχές' },
-  investor_intro: { en: 'Investor-intro cards', el: 'Κάρτες σύστασης σε επενδυτή' },
+  investor_intro: { en: 'Investor-intro cards', el: 'Κάρτες γνωριμίας με επενδυτή' },
 };
 
 /**

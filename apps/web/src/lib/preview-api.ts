@@ -2758,7 +2758,67 @@ function previewMentors() {
  * what that offer leads to. The experts are the showcase's own mentors, so a
  * visitor meets the same people here, on /coaching and in /matches.
  */
-function previewExpertReviews() {
+/**
+ * Review requests sent this session from the mentor directory (docs §111).
+ * They lead My reviews, as the API's write would, until the tab closes.
+ */
+const DEMO_REVIEW_REQUESTS_KEY = 'cfb:demo-review-requests';
+type DemoExpertReview = ReturnType<typeof previewExpertReviewsBase>[number];
+
+function readDemoReviewRequests(): DemoExpertReview[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const parsed = JSON.parse(window.sessionStorage.getItem(DEMO_REVIEW_REQUESTS_KEY) ?? '[]') as unknown;
+    return Array.isArray(parsed) ? (parsed as DemoExpertReview[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function requestDemoExpertReview(body: Record<string, unknown>): { review: DemoExpertReview } {
+  const expertId = typeof body.expertId === 'string' ? body.expertId : '';
+  // The API's two refusals, in its words.
+  if (expertId === ME_ID) throw new DemoRefusal(400, 'You cannot request a review from yourself', { messageEl: 'Δεν μπορείτε να ζητήσετε αξιολόγηση από τον εαυτό σας.' });
+  const mentor = previewMentors().find((m) => m.userId === expertId);
+  if (!mentor) throw new DemoRefusal(404, 'Expert not found', { messageEl: 'Ο ειδικός δεν βρέθηκε.' });
+  const types = ['pitch_deck', 'business_model', 'financial_model', 'legal_structure', 'market_analysis', 'go_to_market', 'technical_architecture', 'product_strategy', 'general'];
+  const review = {
+    id: `preview-exrev-req-${previewNowMs().toString(36)}`,
+    requester: { id: ME_ID, displayName: 'Alex Demo', headline: 'Founder at Harbor', avatarUrl: null },
+    expert: { id: mentor.userId, displayName: mentor.displayName, headline: mentor.headline, avatarUrl: mentor.avatarUrl },
+    workspaceId: PREVIEW_BUILDER_WS_ID,
+    reviewType: typeof body.reviewType === 'string' && types.includes(body.reviewType) ? body.reviewType : 'general',
+    status: 'requested',
+    requestMessage: typeof body.requestMessage === 'string' && body.requestMessage.trim() ? body.requestMessage.trim().slice(0, 4000) : null,
+    documents: [] as Record<string, unknown>[],
+    summaryFeedback: null,
+    strengths: [] as Record<string, unknown>[],
+    improvements: [] as Record<string, unknown>[],
+    scoreOverall: null,
+    scoresByArea: {} as Record<string, number>,
+    isPaid: false,
+    agreedFee: null,
+    currency: mentor.currency ?? 'EUR',
+    requestedAt: new Date(previewNowMs()).toISOString(),
+    acceptedAt: null,
+    dueDate: typeof body.dueDate === 'string' ? body.dueDate : null,
+    submittedAt: null,
+    rating: null,
+    ratingComment: null,
+  } as unknown as DemoExpertReview;
+  try {
+    window.sessionStorage.setItem(DEMO_REVIEW_REQUESTS_KEY, JSON.stringify([review, ...readDemoReviewRequests()].slice(0, 20)));
+  } catch {
+    // Storage blocked: the request is answered but not kept.
+  }
+  return { review };
+}
+
+function previewExpertReviews(): DemoExpertReview[] {
+  return [...readDemoReviewRequests(), ...previewExpertReviewsBase()];
+}
+
+function previewExpertReviewsBase() {
   const sarah = {
     id: 'user-sarah',
     displayName: 'Dr. Sarah Kim',
@@ -4985,6 +5045,9 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
         ? Number((scored.reduce((a, r) => a + (r.scoreOverall ?? 0), 0) / scored.length).toFixed(1))
         : null,
     };
+  }
+  if (pathname === '/api/expert-reviews' && method === 'POST') {
+    return requestDemoExpertReview((body ?? {}) as Record<string, unknown>);
   }
   if (pathname === '/api/expert-reviews') {
     // `side` picks whose reviews: the ones the reader asked for, or the ones

@@ -36,8 +36,8 @@ export function AskIntroButton({ targetId, targetName, className }: { targetId: 
   return (
     <>
       {/* Named for whom: a list of people showed the same name on every row (docs §84). */}
-      <Button size="sm" variant="outline" className={className} onClick={() => setOpen(true)} aria-label={bilingualAria(`Ask for an introduction to ${targetName}`, `Ζητήστε σύσταση προς ${targetName}`)}>
-        <BilingualText en="Ask for an introduction" el="Ζητήστε σύσταση" compact />
+      <Button size="sm" variant="outline" className={className} onClick={() => setOpen(true)} aria-label={bilingualAria(`Ask for an introduction to ${targetName}`, `Ζητήστε γνωριμία προς ${targetName}`)}>
+        <BilingualText en="Ask for an introduction" el="Ζητήστε γνωριμία" compact />
       </Button>
       {open ? <AskIntroDialog open={open} onOpenChange={setOpen} targetId={targetId} targetName={targetName} /> : null}
     </>
@@ -79,7 +79,7 @@ export function AskIntroDialog({ open, onOpenChange, targetId, targetName }: { o
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle><BilingualText en={`An introduction to ${targetName}`} el={`Σύσταση προς ${targetName}`} compact /></DialogTitle>
+          <DialogTitle><BilingualText en={`An introduction to ${targetName}`} el={`Γνωριμία προς ${targetName}`} compact /></DialogTitle>
           <DialogDescription>
             <BilingualText
               en="Someone you both know decides whether to forward it. If they do and the answer is yes, the conversation continues on your need card."
@@ -92,14 +92,14 @@ export function AskIntroDialog({ open, onOpenChange, targetId, targetName }: { o
         {paths.isLoading ? (
           <p className="text-sm text-muted-foreground"><BilingualText en="Looking for people you both know…" el="Αναζήτηση κοινών γνωστών…" compact /></p>
         ) : !data ? (
-          <p className="text-sm text-muted-foreground"><BilingualText en="Introductions are not available right now." el="Οι συστάσεις δεν είναι διαθέσιμες αυτή τη στιγμή." wrap /></p>
+          <p className="text-sm text-muted-foreground"><BilingualText en="Introductions are not available right now." el="Οι γνωριμίες δεν είναι διαθέσιμες αυτή τη στιγμή." wrap /></p>
         ) : data.direct ? (
           <p className="text-sm text-muted-foreground"><BilingualText en="You already know them directly. Send them a message or point them to your need card." el="Γνωρίζεστε ήδη άμεσα. Στείλτε μήνυμα ή δείξτε την κάρτα ανάγκης σας." wrap /></p>
         ) : !data.paths.length ? (
           <p className="text-sm text-muted-foreground"><BilingualText en="Nobody you know on CoFounderBay knows them yet. Connections, mentoring and shared cohorts are what count." el="Κανείς από όσους γνωρίζετε στο CoFounderBay δεν γνωρίζει ακόμη αυτό το πρόσωπο. Μετρούν οι συνδέσεις, η καθοδήγηση και οι κοινοί κύκλοι." wrap /></p>
         ) : !data.cards.length ? (
           <div className="space-y-3 text-sm text-muted-foreground">
-            <BilingualText en="An introduction is for one of your open need cards, and you have none yet." el="Η σύσταση αφορά μία από τις ανοιχτές κάρτες ανάγκης σας, και δεν έχετε ακόμη." wrap />
+            <BilingualText en="An introduction is for one of your open need cards, and you have none yet." el="Η γνωριμία αφορά μία από τις ανοιχτές κάρτες ανάγκης σας, και δεν έχετε ακόμη." wrap />
             <Button asChild size="sm" variant="outline"><Link href="/commitments/new"><BilingualText en="Write a need card" el="Νέα κάρτα ανάγκης" compact /></Link></Button>
           </div>
         ) : (
@@ -138,7 +138,7 @@ export function AskIntroDialog({ open, onOpenChange, targetId, targetName }: { o
               </select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="intro-note"><BilingualText en="Why this introduction, and why now" el="Γιατί αυτή η σύσταση και γιατί τώρα" compact /></Label>
+              <Label htmlFor="intro-note"><BilingualText en="Why this introduction, and why now" el="Γιατί αυτή η γνωριμία και γιατί τώρα" compact /></Label>
               <Textarea id="intro-note" rows={4} maxLength={INTRO_LIMITS.note} value={note} onChange={(e) => setNote(e.target.value)} />
               <p className="text-xs text-muted-foreground"><BilingualText en="No email or phone: the conversation stays on the platform until you both confirm." el="Χωρίς email ή τηλέφωνο: η συζήτηση μένει στην πλατφόρμα μέχρι να επιβεβαιώσετε και οι δύο." wrap /></p>
             </div>

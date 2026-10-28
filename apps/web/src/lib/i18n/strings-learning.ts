@@ -4,13 +4,14 @@ import type { BilingualPair } from './types';
  * /learning — courses, guides, and paths aligned with readiness gaps.
  *
  * «Μάθηση» is the hub. A «μονοπάτι» is a sequenced curriculum (learning path);
- * a «πόρος» is one article, video, or course. «Course» stays untranslated in
- * the type chip because Greek ed-tech writing keeps it, while the hub title
- * «Κέντρο μάθησης» is already in the page registry.
+ * a «πόρος» is one article, video, or course. A course is «μάθημα»: the
+ * page wrote «Courses» while the assistant and the catalogue wrote «μάθημα»,
+ * one thing with two names; the Greek word won (owner, 2026-10-28; docs
+ * §90.5, §111). The hub title «Κέντρο μάθησης» is in the page registry.
  */
 export const LEARNING_STRINGS: Record<string, BilingualPair> = {
   stat_resources: { en: 'Resources', el: 'Πόροι' },
-  stat_courses: { en: 'Courses', el: 'Courses' },
+  stat_courses: { en: 'Courses', el: 'Μαθήματα' },
   stat_hours: { en: 'Total hours', el: 'Συνολικές ώρες' },
   stat_progress: { en: 'In progress', el: 'Σε εξέλιξη' },
 
@@ -25,9 +26,9 @@ export const LEARNING_STRINGS: Record<string, BilingualPair> = {
   tab_saved: { en: 'Saved', el: 'Αποθηκευμένα' },
   tab_completed: { en: 'Completed', el: 'Ολοκληρωμένα' },
 
-  search: { en: 'Search courses, guides, topics…', el: 'Αναζήτηση courses, οδηγών, θεμάτων…' },
+  search: { en: 'Search courses, guides, topics…', el: 'Αναζήτηση μαθημάτων, οδηγών, θεμάτων…' },
   type_all: { en: 'All types', el: 'Όλοι οι τύποι' },
-  type_course: { en: 'Courses', el: 'Courses' },
+  type_course: { en: 'Courses', el: 'Μαθήματα' },
   type_guide: { en: 'Guides', el: 'Οδηγοί' },
   type_video: { en: 'Videos', el: 'Βίντεο' },
   type_article: { en: 'Articles', el: 'Άρθρα' },

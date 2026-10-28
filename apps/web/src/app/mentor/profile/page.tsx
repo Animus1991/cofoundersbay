@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -205,8 +207,8 @@ export default function MentorProfilePage() {
   // listing as read; what the assistant filled in is unsaved.
   const fields = useMemo(() => ({
     headline, bio, selectedIndustries, selectedStages, selectedExpertise, sessionFormats,
-    isFree, hourlyRate, isAccepting, yearsExp, sessionDuration, hoursPerWeek,
-  }), [headline, bio, selectedIndustries, selectedStages, selectedExpertise, sessionFormats, isFree, hourlyRate, isAccepting, yearsExp, sessionDuration, hoursPerWeek]);
+    isFree, hourlyRate, yearsExp, sessionDuration, hoursPerWeek,
+  }), [headline, bio, selectedIndustries, selectedStages, selectedExpertise, sessionFormats, isFree, hourlyRate, yearsExp, sessionDuration, hoursPerWeek]);
   const restoreFields = useCallback((d: Partial<typeof fields>) => {
     const str = (v: unknown, fallback: string) => (typeof v === 'string' ? v : fallback);
     const list = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
@@ -218,7 +220,6 @@ export default function MentorProfilePage() {
     if (Array.isArray(d.sessionFormats)) setSessionFormats(list(d.sessionFormats));
     if (typeof d.isFree === 'boolean') setIsFree(d.isFree);
     setHourlyRate(str(d.hourlyRate, ''));
-    if (typeof d.isAccepting === 'boolean') setIsAccepting(d.isAccepting);
     if (typeof d.yearsExp === 'string') setYearsExp(d.yearsExp);
     if (typeof d.sessionDuration === 'string') setSessionDuration(d.sessionDuration);
     if (typeof d.hoursPerWeek === 'string') setHoursPerWeek(d.hoursPerWeek);
@@ -248,7 +249,8 @@ export default function MentorProfilePage() {
         isFree,
         hourlyRate: isFree ? null : dollarsToCents(hourlyRate),
         currency: 'EUR',
-        isAcceptingRequests: isAccepting,
+        // Taking requests is switched on Availability, where it saves at
+        // once; saving the listing here leaves it as it is (docs §94.4, §111).
         yearsExperience: yearsExp === '20+' ? 20 : Number(yearsExp),
         sessionDuration: Number(sessionDuration),
         hoursPerWeek: Number(hoursPerWeek),
@@ -402,12 +404,26 @@ export default function MentorProfilePage() {
                     </Select>
                   </div>
                 </div>
-                <div className="flex items-center justify-between border-t border-border pt-4">
-                  <div>
-                    <p className="text-sm font-medium"><BilingualText en="Accepting New Mentees" el="Δέχεται νέους καθοδηγούμενους" compact /></p>
-                    <p className="text-xs text-muted-foreground"><BilingualText en="Toggle visibility in mentee search" el="Εμφάνιση στην αναζήτηση καθοδηγούμενων" wrap /></p>
+                {/* One switch for one field (owner, 2026-10-28; docs §94.4,
+                    §111): this page and Availability each had one for
+                    "accepting requests". It stays on Availability, which saves
+                    it at once; here is where it stands and the way there. */}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium"><BilingualText en="Accepting new mentees" el="Δέχεται νέους καθοδηγούμενους" compact /></p>
+                    <p className="text-xs text-muted-foreground">
+                      {isAccepting ? (
+                        <BilingualText en="On: founders can send you requests." el="Ενεργό: οι ιδρυτές σας στέλνουν αιτήματα." wrap />
+                      ) : (
+                        <BilingualText en="Paused: founders cannot send you new requests." el="Σε παύση: οι ιδρυτές δεν σας στέλνουν νέα αιτήματα." wrap />
+                      )}
+                    </p>
                   </div>
-                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label={bilingualAria('Accepting New Mentees', 'Δέχεται νέους καθοδηγούμενους')} />
+                  <Button type="button" variant="outline" size="sm" asChild>
+                    <Link href="/mentor/availability">
+                      <BilingualText en="Change on Availability" el="Αλλαγή στη Διαθεσιμότητα" compact />
+                    </Link>
+                  </Button>
                 </div>
               </CardContent>
             </Card>

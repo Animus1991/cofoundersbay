@@ -331,6 +331,7 @@ function ProposalCard({
 
 function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const { success, error: showError } = useToast();
+  const sayOne = useBilingualString();
   const [form, setForm] = useState({
     title: '',
     role: '',
@@ -352,12 +353,12 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
         isRemote: form.isRemote,
       }),
     onSuccess: () => {
-      success('Posted!', 'Your opportunity is now live.');
+      success(bilingualInline('Posted', 'Δημοσιεύτηκε'), bilingualInline('Your opportunity is listed under Opportunities.', 'Η ευκαιρία σας εμφανίζεται στις Ευκαιρίες.'));
       onCreated();
       onClose();
     },
     onError: (err) =>
-      showError('Failed', err instanceof Error ? err.message : 'Please try again'),
+      showError(bilingualInline('Not posted', 'Δεν δημοσιεύτηκε'), err instanceof Error ? err.message : bilingualInline('Please try again', 'Δοκιμάστε ξανά')),
   });
 
   const set = (k: keyof typeof form, v: string | boolean) =>
@@ -374,7 +375,7 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <p id="opp-type" className="text-sm font-medium">Type</p>
+            <p id="opp-type" className="text-sm font-medium"><BilingualText en={opportunitiesEn('field_type')} el={opportunitiesEl('field_type')} compact /></p>
             <div className="flex gap-2 flex-wrap" role="group" aria-labelledby="opp-type">
               {(Object.entries(OPP_TYPE_DISPLAY) as [OpportunityType, typeof OPP_TYPE_DISPLAY['job']][]).map(([key, cfg]) => (
                 <button
@@ -396,27 +397,27 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
             </div>
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="opp-f1" className="text-sm font-medium">Title *</label>
+            <label htmlFor="opp-f1" className="text-sm font-medium"><BilingualText en={opportunitiesEn('field_title')} el={opportunitiesEl('field_title')} compact /> *</label>
             <Input id="opp-f1"
-              placeholder="e.g. CTO Co-founder, Growth Lead"
+              placeholder={sayOne('e.g. CTO co-founder, Growth lead', 'π.χ. Συνιδρυτής CTO, Υπεύθυνος ανάπτυξης')}
               value={form.title}
               onChange={(e) => set('title', e.target.value)}
               maxLength={120}
             />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="opp-f2" className="text-sm font-medium">Role / function</label>
+            <label htmlFor="opp-f2" className="text-sm font-medium"><BilingualText en={opportunitiesEn('field_role')} el={opportunitiesEl('field_role')} compact /></label>
             <Input id="opp-f2"
-              placeholder="e.g. Engineering, Marketing"
+              placeholder={sayOne('e.g. Engineering, Marketing', 'π.χ. Τεχνολογία, Μάρκετινγκ')}
               value={form.role}
               onChange={(e) => set('role', e.target.value)}
               maxLength={80}
             />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="opp-f3" className="text-sm font-medium">Location</label>
+            <label htmlFor="opp-f3" className="text-sm font-medium"><BilingualText en={opportunitiesEn('field_location')} el={opportunitiesEl('field_location')} compact /></label>
             <Input id="opp-f3"
-              placeholder="e.g. Athens, GR"
+              placeholder={sayOne('e.g. Athens, GR', 'π.χ. Αθήνα')}
               value={form.location}
               onChange={(e) => set('location', e.target.value)}
               disabled={form.isRemote}
@@ -430,17 +431,17 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
               onChange={(e) => set('isRemote', e.target.checked)}
               className="h-4 w-4 rounded border-border accent-primary"
             />
-            Remote
+            <BilingualText en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact />
           </label>
         <DialogFooter>
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button variant="ghost" onClick={onClose}><BilingualText en={opportunitiesEn('cancel')} el={opportunitiesEl('cancel')} compact /></Button>
             <Button
               className="gap-2"
               onClick={() => mutation.mutate()}
               disabled={!form.title.trim() || mutation.isPending}
             >
               {mutation.isPending ? <Loader2 className="icon-sm animate-spin" /> : <Rocket className="icon-sm" />}
-              Post
+              <BilingualText en={opportunitiesEn('submit_post')} el={opportunitiesEl('submit_post')} compact />
             </Button>
         </DialogFooter>
         </div>

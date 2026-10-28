@@ -29,7 +29,6 @@ import {
   ListChecks,
   Lightbulb,
   Zap,
-  BookOpen,
   CalendarDays,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -37,36 +36,33 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn, initialsOf } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import {
   getMyMentorships,
   getMentorshipSessions,
-  discoverMentors,
   listMentorBookings,
   updateMentorBooking,
   updateMentorshipSession,
   type MentorshipRelationshipItem,
   type MentorshipSessionItem,
-  type MentorProfileItem,
 } from '@/lib/api';
-import { attachDemoPhotos } from '@/lib/demo/photos';
-import { formatFee } from '@/lib/mentor-fee';
+import { COACHING_AREAS, coachingAreasFrom, directoryHref, type CoachingArea } from '@/lib/mentoring/services';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type SessionStatus = 'scheduled' | 'completed' | 'cancelled' | 'in_progress';
-type SessionType = 'accountability' | 'clarity' | 'team_dynamics' | 'execution' | 'strategy' | 'wellbeing';
+/* The six areas are the directory's coaching areas (lib/mentoring/services). */
+type SessionType = CoachingArea;
 
 interface CoachingSession {
   id: string;
@@ -89,25 +85,6 @@ interface CoachingSession {
   actionItems?: { task: string; done: boolean }[];
   keyInsights?: string;
   rating?: number;
-}
-
-interface CoachProfile {
-  id: string;
-  name: string;
-  avatar?: string;
-  title: string;
-  specialties: SessionType[];
-  sessionCount: number;
-  rating: number;
-  /* Nobody records a response time, so the line is hidden rather than given a
-     plausible-looking "< 4 hrs". */
-  responseTime?: string;
-  bio: string;
-  pricePerHour?: number;
-  currency?: string;
-  availability: string;
-  availabilityEl: string;
-  isVerified: boolean;
 }
 
 /* Why the two disabled controls are disabled, in both languages. Stated as
@@ -186,51 +163,6 @@ const DEMO_SESSIONS: CoachingSession[] = [
   },
 ];
 
-const DEMO_COACHES: CoachProfile[] = attachDemoPhotos([
-  {
-    id: 'c1',
-    name: 'Elena Papadopoulos',
-    title: 'Startup Execution Coach',
-    specialties: ['execution', 'accountability', 'strategy'],
-    sessionCount: 142,
-    rating: 4.9,
-    responseTime: '< 2 hrs',
-    bio: 'Ex-operator at 2 scale-ups, 3 exits. Specializes in founder accountability, execution rhythms, and OKR systems for early-stage startups.',
-    pricePerHour: 120,
-    availability: 'Mon–Fri, 9am–5pm CET',
-    availabilityEl: 'Δευ–Παρ, 9:00–17:00 CET',
-    isVerified: true,
-  },
-  {
-    id: 'c2',
-    name: 'Marcus Chen',
-    title: 'Founder Clarity Coach',
-    specialties: ['clarity', 'team_dynamics', 'wellbeing'],
-    sessionCount: 87,
-    rating: 4.8,
-    responseTime: '< 4 hrs',
-    bio: 'ICF-certified coach with 8 years helping founders navigate clarity, co-founder dynamics, and founder wellbeing under pressure.',
-    pricePerHour: 150,
-    availability: 'Tue–Thu, flexible',
-    availabilityEl: 'Τρι–Πεμ, ευέλικτα',
-    isVerified: true,
-  },
-  {
-    id: 'c3',
-    name: 'Andreea Ionescu',
-    title: 'GTM & Growth Strategy Coach',
-    specialties: ['strategy', 'execution'],
-    sessionCount: 53,
-    rating: 4.7,
-    responseTime: '< 8 hrs',
-    bio: 'Former VP Marketing at Series B startup. Coaches early-stage founders on go-to-market, positioning, and growth strategy.',
-    pricePerHour: 100,
-    availability: 'Mon, Wed, Fri',
-    availabilityEl: 'Δευ, Τετ, Παρ',
-    isVerified: false,
-  },
-], { portraitKey: 'avatar' });
-
 /**
  * Locale dates after mount so SSR (UTC) and the browser timezone do not mismatch.
  *
@@ -265,13 +197,16 @@ function LocalWhen({ iso, variant }: { iso: string; variant: 'card' | 'banner' }
 
 // ── Configs ───────────────────────────────────────────────────────────────────
 
+/** An area's two names, from the directory's vocabulary, so both pages say the same. */
+const areaNames = (key: SessionType) => ({ label: COACHING_AREAS[key].en, labelEl: COACHING_AREAS[key].el });
+
 const SESSION_TYPE_CONFIG: Record<SessionType, { label: string; labelEl: string; color: string; icon: React.ElementType }> = {
-  accountability: { label: 'Accountability', labelEl: 'Λογοδοσία',         color: 'bg-status-info-bg text-status-info', icon: ListChecks },
-  clarity:        { label: 'Clarity',        labelEl: 'Διαύγεια',          color: 'bg-status-accent-bg text-status-accent', icon: Lightbulb },
-  team_dynamics:  { label: 'Team Dynamics',  labelEl: 'Δυναμική ομάδας',   color: 'bg-status-success-bg text-status-success', icon: Users },
-  execution:      { label: 'Execution',      labelEl: 'Εκτέλεση',          color: 'bg-status-warning-bg text-status-warning', icon: Zap },
-  strategy:       { label: 'Strategy',       labelEl: 'Στρατηγική',        color: 'bg-status-accent-bg text-status-accent', icon: Target },
-  wellbeing:      { label: 'Wellbeing',      labelEl: 'Ευεξία',            color: 'bg-status-success-bg text-status-success', icon: BrainCircuit },
+  accountability: { ...areaNames('accountability'), color: 'bg-status-info-bg text-status-info', icon: ListChecks },
+  clarity:        { ...areaNames('clarity'),        color: 'bg-status-accent-bg text-status-accent', icon: Lightbulb },
+  team_dynamics:  { ...areaNames('team_dynamics'),  color: 'bg-status-success-bg text-status-success', icon: Users },
+  execution:      { ...areaNames('execution'),      color: 'bg-status-warning-bg text-status-warning', icon: Zap },
+  strategy:       { ...areaNames('strategy'),       color: 'bg-status-accent-bg text-status-accent', icon: Target },
+  wellbeing:      { ...areaNames('wellbeing'),      color: 'bg-status-success-bg text-status-success', icon: BrainCircuit },
 };
 
 const STATUS_CONFIG: Record<SessionStatus, { label: string; labelEl: string; color: string; icon: React.ElementType }> = {
@@ -305,7 +240,6 @@ function SessionCard({ session }: { session: CoachingSession }) {
   const status = STATUS_CONFIG[session.status];
   const type = session.sessionType ? SESSION_TYPE_CONFIG[session.sessionType] : null;
   const StatusIcon = status.icon;
-  const TypeIcon = type?.icon;
   const completedActions = session.actionItems?.filter((a) => a.done).length ?? 0;
   const totalActions = session.actionItems?.length ?? 0;
 
@@ -495,120 +429,7 @@ function FailedRead({ en, el, onRetry, busy = false, bare = false }: { en: strin
   );
 }
 
-function CoachCard({ coach, sample }: { coach: CoachProfile; sample: boolean }) {
-  return (
-    <Card className="transition-colors hover:border-primary/20">
-      <CardContent className="space-y-3">
-        <CardHead
-          mark={(
-            <Avatar className="h-10 w-10">
-              {coach.avatar && <AvatarImage src={coach.avatar} />}
-              <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
-                {initialsOf(coach.name)}
-              </AvatarFallback>
-            </Avatar>
-          )}
-          title={(
-            <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-              <span>{coach.name}</span>
-              {coach.isVerified && (
-                <Badge size="sm" className="rounded-full px-1.5 bg-primary/10 text-primary-accessible border-primary/20">
-                  <BilingualText en="Verified" el="Επαληθευμένος" compact />
-                </Badge>
-              )}
-            </span>
-          )}
-          subtitle={coach.title}
-          aside={coach.pricePerHour != null ? (
-            <span className="font-semibold tabular-nums text-foreground">
-              {/* The dollar sign used to be written in. A mentor records a
-                  currency beside the rate; bill them in it. */}
-              {formatFee(coach.pricePerHour, coach.currency)}
-              <BilingualText en="/hr" el="/ώρα" compact />
-            </span>
-          ) : undefined}
-        />
-
-        <p className="card-body line-clamp-2 text-muted-foreground">{coach.bio}</p>
-
-        <div className="space-y-1">
-          <FactLine items={coach.specialties.slice(0, 3).map((s) => <BilingualText key={s} en={SESSION_TYPE_CONFIG[s].label} el={SESSION_TYPE_CONFIG[s].labelEl} compact />)} />
-          <FactLine
-            items={[
-              <span key="rating" data-keep-icon="" className="inline-flex items-center gap-1">
-                <Star className="icon-sm fill-status-warning text-status-warning" aria-hidden="true" />
-                {coach.rating > 0 ? coach.rating : '—'}{' '}
-                <BilingualText
-                  en={`(${coach.sessionCount} sessions)`}
-                  el={`(${coach.sessionCount} ${coach.sessionCount === 1 ? 'συνεδρία' : 'συνεδρίες'})`}
-                  compact
-                />
-              </span>,
-              coach.responseTime ? <BilingualText key="responds" en={`Responds ${coach.responseTime}`} el={`Απαντά ${coach.responseTime}`} compact /> : null,
-              // Read but never printed: whether they take new founders.
-              <BilingualText key="availability" en={coach.availability} el={coach.availabilityEl} compact />,
-            ]}
-          />
-        </div>
-
-        {/* Booking lives on /mentoring, against the same people. The second
-            button went there too ("Browse"); a listed coach is a member, so it
-            opens their profile now, and a sample coach has none (docs §90). */}
-        <CardFoot>
-          <Button size="sm" className="gap-1" asChild>
-            <Link href="/mentoring">
-              <Calendar className="icon-sm" aria-hidden="true" />
-              <BilingualText en="Book with a mentor" el="Κράτηση με μέντορα" compact wrap />
-            </Link>
-          </Button>
-          {sample ? null : (
-            <Button size="sm" variant="outline" className="gap-1" asChild>
-              <Link
-                href={`/profiles/${encodeURIComponent(coach.id)}`}
-                aria-label={bilingualAria(`View profile: ${coach.name}`, `Προβολή προφίλ: ${coach.name}`)}
-              >
-                <BilingualText en="View profile" el="Προβολή προφίλ" compact wrap />
-              </Link>
-            </Button>
-          )}
-        </CardFoot>
-      </CardContent>
-    </Card>
-  );
-}
-
 // ── Main Page ─────────────────────────────────────────────────────────────────
-
-/**
- * Which of the six session types a free-text list of areas names.
- *
- * The backend stores focus areas and skills as the words people typed; this
- * page speaks in six fixed types with an icon and a colour each. Matching is
- * the honest join between them, and no match means no chip rather than a
- * default one that would put every session under the same heading.
- */
-const SPECIALTY_KEYWORDS: Record<SessionType, string[]> = {
-  accountability: ['accountability', 'habit', 'okr', 'goal'],
-  clarity: ['clarity', 'vision', 'positioning', 'focus', 'narrative'],
-  team_dynamics: ['team', 'hiring', 'people', 'culture', 'leadership', 'coaching'],
-  execution: ['execution', 'delivery', 'product', 'operations', 'ops', 'roadmap'],
-  strategy: ['strategy', 'go-to-market', 'gtm', 'fundraising', 'growth', 'market'],
-  wellbeing: ['wellbeing', 'well-being', 'burnout', 'wellness', 'mental', 'resilience'],
-};
-
-function specialtiesFrom(words: readonly string[]): SessionType[] {
-  /*
-   * Whole words, not substrings: "ops" sits inside "develops". Every
-   * non-letter becomes a space and both sides are padded, so a keyword
-   * matches only where a word actually starts and ends, and a hyphenated
-   * keyword still matches because it is normalised the same way.
-   */
-  const normalise = (text: string) => ` ${text.toLowerCase().replace(/[^a-z]+/g, ' ').trim()} `;
-  const haystack = normalise(words.join(' '));
-  return (Object.keys(SPECIALTY_KEYWORDS) as SessionType[]).filter((type) =>
-    SPECIALTY_KEYWORDS[type].some((keyword) => haystack.includes(normalise(keyword))),
-  );
-}
 
 /** The action items a session stores, defensively - the column is free JSON. */
 function toActionItems(raw: MentorshipSessionItem['actionItems']): { task: string; done: boolean }[] {
@@ -634,7 +455,7 @@ function toCoachingSession(
   relationship: MentorshipRelationshipItem | undefined,
 ): CoachingSession {
   const focus = relationship?.focusAreas ?? [];
-  const [specialty] = specialtiesFrom(focus);
+  const [specialty] = coachingAreasFrom(focus);
   return {
     id: row.id,
     coachId: relationship?.mentorId ?? undefined,
@@ -657,46 +478,10 @@ function toCoachingSession(
   };
 }
 
-/** A coach, from the mentor directory the mentorship module already serves. */
-function toCoachProfile(mentor: MentorProfileItem): CoachProfile {
-  const availability =
-    mentor.availabilityStatus === 'available'
-      ? 'Taking new founders'
-      : mentor.availabilityStatus === 'limited'
-        ? 'Limited availability'
-        : 'Not taking new founders';
-  const availabilityEl =
-    mentor.availabilityStatus === 'available'
-      ? 'Δέχεται νέους ιδρυτές'
-      : mentor.availabilityStatus === 'limited'
-        ? 'Περιορισμένη διαθεσιμότητα'
-        : 'Δεν δέχεται νέους ιδρυτές';
-  return {
-    id: mentor.userId,
-    name: mentor.displayName,
-    avatar: mentor.avatarUrl ?? undefined,
-    title: mentor.headline ?? '',
-    specialties: specialtiesFrom([...mentor.skills, ...mentor.industries]),
-    sessionCount: mentor.sessionCount,
-    rating: mentor.rating ?? 0,
-    // No column records how fast a mentor replies, so the line is left off.
-    responseTime: undefined,
-    bio: mentor.bio ?? '',
-    pricePerHour: mentor.isFree ? undefined : (mentor.hourlyRate ?? undefined),
-    currency: mentor.currency ?? undefined,
-    availability,
-    availabilityEl,
-    // Nothing on a mentor profile carries a verification state yet; claiming
-    // one would be the same invention this page is being cured of.
-    isVerified: false,
-  };
-}
-
 export default function CoachingPage() {
   const [activeTab, setActiveTab] = useState('sessions');
   const { showDemoData } = useDemoData();
   const router = useRouter();
-  const [specialtyFilter, setSpecialtyFilter] = useState<SessionType | null>(null);
   /*
    * Coaching is mentorship seen from the founder's side.
    *
@@ -778,33 +563,11 @@ export default function CoachingPage() {
           : [];
 
   /*
-   * The coach directory is the mentor directory - the same people, asked for
-   * from the founder's side. This list used to be three constants rendered
-   * unconditionally, so a real founder browsed three coaches who do not exist.
+   * The coach list was the mentor directory again - the same people, read a
+   * second time, with "Book" sending the reader to Mentors without the
+   * person. Coaches are found in the one directory now, with Coaching
+   * chosen and the area set (owner, 2026-10-28; docs §90.5, §111).
    */
-  const { data: mentorData, isLoading: coachesLoading, isError: coachesError, isFetching: coachesFetching, refetch: refetchCoaches } = useQuery({
-    queryKey: qk('mentors', 'coaching'),
-    queryFn: () => discoverMentors({ limit: 24 }),
-    staleTime: 5 * 60_000,
-    retry: 0,
-  });
-
-  const liveCoaches = useMemo(
-    () => (mentorData?.mentors ?? []).map(toCoachProfile),
-    [mentorData],
-  );
-
-  const coaches =
-    liveCoaches.length > 0
-      ? liveCoaches
-      : coachesLoading
-        ? []
-        : showDemoData
-          ? DEMO_COACHES
-          : [];
-
-  const sampleCoaches = liveCoaches.length === 0 && !coachesLoading && showDemoData;
-  const coachesFailed = coachesError && !mentorData && !sampleCoaches;
 
   /*
    * A list not yet read is not empty (docs §90): a failed read of the
@@ -824,9 +587,6 @@ export default function CoachingPage() {
     for (const q of sessionQueries) if (q.isError) void q.refetch();
   };
 
-  const visibleCoaches = specialtyFilter
-    ? coaches.filter((c) => c.specialties.includes(specialtyFilter))
-    : coaches;
   const upcoming = sessions.filter((s) => s.status === 'scheduled' || s.status === 'in_progress');
   const completed = sessions.filter((s) => s.status === 'completed');
 
@@ -898,31 +658,26 @@ export default function CoachingPage() {
       ],
       sample: liveSessions.length === 0 && showDemoData,
     },
-    {
-      id: 'coaches',
-      labelEn: 'Coaches',
-      labelEl: 'Coaches',
-      rows: coachesLoading ? undefined : visibleCoaches.map((c) => `${c.name} · ${c.title}`),
-      total: coaches.length,
-      sample: sampleCoaches,
-    },
   ]);
-  // Offered to the assistant: the tab and the rail's specialty filter, same
-  // setters (the filter also jumps to the coach list, as the rail's does).
+  // Offered to the assistant: the tab, and finding a coach by area, which
+  // opens the one mentor directory with Coaching and the area chosen.
   usePageControls([
     choiceControl('tab', 'Coaching tab', 'Καρτέλα coaching', [
       { value: 'sessions', en: 'My Sessions', el: 'Οι συνεδρίες μου' },
-      { value: 'find', en: 'Find a Coach', el: 'Εύρεση coach' },
       { value: 'actions', en: 'Action Items', el: 'Ενέργειες' },
       { value: 'insights', en: 'Insights', el: 'Αναλύσεις' },
     ], activeTab, setActiveTab),
-    choiceControl('specialty', 'Coach specialty filter', 'Φίλτρο ειδίκευσης coach', [
-      { value: 'any', en: 'Any specialty', el: 'Οποιαδήποτε ειδίκευση' },
-      ...(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, (typeof SESSION_TYPE_CONFIG)[SessionType]][]).map(([key, cfg]) => ({ value: key, en: cfg.label, el: cfg.labelEl })),
-    ], specialtyFilter ?? 'any', (v) => {
-      setSpecialtyFilter(v === 'any' ? null : (v as SessionType));
-      if (v !== 'any') setActiveTab('find');
-    }),
+    {
+      id: 'find_coach',
+      labelEn: 'Find a coach in the mentor directory, for',
+      labelEl: 'Εύρεση coach στον κατάλογο μεντόρων, για',
+      writes: false,
+      options: [
+        { value: 'any', labelEn: 'Any area', labelEl: 'Οποιοσδήποτε τομέας' },
+        ...(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, (typeof SESSION_TYPE_CONFIG)[SessionType]][]).map(([key, cfg]) => ({ value: key, labelEn: cfg.label, labelEl: cfg.labelEl })),
+      ],
+      run: (v) => router.push(directoryHref('coaching', v && v !== 'any' ? v : null)),
+    },
     {
       id: 'cancel_booking',
       labelEn: 'Cancel booking',
@@ -954,57 +709,38 @@ export default function CoachingPage() {
       ),
     },
     {
-      id: 'filters',
+      id: 'find',
       glyph: 'target',
-      labelEn: 'Filter coaches',
-      labelEl: 'Φίλτρα coaches',
-      // The badge is what makes a collapsed rail honest: a filter that is on
-      // has to be visible without opening anything, or the list looks wrong.
-      badge: specialtyFilter ? 1 : null,
+      labelEn: 'Find a coach',
+      labelEl: 'Εύρεση coach',
       content: (
+        // The six areas filtered a coach list here; the list is the mentor
+        // directory now, so each opens it narrowed to that area (docs §111).
         <div className="space-y-3">
           <p className="text-xs leading-relaxed text-muted-foreground">
             <BilingualText
-              en="Narrow the coach list by what you want help with."
-              el="Περιορίστε τη λίστα coaches με βάση το τι θέλετε να δουλέψετε."
+              en="Coaches are in the mentor directory. Pick what you want help with."
+              el="Οι coaches βρίσκονται στον κατάλογο μεντόρων. Διαλέξτε σε τι θέλετε βοήθεια."
               stacked
               wrap
             />
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, typeof SESSION_TYPE_CONFIG[SessionType]][]).map(([key, cfg]) => {
-              const on = specialtyFilter === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => {
-                    setSpecialtyFilter((prev) => (prev === key ? null : key));
-                    // Filtering the coach list is only visible on that tab.
-                    setActiveTab('find');
-                  }}
-                  className={cn(
-                    'flex min-h-9 items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-all hover:opacity-80',
-                    cfg.color,
-                    on && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
-                  )}
-                >
-                  <cfg.icon className="icon-sm" aria-hidden="true" />
-                  <BilingualText en={cfg.label} el={cfg.labelEl} compact />
-                </button>
-              );
-            })}
+            {(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, typeof SESSION_TYPE_CONFIG[SessionType]][]).map(([key, cfg]) => (
+              <Link
+                key={key}
+                href={directoryHref('coaching', key)}
+                className={cn(
+                  'flex min-h-9 items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-all hover:opacity-80',
+                  cfg.color,
+                )}
+              >
+                <cfg.icon className="icon-sm" aria-hidden="true" />
+                <BilingualText en={cfg.label} el={cfg.labelEl} compact />
+              </Link>
+            ))}
           </div>
-          {specialtyFilter && (
-            <button
-              type="button"
-              onClick={() => setSpecialtyFilter(null)}
-              className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
-            >
-              <BilingualText en="Clear filter" el="Καθαρισμός φίλτρου" compact />
-            </button>
-          )}
+          <RailAction icon={Users} en="All coaches" el="Όλοι οι coaches" onClick={() => router.push(directoryHref('coaching'))} />
         </div>
       ),
     },
@@ -1083,14 +819,13 @@ export default function CoachingPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <TabsList className="h-9 flex-wrap">
               <TabsTrigger value="sessions" className="text-xs"><BilingualText en="My Sessions" el="Οι συνεδρίες μου" compact /></TabsTrigger>
-              <TabsTrigger value="find" className="text-xs"><BilingualText en="Find a Coach" el="Εύρεση coach" compact /></TabsTrigger>
               <TabsTrigger value="actions" className="text-xs"><BilingualText en="Action Items" el="Ενέργειες" compact /></TabsTrigger>
               <TabsTrigger value="insights" className="text-xs"><BilingualText en="Insights" el="Αναλύσεις" compact /></TabsTrigger>
             </TabsList>
             {/* Hidden while the empty My Sessions carries its own way in. */}
             {sessionsEmpty && activeTab === 'sessions' ? null : (
               <Button size="sm" className="h-8 gap-1.5 text-xs" asChild>
-                <Link href="/mentoring">
+                <Link href={directoryHref('coaching')}>
                   <Plus className="icon-sm" aria-hidden="true" />
                   <BilingualText en="Book a session" el="Κράτηση συνεδρίας" compact wrap />
                 </Link>
@@ -1120,7 +855,9 @@ export default function CoachingPage() {
                   <p className="font-semibold text-foreground"><BilingualText en="No coaching sessions yet" el="Δεν υπάρχουν συνεδρίες coaching ακόμα" /></p>
                   <p className="mt-1 text-sm text-muted-foreground"><BilingualText en="Book your first session with a coach to get started." el="Κλείστε την πρώτη σας συνεδρία με coach για να ξεκινήσετε." /></p>
                 </div>
-                <Button size="sm" onClick={() => setActiveTab('find')}><BilingualText en="Find a coach" el="Εύρεση coach" compact /></Button>
+                <Button size="sm" asChild>
+                  <Link href={directoryHref('coaching')}><BilingualText en="Find a coach" el="Εύρεση coach" compact /></Link>
+                </Button>
               </div>
             ) : (
               <>
@@ -1147,97 +884,6 @@ export default function CoachingPage() {
                 )}
               </>
             )}
-          </TabsContent>
-
-          {/* Find a Coach */}
-          <TabsContent value="find" className="mt-4 space-y-4">
-            {/* The chips live in the page rail now. What stays here is the
-                one thing a filtered list owes the reader: which filter is on,
-                and a way out of it. */}
-            {specialtyFilter && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <BilingualText en="Filtered by" el="Φιλτραρισμένο κατά" compact />
-                <span
-                  className={cn(
-                    'flex items-center gap-1 rounded-full border px-2 py-0.5',
-                    SESSION_TYPE_CONFIG[specialtyFilter].color,
-                  )}
-                >
-                  <BilingualText
-                    en={SESSION_TYPE_CONFIG[specialtyFilter].label}
-                    el={SESSION_TYPE_CONFIG[specialtyFilter].labelEl}
-                    compact
-                  />
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setSpecialtyFilter(null)}
-                  className="underline underline-offset-2 hover:text-foreground"
-                >
-                  <BilingualText en="Clear" el="Καθαρισμός" compact />
-                </button>
-              </div>
-            )}
-
-            <div className="space-y-3">
-              {coachesLoading ? (
-                <>
-                  <Skeleton className="h-36 w-full rounded-2xl" />
-                  <Skeleton className="h-36 w-full rounded-2xl" />
-                </>
-              ) : coachesFailed ? (
-                <FailedRead
-                  en="The coaches could not be read just now."
-                  el="Οι coaches δεν διαβάστηκαν αυτή τη στιγμή."
-                  onRetry={() => void refetchCoaches()}
-                  busy={coachesFetching}
-                />
-              ) : (
-                <>
-                  {visibleCoaches.map((coach) => <CoachCard key={coach.id} coach={coach} sample={sampleCoaches} />)}
-                  {visibleCoaches.length === 0 && (
-                    <div className="space-y-3 rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-                      {specialtyFilter ? (
-                        <>
-                          <p>
-                            <BilingualText
-                              en="No coaches with that specialty. Clear the filter to see all of them."
-                              el="Κανένας coach με αυτή την ειδίκευση. Καθαρίστε το φίλτρο για να τους δείτε όλους."
-                              wrap
-                            />
-                          </p>
-                          <Button size="sm" variant="outline" onClick={() => setSpecialtyFilter(null)}>
-                            <BilingualText en="Clear the filter" el="Καθαρισμός φίλτρου" compact />
-                          </Button>
-                        </>
-                      ) : (
-                        // It said "No coaches with that specialty" with no filter on.
-                        <p>
-                          <BilingualText
-                            en="No coaches are listed yet. Mentors appear here as they open their profiles to founders."
-                            el="Δεν εμφανίζονται ακόμη coaches. Οι μέντορες εμφανίζονται εδώ καθώς ανοίγουν το προφίλ τους σε ιδρυτές."
-                            wrap
-                          />
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-            <div className="rounded-xl border border-dashed border-border bg-card/50 p-6 text-center">
-              <BookOpen className="icon-xl text-muted-foreground/50 mx-auto mb-3" />
-              <p className="text-sm font-semibold text-foreground mb-1"><BilingualText en="Become a coach on CoFounderBay" el="Γίνετε coach στο CoFounderBay" /></p>
-              <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Share your expertise and earn while helping founders grow." el="Μοιραστείτε την εμπειρογνωμοσύνη σας και κερδίστε βοηθώντας ιδρυτές να αναπτυχθούν." /></p>
-              {/* Mentor signup is the real version of this — the form exists
-                  and is wired. */}
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/mentor/profile">
-                  <BilingualText en="Apply as coach" el="Αίτηση ως coach" compact wrap />
-                </Link>
-              </Button>
-            </div>
           </TabsContent>
 
           {/* Action Items */}

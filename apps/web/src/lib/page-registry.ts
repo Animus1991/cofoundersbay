@@ -71,7 +71,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/dashboard/mentor', title: 'Mentor dashboard', description: 'Sessions, requests, earnings, and mentee overview.', helpId: 'dashboard-mentor', helpTitle: 'How this mentor home works', helpTitleEl: 'Πώς δουλεύει ο πίνακας μέντορα', section: 'Work', audience: ['mentor'], status: 'complete' },
   { path: '/mentor/sessions', title: 'My sessions', description: 'Upcoming and past mentoring sessions.', helpId: 'mentor-sessions', helpTitle: 'Upcoming vs past sessions', helpTitleEl: 'Επερχόμενες και παρελθούσες συνεδρίες', section: 'Work', audience: ['mentor'], status: 'complete' },
   { path: '/mentor/requests', title: 'Mentee requests', description: 'Accept or decline new mentoring requests.', helpId: 'mentor-requests', helpTitle: 'How mentee requests work', helpTitleEl: 'Πώς λειτουργούν τα αιτήματα καθοδήγησης', section: 'Work', audience: ['mentor'], status: 'complete' },
-  { path: '/mentoring', title: 'Find mentors', description: 'Directory of mentors — filter by expertise and price, then book a session.', helpId: 'mentoring', helpTitle: 'How to find and book a mentor', helpTitleEl: 'Πώς βρίσκετε μέντορα και κλείνετε συνεδρία', section: 'Explore', status: 'complete' },
+  { path: '/mentoring', title: 'Find mentors', description: 'One directory of mentors, coaches and expert reviewers — choose what you need, then book a session or request a review.', helpId: 'mentoring', helpTitle: 'How to find and book a mentor', helpTitleEl: 'Πώς βρίσκετε μέντορα και κλείνετε συνεδρία', section: 'Explore', status: 'complete' },
 
   // ── Investor ──
   { path: '/dashboard/investor', title: 'Investor dashboard', description: 'Deal flow KPIs, pipeline snapshot, and watchlist.', helpId: 'dashboard-investor', helpTitle: 'How this investor home works', helpTitleEl: 'Πώς δουλεύει ο πίνακας επενδυτή', section: 'Work', audience: ['investor'], status: 'complete' },
@@ -161,7 +161,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/learning', title: 'Learning hub', description: 'Curated courses, founder guides, and templates aligned with your readiness gaps.', helpId: 'learning', helpTitle: 'How the learning hub works', helpTitleEl: 'Πώς δουλεύει το κέντρο μάθησης', section: 'Resources', status: 'complete' },
   { path: '/groups', title: 'Communities', description: 'Industry, stage, and interest-based groups. Join to participate; create your own anytime.', helpId: 'groups', helpTitle: 'How communities work', helpTitleEl: 'Πώς δουλεύουν οι κοινότητες', section: 'Community', status: 'complete' },
   { path: '/feed', title: 'Feed', description: 'Updates from your network, communities, and people you follow. Sample posts appear only while there are no posts.', helpId: 'feed', helpTitle: 'What the feed is', helpTitleEl: 'Τι είναι το feed', section: 'Community', status: 'complete' },
-  { path: '/mentoring', title: 'Find mentors', description: 'Directory of vetted mentors \u2014 filter by expertise, timezone, and rate.', helpId: 'mentoring', helpTitle: 'How to find and book a mentor', helpTitleEl: 'Πώς βρίσκετε μέντορα και κλείνετε συνεδρία', section: 'Explore', status: 'complete' },
+  { path: '/mentoring', title: 'Find mentors', description: 'One directory of mentors, coaches and expert reviewers \u2014 choose what you need, then book a session or request a review.', helpId: 'mentoring', helpTitle: 'How to find and book a mentor', helpTitleEl: 'Πώς βρίσκετε μέντορα και κλείνετε συνεδρία', section: 'Explore', status: 'complete' },
 
   // ── Mentor sub-pages ──
 
@@ -233,7 +233,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
 
   // Community and profiles
   { path: '/endorsements', title: 'Endorsements', titleEl: 'Συστάσεις', description: 'Vouches you have given and received, and who is waiting on one.', descriptionEl: 'Συστάσεις που δώσατε και λάβατε, και ποιος περιμένει μία.', section: 'Community', status: 'complete' },
-  { path: '/coaching', title: 'Coaching', titleEl: 'Καθοδήγηση', description: 'Book time with mentors and see your upcoming sessions.', descriptionEl: 'Κλείστε χρόνο με μέντορες και δείτε τις επόμενες συνεδρίες σας.', section: 'Resources', status: 'complete' },
+  { path: '/coaching', title: 'Coaching', titleEl: 'Καθοδήγηση', description: 'Your coaching sessions, action items and insights. Coaches are found in the mentor directory.', descriptionEl: 'Οι συνεδρίες, οι ενέργειες και τα στοιχεία της καθοδήγησής σας. Οι coaches βρίσκονται στον κατάλογο μεντόρων.', section: 'Resources', status: 'complete' },
   { path: '/groups/[groupId]', title: 'Group', titleEl: 'Ομάδα', description: 'A community group — its posts, members and events.', descriptionEl: 'Μια ομάδα — αναρτήσεις, μέλη και εκδηλώσεις.', section: 'Community', status: 'complete' },
   { path: '/groups/manage', title: 'Manage group', titleEl: 'Διαχείριση ομάδας', description: 'Settings, membership and permissions for a group you run.', descriptionEl: 'Ρυθμίσεις, μέλη και δικαιώματα για ομάδα που διαχειρίζεστε.', section: 'Community', status: 'complete' },
   { path: '/groups/moderation', title: 'Group moderation', titleEl: 'Συντονισμός ομάδας', description: 'Reported posts and pending members awaiting a decision.', descriptionEl: 'Αναφερθείσες αναρτήσεις και μέλη σε αναμονή απόφασης.', section: 'Community', status: 'complete' },
@@ -324,7 +324,7 @@ const DYNAMIC_PATTERNS: Array<{ pattern: RegExp; meta: Omit<PageMeta, 'path'> & 
       // It promised "save to shortlist"; this page has no such action (the
       // match page does). It names what the page offers (docs §75).
       description: 'Connect, message, follow, or ask for an introduction.',
-      descriptionEl: 'Σύνδεση, μήνυμα, παρακολούθηση ή αίτημα σύστασης.',
+      descriptionEl: 'Σύνδεση, μήνυμα, παρακολούθηση ή αίτημα γνωριμίας.',
       section: 'Explore',
       status: 'complete',
     },

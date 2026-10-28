@@ -1364,7 +1364,7 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
       .filter((mentor) => mentor.availabilityStatus !== 'unavailable')
       .sort((a, b) => (b.sessionCount ?? 0) - (a.sessionCount ?? 0))
       .slice(0, LIMIT);
-    const actions = [openArea(t, '/coaching', t('Open the mentor directory'), t('Filter by expertise and book a session.'))];
+    const actions = [openArea(t, '/mentoring', t('Open the mentor directory'), t('Filter by expertise and book a session.'))];
     if (mentors.length === 0) {
       return { section: t('No mentors are taking sessions right now.'), citations: [], actions };
     }

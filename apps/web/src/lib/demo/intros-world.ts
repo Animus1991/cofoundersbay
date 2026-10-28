@@ -279,7 +279,7 @@ export function previewIntrosApi(pathname: string, path: string, method: string,
     if (open.length >= INTRO_LIMITS.openPerRequester) {
       throw new DemoRefusal(400, `You have ${INTRO_LIMITS.openPerRequester} introductions waiting. Wait for an answer or withdraw one first.`, {
         reason: 'too_many_open',
-        messageEl: `Έχετε ${INTRO_LIMITS.openPerRequester} συστάσεις σε αναμονή. Περιμένετε μια απάντηση ή αποσύρετε μία πρώτα.`,
+        messageEl: `Έχετε ${INTRO_LIMITS.openPerRequester} γνωριμίες σε αναμονή. Περιμένετε μια απάντηση ή αποσύρετε μία πρώτα.`,
       });
     }
     state.seq += 1;
