@@ -41,6 +41,10 @@ import { formatCompactMoney } from '@/lib/i18n/format';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { dealEventTitleEl } from '@/lib/i18n/deal-events';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
+import { homeSnapshot } from '@/lib/home-snapshot';
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /*
  * The investor's home, read from the investor's own board.
@@ -148,7 +152,7 @@ export default function InvestorDashboard() {
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
-  const { data: summary } = useQuery({
+  const { data: summary, isLoading: summaryLoading, isError: summaryError } = useQuery({
     queryKey: qk('investor', 'summary'),
     queryFn: getInvestorSummary,
     staleTime: 60_000,
@@ -199,6 +203,23 @@ export default function InvestorDashboard() {
 
   const multiple = (d: InvestorDeal) =>
     d.investedCents && d.currentValueCents != null ? d.currentValueCents / d.investedCents : null;
+
+  const say = useBilingualString();
+  usePublishPageSnapshot('/dashboard/investor', homeSnapshot({
+    title: say('Investor home', 'Αρχική επενδυτή'),
+    loading: !mounted || summaryLoading || dealsLoading || activityLoading,
+    failed: (summaryError && !summary) || dealsFailed || activityFailed,
+    demo: isPreviewDemo(),
+    summary: say('Your deal pipeline, portfolio and recent investment activity.', 'Η ροή συμφωνιών, το χαρτοφυλάκιο και η πρόσφατη επενδυτική δραστηριότητά σας.'),
+    figures: {
+      [say('Deal flow', 'Ροή συμφωνιών')]: summary?.totalDeals,
+      [say('Active deals', 'Ενεργές συμφωνίες')]: dealsPage ? active.length : null,
+      [say('Portfolio', 'Χαρτοφυλάκιο')]: summary?.investments,
+      [say('Return', 'Απόδοση')]: summary?.returnPct == null ? null : `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}%`,
+      [say('Active deal', 'Ενεργή συμφωνία')]: active[0] ? `${active[0].name} · ${say(STAGE_LABEL[active[0].pipelineStage]?.en ?? active[0].pipelineStage, STAGE_LABEL[active[0].pipelineStage]?.el ?? active[0].pipelineStage)}` : null,
+    },
+    actions: ['get_investor_pipeline'],
+  }));
 
   if (!mounted) {
     return (

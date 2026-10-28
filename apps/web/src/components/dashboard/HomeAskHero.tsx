@@ -1,7 +1,6 @@
 'use client';
 
 import { FormEvent, KeyboardEvent, useEffect, useId, useState } from 'react';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ArrowUp, Check, ChevronDown } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -16,12 +15,12 @@ import {
 import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 import { HOME_ASK, nowStartingPoints, scopedPrompt, slashCommands, type HomeAskAction, type HomeRole } from '@/lib/home-ask';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
-import { Counter } from '@/components/ui/counter';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { cn } from '@/lib/utils';
 import { YourPagesRow } from '@/components/dashboard/YourPages';
+import { HomeActionShelf } from '@/components/dashboard/HomeActionShelf';
 
 type Part = { en: string; el: string };
 
@@ -135,10 +134,10 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: strin
   }
 
   return (
-    <section aria-labelledby={`${boxId}-title`} className="space-y-3" data-home-ask="">
+    <section aria-labelledby={`${boxId}-title`} className="space-y-3" data-home-ask="" data-testid={`home-${role}-assistant`}>
       {/* The greeting as it was before the box arrived: one quiet line at
           body size, not a heading (the page title is the heading). */}
-      <p id={`${boxId}-title`} className="text-sm text-muted-foreground">
+      <p id={`${boxId}-title`} className="break-words text-sm text-muted-foreground" data-testid="home-greeting">
         {/* Without a name the greeting is just the greeting: the homes used
             to fill in their role word, so a Greek reader met "Καλημέρα,
             Founder." (docs §70). */}
@@ -152,6 +151,7 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: strin
       </p>
 
       <form
+        data-testid="home-ask-form"
         onSubmit={submit}
         className="rounded-xl border border-input bg-card shadow-sm transition-colors focus-within:border-primary-muted"
       >
@@ -159,6 +159,7 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: strin
           <BilingualText en="Ask the assistant" el="Ρωτήστε τον βοηθό" compact />
         </label>
         <textarea
+          data-testid="home-ask-input"
           id={`${boxId}-box`}
           value={value}
           onChange={(event) => { setValue(event.target.value); setActiveCommand(0); }}
@@ -174,10 +175,11 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: strin
           className="block max-h-48 min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
         />
         {listOpen && commands ? (
-          <ul id={`${boxId}-commands`} role="listbox" aria-label={bilingualAria('Commands', 'Εντολές')} className="mx-2 mb-2 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1">
+          <ul id={`${boxId}-commands`} data-testid="home-command-list" role="listbox" aria-label={bilingualAria('Commands', 'Εντολές')} className="mx-2 mb-2 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1">
             {commands.map((command, index) => (
               <li
                 key={command.id}
+                data-testid={`home-command-${command.id}`}
                 id={`${boxId}-command-${index}`}
                 role="option"
                 aria-selected={index === active}
@@ -204,15 +206,16 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: strin
                
                 className="h-8 gap-1.5 px-2 text-xs text-muted-foreground"
                 aria-label={bilingualAria(`About: ${scope?.en ?? ''}`, `Πλαίσιο: ${scope?.el ?? ''}`)}
+                data-testid="home-ask-scope"
               >
                 <CfbGlyph name="discover" className="icon-sm" />
                 <BilingualText en={scope?.en ?? ''} el={scope?.el ?? ''} compact />
                 <ChevronDown className="icon-sm" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent align="start" data-testid="home-scope-menu">
               {config.scopes.map((s) => (
-                <DropdownMenuItem key={s.id} onSelect={() => setScopeId(s.id)} className="gap-2">
+                <DropdownMenuItem key={s.id} data-testid={`home-scope-${s.id}`} onSelect={() => setScopeId(s.id)} className="gap-2">
                   <Check className={cn('icon-sm', s.id === scopeId ? 'opacity-100' : 'opacity-0')} aria-hidden="true" />
                   <BilingualText en={s.en} el={s.el} compact />
                 </DropdownMenuItem>
@@ -224,6 +227,7 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: strin
           </span>
           <Button
             type="submit"
+            data-testid="home-ask-submit"
             size="icon"
             disabled={!value.trim()}
             className="ml-auto h-8 w-8 shrink-0 rounded-lg sm:ml-0"
@@ -234,59 +238,7 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: strin
         </div>
       </form>
 
-      <ul className="flex flex-wrap gap-2" aria-label={bilingualAria('Starting points', 'Σημεία εκκίνησης')}>
-        {now.map((action) => (
-          <li key={action.id}>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              data-home-now=""
-              className="h-8 gap-1.5 rounded-full border-primary-muted bg-primary-subtle px-3 text-xs"
-              onClick={() => run(action)}
-            >
-              <CfbGlyph name={action.glyph} className="icon-sm" />
-              <BilingualText en={action.en} el={action.el} compact />
-              <Counter value={action.count} tone="attention" />
-            </Button>
-          </li>
-        ))}
-        {config.actions.map((action) => (
-          <li key={action.id}>
-            {action.items?.length ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button type="button" variant="outline" size="sm" className="h-8 gap-1.5 rounded-full px-3 text-xs">
-                    <CfbGlyph name={action.glyph} className="icon-sm" />
-                    <BilingualText en={action.en} el={action.el} compact />
-                    <ChevronDown className="icon-sm text-muted-foreground" aria-hidden="true" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  {action.items.map((item) => (
-                    <DropdownMenuItem key={item.id} onSelect={() => run(item)} className="gap-2">
-                      <CfbGlyph name={item.glyph} className="icon-sm text-muted-foreground" />
-                      <BilingualText en={item.en} el={item.el} compact />
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : action.href && !action.prompt ? (
-              <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full px-3 text-xs" asChild>
-                <Link href={action.href}>
-                  <CfbGlyph name={action.glyph} className="icon-sm" />
-                  <BilingualText en={action.en} el={action.el} compact />
-                </Link>
-              </Button>
-            ) : (
-              <Button type="button" variant="outline" size="sm" className="h-8 gap-1.5 rounded-full px-3 text-xs" onClick={() => run(action)}>
-                <CfbGlyph name={action.glyph} className="icon-sm" />
-                <BilingualText en={action.en} el={action.el} compact />
-              </Button>
-            )}
-          </li>
-        ))}
-      </ul>
+      <HomeActionShelf actions={config.actions} now={now} run={run} />
 
       {/* The reader's own pages: pinned, then the most opened (docs §107). */}
       <YourPagesRow />

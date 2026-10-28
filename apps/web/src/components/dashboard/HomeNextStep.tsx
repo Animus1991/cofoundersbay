@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useId } from 'react';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, glyphForHref, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { cn } from '@/lib/utils';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
 
 /**
  * The one thing a home screen names before its figures - the same anatomy on
@@ -65,11 +67,18 @@ export function HomeNextStep({
   askEl?: string;
   onAsk?: () => void;
 }) {
+  const id = useId().replace(/:/g, '');
+  const { ask } = useAskAssistant();
+  const askNext = onAsk ?? (() => ask({
+    en: `What should I do here? ${kickerEn}: ${titleEn ?? title ?? ''}${reasonEn ? `. ${reasonEn}` : ''}`,
+    el: `Τι κάνω εδώ; ${kickerEl}: ${titleEl ?? title ?? titleEn ?? ''}${reasonEl ? `. ${reasonEl}` : ''}`,
+  }));
   const label = <BilingualText en={actionEn} el={actionEl} compact />;
   const waiting = tone === 'waiting';
   return (
     <section
       data-next-step={tone}
+      data-testid={`home-next-step-${id}`}
       aria-label={`${kickerEn} · ${kickerEl}`}
       className={cn(
         'flex flex-wrap items-center gap-x-4 gap-y-3 rounded-lg border px-4 py-3',
@@ -90,28 +99,26 @@ export function HomeNextStep({
         <p className={cn('text-xs font-medium', waiting ? 'text-status-warning' : 'text-primary-accessible')}>
           <BilingualText en={kickerEn} el={kickerEl} compact />
         </p>
-        <p className="text-sm font-medium text-foreground">
+        <p className="break-words text-sm font-medium text-foreground" data-testid={`home-next-title-${id}`}>
           {titleEn != null ? <BilingualText en={titleEn} el={titleEl ?? titleEn} compact wrap /> : title}
         </p>
         {reasonEn ? (
-          <p className="text-xs text-muted-foreground">
+          <p className="break-words text-xs text-muted-foreground" data-testid={`home-next-reason-${id}`}>
             <BilingualText en={reasonEn} el={reasonEl ?? reasonEn} compact wrap />
           </p>
         ) : null}
       </div>
       <div className="flex shrink-0 items-center gap-1.5 max-sm:w-full">
-        {onAsk ? (
-          <Button type="button" size="sm" variant="ghost" className="max-sm:flex-1" onClick={onAsk}>
+          <Button type="button" size="sm" variant="ghost" className="max-sm:flex-1" data-testid={`home-next-ask-${id}`} onClick={askNext}>
             <BilingualText en={askEn ?? 'Ask'} el={askEl ?? 'Ρωτήστε'} compact />
           </Button>
-        ) : null}
         <Button asChild size="sm" variant={actionVariant} className="shrink-0 max-sm:flex-1">
           {external ? (
-            <a href={href} target="_blank" rel="noopener noreferrer">
+            <a href={href} target="_blank" rel="noopener noreferrer" data-testid={`home-next-open-${id}`}>
               {label}
             </a>
           ) : (
-            <Link href={href}>{label}</Link>
+            <Link href={href} data-testid={`home-next-open-${id}`}>{label}</Link>
           )}
         </Button>
       </div>

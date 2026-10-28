@@ -42,6 +42,9 @@ import { qk, queryKeys } from '@/lib/query-keys';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { formatFee } from '@/lib/mentor-fee';
+import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
+import { homeSnapshot, mentorHomePriority } from '@/lib/home-snapshot';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type MenteeRow = { id: string; name: string; startup: string | null; sessionsCompleted: number; avatarUrl: string | null };
 type SessionRow = { id: string; menteeName: string; scheduledAt: string; duration: number; meetingUrl?: string | null };
@@ -194,7 +197,7 @@ export default function MentorDashboard() {
     enabled,
     retry: 0,
   });
-  const { data: requestData } = useQuery({
+  const { data: requestData, isLoading: requestsLoading, isError: requestsError, isFetching: requestsFetching, refetch: refetchRequests } = useQuery({
     queryKey: qk('mentorships', 'requests-received'),
     queryFn: getMyReceivedMentorRequests,
     enabled,
@@ -257,9 +260,10 @@ export default function MentorDashboard() {
    * (docs §94).
    */
   const relFailed = relError && !relData;
-  const sessionsFailed = (sessionError && !sessionData) || (bookingError && !bookingData);
+  const requestsFailed = requestsError && !requestData;
+  const sessionsFailed = relFailed || (sessionError && !sessionData) || (bookingError && !bookingData);
   const menteesKnown = !relLoading && (stats != null || relData != null || relFailed);
-  const sessionsKnown = !sessionLoading && !bookingLoading && (sessionData != null || sessionError) && (bookingData != null || bookingError);
+  const sessionsKnown = !relLoading && !sessionLoading && !bookingLoading && (sessionData != null || sessionError) && (bookingData != null || bookingError);
   const accepting = listing ? listing.isAcceptingRequests !== false : listingError ? null : listing === null ? true : null;
 
   const month = showDemoData ? mentorDemoMonthEarnings() : null;
@@ -276,13 +280,32 @@ export default function MentorDashboard() {
     earningsThisMonth: month ? formatFee(month.amount) : null,
   };
 
-  const nextSession = upcomingAll[0];
+  // A requested booking may appear in the calendar, but cannot be a Join-now recommendation.
+  const requestedIds = new Set(requestedBookings.map((b) => b.id));
+  const nextSession = upcomingAll.find((s) => !requestedIds.has(s.id));
   const nextSessionMinsAway = nextSession
     ? Math.round((new Date(nextSession.scheduledAt).getTime() - Date.now()) / 60000)
     : null;
   const sessionSoon = Boolean(
     nextSession && nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0,
   );
+  const priority = mentorHomePriority({ sessionSoon, bookings: requestedBookings.length, requests: pendingRequests.length, session: Boolean(nextSession) });
+  const say = useBilingualString();
+  usePublishPageSnapshot('/dashboard/mentor', homeSnapshot({
+    title: say('Mentor home', 'Αρχική μέντορα'),
+    loading: !mounted || relLoading || sessionLoading || bookingLoading || requestsLoading,
+    failed: relFailed || sessionsFailed || requestsFailed,
+    demo: showDemoData,
+    summary: say('Your mentees, upcoming sessions and requests awaiting a decision.', 'Οι καθοδηγούμενοι, οι επόμενες συνεδρίες και τα αιτήματα που περιμένουν απόφαση.'),
+    figures: {
+      [say('Active mentees', 'Ενεργοί καθοδηγούμενοι')]: !menteesKnown || (relFailed && !stats) ? null : mentorStats.activeMentees,
+      [say('Upcoming sessions', 'Επόμενες συνεδρίες')]: !sessionsKnown || sessionsFailed ? null : mentorStats.upcomingSessions,
+      [say('Bookings awaiting confirmation', 'Κρατήσεις προς επιβεβαίωση')]: bookingData ? requestedBookings.length : null,
+      [say('Mentorship requests', 'Αιτήματα καθοδήγησης')]: requestData ? pendingRequests.length : null,
+      [say('Next confirmed session', 'Επόμενη επιβεβαιωμένη συνεδρία')]: nextSession ? `${nextSession.menteeName} · ${sessionWhen(nextSession.scheduledAt, say('en-GB', 'el-GR') as 'en-GB' | 'el-GR')}` : null,
+    },
+    actions: ['get_mentorship_sessions', 'get_mentor_requests'],
+  }));
 
   if (!mounted) {
     return (
@@ -326,8 +349,7 @@ export default function MentorDashboard() {
 
         {/* One next step, before everything else. Within the hour it stays the
             status line; otherwise the next session, or the first request. */}
-        {sessionSoon && nextSession ? null : bookingWaiting}
-        {sessionSoon && nextSession ? (
+        {priority === 'booking' ? bookingWaiting : priority === 'soon' && nextSession ? (
           <HomeNextStep
             kickerEn={`Starts in ${nextSessionMinsAway} min`}
             kickerEl={`Ξεκινά σε ${nextSessionMinsAway} λεπ.`}
@@ -335,10 +357,10 @@ export default function MentorDashboard() {
             href={nextSession.meetingUrl || '/mentor/sessions'}
             external={Boolean(nextSession.meetingUrl)}
             glyph="calendar"
-            actionEn="Join now"
-            actionEl="Συμμετοχή τώρα"
+            actionEn={nextSession.meetingUrl ? 'Join now' : 'Open session'}
+            actionEl={nextSession.meetingUrl ? 'Συμμετοχή τώρα' : 'Άνοιγμα συνεδρίας'}
           />
-        ) : nextSession ? (
+        ) : priority === 'session' && nextSession ? (
           <HomeNextStep
             kickerEn="Next session"
             kickerEl="Επόμενη συνεδρία"
@@ -350,7 +372,7 @@ export default function MentorDashboard() {
             actionEn={nextSession.meetingUrl ? 'Join' : 'Open'}
             actionEl={nextSession.meetingUrl ? 'Συμμετοχή' : 'Άνοιγμα'}
           />
-        ) : pendingRequests[0] ? (
+        ) : priority === 'request' && pendingRequests[0] ? (
           <HomeNextStep
             tone="waiting"
             kickerEn="Mentorship request"
@@ -361,8 +383,6 @@ export default function MentorDashboard() {
             actionEl="Εξέταση"
           />
         ) : null}
-
-        {sessionSoon && nextSession ? bookingWaiting : null}
 
         {/* Four figures, each a different fact and each linking to its rows.
             Rating and hours were drawn twice (a tile and a tinted banner). */}
@@ -408,15 +428,17 @@ export default function MentorDashboard() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             {/* Requests lead when there are any: they wait on this mentor. */}
-            {pendingRequests.length > 0 && (
+            {(pendingRequests.length > 0 || requestsFailed || requestsLoading) && (
               <SectionCard
                 title="Mentorship requests"
                 titleEl="Αιτήματα καθοδήγησης"
-                count={pendingRequests.length}
+                count={requestData ? pendingRequests.length : undefined}
                 icon={Zap}
                 action={{ href: '/mentor/requests', label: 'View all', labelEl: 'Όλα' }}
                 contentClassName="card-rows"
               >
+                {requestsLoading && <Skeleton className="h-16" data-testid="mentor-requests-loading" />}
+                {requestsFailed && <FailedLine en="Your mentorship requests could not be read just now." el="Τα αιτήματα καθοδήγησης δεν διαβάστηκαν αυτή τη στιγμή." busy={requestsFetching} onRetry={() => { void refetchRequests(); }} />}
                 {pendingRequests.map((request) => (
                   <RequestRowItem key={request.id} request={request} />
                 ))}

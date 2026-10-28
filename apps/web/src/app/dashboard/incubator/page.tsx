@@ -45,6 +45,10 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { bilingualAria } from '@/lib/i18n/format';
 import { demoMark } from '@/lib/demo/photos';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
+import { homeSnapshot } from '@/lib/home-snapshot';
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /*
  * The organisation's home.
@@ -184,7 +188,8 @@ export default function IncubatorDashboard() {
     .sort((a, b) => a.days - b.days)
     .slice(0, 4);
 
-  const loading = orgLoading || programsLoading;
+  const participantsLoading = participantQueries.some((q) => q.isLoading);
+  const loading = orgLoading || programsLoading || participantsLoading;
   const nextApplication = waiting[0];
   const nextApplicantName = nextApplication?.row.user.profile?.displayName ?? 'Applicant';
   const nextApplicantStartup = nextApplication
@@ -195,6 +200,25 @@ export default function IncubatorDashboard() {
     : nextApplicantName;
   const acceptance = decided.length ? Math.round((accepted.length / decided.length) * 100) : null;
   const fill = seats ? Math.round((filled / seats) * 100) : null;
+  const say = useBilingualString();
+  usePublishPageSnapshot('/dashboard/incubator', homeSnapshot({
+    title: say('Organisation home', 'Αρχική οργανισμού'),
+    loading: !mounted || loading || (Boolean(organizationId) && !mentorData && !mentorsError),
+    failed: programsFailed || participantsFailed || mentorsFailed,
+    demo: isPreviewDemo(),
+    empty: isNone,
+    summary: isNone
+      ? say('This account does not belong to an organisation yet.', 'Αυτός ο λογαριασμός δεν ανήκει ακόμη σε οργανισμό.')
+      : say('Your organisation’s programs, participants, mentor pool and applications awaiting review.', 'Τα προγράμματα, οι συμμετέχοντες, η δεξαμενή μεντόρων και οι αιτήσεις προς αξιολόγηση του οργανισμού σας.'),
+    figures: {
+      [say('Running programs', 'Ενεργά προγράμματα')]: loading || programsFailed ? null : running.length,
+      [say('Startups in programs', 'Startups σε προγράμματα')]: loading || programsFailed || participantsFailed ? null : inPrograms.length,
+      [say('Mentors', 'Μέντορες')]: mentorData && !mentorsFailed ? mentors.length : null,
+      [say('Applications waiting', 'Αιτήσεις σε αναμονή')]: loading || programsFailed || participantsFailed ? null : waiting.length,
+      [say('Application waiting', 'Αίτηση σε αναμονή')]: !loading && nextApplication ? nextApplicationTitle : null,
+    },
+    actions: ['get_org_programs', 'get_org_applications'],
+  }));
 
   if (!mounted) {
     return (

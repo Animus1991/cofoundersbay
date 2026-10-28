@@ -70,6 +70,8 @@ export function PinPageButton() {
       aria-label={aria}
       title={pinned ? sayOne(`Pinned: ${name}`, `Καρφιτσωμένη: ${name}`) : sayOne('Pin to your pages', 'Καρφίτσωμα στις σελίδες σας')}
       data-pin-page=""
+      data-testid="pin-current-page"
+      disabled={!ready}
       data-keep-icon=""
       className={cn(
         'inline-flex h-11 w-11 items-center justify-center rounded-full border transition-colors focus-ring md:h-9 md:w-9 lg:h-[calc(36px*var(--chrome-y))] lg:w-[36px]',

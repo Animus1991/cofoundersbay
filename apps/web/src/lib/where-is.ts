@@ -149,10 +149,14 @@ export function rankPages(query: string, pathname?: string): WhereIsHit[] {
   const terms = whereIsTerms(query);
   if (!terms.length) return [];
   const wantsAdmin = terms.some((t) => /^(admin|διαχειρ|tenant|platform)/.test(t));
+  // Personal account questions must not send a member to their organisation's settings.
+  const personalAccount = terms.some((t) => ['password', 'κωδικο', 'κωδικος', 'account', 'λογαριασμο'].includes(t));
+  const wantsOrg = wantsAdmin || terms.some((t) => /^(organi[sz]|org$|team$|οργανισ|ομαδ)/.test(t));
   const hits: WhereIsHit[] = [];
   for (const page of PAGE_REGISTRY) {
     if (!wantsAdmin && (HIDDEN_SECTIONS.has(page.section ?? '') || page.path.startsWith('/admin') || page.path.startsWith('/tenant'))) continue;
     if (page.status === 'scaffold') continue;
+    if (personalAccount && !wantsOrg && /\/(?:org|tenant|dashboard|admin)(?:\/|$)/.test(page.path)) continue;
     const title = fold(`${page.title} ${page.titleEl ?? ''}`);
     const body = fold(`${page.description} ${page.descriptionEl ?? ''} ${page.helpTitle ?? ''} ${page.helpTitleEl ?? ''}`);
     const path = fold(page.path.replace(/\[[^\]]+\]/g, ' ').replace(/[/-]/g, ' '));

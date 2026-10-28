@@ -61,6 +61,7 @@ export type MetricTileProps = {
 };
 
 export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, captionEl, trend, href, className, labelClassName, valueClassName, metaClassName, align = 'start', trendVisual, edge }: MetricTileProps) {
+  const testId = `home-metric-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
   const centered = align === 'center';
   const mark = glyph ? (
     <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
@@ -68,7 +69,7 @@ export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, 
     <Icon className="icon-sm shrink-0 text-muted-foreground/70" aria-hidden="true" />
   ) : null;
   const content = (
-    <Card className={cn('relative h-full min-w-0 overflow-hidden transition-colors group-hover:border-primary/30', className)}>
+    <Card data-testid={testId} className={cn('relative h-full min-w-0 overflow-hidden transition-colors group-hover:border-primary/30', className)}>
       <CardContent className={cn('flex h-full flex-col', centered && 'items-center text-center')}>
         <div className={cn('flex w-full items-start gap-3', centered ? 'flex-col items-center' : 'justify-between')}>
           {centered ? mark : null}
@@ -76,7 +77,7 @@ export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, 
             <p className={cn('page-stat-label leading-snug text-muted-foreground', labelClassName)}>
               <BilingualText en={label} el={labelEl} stacked wrap />
             </p>
-            <p className={cn('page-stat font-semibold tabular-nums tracking-tight', valueClassName)}>{value}</p>
+            <p data-testid={`${testId}-value`} className={cn('page-stat font-semibold tabular-nums tracking-tight', valueClassName)}>{value}</p>
           </div>
           {centered ? null : mark}
         </div>
@@ -111,7 +112,7 @@ export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, 
     ? bilingualAria(caption, captionEl)
     : undefined;
   return href ? (
-    <Link href={href} title={destination} className="group block h-full min-w-0 w-full rounded-2xl focus-ring">
+    <Link href={href} title={destination} data-testid={`${testId}-open`} className="group block h-full min-w-0 w-full rounded-2xl focus-ring">
       {content}
     </Link>
   ) : (

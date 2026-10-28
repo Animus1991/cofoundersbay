@@ -1,0 +1,142 @@
+{
+  "base": "aea3d864f7e048fd14e509a5a135b5d0bd76cc45",
+  "source": "7d861e314657800d1dfb4964377bcfd705c6dd16",
+  "method": "reviewed content patch; not git pull/merge",
+  "files": [
+    {
+      "path": "apps/api/src/matching/matching.controller.ts",
+      "equal": true,
+      "sha256": "4127e3eab2dcef5f1224e44e93af76c527f0ccecfd5624a3ccac00b900df09d2"
+    },
+    {
+      "path": "apps/api/src/matching/matching.service.ts",
+      "equal": true,
+      "sha256": "c2e9adb26156ed9400ca5e9068c1b66c49c59f1d1dba1637a0230fd7fe2d97eb"
+    },
+    {
+      "path": "apps/api/src/matching/published-matches.test.ts",
+      "equal": true,
+      "sha256": "73e5323686f24461715d5d1168f9e0feb7fe1af030be262f68e7c51a0af6140e"
+    },
+    {
+      "path": "apps/web/scripts/dev.js",
+      "equal": true,
+      "sha256": "b8b11bd65cbd06a48585136737e461ac186d10d66c78c3a35db384a6714a8c61"
+    },
+    {
+      "path": "apps/web/src/app/ai/capabilities/page.tsx",
+      "equal": true,
+      "sha256": "f4c95a43b2c846b65ae5e7f6f57bc9040c6ebbfc479a94a640e669ac6d0a23ea"
+    },
+    {
+      "path": "apps/web/src/app/matches/page.tsx",
+      "equal": true,
+      "sha256": "f327d2a307edfd84b190d7f1e8764a49c2f3e39a82099e6cc127a0eb2ee7365c"
+    },
+    {
+      "path": "apps/web/src/app/research/[boardId]/page.tsx",
+      "equal": true,
+      "sha256": "9046b8fde7a4ccd264d2b6afee5e1c74628c3cd51e4e397018c9249ae16cdac3"
+    },
+    {
+      "path": "apps/web/src/components/common/PageContextualHelp.tsx",
+      "equal": true,
+      "sha256": "3b20bbeffe7e753389a49fe8ab3142b8714077cdfc321d71f555b0c8004719fd"
+    },
+    {
+      "path": "apps/web/src/components/layout/AppShell.tsx",
+      "equal": true,
+      "sha256": "24ebbbba848db3a101af860d04dfef05a6c98d32c9d08652c3e51fb18e07f7fa"
+    },
+    {
+      "path": "apps/web/src/components/layout/PinPageButton.tsx",
+      "equal": true,
+      "sha256": "d288cbe2bfc582acaf58887780db9997f75ac4dcb9dc7b5b64579d2274e3ce29"
+    },
+    {
+      "path": "apps/web/src/components/matches/MatchScoreExplainer.tsx",
+      "equal": true,
+      "sha256": "839edcdb30ad2884c3d8dda5586dfc9fb1033b7ddac8ee692599e90360ad45af"
+    },
+    {
+      "path": "apps/web/src/components/research/ResearchNodeViewer.tsx",
+      "equal": true,
+      "sha256": "6d937f2ca1a805d03927562252c6db73ebbb4e66bb521969668c80e4386938f9"
+    },
+    {
+      "path": "apps/web/src/contexts/BuilderContext.tsx",
+      "equal": true,
+      "sha256": "739c6465c963dc1b3b788b57dd0e16967e578934f36a8d88a542aa5cb11227fd"
+    },
+    {
+      "path": "apps/web/src/hooks/useAIChat.ts",
+      "equal": true,
+      "sha256": "375e4703e19d2275d2f7d1c5c2df8bb844584f75d17842ae7253b68c2eaca42d"
+    },
+    {
+      "path": "apps/web/src/lib/action-registry.ts",
+      "equal": true,
+      "sha256": "89e5887d4d4f8d33a049ba38e29f678b5c7eef8696808b3e11c356138f786cdf"
+    },
+    {
+      "path": "apps/web/src/lib/copilot-engine.ts",
+      "equal": true,
+      "sha256": "d2f018172d7dc4c991a2e6ec689e8919d22899f5185986ab2494453dcab1e83c"
+    },
+    {
+      "path": "apps/web/src/lib/copilot-planner.ts",
+      "equal": true,
+      "sha256": "db6b53bde67ce61476afb62bf549d2646755ea5f3447201f2c2e8872674348a3"
+    },
+    {
+      "path": "apps/web/src/lib/i18n/catalog.ts",
+      "equal": true,
+      "sha256": "e5cdf995788097cf450d09b5246a5d4493c2ae0b29fa64428e2e1f4006f3aab9"
+    },
+    {
+      "path": "apps/web/src/lib/preview-api.ts",
+      "equal": true,
+      "sha256": "360944b1c0baf65b9510aa596c6219edc96d18544771966e38cfc65c5f631545"
+    },
+    {
+      "path": "apps/web/src/lib/reply-style.ts",
+      "equal": true,
+      "sha256": "090a0fe886a2ce5ee94c9417a9708f2d1155fb0e28f0922350a54d334d75268f"
+    },
+    {
+      "path": "apps/web/src/lib/replyStyleAndPins.test.ts",
+      "equal": true,
+      "sha256": "9236d33463e785ff0f0e300512a70aebd9f4473bd4d77b64422be15710587958"
+    },
+    {
+      "path": "docs/PLATFORM_DESIGN_AI_PLAN.md",
+      "equal": true,
+      "sha256": "6caa4c7c65b302c368f2f35e7d6745390dbaa0f86aa30546d15ee71b812858af"
+    },
+    {
+      "path": "packages/shared/src/actions/declarations.ts",
+      "equal": true,
+      "sha256": "39ae049ff495a72e7ebaf3eb36f0d425192918927741c8f3de30f511e5b36f30"
+    },
+    {
+      "path": "packages/shared/src/actions/types.ts",
+      "equal": true,
+      "sha256": "943b13c3297b54808b9fdfdd4376740d7246cb55cd98786659e7dcbcb7b5fb5e"
+    },
+    {
+      "path": "packages/shared/src/matching/index.ts",
+      "equal": true,
+      "sha256": "6d0de834509fa8ff651e408237c1e8d1f487d707ceec316fe679afc87a896a71"
+    },
+    {
+      "path": "packages/shared/src/matching/score.ts",
+      "equal": true,
+      "sha256": "acb4e2af0f9130ba283db2d448ebeda8e2ea0587b9d8a71bfcbee22a73913161"
+    },
+    {
+      "path": "packages/shared/src/matching/skills.ts",
+      "equal": true,
+      "sha256": "3b15586acfc52b26040bde1fb398c5c0731f6787c72b1d5edfb18e856e8f68f0"
+    }
+  ]
+}
