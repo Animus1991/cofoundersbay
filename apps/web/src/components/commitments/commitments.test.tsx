@@ -162,7 +162,7 @@ describe('NeedCard', () => {
     expect(screen.getByText(/does not promise funding/)).toBeTruthy();
     expect(container.querySelector('[data-need-card-group="context"]')?.className).toMatch(/md:grid-cols-2/);
     expect(container.querySelector('[data-need-card-group="needs-and-offer"]')?.className).toMatch(/md:grid-cols-2/);
-    expect(container.querySelector('[data-card-field="offer"]')?.className).toMatch(/bg-primary\/5/);
+    expect(container.querySelector('[data-card-field="offer"]')?.className).not.toMatch(/bg-/);
     rerender(<NeedCard card={{ ...base, kind: 'cofounder', offer: { ...base.offer, equity: null } }} />);
     expect(screen.queryByText(/does not promise funding/)).toBeNull();
   });

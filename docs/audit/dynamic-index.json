@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T21:14:01.009Z",
+  "generatedAt": "2026-10-28T20:12:13.268Z",
   "scope": "Read-only synthetic demo founder; no real authorization, other roles, writes, or full template coverage",
   "caveat": "A missing ID can fall back to a different entity. HTTP 200 is not proof of lookup correctness.",
   "inventory": [

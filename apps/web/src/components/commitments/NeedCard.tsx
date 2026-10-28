@@ -43,10 +43,7 @@ function Field({
   children: ReactNode;
 }) {
   return (
-    <div
-      data-card-field={tone}
-      className={cn(tone === 'offer' && 'rounded-md bg-primary/5')}
-    >
+    <div data-card-field={tone}>
       <dt className={cn(
         'text-xs font-medium text-muted-foreground',
         tone === 'offer' && 'text-primary-accessible',

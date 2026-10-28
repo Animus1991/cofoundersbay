@@ -18,12 +18,17 @@ function probe(code, overrides = {}) {
     fs.rmSync(root, { recursive: true, force: true });
   }
 }
+// The guard itself is Unix-only: it demands a private /tmp/cfb-isolated-*
+// socket dir with mode 0700 and Node's IPC there is a Unix-domain socket,
+// not a Windows named pipe. Only the negative launch check is portable.
+const UNIX_ONLY = { skip: process.platform === 'win32' };
+
 test('guard refuses a non-test launch', () => {
   const result = probe('', { NODE_ENV: 'production' });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /requires the isolated test runner/);
 });
-test('outbound TCP is denied before a connection is made', () => {
+test('outbound TCP is denied before a connection is made', UNIX_ONLY, () => {
   const result = probe(`
     const assert = require('node:assert/strict');
     const net = require('node:net');
@@ -32,13 +37,13 @@ test('outbound TCP is denied before a connection is made', () => {
   `);
   assert.equal(result.status, 0, result.stderr);
 });
-test('fetch cannot contact external providers', () => {
+test('fetch cannot contact external providers', UNIX_ONLY, () => {
   const result = probe(`
     require('node:assert/strict').rejects(fetch('https://example.invalid'), /outbound fetch is disabled/);
   `);
   assert.equal(result.status, 0, result.stderr);
 });
-test('a connection to the private socket remains possible', () => {
+test('a connection to the private socket remains possible', UNIX_ONLY, () => {
   const result = probe(`
     const net = require('node:net');
     const socket = require('node:path').join(process.env.CFB_TEST_SOCKET,'test.sock');

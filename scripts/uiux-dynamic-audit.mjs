@@ -3,11 +3,15 @@
  * node scripts/uiux-dynamic-audit.mjs --limit=12 [--width=390] [--locale=en] [--theme=dark]
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
-const app = new URL('../apps/web/src/app/', import.meta.url).pathname;
-const out = new URL('../docs/audit/', import.meta.url).pathname;
+// fileURLToPath, not URL.pathname: pathname yields /C:/... on Windows.
+const app = fileURLToPath(new URL('../apps/web/src/app/', import.meta.url));
+const out = fileURLToPath(new URL('../docs/audit/', import.meta.url));
+// relative() returns \-separated paths on Windows; fixtures use /.
+const rel = (from, to) => relative(from, to).split(sep).join('/');
 const requireWeb = createRequire(new URL('../apps/web/package.json', import.meta.url));
 const { chromium } = requireWeb('@playwright/test');
 let AxeBuilder;
@@ -55,8 +59,8 @@ function walk(dir) {
   for (const item of readdirSync(dir, { withFileTypes: true })) {
     const file = join(dir, item.name);
     if (item.isDirectory()) walk(file);
-    else if (item.name === 'page.tsx' && relative(app, file).split('/').some(p => p.startsWith('[')))
-      discovered.push(relative(app, file));
+    else if (item.name === 'page.tsx' && rel(app, file).split('/').some(p => p.startsWith('[')))
+      discovered.push(rel(app, file));
   }
 }
 walk(app);
@@ -87,7 +91,7 @@ function index() {
       catch (error) { result = { status: 'invalid_checkpoint', error: String(error) }; }
     }
     return { ...c, status: result.status, httpStatus: result.httpStatus ?? null,
-      finalPath: result.finalPath ?? null, checkpoint: existsSync(path) ? relative(out, path) : null };
+      finalPath: result.finalPath ?? null, checkpoint: existsSync(path) ? rel(out, path) : null };
   });
   const inventory = fixtures.map(f => ({
     ...f, fixtureStatus: f.known ? 'source_confirmed_sample_only' : 'blocked_no_valid_detail_fixture',

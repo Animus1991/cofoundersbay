@@ -5,11 +5,15 @@
  * Requires Playwright browser libraries (e.g. the Nix shell documented in docs/audit/README.txt).
  */
 import { readdirSync, readFileSync, mkdirSync, writeFileSync, renameSync, existsSync, copyFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
-const root = new URL('../apps/web/src/app/', import.meta.url).pathname;
-const out = new URL('../docs/audit/', import.meta.url).pathname;
+// fileURLToPath, not URL.pathname: pathname yields /C:/... on Windows.
+const root = fileURLToPath(new URL('../apps/web/src/app/', import.meta.url));
+const out = fileURLToPath(new URL('../docs/audit/', import.meta.url));
+// relative() returns \-separated paths on Windows; fixtures use /.
+const rel = (from, to) => relative(from, to).split(sep).join('/');
 const requireWeb = createRequire(new URL('../apps/web/package.json', import.meta.url));
 const { chromium } = requireWeb('@playwright/test');
 let AxeBuilder;
@@ -53,22 +57,22 @@ function walk(dir) {
 walk(root);
 const routeMap = new Map();
 for (const file of routeFiles.sort()) {
-  const parts = relative(root, file).split('/').slice(0, -1);
+  const parts = rel(root, file).split('/').slice(0, -1);
   if (parts.some((part) => part.startsWith('@') || part.startsWith('[') || part.startsWith('(.)'))) continue;
   const route = '/' + parts.filter((part) => !/^\(.*\)$/.test(part)).join('/');
   if (routeMap.has(route)) throw new Error(`Duplicate static route ${route}: ${file} and ${routeMap.get(route)}`);
-  routeMap.set(route, relative(root, file));
+  routeMap.set(route, rel(root, file));
 }
 const routes = [...routeMap.keys()].sort();
-const dynamicTemplates = routeFiles.filter((file) => relative(root, file).split('/').some((part) => part.startsWith('[')))
+const dynamicTemplates = routeFiles.filter((file) => rel(root, file).split('/').some((part) => part.startsWith('[')))
   .map((file) => {
-    const parts = relative(root, file).split('/').slice(0, -1);
+    const parts = rel(root, file).split('/').slice(0, -1);
     return {
       template: '/' + parts.filter((part) => !/^\(.*\)$/.test(part)).join('/'),
-      sourceFile: relative(root, file),
+      sourceFile: rel(root, file),
       status: 'not_tested',
       reason: 'A literal fixture navigation, if present, samples one ID only; full dynamic-template/content coverage is not established.',
-      sampledFixtures: dynamicCases.filter((c) => c.sourceFile === relative(root, file)).map((c) => c.route),
+      sampledFixtures: dynamicCases.filter((c) => c.sourceFile === rel(root, file)).map((c) => c.route),
     };
   }).sort((a, b) => a.template.localeCompare(b.template));
 const selectedRoutes = matrix && flags.routes
@@ -131,7 +135,7 @@ function matrixOverview() {
         routeType: fixture ? 'dynamic' : 'static', fixture: fixture?.fixture ?? null,
         status: record.status, finalPath: record.finalPath ?? null, httpStatus: record.httpStatus ?? null,
         ...(postCheckpointChanges.length ? { postCheckpointChanges } : {}),
-        checkpoint: record.status === 'not_tested' ? null : relative(out, path),
+        checkpoint: record.status === 'not_tested' ? null : rel(out, path),
       });
     }
   }
@@ -142,13 +146,13 @@ function matrixOverview() {
     const dir = join(out, 'matrix-evidence', String(w), lang, palette, 'reduce');
     for (const route of [...routes, ...dynamicCases.map((c) => c.route)]) {
       const path = join(dir, `${key(route)}.json`);
-      if (existsSync(path)) supplemental.push({ width: w, locale: lang, theme: palette, motion: 'reduce', requestedRoute: route, checkpoint: relative(out, path) });
+      if (existsSync(path)) supplemental.push({ width: w, locale: lang, theme: palette, motion: 'reduce', requestedRoute: route, checkpoint: rel(out, path) });
     }
   }
   for (const w of [320, 720]) for (const lang of locales) for (const palette of [...themes, 'system']) {
     for (const route of [...routes, ...dynamicCases.map((c) => c.route)]) {
       const path = join(out, 'matrix-evidence', String(w), lang, palette, `${key(route)}.json`);
-      if (existsSync(path)) supplemental.push({ width: w, locale: lang, theme: palette, motion: 'no-preference', requestedRoute: route, checkpoint: relative(out, path) });
+      if (existsSync(path)) supplemental.push({ width: w, locale: lang, theme: palette, motion: 'no-preference', requestedRoute: route, checkpoint: rel(out, path) });
     }
   }
   const tally = Object.fromEntries([...new Set(cells.map((r) => r.status))].map((status) => [status, cells.filter((r) => r.status === status).length]));
