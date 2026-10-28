@@ -29,7 +29,7 @@ import { messageSnippet, readProjectDelivery, textMatches } from '@cofounderbay/
 import { PREVIEW_MESSAGE_EL } from './i18n/strings-messages';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis, placeVariants } from '@cofounderbay/shared';
-import { industryFit, locationFit, matchFrictions, matchStrengths, roleFit, seekerWants, skillsFit } from '@cofounderbay/shared';
+import { computeMatchScore, industryFit, locationFit, matchFrictions, matchStrengths, roleFit, seekerWants, skillsFit, type ProfileSnapshot } from '@cofounderbay/shared';
 import { roleFamily } from './role-family';
 import type { FeedPost } from './api';
 import { ORG, ORG_FOUNDERS, ORG_INVESTORS, ORG_MENTORS, ORG_SLUG, ORG_STAFF, orgPerson } from './demo/org-world';
@@ -1099,10 +1099,6 @@ const PEOPLE = [
     industries: ['SaaS'],
     // Harbor is raising its seed (the milestones' €750K round): traction.
     stage: 'traction',
-    matchScore: 92,
-    // What the shared engine says for these two profiles. "Same stage" was
-    // here, about a company two stages ahead of the visitor's idea.
-    matchReasons: ['Cofounder match', 'Skills overlap', 'Same or nearby location'],
     lookingFor: 'technical cofounder',
     availability: 'full-time',
     lastSeenSecondsAgo: 120,
@@ -1122,9 +1118,6 @@ const PEOPLE = [
     industries: ['Developer tools'],
     // Taverna OS has a working product, not traction yet.
     stage: 'mvp',
-    matchScore: 88,
-    // "Skills overlap" was here: he shares no skill with the visitor.
-    matchReasons: ['Cofounder match', 'Similar stage', 'Active this week'],
     lookingFor: 'business cofounder',
     availability: 'full-time',
     lastSeenSecondsAgo: 240,
@@ -1142,8 +1135,6 @@ const PEOPLE = [
     skillNames: ['Mentoring', 'Go-to-market', 'Leadership'],
     skills: ['Mentoring', 'GTM'],
     industries: ['Marketplace'],
-    matchScore: 81,
-    matchReasons: ['Mentor match'],
     lookingFor: 'mentees',
     availability: 'part-time',
     lastSeenSecondsAgo: 9000,
@@ -1161,8 +1152,6 @@ const PEOPLE = [
     skillNames: ['Investing', 'Networks'],
     skills: ['Investing'],
     industries: ['Fintech', 'SaaS'],
-    matchScore: 76,
-    matchReasons: ['Stage fit'],
     lookingFor: 'deal flow',
     availability: 'flexible',
     // The API filters `investmentStages` on the role payload's `stages`.
@@ -1173,6 +1162,77 @@ const PEOPLE = [
 ];
 
 const SHORTLIST_IDS = new Set<string>(['user-marcus']);
+
+/*
+ * Scores and reasons from the matching engine, over the two sample profiles
+ * (owner, 2026-10-28; docs §106). They were written by hand (92, 88, 81, 76)
+ * and could not agree with the reasons and axes computed beside them. The
+ * visitor's profile is read when asked, so an edit in the demo moves them.
+ */
+type DemoPerson = (typeof PEOPLE)[number];
+
+function demoSnapshot(person: {
+  userId: string;
+  role: string;
+  displayName: string;
+  headline?: string | null;
+  bio?: string | null;
+  location?: string | null;
+  skillNames: string[];
+  stage?: string;
+  availability?: string;
+  investmentStages?: string[];
+}): ProfileSnapshot {
+  const role = (roleFamily(person.role) ?? person.role) as ProfileSnapshot['role'];
+  return {
+    userId: person.userId,
+    profileId: `hit-${person.userId}`,
+    role,
+    displayName: person.displayName,
+    headline: person.headline ?? null,
+    bio: person.bio ?? null,
+    location: person.location ?? null,
+    timezone: null,
+    skillNames: person.skillNames,
+    rolePayload: {
+      ...(person.stage ? { stage: person.stage } : {}),
+      // A founder's availability is their commitment to the company.
+      ...(role === 'founder' && person.availability ? { commitment: person.availability } : {}),
+      ...(person.investmentStages?.length ? { stages: person.investmentStages } : {}),
+    },
+    // Every sample profile says it was updated on the seed day, moved to
+    // the reader's week (the profile endpoint's updatedAt).
+    updatedAtMs: Date.parse(NOW) + previewClockOffsetMs(),
+  };
+}
+
+function visitorSnapshot(): ProfileSnapshot {
+  const me = ME_PROFILE.profile;
+  return {
+    userId: ME_ID,
+    profileId: me.id,
+    role: me.role as ProfileSnapshot['role'],
+    displayName: me.displayName,
+    headline: me.headline,
+    bio: me.bio,
+    location: me.location,
+    timezone: me.timezone,
+    skillNames: me.skills.map((sk) => sk.skillName),
+    rolePayload: me.rolePayload as Record<string, unknown>,
+    updatedAtMs: Date.parse(NOW) + previewClockOffsetMs(),
+  };
+}
+
+/** One sample person with the engine's score and reasons for the visitor. */
+function scoredPerson<T extends DemoPerson>(person: T): T & { matchScore: number; matchReasons: string[] } {
+  const result = computeMatchScore(visitorSnapshot(), demoSnapshot(person));
+  return { ...person, matchScore: result.score, matchReasons: result.breakdown.reasons };
+}
+
+/** The sample people, scored, best first (as the API orders recommendations). */
+function scoredPeople() {
+  return PEOPLE.map((p) => scoredPerson(p)).sort((a, b) => b.matchScore - a.matchScore);
+}
 
 const CONVERSATIONS = [
   {
@@ -1437,6 +1497,8 @@ const ME_PROFILE = {
     avatarUrl: null,
     rolePayload: {
       stage: 'idea',
+      // Full time on the company: the commitment a co-founder match compares.
+      commitment: 'full-time',
       lookingFor: ['cofounder', 'mentor'],
       // Roles and schools for the profile's Experience section; fictional names only.
       experience: [
@@ -2686,8 +2748,8 @@ function kitchenSink() {
     items: [],
     data: [],
     results: [],
-    hits: PEOPLE,
-    suggestions: PEOPLE,
+    hits: scoredPeople(),
+    suggestions: scoredPeople(),
     posts: FEED_POSTS,
     notifications: NOTIFICATIONS,
     conversations: CONVERSATIONS,
@@ -3012,7 +3074,9 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
       lastSeenSecondsAgo: 86_400,
       joinedAt: previewIsoInDays(-m.joined, 9),
     }));
-    const pool = roles.includes('mentor') ? [...PEOPLE, ...orgMentorHits] : PEOPLE;
+    // The sample people carry the engine's score for the visitor (§106).
+    const scored = PEOPLE.map((p) => scoredPerson(p));
+    const pool = roles.includes('mentor') ? [...scored, ...orgMentorHits] : scored;
     // The sheet's industry, skill and commitment filters, as the API applies
     // them; a place matches in either language («Λεμεσός» finds "Limassol").
     const listParam = (name: string) => (params.get(name) ?? '').split(',').map((v) => v.trim().toLowerCase()).filter(Boolean);
@@ -3160,7 +3224,8 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   const vsMatch = pathname.match(/^\/api\/recommendations\/vs\/([^/]+)$/);
   if (vsMatch) {
     const targetId = decodeURIComponent(vsMatch[1]);
-    const target = PEOPLE.find((p) => p.userId === targetId || p.id === targetId);
+    const found = PEOPLE.find((p) => p.userId === targetId || p.id === targetId);
+    const target = found ? scoredPerson(found) : null;
     if (!target) throw new DemoRefusal(404, 'Profile not found', { messageEl: 'Το προφίλ δεν βρέθηκε.' });
     const me = ME_PROFILE.profile;
     const mySkills = me.skills.map((sk) => sk.skillName);
@@ -3245,7 +3310,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     // on a match card agrees with the directory's online dot.
     const nowSeconds = Math.floor(previewNowMs() / 1000);
     return {
-      suggestions: PEOPLE.map((p) => ({ ...p, lastSeenAt: p.lastSeenSecondsAgo == null ? null : nowSeconds - p.lastSeenSecondsAgo })),
+      suggestions: scoredPeople().map((p) => ({ ...p, lastSeenAt: p.lastSeenSecondsAgo == null ? null : nowSeconds - p.lastSeenSecondsAgo })),
     };
   }
 

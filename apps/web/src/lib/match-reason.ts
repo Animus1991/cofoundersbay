@@ -25,6 +25,8 @@ const KNOWN: Record<string, { en: string; el: string }> = {
   'Skills overlap': { en: 'Shared skills', el: 'Κοινές δεξιότητες' },
   'Active this week': { en: 'Active this week', el: 'Ενεργό μέλος αυτή την εβδομάδα' },
   'Mentor match': { en: 'Mentor match', el: 'Ταίριασμα μέντορα' },
+  'Investor match': { en: 'Investor match', el: 'Ταίριασμα επενδυτή' },
+  'Founder match': { en: 'Founder match', el: 'Ταίριασμα ιδρυτή' },
   'Stage fit': { en: 'Stage fit', el: 'Ταιριαστό στάδιο' },
   'Cofounder match': { en: 'Co-founder match', el: 'Ταίριασμα συνιδρυτή' },
   'Similar stage': { en: 'Similar stage', el: 'Κοντινό στάδιο' },

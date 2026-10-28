@@ -585,6 +585,8 @@ export class SearchService {
       location: p.location,
       timezone: p.timezone,
       skillNames: p.skills.map((s) => s.skill.name),
+      // The catalogue's family decides whether the other brings what the reader lacks (docs §106).
+      skillCategories: p.skills.map((s) => (s.skill as { category?: string | null }).category ?? null),
       rolePayload: (p.rolePayload as Record<string, unknown>) ?? null,
       updatedAtMs: p.updatedAt.getTime(),
     };

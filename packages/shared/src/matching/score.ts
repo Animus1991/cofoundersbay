@@ -4,6 +4,7 @@
  */
 
 import type { ProfileSnapshot, MatchScoreResult, MatchScoreBreakdown, UserRole } from './types';
+import { skillFamily, teamSkillsFit } from './skills';
 
 const MAX_SCORE = 100;
 const WEIGHTS = {
@@ -20,14 +21,6 @@ function norm(s: string | null | undefined): string {
   return (s ?? '').toLowerCase().trim();
 }
 
-/** Jaccard similarity of two sets (0–1). */
-function jaccard(a: Set<string>, b: Set<string>): number {
-  if (a.size === 0 && b.size === 0) return 1;
-  const inter = [...a].filter((x) => b.has(x)).length;
-  const union = new Set([...a, ...b]).size;
-  return union > 0 ? inter / union : 0;
-}
-
 /** Complementary roles for cofounder/team matching (founder ↔ founder gets full; founder ↔ mentor/investor gets full). */
 function roleComplementarityScore(viewerRole: UserRole, candidateRole: UserRole): number {
   if (viewerRole === 'founder' && candidateRole === 'founder') return WEIGHTS.roleComplementarity; // cofounder match
@@ -37,26 +30,39 @@ function roleComplementarityScore(viewerRole: UserRole, candidateRole: UserRole)
   return Math.floor(WEIGHTS.roleComplementarity * 0.5); // same role or other: partial
 }
 
-/** rolesSought: viewer wants these roles; candidate's role/skills can "fill" one. */
-function rolesSoughtMatch(viewerPayload: Record<string, unknown> | null, candidateRole: UserRole, candidateSkillNames: string[]): boolean {
-  const sought = viewerPayload?.rolesSought as string[] | undefined;
-  if (!sought?.length) return true;
-  const roleMap: Record<string, string> = {
-    founder: 'founder',
-    mentor: 'mentor',
-    investor: 'investor',
-    cto: 'technical',
-    coo: 'operations',
-    ceo: 'leadership',
-    business_partner: 'business',
-  };
-  const candidateRoleLower = candidateRole.toLowerCase();
-  const candidateSkillsLower = new Set(candidateSkillNames.map((s) => s.toLowerCase()));
+/**
+ * Whether a founder candidate fills one of the roles the reader is looking
+ * for (`rolesSought`, profile edit's "Looking for": Co-founder, CTO,
+ * Designer, Marketing, Sales, Operations, Other).
+ *
+ * The old table knew "cto", "coo", "business_partner" and looked for a skill
+ * literally called "technical": "Co-founder", the first option, matched
+ * nobody, so a founder looking for a co-founder lost 40% of the role points
+ * against every other founder (docs §106). The words are read as profile
+ * edit writes them; a team role is filled by a skill of its family.
+ */
+function rolesSoughtMatch(
+  viewerPayload: Record<string, unknown> | null,
+  candidateRole: UserRole,
+  candidateSkillNames: string[],
+  candidateSkillCategories?: readonly (string | null | undefined)[],
+): boolean {
+  const raw = viewerPayload?.rolesSought;
+  const sought = Array.isArray(raw) ? raw.filter((r): r is string => typeof r === 'string' && r.trim() !== '') : [];
+  if (!sought.length) return true;
+  const families = new Set(candidateSkillNames.map((n, i) => skillFamily(n, candidateSkillCategories?.[i])));
+  const skills = new Set(candidateSkillNames.map(norm));
+  const role = norm(candidateRole);
   for (const r of sought) {
-    const rn = norm(r);
-    if (rn === candidateRoleLower) return true;
-    if (roleMap[rn] && candidateSkillsLower.has(roleMap[rn])) return true;
-    if (candidateSkillsLower.has(rn)) return true;
+    const key = norm(r).replace(/[\s_]+/g, '-');
+    if (key === 'other') return true;
+    if ((key === 'co-founder' || key === 'cofounder' || key === 'founder' || key === 'business-partner') && role === 'founder') return true;
+    if ((key === 'cto' || key === 'technical' || key === 'engineer' || key === 'developer') && families.has('technical')) return true;
+    if ((key === 'designer' || key === 'design') && families.has('design')) return true;
+    if ((key === 'marketing' || key === 'sales' || key === 'operations' || key === 'coo' || key === 'ceo') && (families.has('business') || skills.has(key))) return true;
+    if ((key === 'mentor' || key === 'advisor') && role === 'mentor') return true;
+    if ((key === 'investor' || key === 'angel') && role === 'investor') return true;
+    if (key === role || skills.has(key)) return true;
   }
   return false;
 }
@@ -68,19 +74,27 @@ function rolesSoughtMatch(viewerPayload: Record<string, unknown> | null, candida
 export function computeMatchScore(viewer: ProfileSnapshot, candidate: ProfileSnapshot): MatchScoreResult {
   const reasons: string[] = [];
   let roleComplementarity = roleComplementarityScore(viewer.role, candidate.role);
-  if (viewer.role === 'founder' && candidate.role === 'founder' && !rolesSoughtMatch(viewer.rolePayload, candidate.role, candidate.skillNames)) {
+  if (viewer.role === 'founder' && candidate.role === 'founder' && !rolesSoughtMatch(viewer.rolePayload, candidate.role, candidate.skillNames, candidate.skillCategories)) {
     roleComplementarity = Math.floor(roleComplementarity * 0.6);
   } else if (viewer.role === 'founder' && candidate.role === 'founder') {
     reasons.push('Cofounder match');
+  } else if (roleComplementarity === WEIGHTS.roleComplementarity) {
+    // The other full role points, named: they counted without a reason, so
+    // a mentor's card said nothing about the role that scored it (§106).
+    const named = candidate.role === 'mentor' ? 'Mentor match' : candidate.role === 'investor' ? 'Investor match' : candidate.role === 'founder' ? 'Founder match' : null;
+    if (named) reasons.push(named);
   }
 
-  const viewerSkills = new Set(viewer.skillNames.map(norm).filter(Boolean));
-  const candidateSkills = new Set(candidate.skillNames.map(norm).filter(Boolean));
-  const j = jaccard(viewerSkills, candidateSkills);
-  const skillsOverlap = Math.round(j * WEIGHTS.skillsOverlap);
-  // Two empty lists score as a full overlap (jaccard is 1); the score is left
-  // as it is, but the reason is only said when a skill is actually shared.
-  if (skillsOverlap > 0 && [...viewerSkills].some((s) => candidateSkills.has(s))) reasons.push('Skills overlap');
+  // How the two sets of skills fit as a team (./skills): common ground and
+  // what the other adds. No skills on either side: nothing to score (two
+  // empty lists used to count as a full overlap, 25 of 25).
+  const skills = teamSkillsFit(
+    { names: viewer.skillNames, categories: viewer.skillCategories },
+    { names: candidate.skillNames, categories: candidate.skillCategories },
+  );
+  const skillsOverlap = skills ? Math.round(skills.fit * WEIGHTS.skillsOverlap) : 0;
+  if (skills && skills.shared > 0) reasons.push('Skills overlap');
+  if (skills && skills.added > 0) reasons.push('Complementary skills');
 
   const viewerStage = (viewer.rolePayload?.stage as string) ?? '';
   const candidateStage = (candidate.rolePayload?.stage as string) ?? '';

@@ -9,33 +9,29 @@
  * Athens). Here, the API and the demo compute with the same rules. Pure.
  */
 
-/** Skills that complete each other (a technical person and a business person…), 0..1. */
-export function complementarySkills(userNames: string[], candidateNames: string[]): number {
-  const pairs = [
-    ['technical', 'business'], ['marketing', 'product'],
-    ['design', 'development'], ['sales', 'engineering'], ['finance', 'operations'],
-  ];
-  let count = 0;
-  for (const [a, b] of pairs) {
-    const uA = userNames.some((n) => n.includes(a)), cB = candidateNames.some((n) => n.includes(b));
-    const cA = candidateNames.some((n) => n.includes(a)), uB = userNames.some((n) => n.includes(b));
-    if ((uA && cB) || (cA && uB)) count++;
-  }
-  return Math.min(1, count / pairs.length);
-}
+import { teamSkillsFit } from './skills';
 
 /**
- * Skills fit, 0..1: skills held in common (by id, 70%) and complementary
- * pairs (by lowercased name, 30%); 0.4 when either side lists none.
+ * Skills fit for the comparison's "Skills" axis, 0..1: the team fit both
+ * engines use (`teamSkillsFit`: common ground 40%, what the other adds 60%).
+ * It counted shared skills and five word pairs, so someone who completed the
+ * reader's skills (TypeScript beside Product) scored 0% (docs §106). With no
+ * skills on either side the axis stays at its neutral 0.4.
  */
-export function skillsFit(input: { userKeys: string[]; candidateKeys: string[]; userNames: string[]; candidateNames: string[] }): number {
+export function skillsFit(input: {
+  userKeys: string[];
+  candidateKeys: string[];
+  userNames: string[];
+  candidateNames: string[];
+  userCategories?: (string | null | undefined)[];
+  candidateCategories?: (string | null | undefined)[];
+}): number {
   if (!input.userKeys.length || !input.candidateKeys.length) return 0.4;
-  const uIds = new Set(input.userKeys);
-  const cIds = new Set(input.candidateKeys);
-  const intersection = [...uIds].filter((id) => cIds.has(id)).length;
-  const union = new Set([...uIds, ...cIds]).size;
-  const jaccard = intersection / union;
-  return Math.min(1, jaccard * 0.7 + complementarySkills(input.userNames, input.candidateNames) * 0.3);
+  const fit = teamSkillsFit(
+    { names: input.userNames, categories: input.userCategories },
+    { names: input.candidateNames, categories: input.candidateCategories },
+  );
+  return fit ? fit.fit : 0.4;
 }
 
 /** Place fit, 0..1: the same place 1, the same country 0.7, elsewhere 0.3; 0.5 when either is missing. */

@@ -635,8 +635,9 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
           const profile = (r.profile ?? {}) as { displayName?: string | null; headline?: string | null };
           return {
             id: r.userId,
-            title: `${profile.displayName ?? 'A member'} · ${Math.round(r.score * 100)}% match`,
-            description: [profile.headline, r.reasons?.[0]].filter(Boolean).join(' · ').substring(0, 120) || undefined,
+            // The pair's one number and reason, as /matches shows them (docs §106).
+            title: `${profile.displayName ?? 'A member'} · ${typeof r.listScore === 'number' ? r.listScore : Math.round(r.score * 100)}% match`,
+            description: [profile.headline, r.listReasons?.[0] ?? r.reasons?.[0]].filter(Boolean).join(' · ').substring(0, 120) || undefined,
             url: `/matches/${encodeURIComponent(r.userId)}`,
             createdAt: new Date(),
           };

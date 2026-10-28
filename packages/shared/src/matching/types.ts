@@ -19,6 +19,8 @@ export interface ProfileSnapshot {
   timezone: string | null;
   /** Canonical skill names (or slugs) for overlap. */
   skillNames: string[];
+  /** The catalogue category of each skill (`Skill.category`), in the same order, where known. */
+  skillCategories?: (string | null)[];
   /** rolePayload from Profile – founder: industry, stage, commitment, rolesSought; mentor: expertiseAreas, etc. */
   rolePayload: Record<string, unknown> | null;
   /** Profile.updatedAt as ms for recency bonus. */

@@ -69,11 +69,49 @@ describe('the shared engine says "Skills overlap" only for a shared skill', () =
     updatedAtMs: 0,
   });
 
-  it('no longer claims an overlap for two empty skill lists, and keeps their score', () => {
+  it('gives two empty skill lists nothing, not a full overlap', () => {
     const empty = computeMatchScore(snapshot([]), snapshot([]));
     expect(empty.breakdown.reasons).not.toContain('Skills overlap');
-    // The score is a separate decision: two empty lists still count as they did.
-    expect(empty.breakdown.skillsOverlap).toBe(25);
+    // The owner's decision of 2026-10-28 (docs §106): it was 25 of 25.
+    expect(empty.breakdown.skillsOverlap).toBe(0);
+  });
+
+  it('scores a partner who completes the reader, and says so', () => {
+    const partner = computeMatchScore(snapshot(['Product', 'Growth']), snapshot(['TypeScript', 'AI']));
+    // It was 0: nothing shared. A new family (technical beside business) is 60% of the fit.
+    expect(partner.breakdown.skillsOverlap).toBe(15);
+    expect(partner.breakdown.reasons).toContain('Complementary skills');
+    expect(partner.breakdown.reasons).not.toContain('Skills overlap');
+    // The catalogue's category counts when the name says nothing.
+    const byCategory = computeMatchScore(
+      { ...snapshot(['Alpha']), skillCategories: ['business'] },
+      { ...snapshot(['Beta']), skillCategories: ['technical'] },
+    );
+    expect(byCategory.breakdown.skillsOverlap).toBe(15);
+  });
+
+  it('reads "Looking for" as profile edit writes it', () => {
+    const seeking = (rolesSought: string[], skills: string[] = []) =>
+      computeMatchScore({ ...snapshot(['Product']), rolePayload: { rolesSought } }, snapshot(skills));
+    // "Co-founder" matched nobody: a founder lost 40% of the role points against every founder.
+    expect(seeking(['Co-founder']).breakdown.roleComplementarity).toBe(25);
+    expect(seeking(['Co-founder']).breakdown.reasons).toContain('Cofounder match');
+    // A CTO is a founder with technical skills.
+    expect(seeking(['CTO'], ['TypeScript']).breakdown.roleComplementarity).toBe(25);
+    expect(seeking(['CTO'], ['Sales']).breakdown.roleComplementarity).toBe(15);
+    expect(seeking(['Designer'], ['Design (UI/UX)']).breakdown.roleComplementarity).toBe(25);
+    expect(seeking(['Marketing'], ['Growth']).breakdown.roleComplementarity).toBe(25);
+    expect(seeking(['Other']).breakdown.roleComplementarity).toBe(25);
+  });
+
+  it('names the full role points a mentor, an investor or a founder earns', () => {
+    const pair = (viewer: ProfileSnapshot['role'], candidate: ProfileSnapshot['role']) =>
+      computeMatchScore({ ...snapshot([]), role: viewer }, { ...snapshot([]), role: candidate }).breakdown;
+    expect(pair('founder', 'mentor')).toMatchObject({ roleComplementarity: 25, reasons: expect.arrayContaining(['Mentor match']) });
+    expect(pair('founder', 'investor').reasons).toContain('Investor match');
+    expect(pair('mentor', 'founder').reasons).toContain('Founder match');
+    // Half points are not a match, and say nothing.
+    expect(pair('mentor', 'mentor').reasons).toEqual(['Profile match']);
   });
 
   it('still says it when a skill is shared', () => {

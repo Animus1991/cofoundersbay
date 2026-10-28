@@ -280,6 +280,8 @@ type Topic = 'role' | 'skills' | 'stage' | 'commitment' | 'place' | 'activity' |
 const ENGINE_TOPIC: Record<string, Topic> = {
   'Cofounder match': 'role',
   'Mentor match': 'role',
+  'Investor match': 'role',
+  'Founder match': 'role',
   'Complementary roles': 'role',
   'Skills overlap': 'skills',
   'Complementary skills': 'skills',

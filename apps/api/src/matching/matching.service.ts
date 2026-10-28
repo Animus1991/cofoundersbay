@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { OPEN_TO_COPY, candidateRoleFor, compareCompatAnswers, industryFit, locationFit, matchFrictions, matchStrengths, openToBoost, openToShownTo, roleFit, seekerWants, skillsFit, isHiddenFromSearch } from '@cofounderbay/shared';
+import { OPEN_TO_COPY, candidateRoleFor, compareCompatAnswers, computeMatchScore, industryFit, locationFit, matchFrictions, matchStrengths, openToBoost, openToShownTo, roleFit, seekerWants, skillsFit, isHiddenFromSearch, type ProfileSnapshot } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { CacheService } from '../common/cache/cache.service';
 import { OpenToService } from '../open-to/open-to.service';
@@ -44,12 +44,22 @@ export interface MatchExplanation {
 
 export interface MatchScore {
   userId: string;
+  /** This engine's learning total, 0..1: it orders its own lists (feedback, behaviour, Open to). */
   score: number;
   confidence: number;
   reasons: string[];
   explanation: MatchExplanation[];
   breakdown: ScoreBreakdown;
   profile: any;
+  /**
+   * The pair's score as every page shows it, 0..100: the rule-based score
+   * of /matches (`computeMatchScore`), and its reasons. One number for a
+   * pair wherever it is read: the card, the dialog, the detail page, the
+   * comparison, the weekly email and a cohort run (owner, 2026-10-28;
+   * docs §106).
+   */
+  listScore: number;
+  listReasons: string[];
 }
 
 export interface MatchingResult {
@@ -139,7 +149,9 @@ export class MatchingService {
     if (!user) return [];
     const userVector = await this.getOrBuildFeatureVector(user);
     const criteria: MatchingCriteria = { userId: sourceUserId, remote: true };
-    return Promise.all(candidates.map((c) => this.calculateMatchScore(user, userVector, c, criteria, weights, outcomeMap, behavioralMap)));
+    const scored = await Promise.all(candidates.map((c) => this.calculateMatchScore(user, userVector, c, criteria, weights, outcomeMap, behavioralMap)));
+    // A cohort's suggestion shows the pair's one number (docs §106).
+    return scored.map((m) => ({ ...m, score: m.listScore / 100, reasons: m.listReasons }));
   }
 
   async getRecommendations(userId: string, limit = 10): Promise<MatchScore[]> {
@@ -413,7 +425,9 @@ export class MatchingService {
     const compatibility = targetListed ? compareCompatAnswers(compatOf(sourceUserId), compatOf(targetUserId)) : compareCompatAnswers(null, null);
 
     return {
-      overall: { score: Math.round(matchScore.score * 100), confidence: Math.round(matchScore.confidence * 100) },
+      // The pair's one number: the score /matches shows. The axes below
+      // stay as the analysis of it (docs §106).
+      overall: { score: matchScore.listScore, confidence: Math.round(matchScore.confidence * 100) },
       breakdown: [
         { key: 'role', label: 'Role Complementarity', score: Math.round(matchScore.breakdown.role * 100), color: '#4ADE80' },
         { key: 'skills', label: 'Skills & Expertise', score: Math.round(matchScore.breakdown.skills * 100), color: '#22D3EE' },
@@ -426,7 +440,7 @@ export class MatchingService {
       sharedStrengths,
       frictionPoints: frictionPoints.slice(0, 3),
       compatibility,
-      reasons: matchScore.reasons,
+      reasons: matchScore.listReasons,
       sourceProfile: {
         id: source.id,
         role: source.role,
@@ -520,6 +534,7 @@ export class MatchingService {
     ].filter(e => e.score > 0.3); // Only show meaningful dimensions
 
     const confidence = this.computeConfidence(breakdown, userVector, candidateVector);
+    const list = computeMatchScore(profileSnapshotOf(user), profileSnapshotOf(candidate));
 
     return {
       userId: candidate.id,
@@ -529,6 +544,8 @@ export class MatchingService {
       explanation,
       breakdown,
       profile: candidate.profile,
+      listScore: list.score,
+      listReasons: list.breakdown.reasons,
     };
   }
 
@@ -816,6 +833,10 @@ export class MatchingService {
       candidateKeys: candidateSkills.map((s) => s.skillId),
       userNames: userSkills.map((s) => (s.skill?.name ?? '').toLowerCase()),
       candidateNames: candidateSkills.map((s) => (s.skill?.name ?? '').toLowerCase()),
+      // The catalogue's family (technical, business, design) decides whether
+      // the other brings what the reader lacks.
+      userCategories: userSkills.map((s) => s.skill?.category ?? null),
+      candidateCategories: candidateSkills.map((s) => s.skill?.category ?? null),
     });
   }
 
@@ -838,4 +859,28 @@ export class MatchingService {
 function lookingForOf(user: any): string[] {
   const sought = user?.profile?.rolePayload?.rolesSought;
   return Array.isArray(sought) ? sought.filter((x: unknown): x is string => typeof x === 'string') : [];
+}
+
+/**
+ * A user record (with profile and skills) as the rule-based score reads it,
+ * so this engine can answer with the number /matches shows for the pair.
+ */
+function profileSnapshotOf(user: any): ProfileSnapshot {
+  const profile = user?.profile ?? {};
+  const skills: any[] = Array.isArray(profile.skills) ? profile.skills : [];
+  const updatedAt = profile.updatedAt ? new Date(profile.updatedAt).getTime() : 0;
+  return {
+    userId: String(user?.id ?? ''),
+    profileId: String(profile.id ?? user?.id ?? ''),
+    role: user?.role,
+    displayName: profile.displayName ?? '',
+    headline: profile.headline ?? null,
+    bio: profile.bio ?? null,
+    location: profile.location ?? null,
+    timezone: profile.timezone ?? null,
+    skillNames: skills.map((s) => s.skill?.name ?? '').filter(Boolean),
+    skillCategories: skills.filter((s) => s.skill?.name).map((s) => s.skill?.category ?? null),
+    rolePayload: (profile.rolePayload as Record<string, unknown> | null) ?? null,
+    updatedAtMs: Number.isFinite(updatedAt) ? updatedAt : 0,
+  };
 }

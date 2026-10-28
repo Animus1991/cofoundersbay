@@ -43,9 +43,15 @@ describe('the comparison names what differs, so a page can say it in Greek', () 
     expect(locationFit('Athens, Greece', 'Berlin, Germany')).toBe(0.3);
     expect(locationFit(null, 'Berlin, Germany')).toBe(0.5);
     expect(skillsFit({ userKeys: [], candidateKeys: ['a'], userNames: [], candidateNames: ['x'] })).toBe(0.4);
-    // One of three ids shared (0.7 × 1/3) and one complementary pair of five (0.3 × 1/5).
-    expect(skillsFit({ userKeys: ['a', 'b'], candidateKeys: ['b', 'c'], userNames: ['technical lead'], candidateNames: ['business development'] }))
-      .toBeCloseTo(0.7 / 3 + 0.3 / 5, 10);
+    // The team fit since 2026-10-28 (docs §106): common ground 40%, what the
+    // other adds 60%. A technical co-founder beside Product and Growth scored 0.
+    expect(skillsFit({ userKeys: ['p', 'g'], candidateKeys: ['ts', 'ai'], userNames: ['product', 'growth'], candidateNames: ['typescript', 'ai'] })).toBe(0.6);
+    // The catalogue's category decides when the name does not.
+    expect(skillsFit({ userKeys: ['x'], candidateKeys: ['y'], userNames: ['x'], candidateNames: ['y'], userCategories: ['business'], candidateCategories: ['technical'] })).toBe(0.6);
+    // One shared skill (half the common ground) and a new family.
+    expect(skillsFit({ userKeys: ['p', 'g'], candidateKeys: ['p', 'ts'], userNames: ['product', 'growth'], candidateNames: ['product', 'typescript'] })).toBe(0.8);
+    // A twin: all common ground, nothing added.
+    expect(skillsFit({ userKeys: ['p', 'g'], candidateKeys: ['p', 'g'], userNames: ['product', 'growth'], candidateNames: ['product', 'growth'] })).toBe(0.4);
     expect(industryFit(null, { stage: 'idea' })).toBe(0.5);
     expect(industryFit({ industry: 'SaaS', stage: 'idea' }, { industry: 'SaaS', stage: 'mvp' })).toBeCloseTo(0.5 + 0.3 + 0.13, 10);
     expect(industryFit({ stage: 'idea' }, { stage: 'scaling' })).toBe(0.5);

@@ -13,7 +13,9 @@ const vs = (userId: string) => resolvePreviewApi(`/api/recommendations/vs/${user
 describe('the demo comparison is computed from the two sample profiles', () => {
   it('shows the card’s score and the axes the profiles give data for', () => {
     const elena = vs('user-elena');
-    expect(elena.overall.score).toBe(92);
+    // The engine's number for the pair, as the card shows it (docs §106).
+    // It was written by hand as 92.
+    expect(elena.overall.score).toBe(70);
     expect(elena.breakdown.map((a) => a.key)).toEqual(['role', 'skills', 'industry', 'location']);
     // Both in Athens: the place fits, and there is nothing about time zones.
     expect(elena.breakdown.find((a) => a.key === 'location')?.score).toBe(100);
@@ -30,6 +32,30 @@ describe('the demo comparison is computed from the two sample profiles', () => {
     expect(sarah.breakdown.map((a) => a.key)).toEqual(['role', 'skills', 'location']);
     expect(sarah.frictionPoints[0]).toMatchObject({ key: 'location', values: { mine: 'Athens, Greece', theirs: 'London, UK' } });
     expect(sarah.sharedStrengths).toEqual([]);
+  });
+
+  it('scores every sample with the matching engine, one number wherever it is shown', () => {
+    type Scored = { userId: string; matchScore?: number; matchReasons?: string[] };
+    const { suggestions } = resolvePreviewApi('/api/recommendations?limit=50') as { suggestions: Scored[] };
+    // Best first, as the API orders recommendations. The hand-written
+    // 92, 88, 81 and 76 put Elena first with fewer shared points than Marcus.
+    expect(suggestions.map((s) => [s.userId, s.matchScore])).toEqual([
+      ['user-marcus', 75],
+      ['user-elena', 70],
+      ['user-sarah', 50],
+      ['user-nikos', 45],
+    ]);
+    const { hits } = resolvePreviewApi('/api/search/profiles?limit=50') as { hits: Scored[] };
+    for (const s of suggestions) {
+      expect(vs(s.userId).overall.score).toBe(s.matchScore);
+      expect(hits.find((h) => h.userId === s.userId)?.matchScore).toBe(s.matchScore);
+    }
+    const reasons = (userId: string) => suggestions.find((s) => s.userId === userId)?.matchReasons;
+    // A technical co-founder adds what the visitor lacks: it counts now.
+    expect(reasons('user-marcus')).toEqual(['Cofounder match', 'Complementary skills', 'Similar stage', 'Same commitment', 'Active recently']);
+    // The full role points a mentor or an investor earns are named.
+    expect(reasons('user-sarah')?.[0]).toBe('Mentor match');
+    expect(reasons('user-nikos')?.[0]).toBe('Investor match');
   });
 
   it('refuses a member the demo does not have, instead of answering with Elena', () => {
