@@ -195,7 +195,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
           {vrs.lowestDimension?.href && (
             <p className={cn('text-xs text-pretty', STATUS.warning.text)}>
               <BilingualText en="Lowest" el="Χαμηλότερη" compact />{': '}
-              <Link href={vrs.lowestDimension.href} className="font-medium underline underline-offset-2">
+              <Link href={vrs.lowestDimension.href} className="tap-extend-y font-medium underline underline-offset-2">
                 <BilingualText
                   en={vrs.lowestDimension.label}
                   el={ventureDimensionEl(vrs.lowestDimension.key, vrs.lowestDimension.label)}

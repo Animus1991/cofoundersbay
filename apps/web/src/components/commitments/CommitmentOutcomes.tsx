@@ -76,7 +76,7 @@ export function CommitmentOutcomes({ waitingShownAbove = false }: { waitingShown
         ) : null}
         {/* Says where it goes: a bare "Commitments" under a card titled
             "Commitments" read as a second heading. */}
-        <Link href="/commitments" className="inline-block text-sm font-medium text-primary-accessible underline-offset-4 hover:underline">
+        <Link href="/commitments" className="tap-extend-y inline-block text-sm font-medium text-primary-accessible underline-offset-4 hover:underline">
           <BilingualText en="Open Commitments" el="Άνοιγμα δεσμεύσεων" compact />
         </Link>
       </CardContent>
