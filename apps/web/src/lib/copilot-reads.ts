@@ -79,6 +79,7 @@ import { getMyUpdates, getUpdatesFeed, type FounderUpdate } from '@/lib/updates-
 import { getIntroPaths, listIntros, type Intro } from '@/lib/intros-api';
 import { INTRO_RELATION_COPY, INTRO_STATUS_COPY, SKILL_EVIDENCE_COPY } from '@cofounderbay/shared';
 import { canShortcut, hasKeyboardPointer, hasUsage, pageLabel, pageUse, readUsage, usageSuggestions, yourPages } from '@/lib/usage-profile';
+import { firstMessageDraft } from '@/lib/match-first-message';
 import { getEvidenceCandidates, getSkillEvidence } from '@/lib/skill-evidence-api';
 import { getScout, scoutReasonEl } from '@/lib/scout-api';
 import { listClaimedPerks, listPerks } from '@/lib/perks-api';
@@ -737,6 +738,21 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
       ...friction.map((f) => `• **${f.title}** — ${f.description}`),
     ].slice(0, LIMIT);
     if (early.length) parts.push(`${t('Worth discussing early:')}\n${early.join('\n')}`);
+    // The first message, drafted from the same reasons (docs §108): the card
+    // opens the thread with the text in the composer; the reader edits it and
+    // presses Send, or does not. `start_or_send_message` sends nothing itself.
+    if (name) {
+      const draft = firstMessageDraft({ name, reasons, topics: talks.map((i) => say(i.question)) }, t, locale);
+      actions.unshift({
+        id: newId('first-message'),
+        tool: 'start_or_send_message',
+        title: t('Write first to {name}', { name }),
+        description: t('Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.'),
+        confirmLabel: t('Open with the draft'),
+        payload: { userId, text: draft },
+        status: 'pending',
+      });
+    }
     if (compat && typeof compat.shared === 'number' && compat.shared >= 3) {
       parts.push(t('On the working questions you both answered ({shared} of {total}): {agree} agree, {close} close, {talk} to talk about first.', {
         shared: compat.shared, total: compat.total, agree: compat.agree, close: compat.close, talk: compat.talk,

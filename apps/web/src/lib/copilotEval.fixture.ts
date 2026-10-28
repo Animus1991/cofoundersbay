@@ -113,6 +113,9 @@ export const EVAL_CASES: EvalCase[] = [
   // One match explained (2026-10-12): reasons, friction, where the questions agree.
   { message: 'Why do I match with Elena?', tool: 'get_match_detail', args: { name: 'Elena' }, read: true },
   { message: 'Γιατί ταιριάζω με την Έλενα;', tool: 'get_match_detail', args: { name: 'Elena' }, read: true },
+  // A first message written from the match reasons (2026-10-28, docs §108): the read drafts, the card opens the thread unsent.
+  { message: 'Draft a first message to Elena', tool: 'get_match_detail', args: { name: 'Elena' }, read: true },
+  { message: 'Σύνταξε ένα πρώτο μήνυμα στην Έλενα', tool: 'get_match_detail', args: { name: 'Elena' }, read: true },
   // Listings members search (2026-10-12): the assistant fills the form, the person saves.
   { message: 'Draft my mentor listing with the headline “Go-to-market mentor for seed founders”', tool: 'draft_mentor_listing', args: { headline: 'Go-to-market mentor for seed founders' } },
   { message: 'Συμπλήρωσε την καταχώριση μέντορα με τίτλο «Μέντορας go-to-market για ιδρυτές seed»', tool: 'draft_mentor_listing', args: { headline: 'Μέντορας go-to-market για ιδρυτές seed' } },

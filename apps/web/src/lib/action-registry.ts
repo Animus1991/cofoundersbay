@@ -335,6 +335,11 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     const userId = requireString(payload, 'userId');
     if (!userId) return { ok: false, error: 'Missing user' };
     const { conversationId } = await getOrCreateDirectConversation(userId);
+    // A draft travels to the composer through the same `?to=&text=` the
+    // marketplace's Request already uses (docs §108); the page finds the
+    // thread just created and places the text, never sends it.
+    const text = requireString(payload, 'text').trim().slice(0, 2000);
+    if (text) return { ok: true, href: `/messages?to=${encodeURIComponent(userId)}&text=${encodeURIComponent(text)}` };
     return { ok: true, href: `/messages?c=${conversationId}` };
   },
 

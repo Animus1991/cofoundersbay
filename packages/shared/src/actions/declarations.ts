@@ -940,8 +940,8 @@ export const ACTION_DECLARATIONS = [
     kind: 'mutation',
     label: { en: 'Open a conversation', el: 'Άνοιγμα συνομιλίας' },
     description: {
-      en: 'Open the direct thread with a person, creating it if there is none. Does not send any message text.',
-      el: 'Ανοίγει το απευθείας νήμα με ένα άτομο, δημιουργώντας το αν δεν υπάρχει. Δεν στέλνει κείμενο μηνύματος.',
+      en: 'Open the direct thread with a person, creating it if there is none. Does not send any message text; an optional draft is placed in the composer for the user to edit and send themselves.',
+      el: 'Ανοίγει το απευθείας νήμα με ένα άτομο, δημιουργώντας το αν δεν υπάρχει. Δεν στέλνει κείμενο μηνύματος· ένα προαιρετικό προσχέδιο μπαίνει στο πεδίο σύνταξης, για να το επεξεργαστεί και να το στείλει ο χρήστης.',
     },
     params: [
       {
@@ -951,6 +951,15 @@ export const ACTION_DECLARATIONS = [
         description: {
           en: 'Id of the person to open a thread with.',
           el: 'Το id του ατόμου για το νήμα συνομιλίας.',
+        },
+      },
+      {
+        name: 'text',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'A draft to place in the composer, unsent (up to 2000 characters). Use it for a first message written from the match reasons.',
+          el: 'Προσχέδιο που μπαίνει στο πεδίο σύνταξης, χωρίς αποστολή (έως 2000 χαρακτήρες). Για ένα πρώτο μήνυμα γραμμένο από τους λόγους του ταιριάσματος.',
         },
       },
     ],

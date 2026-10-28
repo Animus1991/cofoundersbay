@@ -979,7 +979,16 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     }
   }
 
-  if (wantsMessage && (person || !nav)) {
+  // "Draft a first message to Elena" wants the words, not just the thread:
+  // the match read writes them from the reasons and hands back the card that
+  // opens the thread with the draft in the composer (docs §108).
+  const wantsFirstDraft = Boolean(person) && includesAny(message, [
+    'first message', 'draft a message', 'draft message', 'draft me a message', 'write a message to', 'write a first',
+    'πρώτο μήνυμα', 'πρωτο μηνυμα', 'σύνταξε μήνυμα', 'συνταξε μηνυμα', 'σύνταξε ένα μήνυμα', 'συνταξε ενα μηνυμα', 'προσχέδιο μηνύματος', 'προσχεδιο μηνυματος',
+  ]);
+  if (wantsFirstDraft && person && !tools.some((t) => t.name === 'get_match_detail')) add('get_match_detail', { name: person });
+
+  if (wantsMessage && (person || !nav) && !wantsFirstDraft) {
     const args: Record<string, string> = {};
     if (person) args.name = person;
     add('start_or_send_message', args);

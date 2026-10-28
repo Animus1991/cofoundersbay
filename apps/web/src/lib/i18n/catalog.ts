@@ -1056,6 +1056,14 @@ const el: Record<string, string> = {
   'That page is already pinned.': 'Η σελίδα είναι ήδη καρφιτσωμένη.',
   'All six places are taken. Unpin one first.': 'Και οι έξι θέσεις είναι πιασμένες. Ξεκαρφιτσώστε πρώτα μία.',
   'That page is not pinned.': 'Η σελίδα δεν είναι καρφιτσωμένη.',
+  'Hi {name},': 'Γεια σας {name},',
+  'I read why we match on CoFounderBay: {reasons}.': 'Διάβασα γιατί ταιριάζουμε στο CoFounderBay: {reasons}.',
+  'CoFounderBay put us side by side, and I would like to hear what you are building.': 'Το CoFounderBay μάς έβαλε δίπλα δίπλα, και θα ήθελα να ακούσω τι χτίζετε.',
+  'One thing I would rather talk about early: {topic}': 'Κάτι που θα προτιμούσα να συζητήσουμε νωρίς: {topic}',
+  'Would you be open to a short call this week?': 'Θα ήσασταν ανοιχτοί σε μια σύντομη κλήση αυτή την εβδομάδα;',
+  'Write first to {name}': 'Γράψτε πρώτοι σε {name}',
+  'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': 'Ανοίγει το νήμα σας με ένα πρώτο μήνυμα γραμμένο από τους παραπάνω λόγους, για να το επεξεργαστείτε. Τίποτα δεν στέλνεται μέχρι να πατήσετε Αποστολή.',
+  'Open with the draft': 'Άνοιγμα με το προσχέδιο',
 };
 
 const es: Record<string, string> = {
@@ -1651,6 +1659,14 @@ const es: Record<string, string> = {
   'That page is already pinned.': 'Esa página ya está fijada.',
   'All six places are taken. Unpin one first.': 'Los seis lugares están ocupados. Quita una primero.',
   'That page is not pinned.': 'Esa página no está fijada.',
+  'Hi {name},': 'Hola {name},',
+  'I read why we match on CoFounderBay: {reasons}.': 'He leído por qué coincidimos en CoFounderBay: {reasons}.',
+  'CoFounderBay put us side by side, and I would like to hear what you are building.': 'CoFounderBay nos ha puesto lado a lado, y me gustaría oír qué estás construyendo.',
+  'One thing I would rather talk about early: {topic}': 'Algo que preferiría hablar pronto: {topic}',
+  'Would you be open to a short call this week?': '¿Te vendría bien una llamada breve esta semana?',
+  'Write first to {name}': 'Escribir primero a {name}',
+  'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': 'Abre vuestra conversación con un primer mensaje redactado a partir de los motivos de arriba, para que lo edites. No se envía nada hasta que pulses Enviar.',
+  'Open with the draft': 'Abrir con el borrador',
 };
 
 const fr: Record<string, string> = {
@@ -2226,6 +2242,14 @@ const fr: Record<string, string> = {
   'That page is already pinned.': 'Cette page est déjà épinglée.',
   'All six places are taken. Unpin one first.': 'Les six places sont prises. Désépinglez-en une d’abord.',
   'That page is not pinned.': 'Cette page n’est pas épinglée.',
+  'Hi {name},': 'Bonjour {name},',
+  'I read why we match on CoFounderBay: {reasons}.': 'J’ai lu pourquoi nous correspondons sur CoFounderBay : {reasons}.',
+  'CoFounderBay put us side by side, and I would like to hear what you are building.': 'CoFounderBay nous a placés côte à côte, et j’aimerais entendre ce que vous construisez.',
+  'One thing I would rather talk about early: {topic}': 'Une chose dont je préférerais parler tôt : {topic}',
+  'Would you be open to a short call this week?': 'Seriez-vous disponible pour un court appel cette semaine ?',
+  'Write first to {name}': 'Écrire en premier à {name}',
+  'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': 'Ouvre votre fil avec un premier message rédigé à partir des raisons ci-dessus, à modifier. Rien n’est envoyé avant que vous n’appuyiez sur Envoyer.',
+  'Open with the draft': 'Ouvrir avec le brouillon',
 };
 
 const de: Record<string, string> = {
@@ -2801,6 +2825,14 @@ const de: Record<string, string> = {
   'That page is already pinned.': 'Diese Seite ist bereits angeheftet.',
   'All six places are taken. Unpin one first.': 'Alle sechs Plätze sind belegt. Lösen Sie zuerst eine.',
   'That page is not pinned.': 'Diese Seite ist nicht angeheftet.',
+  'Hi {name},': 'Hallo {name},',
+  'I read why we match on CoFounderBay: {reasons}.': 'Ich habe gelesen, warum wir auf CoFounderBay zusammenpassen: {reasons}.',
+  'CoFounderBay put us side by side, and I would like to hear what you are building.': 'CoFounderBay hat uns nebeneinandergestellt, und ich würde gern hören, was du aufbaust.',
+  'One thing I would rather talk about early: {topic}': 'Etwas, das ich lieber früh besprechen würde: {topic}',
+  'Would you be open to a short call this week?': 'Hättest du diese Woche Zeit für ein kurzes Gespräch?',
+  'Write first to {name}': 'Zuerst an {name} schreiben',
+  'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': 'Öffnet euren Thread mit einer ersten Nachricht, die aus den obigen Gründen entworfen wurde, zum Bearbeiten. Nichts wird gesendet, bis du auf Senden drückst.',
+  'Open with the draft': 'Mit dem Entwurf öffnen',
 };
 
 const it: Record<string, string> = {
@@ -3368,6 +3400,14 @@ const it: Record<string, string> = {
   'That page is already pinned.': 'Questa pagina è già fissata.',
   'All six places are taken. Unpin one first.': 'Tutti e sei i posti sono occupati. Togline prima una.',
   'That page is not pinned.': 'Questa pagina non è fissata.',
+  'Hi {name},': 'Ciao {name},',
+  'I read why we match on CoFounderBay: {reasons}.': 'Ho letto perché siamo compatibili su CoFounderBay: {reasons}.',
+  'CoFounderBay put us side by side, and I would like to hear what you are building.': 'CoFounderBay ci ha messi fianco a fianco, e mi piacerebbe sentire cosa stai costruendo.',
+  'One thing I would rather talk about early: {topic}': 'Una cosa di cui preferirei parlare presto: {topic}',
+  'Would you be open to a short call this week?': 'Saresti disponibile per una breve chiamata questa settimana?',
+  'Write first to {name}': 'Scrivi per primo a {name}',
+  'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': 'Apre la vostra conversazione con un primo messaggio scritto a partire dai motivi sopra, da modificare. Nulla viene inviato finché non premi Invia.',
+  'Open with the draft': 'Apri con la bozza',
 };
 
 const pt: Record<string, string> = {
@@ -3932,6 +3972,14 @@ const pt: Record<string, string> = {
   'That page is already pinned.': 'Essa página já está fixada.',
   'All six places are taken. Unpin one first.': 'Os seis lugares estão ocupados. Desafixe uma primeiro.',
   'That page is not pinned.': 'Essa página não está fixada.',
+  'Hi {name},': 'Olá {name},',
+  'I read why we match on CoFounderBay: {reasons}.': 'Li por que combinamos no CoFounderBay: {reasons}.',
+  'CoFounderBay put us side by side, and I would like to hear what you are building.': 'O CoFounderBay colocou-nos lado a lado, e gostaria de ouvir o que está a construir.',
+  'One thing I would rather talk about early: {topic}': 'Algo de que preferia falar cedo: {topic}',
+  'Would you be open to a short call this week?': 'Teria disponibilidade para uma chamada curta esta semana?',
+  'Write first to {name}': 'Escrever primeiro a {name}',
+  'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': 'Abre a vossa conversa com uma primeira mensagem redigida a partir dos motivos acima, para editar. Nada é enviado até carregar em Enviar.',
+  'Open with the draft': 'Abrir com o rascunho',
 };
 
 const zh: Record<string, string> = {
@@ -4514,6 +4562,14 @@ const zh: Record<string, string> = {
   'That page is already pinned.': '该页面已固定。',
   'All six places are taken. Unpin one first.': '六个位置都已占用。请先取消固定一个。',
   'That page is not pinned.': '该页面未固定。',
+  'Hi {name},': '你好，{name}，',
+  'I read why we match on CoFounderBay: {reasons}.': '我看了我们在 CoFounderBay 上匹配的原因：{reasons}。',
+  'CoFounderBay put us side by side, and I would like to hear what you are building.': 'CoFounderBay 把我们放在了一起，我想听听你在做什么。',
+  'One thing I would rather talk about early: {topic}': '有一件事我想尽早聊聊：{topic}',
+  'Would you be open to a short call this week?': '这周方便简短通个话吗？',
+  'Write first to {name}': '先给 {name} 写信',
+  'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': '打开你们的对话，并根据上面的原因拟好第一条消息供你编辑。在你按下发送之前不会发送任何内容。',
+  'Open with the draft': '带草稿打开',
 };
 
 const ja: Record<string, string> = {
@@ -5096,6 +5152,14 @@ const ja: Record<string, string> = {
   'That page is already pinned.': 'そのページはすでに固定されています。',
   'All six places are taken. Unpin one first.': '6つの枠がすべて使用中です。先に1つ固定を外してください。',
   'That page is not pinned.': 'そのページは固定されていません。',
+  'Hi {name},': '{name} さん、こんにちは。',
+  'I read why we match on CoFounderBay: {reasons}.': 'CoFounderBay で私たちがマッチした理由を読みました：{reasons}。',
+  'CoFounderBay put us side by side, and I would like to hear what you are building.': 'CoFounderBay が私たちを並べてくれたので、何を作っているのか伺いたいです。',
+  'One thing I would rather talk about early: {topic}': '早めに話しておきたいこと：{topic}',
+  'Would you be open to a short call this week?': '今週、短い通話は可能でしょうか？',
+  'Write first to {name}': '{name} さんに先にメッセージを書く',
+  'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': '上の理由から下書きした最初のメッセージを入れてスレッドを開きます。編集できます。送信を押すまで何も送られません。',
+  'Open with the draft': '下書き付きで開く',
 };
 
 export const CATALOG: Record<Exclude<AppLocale, 'en'>, Record<string, string>> = {
