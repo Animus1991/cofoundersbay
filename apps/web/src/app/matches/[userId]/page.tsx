@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BilingualText } from '@/components/common/BilingualText';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { hasInAppPrevious } from '@/lib/in-app-history';
@@ -72,6 +73,7 @@ function FrictionIcon({ icon }: { icon: string }) {
 // ── Donut Score ───────────────────────────────────────────────────────────────
 
 function DonutScore({ score }: { score: number }) {
+  const sayOne = useBilingualString();
   const r = 38, cx = 50, cy = 50;
   const circ = 2 * Math.PI * r;
   const filled = (score / 100) * circ;
@@ -89,7 +91,10 @@ function DonutScore({ score }: { score: number }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-1" aria-hidden="true">
         <span className="text-2xl font-semibold tabular-nums leading-none text-foreground">{score}%</span>
-        <span className="text-2xs font-medium text-muted-foreground">match</span>
+        {/* One word in the reader's language: «αντιστοίχιση», the catalog's
+            word for "match", is wider than the ring's inside and ran over
+            the arc; «ταίριασμα» fits at this size, and two lines would not. */}
+        <span className="text-2xs font-medium text-muted-foreground">{sayOne('match', 'ταίριασμα')}</span>
       </div>
     </div>
   );

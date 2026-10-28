@@ -20,7 +20,7 @@ const elena = {
   matchScore: 92,
 } as unknown as SearchHit;
 
-function renderHome(state: MatchConnection, onAccept = vi.fn()) {
+function renderHome(state: MatchConnection, onAccept = vi.fn(), excellent = 3) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
@@ -29,7 +29,7 @@ function renderHome(state: MatchConnection, onAccept = vi.fn()) {
           showResume={false}
           matches={[elena]}
           matchCount={4}
-          excellentMatches={3}
+          excellentMatches={excellent}
           connectionOf={() => state}
           onAccept={onAccept}
           activity={[]}
@@ -65,6 +65,12 @@ describe('FounderPhoneHome, the first match', () => {
     renderHome('sent');
     const sent = screen.getByRole('button', { name: /Request sent/ }) as HTMLButtonElement;
     expect(sent.disabled).toBe(true);
+  });
+
+  it('leaves out an excellent count of zero', () => {
+    renderHome('none', vi.fn(), 0);
+    expect(screen.getByText('4 suggestions')).toBeTruthy();
+    expect(screen.queryByText(/excellent/)).toBeNull();
   });
 
   it('carries the matches figure and the way to the list', () => {

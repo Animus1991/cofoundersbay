@@ -234,9 +234,11 @@ export function FounderPhoneHome({
                 </CardTitle>
                 {people.length > 0 ? (
                   <p className="text-xs text-muted-foreground">
+                    {/* The excellent count when there is one: «0 εξαιρετικές» read
+                        as a verdict on the list, not a fact about it. */}
                     <BilingualText
-                      en={`${listed} ${listed === 1 ? 'suggestion' : 'suggestions'} · ${excellentMatches} excellent (80%+)`}
-                      el={`${listed} ${listed === 1 ? 'πρόταση' : 'προτάσεις'} · ${excellentMatches} ${excellentMatches === 1 ? 'εξαιρετική' : 'εξαιρετικές'} (80%+)`}
+                      en={`${listed} ${listed === 1 ? 'suggestion' : 'suggestions'}${excellentMatches > 0 ? ` · ${excellentMatches} excellent (80%+)` : ''}`}
+                      el={`${listed} ${listed === 1 ? 'πρόταση' : 'προτάσεις'}${excellentMatches > 0 ? ` · ${excellentMatches} ${excellentMatches === 1 ? 'εξαιρετική' : 'εξαιρετικές'} (80%+)` : ''}`}
                       compact
                       wrap
                     />
