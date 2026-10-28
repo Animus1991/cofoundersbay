@@ -172,6 +172,59 @@ fs.writeFileSync(
   ),
 );
 
+/*
+ * @cofounderbay/shared is consumed from its dist/ (its package.json points
+ * main, types and exports there). `turbo run dev` builds it first (turbo.json:
+ * dev dependsOn ^build), but starting the web app on its own (`pnpm dev:web`,
+ * or `pnpm dev` inside apps/web) did not. After a pull that changed shared
+ * source the app then ran on the previous build, and anything new was
+ * undefined at runtime: /matches threw "Cannot read properties of undefined
+ * (reading 'roleComplementarity')" on 2026-10-28 (docs §110). So the build
+ * runs here when any source file is newer than its output, and only then.
+ */
+const sharedDir = path.resolve(webDir, '../../packages/shared');
+
+function sharedBuildIsStale() {
+  const srcDir = path.join(sharedDir, 'src');
+  const distDir = path.join(sharedDir, 'dist');
+  if (!fs.existsSync(srcDir)) return false;
+  if (!fs.existsSync(path.join(distDir, 'index.js'))) return true;
+  const pending = [srcDir];
+  while (pending.length) {
+    const dir = pending.pop();
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        pending.push(full);
+        continue;
+      }
+      if (!entry.name.endsWith('.ts') || entry.name.endsWith('.d.ts')) continue;
+      const output = path.join(distDir, path.relative(srcDir, full).replace(/\.ts$/, '.js'));
+      if (!fs.existsSync(output) || fs.statSync(full).mtimeMs > fs.statSync(output).mtimeMs) return true;
+    }
+  }
+  return false;
+}
+
+function buildSharedIfStale() {
+  if (!sharedBuildIsStale()) return;
+  console.log('Building @cofounderbay/shared: its source is newer than its build...');
+  let tsc;
+  try {
+    tsc = require.resolve('typescript/bin/tsc', { paths: [sharedDir, webDir] });
+  } catch {
+    console.warn('TypeScript was not found for @cofounderbay/shared; starting on its previous build.');
+    return;
+  }
+  const result = require('child_process').spawnSync(process.execPath, [tsc, '-p', 'tsconfig.build.json'], {
+    cwd: sharedDir,
+    stdio: 'inherit',
+  });
+  if (result.status !== 0) {
+    console.warn('The @cofounderbay/shared build failed; starting on its previous build.');
+  }
+}
+
 function canListenOnIpv6() {
   return new Promise((resolve) => {
     const probe = require('net').createServer();
@@ -193,6 +246,9 @@ async function main() {
     label: 'Web dev server',
     origin: `http://${WEB_ORIGIN_HOST}:${WEB_PORT}`,
   });
+
+  // After the port is known to be free, so a busy port fails at once.
+  buildSharedIfStale();
 
   console.log(`Starting web dev server on http://${WEB_ORIGIN_HOST}:${WEB_PORT}`);
 
