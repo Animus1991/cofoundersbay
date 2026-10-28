@@ -27,6 +27,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { researchEn, researchEl } from '@/lib/i18n/strings-research';
 import { matchProductLink, readCfbHref } from '@/lib/canvas/canvas-geometry';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { SaveStatus } from '@/components/common/SaveStatus';
 
 type NodeUpdateData = {
   title?: string;
@@ -250,6 +251,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
   const [editTitle, setEditTitle] = useState(node.title || '');
   const [editContent, setEditContent] = useState(initialContent);
   const [saved, setSaved] = useState(!!node.content);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [imgZoom, setImgZoom] = useState(1);
 
@@ -298,6 +300,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
     try {
       onUpdate(updates);
       setSaved(true);
+      setSavedAt(new Date());
     } catch (err) {
       showError('Failed to save', err instanceof Error ? err.message : 'Please try again');
     } finally {
@@ -427,8 +430,12 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
             </span>
           )}
           <div className="flex items-center gap-2 flex-none">
-            {!saved && isEditable && (
-              <span className="text-2xs text-muted-foreground">Unsaved</span>
+            {isEditable && (
+              <SaveStatus
+                state={isSaving ? 'saving' : !saved ? 'dirty' : 'saved'}
+                savedAt={savedAt}
+                className="hidden sm:inline-flex"
+              />
             )}
             {isEditable && (
               <button

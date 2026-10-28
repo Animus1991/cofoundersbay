@@ -323,6 +323,24 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'where_is',
+    kind: 'read',
+    label: { en: 'Find where something lives', el: 'Εύρεση του πού βρίσκεται κάτι' },
+    description: {
+      en: 'Answer "where do I…" and "how do I get to…" questions from the platform\u2019s own page registry and the controls of the page that is open: the page, what it is for, and the control on it when there is one. Reads nothing about the member; proposes opening the page.',
+      el: 'Απαντά σε ερωτήσεις «πού κάνω…» και «πώς πάω…» από το μητρώο σελίδων της πλατφόρμας και τα χειριστήρια της ανοιχτής σελίδας: τη σελίδα, σε τι χρησιμεύει και το χειριστήριο όταν υπάρχει. Δεν διαβάζει τίποτα για το μέλος· προτείνει το άνοιγμα της σελίδας.',
+    },
+    params: [
+      {
+        name: 'query',
+        type: 'string',
+        required: true,
+        description: { en: 'The thing being looked for, in the member\u2019s words.', el: 'Αυτό που αναζητείται, με τα λόγια του μέλους.' },
+      },
+    ],
+    writes: false,
+  },
+  {
     id: 'get_profile_viewers',
     kind: 'read',
     label: { en: 'Read who viewed your profile', el: 'Ανάγνωση του ποιοι είδαν το προφίλ σας' },

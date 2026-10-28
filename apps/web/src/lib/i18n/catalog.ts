@@ -2,6 +2,14 @@ import type { AppLocale } from '@/lib/locale';
 
 /** English UI copy is the lookup key. Missing keys fall back to English. */
 const el: Record<string, string> = {
+  "Opens the page.": "Ανοίγει τη σελίδα.",
+  "now": "τώρα",
+  "On this page:": "Σε αυτή τη σελίδα:",
+  "That lives on **{title}**": "Αυτό βρίσκεται στη σελίδα **{title}**",
+  "Also related:": "Σχετικά επίσης:",
+  "I could not place that. Say what you want to do — \"export\", \"book a mentor\", \"change my password\" — and I will point you to the page.": "Δεν μπόρεσα να το εντοπίσω. Πείτε τι θέλετε να κάνετε — «εξαγωγή», «κλείσιμο μέντορα», «αλλαγή κωδικού» — και θα σας δείξω τη σελίδα.",
+  "Open Help": "Άνοιγμα Βοήθειας",
+  "Guides and support for every area.": "Οδηγοί και υποστήριξη για κάθε περιοχή.",
   "Your profile lists no skills yet, so I cannot tell what you cover.": "Το προφίλ σας δεν αναφέρει ακόμη δεξιότητες, οπότε δεν μπορώ να πω τι καλύπτετε.",
   "From your own skills, you cover: {areas}.": "Από τις δικές σας δεξιότητες καλύπτετε: {areas}.",
   "Not covered yet:": "Δεν καλύπτονται ακόμη:",
@@ -1067,6 +1075,14 @@ const el: Record<string, string> = {
 };
 
 const es: Record<string, string> = {
+  "Opens the page.": "Abre la página.",
+  "now": "ahora",
+  "On this page:": "En esta página:",
+  "That lives on **{title}**": "Eso está en **{title}**",
+  "Also related:": "También relacionado:",
+  "I could not place that. Say what you want to do — \"export\", \"book a mentor\", \"change my password\" — and I will point you to the page.": "No pude ubicarlo. Di qué quieres hacer — «exportar», «reservar un mentor», «cambiar mi contraseña» — y te indicaré la página.",
+  "Open Help": "Abrir ayuda",
+  "Guides and support for every area.": "Guías y soporte para cada área.",
   "Your profile lists no skills yet, so I cannot tell what you cover.": "Tu perfil aún no indica habilidades, así que no puedo saber qué cubres.",
   "From your own skills, you cover: {areas}.": "Con tus propias habilidades cubres: {areas}.",
   "Not covered yet:": "Aún sin cubrir:",
@@ -1670,6 +1686,14 @@ const es: Record<string, string> = {
 };
 
 const fr: Record<string, string> = {
+  "Opens the page.": "Ouvre la page.",
+  "now": "maintenant",
+  "On this page:": "Sur cette page :",
+  "That lives on **{title}**": "Cela se trouve sur **{title}**",
+  "Also related:": "Également lié :",
+  "I could not place that. Say what you want to do — \"export\", \"book a mentor\", \"change my password\" — and I will point you to the page.": "Je n'ai pas pu le situer. Dites ce que vous voulez faire — « exporter », « réserver un mentor », « changer mon mot de passe » — et je vous indiquerai la page.",
+  "Open Help": "Ouvrir l'aide",
+  "Guides and support for every area.": "Guides et assistance pour chaque espace.",
   "Your profile lists no skills yet, so I cannot tell what you cover.": "Votre profil n’indique pas encore de compétences, je ne peux donc pas dire ce que vous couvrez.",
   "From your own skills, you cover: {areas}.": "Avec vos propres compétences, vous couvrez : {areas}.",
   "Not covered yet:": "Pas encore couvert :",
@@ -2253,6 +2277,14 @@ const fr: Record<string, string> = {
 };
 
 const de: Record<string, string> = {
+  "Opens the page.": "Öffnet die Seite.",
+  "now": "jetzt",
+  "On this page:": "Auf dieser Seite:",
+  "That lives on **{title}**": "Das befindet sich auf **{title}**",
+  "Also related:": "Ebenfalls verwandt:",
+  "I could not place that. Say what you want to do — \"export\", \"book a mentor\", \"change my password\" — and I will point you to the page.": "Das konnte ich nicht zuordnen. Sagen Sie, was Sie tun möchten — „exportieren“, „Mentor buchen“, „Passwort ändern“ — und ich zeige Ihnen die Seite.",
+  "Open Help": "Hilfe öffnen",
+  "Guides and support for every area.": "Anleitungen und Support für jeden Bereich.",
   "Your profile lists no skills yet, so I cannot tell what you cover.": "Dein Profil nennt noch keine Fähigkeiten, daher kann ich nicht sagen, was du abdeckst.",
   "From your own skills, you cover: {areas}.": "Mit deinen eigenen Fähigkeiten deckst du ab: {areas}.",
   "Not covered yet:": "Noch nicht abgedeckt:",
@@ -2836,6 +2868,14 @@ const de: Record<string, string> = {
 };
 
 const it: Record<string, string> = {
+  "Opens the page.": "Apre la pagina.",
+  "now": "adesso",
+  "On this page:": "In questa pagina:",
+  "That lives on **{title}**": "Si trova su **{title}**",
+  "Also related:": "Correlato anche:",
+  "I could not place that. Say what you want to do — \"export\", \"book a mentor\", \"change my password\" — and I will point you to the page.": "Non sono riuscito a individuarlo. Dimmi cosa vuoi fare — «esportare», «prenotare un mentor», «cambiare la password» — e ti indicherò la pagina.",
+  "Open Help": "Apri aiuto",
+  "Guides and support for every area.": "Guide e supporto per ogni area.",
   "Your profile lists no skills yet, so I cannot tell what you cover.": "Il tuo profilo non indica ancora competenze, quindi non posso dire cosa copri.",
   "From your own skills, you cover: {areas}.": "Con le tue competenze copri: {areas}.",
   "Not covered yet:": "Non ancora coperto:",
@@ -3411,6 +3451,14 @@ const it: Record<string, string> = {
 };
 
 const pt: Record<string, string> = {
+  "Opens the page.": "Abre a página.",
+  "now": "agora",
+  "On this page:": "Nesta página:",
+  "That lives on **{title}**": "Isso fica em **{title}**",
+  "Also related:": "Também relacionado:",
+  "I could not place that. Say what you want to do — \"export\", \"book a mentor\", \"change my password\" — and I will point you to the page.": "Não consegui localizar isso. Diga o que quer fazer — «exportar», «marcar um mentor», «alterar a palavra-passe» — e indico-lhe a página.",
+  "Open Help": "Abrir ajuda",
+  "Guides and support for every area.": "Guias e apoio para cada área.",
   "Your profile lists no skills yet, so I cannot tell what you cover.": "Seu perfil ainda não lista competências, então não sei dizer o que você cobre.",
   "From your own skills, you cover: {areas}.": "Com suas próprias competências, você cobre: {areas}.",
   "Not covered yet:": "Ainda não coberto:",
@@ -3983,6 +4031,14 @@ const pt: Record<string, string> = {
 };
 
 const zh: Record<string, string> = {
+  "Opens the page.": "打开该页面。",
+  "now": "当前",
+  "On this page:": "在此页面上：",
+  "That lives on **{title}**": "它位于 **{title}**",
+  "Also related:": "另见：",
+  "I could not place that. Say what you want to do — \"export\", \"book a mentor\", \"change my password\" — and I will point you to the page.": "我无法定位。请说出您想做什么——“导出”“预约导师”“修改密码”——我会为您指出页面。",
+  "Open Help": "打开帮助",
+  "Guides and support for every area.": "各区域的指南与支持。",
   "Your profile lists no skills yet, so I cannot tell what you cover.": "你的资料还没有列出技能，所以我无法判断你覆盖了哪些方面。",
   "From your own skills, you cover: {areas}.": "根据你自己的技能，你覆盖了：{areas}。",
   "Not covered yet:": "尚未覆盖：",
@@ -4573,6 +4629,14 @@ const zh: Record<string, string> = {
 };
 
 const ja: Record<string, string> = {
+  "Opens the page.": "ページを開きます。",
+  "now": "現在",
+  "On this page:": "このページで：",
+  "That lives on **{title}**": "それは **{title}** にあります",
+  "Also related:": "関連：",
+  "I could not place that. Say what you want to do — \"export\", \"book a mentor\", \"change my password\" — and I will point you to the page.": "見つけられませんでした。「エクスポート」「メンターを予約」「パスワード変更」など、やりたいことを言ってください。ページをご案内します。",
+  "Open Help": "ヘルプを開く",
+  "Guides and support for every area.": "各エリアのガイドとサポート。",
   "Your profile lists no skills yet, so I cannot tell what you cover.": "プロフィールにまだスキルがないため、カバーしている分野がわかりません。",
   "From your own skills, you cover: {areas}.": "あなた自身のスキルでカバーしているのは：{areas}。",
   "Not covered yet:": "まだカバーされていない分野：",

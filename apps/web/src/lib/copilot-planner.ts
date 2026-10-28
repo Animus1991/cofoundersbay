@@ -3,6 +3,7 @@ import { resolveRouteTarget } from '@/lib/action-registry';
 import { canShortcut } from '@/lib/usage-profile';
 import { namesCanvasSurface, planCanvasCommandArgs } from '@/lib/canvas/plan-canvas-command';
 import type { AreaReadId } from './copilot-reads';
+import { isWhereIsQuestion, whereIsTerms } from './where-is';
 import type { CopilotToolName, PlannedTool } from './copilot-types';
 
 const ROUTE_ALIASES: Array<{ keys: string[]; href: string; label: string }> = [
@@ -737,6 +738,12 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   // plans a save. Neither asked for that. Each older intent still fires when its
   // own verb is there — "find a mentor", "save Elena to my shortlist".
   const areaReads = !nav || includesAny(message, QUESTION_PHRASES) ? detectAreaReads(message) : [];
+
+  // "Where do I export my pitch?" asks for a place. When no area read already
+  // answers it with data (mentors, invites, groups), the page registry does.
+  if (!areaReads.length && !person && isWhereIsQuestion(rawMessage) && whereIsTerms(rawMessage).length) {
+    return [{ name: 'where_is', args: { query: rawMessage.trim().slice(0, 120) } }];
+  }
   const explicitSearch = includesAny(message, EXPLICIT_SEARCH_PHRASES);
   const explicitSave = includesAny(message, EXPLICIT_SAVE_PHRASES);
   const explicitRemove = includesAny(message, EXPLICIT_REMOVE_PHRASES);

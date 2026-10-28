@@ -84,6 +84,8 @@ import { getEvidenceCandidates, getSkillEvidence } from '@/lib/skill-evidence-ap
 import { getScout, scoutReasonEl } from '@/lib/scout-api';
 import { listClaimedPerks, listPerks } from '@/lib/perks-api';
 import { getProfileViewers } from '@/lib/profile-viewers-api';
+import { rankControls, rankPages } from '@/lib/where-is';
+import { currentPageControls } from '@/lib/page-controls';
 import {
   fmtMoney,
   fundraisingRoundView,
@@ -849,6 +851,50 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     }
     if (claimed.length) {
       parts.push(`${t('You claimed:')} ${claimed.slice(0, LIMIT).map((p) => `${p.partner} (${say(p.title, p.titleEl)})`).join(listSeparator(locale))}. ${t('Their codes are under Claimed on the Perks page.')}`);
+    }
+    return { section: parts.join('\n\n'), citations: [], actions };
+  },
+
+  async where_is(args, { t, locale }) {
+    const query = typeof args.query === 'string' ? args.query : '';
+    const pathname = typeof window !== 'undefined' ? window.location.pathname : undefined;
+    const pages = rankPages(query, pathname);
+    const controls = rankControls(query, currentPageControls());
+    const say = (en: string, el?: string | null) => (locale === 'el' ? el ?? en : en);
+    const parts: string[] = [];
+    const actions: CopilotAction[] = [];
+
+    if (controls.length) {
+      const here = controls.map(({ control }) => {
+        const label = say(control.labelEn, control.labelEl);
+        const current = control.current && control.options
+          ? control.options.find((o) => o.value === control.current)
+          : undefined;
+        const now = current ? ` (${t('now')}: ${say(current.labelEn, current.labelEl)})` : '';
+        const blocked = control.unavailableEn ? ` — ${say(control.unavailableEn, control.unavailableEl)}` : '';
+        return `• **${label}**${now}${blocked}`;
+      });
+      parts.push(`${t('On this page:')}\n${here.join('\n')}`);
+    }
+
+    if (pages.length) {
+      const [top, ...rest] = pages;
+      const title = say(top.page.title, top.page.titleEl);
+      const desc = say(top.page.description, top.page.descriptionEl);
+      const href = top.page.path.includes('[') ? top.page.path.split('/[')[0] : top.page.path;
+      parts.push(`${t('That lives on **{title}**', { title })} — ${desc}`);
+      actions.push(openArea(t, href, `${t('Open')} ${title}`, t('Opens the page.')));
+      if (rest.length) {
+        parts.push(`${t('Also related:')} ${rest.map((h) => `**${say(h.page.title, h.page.titleEl)}**`).join(listSeparator(locale))}.`);
+      }
+    }
+
+    if (!parts.length) {
+      return {
+        section: t('I could not place that. Say what you want to do — "export", "book a mentor", "change my password" — and I will point you to the page.'),
+        citations: [],
+        actions: [openArea(t, '/help', t('Open Help'), t('Guides and support for every area.'))],
+      };
     }
     return { section: parts.join('\n\n'), citations: [], actions };
   },

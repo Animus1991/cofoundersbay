@@ -34,6 +34,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { builderEn, builderEl, builderDocLabel } from '@/lib/i18n/strings-builder';
 import type { BuilderDocumentType } from '@/lib/builder-api';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
+import { SaveStatus, useSaveStatus } from '@/components/common/SaveStatus';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { initialsOf } from '@/lib/utils';
 import { ASK } from '@/lib/page-questions';
@@ -152,6 +153,12 @@ function BuilderPageContent() {
     clearError,
   } = useBuilder();
 
+  const save = useSaveStatus(
+    activeDocument?.updatedAt
+      ?? documents.map((d) => d.updatedAt).filter(Boolean).sort().at(-1)
+      ?? null,
+  );
+
   // The document cards are on screen only on the overview; each stage tab publishes its own rows.
   usePageList([
     {
@@ -233,21 +240,24 @@ function BuilderPageContent() {
 
   // Each stage passes the figure its own header shows. Written after every section save, because the
   // API recomputes completion from section flags on that save and the overview would disagree.
-  const handleSave = async (section: string, data: unknown, completionPercent: number) => {
-    const doc = await saveStageSection(section, data);
-    if (doc) await updateDocument(doc.id, { completionPercent });
-  };
+  const handleSave = (section: string, data: unknown, completionPercent: number) =>
+    save.track(async () => {
+      const doc = await saveStageSection(section, data);
+      if (doc) await updateDocument(doc.id, { completionPercent });
+    });
 
   const handleSavePitch = (data: PitchDeckData) =>
     handleSave('pitchDeck', data, pitchDeckCompletion(data.slides ?? []));
 
   const handleSaveApplications = async (data: unknown) => {
     try {
-      let doc = documents.find((d) => d.type === 'application');
-      if (!doc) {
-        doc = await createDocument('application', 'Program applications');
-      }
-      await updateDocumentSection(doc.id, 'applications', { applications: data } as Record<string, unknown>);
+      await save.track(async () => {
+        let doc = documents.find((d) => d.type === 'application');
+        if (!doc) {
+          doc = await createDocument('application', 'Program applications');
+        }
+        await updateDocumentSection(doc.id, 'applications', { applications: data } as Record<string, unknown>);
+      });
     } catch {
       // BuilderContext already surfaces the error banner.
     }
@@ -433,7 +443,10 @@ function BuilderPageContent() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" data-tour="builder-context">
           <div className="min-w-0">
             {workspace?.name && (
-              <p className="page-section font-semibold tracking-tight text-foreground">{workspace.name}</p>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <p className="page-section font-semibold tracking-tight text-foreground">{workspace.name}</p>
+                <SaveStatus state={save.state} savedAt={save.savedAt} error={save.error} onRetry={save.retry} />
+              </div>
             )}
             <p className="mt-0.5 text-sm leading-snug text-muted-foreground">
               {/* The preview workspace ships an English description; map it so

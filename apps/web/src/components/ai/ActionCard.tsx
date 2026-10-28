@@ -148,8 +148,9 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
             withdrawn rather than implying it can. */}
         {showReversal && !dismissed && !cancelled && !undone && (
           // data-keep-icon: the warning glyph is content, not decoration.
-          <p
+          <div
             data-keep-icon=""
+            data-testid="action-card-reversal"
             className={cn(
               'flex items-start gap-1.5 text-xs',
               irreversible ? 'text-destructive' : 'text-muted-foreground',
@@ -158,16 +159,36 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
             {irreversible && (
               <AlertTriangle className="mt-px h-3 w-3 shrink-0" aria-hidden="true" />
             )}
-            <BilingualText
-              en={reversal!.explanation.en}
-              el={reversal!.explanation.el}
-              stacked
-              wrap
-              // `stacked` mutes its second line by default, which would drop the
-              // Greek half of an irreversible warning to ordinary body grey.
-              secondaryClassName={irreversible ? 'text-destructive/80' : undefined}
-            />
-          </p>
+            <div className="flex min-w-0 flex-col items-start gap-1">
+              {/* One scannable word first — the sentence below says why. */}
+              <span
+                data-testid="action-card-reversal-badge"
+                className={cn(
+                  'inline-flex items-center rounded-full border px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide',
+                  reversal!.kind === 'full' && STATUS.success.chip,
+                  reversal!.kind === 'partial' && STATUS.warning.chip,
+                  reversal!.kind === 'none' && STATUS.danger.chip,
+                )}
+              >
+                {reversal!.kind === 'full' ? (
+                  <BilingualText en="Reversible" el="Αναστρέψιμο" compact />
+                ) : reversal!.kind === 'partial' ? (
+                  <BilingualText en="Partly reversible" el="Μερικώς αναστρέψιμο" compact />
+                ) : (
+                  <BilingualText en="Not reversible" el="Μη αναστρέψιμο" compact />
+                )}
+              </span>
+              <BilingualText
+                en={reversal!.explanation.en}
+                el={reversal!.explanation.el}
+                stacked
+                wrap
+                // `stacked` mutes its second line by default, which would drop the
+                // Greek half of an irreversible warning to ordinary body grey.
+                secondaryClassName={irreversible ? 'text-destructive/80' : undefined}
+              />
+            </div>
+          </div>
         )}
 
         {action.error && (failed || done) && (
