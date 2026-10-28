@@ -15,6 +15,7 @@ import {
 import { getRecommendations, getMatchBreakdown, getMeProfile, respondToConnectionRequest, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, restoreMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { createPassLedger } from '@/lib/match-pass';
 import { AppShell } from '@/components/layout/AppShell';
+import { MatchScoreExplainer } from '@/components/matches/MatchScoreExplainer';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
@@ -1359,6 +1360,8 @@ export default function MatchesPage() {
                   )}
                 </p>
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  {/* Every part of the number and its points (docs §110). */}
+                  <MatchScoreExplainer />
                   <button
                     onClick={() => { setSelectMode(s => !s); setSelectedIds(new Set()); }}
                     className={cn('flex h-10 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-colors',

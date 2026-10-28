@@ -126,6 +126,8 @@ const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
   intros: [qk('intros'), qk('commitments')],
   open_to: [qk('open-to'), qk('matching'), qk('recommendations')],
   skill_evidence: [qk('skill-evidence')],
+  // How the assistant answers: /settings/ai reads it under this key.
+  ai_preferences: [queryKeys.aiPreferences],
   scout: [qk('scout')],
 };
 

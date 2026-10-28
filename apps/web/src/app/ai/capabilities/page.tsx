@@ -95,6 +95,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   canvas_command: { en: 'Add a note on the canvas titled Pricing', el: 'Πρόσθεσε σημείωση στον καμβά «Τιμή»' },
   pin_shortcut: { en: 'Pin Messages to my pages', el: 'Καρφίτσωσε τα Μηνύματα στις σελίδες μου' },
   unpin_shortcut: { en: 'Unpin Messages', el: 'Ξεκαρφίτσωσε τα Μηνύματα' },
+  set_reply_style: { en: 'From now on, answer me more concisely', el: 'Από εδώ και πέρα απάντα μου πιο σύντομα' },
   join_group: { en: 'Join the Athens Founders group', el: 'Γράψε με στην κοινότητα Athens Founders' },
   leave_group: { en: 'Leave the Climate Builders group', el: 'Βγάλε με από την κοινότητα Climate Builders' },
   apply_to_program: { en: 'Apply to the Pre-seed Bootcamp', el: 'Κάνε αίτηση στο πρόγραμμα Pre-seed Bootcamp' },

@@ -110,7 +110,9 @@ export type InvalidationTopic =
   | 'intros'
   | 'open_to'
   | 'skill_evidence'
-  | 'scout';
+  | 'scout'
+  /** How the assistant answers: style and emoji (`/settings/ai`). */
+  | 'ai_preferences';
 
 export type ActionDeclaration = {
   id: string;

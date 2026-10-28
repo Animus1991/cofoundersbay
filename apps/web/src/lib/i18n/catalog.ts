@@ -1078,6 +1078,10 @@ const el: Record<string, string> = {
   'Write first to {name}': 'Γράψτε πρώτοι σε {name}',
   'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': 'Ανοίγει το νήμα σας με ένα πρώτο μήνυμα γραμμένο από τους παραπάνω λόγους, για να το επεξεργαστείτε. Τίποτα δεν στέλνεται μέχρι να πατήσετε Αποστολή.',
   'Open with the draft': 'Άνοιγμα με το προσχέδιο',
+  // The assistant changes its own reply style (docs §110).
+  'Unknown reply style.': 'Άγνωστο ύφος απαντήσεων.',
+  'Say which style, or emoji on or off.': 'Πείτε ποιο ύφος, ή αν θέλετε emoji ή όχι.',
+  'That is already how the assistant answers.': 'Έτσι απαντά ήδη ο βοηθός.',
 };
 
 const es: Record<string, string> = {
@@ -1695,6 +1699,10 @@ const es: Record<string, string> = {
   'Write first to {name}': 'Escribir primero a {name}',
   'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': 'Abre vuestra conversación con un primer mensaje redactado a partir de los motivos de arriba, para que lo edites. No se envía nada hasta que pulses Enviar.',
   'Open with the draft': 'Abrir con el borrador',
+  // The assistant changes its own reply style (docs §110).
+  'Unknown reply style.': 'Estilo de respuesta desconocido.',
+  'Say which style, or emoji on or off.': 'Di qué estilo, o si quieres emoji o no.',
+  'That is already how the assistant answers.': 'El asistente ya responde así.',
 };
 
 const fr: Record<string, string> = {
@@ -2292,6 +2300,10 @@ const fr: Record<string, string> = {
   'Write first to {name}': 'Écrire en premier à {name}',
   'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': 'Ouvre votre fil avec un premier message rédigé à partir des raisons ci-dessus, à modifier. Rien n’est envoyé avant que vous n’appuyiez sur Envoyer.',
   'Open with the draft': 'Ouvrir avec le brouillon',
+  // The assistant changes its own reply style (docs §110).
+  'Unknown reply style.': 'Style de réponse inconnu.',
+  'Say which style, or emoji on or off.': 'Dites quel style, ou si vous voulez des emoji ou non.',
+  'That is already how the assistant answers.': 'C’est déjà ainsi que l’assistant répond.',
 };
 
 const de: Record<string, string> = {
@@ -2889,6 +2901,10 @@ const de: Record<string, string> = {
   'Write first to {name}': 'Zuerst an {name} schreiben',
   'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': 'Öffnet euren Thread mit einer ersten Nachricht, die aus den obigen Gründen entworfen wurde, zum Bearbeiten. Nichts wird gesendet, bis du auf Senden drückst.',
   'Open with the draft': 'Mit dem Entwurf öffnen',
+  // The assistant changes its own reply style (docs §110).
+  'Unknown reply style.': 'Unbekannter Antwortstil.',
+  'Say which style, or emoji on or off.': 'Sagen Sie, welcher Stil, oder ob Emoji an oder aus.',
+  'That is already how the assistant answers.': 'So antwortet der Assistent bereits.',
 };
 
 const it: Record<string, string> = {
@@ -3478,6 +3494,10 @@ const it: Record<string, string> = {
   'Write first to {name}': 'Scrivi per primo a {name}',
   'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': 'Apre la vostra conversazione con un primo messaggio scritto a partire dai motivi sopra, da modificare. Nulla viene inviato finché non premi Invia.',
   'Open with the draft': 'Apri con la bozza',
+  // The assistant changes its own reply style (docs §110).
+  'Unknown reply style.': 'Stile di risposta sconosciuto.',
+  'Say which style, or emoji on or off.': 'Di’ quale stile, oppure se vuoi le emoji o no.',
+  'That is already how the assistant answers.': 'L’assistente risponde già così.',
 };
 
 const pt: Record<string, string> = {
@@ -4064,6 +4084,10 @@ const pt: Record<string, string> = {
   'Write first to {name}': 'Escrever primeiro a {name}',
   'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': 'Abre a vossa conversa com uma primeira mensagem redigida a partir dos motivos acima, para editar. Nada é enviado até carregar em Enviar.',
   'Open with the draft': 'Abrir com o rascunho',
+  // The assistant changes its own reply style (docs §110).
+  'Unknown reply style.': 'Estilo de resposta desconhecido.',
+  'Say which style, or emoji on or off.': 'Diga qual estilo, ou se quer emoji ou não.',
+  'That is already how the assistant answers.': 'O assistente já responde assim.',
 };
 
 const zh: Record<string, string> = {
@@ -4668,6 +4692,10 @@ const zh: Record<string, string> = {
   'Write first to {name}': '先给 {name} 写信',
   'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': '打开你们的对话，并根据上面的原因拟好第一条消息供你编辑。在你按下发送之前不会发送任何内容。',
   'Open with the draft': '带草稿打开',
+  // The assistant changes its own reply style (docs §110).
+  'Unknown reply style.': '未知的回复风格。',
+  'Say which style, or emoji on or off.': '请说明哪种风格，或是否使用表情符号。',
+  'That is already how the assistant answers.': '助手已经是这样回答的。',
 };
 
 const ja: Record<string, string> = {
@@ -5272,6 +5300,10 @@ const ja: Record<string, string> = {
   'Write first to {name}': '{name} さんに先にメッセージを書く',
   'Opens your thread with a first message drafted from the reasons above, for you to edit. Nothing is sent until you press Send.': '上の理由から下書きした最初のメッセージを入れてスレッドを開きます。編集できます。送信を押すまで何も送られません。',
   'Open with the draft': '下書き付きで開く',
+  // The assistant changes its own reply style (docs §110).
+  'Unknown reply style.': '不明な返答スタイルです。',
+  'Say which style, or emoji on or off.': 'どのスタイルか、または絵文字の有無を指定してください。',
+  'That is already how the assistant answers.': 'アシスタントはすでにその方法で答えています。',
 };
 
 export const CATALOG: Record<Exclude<AppLocale, 'en'>, Record<string, string>> = {

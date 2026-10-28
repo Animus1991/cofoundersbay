@@ -9,6 +9,7 @@ import { useSidebar } from './SidebarContext';
 import { resolvePageHeader } from '@/lib/page-registry';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
+import { PinPageButton, isPinnablePath } from '@/components/layout/PinPageButton';
 import { cn } from '@/lib/utils';
 import { appShellMainClasses } from '@/lib/layout-config';
 import { AIComposer } from '@/components/ai/AIComposer';
@@ -294,6 +295,9 @@ export function AppShell({
       };
 
   const headerShown = Boolean(pageTitle || pageDescription || actions || showAskAi || showHelp);
+  // The star that pins this page to the reader's own pages (docs §110):
+  // every page with a header that can be one of them; never a home.
+  const pinnable = isPinnablePath(pathname);
 
   const body = fullHeight ? (
     children
@@ -344,9 +348,10 @@ export function AppShell({
                   </p>
                 )}
               </div>
-              {(actions || showHelp) && (
+              {(actions || showHelp || pinnable) && (
                 <div className="flex shrink-0 flex-wrap items-center gap-2 [grid-area:actions] sm:justify-end" data-page-actions="">
                   {actions}
+                  {pinnable && <PinPageButton />}
                   {showHelp && <PageContextualHelp compact defaultOpen={false} />}
                 </div>
               )}

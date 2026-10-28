@@ -16,6 +16,30 @@ const WEIGHTS = {
   recencyBonus: 10,
 } as const;
 
+/**
+ * The six parts of the score and their maximum points, in the order
+ * `computeMatchScore` adds them (they total 100). Exported so a page that
+ * explains the score reads the same numbers the engine uses (docs §110).
+ */
+export const MATCH_SCORE_WEIGHTS: Readonly<Record<keyof typeof WEIGHTS, number>> = WEIGHTS;
+
+/**
+ * The share of a part that a partial fit earns. The engine below reads these,
+ * and so does any page that explains the score, so the two cannot disagree.
+ */
+export const MATCH_SCORE_PARTIAL = {
+  /** A founder who does not fill what the reader is looking for. */
+  roleNotSought: 0.6,
+  /** The same role, or roles that do not complete each other. */
+  roleOther: 0.5,
+  /** One stage apart. */
+  stageAdjacent: 0.5,
+  /** Both full time, or both part time, in different words. */
+  commitmentCompatible: 0.7,
+  /** Profile updated in the last 30 days rather than the last 7. */
+  recentMonth: 0.5,
+} as const;
+
 /** Normalize string for comparison. */
 function norm(s: string | null | undefined): string {
   return (s ?? '').toLowerCase().trim();
@@ -27,7 +51,7 @@ function roleComplementarityScore(viewerRole: UserRole, candidateRole: UserRole)
   if (viewerRole === 'founder' && (candidateRole === 'mentor' || candidateRole === 'investor')) return WEIGHTS.roleComplementarity;
   if ((viewerRole === 'mentor' || viewerRole === 'investor') && candidateRole === 'founder') return WEIGHTS.roleComplementarity;
   if (viewerRole === 'org' && (candidateRole === 'founder' || candidateRole === 'mentor')) return WEIGHTS.roleComplementarity;
-  return Math.floor(WEIGHTS.roleComplementarity * 0.5); // same role or other: partial
+  return Math.floor(WEIGHTS.roleComplementarity * MATCH_SCORE_PARTIAL.roleOther); // same role or other: partial
 }
 
 /**
@@ -75,7 +99,7 @@ export function computeMatchScore(viewer: ProfileSnapshot, candidate: ProfileSna
   const reasons: string[] = [];
   let roleComplementarity = roleComplementarityScore(viewer.role, candidate.role);
   if (viewer.role === 'founder' && candidate.role === 'founder' && !rolesSoughtMatch(viewer.rolePayload, candidate.role, candidate.skillNames, candidate.skillCategories)) {
-    roleComplementarity = Math.floor(roleComplementarity * 0.6);
+    roleComplementarity = Math.floor(roleComplementarity * MATCH_SCORE_PARTIAL.roleNotSought);
   } else if (viewer.role === 'founder' && candidate.role === 'founder') {
     reasons.push('Cofounder match');
   } else if (roleComplementarity === WEIGHTS.roleComplementarity) {
@@ -110,7 +134,7 @@ export function computeMatchScore(viewer: ProfileSnapshot, candidate: ProfileSna
       const vi = stages.indexOf(vs);
       const ci = stages.indexOf(cs);
       if (vi >= 0 && ci >= 0 && Math.abs(vi - ci) <= 1) {
-        stageAlignment = Math.floor(WEIGHTS.stageAlignment * 0.5);
+        stageAlignment = Math.floor(WEIGHTS.stageAlignment * MATCH_SCORE_PARTIAL.stageAdjacent);
         reasons.push('Similar stage');
       }
     }
@@ -127,7 +151,7 @@ export function computeMatchScore(viewer: ProfileSnapshot, candidate: ProfileSna
       (viewerCommitment.includes('full') && candidateCommitment.includes('full')) ||
       (viewerCommitment.includes('part') && candidateCommitment.includes('part'))
     ) {
-      commitmentAlignment = Math.floor(WEIGHTS.commitmentAlignment * 0.7);
+      commitmentAlignment = Math.floor(WEIGHTS.commitmentAlignment * MATCH_SCORE_PARTIAL.commitmentCompatible);
       reasons.push('Compatible commitment');
     }
   }
@@ -149,7 +173,7 @@ export function computeMatchScore(viewer: ProfileSnapshot, candidate: ProfileSna
     recencyBonus = WEIGHTS.recencyBonus;
     reasons.push('Active recently');
   } else if (candidateDaysSinceUpdate <= 30) {
-    recencyBonus = Math.floor(WEIGHTS.recencyBonus * 0.5);
+    recencyBonus = Math.floor(WEIGHTS.recencyBonus * MATCH_SCORE_PARTIAL.recentMonth);
   }
 
   const total =

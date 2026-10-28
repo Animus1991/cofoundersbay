@@ -19,6 +19,8 @@ import type { AppLocale } from '@/lib/locale';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { planCopilotTools, detectPersonName, asksAboutThisPage, asksAboutSamples, railSectionFor, pageControlFor, pageListFor } from '@/lib/copilot-planner';
 import { AREA_READERS, isAreaRead } from '@/lib/copilot-reads';
+import { pageKey, pageLabel } from '@/lib/usage-profile';
+import { replyStyleTarget } from '@/lib/reply-style';
 import type {
   CopilotAction,
   CopilotCitation,
@@ -972,6 +974,23 @@ export async function runCopilotTurn(
       }
       actions.push(
         ...actionsFromToolCalls([{ name: tool.name, args: tool.args ?? {}, writes: true, droppedArgs: [] }], replyLocale).map((action) =>
+          target ? { ...action, title: `${action.title}: ${target}` } : action,
+        ),
+      );
+    }
+
+    // The reader’s pages and the assistant’s own manner (docs §107, §110). The
+    // planner proposed these with no card to show for them; each now names
+    // what it acts on, in the reader’s language.
+    if (tool.name === 'pin_shortcut' || tool.name === 'unpin_shortcut' || tool.name === 'set_reply_style') {
+      const args = tool.args ?? {};
+      const page = typeof args.href === 'string' ? pageKey(args.href) : null;
+      const pageName = page ? pageLabel(page) : null;
+      const target = tool.name === 'set_reply_style'
+        ? replyStyleTarget(args, replyLocale)
+        : pageName ? (replyLocale === 'el' ? pageName.el : pageName.en) : '';
+      actions.push(
+        ...actionsFromToolCalls([{ name: tool.name, args, writes: tool.name === 'set_reply_style', droppedArgs: [] }], replyLocale).map((action) =>
           target ? { ...action, title: `${action.title}: ${target}` } : action,
         ),
       );

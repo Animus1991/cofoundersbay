@@ -598,6 +598,34 @@ function withNaturalFilters(args: Record<string, string>, rawMessage: string): R
 }
 
 /**
+ * How the reader wants the assistant to answer (docs §110): a style, when the
+ * sentence is about the assistant’s answers, and emoji on or off. «Σύνταξε
+ * μια πιο σύντομη απάντηση στην Έλενα» is a draft, not a style: it names no
+ * answer of the assistant’s, so nothing is changed.
+ */
+const ANSWER_PHRASES = [
+  'your answers', 'your replies', 'answer me', 'answer more', 'answer in ', 'reply more', 'respond more', 'talk to me',
+  'be more concise', 'be more detailed', 'be more casual', 'be more formal', 'be brief', 'be concise', 'keep it short', 'keep answers',
+  'απαντα', 'απαντησεις σου', 'μιλα μου', 'μιλας', 'γραφε μου',
+];
+const REPLY_STYLE_ALIASES: Array<{ keys: string[]; style: string }> = [
+  { keys: ['concise', 'shorter', 'brief', 'keep it short', 'πιο συντομ', 'πιο συνοπτικ', 'συντομοτερ', 'συντομα'], style: 'concise' },
+  { keys: ['more detail', 'longer', 'in depth', 'πιο αναλυτικ', 'πιο λεπτομερ', 'αναλυτικα'], style: 'detailed' },
+  { keys: ['casual', 'friendlier', 'more friendly', 'πιο φιλικ', 'πιο χαλαρ', 'φιλικα'], style: 'casual' },
+  { keys: ['formal', 'πιο επισημ', 'επισημα'], style: 'formal' },
+];
+
+export function detectReplyStyle(message: string): Record<string, string> | undefined {
+  const text = fold(message);
+  const emojiOff = /\b(no|without|stop using|drop the)\s+emoji/.test(text) || text.includes('χωρις emoji');
+  const emojiOn = !emojiOff && (/\b(with|use|add)\s+emoji/.test(text) || text.includes('με emoji'));
+  const aboutAnswers = ANSWER_PHRASES.some((phrase) => text.includes(fold(phrase)));
+  const hit = aboutAnswers ? REPLY_STYLE_ALIASES.find((alias) => alias.keys.some((key) => text.includes(fold(key)))) : undefined;
+  if (!hit && !emojiOff && !emojiOn) return undefined;
+  return { ...(hit ? { style: hit.style } : {}), ...(emojiOff ? { emoji: 'false' } : emojiOn ? { emoji: 'true' } : {}) };
+}
+
+/**
  * The page a pin names, with or without a navigation verb: "pin messages",
  * «καρφίτσωσε τα μηνύματα». Only a page that can be one of the reader's
  * pages (not a home), so the planner never proposes a pin it would refuse.
@@ -1140,6 +1168,10 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const wantsPin = !wantsUnpin && includesWord(message, ['pin', 'καρφιτσωσ', 'καρφιτσωμα']);
   const pinTarget = wantsPin || wantsUnpin ? detectPinTarget(message) : undefined;
   if (pinTarget) add(wantsUnpin ? 'unpin_shortcut' : 'pin_shortcut', { href: pinTarget.href, label: pinTarget.label });
+
+  // How the assistant answers (docs §110): «απάντα πιο σύντομα», "no emoji".
+  const replyStyle = detectReplyStyle(rawMessage);
+  if (replyStyle) add('set_reply_style', replyStyle);
 
   const replacedReads = new Set<string>([
     ...(pinTarget ? ['get_usage_insights'] : []),

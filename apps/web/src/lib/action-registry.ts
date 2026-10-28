@@ -73,6 +73,8 @@ import { clearOpenTo, getMyOpenTo, setOpenTo } from '@/lib/open-to-api';
 import { linkSkillEvidence, unlinkSkillEvidence } from '@/lib/skill-evidence-api';
 import { runScout } from '@/lib/scout-api';
 import { canShortcut, pinPage, unpinPage } from '@/lib/usage-profile';
+import { getAIPreferences, updateAIPreferences } from '@/lib/ai-api';
+import { isReplyStyle, readFlag } from '@/lib/reply-style';
 import { isLinkableEvidenceKind, isOpenToKind, type OpenToKind, type OpenToVisibility } from '@cofounderbay/shared';
 
 /**
@@ -264,6 +266,27 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     const result = unpinPage(key);
     if (!result.ok) return { ok: false, error: PIN_REFUSAL[result.reason] };
     return { ok: true, undo: { key, index: result.index } };
+  },
+
+  // The preferences /settings/ai saves and every answer reads (docs §98, §110).
+  // The outcome hands the undo what was there before; a change to what is
+  // already set is refused, so the undo never takes back the reader's own choice.
+  set_reply_style: async (payload) => {
+    const rawStyle = requireString(payload, 'style');
+    const emoji = readFlag(payload?.emoji);
+    if (rawStyle && !isReplyStyle(rawStyle)) return { ok: false, error: 'Unknown reply style.' };
+    const style = isReplyStyle(rawStyle) ? rawStyle : undefined;
+    if (!style && emoji === undefined) return { ok: false, error: 'Say which style, or emoji on or off.' };
+    const current = (await getAIPreferences())?.preferences ?? null;
+    const before = {
+      responseStyle: isReplyStyle(current?.responseStyle) ? current?.responseStyle : 'concise',
+      useEmoji: current?.useEmoji === true,
+    };
+    const sameStyle = !style || style === before.responseStyle;
+    const sameEmoji = emoji === undefined || emoji === before.useEmoji;
+    if (sameStyle && sameEmoji) return { ok: false, error: 'That is already how the assistant answers.' };
+    await updateAIPreferences({ ...(style ? { responseStyle: style } : {}), ...(emoji === undefined ? {} : { useEmoji: emoji }) });
+    return { ok: true, href: '/settings/ai', undo: before };
   },
 
   navigate: async (payload) => {
@@ -827,6 +850,13 @@ const UNDOS: Record<UndoableActionId, Undo> = {
     if (!key) return { ok: false, error: 'Not reversible' };
     const result = unpinPage(key);
     return result.ok ? { ok: true } : { ok: false, error: PIN_REFUSAL[result.reason] };
+  },
+
+  // Puts back the style and the emoji setting from before the change.
+  set_reply_style: async (_payload, context) => {
+    if (!isReplyStyle(context.responseStyle)) return { ok: false, error: 'Not reversible' };
+    await updateAIPreferences({ responseStyle: context.responseStyle, useEmoji: context.useEmoji === true });
+    return { ok: true, href: '/settings/ai' };
   },
 
   // Puts the page back in the place it had.

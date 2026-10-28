@@ -22,6 +22,20 @@
 
 export type SkillFamily = 'technical' | 'business' | 'design' | 'other';
 
+/**
+ * How the team skills fit is weighed (docs §106): common ground and what the
+ * other adds, and how many skills make each one full. Exported so the page
+ * that explains the score reads the engine's own numbers (docs §110).
+ */
+export const TEAM_SKILLS_FIT = {
+  commonWeight: 0.4,
+  addsWeight: 0.6,
+  /** Shared skills for full common ground. */
+  sharedForFull: 2,
+  /** Added skills for full "adds", when none of them is a new family. */
+  addedForFull: 3,
+} as const;
+
 const FAMILY_WORDS: Array<[SkillFamily, RegExp]> = [
   [
     'technical',
@@ -80,8 +94,8 @@ export function teamSkillsFit(mine: SkillSide, theirs: SkillSide): TeamSkillsFit
   const added = b.size - shared;
   const myFamilies = new Set([...a.values()].filter((f) => f !== 'other'));
   const newFamily = [...b.entries()].some(([k, f]) => !a.has(k) && f !== 'other' && !myFamilies.has(f));
-  const common = Math.min(1, shared / 2);
-  const adds = newFamily ? 1 : Math.min(1, added / 3);
-  const fit = Math.round((0.4 * common + 0.6 * adds) * 1000) / 1000;
+  const common = Math.min(1, shared / TEAM_SKILLS_FIT.sharedForFull);
+  const adds = newFamily ? 1 : Math.min(1, added / TEAM_SKILLS_FIT.addedForFull);
+  const fit = Math.round((TEAM_SKILLS_FIT.commonWeight * common + TEAM_SKILLS_FIT.addsWeight * adds) * 1000) / 1000;
   return { fit, shared, added, newFamily };
 }

@@ -2492,6 +2492,49 @@ export const ACTION_DECLARATIONS = [
     },
     confirmLabel: { en: 'Unpin', el: 'Ξεκαρφίτσωμα' },
   },
+  {
+    // The same preferences /settings/ai saves and every answer reads (docs §98);
+    // asked for in the conversation itself (docs §110).
+    id: 'set_reply_style',
+    kind: 'mutation',
+    label: { en: 'Change how the assistant answers', el: 'Αλλαγή του τρόπου που απαντά ο βοηθός' },
+    description: {
+      en: 'Set the assistant’s reply style (concise, detailed, casual or formal) and whether it uses emoji, as on the AI settings page. Every later answer follows it. Use it when the user asks for shorter, longer, friendlier or more formal answers, or for no emoji.',
+      el: 'Ορίζει το ύφος των απαντήσεων του βοηθού (σύντομο, αναλυτικό, φιλικό ή επίσημο) και αν χρησιμοποιεί emoji, όπως η σελίδα ρυθμίσεων AI. Κάθε επόμενη απάντηση το ακολουθεί. Χρησιμοποίησέ το όταν ο χρήστης ζητά πιο σύντομες, πιο αναλυτικές, πιο φιλικές ή πιο επίσημες απαντήσεις, ή χωρίς emoji.',
+    },
+    params: [
+      {
+        name: 'style',
+        type: 'string',
+        required: false,
+        enumValues: ['concise', 'detailed', 'casual', 'formal'],
+        description: {
+          en: 'The reply style to use from now on.',
+          el: 'Το ύφος απαντήσεων από εδώ και πέρα.',
+        },
+      },
+      {
+        name: 'emoji',
+        type: 'boolean',
+        required: false,
+        description: {
+          en: 'Whether answers may use emoji.',
+          el: 'Αν οι απαντήσεις μπορούν να έχουν emoji.',
+        },
+      },
+    ],
+    writes: true,
+    invalidates: ['ai_preferences'],
+    reversal: {
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible: undo puts back the style and the emoji setting you had.',
+        el: 'Πλήρως αναστρέψιμο: η αναίρεση επαναφέρει το ύφος και τη ρύθμιση για τα emoji που είχατε.',
+      },
+    },
+    auditSubject: { param: 'style', entityType: 'ai_preferences' },
+    confirmLabel: { en: 'Change it', el: 'Αλλαγή' },
+  },
 ] as const satisfies readonly ActionDeclaration[];
 
 export type DeclaredAction = (typeof ACTION_DECLARATIONS)[number];

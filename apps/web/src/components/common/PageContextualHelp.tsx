@@ -289,11 +289,12 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Match score is computed from{' '}
-          <strong>role complementarity, skill overlap, stage alignment, commitment, and location</strong>. Higher scores
-          are stronger fits, but always read the &ldquo;Why you match&rdquo; reasons before reaching out.
+          <strong>roles that complete each other, skills as a team, stage, time commitment, place and a recent profile</strong>.
+          Higher scores are stronger fits, but always read the &ldquo;Why you match&rdquo; reasons before reaching out.
         </p>
         <p>
-          Click the chart icon on a card to see the compatibility breakdown, or open Compare to put two profiles side by side.
+          &ldquo;How the score works&rdquo; above the list shows each part and its points. A card&rsquo;s
+          &ldquo;Compatibility&rdquo; opens its breakdown; select two profiles to compare them side by side.
         </p>
       </>
     ),
@@ -301,13 +302,13 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Η βαθμολογία αντιστοίχισης προκύπτει από{' '}
-          <strong>συμπληρωματικότητα ρόλων, επικάλυψη δεξιοτήτων, ευθυγράμμιση σταδίου, διαθεσιμότητα και
-          τοποθεσία</strong>. Η υψηλότερη βαθμολογία σημαίνει ισχυρότερο ταίριασμα, αλλά διαβάζετε πάντα τους λόγους
+          <strong>ρόλους που συμπληρώνονται, δεξιότητες ως ομάδα, στάδιο, δέσμευση χρόνου, τοποθεσία και πρόσφατο
+          προφίλ</strong>. Η υψηλότερη βαθμολογία σημαίνει ισχυρότερο ταίριασμα, αλλά διαβάζετε πάντα τους λόγους
           στο «Γιατί ταιριάζετε» πριν επικοινωνήσετε.
         </p>
         <p>
-          Πατήστε το εικονίδιο γραφήματος σε μια κάρτα για την ανάλυση συμβατότητας, ή ανοίξτε τη Σύγκριση για να
-          δείτε δύο προφίλ δίπλα-δίπλα.
+          Το «Πώς βγαίνει το σκορ» πάνω από τη λίστα δείχνει κάθε μέρος με τους πόντους του. Η «Συμβατότητα» σε
+          μια κάρτα ανοίγει την ανάλυσή της· επιλέξτε δύο προφίλ για να τα δείτε δίπλα δίπλα.
         </p>
       </>
     ),

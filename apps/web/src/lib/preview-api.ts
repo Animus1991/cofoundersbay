@@ -1163,6 +1163,32 @@ const PEOPLE = [
 
 const SHORTLIST_IDS = new Set<string>(['user-marcus']);
 
+/** The demo's AI preferences, as changed this session (docs §110). Only the keys /settings/ai saves. */
+const DEMO_AI_PREFS_KEY = 'cfb:demo-ai-prefs';
+const DEMO_AI_PREF_KEYS = ['responseStyle', 'useEmoji', 'temperature', 'maxTokens', 'responseLanguage', 'enableStreaming', 'enableSuggestions', 'enableContextMemory', 'enableAutoSave', 'saveConversations', 'shareForTraining', 'anonymizeData', 'defaultAgent', 'preferredModel'];
+
+function readDemoAiPrefs(): Record<string, unknown> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = window.sessionStorage.getItem(DEMO_AI_PREFS_KEY);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : null;
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeDemoAiPrefs(body: Record<string, unknown> | null | undefined): void {
+  if (typeof window === 'undefined' || !body || typeof body !== 'object') return;
+  const next = { ...readDemoAiPrefs() };
+  for (const key of DEMO_AI_PREF_KEYS) if (key in body) next[key] = body[key];
+  try {
+    window.sessionStorage.setItem(DEMO_AI_PREFS_KEY, JSON.stringify(next));
+  } catch {
+    // Storage blocked: the change holds for this answer only.
+  }
+}
+
 /*
  * Scores and reasons from the matching engine, over the two sample profiles
  * (owner, 2026-10-28; docs §106). They were written by hand (92, 88, 81, 76)
@@ -4002,6 +4028,9 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     return { models: [], default: 'copilot' };
   }
   if (pathname === '/api/ai/preferences' || pathname.startsWith('/api/ai/preferences')) {
+    // A change is kept for the session (the assistant's set_reply_style and
+    // /settings/ai both write here), so the next read shows it (docs §110).
+    if (method === 'PATCH' || method === 'PUT' || method === 'POST') writeDemoAiPrefs(body);
     return {
       preferences: {
         preferredModel: 'copilot',
@@ -4019,6 +4048,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
         shareForTraining: false,
         anonymizeData: true,
         defaultAgent: 'general',
+        ...readDemoAiPrefs(),
       },
     };
   }
