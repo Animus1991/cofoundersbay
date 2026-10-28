@@ -21,6 +21,8 @@ import { planCopilotTools, detectPersonName, asksAboutThisPage, asksAboutSamples
 import { AREA_READERS, isAreaRead } from '@/lib/copilot-reads';
 import { pageKey, pageLabel } from '@/lib/usage-profile';
 import { replyStyleTarget } from '@/lib/reply-style';
+import { planWeek, wantsWeekPlan } from '@/lib/week-plan';
+import { NOTHING_TO_TRIAGE, notificationPrefTarget, triageSplit, triageTarget } from '@/lib/notification-chat';
 import type {
   CopilotAction,
   CopilotCitation,
@@ -381,6 +383,13 @@ export async function runCopilotTurn(
 ): Promise<CopilotTurnResult> {
   const replyLocale = replyLocaleFor(userMessage, pageContext?.locale);
   const t = translatorFor(replyLocale);
+  // «Ετοίμασε την εβδομάδα μου»: the week in figures, and one card of up to
+  // four reversible actions (docs §107.7-3, §111). Asked for by name, so it
+  // answers the same whichever path planned the turn.
+  if (wantsWeekPlan(userMessage)) {
+    const week = await planWeek(replyLocale ?? 'en', newId);
+    return { message: week.message, actions: week.actions, citations: [], usedTools: ['get_milestones', 'get_events', 'get_notifications'] };
+  }
   let planned = options?.tools ? [...options.tools] : planCopilotTools(userMessage);
   const citations: CopilotCitation[] = [];
   const actions: CopilotAction[] = [];
@@ -991,6 +1000,35 @@ export async function runCopilotTurn(
         : pageName ? (replyLocale === 'el' ? pageName.el : pageName.en) : '';
       actions.push(
         ...actionsFromToolCalls([{ name: tool.name, args, writes: tool.name === 'set_reply_style', droppedArgs: [] }], replyLocale).map((action) =>
+          target ? { ...action, title: `${action.title}: ${target}` } : action,
+        ),
+      );
+    }
+
+    // Notifications from the conversation (docs §111). The triage card says
+    // how many are marked read and how many stay, counted before it is
+    // confirmed; with nothing to mark it says so instead of offering a card.
+    if (tool.name === 'triage_notifications' || tool.name === 'set_notification_pref') {
+      const args = tool.args ?? {};
+      let target = '';
+      if (tool.name === 'set_notification_pref') {
+        target = notificationPrefTarget(args, replyLocale);
+      } else {
+        try {
+          const { notifications } = await listNotifications({ unread: true, limit: 100 });
+          const split = triageSplit(notifications ?? []);
+          if (!split.clear.length) {
+            const nothing = split.keep.length ? NOTHING_TO_TRIAGE.allWaiting : NOTHING_TO_TRIAGE.noneUnread;
+            sections.push(replyLocale === 'el' ? nothing.el : nothing.en);
+            continue;
+          }
+          target = triageTarget({ clear: split.clear.length, keep: split.keep.length }, replyLocale);
+        } catch {
+          target = '';
+        }
+      }
+      actions.push(
+        ...actionsFromToolCalls([{ name: tool.name, args, writes: true, droppedArgs: [] }], replyLocale).map((action) =>
           target ? { ...action, title: `${action.title}: ${target}` } : action,
         ),
       );

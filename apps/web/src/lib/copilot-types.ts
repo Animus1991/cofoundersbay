@@ -52,6 +52,12 @@ export type CopilotAction = {
    * had failed, and it outlived the card's own retry.
    */
   error?: string;
+  /**
+   * Cards proposed together for one request ("prepare my week"): the chat
+   * frames them as one card under this title. Each still runs only when
+   * confirmed and keeps its own undo (docs §107.7-3, §111).
+   */
+  group?: { id: string; title: string };
 };
 
 export type CopilotCitation = {

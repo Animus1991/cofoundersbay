@@ -3,10 +3,12 @@
 import { useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { ConnectButton, MessageButton } from '@/components/common/PersonActions';
+import { useStoredUser } from '@/hooks/useStoredUser';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
-import { getPublicProfile } from '@/lib/api';
+import { getConnectionStatus, getPublicProfile } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { initialsOf } from '@/lib/utils';
 
@@ -19,12 +21,19 @@ const MONTHS_ACCUSATIVE = ['Ιανουάριο', 'Φεβρουάριο', 'Μάρ
  * and when they joined.
  *
  * It reads the profile only when it opens, under the profile page's own query
- * key, so opening the profile afterwards is already loaded. Read-only on
- * purpose: a tooltip holds no buttons, and the profile is one click away.
- * Touch screens never open it (a tap follows the link).
+ * key, so opening the profile afterwards is already loaded. Touch screens
+ * never open it (a tap follows the link).
+ *
+ * With GitHub's two actions since §111 (§54.7-3): Message, and Connect or
+ * where the connection stands. It is a hover card now, not a tooltip, because
+ * a tooltip is read as a description and may not hold buttons. The actions
+ * are the shared PersonActions, so they do what the profile's do; none for
+ * oneself, and none for a visitor, who has nobody to act as.
  */
 export function PersonHovercard({ userId, children }: { userId: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const me = useStoredUser()?.id ?? null;
+  const canAct = Boolean(me) && me !== userId;
   const { data: profile, isLoading } = useQuery({
     queryKey: qk('public-profile', userId),
     queryFn: () => getPublicProfile(userId),
@@ -39,12 +48,20 @@ export function PersonHovercard({ userId, children }: { userId: string; children
   // genitive («Φεβρουαρίου») in another.
   const joinedEl = joinedValid ? `τον ${MONTHS_ACCUSATIVE[joined.getMonth()]} του ${joined.getFullYear()}` : null;
   const skills = (profile?.skills ?? []).slice(0, 3).map((s) => s.skillName).filter(Boolean);
+  // Where the connection stands, under the profile page's key, read on opening.
+  const { data: link } = useQuery({
+    queryKey: qk('connection-status', userId),
+    queryFn: () => getConnectionStatus(userId),
+    enabled: open && canAct,
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const linkStatus = link?.status ?? null;
 
   return (
-    <TooltipProvider delayDuration={500} skipDelayDuration={200}>
-      <Tooltip open={open} onOpenChange={setOpen}>
-        <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <TooltipContent side="bottom" align="start" className="w-72 max-w-[calc(100vw-2rem)] rounded-lg p-3 text-sm">
+    <HoverCard open={open} onOpenChange={setOpen} openDelay={500} closeDelay={150}>
+        <HoverCardTrigger asChild>{children}</HoverCardTrigger>
+        <HoverCardContent side="bottom" align="start" className="w-72 max-w-[calc(100vw-2rem)] rounded-lg p-3 text-sm">
           {isLoading || !profile ? (
             <p className="text-xs text-muted-foreground">
               {isLoading ? <BilingualText en="Loading…" el="Φόρτωση…" compact /> : <BilingualText en="Profile not available" el="Το προφίλ δεν είναι διαθέσιμο" compact />}
@@ -71,8 +88,23 @@ export function PersonHovercard({ userId, children }: { userId: string; children
               </div>
             </div>
           )}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+          {canAct && profile ? (
+            <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3" data-hovercard-actions="">
+              <MessageButton userId={userId} displayName={profile.displayName} />
+              {linkStatus === 'accepted' ? (
+                <span className="text-xs text-muted-foreground"><BilingualText en="Connected" el="Συνδεδεμένοι" compact /></span>
+              ) : linkStatus === 'pending' ? (
+                <span className="text-xs text-muted-foreground">
+                  {link?.direction === 'received'
+                    ? <BilingualText en="Asked to connect with you" el="Ζήτησε σύνδεση μαζί σας" compact />
+                    : <BilingualText en="Request pending" el="Αίτημα σε αναμονή" compact />}
+                </span>
+              ) : (
+                <ConnectButton userId={userId} displayName={profile.displayName} />
+              )}
+            </div>
+          ) : null}
+        </HoverCardContent>
+    </HoverCard>
   );
 }

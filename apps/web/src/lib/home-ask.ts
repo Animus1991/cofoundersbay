@@ -46,6 +46,25 @@ const WEEK = (en: string, el: string, tool: CopilotToolName = 'get_graph'): Home
   prompt: { en, el },
 });
 
+/**
+ * «Ετοίμασε την εβδομάδα μου» (docs §107.7-3, §111): the week in figures and
+ * one card of up to four reversible actions. Beside "My week", which only
+ * briefs; this one also offers what can be done now.
+ */
+const PREPARE_WEEK: HomeAskAction = {
+  id: 'prepare-week',
+  en: 'Prepare my week',
+  el: 'Ετοίμασε την εβδομάδα μου',
+  glyph: 'calendar',
+  tool: 'get_events',
+  // "My calendar" names the reads (events and milestones) without the
+  // "prepare … event" that would read as drafting one.
+  prompt: {
+    en: 'Prepare my week from my calendar and what waits on me.',
+    el: 'Ετοίμασε την εβδομάδα μου από το ημερολόγιό μου και ό,τι με περιμένει.',
+  },
+};
+
 export const HOME_ASK: Record<HomeRole, { scopes: HomeAskScope[]; actions: HomeAskAction[] }> = {
   founder: {
     scopes: [
@@ -96,6 +115,7 @@ export const HOME_ASK: Record<HomeRole, { scopes: HomeAskScope[]; actions: HomeA
         'Brief me on this founder dashboard: what needs attention this week, summarize the graph, and the next action among intros, matches, messages, or profile gaps.',
         'Ενημέρωσέ με για τον πίνακα του ιδρυτή: τι θέλει προσοχή αυτή την εβδομάδα, μια σύνοψη, και η επόμενη κίνηση ανάμεσα σε γνωριμίες, αντιστοιχίσεις, μηνύματα ή κενά του προφίλ.',
       ),
+      PREPARE_WEEK,
     ],
   },
   mentor: {
@@ -110,6 +130,7 @@ export const HOME_ASK: Record<HomeRole, { scopes: HomeAskScope[]; actions: HomeA
       { id: 'prepare', en: 'Prepare my next session', el: 'Προετοιμασία συνεδρίας', glyph: 'calendar', tool: 'get_mentorship_sessions', prompt: { en: 'Prepare me for my next session: who it is with, what we discussed last and what to ask.', el: 'Προετοίμασέ με για την επόμενη συνεδρία: με ποιον είναι, τι συζητήσαμε την τελευταία φορά και τι να ρωτήσω.' } },
       { id: 'follow', en: 'Who needs a follow-up', el: 'Ποιοι θέλουν συνέχεια', glyph: 'people', tool: 'get_mentorship_sessions', prompt: { en: 'Which of my mentees need a follow-up this week?', el: 'Ποιοι από όσους καθοδηγώ χρειάζονται συνέχεια αυτή την εβδομάδα;' } },
       WEEK('Brief me on my mentoring week: requests waiting, sessions coming and anything overdue.', 'Ενημέρωσέ με για την εβδομάδα καθοδήγησης: αιτήματα σε αναμονή, συνεδρίες που έρχονται και ό,τι καθυστερεί.', 'get_mentorship_sessions'),
+      PREPARE_WEEK,
     ],
   },
   investor: {
@@ -125,6 +146,7 @@ export const HOME_ASK: Record<HomeRole, { scopes: HomeAskScope[]; actions: HomeA
       { id: 'scout', en: 'Startups for my thesis', el: 'Startups για τη θέση μου', glyph: 'search', tool: 'get_investor_board', prompt: { en: 'Which startups on my watchlist fit my investment thesis best?', el: 'Ποιες startups στον πίνακα επενδύσεών μου ταιριάζουν καλύτερα στη θέση επένδυσής μου;' } },
       { id: 'meeting', en: 'Prepare my next meeting', el: 'Προετοιμασία συνάντησης', glyph: 'calendar', tool: 'get_investor_board', prompt: { en: 'Prepare notes for my next founder meeting from my pipeline.', el: 'Ετοίμασε σημειώσεις για την επόμενη συνάντηση με ιδρυτές από το pipeline μου.' } },
       WEEK('Brief me on my week from my pipeline: deals that moved, founders waiting and what to decide.', 'Ενημέρωσέ με για την εβδομάδα από το pipeline μου: συμφωνίες που κινήθηκαν, ιδρυτές που περιμένουν και τι πρέπει να αποφασίσω.', 'get_investor_board'),
+      PREPARE_WEEK,
     ],
   },
   provider: {
@@ -138,6 +160,7 @@ export const HOME_ASK: Record<HomeRole, { scopes: HomeAskScope[]; actions: HomeA
       { id: 'waiting', en: 'Inquiries waiting', el: 'Αιτήματα σε αναμονή', glyph: 'bell', tool: 'get_inquiries', prompt: { en: 'Which client inquiries are waiting for my reply?', el: 'Ποια αιτήματα πελατών περιμένουν απάντησή μου;' } },
       { id: 'reply', en: 'Draft a reply', el: 'Προσχέδιο απάντησης', glyph: 'messages', tool: 'get_inquiries', prompt: { en: 'Draft a reply to my most recent client inquiry.', el: 'Γράψε προσχέδιο απάντησης στο πιο πρόσφατο αίτημα πελάτη.' } },
       WEEK('Brief me on my provider week: inquiries, active projects and reviews.', 'Ενημέρωσέ με για την εβδομάδα: αιτήματα πελατών, ενεργά έργα και αξιολογήσεις.', 'get_inquiries'),
+      PREPARE_WEEK,
     ],
   },
   incubator: {
@@ -155,6 +178,7 @@ export const HOME_ASK: Record<HomeRole, { scopes: HomeAskScope[]; actions: HomeA
       { id: 'cohort', en: 'How the cohort is doing', el: 'Πώς πάει η κοόρτη', glyph: 'chart', tool: 'get_org_cohorts', prompt: { en: 'How is the current cohort doing, and who needs help?', el: 'Πώς πάει η τρέχουσα κοόρτη, και ποιος χρειάζεται βοήθεια;' } },
       { id: 'capacity', en: 'Mentors with room', el: 'Μέντορες με χώρο', glyph: 'mentor', tool: 'get_mentors', prompt: { en: 'Which mentors have room for another founder?', el: 'Ποιοι μέντορες έχουν χώρο για έναν ακόμη ιδρυτή;' } },
       WEEK('Brief me on the programme this week: applications, cohort progress and events.', 'Ενημέρωσέ με για το πρόγραμμα αυτή την εβδομάδα: αιτήσεις, πρόοδος κοόρτης και εκδηλώσεις.', 'get_org_cohorts'),
+      PREPARE_WEEK,
     ],
   },
   admin: {

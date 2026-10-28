@@ -129,6 +129,8 @@ const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
   // How the assistant answers: /settings/ai reads it under this key.
   ai_preferences: [queryKeys.aiPreferences],
   scout: [qk('scout')],
+  // The list, the unread count and the email digest share one root.
+  notifications: [qk('notifications')],
 };
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {

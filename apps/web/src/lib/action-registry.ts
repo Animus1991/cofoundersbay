@@ -75,6 +75,15 @@ import { runScout } from '@/lib/scout-api';
 import { canShortcut, pinPage, unpinPage } from '@/lib/usage-profile';
 import { getAIPreferences, updateAIPreferences } from '@/lib/ai-api';
 import { isReplyStyle, readFlag } from '@/lib/reply-style';
+import {
+  getNotificationPreferences,
+  listNotifications,
+  markNotificationsRead,
+  markNotificationsUnread,
+  updateNotificationPreferences,
+} from '@/lib/api';
+import { channelsOf, readNotificationPrefs, setChannel } from '@/lib/notification-prefs';
+import { categoryOf, isChannel, isDigest, triageSplit } from '@/lib/notification-chat';
 import { isLinkableEvidenceKind, isOpenToKind, type OpenToKind, type OpenToVisibility } from '@cofounderbay/shared';
 
 /**
@@ -287,6 +296,47 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     if (sameStyle && sameEmoji) return { ok: false, error: 'That is already how the assistant answers.' };
     await updateAIPreferences({ ...(style ? { responseStyle: style } : {}), ...(emoji === undefined ? {} : { useEmoji: emoji }) });
     return { ok: true, href: '/settings/ai', undo: before };
+  },
+
+  // The unread pile in one confirmed step (docs §107.7-2, §111): what needs
+  // nothing from the reader is marked read; what waits on them stays. The
+  // API answers with the ids it marked, and the undo takes back only those.
+  triage_notifications: async () => {
+    const { notifications } = await listNotifications({ unread: true, limit: 100 });
+    const { clear } = triageSplit(notifications ?? []);
+    if (!clear.length) {
+      return { ok: false, error: (notifications ?? []).some((n) => !n.readAt) ? 'Every unread notification waits on you.' : 'Nothing is unread.' };
+    }
+    const res = await markNotificationsRead(clear.map((n) => n.id));
+    const ids = res?.ids ?? clear.map((n) => n.id);
+    return { ok: true, href: '/notifications', undo: { ids } };
+  },
+
+  // Settings → Notifications from the conversation (docs §110.5, §111). A
+  // channel lives on this device; the digest on the account. A change to
+  // what is already set is refused, so the undo never undoes the reader's
+  // own choice.
+  set_notification_pref: async (payload) => {
+    if (isDigest(payload?.digest)) {
+      const before = (await getNotificationPreferences())?.digestFrequency ?? 'never';
+      if (before === payload.digest) return { ok: false, error: 'The email digest is already set that way.' };
+      await updateNotificationPreferences({ digestFrequency: payload.digest });
+      return { ok: true, href: '/settings/notifications', undo: { digest: before } };
+    }
+    const category = categoryOf(payload?.category);
+    const channel = payload?.channel;
+    const on = readFlag(payload?.on);
+    if (!category || !isChannel(channel) || on === undefined) {
+      return { ok: false, error: 'Say which kind of notification, which channel, and on or off.' };
+    }
+    const prefs = readNotificationPrefs();
+    const before: Record<string, boolean> = {};
+    for (const setting of category.settings) before[setting.id] = channelsOf(prefs, setting)[channel];
+    if (Object.values(before).every((value) => value === on)) {
+      return { ok: false, error: 'That is already how those notifications are set.' };
+    }
+    setChannel(category.settings.map((s) => s.id), channel, on);
+    return { ok: true, href: '/settings/notifications', undo: { channel, before } };
   },
 
   navigate: async (payload) => {
@@ -857,6 +907,29 @@ const UNDOS: Record<UndoableActionId, Undo> = {
     if (!isReplyStyle(context.responseStyle)) return { ok: false, error: 'Not reversible' };
     await updateAIPreferences({ responseStyle: context.responseStyle, useEmoji: context.useEmoji === true });
     return { ok: true, href: '/settings/ai' };
+  },
+
+  // Unread again: exactly the notifications the triage marked read.
+  triage_notifications: async (_payload, context) => {
+    const ids = Array.isArray(context.ids) ? context.ids.filter((id): id is string => typeof id === 'string') : [];
+    if (!ids.length) return { ok: false, error: 'Not reversible' };
+    await markNotificationsUnread(ids);
+    return { ok: true, href: '/notifications' };
+  },
+
+  // Each setting back to what it had: one channel per setting, or the digest.
+  set_notification_pref: async (_payload, context) => {
+    if (isDigest(context.digest)) {
+      await updateNotificationPreferences({ digestFrequency: context.digest });
+      return { ok: true, href: '/settings/notifications' };
+    }
+    const channel = context.channel;
+    const before = context.before && typeof context.before === 'object' ? (context.before as Record<string, unknown>) : null;
+    if (!isChannel(channel) || !before) return { ok: false, error: 'Not reversible' };
+    for (const [id, value] of Object.entries(before)) {
+      if (typeof value === 'boolean') setChannel([id], channel, value);
+    }
+    return { ok: true, href: '/settings/notifications' };
   },
 
   // Puts the page back in the place it had.

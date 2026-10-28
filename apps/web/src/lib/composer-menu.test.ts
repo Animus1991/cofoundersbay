@@ -26,4 +26,14 @@ describe('the composer menu', () => {
     expect(insertMention('Write to @Ele', 9, 'Elena Papadopoulos')).toBe('Write to Elena Papadopoulos ');
     expect(insertMention('@ma', 0, 'Marcus Chen')).toBe('Marcus Chen ');
   });
+
+  it('finds a capability by the words of its example as well as its name (docs §111)', () => {
+    const items = [
+      { id: 'cap:start_or_send_message', en: 'Message someone', el: 'Μήνυμα σε κάποιον', keywords: 'Message Elena about the pilot Στείλε μήνυμα στην Elena για το πιλοτικό' },
+      { id: 'cap:get_events', en: 'Read events', el: 'Ανάγνωση εκδηλώσεων', keywords: 'What events are coming up? Ποιες εκδηλώσεις έρχονται;' },
+    ];
+    expect(filterCommands(items, 'πιλοτ').map((i) => i.id)).toEqual(['cap:start_or_send_message']);
+    expect(filterCommands(items, 'εκδηλ ερχον').map((i) => i.id)).toEqual(['cap:get_events']);
+    expect(filterCommands(items, '').length).toBe(2);
+  });
 });

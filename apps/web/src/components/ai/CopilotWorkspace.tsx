@@ -43,6 +43,8 @@ import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePr
 import { bilingualAria, formatLocalTime } from '@/lib/i18n/format';
 import { COPILOT_PRODUCT_LINKS, copilotStartersFor } from '@/lib/copilot-starters';
 import { composerMode, filterCommands, insertMention } from '@/lib/composer-menu';
+import { listDeclarations } from '@cofounderbay/shared';
+import { CAPABILITY_SAMPLES } from '@/lib/capability-samples';
 import { searchProfiles } from '@/lib/api';
 import { useRoleOptional } from '@/contexts/RoleContext';
 import { StatusText } from '@/components/common/StatusText';
@@ -81,6 +83,17 @@ function CopyAnswer({ content }: { content: string }) {
       {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
     </button>
   );
+}
+
+/** Consecutive cards of one group as one chunk; the rest one chunk each. */
+function groupActions(actions: CopilotAction[]): Array<{ key: string; group?: CopilotAction['group']; actions: CopilotAction[] }> {
+  const chunks: Array<{ key: string; group?: CopilotAction['group']; actions: CopilotAction[] }> = [];
+  for (const action of actions) {
+    const last = chunks[chunks.length - 1];
+    if (action.group && last?.group?.id === action.group.id) last.actions.push(action);
+    else chunks.push({ key: action.group ? `group:${action.group.id}:${action.id}` : action.id, group: action.group, actions: [action] });
+  }
+  return chunks;
 }
 
 function AssistantBody({
@@ -133,16 +146,26 @@ function AssistantBody({
       {message.citations && message.citations.length > 0 && <CitationList citations={message.citations} />}
       {message.actions && message.actions.length > 0 && (
         <div className="grid grid-cols-1 gap-2 pt-1">
-          {message.actions.map((action) => (
-            <ActionCard
-              key={action.id}
-              action={action}
-              busyId={pendingActionId}
-              onConfirm={onConfirm}
-              onDismiss={onDismiss}
-              onUndo={onUndo}
-            />
-          ))}
+          {groupActions(message.actions).map((chunk) => {
+            const cards = chunk.actions.map((action) => (
+              <ActionCard
+                key={action.id}
+                action={action}
+                busyId={pendingActionId}
+                onConfirm={onConfirm}
+                onDismiss={onDismiss}
+                onUndo={onUndo}
+              />
+            ));
+            // Cards proposed together for one request read as one card
+            // (docs §107.7-3, §111); each keeps its own confirm and undo.
+            return chunk.group ? (
+              <section key={chunk.key} aria-label={chunk.group.title} className="space-y-2 rounded-xl border border-border bg-muted/20 p-2.5" data-action-group={chunk.group.id}>
+                <p className="px-0.5 text-xs font-semibold text-foreground">{chunk.group.title}</p>
+                {cards}
+              </section>
+            ) : cards;
+          })}
         </div>
       )}
     </div>
@@ -205,15 +228,29 @@ export function CopilotWorkspace({
     () => copilotStartersFor(isPage ? 'page' : 'popup', { pathname: pageContext.route, role }),
     [isPage, pageContext.route, role],
   );
-  const commandItems = useMemo(
-    () => [
-      { id: 'new', kind: 'command' as const, en: 'New conversation', el: 'Νέα συνομιλία', hint: null as string | null },
-      ...starterSet.reads.map((s) => ({ id: `ask:${s.en}`, kind: 'ask' as const, en: s.en, el: s.el, hint: null as string | null })),
-      ...starterSet.writes.map((s) => ({ id: `ask:${s.en}`, kind: 'ask' as const, en: s.en, el: s.el, hint: null as string | null })),
-    ],
-    [starterSet],
-  );
-  const [people, setPeople] = useState<{ id: string; kind: 'person'; en: string; el: string; hint: string | null }[]>([]);
+  const commandItems = useMemo(() => {
+    const starters = [...starterSet.reads, ...starterSet.writes];
+    const asked = new Set(starters.map((s) => s.en));
+    return [
+      { id: 'new', kind: 'command' as const, en: 'New conversation', el: 'Νέα συνομιλία', hint: null as string | null, keywords: undefined as string | undefined, sample: null as { en: string; el: string } | null },
+      ...starters.map((s) => ({ id: `ask:${s.en}`, kind: 'ask' as const, en: s.en, el: s.el, hint: null as string | null, keywords: undefined as string | undefined, sample: null as { en: string; el: string } | null })),
+      // Then every capability, by its name, with its example as the words
+      // "/" also matches (docs §54.7-1, §111). A read sends its example; a
+      // write puts it in the box to be edited, and still asks to confirm.
+      ...listDeclarations()
+        .filter((d) => CAPABILITY_SAMPLES[d.id] && !asked.has(CAPABILITY_SAMPLES[d.id].en))
+        .map((d) => ({
+          id: `cap:${d.id}`,
+          kind: (d.kind === 'read' ? 'capability' : 'draft') as 'capability' | 'draft',
+          en: d.label.en,
+          el: d.label.el,
+          hint: null as string | null,
+          keywords: `${CAPABILITY_SAMPLES[d.id].en} ${CAPABILITY_SAMPLES[d.id].el}`,
+          sample: CAPABILITY_SAMPLES[d.id],
+        })),
+    ];
+  }, [starterSet]);
+  const [people, setPeople] = useState<{ id: string; kind: 'person'; en: string; el: string; hint: string | null; keywords?: string; sample?: null }[]>([]);
   const mentionQuery = menuMode?.mode === 'mention' ? menuMode.query : null;
   useEffect(() => {
     if (mentionQuery === null || mentionQuery.length < 2) {
@@ -249,6 +286,12 @@ export function CopilotWorkspace({
     } else if (item.kind === 'ask') {
       setInput('');
       void chat.sendMessage(primary === 'el' ? item.el : item.en);
+    } else if (item.kind === 'capability' && item.sample) {
+      setInput('');
+      void chat.sendMessage(primary === 'el' ? item.sample.el : item.sample.en);
+    } else if (item.kind === 'draft' && item.sample) {
+      // A write names an example person or item: it is the reader's to edit.
+      setInput(primary === 'el' ? item.sample.el : item.sample.en);
     } else if (menuMode?.mode === 'mention') {
       setInput(insertMention(input, menuMode.start, item.en));
     }
@@ -661,6 +704,14 @@ export function CopilotWorkspace({
                     <span className="min-w-0 truncate">
                       <BilingualText en={item.en} el={item.el} compact />
                     </span>
+                    {item.sample ? (
+                      // The example, so the name says what it will send; a
+                      // write is marked, since it fills the box instead.
+                      <span className="min-w-0 truncate text-xs text-muted-foreground">
+                        {item.kind === 'draft' ? <BilingualText en="edit: " el="επεξεργασία: " compact /> : null}
+                        «<BilingualText en={item.sample.en} el={item.sample.el} compact />»
+                      </span>
+                    ) : null}
                     {item.kind === 'person' && item.hint ? (
                       <span className="shrink-0 text-xs text-muted-foreground"><StatusText value={item.hint} /></span>
                     ) : null}

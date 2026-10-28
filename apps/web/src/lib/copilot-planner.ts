@@ -1,6 +1,7 @@
 import { readNaturalSearch } from '@cofounderbay/shared';
 import { resolveRouteTarget } from '@/lib/action-registry';
 import { canShortcut } from '@/lib/usage-profile';
+import { detectNotificationPref, wantsTriage } from '@/lib/notification-chat';
 import { namesCanvasSurface, planCanvasCommandArgs } from '@/lib/canvas/plan-canvas-command';
 import type { AreaReadId } from './copilot-reads';
 import { isWhereIsQuestion, whereIsTerms } from './where-is';
@@ -1174,8 +1175,16 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const replyStyle = detectReplyStyle(rawMessage);
   if (replyStyle) add('set_reply_style', replyStyle);
 
+  // Notifications from the conversation (docs §111): "mark the rest read",
+  // «σταμάτα τα email για εκδηλώσεις», "weekly digest".
+  const triage = wantsTriage(rawMessage);
+  if (triage) add('triage_notifications', {});
+  const notificationPref = triage ? undefined : detectNotificationPref(rawMessage);
+  if (notificationPref) add('set_notification_pref', notificationPref);
+
   const replacedReads = new Set<string>([
     ...(pinTarget ? ['get_usage_insights'] : []),
+    ...(triage || notificationPref ? ['get_notifications'] : []),
     ...(draftKind === 'draft_milestone' ? ['get_milestones'] : []),
     ...(draftKind === 'draft_event' ? ['get_events'] : []),
     ...(draftKind === 'draft_profile' ? ['get_profile'] : []),

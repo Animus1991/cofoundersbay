@@ -21,7 +21,6 @@ import {
   Star,
   Bookmark,
   Search,
-  X as XIcon,
 } from 'lucide-react';
 import {
   searchProfiles, getRecommendations, getDashboardStats, getMeProfile, recordMatchFeedback, restoreMatchFeedback, sendConnectionRequest, saveToShortlist, createSavedSearch, type SearchHit
@@ -32,6 +31,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { bilingualInline } from '@/lib/i18n/format';
 import { RailPeople } from '@/components/layout/RailPeople';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -441,10 +441,15 @@ export default function DiscoverPage() {
   };
 
   // Apply role filter to hits
-  const roleHits = roleFilter === 'all' ? hits : hits.filter((h) =>
-    h.role?.toLowerCase().includes(roleFilter.replace('_', ' ')) ||
-    h.role?.toLowerCase() === roleFilter
-  );
+  const hasRole = (h: SearchHit, role: RoleFilter) => role === 'all' ||
+    h.role?.toLowerCase().includes(role.replace('_', ' ')) ||
+    h.role?.toLowerCase() === role;
+  const roleHits = roleFilter === 'all' ? hits : hits.filter((h) => hasRole(h, roleFilter));
+  // How many of the results each role chip finds; a role with none is not
+  // offered, unless it is the one chosen (docs §62.5, §111).
+  const roleChips = ROLE_FILTERS
+    .map((r) => ({ ...r, count: hits.filter((h) => hasRole(h, r.value)).length }))
+    .filter((r) => r.value === 'all' || r.count > 0 || r.value === roleFilter);
   // Paid placement sits in its own labelled slot; the organic list keeps its order.
   const { promoted: promotedHits, organic: filteredHits } = splitPromoted(roleHits, activeTab === 'search' ? promotedIds : []);
 
@@ -544,16 +549,11 @@ export default function DiscoverPage() {
       glyph: 'sliders',
       labelEn: 'Filters & view',
       labelEl: 'Φίλτρα & προβολή',
-      badge: (roleFilter !== 'all' ? 1 : 0) + (viewMode !== 'grid' ? 1 : 0) || null,
+      badge: (viewMode !== 'grid' ? 1 : 0) || null,
       content: (
         <div className="space-y-4">
-          <RailOptions
-            title="Role"
-            titleEl="Ρόλος"
-            options={ROLE_FILTERS.map((r) => ({ value: r.value, en: r.labelEn, el: r.labelEl, icon: r.icon }))}
-            value={roleFilter}
-            onChange={setRoleFilter}
-          />
+          {/* The role is chosen on the page, under the search: the main
+              filter was out of sight in a panel (docs §62.5, §111). */}
           <RailOptions
             title="Layout"
             titleEl="Διάταξη"
@@ -564,9 +564,6 @@ export default function DiscoverPage() {
             value={viewMode === 'match' ? 'grid' : viewMode}
             onChange={setViewMode}
           />
-          {roleFilter !== 'all' && (
-            <RailAction icon={XIcon} en={discoverEn('clear')} el={discoverEl('clear')} onClick={() => setRoleFilter('all')} />
-          )}
         </div>
       ),
     },
@@ -626,6 +623,32 @@ export default function DiscoverPage() {
             resultCount={searchFailed ? undefined : total}
             onSaveSearch={openSaveSearch}
           />
+
+          {/* Who: the role is how a person is looked for, so its chips sit in
+              view with how many of the results each finds (the mentors page
+              does the same with expertise; docs §62.5, §111). */}
+          {!loading && !searchFailed && hits.length > 0 ? (
+            <div className="-mt-4 flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label={bilingualInline('Role', 'Ρόλος')}>
+              {roleChips.map((r) => {
+                const on = roleFilter === r.value;
+                return (
+                  <button
+                    key={r.value}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setRoleFilter(r.value)}
+                    className={cn(
+                      'tap-target-y inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                      on ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                    )}
+                  >
+                    <BilingualText en={r.labelEn} el={r.labelEl} compact />
+                    <span className="tabular-nums opacity-70">{r.count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
 
           {/* Results */}
           {loading && (

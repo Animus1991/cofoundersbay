@@ -131,7 +131,8 @@ function assessment(completed: boolean) {
 
 const TYPES_SOURCE = readFileSync('src/lib/copilot-types.ts', 'utf8');
 const TOPIC_KEYS_SOURCE = readFileSync('src/hooks/useAIChat.ts', 'utf8');
-const CAPABILITIES_PAGE_SOURCE = readFileSync('src/app/ai/capabilities/page.tsx', 'utf8');
+// The sample asks moved out of the capabilities page so the composer's "/" can list them (§111).
+const CAPABILITIES_PAGE_SOURCE = readFileSync('src/lib/capability-samples.ts', 'utf8');
 const PLANNER_SOURCE = readFileSync('src/lib/copilot-planner.ts', 'utf8');
 
 /** The alias table as it is actually written, so the test cannot drift from it. */

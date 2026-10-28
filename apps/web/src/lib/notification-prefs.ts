@@ -206,6 +206,11 @@ export function updateNotificationPrefs(update: (prev: DeviceNotificationPrefs) 
   for (const listener of listeners) listener();
 }
 
+/** The settings as they are now, outside React (the assistant's executor reads them). */
+export function readNotificationPrefs(): DeviceNotificationPrefs {
+  return getSnapshot();
+}
+
 export function useNotificationPrefs(): DeviceNotificationPrefs {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

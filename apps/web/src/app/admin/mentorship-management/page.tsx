@@ -1,13 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { GraduationCap, Calendar, Star, CircleSlash, ChevronRight } from 'lucide-react';
+import { GraduationCap, ChevronRight } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { HelpCallout } from '@/components/common/HelpCallout';
 import { BilingualText } from '@/components/common/BilingualText';
-import { MetricTile } from '@/components/dashboard/MetricTile';
+import { PageFacts } from '@/components/common/PageFacts';
 import { RowHead, EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { discoverMentors } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { initialsOf } from '@/lib/utils';
-import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 const AVAILABILITY: Record<string, { en: string; el: string; variant: 'success' | 'warning' | 'secondary' }> = {
   available: { en: 'Available', el: 'Διαθέσιμος', variant: 'success' },
@@ -50,10 +51,22 @@ export default function MentorshipManagementPage() {
   const unbooked = mentors.filter((m) => !m.sessionCount);
   const unavailable = mentors.filter((m) => m.availabilityStatus === 'unavailable');
   const sorted = [...mentors].sort((a, b) => (b.sessionCount ?? 0) - (a.sessionCount ?? 0));
-  const dash = '—';
+  // The two figures that ask for attention also narrow the roster (docs §64.5, §111).
+  const [show, setShow] = useState<'all' | 'unbooked' | 'unavailable'>('all');
+  const shown = show === 'unbooked'
+    ? sorted.filter((m) => !m.sessionCount)
+    : show === 'unavailable'
+      ? sorted.filter((m) => m.availabilityStatus === 'unavailable')
+      : sorted;
+  const toggle = (next: 'unbooked' | 'unavailable') => setShow((current) => (current === next ? 'all' : next));
 
   const router = useRouter();
   usePageControls([
+    choiceControl('roster_filter', 'Mentors shown', 'Μέντορες που εμφανίζονται', [
+      { value: 'all', en: 'All mentors', el: 'Όλοι οι μέντορες' },
+      { value: 'unbooked', en: 'Not yet booked', el: 'Χωρίς κράτηση' },
+      { value: 'unavailable', en: 'Not taking sessions', el: 'Δεν δέχονται συνεδρίες' },
+    ], show, (v) => setShow(v as typeof show)),
     {
       id: 'open_mentor',
       labelEn: 'Open a mentor\'s profile',
@@ -72,7 +85,7 @@ export default function MentorshipManagementPage() {
       labelEl: 'Κατάλογος μεντόρων',
       rows: isLoading
         ? undefined
-        : sorted.map((m) => `${m.displayName} · ${m.sessionCount ?? 0} sessions · ${m.availabilityStatus}${m.rating != null && m.reviewCount > 0 ? ` · ${m.rating.toFixed(1)}★ (${m.reviewCount})` : ''}`),
+        : shown.map((m) => `${m.displayName} · ${m.sessionCount ?? 0} sessions · ${m.availabilityStatus}${m.rating != null && m.reviewCount > 0 ? ` · ${m.rating.toFixed(1)}★ (${m.reviewCount})` : ''}`),
       total: mentors.length,
       sample: false,
     },
@@ -97,28 +110,42 @@ export default function MentorshipManagementPage() {
         </p>
       </HelpCallout>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <MetricTile icon={GraduationCap} label="Mentors" labelEl="Μέντορες" value={isLoading ? dash : mentors.length} caption="Listed mentors. Opens the mentor directory" captionEl="Καταχωρημένοι μέντορες. Ανοίγει τον κατάλογο μεντόρων" href="/mentoring" />
-        <MetricTile icon={Calendar} label="Sessions held" labelEl="Συνεδρίες" value={isLoading ? dash : sessions} caption="All time, across the directory" captionEl="Συνολικά, σε όλο τον κατάλογο" />
-        <MetricTile
-          icon={Star}
-          label="Average rating"
-          labelEl="Μέση βαθμολογία"
-          value={isLoading ? dash : avg != null ? avg.toFixed(1) : dash}
-          caption={reviews ? `From ${reviews} reviews` : 'No reviews yet'}
-          captionEl={reviews ? `Από ${reviews} κριτικές` : 'Καμία κριτική ακόμα'}
-        />
-        <MetricTile
-          icon={CircleSlash}
-          label="Not yet booked"
-          labelEl="Χωρίς κράτηση"
-          value={isLoading ? dash : unbooked.length}
-          caption={unavailable.length ? `${unavailable.length} not taking sessions` : 'Everyone is taking sessions'}
-          captionEl={unavailable.length ? `${unavailable.length} δεν δέχονται συνεδρίες` : 'Όλοι δέχονται συνεδρίες'}
-        />
-      </div>
+      {/* One line of figures before the roster (docs §64.5, §111): four
+          tiles took a row of boxes for numbers read at a glance. The two
+          that ask for attention are buttons that narrow the roster; the
+          way to the public directory is the roster's own action. */}
+      <PageFacts
+        labelEn="Mentors in figures"
+        labelEl="Οι μέντορες σε αριθμούς"
+        facts={[
+          { id: 'mentors', value: isLoading ? null : mentors.length, en: mentors.length === 1 ? 'mentor' : 'mentors', el: mentors.length === 1 ? 'μέντορας' : 'μέντορες' },
+          { id: 'sessions', value: isLoading ? null : sessions, en: 'sessions held', el: 'συνεδρίες' },
+          {
+            id: 'rating',
+            value: isLoading || avg == null ? null : `${avg.toFixed(1)}★`,
+            en: `average, from ${reviews} ${reviews === 1 ? 'review' : 'reviews'}`,
+            el: `μέσος όρος, από ${reviews} ${reviews === 1 ? 'κριτική' : 'κριτικές'}`,
+          },
+          {
+            id: 'unbooked',
+            value: isLoading ? null : unbooked.length,
+            en: 'not yet booked',
+            el: 'χωρίς κράτηση',
+            onSelect: unbooked.length ? () => toggle('unbooked') : undefined,
+            selected: show === 'unbooked',
+          },
+          {
+            id: 'unavailable',
+            value: isLoading || !unavailable.length ? null : unavailable.length,
+            en: 'not taking sessions',
+            el: 'δεν δέχονται συνεδρίες',
+            onSelect: () => toggle('unavailable'),
+            selected: show === 'unavailable',
+          },
+        ]}
+      />
 
-      <SectionCard title="Mentor roster" titleEl="Κατάλογος μεντόρων" icon={GraduationCap} className="mt-6" contentClassName="card-rows" action={{ href: '/mentoring', label: 'Public directory', labelEl: 'Δημόσιος κατάλογος' }}>
+      <SectionCard title="Mentor roster" titleEl="Κατάλογος μεντόρων" icon={GraduationCap} className="mt-4" contentClassName="card-rows" action={{ href: '/mentoring', label: 'Public directory', labelEl: 'Δημόσιος κατάλογος' }}>
         {isLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-16" />)}
         {!isLoading && isError && mentors.length === 0 && (
           <EmptyLine en="The mentor directory could not be loaded." el="Ο κατάλογος μεντόρων δεν φορτώθηκε." />
@@ -126,7 +153,10 @@ export default function MentorshipManagementPage() {
         {!isLoading && !isError && mentors.length === 0 && (
           <EmptyLine en="No mentor profiles yet." el="Δεν υπάρχουν προφίλ μεντόρων ακόμα." />
         )}
-        {sorted.map((m) => {
+        {!isLoading && mentors.length > 0 && shown.length === 0 && (
+          <EmptyLine en="No mentor matches this figure now." el="Κανένας μέντορας δεν ταιριάζει τώρα σε αυτόν τον αριθμό." />
+        )}
+        {shown.map((m) => {
           const availability = AVAILABILITY[m.availabilityStatus] ?? AVAILABILITY.available;
           return (
             // A row of the roster, not a framed tile: the person's circle,

@@ -24,13 +24,16 @@ export function fold(text: string): string {
   return text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 }
 
-export type ComposerCommand = { id: string; en: string; el: string };
+export type ComposerCommand = { id: string; en: string; el: string; keywords?: string };
 
-/** The commands whose words (in either language) contain every word typed after the slash. */
+/**
+ * The commands whose words (in either language, and their keywords: a
+ * capability's example) contain every word typed after the slash.
+ */
 export function filterCommands<T extends ComposerCommand>(items: T[], query: string): T[] {
   const words = fold(query).split(/\s+/).filter(Boolean);
   return items.filter((item) => {
-    const label = fold(`${item.en} ${item.el}`);
+    const label = fold(`${item.en} ${item.el} ${item.keywords ?? ''}`);
     return words.every((word) => label.includes(word));
   });
 }

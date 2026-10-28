@@ -112,7 +112,9 @@ export type InvalidationTopic =
   | 'skill_evidence'
   | 'scout'
   /** How the assistant answers: style and emoji (`/settings/ai`). */
-  | 'ai_preferences';
+  | 'ai_preferences'
+  /** The reader's notifications and their settings (docs §111). */
+  | 'notifications';
 
 export type ActionDeclaration = {
   id: string;

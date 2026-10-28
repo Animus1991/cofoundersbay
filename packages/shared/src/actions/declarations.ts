@@ -2535,6 +2535,78 @@ export const ACTION_DECLARATIONS = [
     auditSubject: { param: 'style', entityType: 'ai_preferences' },
     confirmLabel: { en: 'Change it', el: 'Αλλαγή' },
   },
+  {
+    // One card for the unread pile (docs §107.7-2, §111): what needs nothing
+    // from the reader is marked read, what waits on them stays.
+    id: 'triage_notifications',
+    kind: 'mutation',
+    label: { en: 'Triage notifications', el: 'Διαλογή ειδοποιήσεων' },
+    description: {
+      en: 'Mark read every unread notification that needs nothing from the user, and leave unread the ones that wait on them: messages, connection, introduction and mentor requests, invitations, reviews asked of them and security alerts. Use it when the user asks to clear, tidy or triage their notifications, or to mark the rest read. Writes only after confirmation.',
+      el: 'Σημειώνει ως αναγνωσμένη κάθε αδιάβαστη ειδοποίηση που δεν χρειάζεται τίποτα από τον χρήστη, και αφήνει αδιάβαστες όσες τον περιμένουν: μηνύματα, αιτήματα σύνδεσης, γνωριμίας και μέντορα, προσκλήσεις, αξιολογήσεις που του ζητήθηκαν και ειδοποιήσεις ασφαλείας. Χρησιμοποίησέ το όταν ο χρήστης ζητά να καθαρίσει ή να τακτοποιήσει τις ειδοποιήσεις, ή να σημειωθούν οι υπόλοιπες ως αναγνωσμένες. Γράφει μόνο μετά από επιβεβαίωση.',
+    },
+    params: [],
+    writes: true,
+    invalidates: ['notifications'],
+    reversal: {
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible: undo makes unread again exactly the notifications this marked read.',
+        el: 'Πλήρως αναστρέψιμο: η αναίρεση κάνει ξανά αδιάβαστες ακριβώς τις ειδοποιήσεις που σημείωσε.',
+      },
+    },
+    confirmLabel: { en: 'Mark them read', el: 'Σήμανση ως αναγνωσμένων' },
+  },
+  {
+    // Settings → Notifications from the conversation (docs §110.5, §111).
+    id: 'set_notification_pref',
+    kind: 'mutation',
+    label: { en: 'Change a notification setting', el: 'Αλλαγή ρύθμισης ειδοποιήσεων' },
+    description: {
+      en: 'Turn a notification channel (push, email or in-app) on or off for one category (messages, connections, matches, projects, events, security), or set how often the email digest comes (daily, weekly, monthly, never), as Settings → Notifications does. Use it when the user asks to stop or start emails or push notifications about something, or to change the digest.',
+      el: 'Ανοίγει ή κλείνει ένα κανάλι ειδοποιήσεων (push, email ή στην εφαρμογή) για μία κατηγορία (μηνύματα, συνδέσεις, αντιστοιχίσεις, έργα, εκδηλώσεις, ασφάλεια), ή ορίζει πόσο συχνά έρχεται η email σύνοψη (καθημερινά, εβδομαδιαία, μηνιαία, ποτέ), όπως οι Ρυθμίσεις → Ειδοποιήσεις. Χρησιμοποίησέ το όταν ο χρήστης ζητά να σταματήσουν ή να αρχίσουν email ή push για κάτι, ή να αλλάξει η σύνοψη.',
+    },
+    params: [
+      {
+        name: 'category',
+        type: 'string',
+        required: false,
+        enumValues: ['messages', 'connections', 'matches', 'projects', 'events', 'security'],
+        description: { en: 'The category whose channel changes.', el: 'Η κατηγορία της οποίας αλλάζει το κανάλι.' },
+      },
+      {
+        name: 'channel',
+        type: 'string',
+        required: false,
+        enumValues: ['push', 'email', 'inApp'],
+        description: { en: 'The channel to turn on or off.', el: 'Το κανάλι που ανοίγει ή κλείνει.' },
+      },
+      {
+        name: 'on',
+        type: 'boolean',
+        required: false,
+        description: { en: 'True to turn the channel on, false to turn it off.', el: 'True για να ανοίξει το κανάλι, false για να κλείσει.' },
+      },
+      {
+        name: 'digest',
+        type: 'string',
+        required: false,
+        enumValues: ['daily', 'weekly', 'monthly', 'never'],
+        description: { en: 'How often the email digest comes, instead of a channel.', el: 'Πόσο συχνά έρχεται η email σύνοψη, αντί για κανάλι.' },
+      },
+    ],
+    writes: true,
+    invalidates: ['notifications'],
+    reversal: {
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible: undo puts back what each setting had before.',
+        el: 'Πλήρως αναστρέψιμο: η αναίρεση επαναφέρει ό,τι είχε κάθε ρύθμιση πριν.',
+      },
+    },
+    auditSubject: { param: 'category', entityType: 'notification_preferences' },
+    confirmLabel: { en: 'Change it', el: 'Αλλαγή' },
+  },
 ] as const satisfies readonly ActionDeclaration[];
 
 export type DeclaredAction = (typeof ACTION_DECLARATIONS)[number];
