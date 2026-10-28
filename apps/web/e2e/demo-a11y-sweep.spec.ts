@@ -39,6 +39,7 @@ const ROUTES = [
   '/programs',
   '/marketplace',
   '/expert-reviews',
+  '/legal',
   '/feed',
   '/settings',
   '/org/cohorts/cohort-autumn-2026',

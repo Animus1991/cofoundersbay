@@ -64,6 +64,7 @@ import {
   Wrench,
   Search,
   Gift,
+  Scale,
   Rss,
   ArrowLeftRight,
   Save,
@@ -438,6 +439,7 @@ export const exploreSections: NavSection[] = [
       { href: '/jobs', label: 'Jobs & Roles', icon: Briefcase },
       { href: '/marketplace', label: 'Services', icon: Store },
       { href: '/perks', label: 'Perks', icon: Gift },
+      { href: '/legal', label: 'Legal Hub', icon: Scale },
     ],
   },
   {

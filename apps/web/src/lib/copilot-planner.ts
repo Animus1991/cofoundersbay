@@ -168,6 +168,11 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     keys: ['perk*', 'partner offer*', 'partner discount*', 'startup credit*', 'cloud credit*', 'discount code*', 'προσφορες συνεργατ', 'προσφορα συνεργατ', 'εκπτωσεις', 'εκπτωση για', 'πιστωσεις'],
     tool: 'get_perks',
   },
+  // The Legal Hub catalogue: a template by name, or the legal area itself.
+  {
+    keys: ['legal hub', 'legal template*', 'legal document*', 'legal office hours', 'nda', 'safe (post', 'safe agreement', 'post-money safe', 'term sheet', 'bylaws', 'articles of incorporation', 'founder stock', 'inventions agreement', 'offer letter', 'contractor agreement', 'adviser agreement', 'advisor agreement', 'employee handbook', 'trademark assignment', 'board consent', 'vesting', 'νομικος κομβος', 'νομικα προτυπα', 'νομικα εγγραφα', 'νομικες ωρες', 'καταστατικ', 'εσωτερικος κανονισμος', 'εκχωρηση σηματος', 'συμφωνια συμβουλου', 'επιστολη προσφορας'],
+    tool: 'get_legal_templates',
+  },
   // Who viewed my profile: asked as a person, not as a figure («προβολές» is analytics).
   {
     keys: ['who viewed', 'who has viewed', 'who looked at my profile', 'who visited my profile', 'viewed my profile', 'profile viewers', 'ποιος ειδε', 'ποιοι ειδαν', 'ποιος εχει δει', 'ειδαν το προφιλ', 'επισκεπτες του προφιλ'],
@@ -955,7 +960,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   if (wantsNotifications) add('get_notifications');
 
   // "Who could introduce me to Nikos" reads the paths to that person.
-  for (const read of areaReads) add(read, (read === 'get_intros' || read === 'get_match_detail') && person ? { name: person } : {});
+  for (const read of areaReads) add(read, (read === 'get_intros' || read === 'get_match_detail') && person ? { name: person } : read === 'get_legal_templates' ? { query: rawMessage.trim().slice(0, 120) } : {});
 
   if (wantsShortlistRemove) {
     const args: Record<string, string> = {};

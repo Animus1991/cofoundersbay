@@ -2,6 +2,12 @@ import type { AppLocale } from '@/lib/locale';
 
 /** English UI copy is the lookup key. Missing keys fall back to English. */
 const el: Record<string, string> = {
+  "Open Legal Hub": "Άνοιγμα Νομικού κόμβου",
+  "Starter templates and 15-minute office hours.": "Αρχικά πρότυπα και 15λεπτες ώρες γραφείου.",
+  "Decide first:": "Αποφασίστε πρώτα:",
+  "From the Legal Hub:": "Από τον Νομικό κόμβο:",
+  "The Legal Hub templates, by the moment you need them:": "Τα πρότυπα του Νομικού κόμβου, ανά στιγμή ανάγκης:",
+  "These are starting points, not legal advice. Say \"draft\" with a template name and I will outline it with your blanks; review it with counsel in your jurisdiction.": "Είναι αφετηρίες, όχι νομική συμβουλή. Πείτε «σύνταξε» με όνομα προτύπου και θα το σκιαγραφήσω με τα κενά σας· ελέγξτε το με δικηγόρο στη δικαιοδοσία σας.",
   "Opens the page.": "Ανοίγει τη σελίδα.",
   "now": "τώρα",
   "On this page:": "Σε αυτή τη σελίδα:",
@@ -1075,6 +1081,12 @@ const el: Record<string, string> = {
 };
 
 const es: Record<string, string> = {
+  "Open Legal Hub": "Abrir Centro legal",
+  "Starter templates and 15-minute office hours.": "Plantillas iniciales y horas de oficina de 15 minutos.",
+  "Decide first:": "Decide primero:",
+  "From the Legal Hub:": "Del Centro legal:",
+  "The Legal Hub templates, by the moment you need them:": "Las plantillas del Centro legal, según el momento en que las necesitas:",
+  "These are starting points, not legal advice. Say \"draft\" with a template name and I will outline it with your blanks; review it with counsel in your jurisdiction.": "Son puntos de partida, no asesoría legal. Di «redacta» con el nombre de una plantilla y la esbozaré con tus espacios en blanco; revísala con un abogado de tu jurisdicción.",
   "Opens the page.": "Abre la página.",
   "now": "ahora",
   "On this page:": "En esta página:",
@@ -1686,6 +1698,12 @@ const es: Record<string, string> = {
 };
 
 const fr: Record<string, string> = {
+  "Open Legal Hub": "Ouvrir le Pôle juridique",
+  "Starter templates and 15-minute office hours.": "Modèles de départ et permanences de 15 minutes.",
+  "Decide first:": "À décider d'abord :",
+  "From the Legal Hub:": "Depuis le Pôle juridique :",
+  "The Legal Hub templates, by the moment you need them:": "Les modèles du Pôle juridique, selon le moment où vous en avez besoin :",
+  "These are starting points, not legal advice. Say \"draft\" with a template name and I will outline it with your blanks; review it with counsel in your jurisdiction.": "Ce sont des points de départ, pas des conseils juridiques. Dites « rédige » avec le nom d'un modèle et je l'esquisserai avec vos blancs ; faites-le relire par un avocat de votre juridiction.",
   "Opens the page.": "Ouvre la page.",
   "now": "maintenant",
   "On this page:": "Sur cette page :",
@@ -2277,6 +2295,12 @@ const fr: Record<string, string> = {
 };
 
 const de: Record<string, string> = {
+  "Open Legal Hub": "Rechts-Hub öffnen",
+  "Starter templates and 15-minute office hours.": "Startvorlagen und 15-minütige Sprechstunden.",
+  "Decide first:": "Zuerst entscheiden:",
+  "From the Legal Hub:": "Aus dem Rechts-Hub:",
+  "The Legal Hub templates, by the moment you need them:": "Die Vorlagen des Rechts-Hubs, nach dem Zeitpunkt, an dem Sie sie brauchen:",
+  "These are starting points, not legal advice. Say \"draft\" with a template name and I will outline it with your blanks; review it with counsel in your jurisdiction.": "Das sind Ausgangspunkte, keine Rechtsberatung. Sagen Sie „entwerfen“ mit einem Vorlagennamen und ich skizziere sie mit Ihren Lücken; lassen Sie sie von einem Anwalt in Ihrer Rechtsordnung prüfen.",
   "Opens the page.": "Öffnet die Seite.",
   "now": "jetzt",
   "On this page:": "Auf dieser Seite:",
@@ -2868,6 +2892,12 @@ const de: Record<string, string> = {
 };
 
 const it: Record<string, string> = {
+  "Open Legal Hub": "Apri Hub legale",
+  "Starter templates and 15-minute office hours.": "Modelli di partenza e ricevimenti di 15 minuti.",
+  "Decide first:": "Decidi prima:",
+  "From the Legal Hub:": "Dall'Hub legale:",
+  "The Legal Hub templates, by the moment you need them:": "I modelli dell'Hub legale, per il momento in cui servono:",
+  "These are starting points, not legal advice. Say \"draft\" with a template name and I will outline it with your blanks; review it with counsel in your jurisdiction.": "Sono punti di partenza, non consulenza legale. Di' «bozza» con il nome di un modello e lo abbozzerò con i tuoi spazi vuoti; fallo rivedere da un legale della tua giurisdizione.",
   "Opens the page.": "Apre la pagina.",
   "now": "adesso",
   "On this page:": "In questa pagina:",
@@ -3451,6 +3481,12 @@ const it: Record<string, string> = {
 };
 
 const pt: Record<string, string> = {
+  "Open Legal Hub": "Abrir Hub jurídico",
+  "Starter templates and 15-minute office hours.": "Modelos iniciais e horas de atendimento de 15 minutos.",
+  "Decide first:": "Decida primeiro:",
+  "From the Legal Hub:": "Do Hub jurídico:",
+  "The Legal Hub templates, by the moment you need them:": "Os modelos do Hub jurídico, pelo momento em que precisa deles:",
+  "These are starting points, not legal advice. Say \"draft\" with a template name and I will outline it with your blanks; review it with counsel in your jurisdiction.": "São pontos de partida, não aconselhamento jurídico. Diga «rascunho» com o nome de um modelo e eu esboço-o com os seus espaços em branco; reveja-o com um advogado na sua jurisdição.",
   "Opens the page.": "Abre a página.",
   "now": "agora",
   "On this page:": "Nesta página:",
@@ -4031,6 +4067,12 @@ const pt: Record<string, string> = {
 };
 
 const zh: Record<string, string> = {
+  "Open Legal Hub": "打开法律中心",
+  "Starter templates and 15-minute office hours.": "入门模板与 15 分钟咨询时段。",
+  "Decide first:": "先决定：",
+  "From the Legal Hub:": "来自法律中心：",
+  "The Legal Hub templates, by the moment you need them:": "法律中心的模板，按您需要的时机排列：",
+  "These are starting points, not legal advice. Say \"draft\" with a template name and I will outline it with your blanks; review it with counsel in your jurisdiction.": "这些是起点，不是法律建议。说“起草”加模板名称，我会为您列出带空白的大纲；请与您所在司法辖区的律师审核。",
   "Opens the page.": "打开该页面。",
   "now": "当前",
   "On this page:": "在此页面上：",
@@ -4629,6 +4671,12 @@ const zh: Record<string, string> = {
 };
 
 const ja: Record<string, string> = {
+  "Open Legal Hub": "リーガルハブを開く",
+  "Starter templates and 15-minute office hours.": "スターターテンプレートと15分のオフィスアワー。",
+  "Decide first:": "まず決めること：",
+  "From the Legal Hub:": "リーガルハブより：",
+  "The Legal Hub templates, by the moment you need them:": "リーガルハブのテンプレート（必要になる時期順）：",
+  "These are starting points, not legal advice. Say \"draft\" with a template name and I will outline it with your blanks; review it with counsel in your jurisdiction.": "これらは出発点であり法的助言ではありません。テンプレート名とともに「ドラフト」と言えば空欄付きで概要を作成します。お住まいの法域の弁護士とご確認ください。",
   "Opens the page.": "ページを開きます。",
   "now": "現在",
   "On this page:": "このページで：",

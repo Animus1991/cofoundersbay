@@ -725,6 +725,41 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       </>
     ),
   },
+  legal: {
+    en: (
+      <>
+        <p>
+          Templates are grouped by the moment a founding team needs them: <strong>Incorporation</strong>,{' '}
+          <strong>Intellectual property</strong>, <strong>Hiring</strong>, <strong>Fundraising</strong>. The badge says
+          how much each matters — <em>Critical</em> is what a lawyer asks about first; <em>Verified</em> and{' '}
+          <em>Industry standard</em> are reviewed forms; <em>Optional</em> is good hygiene. &ldquo;Decide first&rdquo;
+          is the one question to settle before signing.
+        </p>
+        <p>
+          <em>Draft with assistant</em> opens the assistant with the template and your blanks; it writes nothing on
+          its own. <em>Book 15 min</em> asks the assistant to put legal office hours in your calendar — you confirm
+          before the event is created. Nothing here is legal advice; review with counsel in your jurisdiction.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Τα πρότυπα ομαδοποιούνται ανά στιγμή που τα χρειάζεται μια ιδρυτική ομάδα: <strong>Σύσταση</strong>,{' '}
+          <strong>Πνευματική ιδιοκτησία</strong>, <strong>Προσλήψεις</strong>, <strong>Χρηματοδότηση</strong>. Το σήμα
+          λέει πόσο μετρά το καθένα — <em>Κρίσιμο</em> είναι ό,τι ρωτά πρώτα ένας δικηγόρος· <em>Επαληθευμένο</em> και{' '}
+          <em>Πρότυπο αγοράς</em> είναι ελεγμένες φόρμες· <em>Προαιρετικό</em> είναι καλή πρακτική. Το «Αποφασίστε
+          πρώτα» είναι η μία ερώτηση που λύνεται πριν την υπογραφή.
+        </p>
+        <p>
+          Η <em>Σύνταξη με τον βοηθό</em> ανοίγει τον βοηθό με το πρότυπο και τα κενά σας· δεν γράφει τίποτα μόνος
+          του. Το <em>Κλείστε 15′</em> ζητά από τον βοηθό να βάλει νομικές ώρες γραφείου στο ημερολόγιό σας —
+          επιβεβαιώνετε πριν δημιουργηθεί η εκδήλωση. Τίποτα εδώ δεν είναι νομική συμβουλή· ελέγξτε με δικηγόρο
+          στη δικαιοδοσία σας.
+        </p>
+      </>
+    ),
+  },
   perks: {
     en: (
       <>

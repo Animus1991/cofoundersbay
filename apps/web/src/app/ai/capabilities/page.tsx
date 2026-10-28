@@ -43,6 +43,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   get_perks: { en: 'Which perks fit my stage?', el: 'Ποιες προσφορές συνεργατών ταιριάζουν στο στάδιό μου;' },
   get_profile_viewers: { en: 'Who viewed my profile?', el: 'Ποιος είδε το προφίλ μου;' },
   where_is: { en: 'Where do I export my pitch?', el: 'Πού κάνω εξαγωγή το pitch μου;' },
+  get_legal_templates: { en: 'What should I decide before signing a SAFE?', el: 'Τι πρέπει να αποφασίσω πριν υπογράψω SAFE;' },
   get_mentorship_sessions: { en: 'When is my next mentoring session?', el: 'Πότε είναι η επόμενη συνεδρία καθοδήγησής μου;' },
   get_shortlist: { en: 'Who is on my shortlist?', el: 'Ποιος είναι στη λίστα μου;' },
   get_research_boards: { en: 'Show my research boards', el: 'Δείξε τους πίνακες έρευνας' },

@@ -96,7 +96,7 @@ import {
 } from '@/lib/fundraising-demo';
 import { readShowSamples } from '@/contexts/DemoDataContext';
 import { statusEl } from '@/components/common/StatusText';
-import { isCardStage, PERK_CATEGORY_COPY } from '@cofounderbay/shared';
+import { isCardStage, PERK_CATEGORY_COPY, LEGAL_CATEGORIES, LEGAL_STATUS_COPY, LEGAL_TEMPLATES } from '@cofounderbay/shared';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
@@ -853,6 +853,30 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
       parts.push(`${t('You claimed:')} ${claimed.slice(0, LIMIT).map((p) => `${p.partner} (${say(p.title, p.titleEl)})`).join(listSeparator(locale))}. ${t('Their codes are under Claimed on the Perks page.')}`);
     }
     return { section: parts.join('\n\n'), citations: [], actions };
+  },
+
+  async get_legal_templates(args, { t, locale }) {
+    const query = typeof args.query === 'string' ? args.query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
+    const say = (b: { en: string; el: string }) => (locale === 'el' ? b.el : b.en);
+    const actions = [openArea(t, '/legal', t('Open Legal Hub'), t('Starter templates and 15-minute office hours.'))];
+    const named = LEGAL_TEMPLATES.filter((tpl) =>
+      [tpl.id, tpl.name.en, tpl.name.el].some((n) => {
+        const f = n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return query.includes(f) || f.split(/[\s(&-]+/).filter((w) => w.length > 3).some((w) => query.includes(w));
+      }),
+    );
+    const category = LEGAL_CATEGORIES.find((c) => [c.id, c.label.en, c.label.el].some((n) => query.includes(n.toLowerCase())));
+    const list = named.length ? named : category ? LEGAL_TEMPLATES.filter((tpl) => tpl.category === category.id) : LEGAL_TEMPLATES;
+    const lines = list.map((tpl) =>
+      `• **${say(tpl.name)}** (${say(LEGAL_STATUS_COPY[tpl.status])}) — ${say(tpl.description)} ${t('Decide first:')} ${say(tpl.decide)}`,
+    );
+    const head = named.length
+      ? t('From the Legal Hub:')
+      : category
+        ? `${say(category.label)} — ${say(category.when)}`
+        : t('The Legal Hub templates, by the moment you need them:');
+    const foot = t('These are starting points, not legal advice. Say "draft" with a template name and I will outline it with your blanks; review it with counsel in your jurisdiction.');
+    return { section: `${head}\n${lines.join('\n')}\n\n${foot}`, citations: [], actions };
   },
 
   async where_is(args, { t, locale }) {

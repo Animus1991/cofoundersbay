@@ -18,6 +18,7 @@ export const NAV_LINK_DESCRIPTIONS: Record<string, string> = {
   '/intros': 'Warm introductions through people you both know, with consent at every hop',
   '/scout': 'Proposes co-founders for your brief; never sends anything',
   '/perks': 'Credits and discounts from partners; the code is for you alone',
+  '/legal': 'Legal templates by the moment you need them; the assistant drafts, a lawyer reviews',
   '/fundraising': 'Investor pipeline and data room',
   '/ai': 'Your assistant: matches, research, fundraising. Changes wait for your confirmation',
   '/messages': 'Direct messages and intro requests',

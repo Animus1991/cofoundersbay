@@ -323,6 +323,24 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_legal_templates',
+    kind: 'read',
+    label: { en: 'Read the legal template catalogue', el: 'Ανάγνωση του καταλόγου νομικών προτύπων' },
+    description: {
+      en: 'Read the Legal Hub catalogue: the starter templates by category (incorporation, intellectual property, hiring, fundraising), how much each matters, the one decision to settle before signing, and the stages it suits. With a template named, that one in detail. Static platform content, not member data; nothing is written.',
+      el: 'Διαβάζει τον κατάλογο του Νομικού κόμβου: τα αρχικά πρότυπα ανά κατηγορία (σύσταση, πνευματική ιδιοκτησία, προσλήψεις, χρηματοδότηση), πόσο μετρά το καθένα, τη μία απόφαση πριν την υπογραφή και τα στάδια που ταιριάζει. Με όνομα προτύπου, αυτό αναλυτικά. Στατικό περιεχόμενο πλατφόρμας, όχι δεδομένα μέλους· δεν γράφεται τίποτα.',
+    },
+    params: [
+      {
+        name: 'query',
+        type: 'string',
+        required: false,
+        description: { en: 'A template or category named in the member\u2019s words.', el: 'Πρότυπο ή κατηγορία με τα λόγια του μέλους.' },
+      },
+    ],
+    writes: false,
+  },
+  {
     id: 'where_is',
     kind: 'read',
     label: { en: 'Find where something lives', el: 'Εύρεση του πού βρίσκεται κάτι' },

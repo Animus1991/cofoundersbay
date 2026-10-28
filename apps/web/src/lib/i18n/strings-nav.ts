@@ -145,6 +145,7 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/intros': 'Συστάσεις γνωριμίας',
   '/scout': 'Ανιχνευτής συνιδρυτών',
   '/perks': 'Προσφορές',
+  '/legal': 'Νομικός κόμβος',
   '/provider/analytics': 'Αναλυτικά παρόχου',
   '/provider/inquiries': 'Αιτήματα',
   '/provider/profile': 'Προφίλ παρόχου',
@@ -221,6 +222,8 @@ export const NAV_DESCRIPTION_EL: Record<string, string> = {
     'Προτείνει συνιδρυτές για το σημείωμά σας· δεν στέλνει τίποτα',
   '/perks':
     'Πιστώσεις και εκπτώσεις από συνεργάτες· ο κωδικός μόνο για εσάς',
+  '/legal':
+    'Νομικά πρότυπα ανά στιγμή ανάγκης· ο βοηθός συντάσσει, ο δικηγόρος ελέγχει',
   '/fundraising':
     'Pipeline επενδυτών και data room',
   '/ai':

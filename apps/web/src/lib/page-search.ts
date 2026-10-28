@@ -20,6 +20,7 @@ const SYNONYMS: Record<string, string[]> = {
   '/commitments': ['need card', 'need cards', 'ladder', 'καρτα αναγκ', 'καρτες αναγκ'],
   '/scout': ['scout', 'ανιχνευτ'],
   '/perks': ['discount', 'deal', 'credits', 'coupon', 'εκπτωσ', 'κουπον', 'πιστωσ'],
+  '/legal': ['nda', 'safe', 'term sheet', 'contract', 'lawyer', 'vesting', 'νομικ', 'συμβολαι', 'δικηγορ'],
   '/mentoring': ['mentor', 'advisor', 'coach', 'μεντορ', 'συμβουλ'],
   '/investors': ['investor', 'angel', 'vc', 'επενδυτ'],
   '/fundraising': ['raise', 'funding', 'round', 'χρηματοδοτ', 'γυρος'],
