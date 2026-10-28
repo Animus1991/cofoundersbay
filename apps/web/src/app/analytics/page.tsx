@@ -246,69 +246,6 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
   );
 }
 
-function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
-  const items = metrics.slice(0, 3).map((m) => ({
-    label: m.label,
-    labelEl: m.labelEl,
-    change: m.change,
-    changeType: m.changeType,
-    glyph: m.glyph,
-  }));
-  return (
-    // Flat like the rail's other groups (docs §79): the tinted frame inside
-    // the rail marked nothing.
-    <Card className="flex min-w-0 flex-col">
-      <CardContent className="flex flex-1 flex-col">
-        {/* The period badge sits under the title: bilingual "vs prev period"
-            is metadata about the rows, not a peer of the heading. */}
-        <div className="mb-4 min-w-0">
-          <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
-            <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
-            <BilingualText en={analyticsEn('network_velocity')} el={analyticsEl('network_velocity')} compact wrap />
-          </h3>
-          <Badge variant="secondary" className="mt-1.5 max-w-full">
-            <span className="page-stat-label truncate">
-              <BilingualText en={analyticsEn('vs_prev')} el={analyticsEl('vs_prev')} compact />
-            </span>
-          </Badge>
-        </div>
-        {/* Stacked only: this card now lives in the period rail, where three
-            columns would be ~90px and wrap every Greek label. */}
-        <div className="flex flex-1 flex-col divide-y divide-border">
-          {items.map((item) => {
-            const href = metricHref(item.label);
-            const inner = (
-              <>
-              <CfbGlyph name={item.glyph} className="icon-sm shrink-0 text-muted-foreground" />
-              <p className="page-stat-label min-w-0 flex-1 leading-snug text-muted-foreground">
-                <BilingualText en={item.label} el={item.labelEl} compact wrap />
-              </p>
-              <p className={cn('page-stat-label shrink-0 font-semibold tabular-nums',
-                item.changeType === 'increase' ? TREND.up
-                : item.changeType === 'decrease' ? TREND.down
-                : TREND.flat
-              )}>
-                {signedChange(item)}
-              </p>
-              </>
-            );
-            const rowClass = 'flex min-w-0 items-center gap-3 py-2.5 first:pt-0 last:pb-0';
-            return href ? (
-              <Link key={item.label} href={href} className={cn(rowClass, 'rounded-lg focus-ring')}>
-                {inner}
-              </Link>
-            ) : (
-              <div key={item.label} className={rowClass}>
-                {inner}
-              </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 function TopContentList({ content }: { content: TopContent[] }) {
   return (
     <Card className="min-w-0">
@@ -642,7 +579,8 @@ export default function AnalyticsPage() {
               </Button>
             </div>
           </div>
-          {!waiting && !isError && <NetworkVelocity metrics={metrics} />}
+          {/* "Network velocity" was here: the first three tiles' changes again
+              (owner, 2026-10-28; docs §80.2, §111). */}
         </div>
       ),
     },
@@ -897,11 +835,8 @@ export default function AnalyticsPage() {
                 </Card>
               )}
               <ProfileViewersCard />
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {metrics.map((metric) => (
-                  <MetricCard key={metric.label} metric={metric} onOpenTab={setTab} />
-                ))}
-              </div>
+              {/* The Overview's six tiles were repeated here; they stay on the
+                  Overview (owner, 2026-10-28; docs §80.2, §111). */}
             </>
           )}
         </TabsContent>

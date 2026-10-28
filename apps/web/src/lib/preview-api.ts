@@ -1020,8 +1020,46 @@ function previewMilestoneSummary() {
   };
 }
 
+/** The demo workspace's name and description as changed this session (docs §111). */
+const DEMO_BUILDER_WS_KEY = 'cfb:demo-builder-ws';
+
+function readDemoBuilderWs(): { name?: string; description?: string } {
+  if (typeof window === 'undefined') return {};
+  try {
+    const parsed = JSON.parse(window.sessionStorage.getItem(DEMO_BUILDER_WS_KEY) ?? 'null') as unknown;
+    if (!parsed || typeof parsed !== 'object') return {};
+    const rec = parsed as Record<string, unknown>;
+    return {
+      ...(typeof rec.name === 'string' && rec.name.trim() ? { name: rec.name.trim().slice(0, 120) } : {}),
+      ...(typeof rec.description === 'string' ? { description: rec.description.slice(0, 500) } : {}),
+    };
+  } catch {
+    return {};
+  }
+}
+
+function writeDemoBuilderWs(body: Record<string, unknown> | null | undefined): void {
+  if (typeof window === 'undefined' || !body) return;
+  const next: Record<string, unknown> = { ...readDemoBuilderWs() };
+  if (typeof body.name === 'string' && body.name.trim()) next.name = body.name.trim().slice(0, 120);
+  if (typeof body.description === 'string') next.description = body.description.slice(0, 500);
+  try {
+    window.sessionStorage.setItem(DEMO_BUILDER_WS_KEY, JSON.stringify(next));
+  } catch {
+    // Storage blocked: the rename holds until the next read.
+  }
+}
+
 function previewBuilderWorkspace() {
   ensurePreviewApplicationDoc();
+  const changed = readDemoBuilderWs();
+  return {
+    ...previewBuilderWorkspaceBase(),
+    ...changed,
+  };
+}
+
+function previewBuilderWorkspaceBase() {
   return {
     id: PREVIEW_BUILDER_WS_ID,
     name: 'Harbor',
@@ -1832,6 +1870,96 @@ function previewGroupMembers(group: PreviewGroup) {
     })),
     ...(group.isMember ? [{ userId: ME_ID, role: group.memberRole ?? 'member', joinedAt: previewIsoInDays(-60, 10), user: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null, headline: 'Founder', role: 'founder' } }] : []),
   ];
+}
+
+/**
+ * Opportunities and roles posted this session (docs §111). The demo said
+ * "Posted" and showed nothing; a post now appears at the top of its list
+ * until the tab closes, as it would after the API's write.
+ */
+const DEMO_POSTED_KEY = 'cfb:demo-posted';
+type DemoOpportunity = (typeof PREVIEW_OPPORTUNITIES)[number];
+type DemoJob = (typeof PREVIEW_JOBS)[number];
+type DemoPosted = { opportunities: DemoOpportunity[]; jobs: DemoJob[] };
+
+function readDemoPosted(): DemoPosted {
+  if (typeof window === 'undefined') return { opportunities: [], jobs: [] };
+  try {
+    const parsed = JSON.parse(window.sessionStorage.getItem(DEMO_POSTED_KEY) ?? 'null') as Partial<DemoPosted> | null;
+    return {
+      opportunities: Array.isArray(parsed?.opportunities) ? parsed.opportunities : [],
+      jobs: Array.isArray(parsed?.jobs) ? parsed.jobs : [],
+    };
+  } catch {
+    return { opportunities: [], jobs: [] };
+  }
+}
+
+function writeDemoPosted(next: DemoPosted): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.setItem(DEMO_POSTED_KEY, JSON.stringify(next));
+  } catch {
+    // Storage blocked: the post is answered but not kept.
+  }
+}
+
+const demoText = (value: unknown, max: number): string | null =>
+  typeof value === 'string' && value.trim() ? value.trim().slice(0, max) : null;
+
+/** The demo's listings, this session's posts first. */
+function previewOpportunities(): DemoOpportunity[] {
+  return [...readDemoPosted().opportunities, ...PREVIEW_OPPORTUNITIES];
+}
+
+/** The demo's roles, this session's posts first. */
+function previewJobs(): DemoJob[] {
+  return [...readDemoPosted().jobs, ...PREVIEW_JOBS];
+}
+
+function postDemoOpportunity(body: Record<string, unknown>): { opportunity: DemoOpportunity } {
+  const title = demoText(body.title, 120);
+  if (!title) throw new DemoRefusal(400, 'A title is required.', { messageEl: 'Χρειάζεται τίτλος.' });
+  const isRemote = body.isRemote === true;
+  // Shaped like the API's answer; the fixed rows' inferred type has no
+  // null company or deadline in every row, hence the one cast.
+  const opportunity = {
+    id: `opp-posted-${previewNowMs().toString(36)}`,
+    title,
+    description: demoText(body.description, 2000) ?? '',
+    type: demoText(body.type, 40) ?? 'job',
+    company: demoText(body.company, 120),
+    location: isRemote ? 'Remote' : demoText(body.location, 120),
+    isRemote,
+    url: null,
+    tags: Array.isArray(body.tags) ? body.tags.filter((t): t is string => typeof t === 'string' && t.trim() !== '').slice(0, 10) : [],
+    deadline: null,
+    isActive: true,
+    createdBy: { displayName: 'Alex Demo', avatarUrl: null },
+    createdAt: new Date(previewNowMs()).toISOString(),
+  } as DemoOpportunity;
+  const posted = readDemoPosted();
+  writeDemoPosted({ ...posted, opportunities: [opportunity, ...posted.opportunities].slice(0, 20) });
+  return { opportunity };
+}
+
+function postDemoJob(body: Record<string, unknown>): { job: DemoJob } {
+  const title = demoText(body.title, 120);
+  if (!title) throw new DemoRefusal(400, 'A title is required.', { messageEl: 'Χρειάζεται τίτλος.' });
+  const isRemote = body.isRemote === true;
+  const job: DemoJob = {
+    id: `job-posted-${previewNowMs().toString(36)}`,
+    title,
+    role: demoText(body.role, 80) ?? '',
+    location: isRemote ? 'Remote' : demoText(body.location, 120) ?? '',
+    isRemote,
+    type: 'full-time',
+    creator: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null },
+    href: `/profiles/${ME_ID}`,
+  };
+  const posted = readDemoPosted();
+  writeDemoPosted({ ...posted, jobs: [job, ...posted.jobs].slice(0, 20) });
+  return { job };
 }
 
 const PREVIEW_OPPORTUNITIES = [
@@ -2938,8 +3066,8 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     (body ?? {}) as Record<string, unknown>,
     previewNowMs(),
     (kind, itemId) => (kind === 'opportunity'
-      ? PREVIEW_OPPORTUNITIES.find((o) => o.id === itemId)?.title
-      : PREVIEW_JOBS.find((j) => j.id === itemId)?.title) ?? null,
+      ? previewOpportunities().find((o) => o.id === itemId)?.title
+      : previewJobs().find((j) => j.id === itemId)?.title) ?? null,
   );
   if (savedItemsAnswer !== undefined) return savedItemsAnswer;
   // Partner perks: invented partners, the API's claim rules.
@@ -4391,6 +4519,8 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   }
   const builderWsMatch = pathname.match(/^\/api\/builder\/workspaces\/([^/]+)$/);
   if (builderWsMatch) {
+    // A rename or a new description holds for the session (docs §111).
+    if (method === 'PUT' || method === 'PATCH') writeDemoBuilderWs(body);
     return previewBuilderWorkspace();
   }
   const builderActivityMatch = pathname.match(/^\/api\/builder\/workspaces\/([^/]+)\/activity$/);
@@ -5016,10 +5146,13 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     return { event: event ?? null };
   }
 
+  if (pathname === '/api/jobs' && method === 'POST') {
+    return postDemoJob((body ?? {}) as Record<string, unknown>);
+  }
   if (pathname === '/api/jobs' || pathname.startsWith('/api/jobs?')) {
     const params = new URLSearchParams(path.split('?')[1] ?? '');
     const limit = Number(params.get('limit') ?? 50);
-    return { jobs: PREVIEW_JOBS.slice(0, limit) };
+    return { jobs: previewJobs().slice(0, limit) };
   }
 
   if (pathname === '/api/groups/my') {
@@ -5081,6 +5214,9 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     };
   }
 
+  if (pathname === '/api/opportunities' && method === 'POST') {
+    return postDemoOpportunity((body ?? {}) as Record<string, unknown>);
+  }
   if (pathname === '/api/opportunities' || pathname.startsWith('/api/opportunities?')) {
     const params = new URLSearchParams(path.split('?')[1] ?? '');
     const type = params.get('type');
@@ -5088,7 +5224,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     const search = params.get('search')?.toLowerCase() ?? '';
     const limit = Number(params.get('limit') ?? 20);
     const offset = Number(params.get('offset') ?? 0);
-    const matched = PREVIEW_OPPORTUNITIES
+    const matched = previewOpportunities()
       .filter((o) => !type || o.type === type)
       .filter((o) => isRemote == null || o.isRemote === (isRemote === 'true'))
       .filter((o) => !search || `${o.title} ${o.description ?? ''} ${o.company ?? ''} ${o.tags.join(' ')}`.toLowerCase().includes(search));

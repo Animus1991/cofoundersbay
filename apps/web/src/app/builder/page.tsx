@@ -7,6 +7,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { BuilderWorkspace, type BuilderWorkspaceDialog } from '@/components/builder/BuilderWorkspace';
+import { WorkspaceNameEditor } from '@/components/builder/WorkspaceNameEditor';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { IdeaCore, ideaCoreCompletion } from '@/components/builder/IdeaCore';
 import { BusinessModelCanvas, bmcCompletion } from '@/components/builder/BusinessModelCanvas';
@@ -147,6 +148,7 @@ function BuilderPageContent() {
     loadWorkspaces,
     updateDocumentSection,
     updateDocument,
+    updateWorkspace,
     generateContent,
     createDocument,
     selectDocument,
@@ -444,7 +446,7 @@ function BuilderPageContent() {
           <div className="min-w-0">
             {workspace?.name && (
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <p className="page-section font-semibold tracking-tight text-foreground">{workspace.name}</p>
+                <WorkspaceNameEditor name={workspace.name} onRename={(next) => updateWorkspace({ name: next })} />
                 <SaveStatus state={save.state} savedAt={save.savedAt} error={save.error} onRetry={save.retry} />
               </div>
             )}

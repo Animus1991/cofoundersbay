@@ -27,7 +27,7 @@ import {
   GraduationCap,
 } from 'lucide-react';
 import {
-  listJobs, createJobPosting, type JobPostingView,
+  createOpportunity,
   listOpportunities, type OpportunityItem, type OpportunityType,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -63,7 +63,6 @@ import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } fro
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { SaveItemButton, useSavedItems, useSaveToggle } from '@/components/common/SaveItemButton';
-import { MessageButton } from '@/components/common/PersonActions';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
@@ -147,14 +146,6 @@ function approachPrompt(opportunity: OpportunityItem): AskText {
   return {
     en: `Draft my approach for this opportunity: "${opportunity.title}"${opportunity.company ? ` at ${opportunity.company}` : ''}. Type: ${opportunitiesEn(cfg.labelKey)}. ${opportunity.description ?? ''}`,
     el: `Ετοίμασε την προσέγγισή μου για αυτή την ευκαιρία: «${opportunity.title}»${opportunity.company ? ` στην ${opportunity.company}` : ''}. Είδος: ${opportunitiesEl(cfg.labelKey)}. ${opportunity.description ?? ''}`,
-  };
-}
-
-/** What "Draft application" asks, in both languages. */
-function applicationPrompt(job: JobPostingView): AskText {
-  return {
-    en: `Draft an application for the role "${job.title}" posted by ${job.creator.displayName}. Use my profile and tell me what is missing before I send it.`,
-    el: `Ετοίμασε μια αίτηση για τη θέση «${job.title}» (δημοσίευση: ${job.creator.displayName}). Χρησιμοποίησε το προφίλ μου και πες μου τι λείπει πριν τη στείλω.`,
   };
 }
 
@@ -257,55 +248,6 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
   );
 }
 
-function JobCard({ job }: { job: JobPostingView }) {
-  const { ask } = useAskAssistant();
-  return (
-    <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
-      <CardContent className="space-y-3">
-        <CardHead
-          mark={(
-            <Avatar className="h-10 w-10 rounded-full ring-2 ring-border/60">
-              <AvatarImage src={job.creator?.avatarUrl ?? undefined} alt="" />
-              <AvatarFallback className="rounded-full bg-primary/15 text-foreground font-semibold text-sm">
-                {initialsOf(job.creator.displayName)}
-              </AvatarFallback>
-            </Avatar>
-          )}
-          title={job.title}
-          subtitle={(
-            <FactLine
-              className="text-sm"
-              items={[
-                job.creator.displayName,
-                <BilingualText key="job" en={opportunitiesEn('job')} el={opportunitiesEl('job')} compact />,
-                job.isRemote ? <BilingualText key="remote" en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact /> : null,
-              ]}
-            />
-          )}
-        />
-
-        <FactLine items={[job.location, job.role]} />
-
-        <div className="flex gap-2 pt-1">
-          {/* The job feed has no apply route, so the useful actions are the
-              draft the assistant writes and a message to the poster (the
-              posting now carries the poster's id). */}
-          <Button
-            size="sm"
-            className="gap-1.5 text-xs"
-            onClick={() => ask(applicationPrompt(job))}
-          >
-            <BilingualText en="Draft application" el="Σύνταξη αίτησης" compact />
-            <ArrowRight className="icon-sm" />
-          </Button>
-          <SaveItemButton kind="job" itemId={job.id} title={job.title} />
-          <MessageButton userId={job.creator?.id} displayName={job.creator.displayName} />
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 function ProposalCard({
   proposal,
   onAccept,
@@ -397,12 +339,16 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
     type: 'cofounder' as OpportunityType,
   });
 
+  // An opportunity, with the type chosen. The form used to create a job
+  // posting and drop the type, so a co-founder call or an investment showed
+  // up only among jobs (docs §111).
   const mutation = useMutation({
     mutationFn: () =>
-      createJobPosting({
+      createOpportunity({
         title: form.title.trim(),
-        role: form.role.trim() || undefined,
-        location: form.location.trim() || undefined,
+        type: form.type,
+        tags: form.role.trim() ? [form.role.trim()] : undefined,
+        location: form.isRemote ? undefined : form.location.trim() || undefined,
         isRemote: form.isRemote,
       }),
     onSuccess: () => {
@@ -513,15 +459,16 @@ export default function OpportunitiesPage() {
   const router = useRouter();
   const { ask } = useAskAssistant();
   const { success } = useToast();
-  const [activeTab, setActiveTab] = useState<'listings' | 'jobs' | 'applications' | 'proposals'>('listings');
+  // Jobs have one home, /jobs (owner, 2026-10-28; docs §90.5, §111): the
+  // "Jobs" tab here was the same postings with fewer filters.
+  const [activeTab, setActiveTab] = useState<'listings' | 'applications' | 'proposals'>('listings');
   const [search, setSearch] = useState('');
   const [remoteOnly, setRemoteOnly] = useState(false);
-  // Saved only: listings and jobs the reader saved (LinkedIn's "Save").
+  // Saved only: the listings the reader saved (LinkedIn's "Save"); saved
+  // jobs are under Saved only on /jobs.
   const [savedOnly, setSavedOnly] = useState(false);
   const savedListings = useSavedItems('opportunity');
-  const savedJobs = useSavedItems('job');
   const toggleListing = useSaveToggle('opportunity');
-  const toggleJob = useSaveToggle('job');
   const [oppTypeFilter, setOppTypeFilter] = useState<OpportunityType | 'all'>('all');
   const [cardAlertOpen, setCardAlertOpen] = useState(false);
   // The need-card wall's chips (category, place, stage, commitment).
@@ -569,13 +516,6 @@ export default function OpportunitiesPage() {
     retry: 1,
   });
 
-  const { data: jobsData, isLoading: jobsLoading, isError: jobsError, refetch: refetchJobs } = useQuery({
-    queryKey: qk('jobs', { limit: 50 }),
-    queryFn: () => listJobs({ limit: 50 }),
-    staleTime: 60_000,
-    retry: 1,
-  });
-
   /*
    * The need-card wall's data, from the hook the section draws with (one
    * request, shared cache), so the assistant's chip controls offer exactly
@@ -586,7 +526,6 @@ export default function OpportunitiesPage() {
   const wallCards = wall.cards;
 
   const opportunities = (opportunitiesData?.opportunities ?? []).filter((o) => !savedOnly || savedListings.ids.has(o.id));
-  const listingJobs = (jobsData?.jobs ?? []).filter((j) => !savedOnly || savedJobs.ids.has(j.id));
   const pendingProposals = proposals.filter((p) => p.status === 'pending').length;
 
   const handleAcceptProposal = (id: string) => {
@@ -628,7 +567,7 @@ export default function OpportunitiesPage() {
     },
   ]);
   usePageControls([
-    choiceControl('opportunity_tab', 'Opportunities section', 'Ενότητα ευκαιριών', (['listings', 'jobs', 'applications', 'proposals'] as const).map((k) => ({ value: k, en: opportunitiesEn(`tab_${k}`), el: opportunitiesEl(`tab_${k}`) })), activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    choiceControl('opportunity_tab', 'Opportunities section', 'Ενότητα ευκαιριών', (['listings', 'applications', 'proposals'] as const).map((k) => ({ value: k, en: opportunitiesEn(`tab_${k}`), el: opportunitiesEl(`tab_${k}`) })), activeTab, (v) => setActiveTab(v as typeof activeTab)),
     choiceControl('opportunity_type', 'Opportunity type', 'Τύπος ευκαιρίας', oppTypes.map((t) => ({ value: t, en: t === 'all' ? opportunitiesEn('all_types') : opportunitiesEn(OPP_TYPE_DISPLAY[t].labelKey), el: t === 'all' ? opportunitiesEl('all_types') : opportunitiesEl(OPP_TYPE_DISPLAY[t].labelKey) })), oppTypeFilter, (v) => setOppTypeFilter(v as typeof oppTypeFilter)),
     choiceControl('remote_only', 'Remote only', 'Μόνο εξ αποστάσεως', [
       { value: 'off', en: 'Any location', el: 'Οποιαδήποτε τοποθεσία' },
@@ -678,34 +617,6 @@ export default function OpportunitiesPage() {
       },
       undo: (v) => (v && savedListings.ids.has(v) ? { control: 'save_listing', value: v } : undefined),
     },
-    {
-      id: 'save_job',
-      labelEn: 'Save a job',
-      labelEl: 'Αποθήκευση θέσης',
-      writes: true,
-      options: rowOptions(listingJobs.filter((j) => !savedJobs.ids.has(j.id)), (j) => j.id, (j) => j.title),
-      unavailableEn: listingJobs.some((j) => !savedJobs.ids.has(j.id)) ? undefined : 'Every job shown is already saved.',
-      unavailableEl: listingJobs.some((j) => !savedJobs.ids.has(j.id)) ? undefined : 'Κάθε θέση που εμφανίζεται είναι ήδη αποθηκευμένη.',
-      run: async (v) => {
-        if (!v || !listingJobs.some((j) => j.id === v)) return ROW_GONE;
-        await toggleJob.mutateAsync({ itemId: v, save: true });
-      },
-      undo: (v) => (v && !savedJobs.ids.has(v) ? { control: 'unsave_job', value: v } : undefined),
-    },
-    {
-      id: 'unsave_job',
-      labelEn: 'Remove a job from saved',
-      labelEl: 'Αφαίρεση θέσης από τα αποθηκευμένα',
-      writes: true,
-      options: rowOptions(listingJobs.filter((j) => savedJobs.ids.has(j.id)), (j) => j.id, (j) => j.title),
-      unavailableEn: listingJobs.some((j) => savedJobs.ids.has(j.id)) ? undefined : 'No saved job is shown.',
-      unavailableEl: listingJobs.some((j) => savedJobs.ids.has(j.id)) ? undefined : 'Δεν εμφανίζεται αποθηκευμένη θέση.',
-      run: async (v) => {
-        if (!v) return ROW_GONE;
-        await toggleJob.mutateAsync({ itemId: v, save: false });
-      },
-      undo: (v) => (v && savedJobs.ids.has(v) ? { control: 'save_job', value: v } : undefined),
-    },
     { id: 'post_opportunity', labelEn: 'Open the post form', labelEl: 'Άνοιγμα φόρμας δημοσίευσης', writes: false, run: () => setShowPostForm(true) },
     {
       id: 'alert_new_need_cards',
@@ -729,20 +640,6 @@ export default function OpportunitiesPage() {
         const opportunity = opportunities.find((o) => o.id === v);
         if (!opportunity) return;
         ask(approachPrompt(opportunity));
-      },
-    },
-    {
-      id: 'draft_application',
-      labelEn: 'Draft an application for',
-      labelEl: 'Σύνταξη αίτησης για',
-      writes: false,
-      options: rowOptions(listingJobs, (j) => j.id, (j) => j.title),
-      unavailableEn: listingJobs.length === 0 ? 'No jobs are shown on this screen.' : undefined,
-      unavailableEl: listingJobs.length === 0 ? 'Δεν εμφανίζονται θέσεις σε αυτή την οθόνη.' : undefined,
-      run: (v) => {
-        const job = listingJobs.find((j) => j.id === v);
-        if (!job) return;
-        ask(applicationPrompt(job));
       },
     },
   ]);
@@ -811,7 +708,7 @@ export default function OpportunitiesPage() {
             titleEl="Αποθηκευμένα"
             options={[
               { value: 'all', en: 'Everything', el: 'Όλα', icon: Briefcase },
-              { value: 'saved', en: 'Saved only', el: 'Μόνο αποθηκευμένα', icon: Bookmark, count: savedListings.ids.size + savedJobs.ids.size },
+              { value: 'saved', en: 'Saved only', el: 'Μόνο αποθηκευμένα', icon: Bookmark, count: savedListings.ids.size },
             ]}
             value={savedOnly ? 'saved' : 'all'}
             onChange={(v) => setSavedOnly(v === 'saved')}
@@ -839,7 +736,6 @@ export default function OpportunitiesPage() {
 
   const tabs = [
     { key: 'listings' as const, labelKey: 'tab_listings' as const, icon: Handshake, badge: wallCards.length + opportunities.length, tone: 'neutral' as const },
-    { key: 'jobs' as const, labelKey: 'tab_jobs' as const, icon: Briefcase, badge: listingJobs.length, tone: 'neutral' as const },
     { key: 'applications' as const, labelKey: 'tab_applications' as const, icon: FileText },
     { key: 'proposals' as const, labelKey: 'tab_proposals' as const, icon: Check, badge: pendingProposals, tone: 'attention' as const },
   ];
@@ -849,7 +745,7 @@ export default function OpportunitiesPage() {
       {showPostForm && (
         <PostOpportunityForm
           onClose={() => setShowPostForm(false)}
-          onCreated={() => queryClient.invalidateQueries({ queryKey: qk('jobs') })}
+          onCreated={() => queryClient.invalidateQueries({ queryKey: qk('opportunities') })}
         />
       )}
       <AppShell
@@ -970,76 +866,6 @@ export default function OpportunitiesPage() {
           </div>
         )}
 
-        {/* Jobs tab */}
-        {activeTab === 'jobs' && (
-          <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-              <Input
-                placeholder={sayOne(opportunitiesEn('search_jobs'), opportunitiesEl('search_jobs'))}
-                aria-label={bilingualInline(opportunitiesEn('search_jobs'), opportunitiesEl('search_jobs'))}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            {jobsError ? (
-              <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground">
-                  <BilingualText en={opportunitiesEn('jobs_failed')} el={opportunitiesEl('jobs_failed')} compact />
-                </p>
-                <Button variant="secondary" size="sm" onClick={() => refetchJobs()}>
-                  <BilingualText en={opportunitiesEn('try_again')} el={opportunitiesEl('try_again')} compact />
-                </Button>
-              </CardContent></Card>
-            ) : jobsLoading ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="flex gap-4">
-                    <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-48" />
-                      <Skeleton className="h-3 w-32" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : savedOnly && !listingJobs.length ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-                <Bookmark className="h-10 w-10 mb-3 opacity-30" />
-                <p className="font-medium"><BilingualText en="No saved jobs yet" el="Καμία αποθηκευμένη θέση ακόμη" compact /></p>
-                <p className="text-sm mt-1"><BilingualText en="Press Save on a job to keep it here." el="Πατήστε «Αποθήκευση» σε μια θέση για να μείνει εδώ." wrap /></p>
-                <Button variant="secondary" className="mt-4" onClick={() => openRailSection('filters')}>
-                  <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
-                </Button>
-              </div>
-            ) : !jobsData?.jobs?.length ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-                <Briefcase className="h-10 w-10 mb-3 opacity-30" />
-                <p className="font-medium">
-                  <BilingualText en={opportunitiesEn('none_jobs')} el={opportunitiesEl('none_jobs')} compact />
-                </p>
-                <p className="text-sm mt-1">
-                  <BilingualText en={opportunitiesEn('none_jobs_hint')} el={opportunitiesEl('none_jobs_hint')} compact />
-                </p>
-                <Button className="mt-4 gap-2" onClick={() => setShowPostForm(true)}>
-                  <Plus className="icon-sm" />
-                  <BilingualText en={opportunitiesEn('post_job')} el={opportunitiesEl('post_job')} compact />
-                </Button>
-              </div>
-            ) : (
-              (listingJobs as JobPostingView[])
-                .filter(
-                  (j) =>
-                    !search.trim() ||
-                    j.title.toLowerCase().includes(search.toLowerCase()) ||
-                    j.creator.displayName.toLowerCase().includes(search.toLowerCase()),
-                )
-                .map((job) => <JobCard key={job.id} job={job} />)
-            )}
-          </div>
-        )}
-
         {/* Applications tab */}
         {activeTab === 'applications' && (
           <div className="space-y-4">
@@ -1055,7 +881,7 @@ export default function OpportunitiesPage() {
                 <Button variant="outline" size="sm" onClick={() => setActiveTab('listings')}>
                   <BilingualText en={opportunitiesEn('browse_opportunities')} el={opportunitiesEl('browse_opportunities')} compact />
                 </Button>
-                <Button size="sm" onClick={() => setActiveTab('jobs')}>
+                <Button size="sm" onClick={() => router.push('/jobs')}>
                   <BilingualText en={opportunitiesEn('browse_jobs')} el={opportunitiesEl('browse_jobs')} compact />
                 </Button>
               </div>

@@ -881,6 +881,7 @@ export function BuilderWorkspace({
   const blockers = readinessAssessment?.blockers ?? [];
   const nextMilestones = readinessAssessment?.nextMilestones ?? [];
   const showReviewNudge = !reviewDismissed && inProgressDocs >= 2;
+  const notStartedTypes = DEFAULT_DOC_TYPES.filter((type) => !documents.some((d) => d.type === type));
   const dismissReview = () => {
     setReviewDismissed(true);
     localStorage.setItem(BUILDER_REVIEW_DISMISS_KEY, 'true');
@@ -893,13 +894,17 @@ export function BuilderWorkspace({
       <Card className="min-w-0">
         <CardHeader className="flex flex-col gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
+            {/* The documents not started yet. Started ones, with their
+                percentages, are the Documents grid below: listing them here
+                too showed every document twice (owner, 2026-10-28; docs
+                §81.2, §111). */}
             <CardTitle>
-              <BilingualText en={builderEn('quick_actions')} el={builderEl('quick_actions')} compact />
+              <BilingualText en={builderEn('documents_to_start')} el={builderEl('documents_to_start')} compact />
             </CardTitle>
             <CardDescription className="mt-0.5">
               <BilingualText
-                en={builderEn('quick_actions_hint')}
-                el={builderEl('quick_actions_hint')}
+                en={builderEn('documents_to_start_hint')}
+                el={builderEl('documents_to_start_hint')}
                 compact
                 wrap
               />
@@ -916,8 +921,13 @@ export function BuilderWorkspace({
         {/* Two columns keep each percentage beside its name instead of a
             full content width away from it. */}
         <CardContent>
+          {notStartedTypes.length === 0 ? (
+            <p className="card-body text-muted-foreground">
+              <BilingualText en={builderEn('all_documents_started')} el={builderEl('all_documents_started')} wrap />
+            </p>
+          ) : (
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-          {DEFAULT_DOC_TYPES.map((type) => {
+          {notStartedTypes.map((type) => {
             const existing = documents.find((d) => d.type === type);
             const labelEn = docLabelEn(type);
             const labelEl = builderDocLabelGenitiveEl(type);
@@ -957,6 +967,7 @@ export function BuilderWorkspace({
             );
           })}
           </div>
+          )}
         </CardContent>
       </Card>
 
@@ -1163,24 +1174,8 @@ export function BuilderWorkspace({
             );
           })}
 
-          <Card
-            role="button"
-            tabIndex={0}
-            className="cursor-pointer border border-dashed border-border bg-transparent transition-colors hover:border-primary/20 hover:bg-muted/30"
-            onClick={() => setShowCreateDocDialog(true)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setShowCreateDocDialog(true);
-              }
-            }}
-          >
-            <CardContent className="flex h-full items-center py-8">
-              <p className="text-sm font-medium text-muted-foreground">
-                <BilingualText en={builderEn('add_document')} el={builderEl('add_document')} compact />
-              </p>
-            </CardContent>
-          </Card>
+          {/* The dashed "Add document" card was here; it did what the
+              header's "New document" does (owner, 2026-10-28; docs §81.2, §111). */}
         </div>
       )}
       </section>

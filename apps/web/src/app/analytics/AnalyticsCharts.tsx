@@ -3,7 +3,7 @@
 import { useId } from 'react';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, PieChart as RechartsPie, Pie, Cell, Legend,
+  Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -165,7 +165,7 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
   // The axis, the tooltip and the legend name each type in the reader's language.
   const barData = values.filter((item) => typeof item.value === 'number' && Number.isFinite(item.value))
     .map((item) => ({ name: primary === 'el' ? item.el : item.name, value: item.value as number }));
-  const pieData = barData.filter((item) => item.value > 0);
+  const total = barData.reduce((sum, item) => sum + item.value, 0);
 
   return (
     <div className="space-y-5">
@@ -184,23 +184,16 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
               <Bar dataKey="value" radius={[8, 8, 0, 0]}>{barData.map((item, index) => <Cell key={item.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}</Bar>
             </BarChart>
           </ResponsiveContainer> : <Unavailable />}
-          <ul className="mt-4 space-y-1.5 text-xs text-muted-foreground">{values.map((item) => <li key={item.name}>
-            <BilingualText en={`${item.name}: ${typeof item.value === 'number' && Number.isFinite(item.value) ? item.value : 'Unavailable'}`} el={`${item.el}: ${typeof item.value === 'number' && Number.isFinite(item.value) ? item.value : 'Μη διαθέσιμο'}`} compact />
-          </li>)}</ul>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 font-semibold">
-          <CfbGlyph name="compare" className="icon-sm text-muted-foreground" /><BilingualText en="Engagement Distribution" el="Κατανομή αλληλεπίδρασης" compact />
-        </CardTitle></CardHeader>
-        <CardContent>
-          {pieData.length ? <ResponsiveContainer width="100%" height={180}>
-            <RechartsPie><Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={3} dataKey="value">
-              {pieData.map((item, index) => <Cell key={item.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-            {/* The legend's words were drawn in each slice's pastel, under 3:1;
-                the dot carries the colour and the word stays ink. */}
-            </Pie><Tooltip contentStyle={TOOLTIP_STYLE} /><Legend iconSize={8} wrapperStyle={{ fontSize: 12.2412 }} formatter={(value) => <span className="text-foreground">{value}</span>} /></RechartsPie>
-          </ResponsiveContainer> : <p className="py-8 text-sm text-muted-foreground"><BilingualText en={barData.length ? 'No recorded engagement to distribute in this period.' : 'Engagement distribution unavailable.'} el={barData.length ? 'Δεν υπάρχει καταγεγραμμένη αλληλεπίδραση για κατανομή σε αυτή την περίοδο.' : 'Η κατανομή αλληλεπίδρασης δεν είναι διαθέσιμη.'} /></p>}
+          {/* Each type's share beside its number: what the distribution ring
+              added, without a second chart of the same five numbers
+              (owner, 2026-10-28; docs §80.2, §111). */}
+          <ul className="mt-4 space-y-1.5 text-xs text-muted-foreground">{values.map((item) => {
+            const known = typeof item.value === 'number' && Number.isFinite(item.value);
+            const share = known && total > 0 ? ` (${Math.round(((item.value as number) / total) * 100)}%)` : '';
+            return <li key={item.name}>
+              <BilingualText en={`${item.name}: ${known ? item.value : 'Unavailable'}${share}`} el={`${item.el}: ${known ? item.value : 'Μη διαθέσιμο'}${share}`} compact />
+            </li>;
+          })}</ul>
         </CardContent>
       </Card>
     </div>

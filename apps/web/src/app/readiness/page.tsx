@@ -1159,21 +1159,15 @@ export default function ReadinessPage() {
         <p className="card-body text-muted-foreground">
         <BilingualText en={item.rec.en} el={item.rec.el} />
         </p>
+        {/* One action per row (owner, 2026-10-28; docs §79.2, §111): the
+            dimension's card asks the assistant the same question, so a
+            second Ask AI here repeated it. */}
         <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs" asChild>
         <Link href={`#dim-${item.dimKey}`}>
         <BilingualText en={readinessEn('jump_to')} el={readinessEl('jump_to')} compact />
         </Link>
         </Button>
-        <AIInsightButton
-        className="h-8"
-        aboutEn={readinessOf(item.labelEn)}
-        aboutEl={readinessOfEl(item.labelEl)}
-        prompt={{
-          en: `Help me improve ${readinessOf(item.labelEn)} (${item.pct}%). Next step: ${item.rec.en}`,
-          el: `Βοήθησέ με να βελτιώσω: ${readinessOfEl(item.labelEl)} (${item.pct}%). Επόμενο βήμα: ${item.rec.el}`,
-        }}
-        />
         </div>
         </div>
         );

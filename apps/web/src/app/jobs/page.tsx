@@ -25,6 +25,7 @@ import {
   X,
   Handshake,
   Store,
+  Bookmark,
 } from 'lucide-react';
 import { listJobs, createJobPosting, type JobPostingView } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -42,15 +43,16 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
-import { SaveItemButton } from '@/components/common/SaveItemButton';
+import { SaveItemButton, useSavedItems, useSaveToggle } from '@/components/common/SaveItemButton';
 import { jobsEn, jobsEl } from '@/lib/i18n/strings-jobs';
 import { bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
-import { ASK } from '@/lib/page-questions';
+import { ASK, type AskText } from '@/lib/page-questions';
 import { useStoredUser } from '@/hooks/useStoredUser';
 
 const ROLE_FILTERS = [
@@ -73,8 +75,18 @@ const EMPLOYMENT_TYPES = [
   { value: 'advisor',   labelKey: 'emp_advisor' as const },
 ] as const;
 
+/** What "Draft application" asks, in both languages. */
+function applicationPrompt(job: JobPostingView): AskText {
+  return {
+    en: `Draft an application for the role "${job.title}" posted by ${job.creator.displayName}. Use my profile and tell me what is missing before I send it.`,
+    el: `Ετοίμασε μια αίτηση για τη θέση «${job.title}» (δημοσίευση: ${job.creator.displayName}). Χρησιμοποίησε το προφίλ μου και πες μου τι λείπει πριν τη στείλω.`,
+  };
+}
+
 function JobCard({ job, featured = false, myId }: { job: JobPostingView; featured?: boolean; myId?: string | null }) {
   const sayOne = useBilingualString();
+  const { ask } = useAskAssistant();
+  const notMine = !job.creator?.id || job.creator.id !== myId;
   // The Opportunities card: the poster's mark, the role's title with the
   // poster and the kind of work under it, then the facts and the actions,
   // all on the mark's left edge.
@@ -135,6 +147,14 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
                 <ExternalLink className="icon-sm" aria-hidden="true" />
                 <BilingualText en="View poster" el="Προβολή εκδότη" compact />
               </Link>
+            </Button>
+          ) : null}
+          {/* The assistant drafts the application from the reader's profile
+              and says what is missing (it came with the Opportunities "Jobs"
+              tab, which this page replaces; docs §111). Not on one's own role. */}
+          {notMine ? (
+            <Button variant="outline" size="sm" onClick={() => ask(applicationPrompt(job))}>
+              <BilingualText en="Draft application" el="Σύνταξη αίτησης" compact />
             </Button>
           ) : null}
           {/* A candidate's next step. A role had no way to answer it: "Post
@@ -277,6 +297,11 @@ export default function JobsPage() {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [employmentType, setEmploymentType] = useState<(typeof EMPLOYMENT_TYPES)[number]['value']>('all');
   const [showPostForm, setShowPostForm] = useState(false);
+  // Saved only: the roles the reader saved (it was the Opportunities tab's).
+  const [savedOnly, setSavedOnly] = useState(false);
+  const savedJobs = useSavedItems('job');
+  const toggleJob = useSaveToggle('job');
+  const { ask } = useAskAssistant();
   const { openRailSection } = usePageRail();
 
   const { data, isLoading, isError, refetch } = useQuery({
@@ -302,14 +327,15 @@ export default function JobsPage() {
       employmentType === 'all' ||
       typeSlug === employmentType ||
       (employmentType === 'cofounder' && (roleSlug.includes('co-founder') || roleSlug.includes('cofounder') || typeSlug.includes('cofounder')));
-    return matchSearch && matchRole && matchEmp;
+    const matchSaved = !savedOnly || savedJobs.ids.has(j.id);
+    return matchSearch && matchRole && matchEmp && matchSaved;
   });
 
   // The featured strip shows the postings flagged as featured, or the three
   // newest when none are, and the sections below it do not repeat them - the
   // same three cards used to appear twice, once as featured and again under
   // Remote or On-site.
-  const showFeatured = !search && roleFilter === 'all';
+  const showFeatured = !search && roleFilter === 'all' && !savedOnly;
   const flagged = filtered.filter((j) => j.isFeatured);
   const featuredJobs = showFeatured ? (flagged.length ? flagged : filtered).slice(0, 3) : [];
   const featuredIds = new Set(featuredJobs.map((j) => j.id));
@@ -344,6 +370,53 @@ export default function JobsPage() {
       run: () => setSearch(''),
     },
     { id: 'post_job', labelEn: 'Open the post a job form', labelEl: 'Άνοιγμα φόρμας νέας αγγελίας', writes: false, run: () => setShowPostForm(true) },
+    choiceControl('saved_only', 'Saved only', 'Μόνο αποθηκευμένα', [
+      { value: 'all', en: 'Everything', el: 'Όλα' },
+      { value: 'saved', en: 'Saved only', el: 'Μόνο αποθηκευμένα' },
+    ], savedOnly ? 'saved' : 'all', (v) => setSavedOnly(v === 'saved')),
+    {
+      // The same write as each card's Save; Undo removes exactly the row it added.
+      id: 'save_job',
+      labelEn: 'Save a job',
+      labelEl: 'Αποθήκευση θέσης',
+      writes: true,
+      options: rowOptions(filtered.filter((j) => !savedJobs.ids.has(j.id)), (j) => j.id, (j) => j.title),
+      unavailableEn: filtered.some((j) => !savedJobs.ids.has(j.id)) ? undefined : 'Every job shown is already saved.',
+      unavailableEl: filtered.some((j) => !savedJobs.ids.has(j.id)) ? undefined : 'Κάθε θέση που εμφανίζεται είναι ήδη αποθηκευμένη.',
+      run: async (v) => {
+        if (!v || !jobs.some((j) => j.id === v)) return ROW_GONE;
+        await toggleJob.mutateAsync({ itemId: v, save: true });
+      },
+      undo: (v) => (v && !savedJobs.ids.has(v) ? { control: 'unsave_job', value: v } : undefined),
+    },
+    {
+      id: 'unsave_job',
+      labelEn: 'Remove a job from saved',
+      labelEl: 'Αφαίρεση θέσης από τα αποθηκευμένα',
+      writes: true,
+      options: rowOptions(filtered.filter((j) => savedJobs.ids.has(j.id)), (j) => j.id, (j) => j.title),
+      unavailableEn: filtered.some((j) => savedJobs.ids.has(j.id)) ? undefined : 'No saved job is shown.',
+      unavailableEl: filtered.some((j) => savedJobs.ids.has(j.id)) ? undefined : 'Δεν εμφανίζεται αποθηκευμένη θέση.',
+      run: async (v) => {
+        if (!v) return ROW_GONE;
+        await toggleJob.mutateAsync({ itemId: v, save: false });
+      },
+      undo: (v) => (v && savedJobs.ids.has(v) ? { control: 'save_job', value: v } : undefined),
+    },
+    {
+      id: 'draft_application',
+      labelEn: 'Draft an application for',
+      labelEl: 'Σύνταξη αίτησης για',
+      writes: false,
+      options: rowOptions(filtered.filter((j) => !j.creator?.id || j.creator.id !== myId), (j) => j.id, (j) => j.title),
+      unavailableEn: filtered.length === 0 ? 'No jobs are shown on this screen.' : undefined,
+      unavailableEl: filtered.length === 0 ? 'Δεν εμφανίζονται θέσεις σε αυτή την οθόνη.' : undefined,
+      run: (v) => {
+        const job = jobs.find((j) => j.id === v);
+        if (!job) return;
+        ask(applicationPrompt(job));
+      },
+    },
   ]);
 
   /*
@@ -352,7 +425,7 @@ export default function JobsPage() {
    * of chrome before the first posting; they live in the rail now, with the
    * active filter count on its collapsed strip.
    */
-  const activeFilters = (roleFilter !== 'all' ? 1 : 0) + (employmentType !== 'all' ? 1 : 0);
+  const activeFilters = (roleFilter !== 'all' ? 1 : 0) + (employmentType !== 'all' ? 1 : 0) + (savedOnly ? 1 : 0);
   const rail: PageRailSection[] = [
     {
       id: 'summary',
@@ -391,8 +464,18 @@ export default function JobsPage() {
             value={employmentType}
             onChange={setEmploymentType}
           />
+          <RailOptions
+            title="Saved"
+            titleEl="Αποθηκευμένα"
+            options={[
+              { value: 'all', en: 'Everything', el: 'Όλα', icon: Briefcase },
+              { value: 'saved', en: 'Saved only', el: 'Μόνο αποθηκευμένα', icon: Bookmark, count: savedJobs.ids.size },
+            ]}
+            value={savedOnly ? 'saved' : 'all'}
+            onChange={(v) => setSavedOnly(v === 'saved')}
+          />
           {activeFilters > 0 && (
-            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setRoleFilter('all'); setEmploymentType('all'); }} />
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setRoleFilter('all'); setEmploymentType('all'); setSavedOnly(false); }} />
           )}
         </div>
       ),
@@ -471,18 +554,20 @@ export default function JobsPage() {
           illustration="rocket"
           title={
             search ? <BilingualText en={jobsEn('empty_search')} el={jobsEl('empty_search')} />
+            : savedOnly && savedJobs.ids.size === 0 ? <BilingualText en="No saved jobs yet" el="Καμία αποθηκευμένη θέση ακόμη" />
             : activeFilters > 0 ? <BilingualText en="No jobs match these filters" el="Καμία θέση δεν ταιριάζει με αυτά τα φίλτρα" />
             : <BilingualText en={jobsEn('empty')} el={jobsEl('empty')} />
           }
           description={
             search ? (
               <BilingualText
-                en={`Nothing matched “${search.trim()}”${activeFilters > 0 ? ', with the role and type filters in the side panel' : ''}. Clear the search to see every job.`}
-                el={`Τίποτα δεν ταιριάζει με «${search.trim()}»${activeFilters > 0 ? ', μαζί με τα φίλτρα ρόλου και τύπου στο πλευρικό πάνελ' : ''}. Καθαρίστε την αναζήτηση για να δείτε όλες τις θέσεις.`}
+                en={`Nothing matched “${search.trim()}”${activeFilters > 0 ? ', with the filters in the side panel' : ''}. Clear the search to see every job.`}
+                el={`Τίποτα δεν ταιριάζει με «${search.trim()}»${activeFilters > 0 ? ', μαζί με τα φίλτρα στο πλευρικό πάνελ' : ''}. Καθαρίστε την αναζήτηση για να δείτε όλες τις θέσεις.`}
                 wrap
               />
-            ) : activeFilters === 0 ? undefined
-            : <BilingualText en="The role and type filters are set in the side panel." el="Τα φίλτρα ρόλου και τύπου βρίσκονται στο πλευρικό πάνελ." />
+            ) : savedOnly && savedJobs.ids.size === 0 ? <BilingualText en="Press Save on a job to keep it here." el="Πατήστε «Αποθήκευση» σε μια θέση για να μείνει εδώ." wrap />
+            : activeFilters === 0 ? undefined
+            : <BilingualText en="The filters are set in the side panel." el="Τα φίλτρα βρίσκονται στο πλευρικό πάνελ." />
           }
           askAiPrompt={
             search
