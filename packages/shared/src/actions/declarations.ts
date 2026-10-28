@@ -1902,8 +1902,8 @@ export const ACTION_DECLARATIONS = [
     kind: 'mutation',
     label: { en: 'Draft an event', el: 'Πρόχειρη εκδήλωση' },
     description: {
-      en: 'Open the create-event form with fields filled in for the user to review and publish. Saves nothing; use create_event only when the user asks for it to be published directly.',
-      el: 'Ανοίγει τη φόρμα δημιουργίας εκδήλωσης με συμπληρωμένα πεδία για να τα ελέγξει και να τη δημοσιεύσει ο χρήστης. Δεν αποθηκεύει τίποτα.',
+      en: 'Opens the event form with the details filled in, for you to review and publish. Nothing is saved until you publish.',
+      el: 'Ανοίγει τη φόρμα εκδήλωσης με συμπληρωμένα τα στοιχεία, για να τα ελέγξετε και να τη δημοσιεύσετε. Τίποτα δεν αποθηκεύεται μέχρι να δημοσιεύσετε.',
     },
     params: [
       { name: 'title', type: 'string', required: true, description: { en: 'Event title.', el: 'Τίτλος εκδήλωσης.' } },

@@ -439,7 +439,6 @@ export const exploreSections: NavSection[] = [
       { href: '/jobs', label: 'Jobs & Roles', icon: Briefcase },
       { href: '/marketplace', label: 'Services', icon: Store },
       { href: '/perks', label: 'Perks', icon: Gift },
-      { href: '/legal', label: 'Legal Hub', icon: Scale },
     ],
   },
   {
@@ -459,6 +458,7 @@ export const exploreSections: NavSection[] = [
       { href: '/learning', label: 'Learning Hub', icon: BookOpen },
       { href: '/expert-reviews', label: 'Expert Reviews', icon: ClipboardCheck },
       { href: '/coaching', label: 'Coaching', icon: BrainCircuit },
+      { href: '/legal', label: 'Legal Hub', icon: Scale },
       { href: '/help', label: 'Help & Support', icon: HelpCircle },
     ],
   },
