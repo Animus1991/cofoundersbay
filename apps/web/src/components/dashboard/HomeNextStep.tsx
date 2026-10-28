@@ -34,6 +34,9 @@ export function HomeNextStep({
   actionVariant = 'default',
   tone = 'next',
   glyph,
+  askEn,
+  askEl,
+  onAsk,
 }: {
   kickerEn: string;
   kickerEl: string;
@@ -53,6 +56,14 @@ export function HomeNextStep({
   tone?: 'next' | 'waiting';
   /** The glyph when the link's own page does not name one (an external meeting link). */
   glyph?: CfbGlyphName;
+  /**
+   * Ask the assistant about this step, beside the action (the studio's
+   * NextMove, docs §109). The parent asks through `useAskAssistant`, so the
+   * question stays on this page.
+   */
+  askEn?: string;
+  askEl?: string;
+  onAsk?: () => void;
 }) {
   const label = <BilingualText en={actionEn} el={actionEl} compact />;
   const waiting = tone === 'waiting';
@@ -88,15 +99,22 @@ export function HomeNextStep({
           </p>
         ) : null}
       </div>
-      <Button asChild size="sm" variant={actionVariant} className="shrink-0 max-sm:w-full">
-        {external ? (
-          <a href={href} target="_blank" rel="noopener noreferrer">
-            {label}
-          </a>
-        ) : (
-          <Link href={href}>{label}</Link>
-        )}
-      </Button>
+      <div className="flex shrink-0 items-center gap-1.5 max-sm:w-full">
+        {onAsk ? (
+          <Button type="button" size="sm" variant="ghost" className="max-sm:flex-1" onClick={onAsk}>
+            <BilingualText en={askEn ?? 'Ask'} el={askEl ?? 'Ρωτήστε'} compact />
+          </Button>
+        ) : null}
+        <Button asChild size="sm" variant={actionVariant} className="shrink-0 max-sm:flex-1">
+          {external ? (
+            <a href={href} target="_blank" rel="noopener noreferrer">
+              {label}
+            </a>
+          ) : (
+            <Link href={href}>{label}</Link>
+          )}
+        </Button>
+      </div>
     </section>
   );
 }

@@ -28,6 +28,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { explainMatch, type ViewerFacts } from '@/lib/match-explain';
 import type { MatchConnection } from '@/components/common/MatchCard';
 import { calendarDaysUntil } from '@/lib/calendar-days';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
 
 type PhoneActivity = {
   id: string;
@@ -173,6 +174,7 @@ export function FounderPhoneHome({
     onError: () => showError('Could not send request'),
   });
 
+  const { ask } = useAskAssistant();
   const liveEvents = events.data?.events ?? [];
   const eventRows = liveEvents.length > 0
     ? liveEvents.slice(0, 4)
@@ -205,6 +207,12 @@ export function FounderPhoneHome({
           href={`/research/${latestBoard.id}`}
           actionEn="Continue"
           actionEl="Συνέχεια"
+          askEn="Ask"
+          askEl="Ρωτήστε"
+          onAsk={() => ask({
+            en: `What should I do next on the board “${latestBoard.title}”?`,
+            el: `Τι να κάνω στη συνέχεια στον πίνακα «${latestBoard.title}»;`,
+          })}
         />
       ) : null}
 
@@ -218,6 +226,12 @@ export function FounderPhoneHome({
           actionEn="Continue"
           actionEl="Συνέχεια"
           actionVariant="outline"
+          askEn="Ask"
+          askEl="Ρωτήστε"
+          onAsk={() => ask({
+            en: `What is left on the milestone “${milestone.titleEn}”?`,
+            el: `Τι απομένει στο ορόσημο «${milestone.titleEl}»;`,
+          })}
         />
       ) : null}
 

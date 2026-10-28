@@ -415,6 +415,7 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
 
 export default function FounderDashboardContent() {
   const { hasSession, mounted } = useSession();
+  const { ask } = useAskAssistant();
   const { showDemoData } = useDemoData();
   const { primary } = useLanguagePreference();
   const sayOne = useBilingualString();
@@ -1343,6 +1344,12 @@ export default function FounderDashboardContent() {
             glyph="pact"
             actionEn="Open"
             actionEl="Άνοιγμα"
+            askEn="Ask"
+            askEl="Ρωτήστε"
+            onAsk={() => ask({
+              en: `What should I do next here: ${waitingNext.titleEn}`,
+              el: `Τι να κάνω στη συνέχεια εδώ: ${waitingNext.titleEl}`,
+            })}
           />
         ) : null}
 
