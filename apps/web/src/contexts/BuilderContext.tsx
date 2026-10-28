@@ -409,6 +409,7 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
         ...prev,
         error: err instanceof Error ? err.message : 'Failed to update document',
       }));
+      throw err;
     }
   }, []);
 

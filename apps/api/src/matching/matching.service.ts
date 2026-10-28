@@ -44,7 +44,11 @@ export interface MatchExplanation {
 
 export interface MatchScore {
   userId: string;
-  /** This engine's learning total, 0..1: it orders its own lists (feedback, behaviour, Open to). */
+  /**
+   * This engine's learning total, 0..1 (feedback, behaviour, Open to).
+   * It breaks a tie between two people with the same published score.
+   * It is not the number a page shows.
+   */
   score: number;
   confidence: number;
   reasons: string[];
@@ -67,6 +71,25 @@ export interface MatchingResult {
   total: number;
   criteria: MatchingCriteria;
   generatedAt: Date;
+}
+
+/**
+ * The list a member sees: the engine's 0–100 number, at least 25, best first.
+ * The learning score only breaks a tie, so an "Open to" lift still orders two
+ * people with the same list score and never replaces that number.
+ */
+export function selectPublishedMatches<T extends { listScore: number; score: number }>(matches: T[], limit = 20): T[] {
+  return matches
+    .filter((m) => m.listScore >= 25)
+    .sort((a, b) => b.listScore - a.listScore || b.score - a.score)
+    .slice(0, limit);
+}
+
+/** Reasons beside that number, plus an "Open to" line when this viewer may see it. */
+export function publishedMatchReasons(match: { listReasons?: string[]; reasons?: string[] }): string[] {
+  const base = match.listReasons ?? [];
+  const openTo = (match.reasons ?? []).filter((reason) => /^open to /i.test(reason) && !base.includes(reason));
+  return [...base, ...openTo];
 }
 
 // ── Default model weights (Stage 1: hybrid rule + semantic) ──────────────────
@@ -117,10 +140,7 @@ export class MatchingService {
 
       await this.applyOpenTo(user, scoredMatches);
 
-      const validMatches = scoredMatches
-        .filter(m => m.score > 0.25)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 20);
+      const validMatches = selectPublishedMatches(scoredMatches);
 
       // Log inferences in background
       this.logInferences(criteria.userId, validMatches, criteria.modelVersion ?? '1.0').catch(() => {});

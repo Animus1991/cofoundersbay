@@ -49,7 +49,7 @@ type NodeUpdateData = {
 interface ResearchNodeViewerProps {
   node: ResearchNode;
   onClose: () => void;
-  onUpdate: (data: NodeUpdateData) => void;
+  onUpdate: (data: NodeUpdateData) => void | Promise<unknown>;
 }
 
 /* ─── Types ──────────────────────────────────────────────────── */
@@ -253,6 +253,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
   const [saved, setSaved] = useState(!!node.content);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [imgZoom, setImgZoom] = useState(1);
 
   // ── Checklist state ────────────────────────────────────────────────────
@@ -288,21 +289,26 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
   const [linkInputValue, setLinkInputValue] = useState('');
 
   // Mark unsaved on content/title change
-  useEffect(() => { setSaved(false); }, [editContent, editTitle]);
+  useEffect(() => { setSaved(false); setSaveError(null); }, [editContent, editTitle]);
 
-  const doSave = useCallback(() => {
-    if (!isEditable) return;
+  const doSave = useCallback(async () => {
+    if (!isEditable) return false;
     const updates: NodeUpdateData = {};
     if (editTitle !== (node.title || '')) updates.title = editTitle;
     if (editContent !== (node.content || '')) updates.content = editContent;
-    if (Object.keys(updates).length === 0) { setSaved(true); return; }
+    if (Object.keys(updates).length === 0) { setSaved(true); setSaveError(null); return true; }
     setIsSaving(true);
+    setSaveError(null);
     try {
-      onUpdate(updates);
+      await Promise.resolve(onUpdate(updates));
       setSaved(true);
       setSavedAt(new Date());
+      return true;
     } catch (err) {
-      showError('Failed to save', err instanceof Error ? err.message : 'Please try again');
+      const message = err instanceof Error ? err.message : 'Please try again';
+      setSaveError(message);
+      showError('Failed to save', message);
+      return false;
     } finally {
       setIsSaving(false);
     }
@@ -311,14 +317,14 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
   // Auto-save with 1.5s debounce
   useEffect(() => {
     if (saved || !isEditable) return;
-    const timer = setTimeout(() => doSave(), 1500);
+    const timer = setTimeout(() => { void doSave(); }, 1500);
     return () => clearTimeout(timer);
   }, [editContent, editTitle, saved, isEditable, doSave]);
 
-  const handleSave = useCallback(() => {
-    doSave();
-    if (isEditable || isChecklist || isTask || isSWOT) success('Saved');
-  }, [doSave, isEditable, isChecklist, isTask, isSWOT, success]);
+  const handleSave = useCallback(async () => {
+    const ok = await doSave();
+    if (ok) success('Saved');
+  }, [doSave, success]);
 
   // ── Checklist helpers ──────────────────────────────────────────────────
   const saveChecklist = useCallback((items: ChecklistItem[]) => {
@@ -432,8 +438,10 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
           <div className="flex items-center gap-2 flex-none">
             {isEditable && (
               <SaveStatus
-                state={isSaving ? 'saving' : !saved ? 'dirty' : 'saved'}
+                state={isSaving ? 'saving' : saveError ? 'error' : !saved ? 'dirty' : 'saved'}
                 savedAt={savedAt}
+                error={saveError}
+                onRetry={() => { void doSave(); }}
                 className="hidden sm:inline-flex"
               />
             )}

@@ -11,7 +11,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { MatchingService } from './matching.service';
+import { MatchingService, publishedMatchReasons } from './matching.service';
 import { RestoreMatchFeedbackDto } from './dto/restore-feedback.dto';
 
 @Controller('recommendations')
@@ -32,9 +32,9 @@ export class MatchingController {
     return {
       suggestions: matches.map((m) => ({
         userId: m.userId,
-        score: Math.round(m.score * 100),
+        score: m.listScore,
         confidence: Math.round(m.confidence * 100),
-        reasons: m.reasons,
+        reasons: publishedMatchReasons(m),
         explanation: m.explanation,
         profile: m.profile,
       })),
@@ -48,9 +48,9 @@ export class MatchingController {
     return {
       recommendations: matches.map((m) => ({
         userId: m.userId,
-        score: Math.round(m.score * 100),
+        score: m.listScore,
         confidence: Math.round(m.confidence * 100),
-        reasons: m.reasons,
+        reasons: publishedMatchReasons(m),
         explanation: m.explanation,
         profile: m.profile,
       })),
@@ -76,9 +76,9 @@ export class MatchingController {
     const match = result.matches.find((m) => m.userId === targetUserId);
     return {
       userId: targetUserId,
-      score: match ? Math.round(match.score * 100) : 0,
+      score: match ? match.listScore : 0,
       confidence: match ? Math.round(match.confidence * 100) : 0,
-      reasons: match?.reasons ?? [],
+      reasons: match ? publishedMatchReasons(match) : [],
       explanation: match?.explanation ?? [],
     };
   }

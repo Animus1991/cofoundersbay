@@ -3010,9 +3010,10 @@ export default function ResearchBoardPage() {
         <ResearchNodeViewer
           node={viewingNode}
           onClose={() => setViewingNode(null)}
-          onUpdate={(data) => {
-            updateNodeMutation.mutate({ nodeId: viewingNode.id, data });
-            setViewingNode({ ...viewingNode, ...data });
+          onUpdate={async (data) => {
+            const nodeId = viewingNode.id;
+            await updateNodeMutation.mutateAsync({ nodeId, data });
+            setViewingNode((current) => (current && current.id === nodeId ? { ...current, ...data } : current));
           }}
         />
       )}
