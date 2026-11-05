@@ -89,13 +89,23 @@ export class ModerationService {
     return this.toReportItem(row);
   }
 
+  /**
+   * The moderation queue, newest first. `total` counts every report the
+   * filters match, so a page of `limit` from `offset` knows what is left.
+   * This is the only `GET admin/reports`: AdminController had a second one,
+   * shadowed by this module's route, whose type and offset filters live
+   * here now (docs §111).
+   */
   async listReports(params?: {
     status?: ReportStatus;
+    type?: ReportType;
     q?: string;
     limit?: number;
-  }): Promise<ReportItem[]> {
+    offset?: number;
+  }): Promise<{ reports: ReportItem[]; total: number }> {
     const and: Prisma.ReportWhereInput[] = [];
     if (params?.status) and.push({ status: params.status });
+    if (params?.type) and.push({ type: params.type });
     if (params?.q?.trim()) {
       const q = params.q.trim();
       and.push({
@@ -109,14 +119,19 @@ export class ModerationService {
       });
     }
 
-    const rows = await this.prisma.report.findMany({
-      where: and.length ? { AND: and } : undefined,
-      orderBy: { createdAt: 'desc' },
-      take: Math.min(Math.max(params?.limit ?? 100, 1), 300),
-      include: this.reportIncludes(),
-    });
+    const where = and.length ? { AND: and } : undefined;
+    const [rows, total] = await Promise.all([
+      this.prisma.report.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: Math.min(Math.max(params?.limit ?? 100, 1), 300),
+        skip: Math.max(params?.offset ?? 0, 0),
+        include: this.reportIncludes(),
+      }),
+      this.prisma.report.count({ where }),
+    ]);
 
-    return rows.map((row) => this.toReportItem(row));
+    return { reports: rows.map((row) => this.toReportItem(row)), total };
   }
 
   async updateReportStatus(params: {

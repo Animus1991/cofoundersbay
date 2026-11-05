@@ -57,6 +57,24 @@ describe('demo notifications keep what the visitor did', () => {
     expect(demoNotifications(SEED)).toEqual([]);
   });
 
+  it('saves one for later, lists it in Saved, and keeps it when the inbox is cleared', () => {
+    expect(api('/api/notifications/c/saved', 'PATCH', { saved: true })).toEqual({ ok: true, savedAt: NOW });
+    expect((api('/api/notifications?saved=true').notifications as { id: string }[]).map((n) => n.id)).toEqual(['c']);
+    // Saving leaves it read or unread as it was.
+    expect(unreadIds()).toEqual(['a', 'b']);
+    api('/api/notifications', 'DELETE');
+    expect(demoNotifications(SEED).map((n) => n.id)).toEqual(['c']);
+    expect(api('/api/notifications/c/saved', 'PATCH', { saved: false })).toEqual({ ok: true, savedAt: null });
+    expect((api('/api/notifications?saved=true').notifications as unknown[]).length).toBe(0);
+    api('/api/notifications?includeSaved=true', 'DELETE');
+    expect(demoNotifications(SEED)).toEqual([]);
+  });
+
+  it('refuses a Save without a boolean, or of a notification that is not there', () => {
+    expect(() => api('/api/notifications/a/saved', 'PATCH', { saved: 'yes' })).toThrow(/boolean/);
+    expect(() => api('/api/notifications/zz/saved', 'PATCH', { saved: true })).toThrow(/not found/);
+  });
+
   it('leaves the preferences and other paths to their own handlers', () => {
     expect(api('/api/notifications/preferences')).toBeUndefined();
     expect(previewNotificationsApi('/api/notificationsx', new URLSearchParams(), 'GET', {}, SEED, NOW)).toBeUndefined();

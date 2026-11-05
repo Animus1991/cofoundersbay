@@ -22,6 +22,7 @@ import {
   listGroups,
   getMyGroups,
   listPrograms,
+  getMyPrograms,
   respondToMentorRequest,
   assessReadiness,
   pickReadinessDimensions,
@@ -768,6 +769,9 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     }
     const program = programs.find((p) => p?.id === programId);
     if (program && !acceptsApplications(program)) return { ok: false, error: 'This programme is not taking applications' };
+    // Its page shows "Applied" and no note to fill, so a draft would open on nothing.
+    const mine = await getMyPrograms().catch(() => null);
+    if ((mine?.programs ?? []).some((p) => p?.id === programId)) return { ok: false, error: 'You have already applied to this programme' };
     let coverNote = requireString(payload, 'coverNote').trim();
     if (!coverNote) {
       const me = await getMeProfile().catch(() => null);

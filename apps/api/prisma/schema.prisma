@@ -906,9 +906,13 @@ model Notification {
   meta      Json?
   createdAt DateTime         @default(now())
   readAt    DateTime?
+  /// Kept for later, as GitHub's "Save": the inbox's Saved view lists these,
+  /// and "Delete all" leaves them (docs §54.7 #2, §111).
+  savedAt   DateTime?
 
   @@index([userId, createdAt])
   @@index([userId, readAt])
+  @@index([userId, savedAt])
 }
 
 /// One refusal by a safety rule (contact details, promised returns), for the

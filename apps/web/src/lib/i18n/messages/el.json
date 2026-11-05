@@ -3184,5 +3184,9 @@
   "Open to co-founding": "Ανοιχτός/ή σε συνίδρυση",
   "Open to advising": "Ανοιχτός/ή σε συμβουλευτικό ρόλο",
   "Open to angel investing": "Ανοιχτός/ή σε επένδυση ως angel",
-  "Open to mentoring": "Ανοιχτός/ή σε καθοδήγηση"
+  "Open to mentoring": "Ανοιχτός/ή σε καθοδήγηση",
+  "Missing programme": "Δεν ορίστηκε πρόγραμμα",
+  "No single programme matches that title": "Δεν ταιριάζει ένα μόνο πρόγραμμα με αυτόν τον τίτλο",
+  "This programme is not taking applications": "Το πρόγραμμα δεν δέχεται αιτήσεις",
+  "You have already applied to this programme": "Έχετε ήδη κάνει αίτηση σε αυτό το πρόγραμμα"
 }

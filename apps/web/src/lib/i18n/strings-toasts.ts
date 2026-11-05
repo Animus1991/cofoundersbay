@@ -341,6 +341,9 @@ export const TOAST_EL: Record<string, string> = {
   "All notifications marked read": "Όλες οι ειδοποιήσεις σημειώθηκαν ως αναγνωσμένες",
   "These notifications marked read": "Αυτές οι ειδοποιήσεις σημειώθηκαν ως αναγνωσμένες",
   "Could not mark them unread": "Δεν έγινε επαναφορά ως αδιάβαστες",
+  // Notifications: Save, and taking one out of Saved (§111).
+  "Removed from Saved": "Αφαιρέθηκε από τις αποθηκευμένες",
+  "Could not save the notification": "Η ειδοποίηση δεν αποθηκεύτηκε",
   // The API's refusal when a member limits who may start a conversation
   // (Settings > Privacy, shared/visibility messagePolicy).
   "This member is not taking new conversations": "Αυτό το μέλος δεν δέχεται νέες συνομιλίες",

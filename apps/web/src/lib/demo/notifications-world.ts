@@ -9,17 +9,18 @@ import { DemoRefusal } from './demo-refusal';
  * (sessionStorage, as the other `cfb:demo-*` worlds), with the API's rules
  * (`notifications.controller.ts`): the list filters by `unread` and `type`,
  * mark-all-read answers with the ids it marked, mark-unread makes read ones
- * unread again, and a delete removes the row.
+ * unread again, and a delete removes the row. Save keeps one for later: the
+ * list filters by `saved`, and "Delete all" leaves the saved ones (§111).
  */
 
 const STORAGE_KEY = 'cfb:demo-notifications:v1';
 
-type Overlay = { readAt: Record<string, string | null>; deleted: string[] };
-type Row = { id: string; type: string; readAt: string | null };
+type Overlay = { readAt: Record<string, string | null>; savedAt: Record<string, string | null>; deleted: string[] };
+type Row = { id: string; type: string; readAt: string | null; savedAt?: string | null };
 
 let memory: Overlay | null = null;
 
-const empty = (): Overlay => ({ readAt: {}, deleted: [] });
+const empty = (): Overlay => ({ readAt: {}, savedAt: {}, deleted: [] });
 
 function read(): Overlay {
   if (memory) return memory;
@@ -28,6 +29,8 @@ function read(): Overlay {
     const parsed = raw ? (JSON.parse(raw) as Partial<Overlay>) : null;
     memory = {
       readAt: parsed?.readAt && typeof parsed.readAt === 'object' ? parsed.readAt : {},
+      // A tab from before Save has no savedAt: nothing saved.
+      savedAt: parsed?.savedAt && typeof parsed.savedAt === 'object' ? parsed.savedAt : {},
       deleted: Array.isArray(parsed?.deleted) ? parsed.deleted.filter((x): x is string => typeof x === 'string') : [],
     };
   } catch {
@@ -55,12 +58,16 @@ export function resetDemoNotifications() {
   }
 }
 
-/** The sample rows as the visitor has left them: read marks applied, deleted ones gone. */
+/** The sample rows as the visitor has left them: read and saved marks applied, deleted ones gone. */
 export function demoNotifications<T extends Row>(seed: readonly T[]): T[] {
   const overlay = read();
   return seed
     .filter((n) => !overlay.deleted.includes(n.id))
-    .map((n) => (n.id in overlay.readAt ? { ...n, readAt: overlay.readAt[n.id] } : n));
+    .map((n) => ({
+      ...n,
+      readAt: n.id in overlay.readAt ? overlay.readAt[n.id] : n.readAt,
+      savedAt: n.id in overlay.savedAt ? overlay.savedAt[n.id] : (n.savedAt ?? null),
+    }));
 }
 
 function setReadAt(ids: readonly string[], value: string | null) {
@@ -91,14 +98,18 @@ export function previewNotificationsApi<T extends Row>(
     if (method === 'GET') {
       const type = search.get('type');
       const unreadOnly = search.get('unread') === 'true';
+      const savedOnly = search.get('saved') === 'true';
       return {
-        notifications: rows.filter((n) => (!unreadOnly || !n.readAt) && (!type || type === 'all' || n.type === type)),
+        notifications: rows.filter((n) => (!unreadOnly || !n.readAt) && (!savedOnly || n.savedAt) && (!type || type === 'all' || n.type === type)),
         nextCursor: null,
       };
     }
     if (method === 'DELETE') {
+      // As the API: the saved ones stay, unless they are asked for too.
+      const includeSaved = search.get('includeSaved') === 'true';
+      const gone = rows.filter((n) => includeSaved || !n.savedAt).map((n) => n.id);
       const overlay = read();
-      write({ ...overlay, deleted: [...new Set([...overlay.deleted, ...seed.map((n) => n.id)])] });
+      write({ ...overlay, deleted: [...new Set([...overlay.deleted, ...gone])] });
       return { ok: true };
     }
     return undefined;
@@ -140,6 +151,17 @@ export function previewNotificationsApi<T extends Row>(
     const row = rows.find((n) => n.id === readMatch[1]);
     if (row) setReadAt([row.id], nowIso);
     return { ok: true };
+  }
+
+  const savedMatch = /^\/api\/notifications\/([^/]+)\/saved$/.exec(pathname);
+  if (savedMatch && method === 'PATCH') {
+    if (typeof body.saved !== 'boolean') throw new DemoRefusal(400, 'saved must be a boolean value', { reason: 'saved' });
+    const row = rows.find((n) => n.id === savedMatch[1]);
+    if (!row) throw new DemoRefusal(404, 'Notification not found');
+    const savedAt = body.saved ? nowIso : null;
+    const overlay = read();
+    write({ ...overlay, savedAt: { ...overlay.savedAt, [row.id]: savedAt } });
+    return { ok: true, savedAt };
   }
 
   const rowMatch = /^\/api\/notifications\/([^/]+)$/.exec(pathname);

@@ -7,7 +7,7 @@ import {
   Bell, BellOff, Check, CheckCheck, Trash2,
   MessageCircle, UserPlus, Calendar, TrendingUp, Award,
   Briefcase, Users, RefreshCw,
-  Settings, Square, SquareCheck, X,
+  Settings, Square, SquareCheck, X, Bookmark, BookmarkCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -34,6 +34,7 @@ import {
   markNotificationsRead,
   markNotificationsUnread,
   deleteNotification,
+  setNotificationSaved,
   type NotificationItem,
 } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
@@ -85,6 +86,8 @@ const TYPE_LABELS: Record<string, { en: string; el: string }> = {
   system: { en: 'System', el: 'Σύστημα' },
 };
 
+type InboxView = 'all' | 'unread' | 'saved';
+
 /** The date groups' Greek; the keys are the English groupByDate returns. */
 const GROUP_EL: Record<string, string> = { Today: 'Σήμερα', Yesterday: 'Χθες', 'This Week': 'Αυτή την εβδομάδα', Older: 'Παλαιότερες' };
 
@@ -123,6 +126,7 @@ const NotificationRow = memo(function NotificationRow({
   item,
   onRead,
   onDelete,
+  onToggleSave,
   selectable,
   selected,
   onSelect,
@@ -130,11 +134,13 @@ const NotificationRow = memo(function NotificationRow({
   item: NotificationItem;
   onRead: (id: string) => void;
   onDelete: (id: string) => void;
+  onToggleSave: (id: string, saved: boolean) => void;
   selectable?: boolean;
   selected?: boolean;
   onSelect?: (id: string) => void;
 }) {
   const isUnread = !item.readAt;
+  const isSaved = Boolean(item.savedAt);
   const Icon = TYPE_ICONS[item.type] ?? Bell;
   const colorClass = TYPE_COLORS[item.type] ?? TYPE_COLORS.system;
   const typeLabel = TYPE_LABELS[item.type];
@@ -222,6 +228,19 @@ const NotificationRow = memo(function NotificationRow({
               <Check className="icon-sm" /> <BilingualText en="Mark read" el="Ως αναγνωσμένη" compact />
             </button>
           )}
+          {/* GitHub's Save: kept for later in the Saved view, read or not. */}
+          <button
+            type="button"
+            aria-pressed={isSaved}
+            onClick={() => onToggleSave(item.id, !isSaved)}
+            className={cn(
+              'inline-flex tap-target-y items-center gap-1 text-xs transition-colors hover:text-foreground',
+              isSaved ? 'text-foreground' : 'text-muted-foreground',
+            )}
+          >
+            {isSaved ? <BookmarkCheck className="icon-sm" /> : <Bookmark className="icon-sm" />}{' '}
+            {isSaved ? <BilingualText en="Saved" el="Αποθηκευμένη" compact /> : <BilingualText en="Save" el="Αποθήκευση" compact />}
+          </button>
           <button
             onClick={() => onDelete(item.id)}
             className="inline-flex tap-target-y items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-destructive-accessible"
@@ -238,11 +257,14 @@ export default function NotificationsPage() {
   const router = useRouter();
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState('all');
-  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  // All, Unread, or Saved: GitHub's inbox views (Saved since §111).
+  const [view, setView] = useState<InboxView>('all');
+  const showUnreadOnly = view === 'unread';
+  const showSaved = view === 'saved';
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const queryKey = qk('notifications', activeTab, showUnreadOnly);
+  const queryKey = qk('notifications', activeTab, view);
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey,
@@ -251,6 +273,7 @@ export default function NotificationsPage() {
         limit: 50,
         type: activeTab !== 'all' ? activeTab : undefined,
         unread: showUnreadOnly || undefined,
+        saved: showSaved || undefined,
       }),
     staleTime: 30_000,
   });
@@ -284,9 +307,10 @@ export default function NotificationsPage() {
     onSettled: () => qc.invalidateQueries({ queryKey: qk('notifications') }),
   });
 
-  // While a category is chosen, the header's action applies to what is shown:
-  // "mark all read" there used to clear every category, the hidden ones too.
-  const categoryChosen = activeTab !== 'all';
+  // While a category or the Saved view is chosen, the header's action applies
+  // to what is shown: "mark all read" there used to clear every category, the
+  // hidden ones too.
+  const categoryChosen = activeTab !== 'all' || showSaved;
   const shownUnreadIds = notifications.filter((n) => !n.readAt).map((n) => n.id);
   const markShownRead = useMutation({
     mutationFn: markNotificationsRead,
@@ -314,10 +338,12 @@ export default function NotificationsPage() {
   // read - the header button's own mutation, so it writes (and says so).
   usePageControls([
     choiceControl('category', 'Notification category', 'Κατηγορία ειδοποιήσεων', FILTER_TABS.map((t) => ({ value: t.value, en: t.labelEn, el: t.labelEl })), activeTab, (v) => { setActiveTab(v); setSelectedIds(new Set()); }),
-    choiceControl('unread_only', 'Unread filter', 'Φίλτρο αδιάβαστων', [
+    // The id stays `unread_only` for what already names it; Saved is its third view.
+    choiceControl('unread_only', 'Which notifications', 'Ποιες ειδοποιήσεις', [
       { value: 'all', en: 'All notifications', el: 'Όλες οι ειδοποιήσεις' },
       { value: 'unread', en: 'Unread only', el: 'Μόνο αδιάβαστες' },
-    ], showUnreadOnly ? 'unread' : 'all', (v) => setShowUnreadOnly(v === 'unread')),
+      { value: 'saved', en: 'Saved only', el: 'Μόνο αποθηκευμένες' },
+    ], view, (v) => setView(v === 'unread' || v === 'saved' ? v : 'all')),
     {
       id: 'mark_all_read',
       labelEn: 'Mark all notifications read',
@@ -403,8 +429,36 @@ export default function NotificationsPage() {
     onSettled: () => qc.invalidateQueries({ queryKey: qk('notifications') }),
   });
 
+  // Save and unsave, shown at once; in the Saved view an unsaved row leaves
+  // the list. The opposite call is the undo, for the toast and the assistant.
+  const saveN = useMutation({
+    mutationFn: ({ id, saved }: { id: string; saved: boolean }) => setNotificationSaved(id, saved),
+    onMutate: async ({ id, saved }) => {
+      await qc.cancelQueries({ queryKey });
+      qc.setQueryData(queryKey, (old: typeof data) => ({
+        ...old,
+        notifications: (old?.notifications ?? [])
+          .map((n) => (n.id === id ? { ...n, savedAt: saved ? new Date().toISOString() : null } : n))
+          .filter((n) => !showSaved || n.savedAt),
+      }));
+    },
+    onError: (err) => showError('Could not save the notification', err instanceof Error ? err.message : undefined),
+    onSettled: () => qc.invalidateQueries({ queryKey: qk('notifications') }),
+  });
+
   const handleRead = useCallback((id: string) => markRead.mutate(id), [markRead]);
   const handleDelete = useCallback((id: string) => deleteN.mutate(id), [deleteN]);
+  const handleToggleSave = useCallback((id: string, saved: boolean) => {
+    saveN.mutate({ id, saved }, {
+      onSuccess: () => {
+        // Leaving the Saved view is the one change that takes the row away.
+        if (saved || !showSaved) return;
+        success('Removed from Saved', undefined, {
+          action: { label: sayOne('Undo', 'Αναίρεση'), onClick: () => saveN.mutate({ id, saved: true }) },
+        });
+      },
+    });
+  }, [saveN, showSaved, success, sayOne]);
 
   // What the list shows, and each row's Mark read / Delete as commands.
   usePageList([
@@ -413,10 +467,10 @@ export default function NotificationsPage() {
       labelEn: 'Notifications',
       labelEl: 'Ειδοποιήσεις',
       rows: isLoading ? undefined : notifications.map((n) =>
-        `${n.readAt ? '' : '(unread) '}${n.title}${n.body ? ` · ${n.body}` : ''} · ${n.type} · ${n.createdAt.slice(0, 10)}`,
+        `${n.readAt ? '' : '(unread) '}${n.savedAt ? '(saved) ' : ''}${n.title}${n.body ? ` · ${n.body}` : ''} · ${n.type} · ${n.createdAt.slice(0, 10)}`,
       ),
       rowsEl: isLoading ? undefined : notifications.map((n) =>
-        `${n.readAt ? '' : '(αδιάβαστη) '}${n.title}${n.body ? ` · ${n.body}` : ''} · ${elWord(n.type)} · ${n.createdAt.slice(0, 10)}`,
+        `${n.readAt ? '' : '(αδιάβαστη) '}${n.savedAt ? '(αποθηκευμένη) ' : ''}${n.title}${n.body ? ` · ${n.body}` : ''} · ${elWord(n.type)} · ${n.createdAt.slice(0, 10)}`,
       ),
     },
   ]);
@@ -436,6 +490,24 @@ export default function NotificationsPage() {
       writes: true,
       options: rowOptions(notifications, (n) => n.id, (n) => n.title),
       run: async (v) => { if (v) await deleteN.mutateAsync(v); },
+    },
+    {
+      id: 'save_notification',
+      labelEn: 'Save notification for later',
+      labelEl: 'Αποθήκευση ειδοποίησης για αργότερα',
+      writes: true,
+      options: rowOptions(notifications.filter((n) => !n.savedAt), (n) => n.id, (n) => n.title),
+      run: async (v) => { if (v) await saveN.mutateAsync({ id: v, saved: true }); },
+      undo: (v) => (v ? { control: 'unsave_notification', value: v } : undefined),
+    },
+    {
+      id: 'unsave_notification',
+      labelEn: 'Remove notification from Saved',
+      labelEl: 'Αφαίρεση ειδοποίησης από τις αποθηκευμένες',
+      writes: true,
+      options: rowOptions(notifications.filter((n) => n.savedAt), (n) => n.id, (n) => n.title),
+      run: async (v) => { if (v) await saveN.mutateAsync({ id: v, saved: false }); },
+      undo: (v) => (v ? { control: 'save_notification', value: v } : undefined),
     },
   ]);
 
@@ -571,21 +643,22 @@ export default function NotificationsPage() {
           <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2.5 sm:px-6">
             <div role="group" aria-label={bilingualAria('Show', 'Εμφάνιση')} className="inline-flex rounded-lg border border-border p-0.5">
               {([
-                { value: false, en: notificationsEn('filter_all'), el: notificationsEl('filter_all') },
-                { value: true, en: notificationsEn('unread'), el: notificationsEl('unread') },
-              ]).map((option) => (
+                { value: 'all', en: notificationsEn('filter_all'), el: notificationsEl('filter_all') },
+                { value: 'unread', en: notificationsEn('unread'), el: notificationsEl('unread') },
+                { value: 'saved', en: 'Saved', el: 'Αποθηκευμένες' },
+              ] as Array<{ value: InboxView; en: string; el: string }>).map((option) => (
                 <button
-                  key={String(option.value)}
+                  key={option.value}
                   type="button"
-                  aria-pressed={showUnreadOnly === option.value}
-                  onClick={() => setShowUnreadOnly(option.value)}
+                  aria-pressed={view === option.value}
+                  onClick={() => setView(option.value)}
                   className={cn(
                     'tap-target-y inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
-                    showUnreadOnly === option.value ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground',
+                    view === option.value ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
                   <BilingualText en={option.en} el={option.el} compact />
-                  {option.value && unreadCount > 0 ? <Counter value={unreadCount} tone="attention" /> : null}
+                  {option.value === 'unread' && unreadCount > 0 ? <Counter value={unreadCount} tone="attention" /> : null}
                 </button>
               ))}
             </div>
@@ -629,6 +702,26 @@ export default function NotificationsPage() {
             </div>
           ) : isLoading ? (
             <>{Array.from({ length: 6 }).map((_, i) => <NotificationSkeleton key={i} />)}</>
+          ) : notifications.length === 0 && showSaved ? (
+            <div className="flex flex-col items-center gap-3 py-16 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                <Bookmark className="icon-lg text-muted-foreground" />
+              </div>
+              <div>
+                <p className="card-title text-foreground">
+                  <BilingualText en="Nothing saved yet" el="Δεν έχετε αποθηκεύσει τίποτα ακόμη" />
+                </p>
+                <p className="card-body mt-1 text-muted-foreground">
+                  <BilingualText
+                    en="Save a notification to keep it here for later, read or not."
+                    el="Αποθηκεύστε μια ειδοποίηση για να τη βρίσκετε εδώ αργότερα, διαβασμένη ή όχι."
+                  />
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setView('all')}>
+                <BilingualText en={notificationsEn('show_all_notifications')} el={notificationsEl('show_all_notifications')} compact />
+              </Button>
+            </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
@@ -652,7 +745,7 @@ export default function NotificationsPage() {
                   an otherwise dead-end empty state), with our bilingual label. */}
               <div className="flex flex-wrap items-center justify-center gap-2">
                 {showUnreadOnly && (
-                  <Button variant="outline" size="sm" onClick={() => setShowUnreadOnly(false)}>
+                  <Button variant="outline" size="sm" onClick={() => setView('all')}>
                     <BilingualText en={notificationsEn('show_all_notifications')} el={notificationsEl('show_all_notifications')} compact />
                   </Button>
                 )}
@@ -677,6 +770,7 @@ export default function NotificationsPage() {
                     item={item}
                     onRead={handleRead}
                     onDelete={handleDelete}
+                    onToggleSave={handleToggleSave}
                     selectable={bulkMode}
                     selected={selectedIds.has(item.id)}
                     onSelect={toggleSelect}

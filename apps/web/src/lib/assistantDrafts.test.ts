@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const data = vi.hoisted(() => ({
   programs: [] as Array<Record<string, unknown>>,
+  mine: [] as Array<Record<string, unknown>>,
   profile: null as Record<string, unknown> | null,
   reviews: [] as Array<Record<string, unknown>>,
 }));
@@ -10,6 +11,7 @@ vi.mock('@/lib/api', async (importOriginal) => {
   return {
     ...actual,
     listPrograms: vi.fn(async () => ({ programs: data.programs, total: data.programs.length })),
+    getMyPrograms: vi.fn(async () => ({ programs: data.mine })),
     getMeProfile: vi.fn(async () => ({ profile: data.profile, hasCompletedOnboarding: true })),
     listExpertReviews: vi.fn(async () => ({ reviews: data.reviews, total: data.reviews.length })),
   };
@@ -28,7 +30,9 @@ beforeEach(() => {
   data.programs = [
     { id: 'p-boot', title: 'Pre-seed Bootcamp', status: 'active', applicationDeadline: '2099-01-01T00:00:00Z' },
     { id: 'p-closed', title: 'Closed Lab', status: 'completed', applicationDeadline: null },
+    { id: 'p-seed', title: 'Seed Accelerator · Autumn 2026', status: 'active', applicationDeadline: '2099-01-01T00:00:00Z' },
   ];
+  data.mine = [];
   data.profile = { displayName: 'Alex Demo', headline: 'Founder at Harbor', skills: [{ skillName: 'Product' }, { skillName: 'Logistics' }] };
   data.reviews = [
     { id: 'r-sofia', status: 'requested', requester: { id: 'user-sofia', displayName: 'Sofia Alexiou' } },
@@ -65,6 +69,22 @@ describe('the application note the assistant starts (docs §107.7-4, §111)', ()
     const planned = planCopilotTools('Ετοίμασε την αίτησή μου στο «Pre-seed Bootcamp»');
     expect(planned.find((t) => t.name === 'draft_program_application')?.args).toEqual({ programTitle: 'Pre-seed Bootcamp' });
     expect(planned.map((t) => t.name)).not.toContain('apply_to_program');
+  });
+
+  it('reads the programme without quotes, as people type it', () => {
+    const title = (ask: string) => planCopilotTools(ask).find((t) => t.name === 'draft_program_application')?.args;
+    expect(title('Draft my application for Seed Accelerator')).toEqual({ programTitle: 'Seed Accelerator' });
+    expect(title('Prepare my application to the Pre-seed Bootcamp programme.')).toEqual({ programTitle: 'Pre-seed Bootcamp' });
+    expect(title('Ετοίμασε την αίτησή μου για το Seed Accelerator')).toEqual({ programTitle: 'Seed Accelerator' });
+    expect(title('Συμπλήρωσε την αιτηση μου στο πρόγραμμα Pre-seed Bootcamp')).toEqual({ programTitle: 'Pre-seed Bootcamp' });
+  });
+
+  it('refuses a programme the member has already applied to', async () => {
+    data.mine = [{ id: 'p-seed', title: 'Seed Accelerator · Autumn 2026' }];
+    expect(await executeAction('draft_program_application', { programTitle: 'Seed Accelerator' })).toEqual({ ok: false, error: 'You have already applied to this programme' });
+    expect(takeFormDraft('program_application')).toBeFalsy();
+    // A partial title finds the one programme it names.
+    expect(await executeAction('draft_program_application', { programTitle: 'pre-seed' })).toEqual({ ok: true, href: '/programs/p-boot' });
   });
 });
 

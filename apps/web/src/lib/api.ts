@@ -947,6 +947,8 @@ export type NotificationItem = {
   meta: unknown;
   createdAt: string;
   readAt: string | null;
+  /** Kept for later (the inbox's Save); absent from an API older than §111. */
+  savedAt?: string | null;
 };
 
 export async function listNotifications(params?: {
@@ -954,6 +956,7 @@ export async function listNotifications(params?: {
   cursor?: string | null;
   unread?: boolean;
   type?: string;
+  saved?: boolean;
 }): Promise<{
   notifications: NotificationItem[];
   nextCursor: string | null;
@@ -963,6 +966,7 @@ export async function listNotifications(params?: {
   if (params?.cursor) sp.set('cursor', params.cursor);
   if (params?.unread) sp.set('unread', 'true');
   if (params?.type && params.type !== 'all') sp.set('type', params.type);
+  if (params?.saved) sp.set('saved', 'true');
   const url = `/api/notifications${sp.toString() ? `?${sp}` : ''}`;
   return apiRequest(url);
 }
@@ -973,6 +977,11 @@ export async function getNotificationUnreadCount(): Promise<{ count: number }> {
 
 export async function markNotificationRead(id: string): Promise<{ ok: true }> {
   return apiRequest(`/api/notifications/${id}/read`, { method: 'PATCH' });
+}
+
+/** Save (keep for later) or unsave one notification; the opposite call is its Undo. */
+export async function setNotificationSaved(id: string, saved: boolean): Promise<{ ok: true; savedAt: string | null }> {
+  return apiRequest(`/api/notifications/${id}/saved`, { method: 'PATCH', body: JSON.stringify({ saved }) });
 }
 
 /** Answers with the ids it marked, which `markNotificationsUnread` takes back. */
@@ -2570,13 +2579,17 @@ export async function createUserReport(body: {
 
 export async function listAdminReports(params?: {
   status?: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+  type?: AdminReportItem['type'];
   q?: string;
   limit?: number;
-}): Promise<{ reports: AdminReportItem[] }> {
+  offset?: number;
+}): Promise<{ reports: AdminReportItem[]; total?: number }> {
   const sp = new URLSearchParams();
   if (params?.status) sp.set('status', params.status);
+  if (params?.type) sp.set('type', params.type);
   if (params?.q) sp.set('q', params.q);
   if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.offset != null) sp.set('offset', String(params.offset));
   const url = `/api/admin/reports${sp.toString() ? `?${sp}` : ''}`;
   return apiRequest(url);
 }

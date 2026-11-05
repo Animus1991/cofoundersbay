@@ -212,21 +212,8 @@ export class AdminController {
     return { success: true };
   }
 
-  // ─────────────────────────────────────────────────────────────────
-  // Reports listing (needed by frontend moderation queue)
-  // ─────────────────────────────────────────────────────────────────
-
-  @Get('reports')
-  async listReports(
-    @Query('status') status?: string,
-    @Query('type') type?: string,
-    @Query('limit') limitRaw?: string,
-    @Query('offset') offsetRaw?: string,
-  ) {
-    const limit = limitRaw ? parseInt(limitRaw, 10) : 50;
-    const offset = offsetRaw ? parseInt(offsetRaw, 10) : 0;
-    return this.adminService.listReports({ status, type, limit, offset });
-  }
+  // The moderation queue (`GET admin/reports`, `PATCH admin/reports/:id`) is
+  // ModerationAdminController's; a second GET here was never reached (docs §111).
 
   @Patch('users/:userId/moderation')
   async updateUserModeration(

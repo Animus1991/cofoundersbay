@@ -5549,8 +5549,14 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     return { users };
   }
   if (pathname === '/api/admin/reports') {
-    const status = new URLSearchParams(path.split('?')[1] ?? '').get('status');
-    return { reports: previewAdminReports().filter((r) => !status || r.status === status) };
+    // The API's filters and page, so the demo answers as the server does.
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const status = params.get('status');
+    const type = params.get('type');
+    const matching = previewAdminReports().filter((r) => (!status || r.status === status) && (!type || r.type === type));
+    const offset = Math.max(Number(params.get('offset')) || 0, 0);
+    const limit = Math.min(Math.max(Number(params.get('limit')) || 100, 1), 300);
+    return { reports: matching.slice(offset, offset + limit), total: matching.length };
   }
   if (pathname === '/api/admin/skills') {
     // The skills the demo's profiles carry, counted over those profiles, in the

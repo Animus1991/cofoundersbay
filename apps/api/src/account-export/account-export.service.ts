@@ -126,7 +126,7 @@ export class AccountExportService {
         read('activity', 'endorsementsGiven', () => this.prisma.endorsement.findMany({ where: { fromUserId: userId }, select: { id: true, toUserId: true, skill: true, content: true, relationship: true, isApproved: true, createdAt: true }, take: LIMIT })),
         read('activity', 'endorsementsReceived', () => this.prisma.endorsement.findMany({ where: { toUserId: userId }, select: { id: true, fromUserId: true, skill: true, content: true, relationship: true, isApproved: true, createdAt: true }, take: LIMIT })),
         read('activity', 'savedProfiles', () => this.prisma.savedProfile.findMany({ where: { savedById: userId }, select: { userId: true, note: true, createdAt: true }, take: LIMIT })),
-        read('activity', 'notifications', () => this.prisma.notification.findMany({ where: { userId }, select: { type: true, title: true, body: true, link: true, createdAt: true, readAt: true }, orderBy: { createdAt: 'desc' }, take: LIMIT })),
+        read('activity', 'notifications', () => this.prisma.notification.findMany({ where: { userId }, select: { type: true, title: true, body: true, link: true, createdAt: true, readAt: true, savedAt: true }, orderBy: { createdAt: 'desc' }, take: LIMIT })),
       ]);
       // Commitments: the cards they wrote (never the share token, which is a
       // credential for the public link), the ladders they took part in from

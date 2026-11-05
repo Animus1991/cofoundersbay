@@ -1,9 +1,10 @@
-import { Controller, Get, Param, Post, Delete, Query, UseGuards, Patch, Body } from '@nestjs/common';
+import { Controller, Get, Param, Post, Delete, Query, UseGuards, Patch, Body, NotFoundException } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
 import { MarkNotificationsUnreadDto } from './dto/mark-notifications-unread.dto';
+import { SetNotificationSavedDto } from './dto/set-notification-saved.dto';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
@@ -17,15 +18,21 @@ export class NotificationsController {
     @Query('cursor') cursor?: string,
     @Query('unread') unread?: string,
     @Query('type') type?: string,
+    @Query('saved') saved?: string,
   ) {
     const limit = Math.min(Math.max(parseInt(limitRaw ?? '30', 10) || 30, 1), 100);
 
     const where: any = { userId: user.id };
-    
+
     if (unread === 'true') {
       where.readAt = null;
     }
-    
+
+    // The Saved view: what the member kept for later, read or not.
+    if (saved === 'true') {
+      where.savedAt = { not: null };
+    }
+
     if (type && type !== 'all') {
       where.type = type;
     }
@@ -56,9 +63,31 @@ export class NotificationsController {
         meta: n.meta,
         createdAt: n.createdAt.toISOString(),
         readAt: n.readAt ? n.readAt.toISOString() : null,
+        savedAt: n.savedAt ? n.savedAt.toISOString() : null,
       })),
       nextCursor,
     };
+  }
+
+  /**
+   * Save (keep for later) or unsave one of the member's own notifications,
+   * as GitHub's inbox does. Saving leaves it read or unread as it was;
+   * answers with the new `savedAt`, so the row shows it at once and the
+   * opposite call is its Undo.
+   */
+  @Patch(':id/saved')
+  async setSaved(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+    @Body() body: SetNotificationSavedDto,
+  ) {
+    const savedAt = body.saved ? new Date() : null;
+    const result = await this.prisma.notification.updateMany({
+      where: { id, userId: user.id },
+      data: { savedAt },
+    });
+    if (result.count === 0) throw new NotFoundException('Notification not found');
+    return { ok: true, savedAt: savedAt ? savedAt.toISOString() : null };
   }
 
   @Get('unread-count')
@@ -140,10 +169,15 @@ export class NotificationsController {
     return { ok: true };
   }
 
+  /**
+   * Clears the inbox but keeps what the member saved: Save means "keep this
+   * for later", and a delete-all that took those too would undo it. A saved
+   * one goes with its own Delete, or with `?includeSaved=true`.
+   */
   @Delete()
-  async deleteAll(@CurrentUser() user: { id: string }) {
+  async deleteAll(@CurrentUser() user: { id: string }, @Query('includeSaved') includeSaved?: string) {
     await this.prisma.notification.deleteMany({
-      where: { userId: user.id },
+      where: includeSaved === 'true' ? { userId: user.id } : { userId: user.id, savedAt: null },
     });
     return { ok: true };
   }

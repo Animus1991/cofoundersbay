@@ -558,6 +558,21 @@ export function detectProgramTitle(rawMessage: string): string | undefined {
   return el?.[1]?.trim() || undefined;
 }
 
+/**
+ * The programme an application note is drafted for: quoted, or what follows
+ * "application to/for" or «αίτηση (μου) στο / για το». Without it, "Draft my
+ * application for Seed Accelerator" asked for the name again, in quotes.
+ */
+export function detectApplicationProgramTitle(rawMessage: string): string | undefined {
+  const quoted = detectQuotedName(rawMessage);
+  if (quoted) return quoted;
+  const en = rawMessage.match(/\bapplication\s+(?:to|for)\s+(?:the\s+)?(.+?)(?:\s+(?:programme|program))?[.?!]*$/i);
+  if (en?.[1]) return en[1].trim();
+  const el = rawMessage.match(/α[ίι]τησ[ηή](?:\s+μου)?\s+(?:στο|για\s+το)\s+(?:πρόγραμμα\s+|προγραμμα\s+)?(.+?)[.;;!?]*$/iu);
+  if (el?.[1]) return el[1].trim();
+  return detectProgramTitle(rawMessage);
+}
+
 /** Whose mentoring request is being answered: "accept Sofia's…", «…της Σοφίας». */
 export function detectRequesterName(rawMessage: string): string | undefined {
   const en = rawMessage.match(/\b(?:[Aa]ccept|[Dd]ecline|[Rr]eject)\s+([\p{Lu}][\p{L}-]+(?:\s[\p{Lu}][\p{L}-]+)?)(?:'s|’s)\s/u);
@@ -1155,7 +1170,10 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
           : includesAny(message, ['headline', 'bio', 'my profile', 'τίτλο μου', 'τιτλο μου', 'βιογραφικ', 'προφίλ μου', 'προφιλ μου'])
             ? 'draft_profile'
             : null;
-  if (draftKind === 'draft_program_application') add('draft_program_application', quoted ? { programTitle: quoted } : {});
+  if (draftKind === 'draft_program_application') {
+    const programTitle = detectApplicationProgramTitle(rawMessage);
+    add('draft_program_application', programTitle ? { programTitle } : {});
+  }
   if (draftKind === 'draft_expert_review') {
     const asker = detectPersonName(rawMessage);
     add('draft_expert_review', asker ? { requesterName: asker } : {});

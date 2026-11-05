@@ -326,34 +326,6 @@ export class AdminService {
     });
   }
 
-  async listReports(params: {
-    status?: string;
-    type?: string;
-    limit: number;
-    offset: number;
-  }) {
-    const where: Record<string, unknown> = {};
-    if (params.status) where.status = params.status;
-    if (params.type) where.type = params.type;
-
-    const [reports, total] = await Promise.all([
-      this.prisma.report.findMany({
-        where,
-        take: params.limit,
-        skip: params.offset,
-        orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
-        include: {
-          reporter: { select: { id: true, email: true, profile: { select: { displayName: true, avatarUrl: true } } } },
-          reported: { select: { id: true, email: true, profile: { select: { displayName: true, avatarUrl: true } } } },
-          resolvedBy: { select: { id: true, email: true } },
-        },
-      }),
-      this.prisma.report.count({ where }),
-    ]);
-
-    return { reports, total };
-  }
-
   async updateUserModerationStatus(params: {
     adminId: string;
     userId: string;

@@ -23,6 +23,16 @@ const createReportSchema = z.object({
   context: z.unknown().optional(),
 });
 
+// An unknown status or type is a 400, not a database error. Numbers outside
+// the range are clamped by the service, as before.
+const listReportsQuerySchema = z.object({
+  status: z.nativeEnum(ReportStatus).optional(),
+  type: z.nativeEnum(ReportType).optional(),
+  q: z.string().optional(),
+  limit: z.coerce.number().int().optional(),
+  offset: z.coerce.number().int().optional(),
+});
+
 const updateReportSchema = z.object({
   status: z.nativeEnum(ReportStatus),
   moderationStatus: z.nativeEnum(UserModerationStatus).optional(),
@@ -55,17 +65,15 @@ export class ModerationAdminController {
   constructor(private readonly moderation: ModerationService) {}
 
   @Get('reports')
-  async listReports(
-    @Query('status') status?: ReportStatus,
-    @Query('q') q?: string,
-    @Query('limit') limitRaw?: string,
-  ) {
-    const reports = await this.moderation.listReports({
-      status,
-      q: q?.trim() || undefined,
-      limit: limitRaw ? parseInt(limitRaw, 10) : undefined,
+  async listReports(@Query() query: unknown) {
+    const input = listReportsQuerySchema.parse(query);
+    return this.moderation.listReports({
+      status: input.status,
+      type: input.type,
+      q: input.q?.trim() || undefined,
+      limit: input.limit,
+      offset: input.offset,
     });
-    return { reports };
   }
 
   @Patch('reports/:reportId')
