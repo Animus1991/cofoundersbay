@@ -17,6 +17,8 @@ import {
   MAX_SHORTCUTS,
   canShortcut,
   dismissSuggestion,
+  acceptSuggestion,
+  suggestionOutcomeCopy,
   hidePage,
   movePin,
   pageLabel,
@@ -245,13 +247,13 @@ export function YourPagesManager({ onNavigate }: { onNavigate?: () => void }) {
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   {suggestion.kind === 'pin' && suggestion.page ? (
-                    <Button type="button" size="sm" onClick={() => suggestion.page && pinPage(suggestion.page)} disabled={full}>
+                    <Button type="button" size="sm" onClick={() => { if (!suggestion.page) return; acceptSuggestion(suggestion.id); pinPage(suggestion.page); }} disabled={full}>
                       <Pin className="icon-sm" aria-hidden="true" />
                       <BilingualText en="Pin it" el="Καρφίτσωμα" compact />
                     </Button>
                   ) : null}
                   {suggestion.ask ? (
-                    <Button type="button" size="sm" variant="outline" onClick={() => ask(suggestion)}>
+                    <Button type="button" size="sm" variant="outline" onClick={() => { acceptSuggestion(suggestion.id); ask(suggestion); }}>
                       <Sparkles className="icon-sm" aria-hidden="true" />
                       <BilingualText en="Try it with the assistant" el="Δοκιμάστε το με τον βοηθό" compact />
                     </Button>
@@ -265,6 +267,13 @@ export function YourPagesManager({ onNavigate }: { onNavigate?: () => void }) {
             ))}
           </ul>
         </section>
+      ) : null}
+      {/* How the suggestions have fared, so the reader (and we) can tell
+          whether they help (docs §107.7-8, §111). */}
+      {suggestionOutcomeCopy(store) ? (
+        <p className="text-xs text-muted-foreground" data-suggestion-outcomes="">
+          <BilingualText en={suggestionOutcomeCopy(store)!.en} el={suggestionOutcomeCopy(store)!.el} wrap />
+        </p>
       ) : null}
 
       {store.hidden.length > 0 ? (

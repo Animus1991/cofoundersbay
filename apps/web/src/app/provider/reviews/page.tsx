@@ -220,6 +220,7 @@ export default function ProviderReviewsPage() {
       labelEn: 'Client reviews',
       labelEl: 'Αξιολογήσεις πελατών',
       rows: isLoading ? undefined : filteredReviews.map((r) => `${r.clientName} · ${r.service} · ${r.rating}/5${r.response ? ' · answered' : ''}`),
+      rowsEl: isLoading ? undefined : filteredReviews.map((r) => `${r.clientName} · ${r.service} · ${r.rating}/5${r.response ? ' · απαντήθηκε' : ''}`),
       total: reviews.length,
       sample: live.length === 0 && reviews.length > 0,
     },

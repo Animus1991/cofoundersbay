@@ -39,6 +39,7 @@ import { SaveStatus, useSaveStatus } from '@/components/common/SaveStatus';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { initialsOf } from '@/lib/utils';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 const BUILDER_TOUR: TourStep[] = [
   {
@@ -170,6 +171,9 @@ function BuilderPageContent() {
       rows:
         activeTab === 'overview' && !isLoadingWorkspaces
           ? documents.map((doc) => `${doc.title} · ${doc.status} · ${doc.completionPercent ?? 0}%`)
+          : undefined,
+      rowsEl: activeTab === 'overview' && !isLoadingWorkspaces
+          ? documents.map((doc) => `${doc.title} · ${elWord(doc.status)} · ${doc.completionPercent ?? 0}%`)
           : undefined,
       total: documents.length,
     },

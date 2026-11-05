@@ -48,6 +48,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { PageFacts } from '@/components/common/PageFacts';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 type PipelineStage = 'discovered' | 'reviewing' | 'meeting' | 'due_diligence' | 'negotiating' | 'invested' | 'passed';
 
@@ -348,6 +349,13 @@ export default function InvestorPipelinePage() {
           const stageLabel = PIPELINE_STAGES.find((s) => s.key === d.pipelineStage)?.label ?? d.pipelineStage;
           const ask = d.askAmount ? ` · asking ${d.currency ?? '€'} ${d.askAmount.toLocaleString('en-US')}` : '';
           return `${d.name} · ${stageLabel} · ${d.industry}, ${d.stage}${ask}${d.starred ? ' · starred' : ''}`;
+        }),
+      rowsEl: isLoading ? undefined : filteredDeals
+        .filter((d) => showPassed || d.pipelineStage !== 'passed')
+        .map((d) => {
+          const stageLabel = PIPELINE_STAGES.find((s) => s.key === d.pipelineStage)?.labelEl ?? d.pipelineStage;
+          const ask = d.askAmount ? ` · ζητά ${d.currency ?? '€'} ${d.askAmount.toLocaleString('el-GR')}` : '';
+          return `${d.name} · ${stageLabel} · ${d.industry}, ${elWord(d.stage)}${ask}${d.starred ? ' · με αστέρι' : ''}`;
         }),
       total: deals.length,
       sample: !isLive,

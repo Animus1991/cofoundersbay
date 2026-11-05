@@ -21,6 +21,7 @@ import { StatusText } from '@/components/common/StatusText';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { elWord } from '@/lib/rows-el';
 
 type Report = {
   id: string;
@@ -154,6 +155,7 @@ export default function ContentModerationPage() {
       labelEn: 'Reports',
       labelEl: 'Αναφορές',
       rows: isLoading ? undefined : filtered.map((r) => `${r.type} · ${r.reason} · reported by ${r.reporter} · ${r.status}`),
+      rowsEl: isLoading ? undefined : filtered.map((r) => `${elWord(r.type)} · ${r.reason} · αναφορά από ${r.reporter} · ${elWord(r.status)}`),
       total: items.length,
       sample: !isLive && items.length > 0,
     },

@@ -60,6 +60,7 @@ import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePr
 import { FactLine } from '@/components/common/FactLine';
 import { demoMark } from '@/lib/demo/photos';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 /**
  * The page's own row from a group.
@@ -374,6 +375,9 @@ export default function AdminCommunitiesPage() {
       labelEl: 'Κοινότητες',
       rows: isLoading ? undefined : filteredCommunities.map((c) =>
         `${c.name} · ${c.category} · ${c.visibility} · ${c.status} · ${c.memberCount} members, ${c.postCount} posts`,
+      ),
+      rowsEl: isLoading ? undefined : filteredCommunities.map((c) =>
+        `${c.name} · ${elWord(c.category)} · ${elWord(c.visibility)} · ${elWord(c.status)} · ${c.memberCount} μέλη, ${c.postCount} αναρτήσεις`,
       ),
       total: communities.length,
       sample: showingSeed,

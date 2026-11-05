@@ -54,6 +54,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK, type AskText } from '@/lib/page-questions';
 import { useStoredUser } from '@/hooks/useStoredUser';
+import { elWord } from '@/lib/rows-el';
 
 const ROLE_FILTERS = [
   { value: 'all',         labelKey: 'role_all' as const,         icon: Briefcase },
@@ -353,6 +354,9 @@ export default function JobsPage() {
       labelEl: 'Αγγελίες',
       rows: isLoading ? undefined : filtered.map((j) =>
         `${j.title}${j.role ? ` · ${j.role}` : ''} · ${j.creator.displayName} · ${j.isRemote ? 'remote' : (j.location ?? 'on-site')}${j.type ? ` · ${j.type}` : ''}`,
+      ),
+      rowsEl: isLoading ? undefined : filtered.map((j) =>
+        `${j.title}${j.role ? ` · ${elWord(j.role)}` : ''} · ${j.creator.displayName} · ${j.isRemote ? 'εξ αποστάσεως' : (j.location ?? 'με φυσική παρουσία')}${j.type ? ` · ${elWord(j.type)}` : ''}`,
       ),
       total: jobs.length,
     },

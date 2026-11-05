@@ -51,6 +51,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { elWord } from '@/lib/rows-el';
 
 /**
  * The page's own row from the moderation queue row.
@@ -530,6 +531,9 @@ export default function AdminReportsPage() {
       labelEl: 'Αναφορές',
       rows: isLoading ? undefined : filteredReports.map((r) =>
         `${r.reason} — ${r.targetName} (${r.targetType}) · ${r.status} · ${r.priority} priority · by ${r.reporterName}`,
+      ),
+      rowsEl: isLoading ? undefined : filteredReports.map((r) =>
+        `${r.reason} — ${r.targetName} (${elWord(r.targetType)}) · ${elWord(r.status)} · προτεραιότητα ${elWord(r.priority)} · από ${r.reporterName}`,
       ),
       total: reports.length,
       sample: !isLive,

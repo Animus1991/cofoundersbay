@@ -37,4 +37,39 @@ describe('page lists in the reader’s language', () => {
     }
     expect(offenders).toEqual([]);
   });
+
+  it('pass rowsEl wherever the rows write English words of their own (docs §54.7-7, §111)', () => {
+    // "3 members", "remote", "(unread)": words written into the row, which a
+    // Greek answer would quote in English. Rows of names, figures and dates
+    // alone are left as they are.
+    const strip = (text: string) => {
+      let out = '';
+      let depth = 0;
+      for (let i = 0; i < text.length; i += 1) {
+        if (depth === 0 && text.startsWith('${', i)) { depth = 1; i += 1; out += ' '; continue; }
+        if (depth > 0) {
+          if (text[i] === '{') depth += 1;
+          else if (text[i] === '}') depth -= 1;
+          continue;
+        }
+        out += text[i];
+      }
+      return out;
+    };
+    const offenders: string[] = [];
+    for (const path of ROOTS.flatMap((r) => files(join(process.cwd(), r)))) {
+      const source = readFileSync(path, 'utf8');
+      for (const call of source.matchAll(/usePageList\(\[([\s\S]*?)\]\);/g)) {
+        for (const list of call[1].split(/\n\s*\{\s*(?=\n?\s*id:|id:)/)) {
+          if (/\browsEl:/.test(list)) continue;
+          const rows = list.match(/\brows:([\s\S]*?)(?:\n\s*(?:total|sample|labelEn|labelEl|id):|\n\s*\},?\s*$)/);
+          if (!rows) continue;
+          const literals = [...rows[1].matchAll(/`([^`]*)`/g)].map((m) => strip(m[1]));
+          const words = literals.flatMap((text) => text.match(/[A-Za-z][A-Za-z-]{2,}/g) ?? []).filter((w) => w !== 'UTC');
+          if (words.length) offenders.push(`${path.slice(process.cwd().length + 1)}: ${list.match(/id:\s*'([^']+)'/)?.[1] ?? '?'} (${[...new Set(words)].join(', ')})`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
 });

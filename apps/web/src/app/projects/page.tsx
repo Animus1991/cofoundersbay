@@ -63,6 +63,7 @@ import {
 } from '@/lib/projects-demo';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { elWord } from '@/lib/rows-el';
 
 const STATUS_COLOR: Record<ProjectStatus, string> = {
   idea: 'bg-status-accent-bg text-status-accent border-status-accent-border',
@@ -497,6 +498,9 @@ export default function ProjectsPage() {
       labelEl: 'Έργα',
       rows: byTab[tab].map((p) =>
         `${p.name} · ${p.industry}, ${p.stage} · ${p.status} · team ${p.teamSize}/${p.maxTeamSize}${p.rolesNeeded.length ? ` · needs ${p.rolesNeeded.map((r) => r.title).join(', ')}` : ''}${p.isStarred ? ' · starred' : ''}`,
+      ),
+      rowsEl: byTab[tab].map((p) =>
+        `${p.name} · ${p.industry}, ${elWord(p.stage)} · ${elWord(p.status)} · ομάδα ${p.teamSize}/${p.maxTeamSize}${p.rolesNeeded.length ? ` · χρειάζεται ${p.rolesNeeded.map((r) => r.title).join(', ')}` : ''}${p.isStarred ? ' · με αστέρι' : ''}`,
       ),
       total: counts[tab],
       sample: true,

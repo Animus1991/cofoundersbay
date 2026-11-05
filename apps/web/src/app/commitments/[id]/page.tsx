@@ -54,6 +54,7 @@ import { isNotFound as isMissing, statusOf } from '@/lib/read-status';
 import { needCardPost, useSuggestedPost } from '@/lib/share-text';
 import { FORM_DRAFT_ROUTES, stashFormDraft } from '@/lib/form-draft';
 import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { elWord } from '@/lib/rows-el';
 
 const OFFER_FIELD_COPY: Record<string, { en: string; el: string }> = {
   offerRole: CMT.offer_role,
@@ -329,6 +330,7 @@ function Board() {
       labelEn: 'Responses to this card',
       labelEl: 'Απαντήσεις στην κάρτα',
       rows: isOwner ? responses.map((t) => `${t.counterpart.displayName} — ${t.step}${t.myConfirmed ? ', you confirmed' : ''}${t.latestTermsVersion ? `, terms v${t.latestTermsVersion}` : ''}`) : undefined,
+      rowsEl: isOwner ? responses.map((t) => `${t.counterpart.displayName} — ${elWord(t.step)}${t.myConfirmed ? ', το επιβεβαιώσατε' : ''}${t.latestTermsVersion ? `, όροι v${t.latestTermsVersion}` : ''}`) : undefined,
     },
   ]);
 

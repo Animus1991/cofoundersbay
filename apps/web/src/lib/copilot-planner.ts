@@ -1118,7 +1118,23 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'καταχώριση παρόχου', 'καταχωριση παροχου', 'προφίλ παρόχου', 'προφιλ παροχου', 'καταχώριση υπηρεσιών', 'καταχωριση υπηρεσιων',
     'καταχώριση υπηρεσίας', 'καταχωριση υπηρεσιας',
   ]);
-  const draftKind = needCardNoun && needCardVerb
+  // A programme's application note, and a review asked of the reader (§111).
+  // "Request a review" is the other side: it asks, it does not write one.
+  const programApplicationNoun = includesAny(message, [
+    'programme application', 'program application', 'application to', 'my application',
+    'αίτηση στο πρόγραμμα', 'αιτηση στο προγραμμα', 'αίτηση για το πρόγραμμα', 'αιτηση για το προγραμμα',
+    'αίτησή μου', 'αιτηση μου', 'αίτηση στο', 'αιτηση στο',
+  ]);
+  const reviewNoun = !includesAny(message, ['request a review', 'request review', 'ζήτα αξιολόγηση', 'ζητα αξιολογηση', 'αίτημα αξιολόγησης', 'αιτημα αξιολογησης'])
+    && includesAny(message, [
+      'review asked of me', 'asked of me', 'my review for', 'my review of', 'the review for', 'review i was asked',
+      'αξιολόγηση που μου ζήτησ', 'αξιολογηση που μου ζητησ', 'αξιολόγηση για τ', 'αξιολογηση για τ', 'κριτική για τ', 'κριτικη για τ',
+    ]);
+  const draftKind = programApplicationNoun && draftVerb
+    ? 'draft_program_application'
+    : reviewNoun && needCardVerb
+    ? 'draft_expert_review'
+    : needCardNoun && needCardVerb
     ? 'draft_need_card'
     : scoutNoun && needCardVerb
     ? 'draft_scout_brief'
@@ -1139,6 +1155,11 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
           : includesAny(message, ['headline', 'bio', 'my profile', 'τίτλο μου', 'τιτλο μου', 'βιογραφικ', 'προφίλ μου', 'προφιλ μου'])
             ? 'draft_profile'
             : null;
+  if (draftKind === 'draft_program_application') add('draft_program_application', quoted ? { programTitle: quoted } : {});
+  if (draftKind === 'draft_expert_review') {
+    const asker = detectPersonName(rawMessage);
+    add('draft_expert_review', asker ? { requesterName: asker } : {});
+  }
   if (draftKind === 'draft_milestone') add('draft_milestone', quoted ? { title: quoted } : {});
   if (draftKind === 'draft_event') add('draft_event', quoted ? { title: quoted } : {});
   if (draftKind === 'draft_project') add('draft_project', quoted ? { name: quoted } : {});

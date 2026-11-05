@@ -411,6 +411,9 @@ export default function ResearchBoardsPage() {
       rows: isLoading ? undefined : filteredBoards.map((b) =>
         `${b.title} · ${b.nodeCount} nodes${b.isPinned ? ' · pinned' : ''}${b.isArchived ? ' · archived' : ''} · updated ${b.updatedAt.slice(0, 10)}`,
       ),
+      rowsEl: isLoading ? undefined : filteredBoards.map((b) =>
+        `${b.title} · ${b.nodeCount} κόμβοι${b.isPinned ? ' · καρφιτσωμένος' : ''}${b.isArchived ? ' · αρχειοθετημένος' : ''} · ενημερώθηκε ${b.updatedAt.slice(0, 10)}`,
+      ),
       total: boards.length,
     },
   ]);

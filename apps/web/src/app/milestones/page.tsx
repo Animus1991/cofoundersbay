@@ -48,6 +48,7 @@ import { qk } from '@/lib/query-keys';
 import { isMilestoneDueSoon, isMilestoneOverdue, orderMilestones } from '@/lib/milestone-order';
 import { useApiAvailability } from '@/hooks/useApiAvailability';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { elWord } from '@/lib/rows-el';
 
 // ── Status config ────────────────────────────────────────────────────────────
 // Not the calendar glyph for "in progress": the due date beside it already uses it.
@@ -584,6 +585,7 @@ export default function MilestonesPage() {
       labelEn: 'Milestones',
       labelEl: 'Ορόσημα',
       rows: waiting ? undefined : milestones.map((m) => `${m.title} · ${milestoneEn(STATUS_CONFIG[m.status]?.statusKey ?? 'status_todo')} · ${m.priority} priority${m.dueDate ? ` · due ${m.dueDate.slice(0, 10)}` : ''} · ${m.progress}%`),
+      rowsEl: waiting ? undefined : milestones.map((m) => `${m.title} · ${milestoneEl(STATUS_CONFIG[m.status]?.statusKey ?? 'status_todo')} · προτεραιότητα ${elWord(m.priority)}${m.dueDate ? ` · λήγει ${m.dueDate.slice(0, 10)}` : ''} · ${m.progress}%`),
       total: summaryData?.total,
     },
   ]);

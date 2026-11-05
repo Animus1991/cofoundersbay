@@ -47,6 +47,7 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { LEVEL_LABEL_EL } from '@/lib/i18n/strings-reputation';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 const ACHIEVEMENTS_TOUR: TourStep[] = [
   {
@@ -589,6 +590,9 @@ export default function AchievementsPage() {
       labelEl: 'Επιτεύγματα',
       rows: isLoading ? undefined : (filteredAchievements ?? []).map((a) =>
         `${a.title} · ${a.unlocked ? 'unlocked' : 'in progress'} · ${a.category} · ${a.points} pts`,
+      ),
+      rowsEl: isLoading ? undefined : (filteredAchievements ?? []).map((a) =>
+        `${a.title} · ${a.unlocked ? 'ξεκλειδώθηκε' : 'σε εξέλιξη'} · ${elWord(a.category)} · ${a.points} πόντοι`,
       ),
     },
   ]);

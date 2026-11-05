@@ -78,7 +78,7 @@ import { waitsOnMe } from '@/lib/commitments-next';
 import { getMyUpdates, getUpdatesFeed, type FounderUpdate } from '@/lib/updates-api';
 import { getIntroPaths, listIntros, type Intro } from '@/lib/intros-api';
 import { INTRO_RELATION_COPY, INTRO_STATUS_COPY, SKILL_EVIDENCE_COPY } from '@cofounderbay/shared';
-import { canShortcut, hasKeyboardPointer, hasUsage, pageLabel, pageUse, readUsage, usageSuggestions, yourPages } from '@/lib/usage-profile';
+import { canShortcut, hasKeyboardPointer, hasUsage, pageLabel, pageUse, readUsage, suggestionOutcomeCopy, usageSuggestions, yourPages } from '@/lib/usage-profile';
 import { firstMessageDraft } from '@/lib/match-first-message';
 import { getEvidenceCandidates, getSkillEvidence } from '@/lib/skill-evidence-api';
 import { getScout, scoutReasonEl } from '@/lib/scout-api';
@@ -1673,6 +1673,9 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
       lines.push(t('Quicker ways:'));
       for (const suggestion of suggestions) lines.push(`• ${name(suggestion.title)} (${name(suggestion.evidence)})`);
     }
+    // How earlier suggestions fared: taken or set aside (docs §107.7-8).
+    const outcomes = suggestionOutcomeCopy(store);
+    if (outcomes) lines.push(name(outcomes));
     return { section: lines.join('\n'), citations: [], actions };
   },
 };

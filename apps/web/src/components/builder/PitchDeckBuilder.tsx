@@ -773,6 +773,9 @@ export function PitchDeckBuilder({
       rows: numberedSlides.map(({ slide, index }) =>
         `${index + 1}. ${slideTitlePair(slide).en} · ${slide.content.trim() ? `${slide.content.trim().split(/\s+/).length} words` : 'empty'}`,
       ),
+      rowsEl: numberedSlides.map(({ slide, index }) =>
+        `${index + 1}. ${slideTitlePair(slide).el} · ${slide.content.trim() ? `${slide.content.trim().split(/\s+/).length} λέξεις` : 'κενή'}`,
+      ),
     },
   ]);
 

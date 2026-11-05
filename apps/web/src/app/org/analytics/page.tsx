@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { elWord } from '@/lib/rows-el';
 
 const ChartFallback = () => <Skeleton className="h-[180px] w-full rounded-lg" />;
 const PieFallback = () => <Skeleton className="h-[140px] w-[140px] rounded-full" />;
@@ -275,6 +276,7 @@ export default function OrgAnalyticsPage() {
       labelEn: 'Program performance',
       labelEl: 'Απόδοση προγραμμάτων',
       rows: loading ? undefined : programMetrics.map((p) => `${p.name} · ${p.status} · ${p.startups}/${p.capacity ?? '—'} places · ${p.applications} applications`),
+      rowsEl: loading ? undefined : programMetrics.map((p) => `${p.name} · ${elWord(p.status)} · ${p.startups}/${p.capacity ?? '—'} θέσεις · ${p.applications} αιτήσεις`),
     },
   ]);
   usePageControls([

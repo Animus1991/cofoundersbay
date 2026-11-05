@@ -2607,6 +2607,60 @@ export const ACTION_DECLARATIONS = [
     auditSubject: { param: 'category', entityType: 'notification_preferences' },
     confirmLabel: { en: 'Change it', el: 'Αλλαγή' },
   },
+  {
+    // The two forms §107.7-4 named: a programme application and a review (docs §111).
+    id: 'draft_program_application',
+    kind: 'mutation',
+    label: { en: 'Draft a programme application', el: 'Πρόχειρη αίτηση σε πρόγραμμα' },
+    description: {
+      en: 'Open the programme’s page with the application note filled in: why the startup fits, in the founder’s words, from their profile. Sends nothing; the founder reads it, completes it and presses Apply. Use apply_to_program only when they ask to apply now.',
+      el: 'Ανοίγει τη σελίδα του προγράμματος με το σημείωμα της αίτησης συμπληρωμένο: γιατί ταιριάζει η startup, με τα λόγια του ιδρυτή, από το προφίλ του. Δεν στέλνει τίποτα· ο ιδρυτής το διαβάζει, το συμπληρώνει και πατά Αίτηση. Το apply_to_program μόνο όταν ζητά να γίνει η αίτηση τώρα.',
+    },
+    params: [
+      { name: 'programId', type: 'string', required: false, description: { en: 'Id of the programme, from a prior read of programmes.', el: 'Το id του προγράμματος, από προηγούμενη ανάγνωση προγραμμάτων.' } },
+      { name: 'programTitle', type: 'string', required: false, description: { en: 'Exact programme title, used when the id is not known.', el: 'Ακριβής τίτλος προγράμματος, όταν δεν είναι γνωστό το id.' } },
+      { name: 'coverNote', type: 'string', required: false, description: { en: 'The note: why the startup fits this programme and what it wants from it. No promised returns.', el: 'Το σημείωμα: γιατί η startup ταιριάζει στο πρόγραμμα και τι θέλει από αυτό. Χωρίς υποσχέσεις αποδόσεων.' } },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is sent. The page opens with the note filled; you read it and apply, or leave and nothing happens.',
+        el: 'Δεν στέλνεται τίποτα. Η σελίδα ανοίγει με το σημείωμα συμπληρωμένο· το διαβάζετε και κάνετε αίτηση, ή φεύγετε και δεν γίνεται τίποτα.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Open filled application', el: 'Άνοιγμα συμπληρωμένης αίτησης' },
+  },
+  {
+    id: 'draft_expert_review',
+    kind: 'mutation',
+    label: { en: 'Draft a review asked of me', el: 'Πρόχειρη αξιολόγηση που μου ζητήθηκε' },
+    description: {
+      en: 'Open a review someone asked of the user, under Expert reviews → Asked of me, with the written feedback filled in: a summary, strengths and improvements as “area: note” lines separated by semicolons, and an overall score from 1 to 10. Submits nothing; the expert edits it and presses Submit.',
+      el: 'Ανοίγει μια αξιολόγηση που ζήτησαν από τον χρήστη, στις Αξιολογήσεις ειδικών → Ζητήθηκαν από εμένα, με το γραπτό σχόλιο συμπληρωμένο: σύνοψη, δυνατά σημεία και βελτιώσεις ως γραμμές «τομέας: σημείωση» χωρισμένες με ερωτηματικό, και συνολική βαθμολογία από 1 έως 10. Δεν υποβάλλει τίποτα· ο ειδικός τη διορθώνει και πατά Υποβολή.',
+    },
+    params: [
+      { name: 'reviewId', type: 'string', required: false, description: { en: 'Id of the review, from a prior read of expert reviews.', el: 'Το id της αξιολόγησης, από προηγούμενη ανάγνωση αξιολογήσεων.' } },
+      { name: 'requesterName', type: 'string', required: false, description: { en: 'Who asked for it, when the id is not known.', el: 'Ποιος τη ζήτησε, όταν δεν είναι γνωστό το id.' } },
+      { name: 'summaryFeedback', type: 'string', required: false, description: { en: 'The written summary of the review.', el: 'Η γραπτή σύνοψη της αξιολόγησης.' } },
+      { name: 'strengths', type: 'string', required: false, description: { en: 'Strengths as “area: note; area: note”.', el: 'Δυνατά σημεία ως «τομέας: σημείωση; τομέας: σημείωση».' } },
+      { name: 'improvements', type: 'string', required: false, description: { en: 'Improvements as “area: recommendation; …”.', el: 'Βελτιώσεις ως «τομέας: πρόταση; …».' } },
+      { name: 'scoreOverall', type: 'number', required: false, description: { en: 'Overall score from 1 to 10.', el: 'Συνολική βαθμολογία από 1 έως 10.' } },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is submitted. The review opens with these fields filled; you edit them and submit, or leave and nothing happens.',
+        el: 'Δεν υποβάλλεται τίποτα. Η αξιολόγηση ανοίγει με αυτά τα πεδία συμπληρωμένα· τα διορθώνετε και υποβάλλετε, ή φεύγετε και δεν γίνεται τίποτα.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Open filled review', el: 'Άνοιγμα συμπληρωμένης αξιολόγησης' },
+  },
 ] as const satisfies readonly ActionDeclaration[];
 
 export type DeclaredAction = (typeof ACTION_DECLARATIONS)[number];

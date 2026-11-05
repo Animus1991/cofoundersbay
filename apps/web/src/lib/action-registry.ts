@@ -10,6 +10,7 @@ import {
 } from '@cofounderbay/shared';
 import {
   acceptsApplications,
+  listExpertReviews,
   applyToProgram,
   cancelInvite,
   createEndorsement,
@@ -84,6 +85,7 @@ import {
 } from '@/lib/api';
 import { channelsOf, readNotificationPrefs, setChannel } from '@/lib/notification-prefs';
 import { categoryOf, isChannel, isDigest, triageSplit } from '@/lib/notification-chat';
+import { namesPerson, parseReviewNotes, readScore, readerLanguage, startingApplicationNote } from '@/lib/assistant-drafts';
 import { isLinkableEvidenceKind, isOpenToKind, type OpenToKind, type OpenToVisibility } from '@cofounderbay/shared';
 
 /**
@@ -751,6 +753,55 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
       ['serviceType', 'companyName', 'companyWebsite', 'headline', 'description', 'pricingModel', 'startingPriceUsd', 'yearsInBusiness', 'clientsServed', 'industries', 'stages'],
       null,
     ),
+  // A programme's application note, filled on its page; nothing is sent
+  // (docs §107.7-4, §111). Without the model's words, the note starts from
+  // the profile's facts and leaves the rest in brackets.
+  draft_program_application: async (payload) => {
+    let programId = requireString(payload, 'programId');
+    const list = await listPrograms({ limit: 50 });
+    const programs = Array.isArray(list?.programs) ? list.programs : [];
+    if (!programId) {
+      const title = requireString(payload, 'programTitle').trim().toLowerCase();
+      if (!title) return { ok: false, error: 'Missing programme' };
+      programId = byName(programs, (p) => p?.title, title)?.id ?? '';
+      if (!programId) return { ok: false, error: 'No single programme matches that title' };
+    }
+    const program = programs.find((p) => p?.id === programId);
+    if (program && !acceptsApplications(program)) return { ok: false, error: 'This programme is not taking applications' };
+    let coverNote = requireString(payload, 'coverNote').trim();
+    if (!coverNote) {
+      const me = await getMeProfile().catch(() => null);
+      coverNote = startingApplicationNote(me?.profile ?? null, program?.title, readerLanguage());
+    }
+    const ask = typeof payload?.__ask === 'string' ? payload.__ask.trim() : '';
+    stashFormDraft('program_application', { programId, coverNote }, ask || undefined);
+    return { ok: true, href: `/programs/${programId}` };
+  },
+
+  // A review asked of the reader, its feedback filled; nothing is submitted.
+  draft_expert_review: async (payload) => {
+    const { reviews } = await listExpertReviews({ side: 'expert', limit: 50 });
+    const open = (reviews ?? []).filter((r) => r.status !== 'submitted' && r.status !== 'declined' && r.status !== 'expired');
+    let review = open.find((r) => r.id === requireString(payload, 'reviewId'));
+    if (!review) {
+      // «Σοφία» finds "Sofia Alexiou": the name is matched across scripts.
+      const name = requireString(payload, 'requesterName').trim();
+      const named = name ? open.filter((r) => namesPerson(name, r.requester?.displayName)) : open;
+      if (named.length === 1) review = named[0];
+      else return { ok: false, error: named.length ? 'Several reviews match; say whose.' : 'No open review asked of you matches.' };
+    }
+    const fields: Record<string, string> = { reviewId: review.id };
+    const summary = requireString(payload, 'summaryFeedback').trim();
+    if (summary) fields.summaryFeedback = summary;
+    if (parseReviewNotes(payload?.strengths).length) fields.strengths = String(payload?.strengths).trim();
+    if (parseReviewNotes(payload?.improvements).length) fields.improvements = String(payload?.improvements).trim();
+    const score = readScore(payload?.scoreOverall);
+    if (score !== null) fields.scoreOverall = String(score);
+    const ask = typeof payload?.__ask === 'string' ? payload.__ask.trim() : '';
+    stashFormDraft('expert_review', fields, ask || undefined);
+    return { ok: true, href: `/expert-reviews?tab=asked&review=${encodeURIComponent(review.id)}` };
+  },
+
   // Adds proposals to the founder's own list; contacts nobody (declared none).
   run_scout: async () => {
     await runScout();

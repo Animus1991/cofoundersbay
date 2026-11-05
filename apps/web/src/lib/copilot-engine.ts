@@ -291,6 +291,9 @@ const WAVE_C_WRITES = new Set<string>([
   'draft_need_card', 'draft_founder_update',
   // The listings members search; the planner names the headline it read.
   'draft_mentor_listing', 'draft_provider_listing',
+  // A programme application note and a review asked of the reader (§111):
+  // named by the programme's title and by who asked.
+  'draft_program_application', 'draft_expert_review',
 ]);
 
 export function actionsFromToolCalls(

@@ -33,6 +33,7 @@ import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { Counter } from '@/components/ui/counter';
 import { FailedLine } from '@/components/dashboard/SectionCard';
 import { PageFacts } from '@/components/common/PageFacts';
+import { elWord } from '@/lib/rows-el';
 
 function MenteeCard({ relationship, upcomingBookings = 0 }: { relationship: MentorshipRelationshipItem; upcomingBookings?: number }) {
   const fmtDate = useDateFormat();
@@ -179,6 +180,7 @@ export default function MenteesPage() {
       labelEn: 'Mentees',
       labelEl: 'Καθοδηγούμενοι',
       rows: isLoading ? undefined : relationships.map((r) => `${r.mentee?.displayName || 'Unknown'} · ${r.status}${r.nextSessionAt ? ` · next session ${r.nextSessionAt.slice(0, 10)}` : ''}`),
+      rowsEl: isLoading ? undefined : relationships.map((r) => `${r.mentee?.displayName || 'Άγνωστο μέλος'} · ${elWord(r.status)}${r.nextSessionAt ? ` · επόμενη συνεδρία ${r.nextSessionAt.slice(0, 10)}` : ''}`),
     },
   ]);
   usePageControls([

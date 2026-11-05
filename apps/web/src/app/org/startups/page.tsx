@@ -46,6 +46,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 /**
  * The page's own row from the organisation's member list.
@@ -337,6 +338,7 @@ export default function OrgStartupsPage() {
       labelEn: 'Portfolio startups',
       labelEl: 'Startups οργανισμού',
       rows: reading ? undefined : filteredStartups.map((s) => `${s.name} · ${s.industry}, ${s.stage} · ${s.program} · ${s.status} · progress ${s.progress}%`),
+      rowsEl: reading ? undefined : filteredStartups.map((s) => `${s.name} · ${s.industry}, ${elWord(s.stage)} · ${s.program} · ${elWord(s.status)} · πρόοδος ${s.progress}%`),
       total: startups.length,
       sample: live.length === 0,
     },

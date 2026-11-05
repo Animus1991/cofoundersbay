@@ -21,6 +21,7 @@ import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { cn } from '@/lib/utils';
 import { YourPagesRow } from '@/components/dashboard/YourPages';
 import { HomeActionShelf } from '@/components/dashboard/HomeActionShelf';
+import { DictationButton } from '@/components/ai/DictationButton';
 
 type Part = { en: string; el: string };
 
@@ -225,16 +226,20 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: strin
           <span className="ml-auto hidden text-2xs text-muted-foreground sm:inline">
             <BilingualText en="Enter to send · Shift+Enter for a new line · / for commands" el="Enter για αποστολή · Shift+Enter για νέα γραμμή · / για εντολές" compact />
           </span>
-          <Button
-            type="submit"
-            data-testid="home-ask-submit"
-            size="icon"
-            disabled={!value.trim()}
-            className="ml-auto h-8 w-8 shrink-0 rounded-lg sm:ml-0"
-            aria-label={bilingualAria('Send', 'Αποστολή')}
-          >
-            <ArrowUp className="icon-sm" aria-hidden="true" />
-          </Button>
+          {/* Dictation on phones sits beside Send (docs §107.7-7, §111). */}
+          <span className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0">
+            <DictationButton value={value} onChange={setValue} size="small" />
+            <Button
+              type="submit"
+              data-testid="home-ask-submit"
+              size="icon"
+              disabled={!value.trim()}
+              className="h-8 w-8 shrink-0 rounded-lg"
+              aria-label={bilingualAria('Send', 'Αποστολή')}
+            >
+              <ArrowUp className="icon-sm" aria-hidden="true" />
+            </Button>
+          </span>
         </div>
       </form>
 

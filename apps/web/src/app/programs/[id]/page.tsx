@@ -24,6 +24,8 @@ import { StatusText } from '@/components/common/StatusText';
 import type { ReactNode } from 'react';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
+import { FormDraftNotice } from '@/components/common/FormDraftNotice';
+import { useFormDraft } from '@/lib/form-draft';
 
 /**
  * One labelled fact. No icon: the calm-surface rule hides decorative glyphs
@@ -55,6 +57,11 @@ export default function ProgramDetailPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const [note, setNote] = useState('');
+  // The assistant's note for this programme (draft_program_application, docs
+  // §107.7-4, §111): filled here, sent only when the founder presses Apply.
+  const draft = useFormDraft('program_application', (fields) => {
+    if (fields.programId === id && typeof fields.coverNote === 'string') setNote(fields.coverNote);
+  }, Boolean(id));
   const { primary } = useLanguagePreference();
   const placeholder = primary === 'el' ? programsEl('fit_placeholder') : programsEn('fit_placeholder');
 
@@ -303,7 +310,8 @@ export default function ProgramDetailPage() {
                     <BilingualText en={programsEn('fit_label')} el={programsEl('fit_label')} compact />{' '}
                     <span className="text-muted-foreground"><BilingualText en={programsEn('optional')} el={programsEl('optional')} compact /></span>
                   </label>
-                  <Textarea id="program-fit" rows={4} value={note} onChange={(e) => setNote(e.target.value)} placeholder={placeholder} className="resize-none" />
+                  <FormDraftNotice filled={draft.filled.filter((f) => f === 'coverNote')} prompt={draft.prompt} onDismiss={draft.dismiss} />
+                  <Textarea id="program-fit" rows={draft.filled.length ? 7 : 4} value={note} onChange={(e) => setNote(e.target.value)} placeholder={placeholder} className="resize-none" />
                   <Button type="submit" className="w-full gap-2" disabled={apply.isPending}>
                     {apply.isPending ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Zap className="icon-sm" aria-hidden="true" />}
                     <BilingualText en={programsEn('submit_application')} el={programsEl('submit_application')} compact />

@@ -64,6 +64,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { Counter } from '@/components/ui/counter';
 import { calendarDaysUntil } from '@/lib/calendar-days';
 import { useCoverFailed } from '@/hooks/useCoverFailed';
+import { elWord } from '@/lib/rows-el';
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const PROGRAM_STATUS_TONE: Record<string, StatusTone> = {
   open: 'success',
@@ -490,6 +491,9 @@ export default function ProgramsPage() {
       labelEl: 'Προγράμματα',
       rows: isLoading ? undefined : (tab === 'mine' ? myPrograms : tab === 'open' ? openPrograms : filtered).map((p) =>
         `${p.title}${p.organization?.name ? ` · ${p.organization.name}` : ''} · ${p.programType} · ${p.status}${p.applicationDeadline ? ` · apply by ${p.applicationDeadline.slice(0, 10)}` : ''}${enrolledIds.has(p.id) ? ' · applied' : ''}`,
+      ),
+      rowsEl: isLoading ? undefined : (tab === 'mine' ? myPrograms : tab === 'open' ? openPrograms : filtered).map((p) =>
+        `${p.title}${p.organization?.name ? ` · ${p.organization.name}` : ''} · ${elWord(p.programType)} · ${elWord(p.status)}${p.applicationDeadline ? ` · αιτήσεις έως ${p.applicationDeadline.slice(0, 10)}` : ''}${enrolledIds.has(p.id) ? ' · κάνατε αίτηση' : ''}`,
       ),
       total: data?.total,
     },

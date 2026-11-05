@@ -45,6 +45,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { FailedLine } from '@/components/dashboard/SectionCard';
+import { elWord } from '@/lib/rows-el';
 
 const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
 const PortfolioValueChart = dynamic(
@@ -366,6 +367,9 @@ export default function InvestorPortfolioPage() {
       labelEl: 'Εταιρείες χαρτοφυλακίου',
       rows: isLoading ? undefined : investments.map((i) =>
         `${i.name} · ${i.industry}, ${i.stage} · ${i.status.replace('_', ' ')} · invested ${i.amount}, now ${i.currentValue} (${i.returnPct >= 0 ? '+' : ''}${i.returnPct}%)`,
+      ),
+      rowsEl: isLoading ? undefined : investments.map((i) =>
+        `${i.name} · ${i.industry}, ${elWord(i.stage)} · ${elWord(i.status)} · επένδυση ${i.amount}, τώρα ${i.currentValue} (${i.returnPct >= 0 ? '+' : ''}${i.returnPct}%)`,
       ),
       sample: !isLive,
     },

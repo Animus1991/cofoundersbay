@@ -60,6 +60,7 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { elWord } from '@/lib/rows-el';
 
 type Startup = {
   id: string;
@@ -398,6 +399,9 @@ export default function InvestorScoutingPage() {
       labelEl: 'Startups',
       rows: filtered.map((s) =>
         `${s.name} · ${s.industry}, ${s.stage}, ${s.businessModel} · ${s.location} · match ${s.matchScore}% · raising ${s.raisingAmount}${dealFor(s) ? ' · watched' : ''}`,
+      ),
+      rowsEl: filtered.map((s) =>
+        `${s.name} · ${s.industry}, ${elWord(s.stage)}, ${s.businessModel} · ${s.location} · ταίριασμα ${s.matchScore}% · αναζητά ${s.raisingAmount}${dealFor(s) ? ' · στη λίστα παρακολούθησης' : ''}`,
       ),
       total: startups.length,
       sample: startups.length > 0,

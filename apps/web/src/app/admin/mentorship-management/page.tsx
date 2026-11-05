@@ -18,6 +18,7 @@ import { discoverMentors } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { initialsOf } from '@/lib/utils';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { elWord } from '@/lib/rows-el';
 
 const AVAILABILITY: Record<string, { en: string; el: string; variant: 'success' | 'warning' | 'secondary' }> = {
   available: { en: 'Available', el: 'Διαθέσιμος', variant: 'success' },
@@ -86,6 +87,9 @@ export default function MentorshipManagementPage() {
       rows: isLoading
         ? undefined
         : shown.map((m) => `${m.displayName} · ${m.sessionCount ?? 0} sessions · ${m.availabilityStatus}${m.rating != null && m.reviewCount > 0 ? ` · ${m.rating.toFixed(1)}★ (${m.reviewCount})` : ''}`),
+      rowsEl: isLoading
+        ? undefined
+        : shown.map((m) => `${m.displayName} · ${m.sessionCount ?? 0} συνεδρίες · ${elWord(m.availabilityStatus)}${m.rating != null && m.reviewCount > 0 ? ` · ${m.rating.toFixed(1)}★ (${m.reviewCount})` : ''}`),
       total: mentors.length,
       sample: false,
     },

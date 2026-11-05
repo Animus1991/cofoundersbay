@@ -43,6 +43,7 @@ import { qk } from '@/lib/query-keys';
 import { CANCELLED, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { formatRelativeTime, initialsOf } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
+import { elWord } from '@/lib/rows-el';
 
 // The API's Role enum; ChangeUserRoleDto accepts nothing else.
 const ROLES = [
@@ -196,6 +197,7 @@ export default function AdminUserDetailPage() {
       labelEn: 'Reports against this account',
       labelEl: 'Αναφορές κατά του λογαριασμού',
       rows: reportsData ? against.map((r) => `${r.reason ?? 'report'} · ${r.status}`) : undefined,
+      rowsEl: reportsData ? against.map((r) => `${r.reason ?? 'αναφορά'} · ${elWord(r.status)}`) : undefined,
       total: against.length,
       sample: false,
     },

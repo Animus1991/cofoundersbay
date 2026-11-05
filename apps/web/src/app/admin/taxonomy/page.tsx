@@ -295,6 +295,7 @@ export default function AdminTaxonomyPage() {
       labelEn: 'Skills',
       labelEl: 'Δεξιότητες',
       rows: isLoading ? undefined : skills.map((sk) => `${sk.name} (${sk.slug}) · ${sk.category ?? 'uncategorised'} · used by ${sk.count}`),
+      rowsEl: isLoading ? undefined : skills.map((sk) => `${sk.name} (${sk.slug}) · ${sk.category ?? 'χωρίς κατηγορία'} · τη χρησιμοποιούν ${sk.count}`),
       total,
     },
   ]);

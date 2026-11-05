@@ -502,6 +502,9 @@ export default function InvestorsPage() {
       rows: isLoading ? undefined : filtered.filter((i) => !i.sample).map((i) =>
         `${i.displayName}${i.headline ? ` · ${i.headline}` : ''}${i.location ? ` · ${i.location}` : ''}${i.industries.length ? ` · ${i.industries.join(', ')}` : ''}${shortlisted.has(i.userId) ? ' · on your shortlist' : ''}`,
       ),
+      rowsEl: isLoading ? undefined : filtered.filter((i) => !i.sample).map((i) =>
+        `${i.displayName}${i.headline ? ` · ${i.headline}` : ''}${i.location ? ` · ${i.location}` : ''}${i.industries.length ? ` · ${i.industries.join(', ')}` : ''}${shortlisted.has(i.userId) ? ' · στη λίστα σας' : ''}`,
+      ),
     },
     {
       id: 'sample-investors',
@@ -509,6 +512,9 @@ export default function InvestorsPage() {
       labelEl: 'Δείγματα επενδυτών',
       rows: showDemoData ? filtered.filter((i) => i.sample).map((i) =>
         `${i.displayName}${i.firmName ? ` · ${i.firmName}` : ''} · ${i.investorType ? TYPE_LABEL[i.investorType].en : 'investor'} · ${i.stages.join('/')} · ${formatCheckSize(i.checkSizeMin, i.checkSizeMax) ?? 'check size undisclosed'}`,
+      ) : [],
+      rowsEl: showDemoData ? filtered.filter((i) => i.sample).map((i) =>
+        `${i.displayName}${i.firmName ? ` · ${i.firmName}` : ''} · ${i.investorType ? TYPE_LABEL[i.investorType].el : 'επενδυτής'} · ${i.stages.join('/')} · ${formatCheckSize(i.checkSizeMin, i.checkSizeMax) ?? 'το ύψος επένδυσης δεν δηλώνεται'}`,
       ) : [],
       sample: true,
     },

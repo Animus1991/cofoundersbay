@@ -172,6 +172,7 @@ export default function TenantWebhooksPage() {
       labelEn: 'Webhook endpoints',
       labelEl: 'Endpoints webhooks',
       rows: webhooks.map((w) => `${w.url} · ${w.isActive ? 'active' : 'paused'} · ${w.events.join(', ')}`),
+      rowsEl: webhooks.map((w) => `${w.url} · ${w.isActive ? 'ενεργό' : 'σε παύση'} · ${w.events.join(', ')}`),
       total: webhooks.length,
       sample: webhooks.length > 0,
     },

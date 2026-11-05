@@ -57,6 +57,7 @@ import { PageFacts } from '@/components/common/PageFacts';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 /**
  * The page's own row from the API row.
@@ -317,6 +318,9 @@ export default function OrgCohortsPage() {
       labelEl: 'Κύκλοι',
       rows: reading ? undefined : filteredCohorts.map((c) =>
         `${c.name} · ${c.program} · ${c.status} · ${c.startups} ${c.mentors == null ? 'members' : 'startups'} · ${c.startDate} – ${c.endDate} · ${c.progress}%`,
+      ),
+      rowsEl: reading ? undefined : filteredCohorts.map((c) =>
+        `${c.name} · ${c.program} · ${elWord(c.status)} · ${c.startups} ${c.mentors == null ? 'μέλη' : 'startups'} · ${c.startDate} – ${c.endDate} · ${c.progress}%`,
       ),
       total: cohorts.length,
       sample: live.length === 0 && cohorts.length > 0,

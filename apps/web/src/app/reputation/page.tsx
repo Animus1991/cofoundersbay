@@ -241,6 +241,7 @@ export default function ReputationPage() {
       labelEn: 'Badges',
       labelEl: 'Διακρίσεις',
       rows: badges.isLoading ? undefined : badgeList.map((b) => `${b.name}${b.seenAt ? '' : ' · new'}`),
+      rowsEl: badges.isLoading ? undefined : badgeList.map((b) => `${b.name}${b.seenAt ? '' : ' · νέο'}`),
       total: badgeList.length,
     },
     {

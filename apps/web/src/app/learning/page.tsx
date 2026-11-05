@@ -35,6 +35,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
 import { useCoverFailed } from '@/hooks/useCoverFailed';
 import { ROLE_FAMILY_LABEL, roleFamily } from '@/lib/role-family';
+import { elWord } from '@/lib/rows-el';
 
 interface Resource {
   id: string;
@@ -515,6 +516,9 @@ export default function LearningPage() {
       labelEl: 'Πόροι μάθησης',
       rows: learningLoading ? undefined : filteredResources.map((r) =>
         [r.title, r.type, r.category, r.duration, savedIds.includes(r.id) ? 'saved' : ''].filter(Boolean).join(' · '),
+      ),
+      rowsEl: learningLoading ? undefined : filteredResources.map((r) =>
+        [r.title, elWord(r.type), elWord(r.category), r.duration, savedIds.includes(r.id) ? 'αποθηκευμένο' : ''].filter(Boolean).join(' · '),
       ),
       total: allResources.length,
       sample: showingSamples,

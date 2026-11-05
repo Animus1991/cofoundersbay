@@ -58,6 +58,7 @@ import { attachDemoPhotos } from '@/lib/demo/photos';
 import { DEMO_PROVIDERS, type DemoProvider } from '@/lib/demo/marketplace-world';
 import { placeEl } from '@/lib/i18n/places';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -360,6 +361,9 @@ export default function MarketplacePage() {
       labelEl: 'Υπηρεσίες',
       rows: isLoading ? undefined : filtered.map((p) =>
         `${p.title} · by ${p.providerName} · ${p.category} · ${p.pricing}${p.reviewCount ? ` · ${p.avgRating.toFixed(1)}★ (${p.reviewCount})` : ''}${p.isAvailable ? '' : ' · unavailable'}`,
+      ),
+      rowsEl: isLoading ? undefined : filtered.map((p) =>
+        `${p.title} · από ${p.providerName} · ${elWord(p.category)} · ${p.pricing}${p.reviewCount ? ` · ${p.avgRating.toFixed(1)}★ (${p.reviewCount})` : ''}${p.isAvailable ? '' : ' · μη διαθέσιμη'}`,
       ),
       total: allProviders.length,
       sample: showingSamples,

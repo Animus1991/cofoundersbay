@@ -51,6 +51,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { elWord } from '@/lib/rows-el';
 
 /**
  * The page's own row from the admin row.
@@ -511,6 +512,9 @@ export default function AdminUsersPage() {
       labelEl: 'Χρήστες',
       rows: isLoading ? undefined : filteredUsers.map((u) =>
         `${u.name} · ${u.email} · ${u.role} · ${u.status}${u.verified ? ' · verified' : ''}${u.tenant ? ` · ${u.tenant}` : ''}`,
+      ),
+      rowsEl: isLoading ? undefined : filteredUsers.map((u) =>
+        `${u.name} · ${u.email} · ${elWord(u.role)} · ${elWord(u.status)}${u.verified ? ' · επαληθευμένο προφίλ' : ''}${u.tenant ? ` · ${u.tenant}` : ''}`,
       ),
       total: users.length,
       sample: !isLive,

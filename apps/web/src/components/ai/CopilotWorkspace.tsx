@@ -45,6 +45,7 @@ import { COPILOT_PRODUCT_LINKS, copilotStartersFor } from '@/lib/copilot-starter
 import { composerMode, filterCommands, insertMention } from '@/lib/composer-menu';
 import { listDeclarations } from '@cofounderbay/shared';
 import { CAPABILITY_SAMPLES } from '@/lib/capability-samples';
+import { DictationButton } from '@/components/ai/DictationButton';
 import { searchProfiles } from '@/lib/api';
 import { useRoleOptional } from '@/contexts/RoleContext';
 import { StatusText } from '@/components/common/StatusText';
@@ -740,6 +741,9 @@ export function CopilotWorkspace({
                 className="type-ui h-11 min-h-11 flex-1 border-0 bg-transparent px-1 shadow-none focus-visible:outline-none focus-visible:ring-0"
                 disabled={chat.isStreaming}
               />
+              {/* Dictation on phones (docs §107.7-7, §111): the words go into
+                  the box to be read before sending. */}
+              {chat.isStreaming ? null : <DictationButton value={input} onChange={setInput} />}
               {chat.isStreaming ? (
                 // While an answer is being written, the send button is Stop
                 // (GitHub Copilot Chat): what arrived stays, marked "Stopped".

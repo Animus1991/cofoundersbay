@@ -23,6 +23,7 @@ import { formatRelativeTime } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { elWord } from '@/lib/rows-el';
 
 const PRIVACY_LABEL: Record<string, { en: string; el: string }> = {
   public: { en: 'Public', el: 'Δημόσια' },
@@ -68,6 +69,7 @@ export default function CommunityManagementPage() {
       labelEn: 'Communities',
       labelEl: 'Κοινότητες',
       rows: isLoading ? undefined : filtered.map((g) => `${g.name}${g.category ? ` · ${g.category}` : ''} · ${g.privacy} · ${g.memberCount ?? 0} members · ${g.postCount ?? 0} posts`),
+      rowsEl: isLoading ? undefined : filtered.map((g) => `${g.name}${g.category ? ` · ${elWord(g.category)}` : ''} · ${elWord(g.privacy)} · ${g.memberCount ?? 0} μέλη · ${g.postCount ?? 0} αναρτήσεις`),
       total: groups.length,
     },
   ]);

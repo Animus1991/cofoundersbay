@@ -33,6 +33,7 @@ import { demoPortrait } from '@/lib/demo/photos';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 import { ASK } from '@/lib/page-questions';
 import { formatFee } from '@/lib/mentor-fee';
+import { elWord } from '@/lib/rows-el';
 
 // ── Mock data (replace with real API calls) ──────────────────────────────────
 
@@ -136,6 +137,7 @@ export default function MentorEarningsPage() {
       labelEn: 'Paid sessions',
       labelEl: 'Πληρωμένες συνεδρίες',
       rows: transactions.map((t) => `${t.date.slice(0, 10)} · ${t.mentee.name} · ${t.topic} · ${t.duration} min · ${formatFee(t.amount, t.currency, 2)} · ${t.status}`),
+      rowsEl: transactions.map((t) => `${t.date.slice(0, 10)} · ${t.mentee.name} · ${t.topic} · ${t.duration} λεπτά · ${formatFee(t.amount, t.currency, 2)} · ${elWord(t.status)}`),
       total: allTransactions.length,
       sample: showDemoData,
     },

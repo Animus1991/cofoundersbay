@@ -47,6 +47,7 @@ import { Counter } from '@/components/ui/counter';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { DEMO_ENDORSEMENTS, DEMO_MEMBER_ID, type DemoEndorsement } from '@/lib/demo/endorsements-world';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -527,6 +528,9 @@ export default function EndorsementsPage() {
       rows: !showDemoData && receivedLoading ? undefined : received.map((e) =>
         `${e.fromUserName}${e.skill ? ` · ${e.skill}` : ''}${e.relationship ? ` · ${e.relationship}` : ''} · ${e.isApproved ? 'approved' : 'waiting for your approval'}`,
       ),
+      rowsEl: !showDemoData && receivedLoading ? undefined : received.map((e) =>
+        `${e.fromUserName}${e.skill ? ` · ${e.skill}` : ''}${e.relationship ? ` · ${elWord(e.relationship)}` : ''} · ${e.isApproved ? 'εγκρίθηκε' : 'περιμένει την έγκρισή σας'}`,
+      ),
       sample: showDemoData,
     },
     {
@@ -535,6 +539,9 @@ export default function EndorsementsPage() {
       labelEl: 'Συστάσεις που δώσατε',
       rows: !showDemoData && givenLoading ? undefined : given.map((e) =>
         `${e.toUserName}${e.skill ? ` · ${e.skill}` : ''} · ${e.isApproved ? 'approved' : 'not yet approved by them'}`,
+      ),
+      rowsEl: !showDemoData && givenLoading ? undefined : given.map((e) =>
+        `${e.toUserName}${e.skill ? ` · ${e.skill}` : ''} · ${e.isApproved ? 'εγκρίθηκε' : 'δεν έχει εγκριθεί ακόμη'}`,
       ),
       sample: showDemoData,
     },

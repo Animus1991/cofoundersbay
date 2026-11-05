@@ -47,9 +47,15 @@ export type UsageStore = {
   hidden: string[];
   /** Suggestions the reader dismissed, by id, with when. */
   dismissed: Record<string, number>;
+  /**
+   * What the reader did with the suggestions, in total: taken (pinned, or
+   * tried with the assistant) or set aside. The measure of whether they help
+   * (docs §107.7-8, §111); counted here, on this device, like the rest.
+   */
+  outcomes: { accepted: number; dismissed: number };
 };
 
-export const EMPTY_USAGE: UsageStore = { v: 1, enabled: true, visits: {}, moves: {}, via: {}, pins: [], hidden: [], dismissed: {} };
+export const EMPTY_USAGE: UsageStore = { v: 1, enabled: true, visits: {}, moves: {}, via: {}, pins: [], hidden: [], dismissed: {}, outcomes: { accepted: 0, dismissed: 0 } };
 
 /* ── Storage ─────────────────────────────────────────────────────────── */
 
@@ -98,6 +104,10 @@ export function parseUsage(raw: string | null): UsageStore {
     }
     const dismissed: Record<string, number> = {};
     if (isRecord(value.dismissed)) for (const [id, at] of Object.entries(value.dismissed)) if (typeof at === 'number') dismissed[id] = at;
+    const count = (n: unknown) => (typeof n === 'number' && Number.isFinite(n) && n > 0 ? Math.floor(n) : 0);
+    const outcomes = isRecord(value.outcomes)
+      ? { accepted: count(value.outcomes.accepted), dismissed: count(value.outcomes.dismissed) }
+      : { accepted: 0, dismissed: 0 };
     return {
       v: 1,
       enabled: value.enabled !== false,
@@ -107,6 +117,7 @@ export function parseUsage(raw: string | null): UsageStore {
       pins: strings(value.pins).slice(0, MAX_SHORTCUTS),
       hidden: strings(value.hidden),
       dismissed,
+      outcomes,
     };
   } catch {
     return { ...EMPTY_USAGE };
@@ -271,7 +282,35 @@ export function unhidePage(key: string): void {
 }
 
 export function dismissSuggestion(id: string, now = Date.now()): void {
-  update((store) => ({ ...store, dismissed: { ...store.dismissed, [id]: now } }));
+  update((store) => ({
+    ...store,
+    dismissed: { ...store.dismissed, [id]: now },
+    outcomes: id in store.dismissed ? store.outcomes : { ...store.outcomes, dismissed: store.outcomes.dismissed + 1 },
+  }));
+}
+
+/**
+ * A suggestion the reader took: pinned, or tried with the assistant. It is
+ * counted once and quieted, as a dismissed one is, so it does not come back.
+ */
+export function acceptSuggestion(id: string, now = Date.now()): void {
+  update((store) => ({
+    ...store,
+    dismissed: { ...store.dismissed, [id]: now },
+    outcomes: id in store.dismissed ? store.outcomes : { ...store.outcomes, accepted: store.outcomes.accepted + 1 },
+  }));
+}
+
+/** «Προτάσεις ως τώρα: 3 έγιναν δεκτές, 1 παραμερίστηκε (75%).», or nothing before the first. */
+export function suggestionOutcomeCopy(store: UsageStore): { en: string; el: string } | null {
+  const { accepted, dismissed } = store.outcomes;
+  const total = accepted + dismissed;
+  if (!total) return null;
+  const rate = Math.round((accepted / total) * 100);
+  return {
+    en: `Suggestions so far: ${accepted} taken, ${dismissed} set aside (${rate}% taken).`,
+    el: `Προτάσεις ως τώρα: ${accepted} ${accepted === 1 ? 'έγινε δεκτή' : 'έγιναν δεκτές'}, ${dismissed} ${dismissed === 1 ? 'παραμερίστηκε' : 'παραμερίστηκαν'} (${rate}% αποδοχή).`,
+  };
 }
 
 /** On or off. Off keeps the pins (a choice) and stops counting. */
@@ -281,7 +320,7 @@ export function setUsageEnabled(enabled: boolean): void {
 
 /** Forgets what was counted; the pins and the on/off choice stay. */
 export function clearUsageHistory(): void {
-  update((store) => ({ ...store, visits: {}, moves: {}, via: {}, dismissed: {} }));
+  update((store) => ({ ...store, visits: {}, moves: {}, via: {}, dismissed: {}, outcomes: { accepted: 0, dismissed: 0 } }));
 }
 
 /* ── Analysis ────────────────────────────────────────────────────────── */

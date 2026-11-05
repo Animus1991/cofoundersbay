@@ -62,6 +62,7 @@ import { CANCELLED, ROW_GONE, rowOptions, settle, usePageControls, usePageList, 
 import { savedFiltersToParams } from '@/lib/need-card-wall';
 import { FactLine } from '@/components/common/FactLine';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 function SearchCard({
   search,
@@ -425,6 +426,7 @@ export default function SavedSearchesPage() {
       labelEn: 'Saved searches',
       labelEl: 'Αποθηκευμένες αναζητήσεις',
       rows: isLoading ? undefined : searches.map((x) => `${x.name} · "${x.query}"${x.newResults ? ` · ${x.newResults} new results` : ''} · alerts ${x.alertsEnabled ? x.alertFrequency : 'off'}`),
+      rowsEl: isLoading ? undefined : searches.map((x) => `${x.name} · "${x.query}"${x.newResults ? ` · ${x.newResults} νέα αποτελέσματα` : ''} · ειδοποιήσεις ${x.alertsEnabled ? elWord(x.alertFrequency) : 'κλειστές'}`),
     },
   ]);
   usePageControls([

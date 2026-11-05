@@ -42,6 +42,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { bilingualInline } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { elWord } from '@/lib/rows-el';
 
 const ALL_STATUSES = 'all';
 
@@ -268,6 +269,9 @@ export default function AdminBillingPage() {
       rows: subsLoading ? undefined : subs.map((s) =>
         `${subscriptionOwner(s)} · ${s.plan?.displayName ?? s.planId} · ${s.status}${s.cancelAtPeriodEnd ? ' (cancels at period end)' : ''}`,
       ),
+      rowsEl: subsLoading ? undefined : subs.map((s) =>
+        `${subscriptionOwner(s)} · ${s.plan?.displayName ?? s.planId} · ${elWord(s.status)}${s.cancelAtPeriodEnd ? ' (λήγει στο τέλος της περιόδου)' : ''}`,
+      ),
     },
     {
       id: 'invoices',
@@ -281,6 +285,9 @@ export default function AdminBillingPage() {
       labelEl: 'Κουπόνια',
       rows: couponsLoading ? undefined : coupons.map((c) =>
         `${c.code} · ${c.discountType === 'percent' ? `${c.discountValue}% off` : formatCents(c.discountValue)} · ${c.timesRedeemed}${c.maxRedemptions ? `/${c.maxRedemptions}` : ''} redeemed`,
+      ),
+      rowsEl: couponsLoading ? undefined : coupons.map((c) =>
+        `${c.code} · ${c.discountType === 'percent' ? `έκπτωση ${c.discountValue}%` : formatCents(c.discountValue)} · ${c.timesRedeemed}${c.maxRedemptions ? `/${c.maxRedemptions}` : ''} εξαργυρώσεις`,
       ),
     },
   ]);

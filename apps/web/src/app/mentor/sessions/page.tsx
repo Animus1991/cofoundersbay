@@ -42,6 +42,7 @@ import {
 import { BilingualText } from '@/components/common/BilingualText';
 import { Counter } from '@/components/ui/counter';
 import { FailedLine } from '@/components/dashboard/SectionCard';
+import { elWord } from '@/lib/rows-el';
 
 type SessionActions = {
   onReschedule: (s: MentorshipSessionItem) => void;
@@ -308,6 +309,13 @@ export default function MentorSessionsPage() {
           ? `${whenBooking(u.booking)} · ${u.durationMin != null ? `${u.durationMin} min` : '—'}${u.meetingType ? ` · ${u.meetingType.replace('_', ' ')}` : ''} · ${u.status} · booking`
           : u.session
             ? `${when(u.session)} · ${u.session.duration} min${u.session.meetingType ? ` · ${u.session.meetingType.replace('_', ' ')}` : ''} · ${u.status}`
+            : u.id,
+      ),
+      rowsEl: isLoading || bookingsLoading ? undefined : (activeTab === 'past' ? pastRows : upcomingRows).map((u) =>
+        u.source === 'booking' && u.booking
+          ? `${whenBooking(u.booking)} · ${u.durationMin != null ? `${u.durationMin} λεπτά` : '—'}${u.meetingType ? ` · ${elWord(u.meetingType)}` : ''} · ${elWord(u.status)} · κράτηση`
+          : u.session
+            ? `${when(u.session)} · ${u.session.duration} λεπτά${u.session.meetingType ? ` · ${elWord(u.session.meetingType)}` : ''} · ${elWord(u.status)}`
             : u.id,
       ),
       total: unified.length,

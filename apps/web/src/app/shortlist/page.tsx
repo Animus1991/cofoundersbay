@@ -67,6 +67,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 type ViewMode = 'list' | 'grid';
 type SortBy = 'saved_newest' | 'saved_oldest' | 'name_az' | 'match_score';
@@ -465,6 +466,10 @@ export default function ShortlistPage() {
       rows: isLoading ? undefined : filtered.map((i) => {
         const score = matchScores.get(i.userId);
         return `${i.profile?.displayName ?? 'Member'} · ${i.profile?.role ?? 'member'}${i.profile?.headline ? ` · ${i.profile.headline}` : ''}${score != null ? ` · match ${score}%` : ''}${i.note ? ` · note: ${i.note}` : ''}`;
+      }),
+      rowsEl: isLoading ? undefined : filtered.map((i) => {
+        const score = matchScores.get(i.userId);
+        return `${i.profile?.displayName ?? 'Μέλος'} · ${elWord(i.profile?.role ?? 'member')}${i.profile?.headline ? ` · ${i.profile.headline}` : ''}${score != null ? ` · ταίριασμα ${score}%` : ''}${i.note ? ` · σημείωση: ${i.note}` : ''}`;
       }),
       total: rawItems.length,
     },

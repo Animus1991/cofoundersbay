@@ -898,6 +898,7 @@ export default function MessagesPage() {
       labelEn: 'Conversations',
       labelEl: 'Συνομιλίες',
       rows: inbox.map((c) => `${c.recipientName}${c.unreadCount ? ` · ${c.unreadCount} unread` : ''}${c.isPinned ? ' · pinned' : ''} · "${c.lastMessage}"`),
+      rowsEl: inbox.map((c) => `${c.recipientName}${c.unreadCount ? ` · ${c.unreadCount} αδιάβαστα` : ''}${c.isPinned ? ' · καρφιτσωμένη' : ''} · "${c.lastMessage}"`),
     },
   ]);
   usePageControls([

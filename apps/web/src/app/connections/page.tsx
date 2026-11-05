@@ -51,6 +51,7 @@ import { Counter } from '@/components/ui/counter';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { ASK } from '@/lib/page-questions';
 import { statusEl } from '@/components/common/StatusText';
+import { elWord } from '@/lib/rows-el';
 
 const CollaborationStarter = dynamic(
   () => import('@/components/collaboration/CollaborationStarter').then((m) => ({ default: m.CollaborationStarter })),
@@ -380,6 +381,10 @@ export default function ConnectionsPage() {
       rows: isLoading ? undefined : connections.map((c) => {
         const other = otherOf(c);
         return `${other?.displayName ?? 'Someone'}${other?.role ? ` · ${other.role}` : ''}${other?.headline ? ` · ${other.headline}` : ''} · ${c.status}`;
+      }),
+      rowsEl: isLoading ? undefined : connections.map((c) => {
+        const other = otherOf(c);
+        return `${other?.displayName ?? 'Ένα μέλος'}${other?.role ? ` · ${elWord(other.role)}` : ''}${other?.headline ? ` · ${other.headline}` : ''} · ${elWord(c.status)}`;
       }),
     },
   ]);

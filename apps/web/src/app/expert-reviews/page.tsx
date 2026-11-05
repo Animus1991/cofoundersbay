@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -53,6 +53,9 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { ASK } from '@/lib/page-questions';
+import { AskedOfMe, RateReview, type ReviewDraft } from '@/components/expert-reviews/AskedOfMe';
+import { useFormDraft } from '@/lib/form-draft';
+import { Counter } from '@/components/ui/counter';
 
 /** Why the one disabled control is disabled, in both languages. */
 const MESSAGE_HINT = bilingualAria(
@@ -327,6 +330,9 @@ function ReviewCard({ review }: { review: ExpertReview }) {
               <ChevronRight className={cn('icon-sm transition-transform', expanded && 'rotate-90')} aria-hidden="true" />
             </Button>
           ) : null}
+          {review.status === 'submitted' && !review.rating && review.expertId ? (
+            <RateReview reviewId={review.id} expertName={review.expertName} />
+          ) : null}
         </CardFoot>
       </CardContent>
 
@@ -446,6 +452,33 @@ export default function ExpertReviewsPage() {
   const router = useRouter();
 
   /*
+   * The reviews asked of the reader (docs §111): the API's other side, which
+   * no page showed. A link from the assistant's draft or a notification
+   * arrives as ?tab=asked&review=<id>.
+   */
+  const { data: askedData } = useQuery({
+    queryKey: qk('expert-reviews', 'expert'),
+    queryFn: () => listExpertReviews({ side: 'expert', limit: 50 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const asked = askedData?.reviews ?? [];
+  const askedOpen = asked.filter((r) => r.status === 'requested' || r.status === 'accepted' || r.status === 'in_progress').length;
+  const [focusId, setFocusId] = useState<string | null>(null);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'asked') setActiveTab('asked');
+    setFocusId(params.get('review'));
+  }, []);
+  const [reviewDraft, setReviewDraft] = useState<ReviewDraft | null>(null);
+  useFormDraft('expert_review', (fields) => {
+    setReviewDraft(fields as ReviewDraft);
+    setActiveTab('asked');
+    if (typeof fields.reviewId === 'string') setFocusId(fields.reviewId);
+  });
+  const draftUsed = useCallback(() => setReviewDraft(null), []);
+
+  /*
    * The founder's own reviews, from the module that now reads ExpertReview.
    * `side: 'requester'` is what keeps an expert's own requests out of the
    * queue of requests made of them.
@@ -494,6 +527,7 @@ export default function ExpertReviewsPage() {
   usePageControls([
     choiceControl('expert_tab', 'Expert reviews section', 'Ενότητα αξιολογήσεων', [
       { value: 'my-reviews', en: 'My reviews', el: 'Οι αξιολογήσεις μου' },
+      ...(asked.length ? [{ value: 'asked', en: 'Asked of me', el: 'Ζητήθηκαν από εμένα' }] : []),
       { value: 'insights', en: 'Insights', el: 'Αναλύσεις' },
     ], activeTab, setActiveTab),
     {
@@ -582,6 +616,12 @@ export default function ExpertReviewsPage() {
               <TabsTrigger value="my-reviews" className="text-xs">
                 <BilingualText en="My Reviews" el="Οι αξιολογήσεις μου" compact />
               </TabsTrigger>
+              {asked.length || activeTab === 'asked' ? (
+                <TabsTrigger value="asked" className="gap-1.5 text-xs">
+                  <BilingualText en="Asked of me" el="Ζητήθηκαν από εμένα" compact />
+                  {askedOpen ? <Counter value={askedOpen} tone="attention" /> : null}
+                </TabsTrigger>
+              ) : null}
               <TabsTrigger value="insights" className="text-xs">
                 <BilingualText en="Insights" el="Αναλύσεις" compact />
               </TabsTrigger>
@@ -597,6 +637,11 @@ export default function ExpertReviewsPage() {
               </Button>
             )}
           </div>
+
+          {/* Asked of me */}
+          <TabsContent value="asked" className="mt-4 space-y-3">
+            <AskedOfMe reviews={asked} draft={reviewDraft} onDraftUsed={draftUsed} focusId={focusId} />
+          </TabsContent>
 
           {/* My Reviews */}
           <TabsContent value="my-reviews" className="mt-4 space-y-3">

@@ -54,6 +54,7 @@ import { statusEl } from '@/components/common/StatusText';
 import { namedFilters, namedQuery, type NamedFilter } from '@/components/common/EmptyStates';
 import { ASK } from '@/lib/page-questions';
 import { useConnectionActions } from '@/hooks/useConnectionWith';
+import { elWord } from '@/lib/rows-el';
 
 const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
@@ -472,6 +473,9 @@ export default function DiscoverPage() {
       labelEl: activeTab === 'search' ? 'Αποτελέσματα αναζήτησης' : 'Κορυφαίες αντιστοιχίσεις',
       rows: (activeTab === 'search' ? loading : suggestionsLoading) ? undefined : shown.map((h) =>
         `${h.displayName}${h.role ? ` · ${h.role}` : ''}${h.headline ? ` · ${h.headline}` : ''}${h.location ? ` · ${h.location}` : ''}${h.matchScore != null ? ` · match ${h.matchScore}%` : ''}`,
+      ),
+      rowsEl: (activeTab === 'search' ? loading : suggestionsLoading) ? undefined : shown.map((h) =>
+        `${h.displayName}${h.role ? ` · ${elWord(h.role)}` : ''}${h.headline ? ` · ${h.headline}` : ''}${h.location ? ` · ${h.location}` : ''}${h.matchScore != null ? ` · ταίριασμα ${h.matchScore}%` : ''}`,
       ),
       ...(activeTab === 'search' ? { total } : {}),
     },

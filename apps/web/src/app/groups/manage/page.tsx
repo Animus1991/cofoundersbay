@@ -48,6 +48,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { demoMark } from '@/lib/demo/photos';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 type ManagedGroup = {
   id: string;
@@ -282,6 +283,7 @@ export default function ManageGroupsPage() {
       labelEn: 'Groups you manage',
       labelEl: 'Κοινότητες που διαχειρίζεστε',
       rows: isLoading ? undefined : filtered.map((g) => `${g.name} · ${g.category} · ${g.privacy} · ${g.memberCount} members${g.pendingRequests ? ` · ${g.pendingRequests} pending` : ''} · you are ${g.role}`),
+      rowsEl: isLoading ? undefined : filtered.map((g) => `${g.name} · ${elWord(g.category)} · ${elWord(g.privacy)} · ${g.memberCount} μέλη${g.pendingRequests ? ` · ${g.pendingRequests} σε αναμονή` : ''} · ο ρόλος σας: ${elWord(g.role)}`),
       total: groups.length,
       sample: showingSample,
     },

@@ -65,6 +65,7 @@ import { formatDate } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 const PROGRAM_STATUS_FILTERS: { value: 'all' | 'current' | Program['status']; en: string; el: string }[] = [
   { value: 'current', en: 'Not archived', el: 'Μη αρχειοθετημένα' },
@@ -414,6 +415,7 @@ export default function TenantProgramsPage() {
       labelEn: 'Programs',
       labelEl: 'Προγράμματα',
       rows: filteredPrograms.map((p) => `${p.name} · ${p.type} · ${p.status} · ${p.startups} startups${p.mentors ? `, ${p.mentors} mentors` : ''} · ${p.progress}%`),
+      rowsEl: filteredPrograms.map((p) => `${p.name} · ${elWord(p.type)} · ${elWord(p.status)} · ${p.startups} startups${p.mentors ? `, ${p.mentors} μέντορες` : ''} · ${p.progress}%`),
       total: programs.length,
       sample: !isLive,
     },

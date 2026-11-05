@@ -45,6 +45,7 @@ import {
   ChevronRight,
   Link2,
 } from 'lucide-react';
+import { elWord } from '@/lib/rows-el';
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
@@ -261,6 +262,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
       labelEn: `Domains of ${tenant.displayName || tenant.name}`,
       labelEl: `Domains του οργανισμού ${tenant.displayName || tenant.name}`,
       rows: isLoading ? undefined : domains.map((d) => `${d.domainName} · ${d.domainType} · ${d.verificationStatus} · ${d.isActive ? 'active' : 'inactive'}${d.isPrimary ? ' · primary' : ''}`),
+      rowsEl: isLoading ? undefined : domains.map((d) => `${d.domainName} · ${elWord(d.domainType)} · ${elWord(d.verificationStatus)} · ${d.isActive ? 'ενεργό' : 'ανενεργό'}${d.isPrimary ? ' · κύριο' : ''}`),
       total: domains.length,
       sample: false,
     },

@@ -34,6 +34,7 @@ import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { elWord } from '@/lib/rows-el';
 
 type StatusFilter = 'all' | TenantItem['status'];
 type BrandingFilter = 'all' | 'branded' | 'unbranded';
@@ -196,6 +197,9 @@ export default function TenantsAdminPage() {
       labelEl: 'Οργανισμοί',
       rows: isLoading ? undefined : visibleTenants.map((t) =>
         `${t.displayName || t.name} (${t.slug}) · ${t.status}${t.logoUrl ? ' · branded' : ''}`,
+      ),
+      rowsEl: isLoading ? undefined : visibleTenants.map((t) =>
+        `${t.displayName || t.name} (${t.slug}) · ${elWord(t.status)}${t.logoUrl ? ' · με δική του επωνυμία' : ''}`,
       ),
       total: tenantList.length,
     },

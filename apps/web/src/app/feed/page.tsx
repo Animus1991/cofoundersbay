@@ -73,6 +73,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 type PostType = 'update' | 'milestone' | 'question' | 'announcement' | 'achievement';
 
@@ -770,6 +771,14 @@ export default function FeedPage() {
           p.type,
           `"${p.content ?? ''}"`.slice(0, 60),
           `${p.likes ?? 0} likes${p.isLiked ? ' (liked)' : ''}${p.isBookmarked ? ' (saved)' : ''}`,
+        ].join(' · '),
+      ),
+      rowsEl: feedLoading ? undefined : posts.map((p) =>
+        [
+          p.author?.displayName ?? 'Ανάρτηση',
+          elWord(p.type),
+          `"${p.content ?? ''}"`.slice(0, 60),
+          `${p.likes ?? 0} «μου αρέσει»${p.isLiked ? ' (σας αρέσει)' : ''}${p.isBookmarked ? ' (αποθηκευμένη)' : ''}`,
         ].join(' · '),
       ),
       sample: showingSamples,

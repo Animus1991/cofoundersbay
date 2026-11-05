@@ -137,6 +137,7 @@ export default function TenantApiKeysPage() {
       labelEn: 'API keys',
       labelEl: 'Κλειδιά API',
       rows: keys.map((k) => `${k.name} · ${k.isActive ? 'active' : 'inactive'} · ${k.scopes.join(', ')}`),
+      rowsEl: keys.map((k) => `${k.name} · ${k.isActive ? 'ενεργό' : 'ανενεργό'} · ${k.scopes.join(', ')}`),
       total: keys.length,
       sample: keys.length > 0,
     },

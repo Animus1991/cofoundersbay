@@ -2814,8 +2814,117 @@ function requestDemoExpertReview(body: Record<string, unknown>): { review: DemoE
   return { review };
 }
 
+/**
+ * The demo member's side as a reviewer (docs §111): one review asked of them,
+ * and what they and the requester did to reviews this session, under the
+ * API's rules (expert-reviews.service: one step at a time, a submitted
+ * review needs its written feedback, only the requester rates).
+ */
+const DEMO_REVIEW_EDITS_KEY = 'cfb:demo-expert-review-edits';
+const DEMO_EXPERT_TRANSITIONS: Record<string, string[]> = {
+  requested: ['accepted', 'declined'],
+  accepted: ['in_progress', 'declined'],
+  in_progress: ['submitted'],
+};
+
+function readDemoReviewEdits(): Record<string, Record<string, unknown>> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const parsed = JSON.parse(window.sessionStorage.getItem(DEMO_REVIEW_EDITS_KEY) ?? '{}') as unknown;
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, Record<string, unknown>>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeDemoReviewEdit(id: string, patch: Record<string, unknown>): void {
+  if (typeof window === 'undefined') return;
+  const edits = readDemoReviewEdits();
+  edits[id] = { ...(edits[id] ?? {}), ...patch };
+  try {
+    window.sessionStorage.setItem(DEMO_REVIEW_EDITS_KEY, JSON.stringify(edits));
+  } catch {
+    // Storage blocked: the change is answered but not kept.
+  }
+}
+
+function previewReviewAskedOfMe(): DemoExpertReview {
+  return {
+    id: 'preview-exrev-asked-1',
+    requester: { id: 'user-sofia', displayName: 'Sofia Alexiou', headline: 'Founder at Meltemi', avatarUrl: null },
+    expert: { id: ME_ID, displayName: 'Alex Demo', headline: 'Founder at Harbor', avatarUrl: null },
+    workspaceId: null,
+    reviewType: 'pitch_deck',
+    status: 'requested',
+    requestMessage: 'Ten slides for our pre-seed. You raised from logistics buyers last year: does our customer slide convince?',
+    documents: [] as Record<string, unknown>[],
+    summaryFeedback: null,
+    strengths: [] as Record<string, unknown>[],
+    improvements: [] as Record<string, unknown>[],
+    scoreOverall: null,
+    scoresByArea: {} as Record<string, number>,
+    isPaid: false,
+    agreedFee: null,
+    currency: 'EUR',
+    requestedAt: previewIsoInDays(-1, 10),
+    acceptedAt: null,
+    dueDate: previewIsoInDays(6, 18),
+    submittedAt: null,
+    rating: null,
+    ratingComment: null,
+  } as unknown as DemoExpertReview;
+}
+
+type DemoReviewRow = { id: string; status: string; expert?: { id: string }; requester?: { id: string }; summaryFeedback?: string | null; acceptedAt?: string | null; submittedAt?: string | null };
+
 function previewExpertReviews(): DemoExpertReview[] {
-  return [...readDemoReviewRequests(), ...previewExpertReviewsBase()];
+  const edits = readDemoReviewEdits();
+  return [...readDemoReviewRequests(), ...previewExpertReviewsBase(), previewReviewAskedOfMe()].map((review) => {
+    const edit = edits[(review as unknown as DemoReviewRow).id];
+    return edit ? ({ ...review, ...edit } as DemoExpertReview) : review;
+  });
+}
+
+function findDemoReview(id: string): (DemoExpertReview & DemoReviewRow) | undefined {
+  return previewExpertReviews().find((r) => (r as unknown as DemoReviewRow).id === id) as (DemoExpertReview & DemoReviewRow) | undefined;
+}
+
+function patchDemoExpertReview(id: string, body: Record<string, unknown>): { review: DemoExpertReview } {
+  const review = findDemoReview(id);
+  if (!review) throw new DemoRefusal(404, 'Review not found', { messageEl: 'Η αξιολόγηση δεν βρέθηκε.' });
+  if (review.expert?.id !== ME_ID) throw new DemoRefusal(403, 'Only the expert can update this review', { messageEl: 'Μόνο ο ειδικός μπορεί να αλλάξει αυτή την αξιολόγηση.' });
+  const patch: Record<string, unknown> = {};
+  const status = typeof body.status === 'string' ? body.status : null;
+  if (status && status !== review.status) {
+    if (!(DEMO_EXPERT_TRANSITIONS[review.status] ?? []).includes(status)) {
+      throw new DemoRefusal(400, `A ${review.status} review cannot become ${status}`, { messageEl: 'Η αξιολόγηση δεν μπορεί να πάει σε αυτή την κατάσταση από εδώ.' });
+    }
+    const summary = typeof body.summaryFeedback === 'string' ? body.summaryFeedback : review.summaryFeedback;
+    if (status === 'submitted' && !summary) {
+      throw new DemoRefusal(400, 'A submitted review needs its written feedback', { messageEl: 'Μια αξιολόγηση που υποβάλλεται χρειάζεται το γραπτό της σχόλιο.' });
+    }
+    patch.status = status;
+    if (status === 'accepted' && !review.acceptedAt) patch.acceptedAt = new Date(previewNowMs()).toISOString();
+    if (status === 'submitted' && !review.submittedAt) patch.submittedAt = new Date(previewNowMs()).toISOString();
+  }
+  if (typeof body.summaryFeedback === 'string') patch.summaryFeedback = body.summaryFeedback.slice(0, 8000);
+  if (Array.isArray(body.strengths)) patch.strengths = body.strengths.slice(0, 20);
+  if (Array.isArray(body.improvements)) patch.improvements = body.improvements.slice(0, 20);
+  if (typeof body.scoreOverall === 'number' && body.scoreOverall >= 1 && body.scoreOverall <= 10) patch.scoreOverall = Math.round(body.scoreOverall);
+  writeDemoReviewEdit(id, patch);
+  return { review: { ...review, ...patch } as DemoExpertReview };
+}
+
+function rateDemoExpertReview(id: string, body: Record<string, unknown>): { review: DemoExpertReview } {
+  const review = findDemoReview(id);
+  if (!review) throw new DemoRefusal(404, 'Review not found', { messageEl: 'Η αξιολόγηση δεν βρέθηκε.' });
+  if (review.requester?.id !== ME_ID) throw new DemoRefusal(403, 'Only the requester can rate this review', { messageEl: 'Μόνο όποιος τη ζήτησε μπορεί να τη βαθμολογήσει.' });
+  if (review.status !== 'submitted') throw new DemoRefusal(400, 'A review can be rated once it has been submitted', { messageEl: 'Μια αξιολόγηση βαθμολογείται αφού υποβληθεί.' });
+  const rating = typeof body.rating === 'number' ? Math.round(body.rating) : NaN;
+  if (!(rating >= 1 && rating <= 5)) throw new DemoRefusal(400, 'A rating is from 1 to 5', { messageEl: 'Η βαθμολογία είναι από 1 έως 5.' });
+  const patch = { rating, ratingComment: typeof body.ratingComment === 'string' ? body.ratingComment.slice(0, 2000) : null };
+  writeDemoReviewEdit(id, patch);
+  return { review: { ...review, ...patch } as DemoExpertReview };
 }
 
 function previewExpertReviewsBase() {
@@ -5045,6 +5154,18 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
         ? Number((scored.reduce((a, r) => a + (r.scoreOverall ?? 0), 0) / scored.length).toFixed(1))
         : null,
     };
+  }
+  const expertReviewRating = pathname.match(/^\/api\/expert-reviews\/([^/]+)\/rating$/);
+  if (expertReviewRating && method === 'POST') {
+    return rateDemoExpertReview(decodeURIComponent(expertReviewRating[1]), (body ?? {}) as Record<string, unknown>);
+  }
+  const expertReviewOne = pathname.match(/^\/api\/expert-reviews\/([^/]+)$/);
+  if (expertReviewOne && !['experts', 'summary'].includes(expertReviewOne[1])) {
+    const id = decodeURIComponent(expertReviewOne[1]);
+    if (method === 'PATCH') return patchDemoExpertReview(id, (body ?? {}) as Record<string, unknown>);
+    const review = findDemoReview(id);
+    if (!review) throw new DemoRefusal(404, 'Review not found', { messageEl: 'Η αξιολόγηση δεν βρέθηκε.' });
+    return { review };
   }
   if (pathname === '/api/expert-reviews' && method === 'POST') {
     return requestDemoExpertReview((body ?? {}) as Record<string, unknown>);

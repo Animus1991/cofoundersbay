@@ -58,6 +58,7 @@ import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 type Program = {
   /** Set on live rows; the owning organisation's own programs page. */
@@ -444,6 +445,9 @@ export default function AdminProgramsPage() {
       labelEl: 'Προγράμματα',
       rows: isLoading ? undefined : filteredPrograms.map((p) =>
         `${p.name} · ${p.organization} · ${p.type} · ${p.status} · ${p.startups} startups, ${p.mentors} mentors`,
+      ),
+      rowsEl: isLoading ? undefined : filteredPrograms.map((p) =>
+        `${p.name} · ${p.organization} · ${elWord(p.type)} · ${elWord(p.status)} · ${p.startups} startups, ${p.mentors} μέντορες`,
       ),
       total: programs.length,
       sample: showingSample,

@@ -16,6 +16,7 @@ import { getProfileViewers } from '@/lib/profile-viewers-api';
 import { qk } from '@/lib/query-keys';
 import { initialsOf } from '@/lib/utils';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { elWord } from '@/lib/rows-el';
 
 /**
  * Who viewed the reader's profile in the last 90 days. Names appear only for
@@ -39,6 +40,14 @@ export function ProfileViewersCard() {
             `${v.privateCount} members viewed privately${v.privateByRole.length ? ` (${v.privateByRole.map((g) => `${g.count} ${g.role}`).join(', ')})` : ''}`,
             `${v.signedOutViews} views from people not signed in`,
             v.readerSharesName ? 'You show your name when you view.' : 'You view privately, so you see counts only.',
+          ]
+        : undefined,
+      rowsEl: v
+        ? [
+            ...v.named.map((n) => `${n.displayName}${n.headline ? ` (${n.headline})` : ''}: ${n.views} ${n.views === 1 ? 'προβολή' : 'προβολές'}, τελευταία ${n.lastViewedAt.slice(0, 10)}`),
+            `${v.privateCount} μέλη είδαν ιδιωτικά${v.privateByRole.length ? ` (${v.privateByRole.map((g) => `${g.count} ${elWord(g.role)}`).join(', ')})` : ''}`,
+            `${v.signedOutViews} προβολές από μη συνδεδεμένους`,
+            v.readerSharesName ? 'Εμφανίζετε το όνομά σας όταν βλέπετε προφίλ.' : 'Βλέπετε ιδιωτικά, οπότε βλέπετε μόνο αριθμούς.',
           ]
         : undefined,
     },

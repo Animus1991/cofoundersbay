@@ -57,6 +57,7 @@ import {
   type MentorshipSessionItem,
 } from '@/lib/api';
 import { COACHING_AREAS, coachingAreasFrom, directoryHref, type CoachingArea } from '@/lib/mentoring/services';
+import { elWord } from '@/lib/rows-el';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -655,6 +656,10 @@ export default function CoachingPage() {
       rows: sessionsLoading || bookingsLoading ? undefined : [
         ...sessions.map((s) => `${s.scheduledAt.slice(0, 10)} · ${s.title} · with ${s.coachName} · ${s.status} · ${s.durationMinutes} min`),
         ...bookingRows.map((u) => `${u.startAt.slice(0, 10)} · ${u.counterpart.displayName} · ${u.status} · ${u.durationMin != null ? `${u.durationMin} min` : '—'} · booking`),
+      ],
+      rowsEl: sessionsLoading || bookingsLoading ? undefined : [
+        ...sessions.map((s) => `${s.scheduledAt.slice(0, 10)} · ${s.title} · με ${s.coachName} · ${elWord(s.status)} · ${s.durationMinutes} λεπτά`),
+        ...bookingRows.map((u) => `${u.startAt.slice(0, 10)} · ${u.counterpart.displayName} · ${elWord(u.status)} · ${u.durationMin != null ? `${u.durationMin} λεπτά` : '—'} · κράτηση`),
       ],
       sample: liveSessions.length === 0 && showDemoData,
     },

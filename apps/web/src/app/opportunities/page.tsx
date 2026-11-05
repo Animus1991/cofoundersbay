@@ -70,6 +70,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { ASK, type AskText } from '@/lib/page-questions';
 import { calendarDaysUntil } from '@/lib/calendar-days';
+import { elWord } from '@/lib/rows-el';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -552,12 +553,14 @@ export default function OpportunitiesPage() {
       labelEn: 'Need cards',
       labelEl: 'Κάρτες ανάγκης',
       rows: !wall.ready ? [] : wallCards.map((c) => `${c.title} · ${c.kind} · ${c.category || '—'} · ${c.isRemote ? 'remote' : (c.place ?? '—')} · ${c.stage} · ${c.commitment} · ${c.outcome}`),
+      rowsEl: !wall.ready ? [] : wallCards.map((c) => `${c.title} · ${elWord(c.kind)} · ${c.category || '—'} · ${c.isRemote ? 'εξ αποστάσεως' : (c.place ?? '—')} · ${elWord(c.stage)} · ${elWord(c.commitment)} · ${elWord(c.outcome)}`),
     },
     {
       id: 'opportunities',
       labelEn: 'Opportunities',
       labelEl: 'Ευκαιρίες',
       rows: oppLoading ? undefined : opportunities.map((o) => `${o.title}${o.company ? ` · ${o.company}` : ''} · ${o.type} · ${o.isRemote ? 'remote' : (o.location ?? 'on-site')}${o.deadline ? ` · closes ${o.deadline.slice(0, 10)}` : ''}`),
+      rowsEl: oppLoading ? undefined : opportunities.map((o) => `${o.title}${o.company ? ` · ${o.company}` : ''} · ${elWord(o.type)} · ${o.isRemote ? 'εξ αποστάσεως' : (o.location ?? 'με φυσική παρουσία')}${o.deadline ? ` · κλείνει ${o.deadline.slice(0, 10)}` : ''}`),
     },
     {
       id: 'proposals',

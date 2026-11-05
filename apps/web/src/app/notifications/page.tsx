@@ -39,6 +39,7 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
   connection: UserPlus,
@@ -413,6 +414,9 @@ export default function NotificationsPage() {
       labelEl: 'Ειδοποιήσεις',
       rows: isLoading ? undefined : notifications.map((n) =>
         `${n.readAt ? '' : '(unread) '}${n.title}${n.body ? ` · ${n.body}` : ''} · ${n.type} · ${n.createdAt.slice(0, 10)}`,
+      ),
+      rowsEl: isLoading ? undefined : notifications.map((n) =>
+        `${n.readAt ? '' : '(αδιάβαστη) '}${n.title}${n.body ? ` · ${n.body}` : ''} · ${elWord(n.type)} · ${n.createdAt.slice(0, 10)}`,
       ),
     },
   ]);

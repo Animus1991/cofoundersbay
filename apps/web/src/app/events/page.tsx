@@ -25,6 +25,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { qk } from '@/lib/query-keys';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 type ViewMode = 'grid' | 'list';
 type EventFilter = 'all' | 'online' | 'in-person' | 'hybrid';
@@ -192,6 +193,9 @@ export default function EventsPage() {
       labelEl: 'Εκδηλώσεις',
       rows: loading ? undefined : eventsRaw.map((e) =>
         `${e.title} · ${e.startAt.slice(0, 10)} · ${e.mode}${e.location ? ` · ${e.location}` : ''} · ${e.attendeesCount} going${e.viewerRsvp === 'going' ? ' (you are going)' : ''}`,
+      ),
+      rowsEl: loading ? undefined : eventsRaw.map((e) =>
+        `${e.title} · ${e.startAt.slice(0, 10)} · ${elWord(e.mode)}${e.location ? ` · ${e.location}` : ''} · ${e.attendeesCount} συμμετέχουν${e.viewerRsvp === 'going' ? ' (συμμετέχετε)' : ''}`,
       ),
     },
   ]);

@@ -44,6 +44,7 @@ import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { useHydrated } from '@/components/common/RelativeTime';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 /**
  * The page's own row from the API row.
@@ -300,6 +301,7 @@ export default function OrgProgramsPage() {
       labelEn: 'Programs',
       labelEl: 'Προγράμματα',
       rows: reading ? undefined : filteredPrograms.map((p) => `${p.name} · ${p.type} · ${p.status} · ${p.enrolled}/${p.capacity} enrolled`),
+      rowsEl: reading ? undefined : filteredPrograms.map((p) => `${p.name} · ${elWord(p.type)} · ${elWord(p.status)} · ${p.enrolled}/${p.capacity} εγγεγραμμένοι`),
       total: programs.length,
       sample: live.length === 0,
     },

@@ -51,6 +51,7 @@ import { CommitmentLadder } from './CommitmentLadder';
 import { ContactWarning } from './ContactWarning';
 import { NonGuaranteeNote } from './NonGuaranteeNote';
 import { StepChip } from './OutcomeChip';
+import { elWord } from '@/lib/rows-el';
 
 type Pair = { en: string; el: string };
 
@@ -594,6 +595,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
       labelEn: 'Protected conversation',
       labelEl: 'Προστατευμένη συζήτηση',
       rows: thread?.messages.map((m) => `${m.mine ? 'You' : name}: ${m.body}`),
+      rowsEl: thread?.messages.map((m) => `${m.mine ? 'Εσείς' : name}: ${m.body}`),
     },
     {
       id: 'commitment_terms',
@@ -602,6 +604,10 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
       rows: thread?.terms.map(
         (t) =>
           `v${t.version}${t.isLatest ? ' (latest)' : ''}: ${t.role}, ${show(t.equityPct, '%')} equity, ${show(t.vestingMonths)} months vesting, ${show(t.cliffMonths)} cliff, ${show(t.hoursPerWeek)} h/week — ${t.acceptedByMe ? 'you accepted' : 'you have not accepted'}, ${t.acceptedByThem ? 'they accepted' : 'they have not accepted'}`,
+      ),
+      rowsEl: thread?.terms.map(
+        (t) =>
+          `v${t.version}${t.isLatest ? ' (τελευταία)' : ''}: ${elWord(t.role)}, ${show(t.equityPct, '%')} equity, vesting ${show(t.vestingMonths)} μηνών, cliff ${show(t.cliffMonths)}, ${show(t.hoursPerWeek)} ώρες/εβδομάδα — ${t.acceptedByMe ? 'τους αποδεχτήκατε' : 'δεν τους έχετε αποδεχτεί'}, ${t.acceptedByThem ? 'τους αποδέχτηκε η άλλη πλευρά' : 'η άλλη πλευρά δεν τους έχει αποδεχτεί'}`,
       ),
     },
   ]);

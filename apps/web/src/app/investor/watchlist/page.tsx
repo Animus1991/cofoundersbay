@@ -61,6 +61,7 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { PageFacts } from '@/components/common/PageFacts';
 import { FailedLine } from '@/components/dashboard/SectionCard';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -519,6 +520,9 @@ export default function InvestorWatchlistPage() {
       labelEl: 'Startups υπό παρακολούθηση',
       rows: watchedLoading ? undefined : filtered.map((s) =>
         `${s.name} · ${s.industry}, ${s.stage} · ${s.location}${s.raisingAmount ? ` · raising ${s.raisingAmount}` : ''}${s.alertsEnabled ? ' · alerts on' : ''}`,
+      ),
+      rowsEl: watchedLoading ? undefined : filtered.map((s) =>
+        `${s.name} · ${s.industry}, ${elWord(s.stage)} · ${s.location}${s.raisingAmount ? ` · αναζητά ${s.raisingAmount}` : ''}${s.alertsEnabled ? ' · ειδοποιήσεις ενεργές' : ''}`,
       ),
       total: watched.length,
       sample: !watchLive,

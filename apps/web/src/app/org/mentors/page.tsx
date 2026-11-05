@@ -48,6 +48,7 @@ import { ORG_MENTORS } from '@/lib/demo/org-world';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ASK } from '@/lib/page-questions';
+import { elWord } from '@/lib/rows-el';
 
 /**
  * The page's own row from the pool row.
@@ -286,6 +287,7 @@ export default function OrgMentorsPage() {
       labelEn: 'Mentors asking to join',
       labelEl: 'Μέντορες που ζητούν ένταξη',
       rows: requestsQuery.isLoading ? undefined : requests.map((r) => `${r.displayName ?? 'A mentor'}${r.headline ? ` · ${r.headline}` : ''}${r.note ? ` · "${r.note}"` : ''}`),
+      rowsEl: requestsQuery.isLoading ? undefined : requests.map((r) => `${r.displayName ?? 'Μέντορας'}${r.headline ? ` · ${r.headline}` : ''}${r.note ? ` · "${r.note}"` : ''}`),
       total: requests.length,
     },
     {
@@ -293,6 +295,7 @@ export default function OrgMentorsPage() {
       labelEn: 'Mentor pool',
       labelEl: 'Δεξαμενή μεντόρων',
       rows: reading ? undefined : filteredMentors.map((m) => `${m.name}${m.headline ? ` · ${m.headline}` : ''} · ${m.expertise.slice(0, 3).join(', ')} · ${m.activeMentees}/${m.maxMentees} mentees · ${m.status}`),
+      rowsEl: reading ? undefined : filteredMentors.map((m) => `${m.name}${m.headline ? ` · ${m.headline}` : ''} · ${m.expertise.slice(0, 3).join(', ')} · ${m.activeMentees}/${m.maxMentees} καθοδηγούμενοι · ${elWord(m.status)}`),
       total: mentors.length,
       sample: !reading && live.length === 0,
     },

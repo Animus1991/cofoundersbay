@@ -69,6 +69,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { ASK } from '@/lib/page-questions';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { elWord } from '@/lib/rows-el';
 
 /** Access levels and log actions, in both languages (they printed the raw English value). */
 const ACCESS_LEVEL: Record<string, { en: string; el: string }> = {
@@ -368,6 +369,7 @@ export default function DataRoomPage() {
       labelEn: 'Documents',
       labelEl: 'Έγγραφα',
       rows: filteredDocuments.map((d) => `${d.name} · ${formatFileSize(d.size)} · ${d.viewCount} views · ${d.status}`),
+      rowsEl: filteredDocuments.map((d) => `${d.name} · ${formatFileSize(d.size)} · ${d.viewCount} προβολές · ${elWord(d.status)}`),
       total: documents.length,
       sample: showDemoData,
     },
@@ -376,6 +378,7 @@ export default function DataRoomPage() {
       labelEn: 'Investors with access',
       labelEl: 'Επενδυτές με πρόσβαση',
       rows: investors.map((i) => `${i.name}${i.firm ? ` (${i.firm})` : ''} · ${i.accessLevel} · ${i.documentsViewed} viewed`),
+      rowsEl: investors.map((i) => `${i.name}${i.firm ? ` (${i.firm})` : ''} · ${elWord(i.accessLevel)} · είδε ${i.documentsViewed} έγγραφα`),
       sample: showDemoData,
     },
   ]);

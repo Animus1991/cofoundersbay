@@ -67,6 +67,7 @@ import { useConnectionActions } from '@/hooks/useConnectionWith';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import type { MatchConnection } from '@/components/common/MatchCard';
+import { elWord } from '@/lib/rows-el';
 
 function MatchScoreBadge({ score }: { score: number }) {
   // Semantic chips, not white on a mid-tone fill: white on emerald-500 is
@@ -549,6 +550,7 @@ export default function RecommendationsPage() {
       labelEn: 'Recommended people',
       labelEl: 'Προτεινόμενα άτομα',
       rows: recsLoading ? undefined : people.map((p) => `${p.displayName}${p.role ? ` · ${p.role}` : ''}${p.headline ? ` · ${p.headline}` : ''} · match ${Math.round(p.score)}%${savedIds.has(p.userId) ? ' · saved' : ''}`),
+      rowsEl: recsLoading ? undefined : people.map((p) => `${p.displayName}${p.role ? ` · ${elWord(p.role)}` : ''}${p.headline ? ` · ${p.headline}` : ''} · ταίριασμα ${Math.round(p.score)}%${savedIds.has(p.userId) ? ' · αποθηκευμένο' : ''}`),
       total: allRecommendations.length,
     },
   ]);

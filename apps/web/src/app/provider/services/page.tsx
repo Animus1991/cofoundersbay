@@ -51,6 +51,7 @@ import { PageFacts } from '@/components/common/PageFacts';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { FailedLine } from '@/components/dashboard/SectionCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { elWord } from '@/lib/rows-el';
 
 type Service = {
   id: string;
@@ -382,6 +383,7 @@ export default function ProviderServicesPage() {
       labelEn: 'Service listings',
       labelEl: 'Καταχωρίσεις υπηρεσιών',
       rows: isLoading ? undefined : filteredServices.map((s) => `${s.name} · ${s.category} · ${s.price} (${s.priceType}) · ${s.isActive ? 'live' : 'hidden'} · ${s.bookings} bookings`),
+      rowsEl: isLoading ? undefined : filteredServices.map((s) => `${s.name} · ${elWord(s.category)} · ${s.price} (${elWord(s.priceType)}) · ${s.isActive ? 'ενεργή' : 'κρυφή'} · ${s.bookings} κρατήσεις`),
       total: services.length,
       sample: live.length === 0,
     },

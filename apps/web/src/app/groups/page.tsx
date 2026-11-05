@@ -54,6 +54,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { useCoverFailed } from '@/hooks/useCoverFailed';
+import { elWord } from '@/lib/rows-el';
 const CATEGORIES = ['All', 'Founders', 'Tech', 'Marketing', 'Design', 'Finance', 'Product', 'Operations', 'Legal'];
 
 /**
@@ -344,6 +345,9 @@ export default function GroupsPage() {
       labelEl: activeTab === 'my-groups' ? 'Οι ομάδες μου' : 'Ομάδες',
       rows: listLoading ? undefined : displayGroups.map((g) =>
         `${g.name}${g.category ? ` · ${g.category}` : ''} · ${g.privacy} · ${g.memberCount} members, ${g.postCount} posts${g.isMember ? ' · joined' : ''}`,
+      ),
+      rowsEl: listLoading ? undefined : displayGroups.map((g) =>
+        `${g.name}${g.category ? ` · ${elWord(g.category)}` : ''} · ${elWord(g.privacy)} · ${g.memberCount} μέλη, ${g.postCount} αναρτήσεις${g.isMember ? ' · είστε μέλος' : ''}`,
       ),
     },
   ]);

@@ -37,6 +37,7 @@ import { StatusText } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { FailedLine } from '@/components/dashboard/SectionCard';
+import { elWord } from '@/lib/rows-el';
 
 type RequestCardProps = {
   request: MentorRequestItem;
@@ -199,6 +200,7 @@ export default function MentorRequestsPage() {
       labelEn: 'Mentorship requests',
       labelEl: 'Αιτήματα καθοδήγησης',
       rows: isLoading ? undefined : requests.map((r) => `${r.requester?.displayName || 'Unknown'}${r.requester?.headline ? ` · ${r.requester.headline}` : ''} · ${r.status}${r.focusAreas?.length ? ` · ${r.focusAreas.join(', ')}` : ''}`),
+      rowsEl: isLoading ? undefined : requests.map((r) => `${r.requester?.displayName || 'Άγνωστο μέλος'}${r.requester?.headline ? ` · ${r.requester.headline}` : ''} · ${elWord(r.status)}${r.focusAreas?.length ? ` · ${r.focusAreas.join(', ')}` : ''}`),
     },
   ]);
   usePageControls([

@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { elWord } from '@/lib/rows-el';
 
 /*
  * Workspace analytics, counted.
@@ -176,6 +177,7 @@ export default function TenantAnalyticsPage() {
       labelEn: 'Program performance',
       labelEl: 'Απόδοση προγραμμάτων',
       rows: programsLoading ? undefined : programPerformance.map((p) => `${p.name} · ${p.status} · ${p.enrolled}/${p.capacity ?? '—'} places · ${p.graduated} graduated · ${p.applications} applications`),
+      rowsEl: programsLoading ? undefined : programPerformance.map((p) => `${p.name} · ${elWord(p.status)} · ${p.enrolled}/${p.capacity ?? '—'} θέσεις · ${p.graduated} αποφοίτησαν · ${p.applications} αιτήσεις`),
     },
   ]);
   usePageControls([

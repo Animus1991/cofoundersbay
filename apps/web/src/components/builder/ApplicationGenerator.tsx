@@ -37,6 +37,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { useToast } from '@/components/ui/toast';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { elWord } from '@/lib/rows-el';
 
 interface ApplicationGeneratorProps {
   onSave?: (data: ApplicationTemplate[]) => void | Promise<void>;
@@ -289,6 +290,9 @@ export function ApplicationGenerator({
       labelEl: 'Αιτήσεις σε προγράμματα',
       rows: applications.map((app) =>
         `${app.name} · ${deriveApplicationStatus(app)} · ${requiredCompletion(app)}% of required answers${app.id === activeApp ? ' · open' : ''}`,
+      ),
+      rowsEl: applications.map((app) =>
+        `${app.name} · ${elWord(deriveApplicationStatus(app))} · ${requiredCompletion(app)}% των υποχρεωτικών απαντήσεων${app.id === activeApp ? ' · ανοιχτή' : ''}`,
       ),
       total: applications.length,
     },

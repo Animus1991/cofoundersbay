@@ -72,6 +72,7 @@ import { formatFee } from '@/lib/mentor-fee';
 import { RequestReviewDialog } from '@/components/mentoring/RequestReviewDialog';
 import { areaChips, areasOf, hitToMentor, mergeDirectory, offers, priceOf, type Mentor } from '@/lib/mentoring/directory';
 import { MENTOR_SERVICES, areaKeys, areaLabel, directoryFromParams, type MentorService } from '@/lib/mentoring/services';
+import { elWord } from '@/lib/rows-el';
 
 const AVAIL_CONFIG = {
   available: { en: 'Available', el: 'Διαθέσιμος', color: 'text-status-success ', bg: 'bg-status-success-bg', dot: 'bg-status-success-mark' },
@@ -855,6 +856,16 @@ export default function MentoringPage() {
           : (m.rating > 0 ? ` · ${m.rating.toFixed(1)}★` : '');
         return `${m.displayName}${m.location ? ` · ${m.location}` : ''}${named.length ? ` · ${named.join(', ')}` : ''} · ${price}${standing}`;
       }),
+      rowsEl: directoryLoading ? undefined : filteredMentors.map((m) => {
+        const named = service === 'mentoring' ? m.expertise : areasOf(m, service).map((key) => areaLabel(service, key)?.el ?? key);
+        const price = service === 'review'
+          ? (m.review?.feeFrom != null ? `αξιολογήσεις από ${formatFee(m.review.feeFrom, m.review.currency)}` : 'δωρεάν αξιολογήσεις')
+          : (m.hourlyRate ? `${formatFee(m.hourlyRate, m.currency)}/ώρα` : 'δωρεάν');
+        const standing = service === 'review'
+          ? ` · ${m.review?.completed ?? 0} αξιολογήσεις${m.review?.rating != null ? ` · ${m.review.rating.toFixed(1)}★` : ''}`
+          : (m.rating > 0 ? ` · ${m.rating.toFixed(1)}★` : '');
+        return `${m.displayName}${m.location ? ` · ${m.location}` : ''}${named.length ? ` · ${named.join(', ')}` : ''} · ${price}${standing}`;
+      }),
     },
     {
       id: 'sessions',
@@ -862,6 +873,9 @@ export default function MentoringPage() {
       labelEl: 'Οι συνεδρίες μου',
       rows: sessionsLoading ? undefined : filteredSessions.map((u) =>
         `${u.counterpart.displayName} (${u.mentorId === userId ? 'mentee' : 'mentor'}) · ${u.startAt.slice(0, 16).replace('T', ' ')} UTC · ${u.meetingType ?? 'session'} · ${u.status} · ${u.source}`,
+      ),
+      rowsEl: sessionsLoading ? undefined : filteredSessions.map((u) =>
+        `${u.counterpart.displayName} (${u.mentorId === userId ? 'καθοδηγούμενος' : 'μέντορας'}) · ${u.startAt.slice(0, 16).replace('T', ' ')} UTC · ${elWord(u.meetingType ?? 'session')} · ${elWord(u.status)} · ${u.source === 'booking' ? 'κράτηση' : 'συνεδρία καθοδήγησης'}`,
       ),
     },
   ]);

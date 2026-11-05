@@ -48,6 +48,7 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ASK } from '@/lib/page-questions';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { elWord } from '@/lib/rows-el';
 
 type OrgEvent = {
   id: string;
@@ -395,6 +396,7 @@ export default function OrgEventsPage() {
       labelEn: 'Organisation events',
       labelEl: 'Εκδηλώσεις οργανισμού',
       rows: isLoading ? undefined : filtered.map((e) => `${e.title} · ${e.date} ${e.time} · ${e.format} · ${e.status} · ${e.attendees}/${e.capacity} attendees`),
+      rowsEl: isLoading ? undefined : filtered.map((e) => `${e.title} · ${e.date} ${e.time} · ${elWord(e.format)} · ${elWord(e.status)} · ${e.attendees}/${e.capacity} συμμετέχοντες`),
       total: events.length,
       sample: live.length === 0,
     },

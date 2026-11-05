@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { EmptyTenantDomains } from '@/components/common/EmptyStates';
 import { qk } from '@/lib/query-keys';
+import { elWord } from '@/lib/rows-el';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -504,6 +505,9 @@ export default function TenantDomainsPage() {
       labelEl: 'Domains',
       rows: data
         ? domains.map((d) => `${d.domainName} · ${d.domainType} · ${d.verificationStatus} · ${d.isActive ? 'active' : 'inactive'}${d.isPrimary ? ' · primary' : ''}`)
+        : undefined,
+      rowsEl: data
+        ? domains.map((d) => `${d.domainName} · ${elWord(d.domainType)} · ${elWord(d.verificationStatus)} · ${d.isActive ? 'ενεργό' : 'ανενεργό'}${d.isPrimary ? ' · κύριο' : ''}`)
         : undefined,
       total: domains.length,
       sample: false,
