@@ -65,22 +65,19 @@ print_status "Web built"
 echo "🗄️  Setting up database..."
 cd apps/api
 
-# Check if database is available
-if ! npx prisma db push --accept-data-loss 2>/dev/null; then
-    print_warning "Database not available - please run: docker compose up -d"
-    echo "Then run: cd apps/api && npx prisma db push"
+# Migrations, never `prisma db push --accept-data-loss`: that drops whatever
+# the schema no longer names, data included (docs §59.4.1, §111). Since the
+# baseline migration, `migrate deploy` builds every table on an empty
+# database. A database made earlier with `db push` is recorded once with
+# `pnpm db:baseline`, which first checks that it matches the schema.
+npx prisma generate
+print_status "Prisma client generated"
+if npx prisma migrate deploy; then
+    print_status "Database migrations applied"
 else
-    print_status "Database schema pushed"
-    
-    # Run migrations
-    if [ -d "prisma/migrations" ]; then
-        npx prisma migrate deploy
-        print_status "Database migrations applied"
-    fi
-    
-    # Generate Prisma client
-    npx prisma generate
-    print_status "Prisma client generated"
+    print_warning "Migrations did not apply."
+    echo "  Database not running?           docker compose up -d"
+    echo "  Database made with 'db push'?   cd apps/api && pnpm db:baseline   (once)"
 fi
 
 cd ../..
@@ -421,7 +418,7 @@ echo ""
 echo "Next steps:"
 echo "1. Update .env with your production values"
 echo "2. Start your database: docker compose up -d"
-echo "3. Run database migrations: cd apps/api && npx prisma db push"
+echo "3. Run database migrations: cd apps/api && npx prisma migrate deploy"
 echo "4. Start the application: pm2 start ecosystem.config.js"
 echo "5. Run health check: ./scripts/health-check.sh"
 echo ""
