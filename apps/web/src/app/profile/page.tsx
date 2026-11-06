@@ -6,7 +6,6 @@ import { VerificationCard } from '@/components/settings/VerificationCard';
 import { OpenToCard } from '@/components/settings/OpenToCard';
 import { CompatibilityCard } from '@/components/settings/CompatibilityCard';
 import { useScrollToHash } from '@/hooks/useScrollToHash';
-import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { VerifiedBadge } from '@/components/commitments/VerifiedBadge';
 import { ProfileHero } from '@/components/profile/ProfileHero';
 import { ProfileActivity, ProfileExperience, SimilarProfiles } from '@/components/profile/ProfileSections';
