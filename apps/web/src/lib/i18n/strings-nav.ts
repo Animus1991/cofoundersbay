@@ -103,7 +103,9 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/groups': 'Κοινότητες',
   '/help': 'Κέντρο βοήθειας',
   '/investor/analytics': 'Αναλυτικά συμφωνιών',
-  '/investor/pipeline': 'Pipeline συμφωνιών',
+  '/investor/pipeline': 'Pipeline συμφωνιών',
+  '/builder/calculators': 'Υπολογιστές',
+  '/data-room': 'Κοινόχρηστα data rooms',
   '/investor/portfolio': 'Χαρτοφυλάκιο',
   '/investor/scouting': 'Αναζήτηση startups',
   '/investor/watchlist': 'Λίστα παρακολούθησης',
@@ -248,6 +250,8 @@ export const NAV_DESCRIPTION_EL: Record<string, string> = {
     'Σχόλια από τους καθοδηγούμενούς σας',
   '/investor/scouting':
     'Αναζήτηση startups κατά στάδιο και κλάδο',
+  '/builder/calculators': 'Γύρος, μετοχές εργαζομένων, μοναδιαία οικονομικά και runway',
+  '/data-room': 'Έγγραφα που άνοιξαν ιδρυτές στον λογαριασμό σας',
   '/investor/pipeline':
     'Συμφωνίες από τη γνωριμία έως το κλείσιμο',
   '/investor/watchlist':

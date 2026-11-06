@@ -73,6 +73,8 @@ import {
   UserPen,
   BellRing,
   Download,
+  Calculator,
+  FolderOpen,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -142,6 +144,7 @@ export const founderWorkSections: NavSection[] = [
     section: 'Fundraise',
     links: [
       { href: '/fundraising', label: 'Fundraising', icon: DollarSign },
+      { href: '/builder/calculators', label: 'Calculators', icon: Calculator },
       { href: '/updates', label: 'Updates', icon: Megaphone },
       { href: '/builder/applications', label: 'Applications', icon: ClipboardList },
     ],
@@ -208,6 +211,7 @@ export const investorWorkSections: NavSection[] = [
       { href: '/investor/scouting', label: 'Scout Startups', icon: Telescope },
       { href: '/investor/pipeline', label: 'Pipeline', icon: GanttChart },
       { href: '/investor/watchlist', label: 'Watchlist', icon: Eye },
+      { href: '/data-room', label: 'Shared data rooms', icon: FolderOpen },
     ],
   },
   {
