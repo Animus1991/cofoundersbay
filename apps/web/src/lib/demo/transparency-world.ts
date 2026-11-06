@@ -1,7 +1,9 @@
 import {
   TRANSPARENCY_EVENT_KINDS,
   halfYearOf,
+  isAssistantFeedbackReason,
   parseHalfYear,
+  type AssistantFeedbackCounts,
   type TransparencyEventKind,
   type TransparencyReport,
   type TransparencySurface,
@@ -35,8 +37,10 @@ function load(): Counts {
 
 export function resetDemoTransparency() {
   memory = null;
+  votes = null;
   try {
     if (typeof window !== 'undefined') window.sessionStorage.removeItem(STORAGE_KEY);
+    if (typeof window !== 'undefined') window.sessionStorage.removeItem(VOTES_KEY);
   } catch {
     // ignore
   }
@@ -52,6 +56,62 @@ export function recordDemoRefusal(kind: TransparencyEventKind, surface: Transpar
   } catch {
     // storage blocked: the count lasts this page view
   }
+}
+
+// The 👍 and 👎 given in this demo session, kept as the API keeps them: one
+// verdict per answer, a reason only on a 👎, and no text.
+const VOTES_KEY = 'cfb:demo-answer-feedback:v1';
+type Vote = { helpful: boolean; reason: string | null };
+let votes: Record<string, Vote> | null = null;
+
+function loadVotes(): Record<string, Vote> {
+  if (votes) return votes;
+  try {
+    const raw = typeof window !== 'undefined' ? window.sessionStorage.getItem(VOTES_KEY) : null;
+    votes = raw ? (JSON.parse(raw) as Record<string, Vote>) : {};
+  } catch {
+    votes = {};
+  }
+  return votes;
+}
+
+function saveVotes(next: Record<string, Vote>) {
+  votes = next;
+  try {
+    if (typeof window !== 'undefined') window.sessionStorage.setItem(VOTES_KEY, JSON.stringify(next));
+  } catch {
+    // storage blocked: the verdict lasts this page view
+  }
+}
+
+/** Answers `/api/ai/answers/:id/feedback` for the demo, or `undefined` for any other path. */
+export function previewAnswerFeedbackApi(pathname: string, method: string, body: Record<string, unknown>): unknown {
+  const match = /^\/api\/ai\/answers\/([^/]+)\/feedback$/.exec(pathname);
+  if (!match) return undefined;
+  const answerId = decodeURIComponent(match[1]);
+  if (method === 'DELETE') {
+    const { [answerId]: _gone, ...rest } = loadVotes();
+    saveVotes(rest);
+    return { ok: true };
+  }
+  if (method !== 'PUT') return undefined;
+  if (typeof body.helpful !== 'boolean') throw new DemoRefusal(400, 'helpful must be a boolean value', { reason: 'helpful' });
+  if (body.reason !== undefined && !isAssistantFeedbackReason(body.reason)) throw new DemoRefusal(400, 'reason must be one of the listed reasons', { reason: 'reason' });
+  const reason = body.helpful ? null : ((body.reason as string | undefined) ?? null);
+  saveVotes({ ...loadVotes(), [answerId]: { helpful: body.helpful, reason } });
+  return { answerId, helpful: body.helpful, reason };
+}
+
+function feedbackCounts(): AssistantFeedbackCounts {
+  const counts: AssistantFeedbackCounts = { helpful: 0, notHelpful: 0, byReason: {} };
+  for (const vote of Object.values(loadVotes())) {
+    if (vote.helpful) counts.helpful += 1;
+    else {
+      counts.notHelpful += 1;
+      if (isAssistantFeedbackReason(vote.reason)) counts.byReason[vote.reason] = (counts.byReason[vote.reason] ?? 0) + 1;
+    }
+  }
+  return counts;
 }
 
 /** Answers `/api/public/transparency` for the demo, or `undefined` for any other path. */
@@ -75,6 +135,7 @@ export function previewTransparencyApi(pathname: string, path: string, now: numb
     refusals,
     reports: live ? { received: 2, resolved: 1, dismissed: 0, open: 1 } : { received: 0, resolved: 0, dismissed: 0, open: 0 },
     blocks: 0,
+    assistantFeedback: live ? feedbackCounts() : { helpful: 0, notHelpful: 0, byReason: {} },
     generatedAt: new Date(now).toISOString(),
     sample: true,
   };

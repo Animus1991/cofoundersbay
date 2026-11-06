@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import {
+  ASSISTANT_FEEDBACK_COPY,
+  ASSISTANT_FEEDBACK_REASONS,
   TRANSPARENCY_COPY,
   TRANSPARENCY_EVENT_KINDS,
   TRANSPARENCY_SURFACES,
@@ -177,6 +179,31 @@ export default function TransparencyPage() {
                 />
               </p>
             </section>
+
+            {data.assistantFeedback ? (
+              <section aria-labelledby="assistant-heading" className="space-y-4">
+                <h2 id="assistant-heading" className="text-lg font-semibold text-foreground">
+                  <BilingualText en={ASSISTANT_FEEDBACK_COPY.heading.en} el={ASSISTANT_FEEDBACK_COPY.heading.el} compact />
+                </h2>
+                <Card>
+                  <CardContent>
+                    <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                      {[
+                        { ...ASSISTANT_FEEDBACK_COPY.helpful, value: data.assistantFeedback.helpful },
+                        { ...ASSISTANT_FEEDBACK_COPY.notHelpful, value: data.assistantFeedback.notHelpful },
+                        ...ASSISTANT_FEEDBACK_REASONS.map((reason) => ({ ...ASSISTANT_FEEDBACK_COPY.reasons[reason], value: data.assistantFeedback?.byReason[reason] ?? 0 })),
+                      ].map((f) => (
+                        <div key={f.en} className="min-w-0 space-y-1">
+                          <dt className="text-xs text-muted-foreground"><BilingualText en={f.en} el={f.el} compact wrap /></dt>
+                          <dd className="text-xl font-bold tabular-nums text-foreground">{nf(f.value)}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </CardContent>
+                </Card>
+                <p className="text-xs text-muted-foreground"><BilingualText en={ASSISTANT_FEEDBACK_COPY.hint.en} el={ASSISTANT_FEEDBACK_COPY.hint.el} wrap /></p>
+              </section>
+            ) : null}
           </>
         )}
       </MainLandmark>

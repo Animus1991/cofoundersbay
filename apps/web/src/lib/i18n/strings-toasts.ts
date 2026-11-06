@@ -344,6 +344,8 @@ export const TOAST_EL: Record<string, string> = {
   // Notifications: Save, and taking one out of Saved (§111).
   "Removed from Saved": "Αφαιρέθηκε από τις αποθηκευμένες",
   "Could not save the notification": "Η ειδοποίηση δεν αποθηκεύτηκε",
+  // The assistant: 👍 / 👎 under an answer (§111).
+  "Could not save your rating": "Η αξιολόγηση δεν αποθηκεύτηκε",
   // The API's refusal when a member limits who may start a conversation
   // (Settings > Privacy, shared/visibility messagePolicy).
   "This member is not taking new conversations": "Αυτό το μέλος δεν δέχεται νέες συνομιλίες",

@@ -45,6 +45,7 @@ import { COPILOT_PRODUCT_LINKS, copilotStartersFor } from '@/lib/copilot-starter
 import { composerMode, filterCommands, insertMention } from '@/lib/composer-menu';
 import { listDeclarations } from '@cofounderbay/shared';
 import { CAPABILITY_SAMPLES } from '@/lib/capability-samples';
+import { AnswerFeedback } from '@/components/ai/AnswerFeedback';
 import { DictationButton } from '@/components/ai/DictationButton';
 import { searchProfiles } from '@/lib/api';
 import { useRoleOptional } from '@/contexts/RoleContext';
@@ -611,11 +612,12 @@ export function CopilotWorkspace({
                       onRetry={chat.retryLastMessage}
                     />
                   )}
-                  <div className={cn('mt-1 flex items-center gap-1', msg.role === 'user' && 'justify-end')}>
+                  <div className={cn('mt-1 flex flex-wrap items-center gap-1', msg.role === 'user' && 'justify-end')}>
                     <p className={cn('type-caption', msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground')}>
                       {formatTime(msg.timestamp, primary)}
                     </p>
                     {msg.role === 'assistant' && !msg.isStreaming && msg.content ? <CopyAnswer content={msg.content} /> : null}
+                    {msg.role === 'assistant' && !msg.isStreaming && msg.content ? <AnswerFeedback answerId={msg.id} source={msg.model || 'builtin'} /> : null}
                   </div>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import { resolvePreviewApiNow } from '@/lib/preview-api';
 import { leavePreviewDemoForRealAccount } from '@/lib/preview-demo';
-import type { CompatAnswers, CompatComparison, MentorListingInput, ProviderListingInput, PublicStats, TransparencyReport } from '@cofounderbay/shared';
+import type { AssistantFeedbackCounts, AssistantFeedbackReason, CompatAnswers, CompatComparison, MentorListingInput, ProviderListingInput, PublicStats, TransparencyReport } from '@cofounderbay/shared';
+import { isAssistantFeedbackReason } from '@cofounderbay/shared';
 
 // Returns the API base URL evaluated at call time — not module load time.
 // Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
@@ -7618,6 +7619,25 @@ export async function getTransparencyReport(period?: string): Promise<Transparen
   return toTransparencyReport(raw);
 }
 
+function toAssistantFeedback(raw: Record<string, unknown>, n: (v: unknown) => number): AssistantFeedbackCounts {
+  const byReason: AssistantFeedbackCounts['byReason'] = {};
+  const reasons = raw.byReason && typeof raw.byReason === 'object' ? (raw.byReason as Record<string, unknown>) : {};
+  for (const [reason, count] of Object.entries(reasons)) if (isAssistantFeedbackReason(reason) && n(count)) byReason[reason] = n(count);
+  return { helpful: n(raw.helpful), notHelpful: n(raw.notHelpful), byReason };
+}
+
+/** A 👍 or 👎 on one answer: the verdict, a reason from the list, and which assistant answered (docs §111). */
+export async function setAnswerFeedback(
+  answerId: string,
+  body: { helpful: boolean; reason?: AssistantFeedbackReason; source?: string },
+): Promise<{ answerId: string; helpful: boolean; reason: string | null }> {
+  return apiRequest(`/api/ai/answers/${encodeURIComponent(answerId)}/feedback`, { method: 'PUT', body: JSON.stringify(body) });
+}
+
+export async function clearAnswerFeedback(answerId: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/ai/answers/${encodeURIComponent(answerId)}/feedback`, { method: 'DELETE' });
+}
+
 export function toTransparencyReport(raw: unknown): TransparencyReport {
   const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' ? (v as Record<string, unknown>) : {});
   const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.floor(v) : 0);
@@ -7636,6 +7656,7 @@ export function toTransparencyReport(raw: unknown): TransparencyReport {
     refusals: { contact_refused: refusal('contact_refused'), promise_refused: refusal('promise_refused') },
     reports: { received: n(reports.received), resolved: n(reports.resolved), dismissed: n(reports.dismissed), open: n(reports.open) },
     blocks: n(r.blocks),
+    ...(r.assistantFeedback ? { assistantFeedback: toAssistantFeedback(obj(r.assistantFeedback), n) } : {}),
     generatedAt: typeof r.generatedAt === 'string' ? r.generatedAt : '',
     ...(r.sample === true ? { sample: true } : {}),
   };

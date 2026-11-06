@@ -52,6 +52,25 @@ export function previousHalfYear(p: HalfYear): HalfYear {
   return h === 2 ? halfYear(y, 1) : halfYear(y - 1, 2);
 }
 
+/**
+ * What a 👎 under an assistant answer can say was wrong (docs §54.7 #5,
+ * §111). A fixed list, so the verdict is stored without the question, the
+ * answer or any words of the member's.
+ */
+export const ASSISTANT_FEEDBACK_REASONS = ['wrong', 'unclear', 'not_what_i_asked', 'unsafe'] as const;
+export type AssistantFeedbackReason = (typeof ASSISTANT_FEEDBACK_REASONS)[number];
+
+export function isAssistantFeedbackReason(value: unknown): value is AssistantFeedbackReason {
+  return typeof value === 'string' && (ASSISTANT_FEEDBACK_REASONS as readonly string[]).includes(value);
+}
+
+/** The period's 👍 and 👎 on assistant answers, each member's last word on each answer. */
+export interface AssistantFeedbackCounts {
+  helpful: number;
+  notHelpful: number;
+  byReason: Partial<Record<AssistantFeedbackReason, number>>;
+}
+
 export interface TransparencyReport {
   period: HalfYear;
   /** True while the period is still running: the counts so far. */
@@ -59,10 +78,28 @@ export interface TransparencyReport {
   refusals: Record<TransparencyEventKind, { total: number; bySurface: Partial<Record<TransparencySurface, number>> }>;
   reports: { received: number; resolved: number; dismissed: number; open: number };
   blocks: number;
+  /** Absent from an API older than §111. */
+  assistantFeedback?: AssistantFeedbackCounts;
   generatedAt: string;
   /** Set only by the preview demo, whose figures are illustrative. */
   sample?: boolean;
 }
+
+export const ASSISTANT_FEEDBACK_COPY = {
+  heading: { en: 'How the assistant’s answers were rated', el: 'Πώς βαθμολογήθηκαν οι απαντήσεις του βοηθού' },
+  helpful: { en: 'Helpful', el: 'Χρήσιμες' },
+  notHelpful: { en: 'Not helpful', el: 'Όχι χρήσιμες' },
+  hint: {
+    en: 'Each member’s last 👍 or 👎 on each answer, counted when it was given. Stored as the verdict and one reason from the list below: no question, no answer, no words.',
+    el: 'Το τελευταίο 👍 ή 👎 κάθε μέλους σε κάθε απάντηση, μετρημένο όταν δόθηκε. Αποθηκεύεται η κρίση και ένας λόγος από την παρακάτω λίστα: ούτε ερώτηση, ούτε απάντηση, ούτε λόγια.',
+  },
+  reasons: {
+    wrong: { en: 'Wrong or out of date', el: 'Λάθος ή παρωχημένη' },
+    unclear: { en: 'Hard to follow', el: 'Δυσνόητη' },
+    not_what_i_asked: { en: 'Not what I asked', el: 'Δεν ήταν αυτό που ρώτησα' },
+    unsafe: { en: 'Unsafe or inappropriate', el: 'Επικίνδυνη ή ακατάλληλη' },
+  } as Record<AssistantFeedbackReason, { en: string; el: string }>,
+} as const;
 
 export const TRANSPARENCY_COPY = {
   contact_refused: {

@@ -46,6 +46,18 @@ describe('the demo report', () => {
     expect(report.refusals.contact_refused).toEqual({ total: 1, bySurface: { interest: 1 } });
   });
 
+  it('counts each answer’s last 👍 or 👎, with the API’s rules', () => {
+    const rate = (id: string, body: unknown) => resolvePreviewApi(`/api/ai/answers/${id}/feedback`, { method: 'PUT', body: JSON.stringify(body) });
+    rate('a1', { helpful: false, reason: 'wrong' });
+    rate('a2', { helpful: false });
+    rate('a2', { helpful: true });
+    rate('a3', { helpful: true });
+    resolvePreviewApi('/api/ai/answers/a3/feedback', { method: 'DELETE' });
+    expect(() => rate('a4', { helpful: false, reason: 'it was rude' })).toThrow(/reason/);
+    const report = toTransparencyReport(resolvePreviewApi('/api/public/transparency'));
+    expect(report.assistantFeedback).toEqual({ helpful: 1, notHelpful: 1, byReason: { wrong: 1 } });
+  });
+
   it('refuses a malformed period', () => {
     expect(() => resolvePreviewApi('/api/public/transparency?period=soon')).toThrow();
   });

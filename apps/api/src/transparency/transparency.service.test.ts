@@ -20,6 +20,14 @@ function prisma(events: Array<{ kind: string; surface: string; _count: { _all: n
     transparencyEvent: { create: vi.fn(async () => ({})), groupBy: vi.fn(async () => events) },
     report: { count: vi.fn(async ({ where }: { where: Record<string, unknown> }) => (where.status === 'resolved' ? 4 : where.status === 'dismissed' ? 2 : 'createdAt' in where && !('status' in where) ? 9 : 3)) },
     userBlock: { count: vi.fn(async () => 5) },
+    assistantAnswerFeedback: {
+      groupBy: vi.fn(async () => [
+        { helpful: true, reason: null, _count: { _all: 40 } },
+        { helpful: false, reason: 'wrong', _count: { _all: 6 } },
+        { helpful: false, reason: null, _count: { _all: 3 } },
+        { helpful: false, reason: 'made_up', _count: { _all: 1 } },
+      ]),
+    },
   };
 }
 
@@ -40,6 +48,8 @@ describe('the transparency report', () => {
     expect(report.refusals.promise_refused).toEqual({ total: 2, bySurface: { need_card: 2 } });
     expect(report.reports).toEqual({ received: 9, resolved: 4, dismissed: 2, open: 3 });
     expect(report.blocks).toBe(5);
+    // A 👎 without a reason, or with one off the list, still counts as a 👎.
+    expect(report.assistantFeedback).toEqual({ helpful: 40, notHelpful: 10, byReason: { wrong: 6 } });
     expect(db.transparencyEvent.groupBy).toHaveBeenCalledWith(expect.objectContaining({ where: { createdAt: { gte: new Date('2026-07-01T00:00:00Z'), lt: new Date('2027-01-01T00:00:00Z') } } }));
   });
 

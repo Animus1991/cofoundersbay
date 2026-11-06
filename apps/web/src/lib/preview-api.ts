@@ -22,7 +22,7 @@ import { previewNotificationPrefsApi } from './demo/notification-prefs-world';
 import { demoNotifications, previewNotificationsApi } from './demo/notifications-world';
 import { demoConnections, previewConnectionsApi } from './demo/connections-world';
 import { previewLearningApi } from './demo/learning-world';
-import { previewTransparencyApi } from './demo/transparency-world';
+import { previewAnswerFeedbackApi, previewTransparencyApi } from './demo/transparency-world';
 import { previewScoutApi } from './demo/scout-world';
 import { attachDemoPhotos } from './demo/photos';
 import { messageSnippet, readProjectDelivery, textMatches } from '@cofounderbay/shared';
@@ -3314,6 +3314,8 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   // The transparency report: what this demo session's rules refused.
   const transparencyAnswer = previewTransparencyApi(pathname, path, previewNowMs());
   if (transparencyAnswer !== undefined) return transparencyAnswer;
+  const answerFeedback = previewAnswerFeedbackApi(pathname, method, (body ?? {}) as Record<string, unknown>);
+  if (answerFeedback !== undefined) return answerFeedback;
   // The landing page's counts, counted from the demo world so demo mode
   // shows the demo's real numbers rather than fabricated ones.
   if (pathname === '/api/public/stats') {

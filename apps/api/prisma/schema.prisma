@@ -384,6 +384,9 @@ model User {
   // Notifications
   notifications Notification[]
 
+  // 👍 / 👎 on the assistant's answers
+  assistantFeedback AssistantAnswerFeedback[]
+
   // Moderation
   reportsFiled    Report[] @relation("ReportsFiled")
   reportsAgainst  Report[] @relation("ReportsAgainst")
@@ -917,8 +920,8 @@ model Notification {
 
 /// One refusal by a safety rule (contact details, promised returns), for the
 /// half-yearly transparency report. Deliberately no user and no text: the
-/// kind, where it happened and when. Schema-only like the other new models
-/// (`prisma db push`).
+/// kind, where it happened and when. Its table comes with the baseline
+/// migration (20261105120000).
 model TransparencyEvent {
   id        String   @id @default(uuid())
   kind      String
@@ -926,6 +929,28 @@ model TransparencyEvent {
   createdAt DateTime @default(now())
 
   @@index([kind, createdAt])
+}
+
+/// A member's 👍 or 👎 on one assistant answer (docs §54.7 #5, §111): their
+/// last word on it, so a second press changes it and a third clears it.
+/// No question, no answer and no free text: the verdict, a reason from
+/// ASSISTANT_FEEDBACK_REASONS, and which assistant answered. The
+/// transparency report counts these per half year.
+model AssistantAnswerFeedback {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// The answer's id in the conversation (the chat's message id).
+  answerId  String
+  helpful   Boolean
+  reason    String?
+  /// "builtin", or the provider and model that answered; never the text.
+  source    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, answerId])
+  @@index([updatedAt])
 }
 
 model Report {

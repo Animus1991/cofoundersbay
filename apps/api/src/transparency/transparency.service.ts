@@ -3,7 +3,9 @@ import {
   TRANSPARENCY_EVENT_KINDS,
   TRANSPARENCY_SURFACES,
   halfYearOf,
+  isAssistantFeedbackReason,
   parseHalfYear,
+  type AssistantFeedbackCounts,
   type HalfYear,
   type TransparencyEventKind,
   type TransparencyReport,
@@ -44,7 +46,7 @@ export class TransparencyService {
     if (cached && (!inProgress || now.getTime() - cached.at < CACHE_TTL_MS)) return cached.report;
 
     const range = { gte: new Date(period.from), lt: new Date(period.to) };
-    const [events, received, resolved, dismissed, open, blocks] = await Promise.all([
+    const [events, received, resolved, dismissed, open, blocks, ratings] = await Promise.all([
       this.prisma.transparencyEvent
         .groupBy({ by: ['kind', 'surface'], where: { createdAt: range }, _count: { _all: true } })
         .catch(() => [] as Array<{ kind: string; surface: string; _count: { _all: number } }>),
@@ -53,6 +55,10 @@ export class TransparencyService {
       this.prisma.report.count({ where: { status: 'dismissed', resolvedAt: range } }),
       this.prisma.report.count({ where: { createdAt: { lt: range.lt }, status: { in: ['pending', 'reviewed'] } } }),
       this.prisma.userBlock.count({ where: { createdAt: range } }).catch(() => 0),
+      // Each member's last word on each answer, counted when it was given.
+      this.prisma.assistantAnswerFeedback
+        .groupBy({ by: ['helpful', 'reason'], where: { updatedAt: range }, _count: { _all: true } })
+        .catch(() => [] as Array<{ helpful: boolean; reason: string | null; _count: { _all: number } }>),
     ]);
 
     const refusals = Object.fromEntries(TRANSPARENCY_EVENT_KINDS.map((k) => [k, { total: 0, bySurface: {} }])) as TransparencyReport['refusals'];
@@ -65,12 +71,23 @@ export class TransparencyService {
       bucket.bySurface[row.surface as TransparencySurface] = (bucket.bySurface[row.surface as TransparencySurface] ?? 0) + n;
     }
 
+    const assistantFeedback: AssistantFeedbackCounts = { helpful: 0, notHelpful: 0, byReason: {} };
+    for (const row of ratings) {
+      const n = row._count?._all ?? 0;
+      if (row.helpful) assistantFeedback.helpful += n;
+      else {
+        assistantFeedback.notHelpful += n;
+        if (isAssistantFeedbackReason(row.reason)) assistantFeedback.byReason[row.reason] = (assistantFeedback.byReason[row.reason] ?? 0) + n;
+      }
+    }
+
     const report: TransparencyReport = {
       period,
       inProgress,
       refusals,
       reports: { received, resolved, dismissed, open },
       blocks,
+      assistantFeedback,
       generatedAt: now.toISOString(),
     };
     this.cache.set(period.key, { at: now.getTime(), report });
