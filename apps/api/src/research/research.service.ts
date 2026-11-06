@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { cleanRichText } from '../common/rich-text';
 import type { ResearchNodeType, ResearchBoardVisibility } from '@prisma/client';
 
 export type ResearchBoardDto = {
@@ -328,7 +329,7 @@ export class ResearchService {
         boardId,
         type: data.type,
         title: data.title,
-        content: data.content,
+        content: cleanRichText(data.content),
         url: data.url,
         uploadId: data.uploadId,
         posX: data.posX ?? 0,
@@ -407,7 +408,7 @@ export class ResearchService {
       where: { id: nodeId },
       data: {
         title: data.title,
-        content: data.content,
+        content: cleanRichText(data.content),
         url: data.url,
         posX: data.posX,
         posY: data.posY,
@@ -1103,7 +1104,7 @@ Respond with JSON (no markdown):
           id: n.id, boardId,
           type: n.type as any,
           title: n.title ?? null,
-          content: n.content ?? null,
+          content: cleanRichText(n.content ?? null),
           url: (n as any).url ?? null,
           posX: n.posX ?? 0,
           posY: n.posY ?? 0,

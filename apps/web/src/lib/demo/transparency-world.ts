@@ -90,7 +90,8 @@ export function previewAnswerFeedbackApi(pathname: string, method: string, body:
   if (!match) return undefined;
   const answerId = decodeURIComponent(match[1]);
   if (method === 'DELETE') {
-    const { [answerId]: _gone, ...rest } = loadVotes();
+    const rest = { ...loadVotes() };
+    delete rest[answerId];
     saveVotes(rest);
     return { ok: true };
   }

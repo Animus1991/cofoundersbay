@@ -13,6 +13,7 @@ import type { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
 import { COOKIE_NAMES } from '../auth/cookie.utils';
 import { PrismaService } from '../prisma/prisma.service';
+import { cleanRichText } from '../common/rich-text';
 
 type AuthedSocket = Socket & { data: { user?: { id: string; email: string; role: string } } };
 
@@ -210,7 +211,8 @@ export class ResearchGateway implements OnGatewayConnection, OnGatewayDisconnect
       nodeId: input.nodeId,
       changes: {
         title: input.title,
-        content: input.content,
+        // Relayed to collaborators as it is, so it is cleaned as a save is.
+        content: cleanRichText(input.content),
         color: input.color,
         tags: input.tags,
         width: input.width,

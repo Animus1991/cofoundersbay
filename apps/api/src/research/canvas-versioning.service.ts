@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { cleanRichText } from '../common/rich-text';
 
 // ── Snapshot types ────────────────────────────────────────────────────────────
 
@@ -479,7 +480,7 @@ export class CanvasVersioningService {
             boardId,
             type: n.type as any,
             title: n.title,
-            content: n.content,
+            content: cleanRichText(n.content),
             posX: n.posX,
             posY: n.posY,
             width: n.width,
@@ -901,7 +902,7 @@ export class CanvasVersioningService {
           id: n.id, boardId,
           type: n.type as any,
           title: n.title,
-          content: n.content,
+          content: cleanRichText(n.content),
           posX: n.posX, posY: n.posY,
           width: n.width, height: n.height,
           zIndex: n.zIndex,

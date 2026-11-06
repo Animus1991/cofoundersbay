@@ -27,8 +27,9 @@ function readVotes(): Record<string, Vote> {
 
 function remember(answerId: string, vote: Vote | null) {
   try {
-    const { [answerId]: _replaced, ...others } = readVotes();
-    const next = vote ? { ...others, [answerId]: vote } : others;
+    const next = { ...readVotes() };
+    delete next[answerId];
+    if (vote) next[answerId] = vote;
     const kept = Object.entries(next).slice(-REMEMBERED);
     window.localStorage.setItem(STORE, JSON.stringify(Object.fromEntries(kept)));
   } catch {

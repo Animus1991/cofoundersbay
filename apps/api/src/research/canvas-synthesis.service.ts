@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { cleanRichText } from '../common/rich-text';
 import { OllamaService } from '../ai/ollama.service';
 import { getAgent } from '../ai/agents/base-agent';
 
@@ -333,7 +334,7 @@ ${nodesSummary}`;
         boardId,
         type: prismaType as any,
         title: doc.title,
-        content: contentPreview,
+        content: cleanRichText(contentPreview),
         posX: dto.posX ?? 400,
         posY: dto.posY ?? 300,
         width: 280,
