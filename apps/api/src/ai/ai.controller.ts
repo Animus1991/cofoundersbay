@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Param, Delete, Patch, Put, Query, Req, Res, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Param, Delete, Patch, Query, Req, Res, HttpStatus, NotFoundException } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -15,8 +15,6 @@ import { getAgent, listAgents } from './agents/base-agent';
 import { toToolCatalog } from '@cofounderbay/shared';
 import { AIActionAuditService } from './ai-action-audit.service';
 import { RecordAIActionDto } from './dto/record-action.dto';
-import { AnswerFeedbackService } from './answer-feedback.service';
-import { SetAnswerFeedbackDto } from './dto/answer-feedback.dto';
 import { reviewToolCalls } from './tool-calls';
 import { generationFor, withAnswerPreferences, type AnswerPreferences } from './answer-preferences';
 
@@ -29,7 +27,6 @@ export class AIController {
     private readonly conversations: AIConversationService,
     private readonly jobQueue: AIJobQueueService,
     private readonly actionAudit: AIActionAuditService,
-    private readonly answerFeedback: AnswerFeedbackService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -97,21 +94,6 @@ export class AIController {
       ipAddress: req.ip ?? null,
       userAgent: typeof req.headers['user-agent'] === 'string' ? req.headers['user-agent'] : null,
     });
-  }
-
-  /** A 👍 or 👎 on one answer: the caller's last word on it (docs §111). */
-  @Put('answers/:answerId/feedback')
-  async setAnswerFeedback(
-    @CurrentUser() user: { id: string },
-    @Param('answerId') answerId: string,
-    @Body() dto: SetAnswerFeedbackDto,
-  ) {
-    return this.answerFeedback.set(user.id, answerId, dto);
-  }
-
-  @Delete('answers/:answerId/feedback')
-  async clearAnswerFeedback(@CurrentUser() user: { id: string }, @Param('answerId') answerId: string) {
-    return this.answerFeedback.clear(user.id, answerId);
   }
 
   /** The caller's own trail. The actor is taken from the token, never the query. */

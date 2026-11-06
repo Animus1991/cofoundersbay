@@ -5,6 +5,7 @@ import { OllamaService } from './ollama.service';
 import { AIConversationService } from './ai-conversation.service';
 import { AIJobQueueService } from './ai-job-queue.service';
 import { AIActionAuditService } from './ai-action-audit.service';
+import { AnswerFeedbackController } from './answer-feedback.controller';
 import { AnswerFeedbackService } from './answer-feedback.service';
 import { AIProviderRegistry } from './providers/ai-provider.registry';
 import { AIRateLimitGuard } from './guards/ai-rate-limit.guard';
@@ -12,7 +13,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],
-  controllers: [AIController],
+  controllers: [AIController, AnswerFeedbackController],
   providers: [
     AIProviderRegistry,
     AIService,

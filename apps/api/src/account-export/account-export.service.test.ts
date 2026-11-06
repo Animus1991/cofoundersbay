@@ -25,6 +25,10 @@ function prismaStub(overrides: Record<string, Record<string, unknown>> = {}) {
     endorsement: { findMany: empty() },
     savedProfile: { findMany: empty() },
     notification: { findMany: empty() },
+    assistantAnswerFeedback: { findMany: empty() },
+    fundraisingRound: { findMany: empty() },
+    investorPipelineLead: { findMany: empty() },
+    dataRoomDocument: { findMany: empty() },
     milestone: { findMany: empty() },
     commitmentCard: { findMany: empty() },
     commitmentThread: { findMany: empty() },
@@ -91,6 +95,14 @@ describe('AccountExportService.build', () => {
     expect(out.unavailable).toEqual([{ section: 'activity', part: 'savedProfiles', reason: 'The table `public.SavedProfile` does not exist' }]);
     expect((out.data.activity as { savedProfiles: unknown }).savedProfiles).toBeNull();
     expect((out.data.activity as { notifications: unknown }).notifications).toEqual({ items: [], truncated: false });
+  });
+
+  it('lists the data room without the keys that reach the files', async () => {
+    const prisma = prismaStub();
+    await new AccountExportService(prisma as never).build('u1', ['activity']);
+    const query = (prisma.dataRoomDocument.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(query.where).toEqual({ uploadedById: 'u1' });
+    expect(query.select.fileUrl).toBeUndefined();
   });
 
   it('exports the commitments the reader took part in, never a share token or another person’s words', async () => {

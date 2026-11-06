@@ -83,3 +83,7 @@ credentials.json
 # Setup templates hold placeholders only and must stay tracked; the
 # patterns above still ignore every real environment file.
 !.env.example
+
+# Uploaded files: public ones, and the private data room
+apps/api/uploads/
+apps/api/private-uploads/

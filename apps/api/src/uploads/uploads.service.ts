@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { UploadKind } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { writeFileSync, mkdirSync, existsSync, readFileSync, unlinkSync } from 'fs';
 import { resolve } from 'path';
 
 export type StoredFile = {
@@ -39,6 +39,72 @@ export class UploadsService {
     const dir = resolve(__dirname, '..', '..', 'uploads');
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
     return dir;
+  }
+
+  /** Beside `uploads/`, never under it: `main.ts` serves that folder to anyone with the URL. */
+  private getPrivateDir(): string {
+    const dir = resolve(__dirname, '..', '..', 'private-uploads');
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    return dir;
+  }
+
+  /** A stored name, not a path: nothing from a request can step out of the folder. */
+  private privateName(key: string): string {
+    const name = key.replace(/^private\//, '');
+    if (!/^[A-Za-z0-9_.-]+$/.test(name) || name.startsWith('.')) throw new Error('Invalid private file key');
+    return name;
+  }
+
+  private s3Client() {
+    const region = this.config.get<string>('AWS_REGION') || 'us-east-1';
+    const customEndpoint = this.config.get<string>('AWS_S3_ENDPOINT');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
+    const sdk = require('@aws-sdk/client-s3') as any;
+    const client = new sdk.S3Client({
+      region,
+      credentials: { accessKeyId: this.config.get<string>('AWS_ACCESS_KEY_ID')!, secretAccessKey: this.config.get<string>('AWS_SECRET_ACCESS_KEY')! },
+      ...(customEndpoint ? { endpoint: customEndpoint, forcePathStyle: true } : {}),
+    });
+    return { client, sdk, bucket: this.config.get<string>('AWS_S3_BUCKET')! };
+  }
+
+  /**
+   * Files that must never have a public URL (the data room, docs §111). They
+   * come back only through `readPrivateFile`, behind the caller's own access
+   * check. On S3 they sit under `private/`: a bucket policy that opens
+   * `uploads/` to the CDN must not open this prefix.
+   */
+  async storePrivateFile(params: { buffer: Buffer; filename: string; mimeType: string }): Promise<{ key: string }> {
+    const name = this.privateName(params.filename);
+    if (this.useS3) {
+      const { client, sdk, bucket } = this.s3Client();
+      const key = `private/${name}`;
+      await client.send(new sdk.PutObjectCommand({ Bucket: bucket, Key: key, Body: params.buffer, ContentType: params.mimeType, ContentDisposition: 'attachment' }));
+      return { key };
+    }
+    writeFileSync(`${this.getPrivateDir()}/${name}`, params.buffer);
+    return { key: name };
+  }
+
+  async readPrivateFile(key: string): Promise<Buffer> {
+    const name = this.privateName(key);
+    if (this.useS3) {
+      const { client, sdk, bucket } = this.s3Client();
+      const object = await client.send(new sdk.GetObjectCommand({ Bucket: bucket, Key: `private/${name}` }));
+      return Buffer.from(await object.Body.transformToByteArray());
+    }
+    return readFileSync(`${this.getPrivateDir()}/${name}`);
+  }
+
+  async deletePrivateFile(key: string): Promise<void> {
+    const name = this.privateName(key);
+    if (this.useS3) {
+      const { client, sdk, bucket } = this.s3Client();
+      await client.send(new sdk.DeleteObjectCommand({ Bucket: bucket, Key: `private/${name}` }));
+      return;
+    }
+    const path = `${this.getPrivateDir()}/${name}`;
+    if (existsSync(path)) unlinkSync(path);
   }
 
   async storeFile(params: {

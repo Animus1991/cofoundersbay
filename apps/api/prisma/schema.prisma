@@ -4878,6 +4878,10 @@ model InvestorPipelineLead {
   investorEmail    String?
   investorLinkedIn String?
   investorType     String?            // "angel", "vc", "syndicate", "family_office", "scout"
+  /// As the founder wrote them ("Pre-Seed / Seed", "€25K–€150K"): often a range
+  /// in words, so not forced into checkSizeMin / checkSizeMax.
+  stageFocus       String?
+  checkSizeText    String?
   isVerifiedOnPlatform Boolean        @default(false)
   platformUserId   String?            // Link to CoFounderBay investor profile
 
@@ -4921,7 +4925,8 @@ model DataRoomDocument {
   status           DataRoomDocStatus   @default(draft)
   isRequired       Boolean             @default(false)
 
-  // File
+  // File. `fileUrl` is the private storage key, never a public address: the
+  // bytes come back only through GET /fundraising/documents/:id/file.
   fileUrl          String?
   fileName         String?
   fileMimeType     String?

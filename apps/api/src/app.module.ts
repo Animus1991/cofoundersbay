@@ -19,6 +19,7 @@ import { HealthModule } from './health/health.module';
 import { EventsModule } from './events/events.module';
 import { MentoringModule } from './mentoring/mentoring.module';
 import { ModerationModule } from './moderation/moderation.module';
+import { FundraisingModule } from './fundraising/fundraising.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { GraphModule } from './graph/graph.module';
 import { PollsModule } from './polls/polls.module';
@@ -118,6 +119,7 @@ function findEnvFiles(): string[] {
     EventsModule,
     MentoringModule,
     ModerationModule,
+    FundraisingModule,
     DashboardModule,
     GraphModule,
     PollsModule,

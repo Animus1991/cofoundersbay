@@ -127,6 +127,10 @@ export class AccountExportService {
         read('activity', 'endorsementsReceived', () => this.prisma.endorsement.findMany({ where: { toUserId: userId }, select: { id: true, fromUserId: true, skill: true, content: true, relationship: true, isApproved: true, createdAt: true }, take: LIMIT })),
         read('activity', 'savedProfiles', () => this.prisma.savedProfile.findMany({ where: { savedById: userId }, select: { userId: true, note: true, createdAt: true }, take: LIMIT })),
         read('activity', 'notifications', () => this.prisma.notification.findMany({ where: { userId }, select: { type: true, title: true, body: true, link: true, createdAt: true, readAt: true, savedAt: true }, orderBy: { createdAt: 'desc' }, take: LIMIT })),
+        read('activity', 'fundraisingRounds', () => this.prisma.fundraisingRound.findMany({ where: { ownerId: userId }, select: { name: true, roundType: true, status: true, targetAmount: true, currency: true, preMoneyValuation: true, leadInvestorName: true, closingDate: true, description: true, createdAt: true }, take: LIMIT })),
+        read('activity', 'fundraisingInvestors', () => this.prisma.investorPipelineLead.findMany({ where: { addedById: userId }, select: { investorName: true, investorFirm: true, investorType: true, stageFocus: true, checkSizeText: true, status: true, committedAmount: true, currency: true, lastContactAt: true, notes: true, createdAt: true }, take: LIMIT })),
+        // The list of documents, not their storage keys: a key is how the file is reached.
+        read('activity', 'dataRoomDocuments', () => this.prisma.dataRoomDocument.findMany({ where: { uploadedById: userId }, select: { name: true, category: true, status: true, fileName: true, fileSizeBytes: true, createdAt: true }, take: LIMIT })),
         read('activity', 'assistantFeedback', () => this.prisma.assistantAnswerFeedback.findMany({ where: { userId }, select: { helpful: true, reason: true, source: true, createdAt: true, updatedAt: true }, orderBy: { updatedAt: 'desc' }, take: LIMIT })),
       ]);
       // Commitments: the cards they wrote (never the share token, which is a
