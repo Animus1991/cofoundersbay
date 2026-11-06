@@ -150,6 +150,7 @@ export class OpportunitiesService {
         deadline: o.deadline?.toISOString() || null,
         isActive: o.isActive,
         createdBy: {
+          id: o.createdById,
           displayName: o.createdBy.profile?.displayName || 'Unknown',
           avatarUrl: o.createdBy.profile?.avatarUrl || null,
         },

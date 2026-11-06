@@ -24,6 +24,8 @@ import { demoConnections, previewConnectionsApi } from './demo/connections-world
 import { previewLearningApi } from './demo/learning-world';
 import { previewAnswerFeedbackApi, previewTransparencyApi } from './demo/transparency-world';
 import { previewFundraisingApi } from './demo/fundraising-world';
+import { previewPortfolioApi } from './demo/portfolio-world';
+import { previewProposalsApi } from './demo/proposals-world';
 import { previewScoutApi } from './demo/scout-world';
 import { attachDemoPhotos } from './demo/photos';
 import { messageSnippet, readProjectDelivery, textMatches } from '@cofounderbay/shared';
@@ -1936,7 +1938,7 @@ function postDemoOpportunity(body: Record<string, unknown>): { opportunity: Demo
     tags: Array.isArray(body.tags) ? body.tags.filter((t): t is string => typeof t === 'string' && t.trim() !== '').slice(0, 10) : [],
     deadline: null,
     isActive: true,
-    createdBy: { displayName: 'Alex Demo', avatarUrl: null },
+    createdBy: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null },
     createdAt: new Date(previewNowMs()).toISOString(),
   } as DemoOpportunity;
   const posted = readDemoPosted();
@@ -3210,6 +3212,12 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   const method = (init?.method ?? 'GET').toUpperCase();
   const body = parseBody(init);
 
+  // A visitor's proposals and portfolio, with the API's rules (docs §111).
+  const nowIso = new Date(previewNowMs()).toISOString();
+  const proposalsAnswer = previewProposalsApi(pathname, method, (body ?? {}) as Record<string, unknown>, nowIso, (id) => previewOpportunities().find((o) => o.id === id)?.title ?? null, { id: ME_ID, displayName: 'Alex Demo' });
+  if (proposalsAnswer !== undefined) return proposalsAnswer;
+  const portfolioAnswer = previewPortfolioApi(pathname, method, (body ?? {}) as Record<string, unknown>, nowIso, ME_ID);
+  if (portfolioAnswer !== undefined) return portfolioAnswer;
   // Organisation invitations by email (docs §100), with the API's rules.
   const invitationsAnswer = previewOrgInvitationsApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
   if (invitationsAnswer !== undefined) return invitationsAnswer;

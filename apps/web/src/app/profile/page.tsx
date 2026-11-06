@@ -47,6 +47,8 @@ import {
   Settings as SettingsIcon,
 } from 'lucide-react';
 import { ApiError, getMeProfile, getDashboardActivity, listConnectionRequests, getEndorsementsForUser } from '@/lib/api';
+import { getMyPortfolio } from '@/lib/portfolio';
+import { PortfolioList } from '@/components/profile/PortfolioList';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { AppShell } from '@/components/layout/AppShell';
@@ -313,6 +315,8 @@ export default function ProfilePage() {
    * day. Before this it rendered `generateDemoData`, so the profile showed a
    * year of invented contributions that changed on every render.
    */
+  const { data: portfolio } = useQuery({ queryKey: qk('me', 'portfolio'), queryFn: getMyPortfolio, staleTime: 60_000, retry: 0 });
+  const portfolioItems = portfolio?.items ?? [];
   const { data: activityPage } = useQuery({
     queryKey: qk('dashboard', 'activity', 'profile-graph'),
     queryFn: () => getDashboardActivity({ limit: 200 }),
@@ -698,9 +702,9 @@ export default function ProfilePage() {
             />
           ) : null}
 
-          {/* Portfolio placeholder. It used to stretch to the right column's
-              height, which drew a 550px dashed box around one line of text;
-              the empty state keeps its own height now. */}
+          {/* The member's work, and an empty state that keeps its own height:
+              it used to stretch to the right column's and drew a 550px dashed
+              box around one line of text. */}
           <Card className="animate-fade-in">
             <CardHeader>
               <div className="flex items-center justify-between gap-2">
@@ -708,12 +712,18 @@ export default function ProfilePage() {
                   <FolderOpen className="icon-md text-muted-foreground" aria-hidden="true" />
                   <BilingualText en={profileEn('portfolio_showcase')} el={profileEl('portfolio_showcase')} />
                 </CardTitle>
+                {portfolioItems.length > 0 ? (
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/profile/edit?tab=portfolio"><BilingualText en="Edit" el="Επεξεργασία" compact /></Link>
+                  </Button>
+                ) : null}
               </div>
             </CardHeader>
             <CardContent>
-              {/* An empty state on the title's left edge: what it is, what
-                  it is for, and the one way to start. The round icon well in
-                  front of it was a second, larger mark with nothing to mark. */}
+              {portfolioItems.length > 0 ? <PortfolioList items={portfolioItems} /> : (
+              /* An empty state on the title's left edge: what it is, what
+                 it is for, and the one way to start. The round icon well in
+                 front of it was a second, larger mark with nothing to mark. */
               <div className="flex flex-col items-start gap-3">
                 <div>
                   <p className="text-sm font-medium text-foreground">
@@ -723,18 +733,11 @@ export default function ProfilePage() {
                     <BilingualText en={profileEn('showcase_desc')} el={profileEl('showcase_desc')} />
                   </p>
                 </div>
-                {/* "Add" in the head and "Add First Item" here both opened the
-                    profile form, whose Portfolio tab says "Coming soon". One
-                    button, unavailable, saying so (docs §75). */}
-                <WithDisabledReason
-                  reasonEn="Portfolio items cannot be added yet. The portfolio editor is coming."
-                  reasonEl="Στοιχεία χαρτοφυλακίου δεν προστίθενται ακόμη. Ο επεξεργαστής χαρτοφυλακίου έρχεται."
-                >
-                  <Button variant="outline" size="sm" className="gap-1.5" disabled>
-                    <BilingualText en={profileEn('add_first_item')} el={profileEl('add_first_item')} />
-                  </Button>
-                </WithDisabledReason>
+                <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                  <Link href="/profile/edit?tab=portfolio"><BilingualText en={profileEn('add_first_item')} el={profileEl('add_first_item')} /></Link>
+                </Button>
               </div>
+              )}
             </CardContent>
           </Card>
 

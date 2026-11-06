@@ -344,6 +344,13 @@ export const TOAST_EL: Record<string, string> = {
   // Notifications: Save, and taking one out of Saved (§111).
   "Removed from Saved": "Αφαιρέθηκε από τις αποθηκευμένες",
   "Could not save the notification": "Η ειδοποίηση δεν αποθηκεύτηκε",
+  // Proposals on a listing, and the portfolio (§111).
+  "Proposal sent": "Η πρόταση στάλθηκε",
+  "Proposal withdrawn": "Η πρόταση αποσύρθηκε",
+  "Could not send the proposal": "Η πρόταση δεν στάλθηκε",
+  "Could not answer the proposal": "Δεν έγινε η απάντηση στην πρόταση",
+  "Portfolio saved": "Το χαρτοφυλάκιο αποθηκεύτηκε",
+  "Could not save the portfolio item": "Το στοιχείο δεν αποθηκεύτηκε",
   // Fundraising on the API (§111).
   "Round saved": "Ο γύρος αποθηκεύτηκε",
   "Could not save the round": "Ο γύρος δεν αποθηκεύτηκε",

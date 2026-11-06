@@ -28,7 +28,8 @@ import {
 } from 'lucide-react';
 import {
   createOpportunity,
-  listOpportunities, type OpportunityItem, type OpportunityType,
+  listOpportunities, listIncomingProposals, listSentProposals, sendOpportunityProposal, answerOpportunityProposal,
+  type OpportunityItem, type OpportunityProposalItem, type OpportunityType,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { NeedCardsSection, kindsForOpportunityType } from '@/components/commitments/NeedCardsSection';
@@ -48,6 +49,10 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { Button } from '@/components/ui/button';
 import { Counter } from '@/components/ui/counter';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { MessageButton } from '@/components/common/PersonActions';
+import { useModalA11y } from '@/hooks/useModalA11y';
+import { useStoredUser } from '@/hooks/useStoredUser';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -96,6 +101,26 @@ interface Proposal {
   compensation: string;
   status: 'pending' | 'accepted' | 'declined';
   date: string;
+  /** Set on a real proposal: who to write to, and the listing it answers. */
+  fromId?: string;
+  listing?: string;
+}
+
+function proposalFromApi(p: OpportunityProposalItem, formatDate: (iso: string) => string): Proposal {
+  return {
+    id: p.id,
+    fromId: p.from?.id,
+    fromName: p.from?.displayName ?? '',
+    fromInitials: initialsOf(p.from?.displayName),
+    fromAvatar: p.from?.avatarUrl ?? undefined,
+    fromRole: p.from?.headline ?? '',
+    listing: p.opportunityTitle,
+    scope: p.scope,
+    timeframe: p.timeframe ?? '',
+    compensation: p.compensation ?? '',
+    status: p.status === 'withdrawn' ? 'declined' : p.status,
+    date: formatDate(p.createdAt),
+  };
 }
 
 
@@ -150,7 +175,70 @@ function approachPrompt(opportunity: OpportunityItem): AskText {
   };
 }
 
-function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
+function SendProposalModal({ opportunity, onClose, onSend }: {
+  opportunity: OpportunityItem;
+  onClose: () => void;
+  onSend: (body: { scope: string; timeframe: string | null; compensation: string | null }) => Promise<void>;
+}) {
+  const { success, error: showError } = useToast();
+  const panelRef = useModalA11y<HTMLFormElement>(true, onClose);
+  const [scope, setScope] = useState('');
+  const [timeframe, setTimeframe] = useState('');
+  const [compensation, setCompensation] = useState('');
+  const [sending, setSending] = useState(false);
+  const ready = scope.trim().length >= 10;
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!ready || sending) return;
+    setSending(true);
+    try {
+      await onSend({ scope: scope.trim(), timeframe: timeframe.trim() || null, compensation: compensation.trim() || null });
+      success('Proposal sent');
+      onClose();
+    } catch (err) {
+      showError('Could not send the proposal', err instanceof Error ? err.message : undefined);
+    } finally {
+      setSending(false);
+    }
+  }
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <form ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="proposal-title" tabIndex={-1} onSubmit={submit} className="relative w-full max-w-lg space-y-4 rounded-2xl border border-border bg-card p-5 shadow-none" data-surface="overlay">
+        <div>
+          <h2 id="proposal-title" className="page-section font-semibold"><BilingualText en={opportunitiesEn('proposal_send')} el={opportunitiesEl('proposal_send')} /></h2>
+          <p className="mt-0.5 break-words text-sm text-muted-foreground">{opportunity.title}</p>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="proposal-scope"><BilingualText en={opportunitiesEn('proposal_field_scope')} el={opportunitiesEl('proposal_field_scope')} compact /> *</Label>
+          <textarea id="proposal-scope" rows={4} maxLength={2000} required className="w-full resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm" value={scope} onChange={(e) => setScope(e.target.value)} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="proposal-timeframe"><BilingualText en={opportunitiesEn('proposal_field_timeframe')} el={opportunitiesEl('proposal_field_timeframe')} compact /></Label>
+            <Input id="proposal-timeframe" maxLength={120} value={timeframe} onChange={(e) => setTimeframe(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="proposal-compensation"><BilingualText en={opportunitiesEn('proposal_field_compensation')} el={opportunitiesEl('proposal_field_compensation')} compact /></Label>
+            <Input id="proposal-compensation" maxLength={120} value={compensation} onChange={(e) => setCompensation(e.target.value)} />
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground"><BilingualText en={opportunitiesEn('proposal_hint')} el={opportunitiesEl('proposal_hint')} wrap /></p>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
+          <Button type="submit" disabled={!ready || sending}><BilingualText en={opportunitiesEn('proposal_send')} el={opportunitiesEl('proposal_send')} compact /></Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function OpportunityCard({ opportunity, onPropose, proposalSent }: {
+  opportunity: OpportunityItem;
+  /** Absent on the reader's own listing. */
+  onPropose?: () => void;
+  proposalSent?: boolean;
+}) {
   const fmtDate = useDateFormat();
   const { ask } = useAskAssistant();
   const cfg = OPP_TYPE_DISPLAY[opportunity.type] ?? OPP_TYPE_DISPLAY.other;
@@ -240,6 +328,13 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
               <ArrowRight className="icon-sm" />
             </Button>
           )}
+          {proposalSent ? (
+            <span className="self-center text-xs text-muted-foreground"><BilingualText en={opportunitiesEn('proposal_sent_badge')} el={opportunitiesEl('proposal_sent_badge')} compact /></span>
+          ) : onPropose ? (
+            <Button size="sm" variant="outline" className="text-xs" onClick={onPropose}>
+              <BilingualText en={opportunitiesEn('proposal_send')} el={opportunitiesEl('proposal_send')} compact />
+            </Button>
+          ) : null}
           {/* Stored for the reader (/api/saved-items). It used to toast
               "saved on this device" and store nothing. */}
           <SaveItemButton kind="opportunity" itemId={opportunity.id} title={opportunity.title} />
@@ -280,6 +375,7 @@ function ProposalCard({
             <div>
               <p className="text-sm font-semibold text-foreground">{proposal.fromName}</p>
               <p className="text-xs text-muted-foreground">{proposal.fromRole}</p>
+              {proposal.listing ? <p className="text-xs text-muted-foreground">{proposal.listing}</p> : null}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -292,17 +388,27 @@ function ProposalCard({
 
         <div className="rounded-xl bg-secondary/40 p-4 space-y-2">
           <p className="text-sm text-foreground leading-relaxed">{proposal.scope}</p>
-          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-1">
-            <span className="flex items-center gap-1">
-              <Clock className="icon-sm" />
-              {proposal.timeframe}
-            </span>
-            <span className="flex items-center gap-1">
-              <Coins className="icon-sm" />
-              {proposal.compensation}
-            </span>
-          </div>
+          {proposal.timeframe || proposal.compensation ? (
+            <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-1">
+              {proposal.timeframe ? (
+                <span className="flex items-center gap-1">
+                  <Clock className="icon-sm" />
+                  {proposal.timeframe}
+                </span>
+              ) : null}
+              {proposal.compensation ? (
+                <span className="flex items-center gap-1">
+                  <Coins className="icon-sm" />
+                  {proposal.compensation}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
         </div>
+
+        {proposal.status === 'accepted' && proposal.fromId ? (
+          <MessageButton userId={proposal.fromId} displayName={proposal.fromName} />
+        ) : null}
 
         {isPending && (
           <div className="flex gap-2">
@@ -460,7 +566,7 @@ export default function OpportunitiesPage() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { ask } = useAskAssistant();
-  const { success } = useToast();
+  const { success, error: showError } = useToast();
   // Jobs have one home, /jobs (owner, 2026-10-28; docs §90.5, §111): the
   // "Jobs" tab here was the same postings with fewer filters.
   const [activeTab, setActiveTab] = useState<'listings' | 'applications' | 'proposals'>('listings');
@@ -496,15 +602,28 @@ export default function OpportunitiesPage() {
     if (type && (['all', 'job', 'cofounder', 'investment', 'partnership', 'mentorship', 'other'] as const).includes(type as OpportunityType | 'all')) setOppTypeFilter(type as OpportunityType | 'all');
     const q = p.get('q');
     if (q) setSearch(q.slice(0, 200));
+    // A notification about a proposal opens the tab it is on.
+    const tab = p.get('tab');
+    if (tab === 'proposals' || tab === 'applications') setActiveTab(tab);
     if (p.get('remote') === '1') setRemoteOnly(true);
   }, []);
   const [sampleProposals, setProposals] = useState<Proposal[]>(DEMO_PROPOSALS);
   const [showPostForm, setShowPostForm] = useState(false);
+  const [proposingTo, setProposingTo] = useState<OpportunityItem | null>(null);
   const { openRailSection } = usePageRail();
-  // Incoming proposals have no API yet. The two sample cards appear only when
-  // sample data is on, so a real account never counts invented proposals.
+  const me = useStoredUser()?.id ?? null;
+  const fmtDate = useDateFormat();
+  // What the reader's listings received, and what they sent (docs §111). The
+  // two sample cards appear only with samples on, beside anything real, so a
+  // real account never counts invented proposals.
   const { showDemoData } = useDemoData();
-  const proposals = showDemoData ? sampleProposals : [];
+  const { data: incomingData } = useQuery({ queryKey: qk('opportunities', 'proposals', 'incoming'), queryFn: listIncomingProposals, enabled: Boolean(me), staleTime: 30_000, retry: 0 });
+  const { data: sentData } = useQuery({ queryKey: qk('opportunities', 'proposals', 'sent'), queryFn: listSentProposals, enabled: Boolean(me), staleTime: 30_000, retry: 0 });
+  const sentProposals = sentData?.proposals ?? [];
+  const sentTo = new Set(sentProposals.filter((p) => p.status !== 'withdrawn').map((p) => p.opportunityId));
+  const realProposals = (incomingData?.proposals ?? []).map((p) => proposalFromApi(p, (iso) => fmtDate(iso, { day: 'numeric', month: 'short' })));
+  const proposals = showDemoData ? [...realProposals, ...sampleProposals] : realProposals;
+  const refreshProposals = () => queryClient.invalidateQueries({ queryKey: qk('opportunities', 'proposals') });
 
   const { data: opportunitiesData, isLoading: oppLoading, isError: oppError, refetch: refetchOpp } = useQuery({
     queryKey: qk('opportunities', { search, type: oppTypeFilter, isRemote: remoteOnly || undefined }),
@@ -530,21 +649,42 @@ export default function OpportunitiesPage() {
   const opportunities = (opportunitiesData?.opportunities ?? []).filter((o) => !savedOnly || savedListings.ids.has(o.id));
   const pendingProposals = proposals.filter((p) => p.status === 'pending').length;
 
-  const handleAcceptProposal = (id: string) => {
+  const isReal = (id: string) => realProposals.some((p) => p.id === id);
+  const answerReal = async (id: string, status: 'accepted' | 'declined' | 'withdrawn') => {
+    try {
+      await answerOpportunityProposal(id, status);
+      await refreshProposals();
+      return true;
+    } catch (err) {
+      showError('Could not answer the proposal', err instanceof Error ? err.message : undefined);
+      return false;
+    }
+  };
+
+  const handleAcceptProposal = async (id: string) => {
+    if (isReal(id)) {
+      if (await answerReal(id, 'accepted')) success(opportunitiesEn('proposal_accepted'));
+      return;
+    }
     setProposals((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status: 'accepted' as const } : p)),
     );
     success(opportunitiesEn('proposal_accepted'), opportunitiesEn('proposal_accepted_body'));
   };
 
-  const handleDeclineProposal = (id: string) => {
+  const handleDeclineProposal = async (id: string) => {
+    if (isReal(id)) {
+      await answerReal(id, 'declined');
+      return;
+    }
     setProposals((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status: 'declined' as const } : p)),
     );
   };
 
-  // Offered to the assistant: tab, type, remote only and Post; the sample
-  // proposals' Accept / Decline change this screen only, and say so.
+  // Offered to the assistant: tab, type, remote only and Post. A real
+  // proposal's Accept / Decline is stored; a sample's changes this screen only,
+  // and says so.
   const oppTypes = ['all', 'cofounder', 'job', 'investment', 'partnership', 'mentorship'] as const;
   const pendingList = proposals.filter((p) => p.status === 'pending');
   usePageList([
@@ -567,7 +707,8 @@ export default function OpportunitiesPage() {
       labelEn: 'Proposals',
       labelEl: 'Προτάσεις',
       rows: proposals.map((p) => `${p.fromName} (${p.fromRole}) · ${p.scope} · ${p.timeframe} · ${p.compensation} · ${p.status}`),
-      sample: true,
+      rowsEl: proposals.map((p) => `${p.fromName} (${p.fromRole}) · ${p.scope} · ${p.timeframe} · ${p.compensation} · ${elWord(p.status)}`),
+      sample: realProposals.length === 0,
     },
   ]);
   usePageControls([
@@ -630,8 +771,22 @@ export default function OpportunitiesPage() {
       ...(kindsForOpportunityType(oppTypeFilter) ? {} : { unavailableEn: 'This opportunity type has no need cards.', unavailableEl: 'Αυτός ο τύπος ευκαιρίας δεν έχει κάρτες ανάγκης.' }),
       run: () => { setActiveTab('listings'); setCardAlertOpen(true); },
     },
-    { id: 'accept_proposal', labelEn: 'Accept sample proposal (this screen only)', labelEl: 'Αποδοχή δείγματος πρότασης (μόνο σε αυτή την οθόνη)', writes: false, options: rowOptions(pendingList, (p) => p.id, (p) => p.fromName), run: (v) => { if (v) handleAcceptProposal(v); } },
-    { id: 'decline_proposal', labelEn: 'Decline sample proposal (this screen only)', labelEl: 'Απόρριψη δείγματος πρότασης (μόνο σε αυτή την οθόνη)', writes: false, options: rowOptions(pendingList, (p) => p.id, (p) => p.fromName), run: (v) => { if (v) handleDeclineProposal(v); } },
+    {
+      id: 'accept_proposal',
+      labelEn: realProposals.length ? 'Accept proposal' : 'Accept sample proposal (this screen only)',
+      labelEl: realProposals.length ? 'Αποδοχή πρότασης' : 'Αποδοχή δείγματος πρότασης (μόνο σε αυτή την οθόνη)',
+      writes: realProposals.length > 0,
+      options: rowOptions(pendingList, (p) => p.id, (p) => p.fromName),
+      run: async (v) => { if (v) await handleAcceptProposal(v); },
+    },
+    {
+      id: 'decline_proposal',
+      labelEn: realProposals.length ? 'Decline proposal' : 'Decline sample proposal (this screen only)',
+      labelEl: realProposals.length ? 'Απόρριψη πρότασης' : 'Απόρριψη δείγματος πρότασης (μόνο σε αυτή την οθόνη)',
+      writes: realProposals.length > 0,
+      options: rowOptions(pendingList, (p) => p.id, (p) => p.fromName),
+      run: async (v) => { if (v) await handleDeclineProposal(v); },
+    },
     {
       id: 'draft_approach',
       labelEn: 'Draft an approach for',
@@ -863,7 +1018,12 @@ export default function OpportunitiesPage() {
                   />
                 </p>
                 {opportunities.map((opp) => (
-                  <OpportunityCard key={opp.id} opportunity={opp} />
+                  <OpportunityCard
+                    key={opp.id}
+                    opportunity={opp}
+                    proposalSent={sentTo.has(opp.id)}
+                    onPropose={me && opp.createdBy?.id !== me ? () => setProposingTo(opp) : undefined}
+                  />
                 ))}
               </div>
             )}
@@ -873,6 +1033,29 @@ export default function OpportunitiesPage() {
         {/* Applications tab */}
         {activeTab === 'applications' && (
           <div className="space-y-4">
+            {sentProposals.length > 0 ? (
+              <Card>
+                <CardContent className="space-y-3">
+                  <h2 className="card-title"><BilingualText en={opportunitiesEn('proposals_sent_title')} el={opportunitiesEl('proposals_sent_title')} compact /></h2>
+                  <ul className="divide-y divide-border">
+                    {sentProposals.map((p) => (
+                      <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
+                        <div className="min-w-0 flex-1">
+                          <p className="break-words text-sm font-medium text-foreground">{p.opportunityTitle}</p>
+                          <p className="line-clamp-1 text-xs text-muted-foreground">{p.scope}</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground"><BilingualText en={opportunitiesEn(`status_${p.status}`)} el={opportunitiesEl(`status_${p.status}`)} compact /></span>
+                        {p.status === 'pending' ? (
+                          <Button size="sm" variant="ghost" className="text-xs" onClick={() => { void answerReal(p.id, 'withdrawn').then((ok) => { if (ok) success('Proposal withdrawn'); }); }}>
+                            <BilingualText en={opportunitiesEn('proposal_withdraw')} el={opportunitiesEl('proposal_withdraw')} compact />
+                          </Button>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ) : null}
             <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
               <FileText className="h-10 w-10 mb-3 opacity-30" />
               <p className="font-medium">
@@ -898,7 +1081,7 @@ export default function OpportunitiesPage() {
           <div className="space-y-4">
             {showDemoData && <SampleDataNotice
               surface="Proposals"
-              detail="Incoming collaboration proposals are not a live API yet. These two cards show the layout so you can learn Accept and Decline."
+              detail="These two cards are samples, so you can learn Accept and Decline. Proposals sent to your listings arrive here."
               askAiPrompt={ASK.opportunitiesSample}
             />}
             {proposals.length === 0 ? (
@@ -926,6 +1109,16 @@ export default function OpportunitiesPage() {
         {/* Equity roles, investments and proposals appear on this page. */}
         <NonGuaranteeNote />
         </div>
+        {proposingTo ? (
+          <SendProposalModal
+            opportunity={proposingTo}
+            onClose={() => setProposingTo(null)}
+            onSend={async (body) => {
+              await sendOpportunityProposal(proposingTo.id, body);
+              await refreshProposals();
+            }}
+          />
+        ) : null}
       </AppShell>
     </>
   );

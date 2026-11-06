@@ -15,6 +15,7 @@ import { SkillEvidencePanel } from '@/components/profile/SkillEvidencePanel';
 import { IntroVideoLink } from '@/components/profile/IntroVideoLink';
 import { ProfileHero } from '@/components/profile/ProfileHero';
 import { ProfileActivity, ProfileExperience, ProfileRecommendations, SimilarProfiles } from '@/components/profile/ProfileSections';
+import { MemberPortfolio } from '@/components/profile/MemberPortfolio';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import {
   MapPin,
@@ -548,6 +549,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
         {viewerId ? <ProfileActivity userId={userId} own={isOwnProfile} /> : null}
 
         <ProfileExperience payload={rolePayload as Record<string, unknown>} own={isOwnProfile} />
+        <MemberPortfolio userId={profile.userId} />
 
         {/* One skills card. Signed in, the evidence panel lists the profile's
             skills with what backs each one; it followed a "Skills" card that

@@ -1,6 +1,7 @@
 'use client';
 
 import { useFormDraft } from '@/lib/form-draft';
+import { PortfolioEditor } from '@/components/profile/PortfolioEditor';
 import { FormDraftNotice } from '@/components/common/FormDraftNotice';
 import { LinkedInImportDialog, type ImportableProfile } from '@/components/profile/LinkedInImportDialog';
 import { takeProfileImportDraft } from '@/lib/linkedin-import/api';
@@ -433,6 +434,10 @@ export default function ProfileEditPage() {
   const [saving, setSaving] = useState(false);
   const [introVideoError, setIntroVideoError] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+  // The profile's "Add first item" arrives on the Portfolio tab.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('tab') === 'portfolio') setActiveTab('portfolio');
+  }, []);
   // A link to a field on another tab (from the completeness list) opens that
   // tab first; useScrollToHash then finds the field once it is mounted.
   useEffect(() => {
@@ -1421,20 +1426,7 @@ export default function ProfileEditPage() {
 
             {/* Portfolio Tab */}
             <TabsContent value="portfolio" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
-              <Card className="text-center py-12">
-                <CardContent className="space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center text-muted-foreground mb-4">
-                    <LayoutDashboard className="icon-xl" />
-                  </div>
-                  <h3 className="text-xl font-semibold"><BilingualText en="Portfolio Builder Coming Soon" el="Η δημιουργία portfolio έρχεται σύντομα" compact /></h3>
-                  <p className="text-muted-foreground max-w-md mx-auto">
-                    <BilingualText en="Soon you'll be able to add detailed case studies, pitch decks, past startups, and comprehensive project showcases to your profile." el="Σύντομα θα μπορείτε να προσθέτετε αναλυτικές μελέτες περίπτωσης, pitch decks, προηγούμενες startups και παρουσιάσεις έργων στο προφίλ σας." wrap />
-                  </p>
-                  <Button variant="outline" className="mt-4" onClick={() => setActiveTab('basic')}>
-                    <BilingualText en="Go back to Basic Info" el="Επιστροφή στα βασικά στοιχεία" compact />
-                  </Button>
-                </CardContent>
-              </Card>
+              <PortfolioEditor />
             </TabsContent>
           </Tabs>
         </div>

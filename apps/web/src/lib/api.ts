@@ -3124,6 +3124,7 @@ export interface OpportunityItem {
   deadline: string | null;
   isActive: boolean;
   createdBy: {
+    id?: string;
     displayName: string;
     avatarUrl: string | null;
   };
@@ -3149,6 +3150,39 @@ export async function listOpportunities(params?: {
 
 export async function getOpportunity(id: string): Promise<OpportunityItem> {
   return apiRequest(`/api/opportunities/${id}`, undefined, { retryOn401: false });
+}
+
+export type OpportunityProposalItem = {
+  id: string;
+  opportunityId: string;
+  opportunityTitle: string;
+  from: { id: string; displayName: string | null; avatarUrl: string | null; headline: string | null; role: string };
+  scope: string;
+  timeframe: string | null;
+  compensation: string | null;
+  status: 'pending' | 'accepted' | 'declined' | 'withdrawn';
+  respondedAt: string | null;
+  createdAt: string;
+};
+
+/** What the reader's listings received (docs §111). */
+export async function listIncomingProposals(): Promise<{ proposals: OpportunityProposalItem[] }> {
+  return apiRequest('/api/opportunities/proposals/incoming');
+}
+
+export async function listSentProposals(): Promise<{ proposals: OpportunityProposalItem[] }> {
+  return apiRequest('/api/opportunities/proposals/sent');
+}
+
+export async function sendOpportunityProposal(
+  opportunityId: string,
+  body: { scope: string; timeframe?: string | null; compensation?: string | null },
+): Promise<{ proposal: OpportunityProposalItem }> {
+  return apiRequest(`/api/opportunities/${opportunityId}/proposals`, { method: 'POST', body: JSON.stringify(body) });
+}
+
+export async function answerOpportunityProposal(id: string, status: 'accepted' | 'declined' | 'withdrawn'): Promise<{ proposal: OpportunityProposalItem }> {
+  return apiRequest(`/api/opportunities/proposals/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
 }
 
 export async function createOpportunity(body: {
