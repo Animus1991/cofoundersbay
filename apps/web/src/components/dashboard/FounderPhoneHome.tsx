@@ -304,7 +304,7 @@ export function FounderPhoneHome({
     </div>
     ) : null}
 
-    <div className="min-w-0 space-y-6 sm:hidden">
+    <div className="min-w-0 space-y-6 lg:hidden">
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center justify-between gap-2">

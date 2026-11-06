@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Circle, AlertCircle, ChevronDown } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -84,6 +84,11 @@ import { useToast } from '@/components/ui/toast';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { useInvestorFollowUps } from '@/lib/follow-ups';
+
+/** Remembered only under 1024px. Wide screens always show this block. */
+const LOWER_DASHBOARD_KEY = 'cfb:founder-dashboard-lower';
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
 const FOUNDER_TOUR: TourStep[] = [
   {
     target: 'founder-stats',
@@ -758,6 +763,44 @@ export default function FounderDashboardContent() {
     full: fullDashboard,
   });
 
+  // Under 1024px the long cards (readiness through what's new) sit behind one
+  // labelled control. A founder who is just starting already has that fold
+  // (RestOfDashboardToggle), so this one stays out of their way. The first
+  // visit stays open: the tour points at the checklist and the readiness card.
+  const [lowerOpen, setLowerOpen] = useState(true);
+  useIsoLayoutEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)');
+    const apply = () => {
+      if (!mq.matches) {
+        setLowerOpen(true);
+        return;
+      }
+      let choice: string | null = null;
+      let tourDone = false;
+      try {
+        choice = window.localStorage.getItem(LOWER_DASHBOARD_KEY);
+        tourDone = Object.keys(window.localStorage).some(
+          (key) => key.startsWith('cfb.tour.founder-dashboard.') && window.localStorage.getItem(key) === 'done',
+        );
+      } catch {
+        choice = null;
+      }
+      if (choice === '1' || choice === '0') setLowerOpen(choice === '1');
+      else setLowerOpen(!tourDone);
+    };
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+  const toggleLower = useCallback(() => {
+    setLowerOpen((open) => {
+      const next = !open;
+      try { window.localStorage.setItem(LOWER_DASHBOARD_KEY, next ? '1' : '0'); } catch { /* private mode */ }
+      return next;
+    });
+  }, []);
+  const showLowerFold = !restFoldable;
+
   const nextAction = deriveNextAction({
     hasProfile:      !!(profile?.profile?.displayName && profile?.profile?.headline),
     hasPreferences:  !!((profile?.profile as { lookingFor?: unknown[] } | undefined)?.lookingFor && ((profile?.profile as { lookingFor?: unknown[] }).lookingFor as unknown[])?.length > 0),
@@ -1357,7 +1400,8 @@ export default function FounderDashboardContent() {
 
         {/* The unfinished thing and the next people lead at every width.
             Activity, the first person, the milestone and the calendar stay
-            under 640px. The column below still holds the full lists. */}
+            until the rail takes them at 1024px. A tablet has no rail, so
+            hiding them from 640px dropped those four cards. */}
         <FounderPhoneHome
           showResume={!showFirstMove}
           matches={recommendations?.suggestions ?? []}
@@ -1390,7 +1434,7 @@ export default function FounderDashboardContent() {
               faces was the same list twice (docs §70). A read that failed
               is a dash, never 0 ("Inbox is clear", "0/0" while the API was
               down). */}
-          <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3" data-tour="founder-stats">
+          <div className="grid min-w-0 grid-cols-1 gap-3 min-[480px]:grid-cols-2 min-[480px]:gap-4 lg:grid-cols-3" data-tour="founder-stats">
             <MetricTile
               align="center"
               glyph="profile"
@@ -1411,7 +1455,7 @@ export default function FounderDashboardContent() {
               caption={apiAvailable ? messageCaption.en : 'Not read: the server is unavailable. Opens messages'}
               captionEl={apiAvailable ? messageCaption.el : 'Δεν διαβάστηκε: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα μηνύματα'}
             />
-            <div className="col-span-2 min-w-0 lg:col-span-1">
+            <div className="min-w-0 min-[480px]:col-span-2 lg:col-span-1">
               <MetricTile
                 align="center"
                 glyph="flag"
@@ -1437,6 +1481,36 @@ export default function FounderDashboardContent() {
 
           <AttentionChips items={attentionItems} />
 
+          {showLowerFold && (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-auto min-h-11 w-full justify-between gap-3 py-2.5 text-left lg:hidden"
+              aria-expanded={lowerOpen}
+              aria-controls="founder-dashboard-lower"
+              onClick={toggleLower}
+            >
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-foreground">
+                  {lowerOpen ? (
+                    <BilingualText en="Show less" el="Λιγότερα" compact />
+                  ) : (
+                    <BilingualText en="More on this dashboard" el="Περισσότερα στον πίνακα" compact />
+                  )}
+                </span>
+                <span className="block text-xs font-normal text-muted-foreground">
+                  <BilingualText
+                    en="Readiness, first steps, paths, commitments, what’s new"
+                    el="Ετοιμότητα, πρώτα βήματα, διαδρομές, δεσμεύσεις, τι νέο υπάρχει"
+                    wrap
+                  />
+                </span>
+              </span>
+              <ChevronDown className={cn('icon-sm shrink-0 text-muted-foreground transition-transform', lowerOpen && 'rotate-180')} aria-hidden="true" />
+            </Button>
+          )}
+
+          <div id="founder-dashboard-lower" hidden={showLowerFold && !lowerOpen} className="min-w-0 space-y-6">
           {/* Readiness — single home in the column.
               Fundraising, matches, milestones and profile strength live in
               the rail (`snapshot`) so this page stays a glance, not a stack. */}
@@ -1501,6 +1575,7 @@ export default function FounderDashboardContent() {
 
           {/* What the October round added, each with the place to try it. */}
           <WhatsNewPanel audience="founder" />
+          </div>
         </div>
       </div>
     </AppShell>
