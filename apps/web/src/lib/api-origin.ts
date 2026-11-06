@@ -42,11 +42,22 @@ export function getAbsoluteApiOrigin(): string {
   return proxyTarget();
 }
 
-/** Socket.IO connect target (must be absolute). */
+/**
+ * Socket.IO connect target (must be absolute).
+ *
+ * In dev proxy mode HTTP goes through the web's rewrites, but its dev server
+ * never answers a websocket upgrade there: the API said 101 on :3001 and :3000
+ * said nothing, so sending a message read "not connected". The socket goes to
+ * the API directly, on the page's own host, because a cookie is kept per host
+ * and not per port: `127.0.0.1` would arrive without the session.
+ */
 export function getSocketOrigin(): string {
   const httpOrigin = getApiOrigin();
   if (httpOrigin) return httpOrigin;
-  if (typeof window !== 'undefined') return window.location.origin;
+  if (typeof window !== 'undefined') {
+    const { protocol, hostname } = window.location;
+    return `${protocol}//${hostname}:${new URL(proxyTarget()).port}`;
+  }
   return proxyTarget();
 }
 
