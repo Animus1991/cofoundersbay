@@ -793,7 +793,12 @@ function followUpDate(text: string, now = new Date()): string | undefined {
   const exact = text.match(/\b\d{4}-\d{2}-\d{2}\b/);
   if (exact) return exact[0];
   const plain = stripAccents(text.toLowerCase());
-  const day = (offset: number) => new Date(now.getTime() + offset * 86_400_000).toISOString().slice(0, 10);
+  // The reader's own calendar. Through toISOString, UTC was still on yesterday
+  // just after midnight in Athens, and "Friday" came out as a Thursday.
+  const day = (offset: number) => {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
   if (/\btomorrow\b|αυριο/.test(plain)) return day(1);
   const weekday = WEEKDAYS.find(([pattern]) => pattern.test(plain))?.[1];
   if (weekday === undefined) return undefined;

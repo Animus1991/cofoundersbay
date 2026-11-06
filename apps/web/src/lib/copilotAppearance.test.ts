@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { planCopilotTools } from './copilot-planner';
 import { executeAction, undoAction } from './action-registry';
 import { runCopilotTurn } from './copilot-engine';
@@ -72,6 +72,16 @@ describe('a next step with an investor, from the chat', () => {
     const planned = args('Θύμισέ μου το follow-up με τον Νίκο την Παρασκευή', 'set_investor_followup') as { investor: string; date: string };
     expect(planned.investor).toBe('Νίκο');
     expect(new Date(planned.date).getUTCDay()).toBe(5);
+  });
+
+  it('counts the day on the reader\'s clock, also just after midnight', () => {
+    vi.useFakeTimers({ now: new Date(2026, 10, 7, 1, 15), toFake: ['Date'] }); // Sat 7 Nov, 01:15 local
+    try {
+      const planned = args('Θύμισέ μου το follow-up με τον Νίκο την Παρασκευή', 'set_investor_followup') as { date: string };
+      expect(planned.date).toBe('2026-11-13');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('waits for a person and a day before proposing anything', () => {

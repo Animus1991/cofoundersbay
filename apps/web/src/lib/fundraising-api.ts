@@ -174,6 +174,8 @@ export function roundFromApi(round: ApiRound): FundRound & { investors: number; 
     id: round.id,
     apiId: round.id,
     name: round.name,
+    // The name the API gives a round nobody has named; a member's own stays as written.
+    nameEl: round.name === 'My round' ? 'Ο γύρος μου' : undefined,
     type: ROUND_TYPES.find((t) => t.value === round.roundType)?.en ?? round.roundType,
     roundType: round.roundType,
     currency: SYMBOL[round.currency] ?? round.currency,

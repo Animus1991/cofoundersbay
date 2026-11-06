@@ -121,7 +121,7 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
   doc_remove: { en: 'Remove document', el: 'Αφαίρεση εγγράφου' },
   doc_remove_title: { en: 'Remove this document?', el: 'Αφαίρεση αυτού του εγγράφου;' },
   doc_remove_desc: { en: 'The file is deleted from the data room and cannot be recovered.', el: 'Το αρχείο διαγράφεται από το data room και δεν ανακτάται.' },
-  doc_private_note: { en: 'Files here are private: only you can open them. Up to 25 MB, PDF, Office or an image.', el: 'Τα αρχεία εδώ είναι ιδιωτικά: μόνο εσείς τα ανοίγετε. Έως 25 MB, PDF, Office ή εικόνα.' },
+  doc_private_note: { en: 'Files here are private: only you and the investors you give access to can open them. Up to 25 MB, PDF, Office or an image.', el: 'Τα αρχεία εδώ είναι ιδιωτικά: τα ανοίγετε μόνο εσείς και οι επενδυτές στους οποίους δίνετε πρόσβαση. Έως 25 MB, PDF, Office ή εικόνα.' },
   round_plan: { en: 'Draft a round plan', el: 'Σύνταξη σχεδίου γύρου' },
   empty_round_hint: {
     en: 'Ask AI to draft target, instrument, and a first investor list from Builder artefacts.',
