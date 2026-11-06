@@ -94,6 +94,7 @@ export function NeedCard({
   footer,
   className,
   headingLevel = 3,
+  guaranteeNote = true,
 }: {
   card: NeedCardView;
   compact?: boolean;
@@ -103,6 +104,12 @@ export function NeedCard({
   footer?: ReactNode;
   className?: string;
   headingLevel?: 1 | 2 | 3;
+  /**
+   * False where a list carries the non-guarantee sentence once for every card
+   * (the wall says it under its grid); a standalone card keeps it in its own
+   * footer, because a card shared on its own must still say it.
+   */
+  guaranteeNote?: boolean;
 }) {
   const kind = kindCopy(card.kind);
   // The unit after the hours follows the reader: «40 ώρ./εβδ.», not "40 h/week".
@@ -191,7 +198,7 @@ export function NeedCard({
 
       {showsMoney || footer || actions ? (
         <footer className="space-y-3 border-t border-border pt-3">
-          {showsMoney ? <NonGuaranteeNote /> : null}
+          {showsMoney && guaranteeNote ? <NonGuaranteeNote /> : null}
           {footer}
           {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
         </footer>

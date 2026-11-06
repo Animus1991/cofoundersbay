@@ -1460,7 +1460,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-              <div className="flex items-center justify-between gap-4">
+              <div className="rounded-xl border p-4 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-foreground"><BilingualText en="Export your data" el="Εξαγωγή των δεδομένων σας" compact /></p>
                   <p className="text-xs text-muted-foreground"><BilingualText en="A JSON file of the categories you choose on the export page. Nothing is stored after the download." el="Αρχείο JSON με τις κατηγορίες που διαλέγετε στη σελίδα εξαγωγής. Τίποτα δεν φυλάσσεται μετά τη λήψη." wrap /></p>

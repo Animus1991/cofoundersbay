@@ -78,9 +78,9 @@ export const THEME_OPTIONS = [
   {
     name: 'terra' as ThemeName,
     label: 'Terracotta',
-    description: 'Warm rose with a dusty terracotta',
+    description: 'Soft mauve with a dusty rose',
     icon: Flame,
-    swatch: ['#f6efee', '#8f5952', '#6e403b'],
+    swatch: ['#f5eff2', '#985d75', '#7b475b'],
   },
 ];
 

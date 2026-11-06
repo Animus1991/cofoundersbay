@@ -31,6 +31,7 @@ describe('non-guarantee sentence', () => {
   it('is not dropped from the need card when equity or an investor introduction is on it', () => {
     const card = readFileSync('src/components/commitments/NeedCard.tsx', 'utf8');
     expect(card).toContain("const showsMoney = Boolean(card.offer.equity) || card.kind === 'investor_intro';");
-    expect(card).toContain('{showsMoney ? <NonGuaranteeNote /> : null}');
+    // On by default; a list that carries the sentence once passes guaranteeNote={false}.
+    expect(card).toContain('{showsMoney && guaranteeNote ? <NonGuaranteeNote /> : null}');
   });
 });

@@ -9,12 +9,14 @@ import { resetDemoSavedSearches } from '@/lib/demo/saved-searches-world';
 import { NO_CHIPS, type CardChips } from '@/lib/need-card-wall';
 import { ToastProvider } from '@/components/ui/toast';
 import { NeedCardsSection } from './NeedCardsSection';
+import { NeedCardChips } from './NeedCardChips';
+import { useNeedCardWall } from './useNeedCardWall';
 import { NeedCardAlertDialog } from './NeedCardAlertDialog';
 
 /**
- * The need-card wall in Opportunities, against the demo board: four chips
- * over the cards, each offering only choices that show a card, an empty
- * state that names the chips, and an alert that keeps them.
+ * The need-card wall in Opportunities, against the demo board: four filters
+ * in the rail, each offering only choices that show a card, an empty state
+ * that names them, and an alert that keeps them.
  */
 
 vi.mock('@/lib/api', async (importOriginal) => ({
@@ -41,17 +43,16 @@ const wrap = (ui: React.ReactNode) =>
 
 function Wall({ initial = NO_CHIPS, onChange }: { initial?: CardChips; onChange?: (c: CardChips) => void }) {
   const [chips, setChips] = useState(initial);
+  const wall = useNeedCardWall({ type: 'all', remoteOnly: false, search: '', chips });
+  const change = (c: CardChips) => {
+    setChips(c);
+    onChange?.(c);
+  };
   return (
-    <NeedCardsSection
-      type="all"
-      remoteOnly={false}
-      search=""
-      chips={chips}
-      onChipsChange={(c) => {
-        setChips(c);
-        onChange?.(c);
-      }}
-    />
+    <>
+      <NeedCardsSection type="all" remoteOnly={false} search="" chips={chips} onChipsChange={change} />
+      <NeedCardChips wall={wall} chips={chips} onChipsChange={change} />
+    </>
   );
 }
 
@@ -61,42 +62,29 @@ const wallTitles = () =>
     .map((h) => h.textContent);
 
 describe('the need-card wall', () => {
-  it('narrows by a chip, names the choice on the chip, and clears', async () => {
+  it('narrows by a rail filter, marks the choice, and clears', async () => {
     wrap(<Wall />);
     await waitFor(() => expect(wallTitles().length).toBeGreaterThan(1));
     const everyCard = wallTitles();
 
-    const category = screen.getByRole('button', { name: /^Category/ });
-    expect(category.getAttribute('aria-expanded')).toBe('false');
-    // A closed panel is hidden by class as well: a display utility would
-    // outrank the bare attribute, and all four panels once showed at once.
-    for (const key of ['category', 'place', 'stage', 'commitment']) {
-      const panel = document.getElementById(`need-chip-${key}`)!;
-      expect(panel.hidden).toBe(true);
-      expect(panel.classList.contains('hidden')).toBe(true);
-      expect(panel.classList.contains('flex')).toBe(false);
-    }
-    fireEvent.click(category);
-    expect(category.getAttribute('aria-expanded')).toBe('true');
-    const panel = screen.getByRole('group', { name: /^Category/ });
+    const category = await screen.findByRole('group', { name: /^Category/ });
     // Each choice says how many cards it would show.
-    const healthTech = within(panel).getByRole('button', { name: /HealthTech/ });
+    const healthTech = within(category).getByRole('button', { name: /HealthTech/ });
     expect(healthTech.textContent).toMatch(/1$/);
     fireEvent.click(healthTech);
 
     expect(wallTitles()).toEqual(['Head of growth for Aegis Health']);
-    expect(screen.getByRole('button', { name: /^Category: HealthTech/ })).toBeTruthy();
+    expect(within(screen.getByRole('group', { name: /^Category/ })).getByRole('button', { name: /HealthTech/ }).getAttribute('aria-pressed')).toBe('true');
     expect(screen.getByText(new RegExp(`1 of ${everyCard.length} cards`))).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: /Clear card filters/ }));
+    fireEvent.click(screen.getAllByRole('button', { name: /Clear card filters/ })[0]);
     expect(wallTitles()).toEqual(everyCard);
   });
 
   it('never offers a choice that would empty the wall', async () => {
     wrap(<Wall initial={{ ...NO_CHIPS, place: 'Thessaloniki' }} />);
     await waitFor(() => expect(wallTitles()).toEqual(['Head of growth for Aegis Health']));
-    fireEvent.click(screen.getByRole('button', { name: /^Stage/ }));
-    const stages = within(screen.getByRole('group', { name: /^Stage/ }))
+    const stages = within(await screen.findByRole('group', { name: /^Stage/ }))
       .getAllByRole('button')
       .map((b) => b.getAttribute('aria-pressed'));
     // "Any" plus the one stage a Thessaloniki card is at.
