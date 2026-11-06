@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  Plus, ChevronRight, CheckCircle2, Download, X,
+  Plus, ChevronRight, CheckCircle2, Download, X, Trash2,
 } from 'lucide-react';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { AppShell } from '@/components/layout/AppShell';
@@ -55,7 +56,6 @@ import {
   fundraisingRoundView,
   fmtMoney,
   daysUntil,
-  readFundraisingOverlay,
   resolveFundraisingLeads,
   resolveFundraisingDocs,
   isPersonLead,
@@ -66,6 +66,28 @@ import {
 } from '@/lib/fundraising-demo';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Counter } from '@/components/ui/counter';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { qk } from '@/lib/query-keys';
+import {
+  ROUND_CURRENCIES,
+  ROUND_TYPES,
+  apiCategory,
+  apiLeadStatus,
+  createFundraisingLead,
+  createFundraisingRound,
+  docFromApi,
+  downloadFundraisingDocument,
+  getFundraising,
+  leadFromApi,
+  removeFundraisingDocument,
+  roundFromApi,
+  updateFundraisingDocument,
+  updateFundraisingLead,
+  updateFundraisingRound,
+  uploadFundraisingDocument,
+  type FundraisingState,
+  type RoundInput,
+} from '@/lib/fundraising-api';
 
 const ROUND_TONE: Record<string, StatusTone> = {
   planning: 'neutral',
@@ -147,19 +169,24 @@ function LeadName({ lead, className, as: Tag = 'p' }: { lead: InvestorLead; clas
   );
 }
 
+type NewLead = { name: string; firm?: string; type: string; stage: string; checkSize: string; status: InvestorStatus; notes?: string; committed: number | null };
+
 function AddLeadModal({
   open,
+  live,
   defaultStatus,
   onClose,
-  onCreated,
+  onSave,
 }: {
   open: boolean;
+  /** A real account: asks what a committed investor put in. */
+  live: boolean;
   defaultStatus: InvestorStatus;
   onClose: () => void;
-  onCreated: () => void;
+  onSave: (lead: NewLead) => void | Promise<void>;
 }) {
   const t = useFundraisingPrimaryText();
-  const { success } = useToast();
+  const { success, error: showError } = useToast();
   const [name, setName] = useState('');
   const panelRef = useModalA11y<HTMLFormElement>(open, onClose);
   const [firm, setFirm] = useState('');
@@ -168,24 +195,33 @@ function AddLeadModal({
   const [checkSize, setCheckSize] = useState('€25K–€150K');
   const [status, setStatus] = useState<InvestorStatus>(defaultStatus);
   const [notes, setNotes] = useState('');
+  const [committed, setCommitted] = useState('');
+  const [saving, setSaving] = useState(false);
 
   if (!open) return null;
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) return;
-    addFundraisingLead({
-      name: name.trim(),
-      firm: firm.trim() || undefined,
-      type,
-      stage,
-      checkSize,
-      status,
-      notes: notes.trim() || undefined,
-    });
-    success('Contact added', 'It now appears in Pipeline and Kanban.');
-    onCreated();
-    onClose();
+    if (!name.trim() || saving) return;
+    setSaving(true);
+    try {
+      await onSave({
+        name: name.trim(),
+        firm: firm.trim() || undefined,
+        type,
+        stage,
+        checkSize,
+        status,
+        notes: notes.trim() || undefined,
+        committed: status === 'committed' && Number(committed) > 0 ? Number(committed) : null,
+      });
+      success('Contact added', 'It now appears in Pipeline and Kanban.');
+      onClose();
+    } catch (err) {
+      showError('Could not save the contact', err instanceof Error ? err.message : undefined);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -254,6 +290,12 @@ function AddLeadModal({
             ))}
           </select>
         </div>
+        {live && status === 'committed' ? (
+          <div className="space-y-1.5">
+            <Label htmlFor="committed"><BilingualText en={fundraisingEn('field_committed')} el={fundraisingEl('field_committed')} compact /></Label>
+            <Input id="committed" type="number" min="0" step="any" inputMode="decimal" className={BUILDER_BTN} value={committed} onChange={(e) => setCommitted(e.target.value)} />
+          </div>
+        ) : null}
         <div className="space-y-1.5">
           <Label htmlFor="notes"><BilingualText en={fundraisingEn('field_notes')} el={fundraisingEl('field_notes')} compact /></Label>
           <textarea id="notes" className="w-full resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t(fundraisingEn('notes_ph'), fundraisingEl('notes_ph'))} />
@@ -262,9 +304,147 @@ function AddLeadModal({
           <Button type="button" variant="outline" className={BUILDER_BTN} onClick={onClose}>
             <BilingualText en={fundraisingEn('cancel')} el={fundraisingEl('cancel')} compact />
           </Button>
-          <Button type="submit" className={BUILDER_BTN} disabled={!name.trim()}>
+          <Button type="submit" className={BUILDER_BTN} disabled={!name.trim() || saving}>
             <BilingualText en={fundraisingEn('save')} el={fundraisingEl('save')} compact />
           </Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/** A real account's round: what the showcase's card shows, from what the founder entered (docs §111). */
+function RoundModal({
+  initial,
+  onClose,
+  onSave,
+}: {
+  initial: (RoundInput & { id?: string }) | null;
+  onClose: () => void;
+  onSave: (round: RoundInput) => Promise<void>;
+}) {
+  const t = useFundraisingPrimaryText();
+  const { error: showError, success } = useToast();
+  const panelRef = useModalA11y<HTMLFormElement>(true, onClose);
+  const [name, setName] = useState(initial?.name ?? '');
+  const [roundType, setRoundType] = useState(initial?.roundType ?? 'seed');
+  const [currency, setCurrency] = useState(initial?.currency ?? 'EUR');
+  const [target, setTarget] = useState(initial?.targetAmount != null ? String(initial.targetAmount) : '');
+  const [closing, setClosing] = useState(initial?.closingDate?.slice(0, 10) ?? '');
+  const [leadInvestor, setLeadInvestor] = useState(initial?.leadInvestorName ?? '');
+  const [status, setStatus] = useState<NonNullable<RoundInput['status']>>(initial?.status ?? 'planning');
+  const [saving, setSaving] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim() || saving) return;
+    setSaving(true);
+    try {
+      await onSave({ name: name.trim(), roundType, currency, targetAmount: Number(target) > 0 ? Number(target) : null, closingDate: closing || null, leadInvestorName: leadInvestor.trim() || null, status });
+      success('Round saved');
+      onClose();
+    } catch (err) {
+      showError('Could not save the round', err instanceof Error ? err.message : undefined);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const selectClass = 'w-full rounded-xl border border-input bg-background px-3 py-2 text-sm';
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <form ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="round-modal-title" tabIndex={-1} onSubmit={submit} className="relative w-full max-w-lg space-y-4 overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-none" data-surface="overlay">
+        <div className="flex items-center justify-between">
+          <h2 id="round-modal-title" className="page-section font-semibold">
+            {initial?.id ? <BilingualText en={fundraisingEn('round_edit')} el={fundraisingEl('round_edit')} /> : <BilingualText en={fundraisingEn('round_create')} el={fundraisingEl('round_create')} />}
+          </h2>
+          <button type="button" onClick={onClose} className={cn(BUILDER_BTN, 'inline-flex h-11 w-11 items-center justify-center text-muted-foreground hover:bg-muted sm:h-9 sm:w-9')} aria-label={bilingualAria('Close dialog', 'Κλείσιμο παραθύρου')}>
+            <X className="icon-sm" />
+          </button>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="round-name"><BilingualText en={fundraisingEn('field_round_name')} el={fundraisingEl('field_round_name')} compact /> *</Label>
+          <Input id="round-name" className={BUILDER_BTN} required value={name} onChange={(e) => setName(e.target.value)} placeholder={t(fundraisingEn('round_name_ph'), fundraisingEl('round_name_ph'))} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="round-type"><BilingualText en={fundraisingEn('field_round_type')} el={fundraisingEl('field_round_type')} compact /></Label>
+            <select id="round-type" className={selectClass} value={roundType} onChange={(e) => setRoundType(e.target.value)}>
+              {ROUND_TYPES.map((item) => <option key={item.value} value={item.value}>{t(item.en, item.el)}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="round-status"><BilingualText en={fundraisingEn('field_round_status')} el={fundraisingEl('field_round_status')} compact /></Label>
+            <select id="round-status" className={selectClass} value={status} onChange={(e) => setStatus(e.target.value as NonNullable<RoundInput['status']>)}>
+              {(['planning', 'active', 'closing', 'closed'] as const).map((item) => <option key={item} value={item}>{t(fundraisingEn(ROUND_STATUS_KEYS[item]), fundraisingEl(ROUND_STATUS_KEYS[item]))}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="grid grid-cols-[1fr_6rem] gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="round-target"><BilingualText en={fundraisingEn('field_target')} el={fundraisingEl('field_target')} compact /></Label>
+            <Input id="round-target" type="number" min="0" step="any" inputMode="decimal" className={BUILDER_BTN} value={target} onChange={(e) => setTarget(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="round-currency"><BilingualText en={fundraisingEn('field_currency')} el={fundraisingEl('field_currency')} compact /></Label>
+            <select id="round-currency" className={selectClass} value={currency} onChange={(e) => setCurrency(e.target.value)}>
+              {ROUND_CURRENCIES.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="round-closing"><BilingualText en={fundraisingEn('field_closing')} el={fundraisingEl('field_closing')} compact /></Label>
+            <Input id="round-closing" type="date" className={BUILDER_BTN} value={closing} onChange={(e) => setClosing(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="round-lead"><BilingualText en={fundraisingEn('field_lead_investor')} el={fundraisingEl('field_lead_investor')} compact /></Label>
+            <Input id="round-lead" className={BUILDER_BTN} value={leadInvestor} onChange={(e) => setLeadInvestor(e.target.value)} />
+          </div>
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" className={BUILDER_BTN} onClick={onClose}>
+            <BilingualText en={fundraisingEn('cancel')} el={fundraisingEl('cancel')} compact />
+          </Button>
+          <Button type="submit" className={BUILDER_BTN} disabled={!name.trim() || saving}>
+            <BilingualText en={fundraisingEn('save')} el={fundraisingEl('save')} compact />
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/** Moved to Committed: raised adds up the amounts, so it asks for one. Optional. */
+function CommitAmountModal({ leadName, onClose, onSave }: { leadName: string; onClose: () => void; onSave: (amount: number) => Promise<void> }) {
+  const { error: showError, success } = useToast();
+  const panelRef = useModalA11y<HTMLFormElement>(true, onClose);
+  const [amount, setAmount] = useState('');
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!(Number(amount) > 0)) return;
+    try {
+      await onSave(Number(amount));
+      success('Amount saved');
+      onClose();
+    } catch (err) {
+      showError('Could not save the contact', err instanceof Error ? err.message : undefined);
+    }
+  }
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <form ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="commit-modal-title" tabIndex={-1} onSubmit={submit} className="relative w-full max-w-sm space-y-4 rounded-2xl border border-border bg-card p-5 shadow-none" data-surface="overlay">
+        <h2 id="commit-modal-title" className="page-section font-semibold"><BilingualText en={fundraisingEn('commit_title')} el={fundraisingEl('commit_title')} /></h2>
+        <p className="text-sm text-muted-foreground">{leadName} · <BilingualText en={fundraisingEn('commit_hint')} el={fundraisingEl('commit_hint')} wrap /></p>
+        <div className="space-y-1.5">
+          <Label htmlFor="commit-amount"><BilingualText en={fundraisingEn('field_committed')} el={fundraisingEl('field_committed')} compact /></Label>
+          <Input id="commit-amount" type="number" min="0" step="any" inputMode="decimal" className={BUILDER_BTN} value={amount} onChange={(e) => setAmount(e.target.value)} />
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" className={BUILDER_BTN} onClick={onClose}><BilingualText en={fundraisingEn('commit_later')} el={fundraisingEl('commit_later')} compact /></Button>
+          <Button type="submit" className={BUILDER_BTN} disabled={!(Number(amount) > 0)}><BilingualText en={fundraisingEn('save')} el={fundraisingEl('save')} compact /></Button>
         </div>
       </form>
     </div>
@@ -306,9 +486,12 @@ const MESSAGE_TEMPLATES = [
 function RoundCard({
   round,
   onAdd,
+  onEdit,
 }: {
   round: ReturnType<typeof fundraisingRoundView>;
   onAdd: () => void;
+  /** A real account's round can be changed; the showcase's cannot. */
+  onEdit?: () => void;
 }) {
   const { primary } = useLanguagePreference();
   const { ask } = useAskAssistant();
@@ -317,7 +500,8 @@ function RoundCard({
   // Until the browser has its own clock the tile shows the fixed closing
   // date, which renders identically on both sides.
   const hydrated = useHydrated();
-  const pct = Math.round((round.raised / round.target) * 100);
+  const hasTarget = round.target > 0;
+  const pct = hasTarget ? Math.round((round.raised / round.target) * 100) : 0;
   const remaining = round.target - round.raised;
   const days = hydrated ? daysUntil(round.closingDate) : null;
   const roundKey = ROUND_STATUS_KEYS[round.status];
@@ -358,15 +542,23 @@ function RoundCard({
         <div className="space-y-1.5">
           <div className="card-body flex justify-between gap-3 tabular-nums">
             <span className="font-medium">{fmtMoney(round.raised, round.currency)} <BilingualText en={fundraisingEn('raised')} el={fundraisingEl('raised')} compact /></span>
-            <span className="text-muted-foreground">{fmtMoney(round.target, round.currency)} <BilingualText en={fundraisingEn('target')} el={fundraisingEl('target')} compact /></span>
+            {hasTarget ? (
+              <span className="text-muted-foreground">{fmtMoney(round.target, round.currency)} <BilingualText en={fundraisingEn('target')} el={fundraisingEl('target')} compact /></span>
+            ) : (
+              <span className="text-muted-foreground"><BilingualText en={fundraisingEn('no_target')} el={fundraisingEl('no_target')} compact /></span>
+            )}
           </div>
-          <Progress value={pct} className="h-2" />
-          <div className="flex justify-between gap-3 text-xs text-muted-foreground tabular-nums">
-            <span>
-              <BilingualText en={`${pct}% ${fundraisingEn('of_target')}`} el={`${pct}% ${fundraisingEl('of_target')}`} compact />
-            </span>
-            <span>{fmtMoney(remaining, round.currency)} <BilingualText en={fundraisingEn('remaining')} el={fundraisingEl('remaining')} compact /></span>
-          </div>
+          {hasTarget ? (
+            <>
+              <Progress value={pct} className="h-2" />
+              <div className="flex justify-between gap-3 text-xs text-muted-foreground tabular-nums">
+                <span>
+                  <BilingualText en={`${pct}% ${fundraisingEn('of_target')}`} el={`${pct}% ${fundraisingEl('of_target')}`} compact />
+                </span>
+                <span>{fmtMoney(remaining, round.currency)} <BilingualText en={fundraisingEn('remaining')} el={fundraisingEl('remaining')} compact /></span>
+              </div>
+            </>
+          ) : null}
         </div>
 
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border pt-3 sm:grid-cols-3">
@@ -424,6 +616,11 @@ function RoundCard({
           <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={onAdd}>
             <BilingualText en={fundraisingEn('add_investor')} el={fundraisingEl('add_investor')} compact />
           </Button>
+          {onEdit ? (
+            <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={onEdit}>
+              <BilingualText en={fundraisingEn('round_edit')} el={fundraisingEl('round_edit')} compact />
+            </Button>
+          ) : null}
         </CardFoot>
       </CardContent>
     </Card>
@@ -534,16 +731,63 @@ function PipelineView({
   );
 }
 
+/** What a real account can do in the room; the showcase's rows only change status. */
+type RoomActions = {
+  upload: (file: File, category: string) => Promise<void>;
+  markReady: (doc: DataRoomDoc) => Promise<void>;
+  download: (doc: DataRoomDoc) => Promise<void>;
+  remove: (doc: DataRoomDoc) => Promise<void>;
+};
+
+function RoomUpload({ onUpload }: { onUpload: RoomActions['upload'] }) {
+  const { success, error: showError } = useToast();
+  const t = useFundraisingPrimaryText();
+  const input = useRef<HTMLInputElement>(null);
+  const [category, setCategory] = useState('Pitch');
+  const [busy, setBusy] = useState(false);
+  async function choose(file: File | undefined) {
+    if (!file) return;
+    setBusy(true);
+    try {
+      await onUpload(file, category);
+      success('Document added', 'It is stored privately and only you can open it.');
+    } catch (err) {
+      showError('Could not add the document', err instanceof Error ? err.message : undefined);
+    } finally {
+      setBusy(false);
+      if (input.current) input.current.value = '';
+    }
+  }
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <label className="sr-only" htmlFor="room-category"><BilingualText en={fundraisingEn('doc_category')} el={fundraisingEl('doc_category')} compact /></label>
+        <select id="room-category" className="rounded-xl border border-input bg-background px-3 py-2 text-sm" value={category} onChange={(e) => setCategory(e.target.value)}>
+          {DOC_CATEGORIES.filter((c) => c !== 'All').map((c) => <option key={c} value={c}>{DOC_CATEGORY_KEYS[c] ? t(fundraisingEn(DOC_CATEGORY_KEYS[c]), fundraisingEl(DOC_CATEGORY_KEYS[c])) : c}</option>)}
+        </select>
+        <input ref={input} id="room-file" type="file" className="sr-only" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.webp" onChange={(e) => void choose(e.target.files?.[0])} />
+        <Button size="sm" variant="outline" className={BUILDER_BTN} disabled={busy} onClick={() => input.current?.click()}>
+          {busy ? <BilingualText en={fundraisingEn('doc_uploading')} el={fundraisingEl('doc_uploading')} compact /> : <BilingualText en={fundraisingEn('doc_upload')} el={fundraisingEl('doc_upload')} compact />}
+        </Button>
+      </div>
+      <p className="text-center text-2xs text-muted-foreground"><BilingualText en={fundraisingEn('doc_private_note')} el={fundraisingEl('doc_private_note')} wrap /></p>
+    </div>
+  );
+}
+
 function DataRoomView({
   docs,
   onChange,
+  actions,
 }: {
   docs: DataRoomDoc[];
   onChange: () => void;
+  actions?: RoomActions;
 }) {
   const { primary } = useLanguagePreference();
-  const { success } = useToast();
+  const { success, error: showError } = useToast();
   const [catFilter, setCatFilter] = useState('All');
+  const [removing, setRemoving] = useState<DataRoomDoc | null>(null);
   const filtered = catFilter === 'All' ? docs : docs.filter((d) => d.category === catFilter);
   const ready = docs.filter((d) => d.status === 'ready' || d.status === 'shared').length;
   const required = docs.filter((d) => d.isRequired);
@@ -555,6 +799,7 @@ function DataRoomView({
         <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
           <p className="page-section font-semibold"><BilingualText en={fundraisingEn('empty_room_title')} el={fundraisingEl('empty_room_title')} /></p>
           <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_room_hint')} el={fundraisingEl('empty_room_hint')} /></p>
+          {actions ? <RoomUpload onUpload={actions.upload} /> : null}
           <Button size="sm" variant="outline" className={BUILDER_BTN} asChild>
             <Link href="/builder"><BilingualText en={fundraisingEn('open_builder')} el={fundraisingEl('open_builder')} compact /></Link>
           </Button>
@@ -595,6 +840,8 @@ function DataRoomView({
           <Progress value={docs.length ? (ready / docs.length) * 100 : 0} className="mt-3 h-2" />
         </CardContent>
       </Card>
+
+      {actions ? <RoomUpload onUpload={actions.upload} /> : null}
 
       <div className="flex flex-wrap gap-2">
         {DOC_CATEGORIES.map((c) => {
@@ -668,6 +915,13 @@ function DataRoomView({
                         title={bilingualAria(fundraisingEn('mark_ready'), fundraisingEl('mark_ready'))}
                         disabled={doc.status !== 'draft'}
                         onClick={() => {
+                          if (actions) {
+                            actions.markReady(doc).then(
+                              () => success('Marked ready'),
+                              (err: unknown) => showError('Could not update the document', err instanceof Error ? err.message : undefined),
+                            );
+                            return;
+                          }
                           markFundraisingDocStatus(doc.id, 'ready');
                           onChange();
                           success('Marked ready', 'The document is marked ready in this browser.');
@@ -678,7 +932,19 @@ function DataRoomView({
                       {/* "Download started" was a toast with no file behind it. A
                           document with a link opens there; one without says why
                           nothing can be downloaded. */}
-                      {doc.href ? (
+                      {actions && doc.hasFile ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={cn('h-7 w-7 p-0', BUILDER_BTN)}
+                          aria-label={bilingualAria(fundraisingEn('download'), fundraisingEl('download'))}
+                          onClick={() => {
+                            actions.download(doc).catch((err: unknown) => showError('Could not download the document', err instanceof Error ? err.message : undefined));
+                          }}
+                        >
+                          <Download className="icon-sm" />
+                        </Button>
+                      ) : doc.href ? (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -704,6 +970,18 @@ function DataRoomView({
                           </Button>
                         </WithDisabledReason>
                       )}
+                      {actions ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={cn('h-7 w-7 p-0', BUILDER_BTN)}
+                          aria-label={bilingualAria(fundraisingEn('doc_remove'), fundraisingEl('doc_remove'))}
+                          title={bilingualAria(fundraisingEn('doc_remove'), fundraisingEl('doc_remove'))}
+                          onClick={() => setRemoving(doc)}
+                        >
+                          <Trash2 className="icon-sm" />
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
               </li>
@@ -712,6 +990,25 @@ function DataRoomView({
           </ul>
         </Card>
       )}
+      {actions ? (
+        <ConfirmDialog
+          open={removing !== null}
+          onOpenChange={(next) => { if (!next) setRemoving(null); }}
+          title={<BilingualText en={fundraisingEn('doc_remove_title')} el={fundraisingEl('doc_remove_title')} />}
+          description={<BilingualText en={fundraisingEn('doc_remove_desc')} el={fundraisingEl('doc_remove_desc')} wrap />}
+          confirmLabel={<BilingualText en={fundraisingEn('doc_remove')} el={fundraisingEl('doc_remove')} compact />}
+          onConfirm={async () => {
+            if (!removing) return;
+            try {
+              await actions.remove(removing);
+              success('Document removed');
+            } catch (err) {
+              showError('Could not remove the document', err instanceof Error ? err.message : undefined);
+            }
+            setRemoving(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -835,7 +1132,10 @@ export default function FundraisingPage() {
   const [tick, setTick] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [addStatus, setAddStatus] = useState<InvestorStatus>('prospect');
-  const { success } = useToast();
+  const [roundFormOpen, setRoundFormOpen] = useState(false);
+  const [commitFor, setCommitFor] = useState<InvestorLead | null>(null);
+  const { success, error: showError } = useToast();
+  const qc = useQueryClient();
 
   // The overlay lives in sessionStorage: the server cannot see it, so reading
   // it during the first client render produced different leads/docs/statuses
@@ -843,19 +1143,30 @@ export default function FundraisingPage() {
   // rows. Until hydration the page renders the overlay-free seed state
   // (identical to the server); the overlay applies one frame later.
   const hydrated = useHydrated();
+  // A member's own round is on the API (docs §111). Their contacts used to
+  // live in this tab's sessionStorage and ended with it; the showcase, with
+  // samples on, keeps its overlay.
+  const live = !showDemoData;
+  const { data: saved } = useQuery({
+    queryKey: qk('fundraising'),
+    queryFn: getFundraising,
+    enabled: hydrated && live,
+    staleTime: 30_000,
+    retry: 0,
+  });
+  const keep = (state: FundraisingState) => qc.setQueryData(qk('fundraising'), state);
   const leads = useMemo(() => {
-    const all = hydrated ? listFundraisingLeads() : resolveFundraisingLeads();
-    if (showDemoData) return all;
-    const createdIds = new Set(readFundraisingOverlay().created.map((l) => l.id));
-    return all.filter((l) => createdIds.has(l.id));
-  }, [hydrated, showDemoData, tick]);
-  const docs = useMemo(
-    () => (showDemoData ? (hydrated ? listFundraisingDocs() : resolveFundraisingDocs()) : []),
-    [hydrated, showDemoData, tick],
-  );
+    if (live) return (saved?.leads ?? []).map(leadFromApi);
+    return hydrated ? listFundraisingLeads() : resolveFundraisingLeads();
+  }, [hydrated, live, saved, tick]);
+  const docs = useMemo(() => {
+    if (live) return (saved?.documents ?? []).map(docFromApi);
+    return hydrated ? listFundraisingDocs() : resolveFundraisingDocs();
+  }, [hydrated, live, saved, tick]);
   const stats = fundraisingPipelineStats(leads);
   // On the reader's calendar once the browser has its own clock (fundraisingRoundView).
-  const round = showDemoData ? fundraisingRoundView(leads, hydrated ? Date.now() : undefined) : null;
+  const savedRound = live && saved?.round ? roundFromApi(saved.round) : null;
+  const round = showDemoData ? fundraisingRoundView(leads, hydrated ? Date.now() : undefined) : savedRound;
   const harborLive = showDemoData && leads.some((l) => l.id === 'ata');
   const askAi = harborLive ? HARBOR_ASK : GENERIC_ASK;
 
@@ -868,11 +1179,54 @@ export default function FundraisingPage() {
     setAddOpen(true);
   }
 
-  function handleMove(id: string, status: InvestorStatus) {
+  async function handleMove(id: string, status: InvestorStatus) {
+    if (live) {
+      try {
+        keep(await updateFundraisingLead(id, { status: apiLeadStatus(status) }));
+      } catch (err) {
+        showError('Could not update the stage', err instanceof Error ? err.message : undefined);
+        return;
+      }
+      success('Stage updated', 'Pipeline and Kanban stay in lockstep.');
+      const lead = leads.find((l) => l.id === id);
+      if (status === 'committed' && lead) setCommitFor(lead);
+      return;
+    }
     moveFundraisingLead(id, status);
     refresh();
     success('Stage updated', 'Pipeline and Kanban stay in lockstep.');
   }
+
+  async function saveLead(lead: NewLead) {
+    if (!live) {
+      addFundraisingLead({ name: lead.name, firm: lead.firm, type: lead.type, stage: lead.stage, checkSize: lead.checkSize, status: lead.status, notes: lead.notes });
+      refresh();
+      return;
+    }
+    keep(await createFundraisingLead({
+      investorName: lead.name,
+      investorFirm: lead.firm ?? null,
+      investorType: lead.type,
+      stageFocus: lead.stage || null,
+      checkSizeText: lead.checkSize || null,
+      status: apiLeadStatus(lead.status),
+      committedAmount: lead.committed,
+      notes: lead.notes ?? null,
+    }));
+  }
+
+  async function saveRound(input: RoundInput) {
+    keep(savedRound ? await updateFundraisingRound(savedRound.apiId, input) : await createFundraisingRound(input));
+  }
+
+  const roomActions: RoomActions | undefined = live
+    ? {
+        upload: async (file, category) => { keep(await uploadFundraisingDocument(file, { category: apiCategory(category) })); },
+        markReady: async (doc) => { keep(await updateFundraisingDocument(doc.id, { status: 'ready' })); },
+        download: (doc) => downloadFundraisingDocument(doc.id, doc.fileName ?? doc.name),
+        remove: async (doc) => { keep(await removeFundraisingDocument(doc.id)); },
+      }
+    : undefined;
 
   const [view, setView] = useState('pipeline');
   const stageName = (st: InvestorStatus) => {
@@ -907,21 +1261,21 @@ export default function FundraisingPage() {
       run: (value) => openAdd((value as InvestorStatus) ?? 'prospect'),
     },
     // One command per stage, over the leads not already in it: the same move
-    // the stage selector on each row makes. Leads are kept in this browser
-    // (the fundraising overlay), so the move is stored data.
+    // the stage selector on each row makes. A real account's lead is on the
+    // API, the showcase's in the browser overlay; either way it is stored data.
     ...PIPELINE_STAGES.map((st) => ({
       id: `move_to_${st}`,
       labelEn: `Move lead to ${stageName(st).en}`,
       labelEl: `Μετακίνηση επενδυτή σε ${stageName(st).el}`,
       writes: true,
       options: leads.filter((l) => l.status !== st).map((l) => ({ value: l.id, labelEn: l.name, labelEl: l.nameEl ?? l.name })),
-      // A move sets the lead's one status in the browser overlay; moving it
-      // back to where it was restores it.
+      // A move sets the lead's one status; moving it back to where it was
+      // restores it.
       undo: (value?: string) => {
         const prior = leads.find((l) => l.id === value)?.status;
         return prior && prior !== st && PIPELINE_STAGES.includes(prior) ? { control: `move_to_${prior}`, value } : undefined;
       },
-      run: (value?: string) => { if (value) handleMove(value, st); },
+      run: async (value?: string) => { if (value) await handleMove(value, st); },
     })),
   ]);
 
@@ -1026,7 +1380,7 @@ export default function FundraisingPage() {
     >
       <div className="space-y-6">
         {round ? (
-          <RoundCard round={round} onAdd={() => openAdd('committed')} />
+          <RoundCard round={round} onAdd={() => openAdd('committed')} onEdit={savedRound ? () => setRoundFormOpen(true) : undefined} />
         ) : (
           <Card className="rounded-xl border-dashed">
             <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
@@ -1037,9 +1391,16 @@ export default function FundraisingPage() {
                   promised a target, an instrument and a first investor list.
                   Outline: the one filled button on this page is the
                   pipeline's Add contact (docs §74). */}
-              <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={() => ask(ROUND_PLAN_ASK)}>
-                <BilingualText en={fundraisingEn('round_plan')} el={fundraisingEl('round_plan')} compact />
-              </Button>
+              <div className="flex flex-wrap justify-center gap-2">
+                {live ? (
+                  <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={() => setRoundFormOpen(true)}>
+                    <BilingualText en={fundraisingEn('round_create')} el={fundraisingEl('round_create')} compact />
+                  </Button>
+                ) : null}
+                <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={() => ask(ROUND_PLAN_ASK)}>
+                  <BilingualText en={fundraisingEn('round_plan')} el={fundraisingEl('round_plan')} compact />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -1083,7 +1444,7 @@ export default function FundraisingPage() {
             <PipelineView leads={leads} onAdd={openAdd} onMove={handleMove} />
           </TabsContent>
           <TabsContent value="dataroom" className="mt-4">
-            <DataRoomView docs={docs} onChange={refresh} />
+            <DataRoomView docs={docs} onChange={refresh} actions={roomActions} />
           </TabsContent>
         </Tabs>
 
@@ -1096,9 +1457,24 @@ export default function FundraisingPage() {
         <AddLeadModal
           key={addStatus}
           open
+          live={live}
           defaultStatus={addStatus}
           onClose={() => setAddOpen(false)}
-          onCreated={refresh}
+          onSave={saveLead}
+        />
+      )}
+      {roundFormOpen && (
+        <RoundModal
+          initial={saved?.round ? { ...saved.round, id: saved.round.id } : null}
+          onClose={() => setRoundFormOpen(false)}
+          onSave={saveRound}
+        />
+      )}
+      {commitFor && (
+        <CommitAmountModal
+          leadName={commitFor.name}
+          onClose={() => setCommitFor(null)}
+          onSave={async (amount) => { keep(await updateFundraisingLead(commitFor.id, { committedAmount: amount })); }}
         />
       )}
     </AppShell>

@@ -91,9 +91,9 @@ import {
   fundraisingRoundView,
   listFundraisingDocs,
   listFundraisingLeads,
-  readFundraisingOverlay,
   type InvestorStatus,
 } from '@/lib/fundraising-demo';
+import { docFromApi, getFundraising, leadFromApi, roundFromApi } from '@/lib/fundraising-api';
 import { readShowSamples } from '@/contexts/DemoDataContext';
 import { statusEl } from '@/components/common/StatusText';
 import { isCardStage, PERK_CATEGORY_COPY, LEGAL_CATEGORIES, LEGAL_STATUS_COPY, LEGAL_TEMPLATES } from '@cofounderbay/shared';
@@ -1023,11 +1023,12 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
    */
   async get_fundraising(_args, { t, locale }) {
     const samples = readShowSamples();
-    const all = listFundraisingLeads();
-    const created = new Set(readFundraisingOverlay().created.map((l) => l.id));
-    const leads = samples ? all : all.filter((l) => created.has(l.id));
-    const round = samples ? fundraisingRoundView(leads, Date.now()) : null;
-    const drafts = samples ? listFundraisingDocs().filter((d) => d.status === 'draft') : [];
+    // A member's own round is on the API; the showcase keeps its overlay. If
+    // the read fails this says there is nothing, as the page's empty state does.
+    const saved = samples ? null : await getFundraising().catch(() => null);
+    const leads = samples ? listFundraisingLeads() : (saved?.leads ?? []).map(leadFromApi);
+    const round = samples ? fundraisingRoundView(leads, Date.now()) : saved?.round ? roundFromApi(saved.round) : null;
+    const drafts = (samples ? listFundraisingDocs() : (saved?.documents ?? []).map(docFromApi)).filter((d) => d.status === 'draft');
     const actions = [openArea(t, '/fundraising', t('Open fundraising'), t('Your round, the investors you are talking to and the data room.'))];
     if (!round && !leads.length) {
       return { section: t('No round and no investor leads yet. The Fundraising page is where you track them.'), citations: [], actions };

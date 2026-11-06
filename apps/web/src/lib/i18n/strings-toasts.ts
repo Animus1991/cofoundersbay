@@ -344,6 +344,19 @@ export const TOAST_EL: Record<string, string> = {
   // Notifications: Save, and taking one out of Saved (§111).
   "Removed from Saved": "Αφαιρέθηκε από τις αποθηκευμένες",
   "Could not save the notification": "Η ειδοποίηση δεν αποθηκεύτηκε",
+  // Fundraising on the API (§111).
+  "Round saved": "Ο γύρος αποθηκεύτηκε",
+  "Could not save the round": "Ο γύρος δεν αποθηκεύτηκε",
+  "Could not save the contact": "Η επαφή δεν αποθηκεύτηκε",
+  "Could not update the stage": "Το στάδιο δεν ενημερώθηκε",
+  "Amount saved": "Το ποσό αποθηκεύτηκε",
+  "Document added": "Το έγγραφο προστέθηκε",
+  "Could not add the document": "Το έγγραφο δεν προστέθηκε",
+  "Document removed": "Το έγγραφο αφαιρέθηκε",
+  "Could not remove the document": "Το έγγραφο δεν αφαιρέθηκε",
+  "Could not download the document": "Το έγγραφο δεν κατέβηκε",
+  "Could not update the document": "Το έγγραφο δεν ενημερώθηκε",
+  "It is stored privately and only you can open it.": "Αποθηκεύτηκε ιδιωτικά και μόνο εσείς μπορείτε να το ανοίξετε.",
   // The assistant: 👍 / 👎 under an answer (§111).
   "Could not save your rating": "Η αξιολόγηση δεν αποθηκεύτηκε",
   // The API's refusal when a member limits who may start a conversation

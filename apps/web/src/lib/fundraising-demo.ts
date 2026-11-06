@@ -48,6 +48,9 @@ export type DataRoomDoc = {
   isRequired: boolean;
   lastUpdated?: string;
   href?: string;
+  /** A real account's document: a stored file behind the API, never a public address. */
+  hasFile?: boolean;
+  fileName?: string;
 };
 
 const STORAGE_KEY = 'cfb:demo-fundraising';

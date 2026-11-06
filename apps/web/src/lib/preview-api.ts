@@ -23,6 +23,7 @@ import { demoNotifications, previewNotificationsApi } from './demo/notifications
 import { demoConnections, previewConnectionsApi } from './demo/connections-world';
 import { previewLearningApi } from './demo/learning-world';
 import { previewAnswerFeedbackApi, previewTransparencyApi } from './demo/transparency-world';
+import { previewFundraisingApi } from './demo/fundraising-world';
 import { previewScoutApi } from './demo/scout-world';
 import { attachDemoPhotos } from './demo/photos';
 import { messageSnippet, readProjectDelivery, textMatches } from '@cofounderbay/shared';
@@ -3314,6 +3315,13 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   // The transparency report: what this demo session's rules refused.
   const transparencyAnswer = previewTransparencyApi(pathname, path, previewNowMs());
   if (transparencyAnswer !== undefined) return transparencyAnswer;
+  // A visitor's own round, with the samples hidden. The form's file is read for
+  // its name and size only: the demo keeps no files.
+  const form = typeof FormData !== 'undefined' && init?.body instanceof FormData ? init.body : null;
+  const formFile = form?.get('file');
+  const upload = formFile && typeof formFile !== 'string' ? { name: formFile.name, size: formFile.size, type: formFile.type, category: String(form?.get('category') ?? 'other') } : null;
+  const fundraisingAnswer = previewFundraisingApi(pathname, method, (body ?? {}) as Record<string, unknown>, upload, new Date(previewNowMs()).toISOString());
+  if (fundraisingAnswer !== undefined) return fundraisingAnswer;
   const answerFeedback = previewAnswerFeedbackApi(pathname, method, (body ?? {}) as Record<string, unknown>);
   if (answerFeedback !== undefined) return answerFeedback;
   // The landing page's counts, counted from the demo world so demo mode

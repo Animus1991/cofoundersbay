@@ -7,7 +7,7 @@ import { isAssistantFeedbackReason } from '@cofounderbay/shared';
 // Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
 import { getApiOrigin } from './api-origin';
 
-function getApiBase(): string {
+export function getApiBase(): string {
   return getApiOrigin();
 }
 

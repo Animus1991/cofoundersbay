@@ -51,6 +51,7 @@ export const QUERY_ROOTS = [
   'feed',
   'follows',
   'founder-updates',
+  'fundraising',
   'gamification',
   'graph',
   'groups',
