@@ -1184,13 +1184,16 @@ export default function FundraisingPage() {
   // live in this tab's sessionStorage and ended with it; the showcase, with
   // samples on, keeps its overlay.
   const live = !showDemoData;
-  const { data: saved } = useQuery({
+  const { data: saved, isError: readFailed, refetch: readAgain } = useQuery({
     queryKey: qk('fundraising'),
     queryFn: getFundraising,
     enabled: hydrated && live,
     staleTime: 30_000,
     retry: 0,
   });
+  // A round that was not read is not an empty round: the page used to answer a
+  // failed read with "No active round yet", as if the investors were gone.
+  const unread = live && readFailed && !saved;
   const keep = (state: FundraisingState) => qc.setQueryData(qk('fundraising'), state);
   const leads = useMemo(() => {
     if (live) return (saved?.leads ?? []).map(leadFromApi);
@@ -1317,8 +1320,8 @@ export default function FundraisingPage() {
       id: 'leads',
       labelEn: 'Investor leads',
       labelEl: 'Υποψήφιοι επενδυτές',
-      rows: leads.map((l) => `${l.name}${l.firm ? ` (${l.firm})` : ''} · ${stageName(l.status).en} · ${l.checkSize}`),
-      rowsEl: leads.map((l) => `${l.name}${l.firm ? ` (${l.firm})` : ''} · ${stageName(l.status).el} · ${l.checkSize}`),
+      rows: unread ? undefined : leads.map((l) => `${l.name}${l.firm ? ` (${l.firm})` : ''} · ${stageName(l.status).en} · ${l.checkSize}`),
+      rowsEl: unread ? undefined : leads.map((l) => `${l.name}${l.firm ? ` (${l.firm})` : ''} · ${stageName(l.status).el} · ${l.checkSize}`),
       sample: showDemoData,
     },
   ]);
@@ -1484,6 +1487,18 @@ export default function FundraisingPage() {
       ) : undefined}
     >
       <div className="space-y-6">
+        {unread ? (
+          <Card className="rounded-xl border-dashed" role="alert">
+            <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+              <CfbGlyph name="wallet" className="icon-lg text-muted-foreground/50" />
+              <p className="page-section font-semibold"><BilingualText en={fundraisingEn('unread_title')} el={fundraisingEl('unread_title')} /></p>
+              <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('unread_hint')} el={fundraisingEl('unread_hint')} /></p>
+              <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={() => readAgain()}>
+                <BilingualText en={fundraisingEn('unread_retry')} el={fundraisingEl('unread_retry')} compact />
+              </Button>
+            </CardContent>
+          </Card>
+        ) : <>
         {round ? (
           <RoundCard round={round} onAdd={() => openAdd('committed')} onEdit={savedRound ? () => setRoundFormOpen(true) : undefined} />
         ) : (
@@ -1552,6 +1567,7 @@ export default function FundraisingPage() {
             <DataRoomView docs={docs} onChange={refresh} onShare={() => setShareOpen(true)} actions={roomActions} />
           </TabsContent>
         </Tabs>
+        </>}
         <ShareRoomDialog open={shareOpen} onOpenChange={setShareOpen} leads={shareLeads} docs={shareDocs} actions={shareActions} />
         <FollowUpDialog
           lead={followUpFor}

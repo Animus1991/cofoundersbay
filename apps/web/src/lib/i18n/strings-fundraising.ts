@@ -94,6 +94,12 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
   },
   add_to_stage_aria: { en: 'Add a contact at {stage}', el: 'Προσθήκη επαφής στο στάδιο {stage}' },
   empty_round_title: { en: 'No active round yet', el: 'Δεν υπάρχει ενεργός γύρος' },
+  unread_title: { en: 'Your round could not be read just now', el: 'Ο γύρος σας δεν διαβάστηκε αυτή τη στιγμή' },
+  unread_hint: {
+    en: 'Nothing has changed: your investors and documents stay as you left them.',
+    el: 'Δεν άλλαξε τίποτα: οι επενδυτές και τα έγγραφά σας μένουν όπως τα αφήσατε.',
+  },
+  unread_retry: { en: 'Try again', el: 'Δοκιμάστε ξανά' },
   round_create: { en: 'Create your round', el: 'Δημιουργία γύρου' },
   round_edit: { en: 'Edit round', el: 'Επεξεργασία γύρου' },
   field_round_name: { en: 'Round name', el: 'Όνομα γύρου' },
