@@ -1,4 +1,5 @@
 import { ASSISTANT_FEEDBACK_REASONS, type AssistantFeedbackReason } from '@cofounderbay/shared';
+import { Transform } from 'class-transformer';
 import { IsBoolean, IsIn, IsOptional, IsString, Length, Matches } from 'class-validator';
 
 /**
@@ -7,6 +8,8 @@ import { IsBoolean, IsIn, IsOptional, IsString, Length, Matches } from 'class-va
  * travel in here.
  */
 export class SetAnswerFeedbackDto {
+  // The raw value: the global pipe's implicit conversion turns any string into true.
+  @Transform(({ obj }) => (obj as { helpful?: unknown }).helpful)
   @IsBoolean()
   helpful!: boolean;
 

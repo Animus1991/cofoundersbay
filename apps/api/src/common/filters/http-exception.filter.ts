@@ -1,7 +1,8 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus, Logger } from '@nestjs/common';
+import { BadRequestException, ExceptionFilter, Catch, ArgumentsHost, HttpStatus, Logger } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { HttpException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { ZodError } from 'zod';
 import { ErrorCode, StandardErrorResponse } from '@cofounderbay/shared';
 
 type RequestWithId = Request & { reqId?: string };
@@ -24,6 +25,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const method = req.method;
     const userAgent = req.get('User-Agent');
     const ip = req.ip || req.connection.remoteAddress;
+
+    // A failed `schema.parse()` is the caller's mistake, not a server error.
+    if (exception instanceof ZodError) {
+      const first = exception.errors[0];
+      const field = first?.path.join('.');
+      const message = first ? `${field ? `${field}: ` : ''}${first.message}` : 'Validation failed';
+      return this.handleHttpException(new BadRequestException(message), res, { requestId, timestamp, path, method, userAgent, ip });
+    }
 
     // Handle different types of exceptions
     if (exception instanceof HttpException) {

@@ -3,6 +3,7 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
+  StreamableFile,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -18,6 +19,9 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
     
     return next.handle().pipe(
       map((data) => {
+        // A file is bytes: wrapped, a download arrives as JSON describing a stream.
+        if (data instanceof StreamableFile) return data;
+
         // If response is already in standard format, just add metadata
         if (this.isStandardSuccessResponse(data)) {
           const response = data as StandardSuccessResponse<T>;

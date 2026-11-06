@@ -2,31 +2,61 @@
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 
+/** One signed-in browser: a cookie jar, the CSRF header, and JSON or raw responses. */
+function makeClient(base, paceMs = 0) {
+  const cookies = new Map();
+  const pace = () => (paceMs ? new Promise((resolve) => setTimeout(resolve, paceMs)) : undefined);
+  const cookieHeader = () => [...cookies].map(([k, v]) => `${k}=${v}`).join('; ');
+  const keep = (response) => {
+    for (const cookie of response.headers.getSetCookie()) {
+      const pair = cookie.split(';')[0];
+      const eq = pair.indexOf('=');
+      cookies.set(pair.slice(0, eq), pair.slice(eq + 1));
+    }
+  };
+  const parsed = async (response) => {
+    keep(response);
+    const json = await response.json().catch(() => ({}));
+    return { status: response.status, data: json.data ?? json, raw: json };
+  };
+  return {
+    cookies,
+    async request(method, route, body, csrf = true) {
+      await pace();
+      const headers = { 'Content-Type': 'application/json' };
+      if (cookies.size) headers.Cookie = cookieHeader();
+      if (csrf && cookies.has('cfb_csrf')) headers['x-csrf-token'] = cookies.get('cfb_csrf');
+      const response = await fetch(base + route, {
+        method, headers, body: body === undefined ? undefined : JSON.stringify(body),
+        signal: AbortSignal.timeout(10000),
+      });
+      return parsed(response);
+    },
+    /** A multipart upload, as the browser sends one. */
+    async upload(route, fileName, type, bytes, fields) {
+      await pace();
+      const form = new FormData();
+      form.append('file', new Blob([bytes], { type }), fileName);
+      for (const [key, value] of Object.entries(fields)) form.append(key, value);
+      const headers = {};
+      if (cookies.size) headers.Cookie = cookieHeader();
+      if (cookies.has('cfb_csrf')) headers['x-csrf-token'] = cookies.get('cfb_csrf');
+      return parsed(await fetch(base + route, { method: 'POST', headers, body: form, signal: AbortSignal.timeout(20000) }));
+    },
+    /** The response itself, for a download's bytes and headers. */
+    async raw(route) {
+      await pace();
+      const headers = {};
+      if (cookies.size) headers.Cookie = cookieHeader();
+      return fetch(base + route, { headers, signal: AbortSignal.timeout(10000) });
+    },
+  };
+}
+
 async function runChecks({ base, db, requireApi, results }) {
   const argon2 = requireApi('argon2');
   const password = crypto.randomBytes(24).toString('base64') + 'aA1!';
-  function client() {
-    const cookies = new Map();
-    return {
-      cookies,
-      async request(method, route, body, csrf = true) {
-        const headers = { 'Content-Type': 'application/json' };
-        if (cookies.size) headers.Cookie = [...cookies].map(([k, v]) => `${k}=${v}`).join('; ');
-        if (csrf && cookies.has('cfb_csrf')) headers['x-csrf-token'] = cookies.get('cfb_csrf');
-        const response = await fetch(base + route, {
-          method, headers, body: body === undefined ? undefined : JSON.stringify(body),
-          signal: AbortSignal.timeout(10000),
-        });
-        for (const cookie of response.headers.getSetCookie()) {
-          const pair = cookie.split(';')[0];
-          const eq = pair.indexOf('=');
-          cookies.set(pair.slice(0, eq), pair.slice(eq + 1));
-        }
-        const json = await response.json();
-        return { status: response.status, data: json.data ?? json, raw: json };
-      },
-    };
-  }
+  const client = () => makeClient(base);
   const check = (name, condition) => {
     assert.ok(condition, name);
     results.push({ check: name, passed: true });
@@ -77,4 +107,4 @@ async function runChecks({ base, db, requireApi, results }) {
     check(`real_session_${role}`, login.status === 201 && me.status === 200 && me.data.user?.role === role);
   }
 }
-module.exports = { runChecks };
+module.exports = { runChecks, makeClient };
