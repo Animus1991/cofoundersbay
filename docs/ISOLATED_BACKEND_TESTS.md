@@ -1,5 +1,33 @@
 # Disposable real-backend checks
 
+## Verified checkpoint — 2026-11-06
+
+`scripts/isolated-backend-docker.cjs` passed **102 named checks** against the
+compiled Nest API. It is the runner for Windows and for machines without local
+PostgreSQL tools, and it adds what the socket runner below does not have:
+
+- The database is a throwaway `postgres:16-alpine` container on a random port,
+  built **only** by `prisma migrate deploy`. A `migrate diff --exit-code` then
+  proves the migrated database equals `schema.prisma`.
+- It runs the identity checks below, then `isolated-backend-product-checks.cjs`.
+- Those cover notification Save, admin reports, answer ratings, fundraising,
+  the data room, proposals on a listing, portfolios and server-side rich text
+  cleaning. They read the row and the file on disk, not only the response.
+
+From the repository root, with Docker running:
+
+```sh
+pnpm --filter @cofounderbay/shared build
+pnpm --filter @cofounderbay/api exec prisma generate
+pnpm --filter @cofounderbay/api exec nest build
+node scripts/isolated-backend-docker.cjs
+```
+
+A run takes about four minutes, because the client paces itself under the
+per-IP throttle. The report lists every check by name. The container runs on
+the host's network stack, so the outbound guard of the socket runner does not
+apply here. Storage checks cover the local disk; the S3 path is not exercised.
+
 ## Verified checkpoint — 2026-10-25
 
 The new harness passed **28 checks** using the actual compiled Nest application,
@@ -93,7 +121,8 @@ data; it is not silently pointed at the disposable database.
 
 - Browser form submission, reload and UI updates with the real backend.
 - Full role/permission matrix, persona and tenant/resource boundaries.
-- Every create/edit/delete action beyond the shortlist.
+- Every create/edit/delete action beyond the shortlist and the flows of the
+  2026-11-06 checkpoint.
 - Expired access JWTs, OAuth, 2FA, email verification and password-reset delivery.
 - Concurrent writes, server restart/disk durability and load/performance.
 - Redis workers, search indexing, email, payment providers, storage and real LLMs.
