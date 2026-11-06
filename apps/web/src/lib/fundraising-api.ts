@@ -25,6 +25,8 @@ export type ApiRound = {
   description: string | null;
 };
 
+export type LinkedAccount = { id: string; displayName: string; avatarUrl: string | null; headline: string | null };
+
 export type ApiLead = {
   id: string;
   investorName: string;
@@ -38,6 +40,8 @@ export type ApiLead = {
   lastContactAt: string | null;
   notes: string | null;
   isVerifiedOnPlatform: boolean;
+  /** The investor's own account: what lets them open what is shared. */
+  linkedAccount: LinkedAccount | null;
 };
 
 export type ApiDocument = {
@@ -51,7 +55,27 @@ export type ApiDocument = {
   fileMimeType: string | null;
   fileSizeBytes: number | null;
   viewCount: number;
+  sharedWithLeads: boolean;
+  /** Who opened it, latest first. */
+  openedBy: string[];
+  lastOpenedAt: string | null;
   updatedAt: string;
+};
+
+export type SharedRoom = {
+  roundId: string;
+  roundName: string;
+  roundType: string;
+  owner: LinkedAccount | null;
+  documents: Array<{
+    id: string;
+    name: string;
+    category: string;
+    fileName: string | null;
+    fileMimeType: string | null;
+    fileSizeBytes: number | null;
+    updatedAt: string;
+  }>;
 };
 
 export type FundraisingState = { round: ApiRound | null; leads: ApiLead[]; documents: ApiDocument[] };
@@ -135,6 +159,7 @@ export function docFromApi(doc: ApiDocument): DataRoomDoc {
     lastUpdated: doc.updatedAt,
     hasFile: doc.hasFile,
     fileName: doc.fileName ?? undefined,
+    openedBy: doc.openedBy,
   };
 }
 
@@ -176,6 +201,23 @@ export function createFundraisingLead(body: LeadInput): Promise<FundraisingState
 
 export function updateFundraisingLead(id: string, body: Partial<LeadInput>): Promise<FundraisingState> {
   return apiRequest(`/api/fundraising/leads/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+}
+
+/** Linking is what gives an investor access; null ends it. */
+export function linkFundraisingLead(id: string, platformUserId: string | null): Promise<FundraisingState> {
+  return apiRequest(`/api/fundraising/leads/${id}`, { method: 'PATCH', body: JSON.stringify({ platformUserId }) });
+}
+
+export function searchFundraisingMembers(q: string): Promise<{ members: Array<LinkedAccount & { isInvestor: boolean }> }> {
+  return apiRequest(`/api/fundraising/investors/search?q=${encodeURIComponent(q)}`);
+}
+
+export function shareFundraisingDocuments(documentIds: string[], shared: boolean): Promise<FundraisingState> {
+  return apiRequest('/api/fundraising/documents/sharing', { method: 'POST', body: JSON.stringify({ documentIds, shared }) });
+}
+
+export function listSharedRooms(): Promise<{ rooms: SharedRoom[] }> {
+  return apiRequest('/api/fundraising/shared');
 }
 
 export function uploadFundraisingDocument(file: File, fields: { category: string; isRequired?: boolean }): Promise<FundraisingState> {

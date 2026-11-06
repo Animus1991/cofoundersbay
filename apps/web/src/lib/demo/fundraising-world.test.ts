@@ -47,11 +47,46 @@ describe('a visitor’s own round in the demo, with the API’s rules', () => {
   });
 });
 
+describe('sharing the data room in the demo', () => {
+  const room = () => {
+    const state = api('/api/fundraising/documents', 'POST', {}, { name: 'deck.pdf', size: 10, type: 'application/pdf', category: 'pitch' });
+    const withLead = api('/api/fundraising/leads', 'POST', { investorName: 'Ada' });
+    return { doc: state.documents[0].id, lead: withLead.leads[0].id };
+  };
+
+  it('links a lead to a member of the demo, and unlinks', () => {
+    const { lead } = room();
+    const linked = api(`/api/fundraising/leads/${lead}`, 'PATCH', { platformUserId: 'demo-nikos' });
+    expect(linked.leads[0]).toMatchObject({ isVerifiedOnPlatform: true, linkedAccount: { displayName: 'Nikos Andreou' } });
+    expect(api(`/api/fundraising/leads/${lead}`, 'PATCH', { platformUserId: null }).leads[0]).toMatchObject({ isVerifiedOnPlatform: false, linkedAccount: null });
+  });
+
+  it('refuses a member it does not know, as the API does', () => {
+    const { lead } = room();
+    expect(() => api(`/api/fundraising/leads/${lead}`, 'PATCH', { platformUserId: 'nobody' })).toThrow('Member not found');
+  });
+
+  it('shares a document and takes it back', () => {
+    const { doc } = room();
+    const shared = api('/api/fundraising/documents/sharing', 'POST', { documentIds: [doc], shared: true });
+    expect(shared.documents[0]).toMatchObject({ sharedWithLeads: true, status: 'shared' });
+    const back = api('/api/fundraising/documents/sharing', 'POST', { documentIds: [doc], shared: false });
+    expect(back.documents[0]).toMatchObject({ sharedWithLeads: false, status: 'ready' });
+  });
+
+  it('finds members by name, and shows the investor’s side a room', () => {
+    const found = previewFundraisingApi('/api/fundraising/investors/search', 'GET', { q: 'nik' }, null, NOW) as { members: Array<{ id: string }> };
+    expect(found.members.map((m) => m.id)).toEqual(['demo-nikos']);
+    const shared = previewFundraisingApi('/api/fundraising/shared', 'GET', {}, null, NOW) as { rooms: Array<{ documents: unknown[] }> };
+    expect(shared.rooms[0].documents.length).toBeGreaterThan(0);
+  });
+});
+
 describe('the API’s words on the page’s cards', () => {
   it('maps a lead, with the committed amount over the first guess', () => {
     const lead = {
       id: 'l1', investorName: 'Ada', investorFirm: 'Aegean', investorType: 'VC', stageFocus: 'Seed', checkSizeText: '€25K–€150K',
-      status: 'due_diligence' as const, committedAmount: null, currency: 'EUR', lastContactAt: NOW, notes: 'Warm', isVerifiedOnPlatform: false,
+      status: 'due_diligence' as const, committedAmount: null, currency: 'EUR', lastContactAt: NOW, notes: 'Warm', isVerifiedOnPlatform: false, linkedAccount: null,
     };
     expect(leadFromApi(lead)).toMatchObject({ name: 'Ada', firm: 'Aegean', status: 'dd', checkSize: '€25K–€150K', lastContact: NOW, notes: 'Warm' });
     expect(leadFromApi({ ...lead, status: 'committed', committedAmount: 250000 }).checkSize).toBe('€250,000');
@@ -68,7 +103,7 @@ describe('the API’s words on the page’s cards', () => {
   });
 
   it('maps a document and its category both ways', () => {
-    const doc = docFromApi({ id: 'd1', name: 'Deck', category: 'financials', status: 'archived', isRequired: true, hasFile: true, fileName: 'deck.pdf', fileMimeType: null, fileSizeBytes: 1, viewCount: 0, updatedAt: NOW });
+    const doc = docFromApi({ id: 'd1', name: 'Deck', category: 'financials', status: 'archived', isRequired: true, hasFile: true, fileName: 'deck.pdf', sharedWithLeads: false, openedBy: [], lastOpenedAt: null, fileMimeType: null, fileSizeBytes: 1, viewCount: 0, updatedAt: NOW });
     expect(doc).toMatchObject({ category: 'Financials', status: 'draft', hasFile: true, fileName: 'deck.pdf', isRequired: true });
     expect(apiCategory('Financials')).toBe('financials');
   });

@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, Res, StreamableFile, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, Res, StreamableFile, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request, Response } from 'express';
 import { memoryStorage } from 'multer';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FundraisingService } from './fundraising.service';
-import { createLeadSchema, createRoundSchema, documentFieldsSchema, updateDocumentSchema, updateLeadSchema, updateRoundSchema } from './fundraising.schemas';
+import { createLeadSchema, createRoundSchema, documentFieldsSchema, investorSearchSchema, shareDocumentsSchema, updateDocumentSchema, updateLeadSchema, updateRoundSchema } from './fundraising.schemas';
 
 type Me = { id: string };
 
@@ -18,6 +18,17 @@ export class FundraisingController {
   @Get()
   state(@CurrentUser() user: Me) {
     return this.fundraising.state(user.id);
+  }
+
+  /** The data rooms other members opened to this one. */
+  @Get('shared')
+  shared(@CurrentUser() user: Me) {
+    return this.fundraising.sharedWithMe(user.id);
+  }
+
+  @Get('investors/search')
+  searchInvestors(@CurrentUser() user: Me, @Query() query: unknown) {
+    return this.fundraising.searchInvestors(user.id, investorSearchSchema.parse(query).q);
   }
 
   @Post('rounds')
@@ -43,6 +54,11 @@ export class FundraisingController {
   @Delete('leads/:id')
   removeLead(@CurrentUser() user: Me, @Param('id') id: string) {
     return this.fundraising.removeLead(user.id, id);
+  }
+
+  @Post('documents/sharing')
+  shareDocuments(@CurrentUser() user: Me, @Body() body: unknown) {
+    return this.fundraising.shareDocuments(user.id, shareDocumentsSchema.parse(body));
   }
 
   @Post('documents')

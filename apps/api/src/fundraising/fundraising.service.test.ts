@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ZodError } from 'zod';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FundraisingService } from './fundraising.service';
@@ -23,8 +23,11 @@ function setup() {
   const prisma: Record<string, any> = {
     fundraisingRound: { findFirst: vi.fn(async ({ where }: any) => (where.ownerId === 'me' && (!where.id || where.id === 'r1') ? round : null)), create: vi.fn(async ({ data }: any) => ({ ...round, ...data })), update: vi.fn(async () => round) },
     investorPipelineLead: { findMany: vi.fn(async () => [] as unknown[]), findFirst: vi.fn(async () => null as unknown), create: vi.fn(async () => ({})), update: vi.fn(async () => ({})), delete: vi.fn(async () => ({})) },
-    dataRoomDocument: { findMany: vi.fn(async () => [] as unknown[]), findFirst: vi.fn(async () => null as unknown), findUnique: vi.fn(async () => null as unknown), create: vi.fn(async () => ({})), update: vi.fn(async () => ({})), delete: vi.fn(async () => ({})) },
-    dataRoomAccessLog: { create: vi.fn(async () => ({})) },
+    dataRoomDocument: { count: vi.fn(async () => 0), findMany: vi.fn(async () => [] as unknown[]), findFirst: vi.fn(async () => null as unknown), findUnique: vi.fn(async () => null as unknown), create: vi.fn(async () => ({})), update: vi.fn(async () => ({})), delete: vi.fn(async () => ({})) },
+    dataRoomAccessLog: { create: vi.fn(async () => ({})), findMany: vi.fn(async () => [] as unknown[]) },
+    profile: { findMany: vi.fn(async () => [] as unknown[]), findUnique: vi.fn(async () => ({ displayName: 'Elena' }) as unknown) },
+    user: { findUnique: vi.fn(async () => ({ moderationStatus: 'active' }) as unknown) },
+    userBlock: { findFirst: vi.fn(async () => null as unknown), findMany: vi.fn(async () => [] as unknown[]) },
     $transaction: vi.fn(async (ops: unknown[]) => ops),
   };
   const uploads = {
@@ -32,7 +35,8 @@ function setup() {
     readPrivateFile: vi.fn(async () => Buffer.from('bytes')),
     deletePrivateFile: vi.fn(async () => undefined),
   };
-  return { service: new FundraisingService(prisma as never, uploads as never), prisma, uploads };
+  const notifications = { createNotification: vi.fn(async () => ({})) };
+  return { service: new FundraisingService(prisma as never, uploads as never, notifications as never), prisma, uploads, notifications };
 }
 
 let t: ReturnType<typeof setup>;
@@ -140,6 +144,77 @@ describe('the data room', () => {
   it('is changed by its owner only', async () => {
     await expect(t.service.updateDocument('me', 'theirs', { status: 'archived' })).rejects.toBeInstanceOf(NotFoundException);
     await expect(t.service.removeDocument('me', 'theirs')).rejects.toBeInstanceOf(NotFoundException);
+  });
+});
+
+describe('sharing the data room', () => {
+  const ACCOUNT = '11111111-1111-4111-8111-111111111111';
+
+  it('links a lead to an account, which the state then names', async () => {
+    t.prisma.investorPipelineLead.findFirst.mockImplementation(async ({ where }: any) => (where.id === 'l1' ? lead({}) : null));
+    t.prisma.investorPipelineLead.findMany.mockResolvedValue([lead({ platformUserId: ACCOUNT })]);
+    t.prisma.profile.findMany.mockResolvedValue([{ userId: ACCOUNT, displayName: 'Nikos', avatarUrl: null, headline: null }]);
+    const state = await t.service.updateLead('me', 'l1', { platformUserId: ACCOUNT });
+    expect(t.prisma.investorPipelineLead.update.mock.calls[0][0].data).toMatchObject({ platformUserId: ACCOUNT, isVerifiedOnPlatform: true });
+    expect(state.leads[0].linkedAccount).toMatchObject({ id: ACCOUNT, displayName: 'Nikos' });
+  });
+
+  it('will not link your own account, a blocked member, or one already on this round', async () => {
+    t.prisma.investorPipelineLead.findFirst.mockImplementation(async ({ where }: any) => (where.id === 'l1' ? lead({}) : null));
+    await expect(t.service.updateLead('me', 'l1', { platformUserId: 'me' })).rejects.toBeInstanceOf(BadRequestException);
+
+    t.prisma.userBlock.findFirst.mockResolvedValueOnce({ id: 'b' });
+    await expect(t.service.updateLead('me', 'l1', { platformUserId: ACCOUNT })).rejects.toBeInstanceOf(ForbiddenException);
+
+    t.prisma.investorPipelineLead.findFirst.mockImplementation(async ({ where }: any) => (where.id === 'l1' ? lead({}) : { id: 'other' }));
+    await expect(t.service.updateLead('me', 'l1', { platformUserId: ACCOUNT })).rejects.toBeInstanceOf(BadRequestException);
+    expect(t.prisma.investorPipelineLead.update).not.toHaveBeenCalled();
+  });
+
+  it('unlinking takes the verified mark with it', async () => {
+    t.prisma.investorPipelineLead.findFirst.mockResolvedValue(lead({ platformUserId: ACCOUNT, isVerifiedOnPlatform: true }));
+    await t.service.updateLead('me', 'l1', { platformUserId: null });
+    expect(t.prisma.investorPipelineLead.update.mock.calls[0][0].data).toMatchObject({ platformUserId: null, isVerifiedOnPlatform: false });
+  });
+
+  it('shares files and tells each linked investor once, however many files moved', async () => {
+    t.prisma.dataRoomDocument.findMany.mockResolvedValueOnce([doc({ id: 'd1' }), doc({ id: 'd2' })]);
+    t.prisma.dataRoomDocument.updateMany = vi.fn(async () => ({ count: 2 }));
+    t.prisma.investorPipelineLead.findMany.mockResolvedValueOnce([{ platformUserId: ACCOUNT }, { platformUserId: ACCOUNT }]);
+    await t.service.shareDocuments('me', { documentIds: ['d1', 'd2'], shared: true });
+    expect(t.prisma.dataRoomDocument.updateMany.mock.calls[0][0].data).toEqual({ sharedWithLeads: true, status: 'shared' });
+    expect(t.notifications.createNotification).toHaveBeenCalledTimes(1);
+    expect(t.notifications.createNotification).toHaveBeenCalledWith(expect.objectContaining({ userId: ACCOUNT, title: 'Elena shared 2 documents with you', link: '/data-room' }));
+  });
+
+  it('stopping tells no one, and a re-share of what was shared stays quiet', async () => {
+    t.prisma.dataRoomDocument.updateMany = vi.fn(async () => ({ count: 1 }));
+    t.prisma.dataRoomDocument.findMany.mockResolvedValueOnce([doc({ sharedWithLeads: true })]);
+    await t.service.shareDocuments('me', { documentIds: ['d1'], shared: false });
+    expect(t.prisma.dataRoomDocument.updateMany.mock.calls[0][0].data).toEqual({ sharedWithLeads: false, status: 'ready' });
+    t.prisma.dataRoomDocument.findMany.mockResolvedValueOnce([doc({ sharedWithLeads: true })]);
+    await t.service.shareDocuments('me', { documentIds: ['d1'], shared: true });
+    expect(t.notifications.createNotification).not.toHaveBeenCalled();
+  });
+
+  it('refuses a document with no file, and one that is not yours', async () => {
+    t.prisma.dataRoomDocument.findMany.mockResolvedValueOnce([doc({ fileUrl: null })]);
+    await expect(t.service.shareDocuments('me', { documentIds: ['d1'], shared: true })).rejects.toBeInstanceOf(BadRequestException);
+    t.prisma.dataRoomDocument.findMany.mockResolvedValueOnce([]);
+    await expect(t.service.shareDocuments('me', { documentIds: ['theirs'], shared: true })).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('lists a room for its investor, without a storage key', async () => {
+    t.prisma.investorPipelineLead.findMany.mockResolvedValueOnce([{ round: { id: 'r1', name: 'Seed', roundType: 'seed', ownerId: 'me' } }]);
+    t.prisma.dataRoomDocument.findMany.mockResolvedValueOnce([doc({ sharedWithLeads: true })]);
+    const { rooms } = await t.service.sharedWithMe('investor');
+    expect(rooms).toHaveLength(1);
+    expect(rooms[0].documents[0]).toMatchObject({ id: 'd1', fileName: 'deck.pdf' });
+    expect(JSON.stringify(rooms)).not.toContain('dataroom_1_abc');
+  });
+
+  it('shows nothing to a member no one linked', async () => {
+    await expect(t.service.sharedWithMe('stranger')).resolves.toEqual({ rooms: [] });
   });
 });
 

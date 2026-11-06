@@ -30,7 +30,10 @@ export const createLeadSchema = z.object({
   committedAmount: amount.nullish(),
   notes: optionalText(2000),
 });
-export const updateLeadSchema = createLeadSchema.partial();
+export const updateLeadSchema = createLeadSchema.partial().extend({
+  /** The investor's own account: what lets them open shared files. Null unlinks, and access ends with it. */
+  platformUserId: z.string().uuid().nullable().optional(),
+});
 
 export const documentFieldsSchema = z.object({
   name: text(160).optional(),
@@ -45,8 +48,16 @@ export const updateDocumentSchema = z.object({
   isRequired: z.boolean().optional(),
 });
 
+export const shareDocumentsSchema = z.object({
+  documentIds: z.array(z.string().uuid()).min(1).max(100),
+  shared: z.boolean(),
+});
+
+export const investorSearchSchema = z.object({ q: z.string().trim().min(2).max(80) });
+
 export type CreateRound = z.infer<typeof createRoundSchema>;
 export type UpdateRound = z.infer<typeof updateRoundSchema>;
 export type CreateLead = z.infer<typeof createLeadSchema>;
 export type UpdateLead = z.infer<typeof updateLeadSchema>;
 export type UpdateDocument = z.infer<typeof updateDocumentSchema>;
+export type ShareDocuments = z.infer<typeof shareDocumentsSchema>;

@@ -51,9 +51,32 @@ export type DataRoomDoc = {
   /** A real account's document: a stored file behind the API, never a public address. */
   hasFile?: boolean;
   fileName?: string;
+  /** Who opened it, latest first. */
+  openedBy?: string[];
 };
 
 const STORAGE_KEY = 'cfb:demo-fundraising';
+const ROOM_SHARE_KEY = 'cfb:demo-room-share:v1';
+
+/** The showcase's sharing, in this tab only, like the rest of its overlay. */
+export type DemoRoomShare = { links: Record<string, { id: string; displayName: string }>; shared: string[] };
+
+export function readDemoRoomShare(): DemoRoomShare {
+  try {
+    const raw = typeof window !== 'undefined' ? window.sessionStorage.getItem(ROOM_SHARE_KEY) : null;
+    return raw ? (JSON.parse(raw) as DemoRoomShare) : { links: {}, shared: [] };
+  } catch {
+    return { links: {}, shared: [] };
+  }
+}
+
+export function writeDemoRoomShare(next: DemoRoomShare) {
+  try {
+    window.sessionStorage.setItem(ROOM_SHARE_KEY, JSON.stringify(next));
+  } catch {
+    // Storage blocked: the choice lasts for this view only.
+  }
+}
 
 const FUNDRAISING_STALE_SNIPPETS = [
   'Sarah Chen',

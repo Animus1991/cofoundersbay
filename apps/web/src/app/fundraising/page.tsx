@@ -63,10 +63,14 @@ import {
   type InvestorStatus,
   type DataRoomDoc,
   type DocStatus,
+  readDemoRoomShare,
+  type DemoRoomShare,
+  writeDemoRoomShare,
 } from '@/lib/fundraising-demo';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Counter } from '@/components/ui/counter';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { ShareRoomDialog, type ShareDoc, type ShareLead, type ShareRoomActions } from '@/components/fundraising/ShareRoomDialog';
 import { qk } from '@/lib/query-keys';
 import {
   ROUND_CURRENCIES,
@@ -87,6 +91,9 @@ import {
   uploadFundraisingDocument,
   type FundraisingState,
   type RoundInput,
+  linkFundraisingLead,
+  searchFundraisingMembers,
+  shareFundraisingDocuments,
 } from '@/lib/fundraising-api';
 
 const ROUND_TONE: Record<string, StatusTone> = {
@@ -778,10 +785,12 @@ function RoomUpload({ onUpload }: { onUpload: RoomActions['upload'] }) {
 function DataRoomView({
   docs,
   onChange,
+  onShare,
   actions,
 }: {
   docs: DataRoomDoc[];
   onChange: () => void;
+  onShare: () => void;
   actions?: RoomActions;
 }) {
   const { primary } = useLanguagePreference();
@@ -826,15 +835,9 @@ function DataRoomView({
                 <p className="page-stat text-xl font-bold tabular-nums text-primary-accessible">{docs.length ? Math.round((ready / docs.length) * 100) : 0}%</p>
                 <p className="text-2xs text-muted-foreground"><BilingualText en={fundraisingEn('dr_complete')} el={fundraisingEl('dr_complete')} compact /></p>
               </div>
-              {/* It copied /share/data-room-seed and said "Tokenised link";
-                  the link opened "Link Unavailable". Share links exist for
-                  Builder documents, not for this room, so it says so
-                  (docs §74). */}
-              <WithDisabledReason reasonEn={fundraisingEn('share_unavailable')} reasonEl={fundraisingEl('share_unavailable')}>
-                <Button size="sm" variant="outline" className={cn('h-8 gap-1.5 text-xs', BUILDER_BTN)} disabled>
-                  <BilingualText en={fundraisingEn('share_room')} el={fundraisingEl('share_room')} compact />
-                </Button>
-              </WithDisabledReason>
+              <Button size="sm" variant="outline" className={cn('h-8 gap-1.5 text-xs', BUILDER_BTN)} onClick={onShare}>
+                <BilingualText en={fundraisingEn('share_room')} el={fundraisingEl('share_room')} compact />
+              </Button>
             </div>
           </div>
           <Progress value={docs.length ? (ready / docs.length) * 100 : 0} className="mt-3 h-2" />
@@ -898,6 +901,9 @@ function DataRoomView({
                       {doc.lastUpdated && (
                         <span>· <BilingualText en={fundraisingEn('updated')} el={fundraisingEl('updated')} compact /> {formatShortDate(doc.lastUpdated, primary)}</span>
                       )}
+                      {doc.openedBy && doc.openedBy.length > 0 ? (
+                        <span className="truncate">· <BilingualText en={`Opened by ${doc.openedBy.join(', ')}`} el={`Το άνοιξαν: ${doc.openedBy.join(', ')}`} compact /></span>
+                      ) : null}
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
@@ -1228,6 +1234,47 @@ export default function FundraisingPage() {
       }
     : undefined;
 
+  /*
+   * Who can open the room and what they see (docs §112). A real account's
+   * choices are on the API; the showcase keeps them in this tab, like the rest
+   * of its overlay. The member search is the same on both.
+   */
+  const [shareOpen, setShareOpen] = useState(false);
+  const roomShare: DemoRoomShare = hydrated ? readDemoRoomShare() : { links: {}, shared: [] };
+  const shareLeads: ShareLead[] = live
+    ? (saved?.leads ?? []).map((l) => ({ id: l.id, name: l.investorName, firm: l.investorFirm ?? undefined, account: l.linkedAccount }))
+    : leads.map((l) => ({ id: l.id, name: l.name, firm: l.firm, account: roomShare.links[l.id] ?? null }));
+  const shareDocs: ShareDoc[] = live
+    ? (saved?.documents ?? []).map((d) => ({ id: d.id, name: d.name, shared: d.sharedWithLeads, canShare: d.hasFile, openedBy: d.openedBy }))
+    : docs.map((d) => ({ id: d.id, name: d.name, nameEl: d.nameEl, shared: roomShare.shared.includes(d.id), canShare: d.status !== 'draft', openedBy: [] }));
+  const shareActions = useMemo<ShareRoomActions>(() => ({
+    search: async (q) => (await searchFundraisingMembers(q)).members,
+    link: async (leadId, member) => {
+      if (live) {
+        keep(await linkFundraisingLead(leadId, member?.id ?? null));
+        return;
+      }
+      const current = readDemoRoomShare();
+      const links = { ...current.links };
+      if (member) links[leadId] = { id: member.id, displayName: member.displayName };
+      else delete links[leadId];
+      writeDemoRoomShare({ ...current, links });
+      setTick((n) => n + 1);
+    },
+    share: async (ids, shared) => {
+      if (live) {
+        keep(await shareFundraisingDocuments(ids, shared));
+        return;
+      }
+      const current = readDemoRoomShare();
+      writeDemoRoomShare({ ...current, shared: shared ? [...new Set([...current.shared, ...ids])] : current.shared.filter((id) => !ids.includes(id)) });
+      ids.forEach((id) => markFundraisingDocStatus(id, shared ? 'shared' : 'ready'));
+      setTick((n) => n + 1);
+    },
+    // `keep` writes through the stable query client; `live` is what changes the route.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [live]);
+
   const [view, setView] = useState('pipeline');
   const stageName = (st: InvestorStatus) => {
     const key = INVESTOR_STATUS_KEYS[st];
@@ -1259,6 +1306,32 @@ export default function FundraisingPage() {
       writes: false,
       options: PIPELINE_STAGES.map((st) => ({ value: st, labelEn: stageName(st).en, labelEl: stageName(st).el })),
       run: (value) => openAdd((value as InvestorStatus) ?? 'prospect'),
+    },
+    {
+      id: 'open_room_sharing',
+      labelEn: 'Open data room sharing',
+      labelEl: 'Άνοιγμα κοινής χρήσης του data room',
+      writes: false,
+      run: () => { setView('dataroom'); setShareOpen(true); },
+    },
+    {
+      // The same write as the dialog's checkbox; Undo is the opposite one.
+      id: 'share_document',
+      labelEn: 'Share a document with linked investors',
+      labelEl: 'Κοινή χρήση εγγράφου με τους συνδεδεμένους επενδυτές',
+      writes: true,
+      options: shareDocs.filter((d) => d.canShare && !d.shared).map((d) => ({ value: d.id, labelEn: d.name, labelEl: d.nameEl ?? d.name })),
+      undo: (value?: string) => (value ? { control: 'unshare_document', value } : undefined),
+      run: async (value?: string) => { if (value) await shareActions.share([value], true); },
+    },
+    {
+      id: 'unshare_document',
+      labelEn: 'Stop sharing a document',
+      labelEl: 'Διακοπή κοινής χρήσης εγγράφου',
+      writes: true,
+      options: shareDocs.filter((d) => d.shared).map((d) => ({ value: d.id, labelEn: d.name, labelEl: d.nameEl ?? d.name })),
+      undo: (value?: string) => (value ? { control: 'share_document', value } : undefined),
+      run: async (value?: string) => { if (value) await shareActions.share([value], false); },
     },
     // One command per stage, over the leads not already in it: the same move
     // the stage selector on each row makes. A real account's lead is on the
@@ -1444,9 +1517,10 @@ export default function FundraisingPage() {
             <PipelineView leads={leads} onAdd={openAdd} onMove={handleMove} />
           </TabsContent>
           <TabsContent value="dataroom" className="mt-4">
-            <DataRoomView docs={docs} onChange={refresh} actions={roomActions} />
+            <DataRoomView docs={docs} onChange={refresh} onShare={() => setShareOpen(true)} actions={roomActions} />
           </TabsContent>
         </Tabs>
+        <ShareRoomDialog open={shareOpen} onOpenChange={setShareOpen} leads={shareLeads} docs={shareDocs} actions={shareActions} />
 
         {/* Resources moved to the page rail ('resources' section). */}
         {/* Round size, committed amounts and check sizes appear above. */}

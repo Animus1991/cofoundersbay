@@ -676,7 +676,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     section: 'Εργασία',
   },
   '/data-room': {
-    title: 'Data room επενδυτών',
+    title: 'Κοινόχρηστα data rooms',
     description:
       'Ιδιωτικά έγγραφα για diligence. Η πρόσβαση μοιράζεται ανά επενδυτή· τίποτα εδώ δεν είναι δημόσιο.',
     section: 'Εργασία',

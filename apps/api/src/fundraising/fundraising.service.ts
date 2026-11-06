@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import type { DataRoomDocCategory, DataRoomDocument, FundraisingRound, InvestorLeadStatus, InvestorPipelineLead, Prisma } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadsService } from '../uploads/uploads.service';
 import { validateUpload } from '../uploads/upload-validation';
-import type { CreateLead, CreateRound, UpdateDocument, UpdateLead, UpdateRound } from './fundraising.schemas';
+import type { CreateLead, CreateRound, ShareDocuments, UpdateDocument, UpdateLead, UpdateRound } from './fundraising.schemas';
 
 const COMMITTED: InvestorLeadStatus = 'committed';
 
@@ -12,7 +13,10 @@ function money(value: Prisma.Decimal | null | undefined): number | null {
   return value == null ? null : Number(value);
 }
 
-function leadView(lead: InvestorPipelineLead) {
+type Person = { id: string; displayName: string; avatarUrl: string | null; headline: string | null };
+type Openings = { openedBy: string[]; lastOpenedAt: string | null };
+
+function leadView(lead: InvestorPipelineLead, people: Map<string, Person>) {
   return {
     id: lead.id,
     investorName: lead.investorName,
@@ -26,11 +30,12 @@ function leadView(lead: InvestorPipelineLead) {
     lastContactAt: lead.lastContactAt?.toISOString() ?? null,
     notes: lead.notes,
     isVerifiedOnPlatform: lead.isVerifiedOnPlatform,
+    linkedAccount: lead.platformUserId ? (people.get(lead.platformUserId) ?? null) : null,
   };
 }
 
 /** The storage key stays here: a client gets to know that a file exists, not where. */
-function documentView(doc: DataRoomDocument) {
+function documentView(doc: DataRoomDocument, openings?: Openings) {
   return {
     id: doc.id,
     name: doc.name,
@@ -42,6 +47,9 @@ function documentView(doc: DataRoomDocument) {
     fileMimeType: doc.fileMimeType,
     fileSizeBytes: doc.fileSizeBytes,
     viewCount: doc.viewCount,
+    sharedWithLeads: doc.sharedWithLeads,
+    openedBy: openings?.openedBy ?? [],
+    lastOpenedAt: openings?.lastOpenedAt ?? null,
     updatedAt: doc.updatedAt.toISOString(),
   };
 }
@@ -82,7 +90,48 @@ export class FundraisingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly uploads: UploadsService,
+    // Optional so unit tests that build the service without it still work.
+    @Optional() private readonly notifications?: NotificationsService,
   ) {}
+
+  private async tell(userId: string, title: string) {
+    await this.notifications
+      ?.createNotification({ userId, type: 'fundraising_update', title, body: null, link: '/data-room' })
+      .catch((err: unknown) => this.logger.warn(`Data room notice not sent: ${String(err)}`));
+  }
+
+  private async nameOf(userId: string) {
+    const profile = await this.prisma.profile.findUnique({ where: { userId }, select: { displayName: true } });
+    return profile?.displayName ?? 'A founder';
+  }
+
+  private async people(ids: string[]): Promise<Map<string, Person>> {
+    if (ids.length === 0) return new Map();
+    const rows = await this.prisma.profile.findMany({
+      where: { userId: { in: ids } },
+      select: { userId: true, displayName: true, avatarUrl: true, headline: true },
+    });
+    return new Map(rows.map((r) => [r.userId, { id: r.userId, displayName: r.displayName, avatarUrl: r.avatarUrl, headline: r.headline }]));
+  }
+
+  /** Who opened each file, latest first: the owner's answer to "has anyone read this?". */
+  private async openings(roundId: string): Promise<Map<string, Openings>> {
+    const logs = await this.prisma.dataRoomAccessLog.findMany({
+      where: { roundId },
+      orderBy: { accessedAt: 'desc' },
+      take: 500,
+      select: { documentId: true, accessorId: true, accessedAt: true },
+    });
+    const people = await this.people([...new Set(logs.map((l) => l.accessorId))]);
+    const byDocument = new Map<string, Openings>();
+    for (const log of logs) {
+      const entry = byDocument.get(log.documentId) ?? { openedBy: [], lastOpenedAt: log.accessedAt.toISOString() };
+      const name = people.get(log.accessorId)?.displayName;
+      if (name && !entry.openedBy.includes(name) && entry.openedBy.length < 5) entry.openedBy.push(name);
+      byDocument.set(log.documentId, entry);
+    }
+    return byDocument;
+  }
 
   /** The round in progress, else the latest one. */
   private currentRound(ownerId: string) {
@@ -118,11 +167,17 @@ export class FundraisingService {
   async state(ownerId: string) {
     const round = await this.currentRound(ownerId);
     if (!round) return { round: null, leads: [], documents: [] };
-    const [leads, documents] = await Promise.all([
+    const [leads, documents, openings] = await Promise.all([
       this.prisma.investorPipelineLead.findMany({ where: { roundId: round.id }, orderBy: { createdAt: 'desc' } }),
       this.prisma.dataRoomDocument.findMany({ where: { roundId: round.id }, orderBy: { createdAt: 'desc' } }),
+      this.openings(round.id),
     ]);
-    return { round: roundView(round, leads), leads: leads.map(leadView), documents: documents.map(documentView) };
+    const people = await this.people(leads.flatMap((l) => (l.platformUserId ? [l.platformUserId] : [])));
+    return {
+      round: roundView(round, leads),
+      leads: leads.map((l) => leadView(l, people)),
+      documents: documents.map((d) => documentView(d, openings.get(d.id))),
+    };
   }
 
   async createRound(ownerId: string, input: CreateRound) {
@@ -146,12 +201,66 @@ export class FundraisingService {
 
   async updateLead(ownerId: string, id: string, input: UpdateLead) {
     const lead = await this.ownLead(ownerId, id);
-    const moved = input.status !== undefined && input.status !== lead.status;
+    const { platformUserId, ...fields } = input;
+    const moved = fields.status !== undefined && fields.status !== lead.status;
+    const relinked = platformUserId !== undefined && platformUserId !== lead.platformUserId;
+    if (relinked && platformUserId) await this.assertLinkable(ownerId, platformUserId, lead.roundId);
     await this.prisma.investorPipelineLead.update({
       where: { id },
-      data: { ...input, ...(moved && input.status !== 'prospect' ? { lastContactAt: new Date() } : {}) },
+      data: {
+        ...fields,
+        ...(moved && fields.status !== 'prospect' ? { lastContactAt: new Date() } : {}),
+        ...(relinked ? { platformUserId, isVerifiedOnPlatform: Boolean(platformUserId) } : {}),
+      },
     });
+    if (relinked && platformUserId) {
+      const shared = await this.prisma.dataRoomDocument.count({ where: { roundId: lead.roundId, sharedWithLeads: true } });
+      if (shared > 0) await this.tell(platformUserId, `${await this.nameOf(ownerId)} gave you access to their data room`);
+    }
     return this.state(ownerId);
+  }
+
+  /** The account has to exist, be someone else, and not stand behind a block in either direction. */
+  private async assertLinkable(ownerId: string, userId: string, roundId: string) {
+    if (userId === ownerId) throw new BadRequestException('A lead cannot be linked to your own account');
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { moderationStatus: true } });
+    if (!user || user.moderationStatus !== 'active') throw new NotFoundException('Member not found');
+    const blocked = await this.prisma.userBlock.findFirst({
+      where: { OR: [{ blockerId: ownerId, blockedId: userId }, { blockerId: userId, blockedId: ownerId }] },
+      select: { id: true },
+    });
+    if (blocked) throw new ForbiddenException('You cannot link this member');
+    const taken = await this.prisma.investorPipelineLead.findFirst({ where: { roundId, platformUserId: userId }, select: { id: true } });
+    if (taken) throw new BadRequestException('This member is already linked to another investor on this round');
+  }
+
+  /** Members a founder can link a lead to, investors first. Only what a member card already shows. */
+  async searchInvestors(ownerId: string, q: string) {
+    const blocks = await this.prisma.userBlock.findMany({
+      where: { OR: [{ blockerId: ownerId }, { blockedId: ownerId }] },
+      select: { blockerId: true, blockedId: true },
+    });
+    const hidden = [ownerId, ...blocks.flatMap((b) => [b.blockerId, b.blockedId])];
+    const rows = await this.prisma.profile.findMany({
+      where: {
+        userId: { notIn: hidden },
+        displayName: { contains: q, mode: 'insensitive' },
+        user: { moderationStatus: 'active' },
+      },
+      take: 20,
+      orderBy: { displayName: 'asc' },
+      select: { userId: true, displayName: true, avatarUrl: true, headline: true, user: { select: { role: true } } },
+    });
+    const investorsFirst = [...rows].sort((a, b) => Number(b.user.role === 'investor') - Number(a.user.role === 'investor'));
+    return {
+      members: investorsFirst.slice(0, 8).map((r) => ({
+        id: r.userId,
+        displayName: r.displayName,
+        avatarUrl: r.avatarUrl,
+        headline: r.headline,
+        isInvestor: r.user.role === 'investor',
+      })),
+    };
   }
 
   async removeLead(ownerId: string, id: string) {
@@ -191,6 +300,69 @@ export class FundraisingService {
     await this.ownDocument(ownerId, id);
     await this.prisma.dataRoomDocument.update({ where: { id }, data: input });
     return this.state(ownerId);
+  }
+
+  /**
+   * Share files with the investors linked on their round, or stop. Only a
+   * linked account can open them, and each opening is logged; there is no
+   * public link. One notice per investor, however many files moved.
+   */
+  async shareDocuments(ownerId: string, input: ShareDocuments) {
+    const ids = [...new Set(input.documentIds)];
+    const docs = await this.prisma.dataRoomDocument.findMany({ where: { id: { in: ids }, uploadedById: ownerId } });
+    if (docs.length !== ids.length) throw new NotFoundException('Document not found');
+    if (input.shared && docs.some((d) => !d.fileUrl)) throw new BadRequestException('Only a document with a file can be shared');
+    await this.prisma.dataRoomDocument.updateMany({
+      where: { id: { in: ids } },
+      data: { sharedWithLeads: input.shared, status: input.shared ? 'shared' : 'ready' },
+    });
+    const fresh = docs.filter((d) => !d.sharedWithLeads && d.roundId);
+    if (input.shared && fresh.length > 0) {
+      const leads = await this.prisma.investorPipelineLead.findMany({
+        where: { roundId: { in: [...new Set(fresh.map((d) => d.roundId as string))] }, platformUserId: { not: null } },
+        select: { platformUserId: true },
+      });
+      const owner = await this.nameOf(ownerId);
+      const title = fresh.length === 1 ? `${owner} shared a document with you` : `${owner} shared ${fresh.length} documents with you`;
+      await Promise.all([...new Set(leads.map((l) => l.platformUserId as string))].map((userId) => this.tell(userId, title)));
+    }
+    return this.state(ownerId);
+  }
+
+  /** The rooms opened to this member, each with what its owner shared. No key leaves this service. */
+  async sharedWithMe(userId: string) {
+    const links = await this.prisma.investorPipelineLead.findMany({
+      where: { platformUserId: userId },
+      select: { round: { select: { id: true, name: true, roundType: true, ownerId: true } } },
+    });
+    const rounds = links.map((l) => l.round);
+    if (rounds.length === 0) return { rooms: [] };
+    const [documents, owners] = await Promise.all([
+      this.prisma.dataRoomDocument.findMany({
+        where: { roundId: { in: rounds.map((r) => r.id) }, sharedWithLeads: true, fileUrl: { not: null } },
+        orderBy: { updatedAt: 'desc' },
+      }),
+      this.people([...new Set(rounds.map((r) => r.ownerId))]),
+    ]);
+    return {
+      rooms: rounds
+        .map((round) => ({
+          roundId: round.id,
+          roundName: round.name,
+          roundType: round.roundType,
+          owner: owners.get(round.ownerId) ?? null,
+          documents: documents.filter((d) => d.roundId === round.id).map((d) => ({
+            id: d.id,
+            name: d.name,
+            category: d.category,
+            fileName: d.fileName,
+            fileMimeType: d.fileMimeType,
+            fileSizeBytes: d.fileSizeBytes,
+            updatedAt: d.updatedAt.toISOString(),
+          })),
+        }))
+        .filter((room) => room.documents.length > 0),
+    };
   }
 
   async removeDocument(ownerId: string, id: string) {

@@ -62,6 +62,7 @@ import {
   BrainCircuit,
   ClipboardSignature,
   FlaskConical,
+  FolderOpen,
 } from 'lucide-react';
 
 export type NavLink = {
@@ -257,6 +258,7 @@ export const investorNavSections: NavSection[] = [
       { href: '/investor/scouting', label: 'Scout Startups', icon: Telescope },
       { href: '/investor/pipeline', label: 'Pipeline', icon: GanttChart },
       { href: '/investor/portfolio', label: 'Portfolio', icon: Briefcase },
+      { href: '/data-room', label: 'Shared data rooms', icon: FolderOpen },
     ],
   },
   {

@@ -1,4 +1,4 @@
-import type { ApiDocument, ApiLead, ApiRound, FundraisingState } from '@/lib/fundraising-api';
+import type { ApiDocument, ApiLead, ApiRound, FundraisingState, LinkedAccount, SharedRoom } from '@/lib/fundraising-api';
 import { DemoRefusal } from './demo-refusal';
 
 /**
@@ -14,6 +14,25 @@ import { DemoRefusal } from './demo-refusal';
 const STORAGE_KEY = 'cfb:demo-own-fundraising:v1';
 
 type World = { round: Omit<ApiRound, 'raisedAmount' | 'investors'> | null; leads: ApiLead[]; documents: ApiDocument[] };
+
+/** Investors a demo lead can be linked to: the people the demo's directory already shows. */
+const DEMO_MEMBERS: Array<LinkedAccount & { isInvestor: boolean }> = [
+  { id: 'demo-nikos', displayName: 'Nikos Andreou', avatarUrl: null, headline: 'Angel investor', isInvestor: true },
+  { id: 'demo-maria', displayName: 'Maria Lazarou', avatarUrl: null, headline: 'Partner at Aegean Ventures', isInvestor: true },
+  { id: 'demo-sarah', displayName: 'Dr. Sarah Kim', avatarUrl: null, headline: 'Startup mentor', isInvestor: false },
+];
+
+/** A room someone opened to the visitor, so the investor's side of the data room has something to show. */
+const SAMPLE_ROOM: SharedRoom = {
+  roundId: 'demo-shared-round',
+  roundName: 'Harbor seed',
+  roundType: 'seed',
+  owner: { id: 'demo-elena', displayName: 'Elena Papadopoulos', avatarUrl: null, headline: 'Founder & CEO at Harbor' },
+  documents: [
+    { id: 'demo-shared-deck', name: 'Investor deck', category: 'pitch', fileName: 'harbor-deck.pdf', fileMimeType: 'application/pdf', fileSizeBytes: 2_400_000, updatedAt: '2026-10-28T09:00:00.000Z' },
+    { id: 'demo-shared-model', name: 'Financial model', category: 'financials', fileName: 'harbor-model.xlsx', fileMimeType: 'application/vnd.ms-excel', fileSizeBytes: 640_000, updatedAt: '2026-10-21T09:00:00.000Z' },
+  ],
+};
 
 const empty = (): World => ({ round: null, leads: [], documents: [] });
 let memory: World | null = null;
@@ -82,6 +101,24 @@ export function previewFundraisingApi(
   const world = read();
 
   if (pathname === '/api/fundraising' && method === 'GET') return state(world);
+  if (pathname === '/api/fundraising/shared' && method === 'GET') return { rooms: [SAMPLE_ROOM] };
+
+  if (pathname === '/api/fundraising/investors/search' && method === 'GET') {
+    const q = typeof body.q === 'string' ? body.q.trim().toLowerCase() : '';
+    return { members: DEMO_MEMBERS.filter((m) => m.displayName.toLowerCase().includes(q)) };
+  }
+
+  if (pathname === '/api/fundraising/documents/sharing' && method === 'POST') {
+    const ids = Array.isArray(body.documentIds) ? (body.documentIds as string[]) : [];
+    if (ids.some((id) => !world.documents.some((d) => d.id === id))) throw new DemoRefusal(404, 'Document not found');
+    const shared = body.shared === true;
+    const next = {
+      ...world,
+      documents: world.documents.map((d) => (ids.includes(d.id) ? { ...d, sharedWithLeads: shared, status: shared ? ('shared' as const) : ('ready' as const), updatedAt: nowIso } : d)),
+    };
+    write(next);
+    return state(next);
+  }
 
   if (pathname === '/api/fundraising/rounds' && method === 'POST') {
     const next = { ...world, round: { ...plainRound(nowIso), ...roundFields(body), name: requireText(body.name, 'name') } };
@@ -113,6 +150,7 @@ export function previewFundraisingApi(
       lastContactAt: status === 'prospect' ? null : nowIso,
       notes: orNull(body.notes),
       isVerifiedOnPlatform: false,
+      linkedAccount: null,
     };
     const next = { ...world, round, leads: [lead, ...world.leads] };
     write(next);
@@ -124,10 +162,14 @@ export function previewFundraisingApi(
     const lead = world.leads.find((l) => l.id === leadMatch[1]);
     if (!lead) throw new DemoRefusal(404, 'Investor not found');
     const moved = body.status !== undefined && body.status !== lead.status;
+    const { platformUserId, ...fields } = body as Partial<ApiLead> & { platformUserId?: string | null };
+    const account = platformUserId ? DEMO_MEMBERS.find((m) => m.id === platformUserId) : null;
+    if (platformUserId && !account) throw new DemoRefusal(404, 'Member not found');
     const changed: ApiLead = {
       ...lead,
-      ...(body as Partial<ApiLead>),
+      ...fields,
       ...(moved && body.status !== 'prospect' ? { lastContactAt: nowIso } : {}),
+      ...(platformUserId !== undefined ? { linkedAccount: account ?? null, isVerifiedOnPlatform: Boolean(account) } : {}),
     };
     const next = { ...world, leads: world.leads.map((l) => (l.id === lead.id ? changed : l)) };
     write(next);
@@ -148,6 +190,9 @@ export function previewFundraisingApi(
       fileMimeType: upload.type || null,
       fileSizeBytes: upload.size,
       viewCount: 0,
+      sharedWithLeads: false,
+      openedBy: [],
+      lastOpenedAt: null,
       updatedAt: nowIso,
     };
     const next = { ...world, round, documents: [doc, ...world.documents] };
