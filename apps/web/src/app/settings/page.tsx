@@ -64,6 +64,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { messagePolicy, type MessagePolicy } from '@cofounderbay/shared';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
+import { DeleteAccountDialog } from '@/components/settings/DeleteAccountDialog';
 
 /*
  * The quick notification switches here are the in-app channel of each
@@ -666,6 +667,7 @@ function PrivacyCard() {
 }
 
 export default function SettingsPage() {
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const sayOne = useBilingualString();
   const searchParams = useSearchParams();
   // `/settings#language`, `#profile-views`, `#billing`: the cards mount after load.
@@ -1477,19 +1479,21 @@ export default function SettingsPage() {
               <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-destructive-accessible"><BilingualText en="Delete account" el="Διαγραφή λογαριασμού" compact /></p>
-                  <p className="text-xs text-muted-foreground"><BilingualText en="Permanently remove your account and its data. Send the request from the email you signed up with; it is answered within 30 days and cannot be undone." el="Οριστική διαγραφή του λογαριασμού σας και των δεδομένων του. Στείλτε το αίτημα από το email της εγγραφής σας· απαντάται μέσα σε 30 ημέρες και δεν αναιρείται." wrap /></p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en="Permanently remove your account and its data. It cannot be undone." el="Οριστική διαγραφή του λογαριασμού σας και των δεδομένων του. Δεν αναιρείται." wrap /></p>
                 </div>
-                {/* There is no self-serve deletion endpoint yet, so this was a
-                    destructive-looking button that only showed a toast. It now
-                    opens the request it always meant: an email to privacy,
-                    which section 7 of the privacy policy answers within 30 days. */}
-                <Button variant="destructive" size="sm" className="shrink-0 gap-2" asChild>
-                  <a href="mailto:privacy@cofounderbay.com?subject=Account%20deletion%20request">
-                    <Trash2 className="icon-sm" /><BilingualText en="Request deletion" el="Αίτημα διαγραφής" compact />
-                  </a>
+                <Button variant="destructive" size="sm" className="shrink-0 gap-2" onClick={() => setDeleteOpen(true)}>
+                  <Trash2 className="icon-sm" /><BilingualText en="Delete account" el="Διαγραφή λογαριασμού" compact />
                 </Button>
               </div>
               </div>
+              {/* Section 7 of the privacy policy: someone who cannot sign in still has this right. */}
+              <p className="mt-3 text-xs text-muted-foreground">
+                <BilingualText en="Cannot sign in?" el="Δεν μπορείτε να συνδεθείτε;" compact />{' '}
+                <a href="mailto:privacy@cofounderbay.com?subject=Account%20deletion%20request" className="text-primary-accessible underline underline-offset-4">
+                  <BilingualText en="Request deletion by email" el="Αίτημα διαγραφής με email" compact />
+                </a>
+              </p>
+              <DeleteAccountDialog open={deleteOpen} onOpenChange={setDeleteOpen} />
             </CardContent>
           </Card>
         </div>

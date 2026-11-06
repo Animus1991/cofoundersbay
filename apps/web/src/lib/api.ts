@@ -414,6 +414,27 @@ export async function login(body: { email: string; password: string }) {
   return result;
 }
 
+export type AccountDeletionBlocker = { code: 'last_super_admin' } | { code: 'organization_has_members'; organizations: string[] };
+
+export type AccountDeletionPreview = {
+  confirmWith: 'password' | 'email';
+  needsCode: boolean;
+  blockers: AccountDeletionBlocker[];
+  counts: { dataRoomFiles: number; uploads: number; groupsHandedOver: number; groupsRemoved: number; sharedWorkspaces: number; rounds: number };
+};
+
+export function getAccountDeletion() {
+  return apiRequest<AccountDeletionPreview>('/api/account/deletion');
+}
+
+/** The account goes for good; the server clears the session with it. */
+export async function deleteAccount(body: { password?: string; email?: string; code?: string }) {
+  await apiRequest<{ deleted: true }>('/api/account/delete', { method: 'POST', body: JSON.stringify(body) }, { retryOn401: false });
+  clearLegacyTokens();
+  clearSessionIndicators();
+  broadcastLogout();
+}
+
 export async function logout() {
   await apiRequest<{ ok: true }>(
     '/api/auth/logout',

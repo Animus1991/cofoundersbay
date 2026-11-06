@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import type { UploadKind } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { writeFileSync, mkdirSync, existsSync, readFileSync, unlinkSync } from 'fs';
-import { resolve } from 'path';
+import { basename, resolve } from 'path';
 
 export type StoredFile = {
   key: string;
@@ -104,6 +104,17 @@ export class UploadsService {
       return;
     }
     const path = `${this.getPrivateDir()}/${name}`;
+    if (existsSync(path)) unlinkSync(path);
+  }
+
+  /** A public upload, by the key `storeFile` returned: `uploads/…` on S3, the bare name on disk. */
+  async deletePublicFile(key: string): Promise<void> {
+    if (this.useS3) {
+      const { client, sdk, bucket } = this.s3Client();
+      await client.send(new sdk.DeleteObjectCommand({ Bucket: bucket, Key: key }));
+      return;
+    }
+    const path = `${this.getUploadsDir()}/${basename(key)}`;
     if (existsSync(path)) unlinkSync(path);
   }
 

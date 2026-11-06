@@ -9,6 +9,13 @@
  */
 export const TOAST_EL: Record<string, string> = {
   "Code copied": "Ο κωδικός αντιγράφηκε",
+  "Account linked": "Ο λογαριασμός συνδέθηκε",
+  "Link removed": "Η σύνδεση αφαιρέθηκε",
+  "Could not change the link": "Η σύνδεση δεν άλλαξε",
+  "Document shared": "Το έγγραφο μοιράστηκε",
+  "Document no longer shared": "Το έγγραφο δεν είναι πλέον κοινόχρηστο",
+  "Could not change the sharing": "Η κοινή χρήση δεν άλλαξε",
+  "Could not delete the account": "Ο λογαριασμός δεν διαγράφηκε",
   "Could not copy the code": "Ο κωδικός δεν αντιγράφηκε",
   "Select it and copy it by hand.": "Επιλέξτε τον και αντιγράψτε τον χειροκίνητα.",
   "Perk claimed": "Η προσφορά διεκδικήθηκε",

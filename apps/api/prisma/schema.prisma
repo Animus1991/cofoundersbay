@@ -1101,7 +1101,7 @@ model GroupPost {
   groupId   String
   group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
   authorId  String
-  author    User      @relation(fields: [authorId], references: [id])
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   content   String    @db.Text
   mediaUrls Json?
   isPinned  Boolean   @default(false)
@@ -1122,7 +1122,7 @@ model GroupPostComment {
   postId    String
   post      GroupPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   authorId  String
-  author    User      @relation(fields: [authorId], references: [id])
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   content   String    @db.Text
   editedAt  DateTime?
   deletedAt DateTime?
@@ -1138,7 +1138,7 @@ model GroupPostReaction {
   postId    String
   post      GroupPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   userId    String
-  user      User      @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   emoji     String
   createdAt DateTime  @default(now())
 

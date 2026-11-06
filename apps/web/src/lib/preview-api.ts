@@ -3328,7 +3328,8 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   const form = typeof FormData !== 'undefined' && init?.body instanceof FormData ? init.body : null;
   const formFile = form?.get('file');
   const upload = formFile && typeof formFile !== 'string' ? { name: formFile.name, size: formFile.size, type: formFile.type, category: String(form?.get('category') ?? 'other') } : null;
-  const fundraisingAnswer = previewFundraisingApi(pathname, method, (body ?? {}) as Record<string, unknown>, upload, new Date(previewNowMs()).toISOString());
+  const fundraisingFields = method === 'GET' ? Object.fromEntries(new URLSearchParams(path.split('?')[1] ?? '')) : ((body ?? {}) as Record<string, unknown>);
+  const fundraisingAnswer = previewFundraisingApi(pathname, method, fundraisingFields, upload, new Date(previewNowMs()).toISOString());
   if (fundraisingAnswer !== undefined) return fundraisingAnswer;
   const answerFeedback = previewAnswerFeedbackApi(pathname, method, (body ?? {}) as Record<string, unknown>);
   if (answerFeedback !== undefined) return answerFeedback;
@@ -3727,6 +3728,13 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
 
   // The account export, built from the demo's own records the way the API
   // builds it from the database: only what the demo user owns or sent.
+  // Nothing is deleted in the demo: the dialog shows what a member would see, and stops there.
+  if (pathname === '/api/account/deletion') {
+    return { confirmWith: 'password', needsCode: false, blockers: [], counts: { dataRoomFiles: 2, uploads: 3, groupsHandedOver: 1, groupsRemoved: 0, sharedWorkspaces: 1, rounds: 1 } };
+  }
+  if (pathname === '/api/account/delete') {
+    throw new DemoRefusal(403, 'Nothing is deleted in the demo. A real account goes for good at this step.');
+  }
   if (pathname === '/api/account/export') {
     const all = ['profile', 'messages', 'connections', 'activity', 'milestones', 'settings'];
     const asked = (new URLSearchParams(path.split('?')[1] ?? '').get('sections') ?? '').split(',').filter((x) => all.includes(x));

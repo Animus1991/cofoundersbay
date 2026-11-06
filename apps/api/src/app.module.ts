@@ -65,6 +65,7 @@ import { PerksModule } from './perks/perks.module';
 import { ProfileViewersModule } from './profile-viewers/profile-viewers.module';
 import { EndorsementsModule } from './endorsements/endorsements.module';
 import { AccountExportModule } from './account-export/account-export.module';
+import { AccountDeletionModule } from './account-deletion/account-deletion.module';
 import { ResearchModule } from './research/research.module';
 import { BuilderModule } from './builder/builder.module';
 import { RolesModule } from './roles/roles.module';
@@ -163,6 +164,7 @@ function findEnvFiles(): string[] {
     ProfileViewersModule,
     EndorsementsModule,
     AccountExportModule,
+    AccountDeletionModule,
     ResearchModule,
     BuilderModule,
     RolesModule,

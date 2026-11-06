@@ -168,7 +168,7 @@ While we strive to protect your information, no method of transmission or storag
 **Objection:** Object to certain processing activities
 **Withdrawal:** Withdraw consent at any time
 
-To exercise these rights, contact us at privacy@cofounderbay.com or use the settings in your account.
+To exercise these rights, contact us at privacy@cofounderbay.com or use the settings in your account. You can delete your account yourself under Settings; that removes its data and stored files at once, and the email address above stays open to anyone who cannot sign in.
 
 We will respond to requests within 30 days or as required by applicable law.`,
   },
