@@ -387,6 +387,9 @@ model User {
   // 👍 / 👎 on the assistant's answers
   assistantFeedback AssistantAnswerFeedback[]
 
+  // Proposals on other members' listings
+  opportunityProposals OpportunityProposal[] @relation("OpportunityProposalsSent")
+
   // Moderation
   reportsFiled    Report[] @relation("ReportsFiled")
   reportsAgainst  Report[] @relation("ReportsAgainst")
@@ -1270,10 +1273,40 @@ model Opportunity {
   createdBy   User            @relation(fields: [createdById], references: [id], onDelete: Cascade)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+  proposals   OpportunityProposal[]
 
   @@index([type, isActive])
   @@index([createdById])
   @@index([createdAt])
+}
+
+enum OpportunityProposalStatus {
+  pending
+  accepted
+  declined
+  withdrawn
+}
+
+/// A member's proposal on someone's listing (docs §111): what they would do,
+/// by when and for what. One per member and listing; the listing's owner
+/// accepts or declines, the sender can withdraw while it is pending.
+model OpportunityProposal {
+  id            String                    @id @default(uuid())
+  opportunityId String
+  opportunity   Opportunity               @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  fromId        String
+  from          User                      @relation("OpportunityProposalsSent", fields: [fromId], references: [id], onDelete: Cascade)
+  scope         String                    @db.Text
+  timeframe     String?
+  compensation  String?
+  status        OpportunityProposalStatus @default(pending)
+  respondedAt   DateTime?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  @@unique([opportunityId, fromId])
+  @@index([fromId, createdAt])
+  @@index([opportunityId, status])
 }
 
 // ── Commitments ─────────────────────────────────────────────────────────────
