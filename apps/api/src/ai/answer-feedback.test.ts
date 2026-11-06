@@ -10,7 +10,7 @@ import { SetAnswerFeedbackDto } from './dto/answer-feedback.dto';
 
 function setup() {
   const assistantAnswerFeedback = {
-    upsert: vi.fn(async ({ create }: { create: Record<string, unknown> }) => create),
+    upsert: vi.fn(async ({ create }: { create: Record<string, unknown>; update?: unknown }) => create),
     deleteMany: vi.fn(async () => ({ count: 1 })),
   };
   return { service: new AnswerFeedbackService({ assistantAnswerFeedback } as never), assistantAnswerFeedback };

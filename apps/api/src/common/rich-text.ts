@@ -1,4 +1,7 @@
-import sanitizeHtml from 'sanitize-html';
+// `= require`, not a default import: this tsconfig has no esModuleInterop, so a
+// default import compiles to `.default`, which sanitize-html does not have. The
+// tests would pass and the first note with markup would throw in the build.
+import sanitizeHtml = require('sanitize-html');
 
 /**
  * Rich text on its way into the database (docs §§ on the research editor, §111).
