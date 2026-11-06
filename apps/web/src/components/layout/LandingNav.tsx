@@ -26,6 +26,9 @@ const JOIN: Pair = { en: 'Join free', el: 'Εγγραφή' };
  * The public pages' top bar. Chrome, so it speaks the reader's chosen
  * language only (the switcher sets it): five links as "English · Ελληνικά"
  * pairs ran past the bar at tablet widths. It used to be English only.
+ *
+ * A tablet takes the phone's menu: even in one language the Greek links broke
+ * onto two lines and ran under the logo at 820px.
  */
 export function LandingNav() {
   const [open, setOpen] = useState(false);
@@ -43,7 +46,7 @@ export function LandingNav() {
         <Link href="/" aria-label={bilingualAria('CoFounderBay home', 'Αρχική CoFounderBay')}>
           <Logo size="sm" />
         </Link>
-        <div className="hidden items-center gap-7 text-sm text-muted-foreground md:flex" lang={lang}>
+        <div className="hidden items-center gap-7 whitespace-nowrap text-sm text-muted-foreground lg:flex" lang={lang}>
           {NAV_LINKS.map((link) => (
             <Link key={link.href} href={link.href} className="transition-colors hover:text-foreground">
               {say(link.label)}
@@ -65,7 +68,7 @@ export function LandingNav() {
             type="button"
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="lg:hidden"
             aria-label={open ? bilingualAria('Close menu', 'Κλείσιμο μενού') : bilingualAria('Open menu', 'Άνοιγμα μενού')}
             aria-expanded={open}
             aria-controls="landing-mobile-nav"
@@ -79,7 +82,7 @@ export function LandingNav() {
         <div
           id="landing-mobile-nav"
           lang={lang}
-          className="border-t border-border bg-background px-6 py-4 sm:px-8 md:hidden"
+          className="border-t border-border bg-background px-6 py-4 sm:px-8 lg:hidden"
         >
           <div className="flex flex-col gap-3">
             {NAV_LINKS.map((link) => (
@@ -92,7 +95,7 @@ export function LandingNav() {
                 {say(link.label)}
               </Link>
             ))}
-            <Button variant="ghost" size="sm" className="w-full" asChild>
+            <Button variant="ghost" size="sm" className="w-full sm:hidden" asChild>
               <Link href="/login" onClick={() => setOpen(false)}>
                 {say(LOG_IN)}
               </Link>

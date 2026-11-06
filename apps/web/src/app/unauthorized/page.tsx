@@ -15,8 +15,9 @@ export const metadata = {
  * permission a page needs. The redirect existed; the page did not, so a
  * permission check ended on a 404 that said nothing about why.
  *
- * Server-rendered and bilingual in place (no client language context), in the
- * same shape as `not-found.tsx`.
+ * Server-rendered, in the same shape as `not-found.tsx`. The words go through
+ * BilingualText like the buttons below them: written out in both languages,
+ * a Greek reader got one screen in two.
  */
 export default function UnauthorizedPage() {
   return (
@@ -24,18 +25,15 @@ export default function UnauthorizedPage() {
       <Logo size="sm" />
       <ShieldAlert className="mt-8 icon-xl text-status-warning" aria-hidden="true" />
       <h1 className="mt-3 text-xl font-semibold text-foreground">
-        You do not have access to this page
-        <span className="mt-1 block text-base font-normal text-muted-foreground" lang="el">
-          Δεν έχετε πρόσβαση σε αυτή τη σελίδα
-        </span>
+        <BilingualText en="You do not have access to this page" el="Δεν έχετε πρόσβαση σε αυτή τη σελίδα" compact wrap />
       </h1>
       <p className="mt-3 max-w-md text-sm text-muted-foreground">
-        It needs a role your account does not have yet. Switch to a role that has it, or ask an administrator to add
-        the role to your account.
-      </p>
-      <p className="mt-1 max-w-md text-sm text-muted-foreground" lang="el">
-        Απαιτεί έναν ρόλο που ο λογαριασμός σας δεν έχει ακόμη. Αλλάξτε σε ρόλο που τον έχει ή ζητήστε από έναν
-        διαχειριστή να τον προσθέσει.
+        <BilingualText
+          en="It needs a role your account does not have yet. Switch to a role that has it, or ask an administrator to add the role to your account."
+          el="Απαιτεί έναν ρόλο που ο λογαριασμός σας δεν έχει ακόμη. Αλλάξτε σε ρόλο που τον έχει ή ζητήστε από έναν διαχειριστή να τον προσθέσει."
+          compact
+          wrap
+        />
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <Button asChild>

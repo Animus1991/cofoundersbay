@@ -396,32 +396,32 @@ export default function PricingPage() {
               <thead>
                 <tr className="border-b border-border">
                   <th className="py-4 text-left text-sm font-semibold text-foreground"><BilingualText en="Feature" el="Δυνατότητα" compact /></th>
-                  <th className="py-4 text-center text-sm font-semibold text-foreground"><BilingualText en="Free" el="Δωρεάν" compact /></th>
-                  <th className="py-4 text-center text-sm font-semibold text-primary-accessible">Pro</th>
-                  <th className="py-4 text-center text-sm font-semibold text-foreground"><BilingualText en="Team" el="Ομάδα" compact /></th>
-                  <th className="py-4 text-center text-sm font-semibold text-foreground">Enterprise</th>
+                  <th className="px-2 py-4 text-center text-sm font-semibold text-foreground"><BilingualText en="Free" el="Δωρεάν" compact /></th>
+                  <th className="px-2 py-4 text-center text-sm font-semibold text-primary-accessible">Pro</th>
+                  <th className="px-2 py-4 text-center text-sm font-semibold text-foreground"><BilingualText en="Team" el="Ομάδα" compact /></th>
+                  <th className="px-2 py-4 text-center text-sm font-semibold text-foreground">Enterprise</th>
                 </tr>
               </thead>
               <tbody>
                 {FEATURES.map((feature, i) => (
                   <tr key={feature.name} className={cn('border-b border-border', i % 2 === 0 && 'bg-card/50')}>
                     <td className="py-3 text-sm text-muted-foreground"><BilingualText en={feature.name} el={feature.nameEl} wrap /></td>
-                    <td className="py-3 text-center">
+                    <td className="px-2 py-3 text-center">
                       <div className="flex justify-center">
                         <FeatureCheck value={feature.free} />
                       </div>
                     </td>
-                    <td className="py-3 text-center bg-primary/5">
+                    <td className="px-2 py-3 text-center bg-primary/5">
                       <div className="flex justify-center">
                         <FeatureCheck value={feature.pro} />
                       </div>
                     </td>
-                    <td className="py-3 text-center">
+                    <td className="px-2 py-3 text-center">
                       <div className="flex justify-center">
                         <FeatureCheck value={feature.team} />
                       </div>
                     </td>
-                    <td className="py-3 text-center">
+                    <td className="px-2 py-3 text-center">
                       <div className="flex justify-center">
                         <FeatureCheck value={feature.enterprise} />
                       </div>
