@@ -569,7 +569,8 @@ export default function CalendarPage() {
   const upcomingEvents = useMemo(() => {
     const n = new Date();
     const todayStart = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()));
-    return filteredEvents.filter((e) => new Date(e.date) >= todayStart).slice(0, 8);
+    // A follow-up stays on the list once its day has passed: that is when it matters most.
+    return filteredEvents.filter((e) => new Date(e.date) >= todayStart || e.id.startsWith('followup-')).slice(0, 8);
   }, [filteredEvents]);
 
   // What the export carries: everything the filters leave, from today on.

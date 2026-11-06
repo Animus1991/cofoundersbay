@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { planCopilotTools } from './copilot-planner';
 import { executeAction, undoAction } from './action-registry';
+import { runCopilotTurn } from './copilot-engine';
 
 const tools = (message: string) => planCopilotTools(message).map((t) => t.name);
 const args = (message: string, tool: string) => planCopilotTools(message).find((t) => t.name === tool)?.args;
@@ -45,6 +46,19 @@ describe('the look and the language, from the chat', () => {
     expect(window.localStorage.getItem('cfb_locale')).toBe('en');
     await undoAction('set_language', { language: 'en' }, done.undo);
     expect(window.localStorage.getItem('cfb_locale')).toBe('el');
+  });
+});
+
+describe('the card the reader confirms', () => {
+  // The planner alone is not enough: a tool with no arm in the engine produced
+  // no card at all, and only a browser run showed it.
+  it.each([
+    ['Βάλε σκοτεινό θέμα', 'set_theme'],
+    ['Άλλαξε τη γλώσσα σε αγγλικά', 'set_language'],
+    ['Follow up with Nikos Andreou on 2026-11-20: send the deck', 'set_investor_followup'],
+  ])('«%s» reaches a card', async (message, tool) => {
+    const turn = await runCopilotTurn(message);
+    expect(turn.actions.map((a) => a.tool)).toContain(tool);
   });
 });
 
