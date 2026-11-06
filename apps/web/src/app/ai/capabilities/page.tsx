@@ -17,6 +17,10 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { CAPABILITY_SAMPLES as SAMPLE_ASK } from '@/lib/capability-samples';
+import { cn } from '@/lib/utils';
+
+/** A phone starts each list here: every card at once measured 29,000px. The search reaches all of them. */
+const PHONE_FIRST = 6;
 
 /**
  * Generated from the shared capability contract — the same list the model is
@@ -97,6 +101,9 @@ export default function AICapabilitiesPage() {
    * (docs §91).
    */
   const [query, setQuery] = useState('');
+  const [readsOpen, setReadsOpen] = useState(false);
+  const [mutationsOpen, setMutationsOpen] = useState(false);
+  const searching = query.trim().length > 0;
   const q = query.trim().toLocaleLowerCase();
   const shown = q ? capabilities.filter((spec) => haystack(spec).includes(q)) : capabilities;
   const reads = shown.filter((spec) => spec.kind === 'read');
@@ -173,10 +180,17 @@ export default function AICapabilitiesPage() {
             />
           </p>
           <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {reads.map((spec) => (
-              <CapabilityCard key={spec.id} spec={spec} />
+            {reads.map((spec, index) => (
+              <div key={spec.id} className={cn(!readsOpen && !searching && index >= PHONE_FIRST && 'max-sm:hidden')}>
+                <CapabilityCard spec={spec} />
+              </div>
             ))}
           </div>
+          {!readsOpen && !searching && reads.length > PHONE_FIRST ? (
+            <Button type="button" variant="outline" size="sm" className="mt-3 w-full sm:hidden" onClick={() => setReadsOpen(true)}>
+              <BilingualText en={`Show all ${reads.length}`} el={`Όλες οι ${reads.length}`} compact />
+            </Button>
+          ) : null}
         </section>
         ) : null}
 
@@ -193,10 +207,17 @@ export default function AICapabilitiesPage() {
             />
           </p>
           <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {mutations.map((spec) => (
-              <CapabilityCard key={spec.id} spec={spec} />
+            {mutations.map((spec, index) => (
+              <div key={spec.id} className={cn(!mutationsOpen && !searching && index >= PHONE_FIRST && 'max-sm:hidden')}>
+                <CapabilityCard spec={spec} />
+              </div>
             ))}
           </div>
+          {!mutationsOpen && !searching && mutations.length > PHONE_FIRST ? (
+            <Button type="button" variant="outline" size="sm" className="mt-3 w-full sm:hidden" onClick={() => setMutationsOpen(true)}>
+              <BilingualText en={`Show all ${mutations.length}`} el={`Όλες οι ${mutations.length}`} compact />
+            </Button>
+          ) : null}
         </section>
         ) : null}
       </div>

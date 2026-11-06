@@ -6,6 +6,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useStoredUser } from '@/hooks/useStoredUser';
+import { cn } from '@/lib/utils';
 
 export type WhatsNewAudience = 'founder' | 'investor' | 'mentor' | 'org' | 'provider';
 
@@ -103,8 +104,9 @@ export function WhatsNewPanel({ audience }: { audience: WhatsNewAudience }) {
       </CardHeader>
       <CardContent>
         <ul id={`whats-new-${audience}`} className="grid grid-cols-1 gap-x-6 gap-y-1 md:grid-cols-2">
-          {shown.map((item) => (
-            <li key={item.en /* a title: several entries can open the same page */} className="min-w-0">
+          {shown.map((item, index) => (
+            // Two on a phone: «Όλα τα 20» below opens the rest there too.
+            <li key={item.en /* a title: several entries can open the same page */} className={cn('min-w-0', !showAll && index >= 2 && 'max-sm:hidden')}>
               <Link href={item.href} className="axis-row block rounded-md py-2 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <span className="block text-sm font-medium text-foreground"><BilingualText en={item.en} el={item.el} compact /></span>
                 <span className="mt-0.5 block text-xs text-muted-foreground"><BilingualText en={item.hintEn} el={item.hintEl} wrap /></span>

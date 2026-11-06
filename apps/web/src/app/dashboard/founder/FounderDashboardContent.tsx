@@ -1215,7 +1215,7 @@ export default function FounderDashboardContent() {
             <CardContent className="space-y-3">
               {showDemoData ? (
                 <>
-                {DEMO_EVENTS.slice(0, 3).map((event) => {
+                {DEMO_EVENTS.slice(0, 3).map((event, index) => {
                   const tone = EVENT_CONFIG[event.type];
                   const cfg = STATUS[tone];
                   const isUrgent = event.daysLeft <= 3;
@@ -1223,7 +1223,7 @@ export default function FounderDashboardContent() {
                     <Link
                       key={event.id}
                       href="/events"
-                      className="axis-row flex items-start gap-3 rounded-md py-1.5 transition-colors hover:bg-accent"
+                      className={cn('axis-row flex items-start gap-3 rounded-md py-1.5 transition-colors hover:bg-accent', index >= 2 && 'max-sm:hidden')}
                     >
                       <div className="mt-0.5 shrink-0 text-muted-foreground">
                         <CfbGlyph name="calendar" className={cn('icon-sm', isUrgent ? cfg.icon : 'text-muted-foreground')} />

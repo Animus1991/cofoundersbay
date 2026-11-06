@@ -4946,6 +4946,23 @@ input:is(
   }
 }
 
+/* The phone top bar keeps its compact icons (owner, docs §64) and gives each a
+   taller invisible target: the bar is 48px and the marks 27px, so a thumb
+   landing beside one used to do nothing. Nothing moves or grows on screen. */
+@media (max-width: 639.98px) {
+  header[data-phone-topbar] :is(button, a) {
+    position: relative;
+  }
+  header[data-phone-topbar] :is(button, a)::after {
+    content: '';
+    position: absolute;
+    top: -9px;
+    bottom: -9px;
+    left: -1px;
+    right: -1px;
+  }
+}
+
 /* Phone page tools: the same icon, at the same height, as the one beside
    the three dots in a message thread. That icon is centered on the avatar
    row, 10px under the top bar, and its right edge lines up with the account

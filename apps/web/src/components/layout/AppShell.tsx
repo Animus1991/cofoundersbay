@@ -20,6 +20,7 @@ import { PageRail, type PageRailSection } from './PageRail';
 import { usePageRail } from './PageRailContext';
 import { PageHeaderSlot } from './PageHeaderSlot';
 import { recordInAppView } from '@/lib/in-app-history';
+import { PageLead } from './PageLead';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -324,10 +325,16 @@ export function AppShell({
                 width from the title on every wide home header. */}
             <div
               className={cn(
-                'grid min-w-0 grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto]',
+                'grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3',
                 showAskAi
-                  ? "[grid-template-areas:'title'_'actions'_'ask'] sm:[grid-template-areas:'title_actions'_'ask_ask'] [@container(min-width:64rem)]:grid-cols-[minmax(0,1fr)_auto_18rem] [@container(min-width:64rem)]:[grid-template-areas:'title_actions_ask']"
-                  : "[grid-template-areas:'title'_'actions'] sm:[grid-template-areas:'title_actions']",
+                  ? cn(
+                      actions ? "[grid-template-areas:'title_title'_'actions_actions'_'ask_tools']" : "[grid-template-areas:'title_title'_'ask_tools']",
+                      "sm:[grid-template-areas:'title_actions'_'ask_ask'] [@container(min-width:64rem)]:grid-cols-[minmax(0,1fr)_auto_18rem] [@container(min-width:64rem)]:[grid-template-areas:'title_actions_ask']",
+                    )
+                  : cn(
+                      actions ? "[grid-template-areas:'title_tools'_'actions_actions']" : "[grid-template-areas:'title_tools']",
+                      "sm:[grid-template-areas:'title_actions']",
+                    ),
               )}
             >
               <div className="min-w-0 [grid-area:title]" data-page-header="">
@@ -336,23 +343,20 @@ export function AppShell({
                     <BilingualText en={pageTitle} el={pageTitleEl} />
                   </h1>
                 )}
-                {pageDescription && (
-                  <p className="page-lead mt-0.5 max-w-prose text-sm leading-snug text-muted-foreground">
-                    <BilingualText
-                      en={pageDescription}
-                      el={pageDescriptionEl}
-                      stacked
-                      wrap
-                      secondaryFrom="lg"
-                    />
-                  </p>
-                )}
+                {pageDescription && <PageLead en={pageDescription} el={pageDescriptionEl} />}
               </div>
               {(actions || showHelp || pinnable) && (
-                <div className="flex shrink-0 flex-wrap items-center gap-2 [grid-area:actions] sm:justify-end" data-page-actions="">
-                  {actions}
-                  {pinnable && <PinPageButton />}
-                  {showHelp && <PageContextualHelp compact defaultOpen={false} />}
+                // One group from `sm`. On a phone its two halves take their own
+                // grid places: a row for the star and help alone cost 48px on
+                // every page, so they stand beside the ask field instead.
+                <div className="contents sm:flex sm:shrink-0 sm:flex-wrap sm:items-center sm:justify-end sm:gap-2 sm:[grid-area:actions]" data-page-actions="">
+                  {actions ? <div className="flex min-w-0 flex-wrap items-center gap-2 [grid-area:actions] sm:contents">{actions}</div> : null}
+                  {pinnable || showHelp ? (
+                    <div className="flex items-center gap-2 self-center [grid-area:tools] sm:contents">
+                      {pinnable && <PinPageButton />}
+                      {showHelp && <PageContextualHelp compact defaultOpen={false} />}
+                    </div>
+                  ) : null}
                 </div>
               )}
               {showAskAi && (

@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
@@ -149,6 +149,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
   // rendered "weight 1%" three times, which reads as though each dimension were
   // worth one percent. Express it as its share of the total instead, which is
   // correct whether the API sends 1/1/1 or 40/35/25.
+  const [dimensionsOpen, setDimensionsOpen] = useState(false);
   const weightTotal = vrs.dimensions.reduce((sum, d) => sum + (Number(d.weight) || 0), 0);
   const weightShare = (weight: number): number | null => {
     const w = Number(weight);
@@ -219,7 +220,17 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
           </p>
         </div>
 
-        <ul className={cn('space-y-2.5', compact && 'hidden')}>
+        {/* A phone opens on the score and the weakest dimension; the six bars are a tap away. */}
+        {!compact ? (
+          <Button type="button" variant="outline" size="sm" className="mb-3 w-full sm:hidden" aria-expanded={dimensionsOpen} onClick={() => setDimensionsOpen((v) => !v)}>
+            <BilingualText
+              en={dimensionsOpen ? 'Hide the dimensions' : `Show the ${dimensionCount} dimensions`}
+              el={dimensionsOpen ? 'Απόκρυψη διαστάσεων' : `Οι ${dimensionCount} διαστάσεις`}
+              compact
+            />
+          </Button>
+        ) : null}
+        <ul className={cn('space-y-2.5', compact && 'hidden', !dimensionsOpen && 'max-sm:hidden')}>
           {vrs.dimensions.filter((dim) => dim?.href).map((dim, index) => {
             const { color, bar } = scoreTier(dim.score);
             return (

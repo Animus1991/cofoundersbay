@@ -151,9 +151,9 @@ describe('Mobile drawer keyboard and language', () => {
     localStorage.setItem('cfb:language-display', 'bilingual');
     render(<Navigation />);
     const bar = screen.getByRole('navigation', { name: /Primary mobile navigation/ });
-    const profile = bar.querySelector('a[href="/profile"]')!;
-    expect(profile.querySelector('[lang]')?.getAttribute('lang')).toBe('el');
-    expect(profile.textContent).toContain('Profile');
+    const assistant = bar.querySelector('a[href="/ai"]')!;
+    expect(assistant.querySelector('[lang]')?.getAttribute('lang')).toBe('el');
+    expect(assistant.textContent).toContain('Assistant');
   });
 
   it('exposes notification counts in account mode', () => {

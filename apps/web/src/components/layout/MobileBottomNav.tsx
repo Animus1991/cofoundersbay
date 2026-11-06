@@ -3,7 +3,7 @@
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { BilingualText } from '@/components/common/BilingualText';
 import { usePathname } from 'next/navigation';
-import { Home, Compass, MessageCircle, User } from 'lucide-react';
+import { Home, Compass, MessageCircle, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CfbGlyph, NavIcon } from '@/components/icons/CfbGlyph';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
@@ -14,8 +14,11 @@ import { bilingualAria } from '@/lib/i18n/format';
 const PRIMARY_TABS = [
   { icon: Home, label: 'Home', labelEl: 'Αρχική', path: '/dashboard', match: ['/dashboard'] },
   { icon: Compass, label: 'Discover', labelEl: 'Εξερεύνηση', path: '/discover', match: ['/discover'] },
+  // The assistant is the product's centre, and a phone had no way to it but a
+  // page's ask field. The profile moved off this bar for it: the avatar above
+  // has always opened it (docs §112).
+  { icon: Sparkles, label: 'Assistant', labelEl: 'Βοηθός', path: '/ai', match: ['/ai'] },
   { icon: MessageCircle, label: 'Messages', labelEl: 'Μηνύματα', path: '/messages', match: ['/messages'], badgeKey: 'messages' as const },
-  { icon: User, label: 'Profile', labelEl: 'Προφίλ', path: '/profile', match: ['/profile'] },
 ] as const;
 
 const tabClasses = 'relative flex min-h-[3.75rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1 text-[12.485px] font-medium leading-[1.25] tracking-tight focus-ring';
@@ -110,7 +113,7 @@ export function MobileBottomNav() {
       role="navigation"
       aria-label={t('Primary mobile navigation')}
     >
-      {PRIMARY_TABS.slice(0, 3).map(renderTab)}
+      {PRIMARY_TABS.map(renderTab)}
       <button
         type="button"
         onClick={() => setMobileNavOpen(true)}
@@ -126,7 +129,6 @@ export function MobileBottomNav() {
         <CfbGlyph name="more" className="icon-md" />
         <TabLabel en="More" el="Μενού" />
       </button>
-      {PRIMARY_TABS.slice(3).map(renderTab)}
     </nav>
   );
 }
