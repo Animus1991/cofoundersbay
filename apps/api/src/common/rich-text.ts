@@ -1,7 +1,10 @@
-// `= require`, not a default import: this tsconfig has no esModuleInterop, so a
-// default import compiles to `.default`, which sanitize-html does not have. The
-// tests would pass and the first note with markup would throw in the build.
-import sanitizeHtml = require('sanitize-html');
+import * as sanitizeModule from 'sanitize-html';
+
+// The compiled build (commonjs, no esModuleInterop) gets the function itself; a
+// default import there compiles to `.default`, which the package does not have.
+// Vitest's ESM interop gets it under `.default`. Both are checked: the tests, and
+// running the compiled file, because the tests alone passed with the broken form.
+const sanitizeHtml: typeof sanitizeModule = (sanitizeModule as unknown as { default?: typeof sanitizeModule }).default ?? sanitizeModule;
 
 /**
  * Rich text on its way into the database (docs §§ on the research editor, §111).
@@ -15,7 +18,7 @@ import sanitizeHtml = require('sanitize-html');
 const COLOUR = [/^#[0-9a-f]{3,8}$/i, /^rgba?\([\d\s.,%]+\)$/i, /^[a-z]+$/i];
 const LENGTH = [/^-?[\d.]+(?:px|em|rem|%)?(?:\s+-?[\d.]+(?:px|em|rem|%)?){0,3}$/i];
 
-const OPTIONS: sanitizeHtml.IOptions = {
+const OPTIONS: sanitizeModule.IOptions = {
   allowedTags: [
     'p', 'br', 'span', 'div', 'font',
     'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'del', 'ins', 'mark', 'sub', 'sup', 'small', 'code', 'pre', 'kbd',
