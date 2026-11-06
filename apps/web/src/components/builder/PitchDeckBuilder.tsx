@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useId } from 'react';
 import Link from 'next/link';
 import { isPreviewDemo } from '@/lib/preview-demo';
+import { demoDeckText } from '@/lib/demo/pitch-greek';
 import { fundraisingRoundView, fmtMoney } from '@/lib/fundraising-demo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageRail, type PageRailSection } from '@/components/layout/PageRail';
@@ -200,8 +201,8 @@ function pickSlide(raw: unknown, index: number): Slide {
     id: typeof rec.id === 'string' && rec.id.trim() ? rec.id : `slide-${index}-${type}`,
     type,
     title,
-    content: typeof rec.content === 'string' ? rec.content : '',
-    notes: typeof rec.notes === 'string' ? rec.notes : '',
+    content: demoDeckText(typeof rec.content === 'string' ? rec.content : ''),
+    notes: demoDeckText(typeof rec.notes === 'string' ? rec.notes : ''),
     order: typeof rec.order === 'number' && Number.isFinite(rec.order) ? rec.order : index,
   };
 }
@@ -254,7 +255,7 @@ export function pickPitchDeck(raw: unknown): Partial<PitchDeckData> {
   const source = nested && looksLikePitch(nested) ? nested : root;
   const next: Partial<PitchDeckData> = {};
   if (typeof source.companyName === 'string') next.companyName = source.companyName;
-  if (typeof source.tagline === 'string') next.tagline = source.tagline;
+  if (typeof source.tagline === 'string') next.tagline = demoDeckText(source.tagline);
   if (typeof source.askAmount === 'string') next.askAmount = source.askAmount;
   if (typeof source.deckType === 'string' && DECK_TYPE_VALUES.includes(source.deckType as PitchDeckData['deckType'])) {
     next.deckType = source.deckType as PitchDeckData['deckType'];
