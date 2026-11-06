@@ -139,6 +139,14 @@ const VALUE_EL: Record<string, string> = {
 };
 
 /** `relative`: the sr-only name must not escape the table's horizontal scroller. */
+/** The comparison's columns, which a phone shows one at a time. */
+const COMPARE_PLANS = [
+  { key: 'free', en: 'Free', el: 'Δωρεάν' },
+  { key: 'pro', en: 'Pro', el: 'Pro' },
+  { key: 'team', en: 'Team', el: 'Ομάδα' },
+  { key: 'enterprise', en: 'Enterprise', el: 'Enterprise' },
+] as const;
+
 function FeatureCheck({ value }: { value: boolean | string }) {
   if (value === true) {
     return (
@@ -161,6 +169,7 @@ function FeatureCheck({ value }: { value: boolean | string }) {
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(true);
+  const [phonePlan, setPhonePlan] = useState<(typeof COMPARE_PLANS)[number]['key']>('pro');
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const { hasSession } = useSession();
 
@@ -347,12 +356,38 @@ export default function PricingPage() {
             <BilingualText en="Compare all features" el="Σύγκριση όλων των δυνατοτήτων" compact />
           </h2>
 
+          {/* A phone reads one plan at a time: five columns needed a sideways scroll,
+              on the page where a visitor decides. */}
+          <div className="space-y-3 sm:hidden" data-pricing-phone="">
+            <div className="grid grid-cols-4 gap-1 rounded-xl bg-secondary/50 p-1" role="group" aria-label={bilingualAria('Plan to read', 'Πλάνο προς ανάγνωση')}>
+              {COMPARE_PLANS.map((plan) => (
+                <button
+                  key={plan.key}
+                  type="button"
+                  aria-pressed={phonePlan === plan.key}
+                  onClick={() => setPhonePlan(plan.key)}
+                  className={cn('min-w-0 rounded-lg px-1 py-2 text-sm font-medium transition-all', phonePlan === plan.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+                >
+                  <BilingualText en={plan.en} el={plan.el} compact />
+                </button>
+              ))}
+            </div>
+            <ul className="divide-y divide-border">
+              {FEATURES.map((feature) => (
+                <li key={feature.name} className="flex items-start justify-between gap-3 py-3">
+                  <span className="min-w-0 text-sm text-muted-foreground"><BilingualText en={feature.name} el={feature.nameEl} wrap /></span>
+                  <span className="shrink-0"><FeatureCheck value={feature[phonePlan]} /></span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* A scroll container that a keyboard user cannot reach is a WCAG 2.1.1
               failure on narrow viewports, where this table is the only way to
               read the comparison. tabIndex + a group role make it focusable and
               scrollable with the arrow keys. */}
           <div
-            className="focus-ring overflow-x-auto rounded-md"
+            className="focus-ring hidden overflow-x-auto rounded-md sm:block"
             tabIndex={0}
             role="group"
             aria-label="Plan feature comparison, scrolls horizontally"
