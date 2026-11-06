@@ -29,6 +29,7 @@ import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { notificationEl } from '@/lib/notification-text';
 
 const TYPE_GLYPH: Record<string, CfbGlyphName> = {
   message: 'messages',
@@ -256,7 +257,7 @@ export function NotificationsBell({ className }: { className?: string }) {
                       !notification.readAt ? 'font-semibold text-foreground' : 'font-medium text-foreground/80',
                     )}
                   >
-                    {notification.title}
+                    <BilingualText en={notification.title} el={notificationEl(notification.title)} compact wrap />
                   </p>
                   <span className="mt-0.5 shrink-0 text-2xs text-muted-foreground">
                     <RelativeTime date={notification.createdAt} format={formatRelativeTime} />

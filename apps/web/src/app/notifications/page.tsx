@@ -42,6 +42,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
 import { elWord } from '@/lib/rows-el';
 import { useInvestorFollowUps } from '@/lib/follow-ups';
+import { notificationEl } from '@/lib/notification-text';
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
   connection: UserPlus,
@@ -201,10 +202,10 @@ const NotificationRow = memo(function NotificationRow({
               onClick={() => onRead(item.id)}
               className={cn("block first-letter:uppercase after:absolute after:inset-0 after:content-[''] hover:underline", !isUnread && 'text-foreground/80')}
             >
-              {item.title}
+              <BilingualText en={item.title} el={notificationEl(item.title)} compact wrap />
             </Link>
           ) : (
-            <span className={cn('block first-letter:uppercase', !isUnread && 'text-foreground/80')}>{item.title}</span>
+            <span className={cn('block first-letter:uppercase', !isUnread && 'text-foreground/80')}><BilingualText en={item.title} el={notificationEl(item.title)} compact wrap /></span>
           )}
           subtitle={typeLabel
             ? <BilingualText en={typeLabel.en} el={typeLabel.el} compact />
@@ -212,7 +213,7 @@ const NotificationRow = memo(function NotificationRow({
           aside={<RelativeTime date={item.createdAt} absoluteAfterDays={7} />}
         />
         {item.body && (
-          <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground first-letter:uppercase">{item.body}</p>
+          <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground first-letter:uppercase"><BilingualText en={item.body} el={notificationEl(item.body)} compact wrap /></p>
         )}
         {/* Always shown: at opacity-0 until hover the three actions were
             invisible on touch screens yet still took taps, and on a desktop
@@ -472,7 +473,7 @@ export default function NotificationsPage() {
         `${n.readAt ? '' : '(unread) '}${n.savedAt ? '(saved) ' : ''}${n.title}${n.body ? ` · ${n.body}` : ''} · ${n.type} · ${n.createdAt.slice(0, 10)}`,
       ),
       rowsEl: isLoading ? undefined : notifications.map((n) =>
-        `${n.readAt ? '' : '(αδιάβαστη) '}${n.savedAt ? '(αποθηκευμένη) ' : ''}${n.title}${n.body ? ` · ${n.body}` : ''} · ${elWord(n.type)} · ${n.createdAt.slice(0, 10)}`,
+        `${n.readAt ? '' : '(αδιάβαστη) '}${n.savedAt ? '(αποθηκευμένη) ' : ''}${notificationEl(n.title)}${n.body ? ` · ${notificationEl(n.body)}` : ''} · ${elWord(n.type)} · ${n.createdAt.slice(0, 10)}`,
       ),
     },
   ]);

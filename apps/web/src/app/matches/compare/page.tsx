@@ -26,6 +26,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { elWord } from '@/lib/rows-el';
+import { Card, CardContent } from '@/components/ui/card';
 
 /*
  * Matches side by side.
@@ -159,6 +160,64 @@ export default function MatchComparePage() {
     },
   ]);
 
+  const removeButton = (person: (typeof people)[number]) => (
+    <Button aria-label={bilingualAria(`Remove ${person.displayName} from the comparison`, `Αφαίρεση από τη σύγκριση: ${person.displayName}`)} variant="ghost" size="icon" className="absolute right-2 top-2 h-7 w-7" onClick={() => remove(person.userId)}>
+      <X className="icon-sm" aria-hidden="true" />
+    </Button>
+  );
+  const personHead = (person: (typeof people)[number], i: number) => (
+    <>
+    {/* Each column's head is a card's head: the circle, the
+        name with the role, the headline and the place. */}
+    <CardHead
+      className="pr-8"
+      titleAs="p"
+      mark={(
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={person.avatarUrl ?? undefined} alt="" />
+          <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(person.displayName)}</AvatarFallback>
+        </Avatar>
+      )}
+      title={(
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+          <PersonHovercard userId={person.userId}><Link href={`/profiles/${person.userId}`} className="transition-colors hover:text-primary-accessible">{person.displayName}</Link></PersonHovercard>
+          <RoleBadge role={person.role} size="sm" />
+        </span>
+      )}
+      subtitle={person.headline ? <span className="line-clamp-2">{person.headline}</span> : undefined}
+      meta={person.location ?? undefined}
+    />
+    <div className="mt-3 flex items-baseline gap-2">
+      <span className="page-stat text-2xl font-semibold tabular-nums text-primary-accessible">{scoreOf(i) ?? '—'}%</span>
+      {overallLeader === i && (
+        <Badge variant="success" size="sm" className="gap-1"><Crown className="h-3 w-3" aria-hidden="true" /><BilingualText en="Highest" el="Υψηλότερη" compact /></Badge>
+      )}
+    </div>
+    {breakdowns[i]?.overall?.confidence != null && (
+      <p className="text-xs text-muted-foreground"><BilingualText en={`${breakdowns[i]?.overall?.confidence}% confidence`} el={`${breakdowns[i]?.overall?.confidence}% βεβαιότητα`} compact /></p>
+    )}
+    <div className="mt-3 flex gap-2">
+      <MessageButton userId={person.userId} displayName={person.displayName} variant="default" className="flex-1" />
+      <ConnectButton userId={person.userId} displayName={person.displayName} variant="outline" className="flex-1" />
+    </div>
+    </>
+  );
+  const skillsOf = (person: (typeof people)[number]) => (
+    <FactLine className="text-foreground sm:text-sm" items={(person.skillNames.length ? person.skillNames : person.skills ?? []).slice(0, 6)} />
+  );
+  const strengthsOf = (i: number) => (
+    <ul className="space-y-1.5 text-muted-foreground">
+      {strengthTerms(breakdowns[i]?.strengthItems).slice(0, 4).map((t) => <li key={t.en}><BilingualText en={t.en} el={t.el} compact wrap /></li>)}
+      {!breakdownQueries[i]?.isLoading && !strengthTerms(breakdowns[i]?.strengthItems).length && <li>{'—'}</li>}
+    </ul>
+  );
+  const frictionsOf = (i: number) => (
+    <ul className="space-y-1.5 text-muted-foreground">
+      {(breakdowns[i]?.frictionItems ?? []).map(frictionCopy).filter((f): f is { en: string; el: string } => f !== null).slice(0, 4).map((f) => <li key={f.en}><BilingualText en={f.en} el={f.el} compact wrap /></li>)}
+      {!breakdownQueries[i]?.isLoading && !(breakdowns[i]?.frictionItems ?? []).length && <li>{'—'}</li>}
+    </ul>
+  );
+
   return (
     <AppShell title="Compare matches" titleEl="Σύγκριση αντιστοιχίσεων" description="Open two or more match profiles side by side to weigh fit." descriptionEl="Ανοίξτε δύο ή περισσότερα προφίλ δίπλα-δίπλα για να κρίνετε πόσο ταιριάζουν.">
       <div className="space-y-6">
@@ -166,12 +225,12 @@ export default function MatchComparePage() {
           <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back. Πίσω">
             <ArrowLeft className="icon-md" />
           </Button>
-          <p className="min-w-0 flex-1 text-sm text-muted-foreground">
+          <p className="min-w-0 flex-1 basis-[calc(100%-3.5rem)] text-sm text-muted-foreground sm:basis-0">
             <BilingualText en={`Compare up to ${MAX} of your matches side by side.`} el={`Συγκρίνετε έως ${MAX} αντιστοιχίσεις δίπλα-δίπλα.`} />
           </p>
           {people.length < MAX && addable.length > 0 && (
             <Select value="" onValueChange={add}>
-              <SelectTrigger aria-label="Add a match to compare. Προσθήκη αντιστοίχισης για σύγκριση" className="w-[220px]">
+              <SelectTrigger aria-label="Add a match to compare. Προσθήκη αντιστοίχισης για σύγκριση" className="w-full sm:w-[220px]">
                 <Plus className="mr-1.5 icon-sm" aria-hidden="true" />
                 <SelectValue placeholder={sayOne("Add a match", "Προσθήκη αντιστοίχισης")} />
               </SelectTrigger>
@@ -219,8 +278,65 @@ export default function MatchComparePage() {
           </SectionCard>
         )}
 
+        {/* A label column and a person side by side do not fit a phone: the table
+            cut the name, the headline and Connect at the edge. */}
         {people.length > 0 && (
-          <div className="overflow-x-auto rounded-xl border border-border bg-card">
+          <div className="space-y-4 sm:hidden" data-compare-phone="">
+            {people.map((person, i) => (
+              <Card key={person.userId} className="relative">
+                <CardContent className="space-y-3">
+                  {removeButton(person)}
+                  {personHead(person, i)}
+                  <div className="space-y-1 border-t border-border pt-3">
+                    <p className="text-xs font-medium text-muted-foreground"><BilingualText en="Skills" el="Δεξιότητες" compact /></p>
+                    {skillsOf(person)}
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground"><BilingualText en="Strengths" el="Δυνατά σημεία" compact /></p>
+                    {strengthsOf(i)}
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground"><BilingualText en="Considerations" el="Σημεία προσοχής" compact /></p>
+                    {frictionsOf(i)}
+                  </div>
+                  {person.availability || person.lookingFor ? (
+                    <p className="text-sm text-muted-foreground">{[person.availability, person.lookingFor].filter(Boolean).join(' · ')}</p>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ))}
+            {people.length > 1 ? (
+              <Card>
+                <CardContent className="space-y-4">
+                  <h2 className="card-title"><BilingualText en="Dimension by dimension" el="Ανά διάσταση" compact /></h2>
+                  {axes.map(([key, label]) => {
+                    const values = people.map((_, i) => axisScore(i, key));
+                    const lead = leaderOf(values);
+                    return (
+                      <div key={key} className="space-y-1.5">
+                        <p className="text-xs font-medium text-muted-foreground"><BilingualText en={axisCopy(key, label).en} el={axisCopy(key, label).el} compact /></p>
+                        {people.map((person, i) => (
+                          <div key={person.userId} className="flex items-center gap-2 text-sm">
+                            <span className="w-24 shrink-0 truncate text-foreground">{person.displayName.split(' ')[0]}</span>
+                            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+                              <span className={cn('block h-full rounded-full', lead === i ? 'bg-status-success-mark' : 'bg-primary/60')} style={{ width: `${values[i] ?? 0}%` }} />
+                            </span>
+                            <span className={cn('w-10 text-right tabular-nums', lead === i ? 'font-semibold text-status-success' : 'text-muted-foreground')}>
+                              {values[i] == null ? '—' : `${values[i]}%`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            ) : null}
+          </div>
+        )}
+
+        {people.length > 0 && (
+          <div className="hidden overflow-x-auto rounded-xl border border-border bg-card sm:block">
             <table className="w-full min-w-[640px] border-collapse text-sm">
               <caption className="sr-only"><BilingualText en="Your matches compared, dimension by dimension" el="Οι αντιστοιχίσεις σας συγκριτικά, διάσταση προς διάσταση" wrap /></caption>
               <thead>
@@ -230,42 +346,8 @@ export default function MatchComparePage() {
                   </th>
                   {people.map((person, i) => (
                     <th key={person.userId} scope="col" className="relative p-4 text-left align-top font-normal">
-                      <Button aria-label={bilingualAria(`Remove ${person.displayName} from the comparison`, `Αφαίρεση από τη σύγκριση: ${person.displayName}`)} variant="ghost" size="icon" className="absolute right-2 top-2 h-7 w-7" onClick={() => remove(person.userId)}>
-                        <X className="icon-sm" aria-hidden="true" />
-                      </Button>
-                      {/* Each column's head is a card's head: the circle, the
-                          name with the role, the headline and the place. */}
-                      <CardHead
-                        className="pr-8"
-                        titleAs="p"
-                        mark={(
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={person.avatarUrl ?? undefined} alt="" />
-                            <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(person.displayName)}</AvatarFallback>
-                          </Avatar>
-                        )}
-                        title={(
-                          <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                            <PersonHovercard userId={person.userId}><Link href={`/profiles/${person.userId}`} className="transition-colors hover:text-primary-accessible">{person.displayName}</Link></PersonHovercard>
-                            <RoleBadge role={person.role} size="sm" />
-                          </span>
-                        )}
-                        subtitle={person.headline ? <span className="line-clamp-2">{person.headline}</span> : undefined}
-                        meta={person.location ?? undefined}
-                      />
-                      <div className="mt-3 flex items-baseline gap-2">
-                        <span className="page-stat text-2xl font-semibold tabular-nums text-primary-accessible">{scoreOf(i) ?? '—'}%</span>
-                        {overallLeader === i && (
-                          <Badge variant="success" size="sm" className="gap-1"><Crown className="h-3 w-3" aria-hidden="true" /><BilingualText en="Highest" el="Υψηλότερη" compact /></Badge>
-                        )}
-                      </div>
-                      {breakdowns[i]?.overall?.confidence != null && (
-                        <p className="text-xs text-muted-foreground"><BilingualText en={`${breakdowns[i]?.overall?.confidence}% confidence`} el={`${breakdowns[i]?.overall?.confidence}% βεβαιότητα`} compact /></p>
-                      )}
-                      <div className="mt-3 flex gap-2">
-                        <MessageButton userId={person.userId} displayName={person.displayName} variant="default" className="flex-1" />
-                        <ConnectButton userId={person.userId} displayName={person.displayName} variant="outline" className="flex-1" />
-                      </div>
+                      {removeButton(person)}
+                      {personHead(person, i)}
                     </th>
                   ))}
                 </tr>
@@ -296,7 +378,7 @@ export default function MatchComparePage() {
                   <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground"><BilingualText en="Skills" el="Δεξιότητες" compact /></th>
                   {people.map((person) => (
                     <td key={person.userId} className="p-4 align-top">
-                      <FactLine className="text-foreground sm:text-sm" items={(person.skillNames.length ? person.skillNames : person.skills ?? []).slice(0, 6)} />
+                      {skillsOf(person)}
                     </td>
                   ))}
                 </tr>
@@ -306,10 +388,7 @@ export default function MatchComparePage() {
                   </th>
                   {people.map((person, i) => (
                     <td key={person.userId} className="p-4 align-top">
-                      <ul className="space-y-1.5 text-muted-foreground">
-                        {strengthTerms(breakdowns[i]?.strengthItems).slice(0, 4).map((t) => <li key={t.en}><BilingualText en={t.en} el={t.el} compact wrap /></li>)}
-                        {!breakdownQueries[i]?.isLoading && !strengthTerms(breakdowns[i]?.strengthItems).length && <li>{'—'}</li>}
-                      </ul>
+                      {strengthsOf(i)}
                     </td>
                   ))}
                 </tr>
@@ -319,10 +398,7 @@ export default function MatchComparePage() {
                   </th>
                   {people.map((person, i) => (
                     <td key={person.userId} className="p-4 align-top">
-                      <ul className="space-y-1.5 text-muted-foreground">
-                        {(breakdowns[i]?.frictionItems ?? []).map(frictionCopy).filter((f): f is { en: string; el: string } => f !== null).slice(0, 4).map((f) => <li key={f.en}><BilingualText en={f.en} el={f.el} compact wrap /></li>)}
-                        {!breakdownQueries[i]?.isLoading && !(breakdowns[i]?.frictionItems ?? []).length && <li>{'—'}</li>}
-                      </ul>
+                      {frictionsOf(i)}
                     </td>
                   ))}
                 </tr>

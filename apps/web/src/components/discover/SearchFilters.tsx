@@ -284,14 +284,15 @@ export function SearchFilters({
                 while the field is empty and Enter reads words at all. Each is
                 a button that types itself, so the syntax is learned by use. */}
             {onSearchAsTyped && !filters.q && (
-              <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-muted-foreground" data-search-qualifiers="">
-                <span><BilingualText en="Or narrow with" el="Ή περιορίστε με" compact /></span>
+              // One line that scrolls on a phone: wrapped, these rows put the first result under the fold.
+              <p className="mt-1.5 flex items-center gap-x-2 gap-y-1 overflow-x-auto text-2xs text-muted-foreground sm:flex-wrap sm:overflow-visible" data-search-qualifiers="">
+                <span className="shrink-0"><BilingualText en="Or narrow with" el="Ή περιορίστε με" compact /></span>
                 {SEARCH_QUALIFIER_EXAMPLES.map((q) => (
                   <button
                     key={q.en}
                     type="button"
                     onClick={() => updateFilter('q', `${primaryIsGreek ? q.el : q.en} `)}
-                    className="rounded border border-input bg-transparent px-1.5 py-px font-mono text-2xs text-muted-foreground hover:border-foreground/25 hover:text-foreground"
+                    className="shrink-0 rounded border border-input bg-transparent px-1.5 py-px font-mono text-2xs text-muted-foreground hover:border-foreground/25 hover:text-foreground"
                   >
                     {primaryIsGreek ? q.el : q.en}
                   </button>
@@ -520,16 +521,18 @@ export function SearchFilters({
         </Sheet>
         </div>
 
-        <Button onClick={onSearch} disabled={loading} className="min-h-10 w-full gap-2 sm:w-auto">
-          <Search className="h-4 w-4 sm:hidden" />
-          {loading ? <BilingualText en="Searching…" el="Αναζήτηση…" compact /> : <BilingualText en="Search" el="Αναζήτηση" compact />}
-        </Button>
-        {onSaveSearch && (
-          <Button variant="outline" onClick={onSaveSearch} className="min-h-10 w-full gap-2 sm:w-auto">
-            <Bookmark className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Save search" el="Αποθήκευση αναζήτησης" compact />
+        <div className="flex min-w-0 gap-2 sm:contents">
+          <Button onClick={onSearch} disabled={loading} className="min-h-10 flex-1 gap-2 sm:flex-none">
+            <Search className="h-4 w-4 sm:hidden" />
+            {loading ? <BilingualText en="Searching…" el="Αναζήτηση…" compact /> : <BilingualText en="Search" el="Αναζήτηση" compact />}
           </Button>
-        )}
+          {onSaveSearch && (
+            <Button variant="outline" onClick={onSaveSearch} className="min-h-10 flex-1 gap-2 sm:flex-none">
+              <Bookmark className="icon-sm" aria-hidden="true" />
+              <BilingualText en="Save search" el="Αποθήκευση αναζήτησης" compact />
+            </Button>
+          )}
+        </div>
       </div>
 
       {preview.length > 0 && (
