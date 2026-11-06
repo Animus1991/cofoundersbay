@@ -1,6 +1,6 @@
 import { ASSISTANT_FEEDBACK_REASONS, type AssistantFeedbackReason } from '@cofounderbay/shared';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsIn, IsOptional, IsString, Length, Matches } from 'class-validator';
+import { IsIn, IsOptional, IsString, Length, Matches } from 'class-validator';
+import { IsStrictBoolean } from '../../common/strict-boolean';
 
 /**
  * `PUT /ai/answers/:answerId/feedback`. A reason comes from the fixed list and
@@ -8,9 +8,7 @@ import { IsBoolean, IsIn, IsOptional, IsString, Length, Matches } from 'class-va
  * travel in here.
  */
 export class SetAnswerFeedbackDto {
-  // The raw value: the global pipe's implicit conversion turns any string into true.
-  @Transform(({ obj }) => (obj as { helpful?: unknown }).helpful)
-  @IsBoolean()
+  @IsStrictBoolean()
   helpful!: boolean;
 
   @IsOptional()

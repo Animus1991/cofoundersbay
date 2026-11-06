@@ -1,4 +1,5 @@
-import { IsBoolean, IsIn, IsOptional } from 'class-validator';
+import { IsIn, IsOptional } from 'class-validator';
+import { IsStrictBoolean } from '../../common/strict-boolean';
 
 export const DIGEST_TYPES = ['daily', 'weekly', 'monthly'] as const;
 
@@ -9,12 +10,12 @@ export class SendTestDigestDto {
 }
 
 export class UpdateDigestPreferencesDto {
-  @IsOptional() @IsBoolean() daily?: boolean;
-  @IsOptional() @IsBoolean() weekly?: boolean;
-  @IsOptional() @IsBoolean() monthly?: boolean;
-  @IsOptional() @IsBoolean() connections?: boolean;
-  @IsOptional() @IsBoolean() messages?: boolean;
-  @IsOptional() @IsBoolean() opportunities?: boolean;
-  @IsOptional() @IsBoolean() events?: boolean;
-  @IsOptional() @IsBoolean() updates?: boolean;
+  @IsOptional() @IsStrictBoolean() daily?: boolean;
+  @IsOptional() @IsStrictBoolean() weekly?: boolean;
+  @IsOptional() @IsStrictBoolean() monthly?: boolean;
+  @IsOptional() @IsStrictBoolean() connections?: boolean;
+  @IsOptional() @IsStrictBoolean() messages?: boolean;
+  @IsOptional() @IsStrictBoolean() opportunities?: boolean;
+  @IsOptional() @IsStrictBoolean() events?: boolean;
+  @IsOptional() @IsStrictBoolean() updates?: boolean;
 }

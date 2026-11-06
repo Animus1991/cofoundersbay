@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsIn, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
+import { IsIn, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
+import { IsStrictBoolean } from '../../common/strict-boolean';
 
 /** The feedback values a match outcome can hold (`MatchFeedbackType`). */
 export const MATCH_FEEDBACK_VALUES = ['accepted', 'declined', 'ignored', 'not_relevant', 'not_now', 'better_fit_wanted'] as const;
@@ -9,10 +10,10 @@ export class MatchOutcomeSnapshotDto {
   @IsIn(MATCH_FEEDBACK_VALUES as unknown as string[])
   feedback!: (typeof MATCH_FEEDBACK_VALUES)[number];
 
-  @IsBoolean()
+  @IsStrictBoolean()
   connectionStarted!: boolean;
 
-  @IsBoolean()
+  @IsStrictBoolean()
   conversationStarted!: boolean;
 }
 

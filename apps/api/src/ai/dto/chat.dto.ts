@@ -1,5 +1,6 @@
-import { IsIn, IsString, IsOptional, IsArray, ValidateNested, IsEnum, IsNumber, IsBoolean } from 'class-validator';
+import { IsIn, IsString, IsOptional, IsArray, ValidateNested, IsEnum, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsStrictBoolean } from '../../common/strict-boolean';
 
 export class ChatMessageDto {
   /**
@@ -54,7 +55,7 @@ export class ChatRequestDto {
    * default on is a decision for whenever a tool-capable model is the
    * configured one.
    */
-  @IsBoolean()
+  @IsStrictBoolean()
   @IsOptional()
   enableTools?: boolean;
 }
@@ -100,35 +101,35 @@ export class UpdateAIPreferencesDto {
   @IsOptional()
   responseLanguage?: string;
 
-  @IsBoolean()
+  @IsStrictBoolean()
   @IsOptional()
   useEmoji?: boolean;
 
-  @IsBoolean()
+  @IsStrictBoolean()
   @IsOptional()
   enableStreaming?: boolean;
 
-  @IsBoolean()
+  @IsStrictBoolean()
   @IsOptional()
   enableSuggestions?: boolean;
 
-  @IsBoolean()
+  @IsStrictBoolean()
   @IsOptional()
   enableContextMemory?: boolean;
 
-  @IsBoolean()
+  @IsStrictBoolean()
   @IsOptional()
   enableAutoSave?: boolean;
 
-  @IsBoolean()
+  @IsStrictBoolean()
   @IsOptional()
   saveConversations?: boolean;
 
-  @IsBoolean()
+  @IsStrictBoolean()
   @IsOptional()
   shareForTraining?: boolean;
 
-  @IsBoolean()
+  @IsStrictBoolean()
   @IsOptional()
   anonymizeData?: boolean;
 

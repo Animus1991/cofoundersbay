@@ -2,7 +2,6 @@ import {
   IsString,
   IsOptional,
   IsEnum,
-  IsBoolean,
   IsInt,
   IsObject,
   IsArray,
@@ -14,6 +13,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsStrictBoolean } from '../../common/strict-boolean';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Enums (matching Prisma schema)
@@ -325,7 +325,7 @@ export class UpdateDocumentSectionDto {
   content?: Record<string, any>;
 
   @IsOptional()
-  @IsBoolean()
+  @IsStrictBoolean()
   isComplete?: boolean;
 
   @IsOptional()
@@ -347,15 +347,15 @@ export class AddCollaboratorDto {
   role!: BuilderCollaboratorRole;
 
   @IsOptional()
-  @IsBoolean()
+  @IsStrictBoolean()
   notifyOnComments?: boolean;
 
   @IsOptional()
-  @IsBoolean()
+  @IsStrictBoolean()
   notifyOnChanges?: boolean;
 
   @IsOptional()
-  @IsBoolean()
+  @IsStrictBoolean()
   notifyOnReviews?: boolean;
 }
 
@@ -365,19 +365,19 @@ export class UpdateCollaboratorDto {
   role?: BuilderCollaboratorRole;
 
   @IsOptional()
-  @IsBoolean()
+  @IsStrictBoolean()
   isActive?: boolean;
 
   @IsOptional()
-  @IsBoolean()
+  @IsStrictBoolean()
   notifyOnComments?: boolean;
 
   @IsOptional()
-  @IsBoolean()
+  @IsStrictBoolean()
   notifyOnChanges?: boolean;
 
   @IsOptional()
-  @IsBoolean()
+  @IsStrictBoolean()
   notifyOnReviews?: boolean;
 }
 
@@ -533,7 +533,7 @@ export class UpdateReadinessCriterionDto {
   @IsString()
   criterionId!: string;
 
-  @IsBoolean()
+  @IsStrictBoolean()
   completed!: boolean;
 
   @IsOptional()
@@ -666,7 +666,7 @@ export class CreateTemplateDto {
   stage?: string;
 
   @IsOptional()
-  @IsBoolean()
+  @IsStrictBoolean()
   isPublic?: boolean;
 }
 

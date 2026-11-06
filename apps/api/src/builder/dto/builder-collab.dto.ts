@@ -2,7 +2,6 @@ import {
   IsString,
   IsOptional,
   IsEnum,
-  IsBoolean,
   IsInt,
   IsUUID,
   IsDateString,
@@ -13,6 +12,7 @@ import {
   MinLength,
   Min,
 } from 'class-validator';
+import { IsStrictBoolean } from '../../common/strict-boolean';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Enums (matching Prisma schema Phase 1 additions)
@@ -225,7 +225,7 @@ export class CreateShareLinkDto {
 
 export class UpdateShareLinkDto {
   @IsOptional()
-  @IsBoolean()
+  @IsStrictBoolean()
   isActive?: boolean;
 
   @IsOptional()
