@@ -206,13 +206,13 @@ export default function MatchComparePage() {
     <FactLine className="text-foreground sm:text-sm" items={(person.skillNames.length ? person.skillNames : person.skills ?? []).slice(0, 6)} />
   );
   const strengthsOf = (i: number) => (
-    <ul className="space-y-1.5 text-muted-foreground">
+    <ul className="space-y-1.5 text-sm text-muted-foreground">
       {strengthTerms(breakdowns[i]?.strengthItems).slice(0, 4).map((t) => <li key={t.en}><BilingualText en={t.en} el={t.el} compact wrap /></li>)}
       {!breakdownQueries[i]?.isLoading && !strengthTerms(breakdowns[i]?.strengthItems).length && <li>{'—'}</li>}
     </ul>
   );
   const frictionsOf = (i: number) => (
-    <ul className="space-y-1.5 text-muted-foreground">
+    <ul className="space-y-1.5 text-sm text-muted-foreground">
       {(breakdowns[i]?.frictionItems ?? []).map(frictionCopy).filter((f): f is { en: string; el: string } => f !== null).slice(0, 4).map((f) => <li key={f.en}><BilingualText en={f.en} el={f.el} compact wrap /></li>)}
       {!breakdownQueries[i]?.isLoading && !(breakdowns[i]?.frictionItems ?? []).length && <li>{'—'}</li>}
     </ul>

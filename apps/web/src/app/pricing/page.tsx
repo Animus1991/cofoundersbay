@@ -359,14 +359,14 @@ export default function PricingPage() {
           {/* A phone reads one plan at a time: five columns needed a sideways scroll,
               on the page where a visitor decides. */}
           <div className="space-y-3 sm:hidden" data-pricing-phone="">
-            <div className="grid grid-cols-4 gap-1 rounded-xl bg-secondary/50 p-1" role="group" aria-label={bilingualAria('Plan to read', 'Πλάνο προς ανάγνωση')}>
+            <div className="flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1" role="group" aria-label={bilingualAria('Plan to read', 'Πλάνο προς ανάγνωση')}>
               {COMPARE_PLANS.map((plan) => (
                 <button
                   key={plan.key}
                   type="button"
                   aria-pressed={phonePlan === plan.key}
                   onClick={() => setPhonePlan(plan.key)}
-                  className={cn('min-w-0 rounded-lg px-1 py-2 text-sm font-medium transition-all', phonePlan === plan.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+                  className={cn('rounded-lg px-3 py-2 text-sm font-medium transition-all', phonePlan === plan.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
                 >
                   <BilingualText en={plan.en} el={plan.el} compact />
                 </button>
