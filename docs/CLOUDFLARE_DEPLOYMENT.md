@@ -60,6 +60,45 @@ bundle.
    Workers Paid. `pnpm exec wrangler deploy --dry-run --outdir /tmp/w` in
    `apps/web` after `pnpm run cf:build` prints the current figure.
 
+## Readiness
+
+`node scripts/check-cloudflare-readiness.mjs` checks what can be checked without
+an account: the worker config, the KV pairing that failed the first deploy, the
+workflow's order and variables, and that uploads stay out of git. It needs no
+secrets and changes nothing.
+
+Cloudflare carries the **web app only**. The API is a long-running NestJS server
+with Prisma, WebSockets and file handling, so it needs its own host, and the web
+app cannot do anything real until `NEXT_PUBLIC_API_URL` points at it.
+
+What only the owner can add, in order:
+
+1. **An API host** (any Node 22 server or container) with PostgreSQL. Start it
+   with `node dist/main` after `pnpm --filter @cofounderbay/api build`.
+2. **The database**, built by migrations: `prisma migrate deploy`. A database
+   made earlier with `db push` is recorded once with `pnpm db:baseline`.
+3. **API secrets**, from `apps/api/.env.example`: `DATABASE_URL`,
+   `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `FRONTEND_URL` and the SMTP values.
+4. **Private file storage for the data room.** Set `AWS_S3_BUCKET`,
+   `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (`AWS_S3_ENDPOINT` for an
+   S3-compatible store such as Cloudflare R2), and install `@aws-sdk/client-s3`
+   on the host. Files go under `private/`: a bucket policy that opens `uploads/`
+   to a CDN must not open that prefix. Without these the files sit on the API
+   host's disk, in `apps/api/private-uploads`, so that disk must survive a
+   redeploy and be backed up.
+5. **GitHub**: the secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`,
+   and the variables `NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_API_URL` (steps 1–3
+   of the one-time setup above).
+6. **Cloudflare**: Workers Paid (see *Plan size*), and a custom domain with a
+   wildcard route for tenants (see *Multi-tenant note*).
+7. **The first deploy**: run the workflow by hand with `environment: preview`
+   before merging to `main`, which deploys on every push.
+
+After the first deploy, check against the real origin: sign-up and sign-in
+(cookies and CSRF cross origins), one file upload and download, and the browser
+console for CSP refusals. `scripts/isolated-backend-docker.cjs` proves the API
+and its migrations on a throwaway database, not this cross-origin path.
+
 ## Deploying by hand
 
 ```bash
