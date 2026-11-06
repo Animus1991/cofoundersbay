@@ -76,6 +76,7 @@ export const CAPABILITY_SAMPLES: Record<string, { en: string; el: string }> = {
   create_milestone: { en: 'Add a milestone: close the pre-seed round by June', el: 'Πρόσθεσε ορόσημο: κλείσιμο pre-seed γύρου ως τον Ιούνιο' },
   set_theme: { en: 'Switch to the dark theme', el: 'Βάλε σκοτεινό θέμα' },
   set_language: { en: 'Change the language to English', el: 'Άλλαξε τη γλώσσα σε ελληνικά' },
+  set_pitch_slide: { en: 'Rewrite slide 2 to: Founders lose weeks on the wrong co-founder', el: 'Άλλαξε τη διαφάνεια Πρόβλημα σε: Οι ιδρυτές χάνουν εβδομάδες' },
   set_investor_followup: { en: 'Remind me to send Nikos the deck on Friday', el: 'Θύμισέ μου να στείλω στον Νίκο το deck την Παρασκευή' },
   update_milestone_status: { en: 'Mark the pitch deck milestone as done', el: 'Ολοκλήρωσε το ορόσημο του pitch deck' },
   rsvp_event: { en: 'RSVP me as going to the demo day', el: 'Δήλωσέ με συμμετέχοντα στο demo day' },

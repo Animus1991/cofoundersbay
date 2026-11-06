@@ -1457,6 +1457,40 @@ export const ACTION_DECLARATIONS = [
     confirmLabel: { en: 'Change theme', el: 'Αλλαγή θέματος' },
   },
   {
+    id: 'set_pitch_slide',
+    kind: 'mutation',
+    label: { en: 'Rewrite a slide', el: 'Αλλαγή κειμένου διαφάνειας' },
+    description: {
+      en: 'Replace the text of one slide in the open pitch deck, and save the deck.',
+      el: 'Αντικαθιστά το κείμενο μιας διαφάνειας στο ανοιχτό pitch deck και το αποθηκεύει.',
+    },
+    params: [
+      {
+        name: 'slide',
+        type: 'string',
+        required: true,
+        description: { en: 'The slide, by number or by title.', el: 'Η διαφάνεια, με αριθμό ή τίτλο.' },
+      },
+      {
+        name: 'content',
+        type: 'string',
+        required: true,
+        description: { en: 'The new text of the slide.', el: 'Το νέο κείμενο της διαφάνειας.' },
+      },
+    ],
+    writes: true,
+    invalidates: [],
+    reversal: {
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible. The undo puts back the text the slide had, and saves the deck.',
+        el: 'Πλήρως αναστρέψιμο. Η αναίρεση επαναφέρει το κείμενο που είχε η διαφάνεια και αποθηκεύει το deck.',
+      },
+    },
+    navigatesOnSuccess: false,
+    confirmLabel: { en: 'Rewrite slide', el: 'Αλλαγή διαφάνειας' },
+  },
+  {
     id: 'set_language',
     kind: 'mutation',
     label: { en: 'Change the language', el: 'Αλλαγή γλώσσας' },

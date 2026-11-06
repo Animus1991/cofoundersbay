@@ -66,6 +66,7 @@ import { isPreviewDemo } from '@/lib/preview-demo';
 import { findLeadByName, saveFollowUp } from '@/lib/follow-ups';
 import { APP_LOCALES, applyLocale, getStoredLocale } from '@/lib/locale';
 import { applyTheme, type ThemeName } from '@/lib/themes';
+import { pitchDeckEditor } from '@/lib/pitch-deck-bridge';
 import { demoCriterionState, toggleDemoCriterion } from '@/lib/readiness-demo';
 import { PAGE_REGISTRY, getPageMeta } from '@/lib/page-registry';
 import { runCanvasCommand } from '@/lib/canvas/canvas-command-bus';
@@ -580,6 +581,17 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     if (from === theme) return { ok: false, error: 'That theme is already on' };
     applyTheme(theme as ThemeName);
     return { ok: true, undo: { from } };
+  },
+
+  set_pitch_slide: async (payload) => {
+    const slide = requireString(payload, 'slide');
+    const content = requireString(payload, 'content').trim();
+    if (!slide || !content) return { ok: false, error: 'Say which slide, and what it should read' };
+    const editor = pitchDeckEditor();
+    if (!editor) return { ok: false, error: 'Open the pitch deck first, then ask again' };
+    const change = await editor.setSlide(slide, content);
+    if (!change) return { ok: false, error: `There is no slide "${slide}" in this deck` };
+    return { ok: true, undo: { id: change.id, before: change.before } };
   },
 
   set_language: async (payload) => {
@@ -1158,6 +1170,14 @@ const UNDOS: Record<UndoableActionId, Undo> = {
     if (!THEME_NAMES.includes(from as ThemeName)) return { ok: false, error: 'No previous theme to restore' };
     applyTheme(from as ThemeName);
     return { ok: true };
+  },
+
+  set_pitch_slide: async (_payload, context) => {
+    const id = requireString(context, 'id');
+    const editor = pitchDeckEditor();
+    if (!id || !editor) return { ok: false, error: 'Open the pitch deck first, then undo' };
+    const restored = await editor.restoreSlide(id, requireString(context, 'before'));
+    return restored ? { ok: true } : { ok: false, error: 'That slide is no longer in the deck' };
   },
 
   set_language: async (_payload, context) => {

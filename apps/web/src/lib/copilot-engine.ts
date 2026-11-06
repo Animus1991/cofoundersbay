@@ -1010,11 +1010,13 @@ export async function runCopilotTurn(
 
     // The look, the language and a next step with an investor (docs §112):
     // each card names what it will set, so a confirm is an informed one.
-    if (tool.name === 'set_theme' || tool.name === 'set_language' || tool.name === 'set_investor_followup') {
+    if (tool.name === 'set_theme' || tool.name === 'set_language' || tool.name === 'set_investor_followup' || tool.name === 'set_pitch_slide') {
       const args = tool.args ?? {};
       const target = tool.name === 'set_investor_followup'
         ? [args.investor, args.date, args.step].filter(Boolean).join(' · ')
-        : String(args.theme ?? args.language ?? '');
+        : tool.name === 'set_pitch_slide'
+          ? [args.slide, args.content].filter(Boolean).join(' · ')
+          : String(args.theme ?? args.language ?? '');
       actions.push(
         ...actionsFromToolCalls([{ name: tool.name, args, writes: true, droppedArgs: [] }], replyLocale).map((action) =>
           target ? { ...action, title: `${action.title}: ${target}` } : action,

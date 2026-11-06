@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useId } from 'react';
+import { findSlideIndex, registerPitchDeckEditor } from '@/lib/pitch-deck-bridge';
 import Link from 'next/link';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { demoDeckText } from '@/lib/demo/pitch-greek';
@@ -571,6 +572,39 @@ export function PitchDeckBuilder({
       return { ...prev, slides: next };
     });
   };
+
+  // The assistant's way into the deck: it writes what is on screen and saves it,
+  // so "done" means stored, and Undo has the text the slide had (docs §113).
+  const liveRef = useRef({ data, onSave });
+  liveRef.current = { data, onSave };
+  useEffect(() => {
+    const write = async (id: string, content: string) => {
+      const { data: current, onSave: save } = liveRef.current;
+      const next = { ...current, slides: current.slides.map((slide) => (slide.id === id ? { ...slide, content } : slide)) };
+      setData(next);
+      await save?.(next);
+      savedRef.current = snapshotOf(next);
+    };
+    return registerPitchDeckEditor({
+      setSlide: async (ref, content) => {
+        const { slides } = liveRef.current.data;
+        const index = findSlideIndex(ref, slides.map((slide) => {
+          const template = SLIDE_TEMPLATES.find((item) => item.type === slide.type);
+          return { names: [slide.title, slide.type, ...(template ? [builderEn(template.titleKey), builderEl(template.titleKey)] : [])] };
+        }));
+        const slide = slides[index];
+        if (!slide) return null;
+        await write(slide.id, content);
+        setCurrentSlideIndex(index);
+        return { id: slide.id, before: slide.content };
+      },
+      restoreSlide: async (id, content) => {
+        if (!liveRef.current.data.slides.some((slide) => slide.id === id)) return false;
+        await write(id, content);
+        return true;
+      },
+    });
+  }, []);
 
   const updateSlide = (field: keyof Slide, value: string) => {
     setData((prev) => ({

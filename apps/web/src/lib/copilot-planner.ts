@@ -815,6 +815,14 @@ function detectFollowUp(rawMessage: string): { investor: string; date: string; s
   return { investor: person[1], date, ...(step ? { step } : {}) };
 }
 
+/** «Άλλαξε τη διαφάνεια Πρόβλημα σε: …», "rewrite slide 2 to: …". The colon marks where the new text starts. */
+function detectSlideRewrite(rawMessage: string): { slide: string; content: string } | undefined {
+  const hit = rawMessage.match(/(?:άλλαξε|αλλαξε|ξαναγράψε|ξαναγραψε|γράψε|γραψε|βάλε|βαλε|rewrite|change|update|set)\s+(?:the\s+|τη\s+|την\s+|στη\s+|στην\s+)?(?:slide|διαφάνεια|διαφανεια)\s+(.+?)(?:\s+(?:to|σε))?\s*:\s*(.+)$/iu);
+  const slide = hit?.[1]?.trim();
+  const content = hit?.[2]?.trim();
+  return slide && content ? { slide, content } : undefined;
+}
+
 export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const message = rawMessage.trim().toLowerCase();
   if (!message) return [{ name: 'get_graph', args: {} }];
@@ -1281,6 +1289,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   if (language) add('set_language', { language });
   const followUp = detectFollowUp(rawMessage);
   if (followUp) add('set_investor_followup', followUp);
+  const slideRewrite = detectSlideRewrite(rawMessage);
+  if (slideRewrite) add('set_pitch_slide', slideRewrite);
 
   // How the assistant answers (docs §110): «απάντα πιο σύντομα», "no emoji".
   const replyStyle = detectReplyStyle(rawMessage);
