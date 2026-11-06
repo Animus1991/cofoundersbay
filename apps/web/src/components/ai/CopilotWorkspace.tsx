@@ -98,10 +98,37 @@ function groupActions(actions: CopilotAction[]): Array<{ key: string; group?: Co
   return chunks;
 }
 
+/**
+ * One press for cards proposed together. Only what can be taken back: a card
+ * the registry marks irreversible still asks on its own, so a bulk confirm can
+ * never carry a step someone would have paused on.
+ */
+export function bulkConfirmable(actions: CopilotAction[]): CopilotAction[] {
+  return actions.filter((action) => {
+    const spec = getActionSpec(action.tool);
+    return action.status === 'pending' && !(spec?.writes && spec.reversal?.kind === 'none');
+  });
+}
+
+function ConfirmAll({ actions, busy, onConfirmAll }: {
+  actions: CopilotAction[];
+  busy: boolean;
+  onConfirmAll: (actions: CopilotAction[]) => void;
+}) {
+  const ready = bulkConfirmable(actions);
+  if (ready.length < 2) return null;
+  return (
+    <Button type="button" size="sm" variant="outline" className="h-7 tap-target-y" disabled={busy} onClick={() => onConfirmAll(ready)}>
+      <BilingualText en={`Confirm all ${ready.length}`} el={`Επιβεβαίωση όλων (${ready.length})`} compact />
+    </Button>
+  );
+}
+
 function AssistantBody({
   message,
   pendingActionId,
   onConfirm,
+  onConfirmAll,
   onDismiss,
   onUndo,
   onRetry,
@@ -109,6 +136,7 @@ function AssistantBody({
   message: AIMessage;
   pendingActionId: string | null;
   onConfirm: (action: CopilotAction) => void;
+  onConfirmAll: (actions: CopilotAction[]) => void;
   onDismiss: (action: CopilotAction) => void;
   onUndo: (action: CopilotAction) => void;
   onRetry: () => void;
@@ -163,7 +191,10 @@ function AssistantBody({
             // (docs §107.7-3, §111); each keeps its own confirm and undo.
             return chunk.group ? (
               <section key={chunk.key} aria-label={chunk.group.title} className="space-y-2 rounded-xl border border-border bg-muted/20 p-2.5" data-action-group={chunk.group.id}>
-                <p className="px-0.5 text-xs font-semibold text-foreground">{chunk.group.title}</p>
+                <div className="flex flex-wrap items-center justify-between gap-2 px-0.5">
+                  <p className="text-xs font-semibold text-foreground">{chunk.group.title}</p>
+                  <ConfirmAll actions={chunk.actions} busy={Boolean(pendingActionId)} onConfirmAll={onConfirmAll} />
+                </div>
                 {cards}
               </section>
             ) : cards;
@@ -348,6 +379,15 @@ export function CopilotWorkspace({
     // where you are, because it declares `navigatesOnSuccess` false.
     if (result?.href && getActionSpec(action.tool)?.navigatesOnSuccess) {
       router.push(result.href);
+    }
+  };
+
+  // In order, one at a time, stopping at the first that fails: that card then
+  // shows why, and the rest wait for a decision made with that in view.
+  const handleConfirmAll = async (actions: CopilotAction[]) => {
+    for (const action of actions) {
+      const result = await chat.confirmAction(action);
+      if (result === undefined) return;
     }
   };
 
@@ -607,6 +647,7 @@ export function CopilotWorkspace({
                       message={msg}
                       pendingActionId={chat.pendingActionId}
                       onConfirm={(a) => void handleConfirm(a)}
+                      onConfirmAll={(actions) => void handleConfirmAll(actions)}
                       onDismiss={chat.dismissAction}
                       onUndo={(a) => void chat.undoAction(a)}
                       onRetry={chat.retryLastMessage}

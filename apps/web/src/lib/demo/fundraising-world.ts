@@ -151,6 +151,8 @@ export function previewFundraisingApi(
       notes: orNull(body.notes),
       isVerifiedOnPlatform: false,
       linkedAccount: null,
+      nextFollowUpAt: orNull(body.nextFollowUpAt),
+      nextStep: orNull(body.nextStep),
     };
     const next = { ...world, round, leads: [lead, ...world.leads] };
     write(next);

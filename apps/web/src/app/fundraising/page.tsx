@@ -63,6 +63,7 @@ import {
   type InvestorStatus,
   type DataRoomDoc,
   type DocStatus,
+  setFundraisingFollowUp,
   readDemoRoomShare,
   type DemoRoomShare,
   writeDemoRoomShare,
@@ -71,6 +72,8 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { Counter } from '@/components/ui/counter';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ShareRoomDialog, type ShareDoc, type ShareLead, type ShareRoomActions } from '@/components/fundraising/ShareRoomDialog';
+import { FollowUpDialog } from '@/components/fundraising/FollowUpDialog';
+import { isFollowUpDue, isFollowUpLate, type FollowUpLead } from '@/lib/follow-ups';
 import { qk } from '@/lib/query-keys';
 import {
   ROUND_CURRENCIES,
@@ -173,6 +176,28 @@ function LeadName({ lead, className, as: Tag = 'p' }: { lead: InvestorLead; clas
         ? <BilingualText en={lead.name} el={lead.nameEl} compact wrap={!truncating} />
         : lead.name}
     </Tag>
+  );
+}
+
+/** The next step on a lead: when it is, whether it has come, and the way to change it. */
+function LeadNextStep({ lead, primary, onEdit }: { lead: InvestorLead; primary: 'en' | 'el'; onEdit: (lead: InvestorLead) => void }) {
+  if (!lead.nextFollowUp) {
+    return lead.status === 'committed' || lead.status === 'passed' ? null : (
+      <button type="button" className="tap-extend-y text-left text-xs font-medium text-muted-foreground hover:text-foreground" onClick={() => onEdit(lead)}>
+        <BilingualText en={fundraisingEn('followup_add')} el={fundraisingEl('followup_add')} compact />
+      </button>
+    );
+  }
+  const followUp = lead as FollowUpLead;
+  const late = isFollowUpLate(followUp);
+  const today = !late && isFollowUpDue(followUp);
+  return (
+    <button type="button" className="tap-extend-y block w-full text-left text-xs" onClick={() => onEdit(lead)}>
+      <span className={cn('font-medium', late ? STATUS.warning.text : 'text-foreground')}>
+        {late ? <BilingualText en={fundraisingEn('followup_late')} el={fundraisingEl('followup_late')} compact /> : today ? <BilingualText en={fundraisingEn('followup_today')} el={fundraisingEl('followup_today')} compact /> : formatShortDate(lead.nextFollowUp, primary)}
+      </span>
+      {lead.nextStep ? <span className="text-muted-foreground"> · {lead.nextStep}</span> : null}
+    </button>
   );
 }
 
@@ -638,10 +663,12 @@ function PipelineView({
   leads,
   onAdd,
   onMove,
+  onFollowUp,
 }: {
   leads: InvestorLead[];
   onAdd: (status: InvestorStatus) => void;
   onMove: (id: string, status: InvestorStatus) => void;
+  onFollowUp: (lead: InvestorLead) => void;
 }) {
   const { primary } = useLanguagePreference();
   const byStage = PIPELINE_STAGES.reduce<Record<InvestorStatus, InvestorLead[]>>((acc, s) => {
@@ -694,6 +721,7 @@ function PipelineView({
                             : lead.notes}
                         </p>
                       )}
+                      <LeadNextStep lead={lead} primary={primary} onEdit={onFollowUp} />
                       {lead.lastContact && (
                         <p className="text-xs text-muted-foreground">
                           <BilingualText en={fundraisingEn('last_contact')} el={fundraisingEl('last_contact')} compact />
@@ -1022,10 +1050,12 @@ function DataRoomView({
 function InvestorListView({
   leads,
   onMove,
+  onFollowUp,
   harborLive,
 }: {
   leads: InvestorLead[];
   onMove: (id: string, status: InvestorStatus) => void;
+  onFollowUp: (lead: InvestorLead) => void;
   /** Only the showcase may brief the assistant with Harbor's round. */
   harborLive: boolean;
 }) {
@@ -1075,6 +1105,7 @@ function InvestorListView({
                     : lead.notes}
                 </p>
               )}
+              <LeadNextStep lead={lead} primary={primary} onEdit={onFollowUp} />
               {/* The date says what it is, as the Kanban card does. */}
               <CardFoot
                 meta={lead.lastContact ? (
@@ -1240,6 +1271,7 @@ export default function FundraisingPage() {
    * of its overlay. The member search is the same on both.
    */
   const [shareOpen, setShareOpen] = useState(false);
+  const [followUpFor, setFollowUpFor] = useState<InvestorLead | null>(null);
   const roomShare: DemoRoomShare = hydrated ? readDemoRoomShare() : { links: {}, shared: [] };
   const shareLeads: ShareLead[] = live
     ? (saved?.leads ?? []).map((l) => ({ id: l.id, name: l.investorName, firm: l.investorFirm ?? undefined, account: l.linkedAccount }))
@@ -1510,17 +1542,29 @@ export default function FundraisingPage() {
                 </CardContent>
               </Card>
             ) : (
-              <InvestorListView leads={leads} onMove={handleMove} harborLive={harborLive} />
+              <InvestorListView leads={leads} onMove={handleMove} onFollowUp={setFollowUpFor} harborLive={harborLive} />
             )}
           </TabsContent>
           <TabsContent value="kanban" className="mt-4">
-            <PipelineView leads={leads} onAdd={openAdd} onMove={handleMove} />
+            <PipelineView leads={leads} onAdd={openAdd} onMove={handleMove} onFollowUp={setFollowUpFor} />
           </TabsContent>
           <TabsContent value="dataroom" className="mt-4">
             <DataRoomView docs={docs} onChange={refresh} onShare={() => setShareOpen(true)} actions={roomActions} />
           </TabsContent>
         </Tabs>
         <ShareRoomDialog open={shareOpen} onOpenChange={setShareOpen} leads={shareLeads} docs={shareDocs} actions={shareActions} />
+        <FollowUpDialog
+          lead={followUpFor}
+          onClose={() => setFollowUpFor(null)}
+          onSave={async (leadId, at, step) => {
+            if (live) {
+              keep(await updateFundraisingLead(leadId, { nextFollowUpAt: at, nextStep: step }));
+              return;
+            }
+            setFundraisingFollowUp(leadId, at, step);
+            refresh();
+          }}
+        />
 
         {/* Resources moved to the page rail ('resources' section). */}
         {/* Round size, committed amounts and check sizes appear above. */}

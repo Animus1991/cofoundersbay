@@ -60,7 +60,7 @@ export function partOfDay(hour: number): Part {
  * - Under them, "Your pages": what the reader pinned and opens most, each
  *   with its `G` number (`YourPagesRow`, docs §107).
  */
-export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: string | null; lead?: Part }) {
+export function HomeAskHero({ role, name, lead, followUpsDue = 0 }: { role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number }) {
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
   const popup = usePopupChatOptional();
@@ -68,7 +68,7 @@ export function HomeAskHero({ role, name, lead }: { role: HomeRole; name?: strin
   const pathname = usePathname();
   const boxId = useId();
   const config = HOME_ASK[role];
-  const now = nowStartingPoints(useUnreadCounts());
+  const now = nowStartingPoints({ ...useUnreadCounts(), followUps: followUpsDue });
   const [scopeId, setScopeId] = useState(config.scopes[0]?.id ?? 'all');
   const [value, setValue] = useState('');
   const [part, setPart] = useState<Part | null>(null);

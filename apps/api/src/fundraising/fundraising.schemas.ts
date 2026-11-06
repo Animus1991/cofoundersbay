@@ -29,6 +29,8 @@ export const createLeadSchema = z.object({
   status: z.nativeEnum(InvestorLeadStatus).default(InvestorLeadStatus.prospect),
   committedAmount: amount.nullish(),
   notes: optionalText(2000),
+  nextFollowUpAt: day,
+  nextStep: optionalText(200),
 });
 export const updateLeadSchema = createLeadSchema.partial().extend({
   /** The investor's own account: what lets them open shared files. Null unlinks, and access ends with it. */

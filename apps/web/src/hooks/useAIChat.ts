@@ -96,6 +96,7 @@ export interface UseAIChatReturn {
  * the point — the alternative is a capability that quietly refreshes nothing.
  */
 const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
+  fundraising: [qk('fundraising')],
   connections: [...CONNECTION_KEYS, queryKeys.graphMe],
   messages: [...MESSAGE_KEYS],
   shortlist: [queryKeys.shortlist, queryKeys.shortlistIds],

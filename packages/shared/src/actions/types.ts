@@ -95,6 +95,8 @@ export type InvalidationTopic =
   | 'readiness'
   | 'workspaces'
   | 'investor'
+  /** A founder's round, its investors and the data room (`/fundraising`). */
+  | 'fundraising'
   | 'graph'
   | 'research'
   | 'profile'

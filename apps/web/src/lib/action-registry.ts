@@ -63,6 +63,9 @@ import {
   withdrawConnectionRequest,
 } from '@/lib/api';
 import { isPreviewDemo } from '@/lib/preview-demo';
+import { findLeadByName, saveFollowUp } from '@/lib/follow-ups';
+import { APP_LOCALES, applyLocale, getStoredLocale } from '@/lib/locale';
+import { applyTheme, type ThemeName } from '@/lib/themes';
 import { demoCriterionState, toggleDemoCriterion } from '@/lib/readiness-demo';
 import { PAGE_REGISTRY, getPageMeta } from '@/lib/page-registry';
 import { runCanvasCommand } from '@/lib/canvas/canvas-command-bus';
@@ -123,6 +126,8 @@ type Undo = (
   payload: Record<string, unknown>,
   context: Record<string, unknown>,
 ) => Promise<ActionOutcome>;
+
+const THEME_NAMES: readonly ThemeName[] = ['dark', 'light', 'lilac', 'system', 'alliance', 'cofounder', 'minimal', 'apricot', 'terra'];
 
 function requireString(payload: Record<string, unknown>, key: string): string {
   const value = payload?.[key];
@@ -566,6 +571,40 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     return created?.id
       ? { ok: true, href: '/milestones', undo: { milestoneId: created.id } }
       : { ok: true, href: '/milestones' };
+  },
+
+  set_theme: async (payload) => {
+    const theme = requireString(payload, 'theme');
+    if (!THEME_NAMES.includes(theme as ThemeName)) return { ok: false, error: 'Unknown theme' };
+    const from = window.localStorage.getItem('theme') ?? 'light';
+    if (from === theme) return { ok: false, error: 'That theme is already on' };
+    applyTheme(theme as ThemeName);
+    return { ok: true, undo: { from } };
+  },
+
+  set_language: async (payload) => {
+    const language = requireString(payload, 'language');
+    if (!APP_LOCALES.some((l) => l.value === language)) return { ok: false, error: 'Unknown language' };
+    const from = getStoredLocale();
+    if (from === language) return { ok: false, error: 'That language is already on' };
+    applyLocale(language);
+    return { ok: true, undo: { from } };
+  },
+
+  set_investor_followup: async (payload) => {
+    const investor = requireString(payload, 'investor');
+    const date = requireString(payload, 'date');
+    if (!investor) return { ok: false, error: 'Missing investor' };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok: false, error: 'Use a date like 2026-11-20' };
+    const lead = await findLeadByName(investor);
+    if (!lead) return { ok: false, error: 'No investor by that name on your round' };
+    const step = requireString(payload, 'step') || null;
+    await saveFollowUp(lead.id, date, step);
+    return {
+      ok: true,
+      href: '/fundraising',
+      undo: { leadId: lead.id, fromAt: lead.nextFollowUp ?? null, fromStep: lead.nextStep ?? null },
+    };
   },
 
   update_milestone_status: async (payload) => {
@@ -1112,6 +1151,28 @@ const UNDOS: Record<UndoableActionId, Undo> = {
     if (!milestoneId) return { ok: false, error: 'No milestone to remove' };
     await deleteMilestone(milestoneId);
     return { ok: true, href: '/milestones' };
+  },
+
+  set_theme: async (_payload, context) => {
+    const from = requireString(context, 'from');
+    if (!THEME_NAMES.includes(from as ThemeName)) return { ok: false, error: 'No previous theme to restore' };
+    applyTheme(from as ThemeName);
+    return { ok: true };
+  },
+
+  set_language: async (_payload, context) => {
+    const from = requireString(context, 'from');
+    if (!from) return { ok: false, error: 'No previous language to restore' };
+    applyLocale(from);
+    return { ok: true };
+  },
+
+  /** Puts back the step the investor had, or none. */
+  set_investor_followup: async (_payload, context) => {
+    const leadId = requireString(context, 'leadId');
+    if (!leadId) return { ok: false, error: 'No previous step to restore' };
+    await saveFollowUp(leadId, (context.fromAt as string | null) ?? null, (context.fromStep as string | null) ?? null);
+    return { ok: true, href: '/fundraising' };
   },
 
   /** Restores the status the milestone actually had, not a default. */

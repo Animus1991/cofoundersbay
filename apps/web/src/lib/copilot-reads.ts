@@ -101,6 +101,7 @@ import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
 import { calendarDaysUntil } from '@/lib/calendar-days';
+import { isFollowUpDue, withFollowUps } from '@/lib/follow-ups';
 
 /**
  * What the assistant can read about the product areas it used to be blind to.
@@ -1052,9 +1053,12 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
       const lines = sorted.slice(0, LIMIT).map((l) => {
         const name = el ? l.nameEl ?? l.name : l.name;
         const size = el ? l.checkSizeEl ?? l.checkSize : l.checkSize;
-        return `• **${name}** — ${t(LEAD_STAGE[l.status])}${size ? ` · ${size}` : ''}`;
+        const next = l.nextFollowUp ? ` · ${l.nextFollowUp.slice(0, 10)}${l.nextStep ? `: ${l.nextStep}` : ''}` : '';
+        return `• **${name}** — ${t(LEAD_STAGE[l.status])}${size ? ` · ${size}` : ''}${next}`;
       });
       parts.push(`${t('Investors you are talking to:')}\n${lines.join('\n')}`);
+      const due = withFollowUps(leads).filter(isFollowUpDue);
+      if (due.length) parts.push(`${t('Follow-ups due now:')} ${due.map((l) => (el ? l.nameEl ?? l.name : l.name)).join(', ')}.`);
       if (leads.length > LIMIT) parts.push(t('{count} more on the Fundraising page.', { count: leads.length - LIMIT }));
     }
     if (drafts.length) {

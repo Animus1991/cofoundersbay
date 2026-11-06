@@ -4928,6 +4928,8 @@ model InvestorPipelineLead {
   // Tracking
   lastContactAt    DateTime?
   nextFollowUpAt   DateTime?
+  /// What the founder means to do on that date ("Send the updated deck").
+  nextStep         String?
   meetingScheduledAt DateTime?
   notes            String?            @db.Text
 

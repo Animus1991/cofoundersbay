@@ -225,8 +225,22 @@ export type HomeAskNow = HomeAskAction & { count: number };
  * the chat bubble show, so the numbers agree everywhere; nothing is shown
  * when nothing waits.
  */
-export function nowStartingPoints(counts: { messages: number; intros: number; notifications: number }): HomeAskNow[] {
+export function nowStartingPoints(counts: { messages: number; intros: number; notifications: number; followUps?: number }): HomeAskNow[] {
   const out: HomeAskNow[] = [];
+  if (counts.followUps && counts.followUps > 0) {
+    out.push({
+      id: 'now-followups',
+      en: 'Investor follow-ups',
+      el: 'Follow-up επενδυτών',
+      glyph: 'chart',
+      count: counts.followUps,
+      tool: 'get_fundraising',
+      prompt: {
+        en: 'Which investor follow-ups are due, and what should I say to each one?',
+        el: 'Ποια follow-up επενδυτών έφτασαν, και τι να πω στον καθέναν;',
+      },
+    });
+  }
   if (counts.intros > 0) {
     out.push({
       id: 'now-intros',

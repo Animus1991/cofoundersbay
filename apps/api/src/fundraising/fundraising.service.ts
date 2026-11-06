@@ -28,6 +28,8 @@ function leadView(lead: InvestorPipelineLead, people: Map<string, Person>) {
     committedAmount: money(lead.committedAmount),
     currency: lead.currency,
     lastContactAt: lead.lastContactAt?.toISOString() ?? null,
+    nextFollowUpAt: lead.nextFollowUpAt?.toISOString() ?? null,
+    nextStep: lead.nextStep,
     notes: lead.notes,
     isVerifiedOnPlatform: lead.isVerifiedOnPlatform,
     linkedAccount: lead.platformUserId ? (people.get(lead.platformUserId) ?? null) : null,

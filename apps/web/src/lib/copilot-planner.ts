@@ -751,6 +751,65 @@ export function messageSearchQuery(rawMessage: string): string | null {
  * Rule-based planner used when the LLM has no tools (preview, Ollama down).
  * Returns 1–3 tools; never proposes destructive admin actions.
  */
+const THEME_WORDS: Array<[string[], string]> = [
+  [['dark', 'σκοτειν'], 'dark'],
+  [['lilac', 'λιλα'], 'lilac'],
+  [['terracotta', 'τερακοτα'], 'terra'],
+  [['apricot', 'βερικοκ'], 'apricot'],
+  [['mint', 'μεντα'], 'minimal'],
+  [['light', 'φωτειν'], 'light'],
+];
+
+/** A theme only when the sentence is about the theme: "dark" alone says nothing. */
+function detectTheme(message: string): string | undefined {
+  if (!includesWord(message, ['theme', 'θεμα', 'dark mode', 'light mode'])) return undefined;
+  return THEME_WORDS.find(([words]) => includesWord(message, words))?.[1];
+}
+
+const LANGUAGE_WORDS: Array<[string[], string]> = [
+  [['greek', 'ελληνικα'], 'el'],
+  [['english', 'αγγλικα'], 'en'],
+  [['spanish', 'ισπανικα'], 'es'],
+  [['french', 'γαλλικα'], 'fr'],
+  [['german', 'γερμανικα'], 'de'],
+  [['italian', 'ιταλικα'], 'it'],
+];
+
+function detectLanguage(message: string): string | undefined {
+  if (!includesWord(message, ['language', 'γλωσσα'])) return undefined;
+  if (!includesWord(message, ['change', 'switch', 'set', 'αλλαξε', 'βαλε'])) return undefined;
+  return LANGUAGE_WORDS.find(([words]) => includesWord(message, words))?.[1];
+}
+
+const WEEKDAYS: Array<[RegExp, number]> = [
+  [/\b(sunday)\b|κυριακ/i, 0], [/\b(monday)\b|δευτερ/i, 1], [/\b(tuesday)\b|τριτη/i, 2], [/\b(wednesday)\b|τεταρτ/i, 3],
+  [/\b(thursday)\b|πεμπτ/i, 4], [/\b(friday)\b|παρασκευ/i, 5], [/\b(saturday)\b|σαββατ/i, 6],
+];
+
+const stripAccents = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+/** The day a sentence names: a date, tomorrow, or the next such weekday. */
+function followUpDate(text: string, now = new Date()): string | undefined {
+  const exact = text.match(/\b\d{4}-\d{2}-\d{2}\b/);
+  if (exact) return exact[0];
+  const plain = stripAccents(text.toLowerCase());
+  const day = (offset: number) => new Date(now.getTime() + offset * 86_400_000).toISOString().slice(0, 10);
+  if (/\btomorrow\b|αυριο/.test(plain)) return day(1);
+  const weekday = WEEKDAYS.find(([pattern]) => pattern.test(plain))?.[1];
+  if (weekday === undefined) return undefined;
+  return day(((weekday - now.getDay() + 6) % 7) + 1);
+}
+
+/** "follow up with Nikos on Friday: send the deck", «follow-up με τον Νίκο την Παρασκευή». */
+function detectFollowUp(rawMessage: string): { investor: string; date: string; step?: string } | undefined {
+  if (!/follow[- ]?up|next step|επόμενο βήμα|θύμισέ μου|θυμισε μου/i.test(rawMessage)) return undefined;
+  const person = rawMessage.match(/(?:\bwith|\bto|με τον|με την|με το|στον|στην|στο)\s+([A-ZΑ-ΩΆ-Ώ][\p{L}.'’-]+(?:\s+[A-ZΑ-ΩΆ-Ώ][\p{L}.'’-]+)?)/u);
+  const date = followUpDate(rawMessage);
+  if (!person || !date) return undefined;
+  const step = rawMessage.match(/[:«"“](.+?)[»"”]?\s*$/)?.[1]?.trim();
+  return { investor: person[1], date, ...(step ? { step } : {}) };
+}
+
 export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const message = rawMessage.trim().toLowerCase();
   if (!message) return [{ name: 'get_graph', args: {} }];
@@ -1209,6 +1268,14 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const wantsPin = !wantsUnpin && includesWord(message, ['pin', 'καρφιτσωσ', 'καρφιτσωμα']);
   const pinTarget = wantsPin || wantsUnpin ? detectPinTarget(message) : undefined;
   if (pinTarget) add(wantsUnpin ? 'unpin_shortcut' : 'pin_shortcut', { href: pinTarget.href, label: pinTarget.label });
+
+  // The look and the language, and a next step with an investor (docs §112).
+  const theme = detectTheme(message);
+  if (theme) add('set_theme', { theme });
+  const language = detectLanguage(message);
+  if (language) add('set_language', { language });
+  const followUp = detectFollowUp(rawMessage);
+  if (followUp) add('set_investor_followup', followUp);
 
   // How the assistant answers (docs §110): «απάντα πιο σύντομα», "no emoji".
   const replyStyle = detectReplyStyle(rawMessage);

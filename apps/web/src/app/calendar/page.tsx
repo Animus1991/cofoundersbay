@@ -46,6 +46,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { useHydrated } from '@/components/common/RelativeTime';
 import { useI18n } from '@/components/common/I18nProvider';
 import { ASK } from '@/lib/page-questions';
+import { useInvestorFollowUps, type FollowUpLead } from '@/lib/follow-ups';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -158,6 +159,17 @@ function fromMilestone(mst: Milestone): CalendarEvent | null {
     priority: mst.priority,
     status: mst.status,
     href: '/milestones',
+  };
+}
+
+/** A follow-up with an investor keeps its day here too; moving it there moves it here. */
+function fromFollowUp(lead: FollowUpLead): CalendarEvent {
+  return {
+    id: `followup-${lead.id}`,
+    title: lead.nextStep ? `${lead.name}: ${lead.nextStep}` : lead.name,
+    type: 'deadline',
+    date: lead.nextFollowUp,
+    href: '/fundraising',
   };
 }
 
@@ -508,6 +520,7 @@ export default function CalendarPage() {
   };
 
   const { showDemoData } = useDemoData();
+  const { items: followUps } = useInvestorFollowUps();
   const { data: milestoneData, isLoading: milestonesLoading, isError: milestonesFailed, refetch: refetchMilestones } = useQuery({
     queryKey: qk('milestones', 'all', 'all'),
     queryFn: () => listMilestones({ limit: 100 }),
@@ -539,7 +552,8 @@ export default function CalendarPage() {
     ...(milestoneData?.milestones ?? []).map(fromMilestone).filter((e): e is CalendarEvent => e != null),
     ...(sessionData?.sessions ?? []).filter((x) => x.status === 'scheduled').map(fromSession),
     ...(eventData?.events ?? []).filter((ev) => ev.viewerRsvp === 'going' || ev.viewerRsvp === 'interested').map(fromEvent),
-  ], [milestoneData, sessionData, eventData]);
+    ...followUps.map(fromFollowUp),
+  ], [milestoneData, sessionData, eventData, followUps]);
   const isSample = !loading && liveEvents.length === 0 && showDemoData;
 
   const filteredEvents = useMemo(() => {

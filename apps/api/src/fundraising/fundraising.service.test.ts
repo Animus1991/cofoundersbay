@@ -3,7 +3,7 @@ import { BadRequestException, ForbiddenException, NotFoundException } from '@nes
 import { ZodError } from 'zod';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FundraisingService } from './fundraising.service';
-import { createLeadSchema, createRoundSchema, documentFieldsSchema, updateDocumentSchema } from './fundraising.schemas';
+import { createLeadSchema, createRoundSchema, documentFieldsSchema, updateDocumentSchema, updateLeadSchema } from './fundraising.schemas';
 
 /** A founder's round, investors and data room: their own only, and files stay private (docs §111). */
 
@@ -144,6 +144,25 @@ describe('the data room', () => {
   it('is changed by its owner only', async () => {
     await expect(t.service.updateDocument('me', 'theirs', { status: 'archived' })).rejects.toBeInstanceOf(NotFoundException);
     await expect(t.service.removeDocument('me', 'theirs')).rejects.toBeInstanceOf(NotFoundException);
+  });
+});
+
+describe('the next step with an investor', () => {
+  it('keeps a date and a step, and returns them', async () => {
+    t.prisma.investorPipelineLead.findFirst.mockResolvedValue(lead({}));
+    t.prisma.investorPipelineLead.findMany.mockResolvedValue([lead({ nextFollowUpAt: new Date('2026-11-10T00:00:00Z'), nextStep: 'Send the deck' })]);
+    const state = await t.service.updateLead('me', 'l1', updateLeadSchema.parse({ nextFollowUpAt: '2026-11-10', nextStep: 'Send the deck' }));
+    expect(t.prisma.investorPipelineLead.update.mock.calls[0][0].data).toMatchObject({ nextStep: 'Send the deck' });
+    expect(state.leads[0]).toMatchObject({ nextFollowUpAt: '2026-11-10T00:00:00.000Z', nextStep: 'Send the deck' });
+  });
+
+  it('leaves them alone when something else changes', () => {
+    expect(updateLeadSchema.parse({ status: 'meeting' })).toEqual({ status: 'meeting' });
+  });
+
+  it('clears on an empty value, and refuses a date that is not one', () => {
+    expect(updateLeadSchema.parse({ nextFollowUpAt: null, nextStep: '' })).toEqual({ nextFollowUpAt: null, nextStep: null });
+    expect(() => updateLeadSchema.parse({ nextFollowUpAt: 'soon' })).toThrow(ZodError);
   });
 });
 

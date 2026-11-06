@@ -33,6 +33,9 @@ export type InvestorLead = {
   checkSizeEl?: string;
   status: InvestorStatus;
   lastContact?: string;
+  /** The next step with this investor and its day (docs §112). */
+  nextFollowUp?: string;
+  nextStep?: string;
   notes?: string;
   notesEl?: string;
   isVerified: boolean;
@@ -192,15 +195,22 @@ const DOC_STATUSES: DocStatus[] = ['draft', 'ready', 'shared'];
 const SEED_LEAD_IDS = new Set(FUNDRAISING_SEED_LEADS.map((l) => l.id));
 const SEED_DOC_IDS = new Set(FUNDRAISING_SEED_DOCS.map((d) => d.id));
 
+/** The showcase's next steps, as days from today: a fixed date would go stale. */
+const SEED_FOLLOW_UPS: Record<string, { days: number; step: string; stepEl: string }> = {
+  'irini-kosta': { days: -2, step: 'Send the updated traction slide', stepEl: 'Αποστολή της ενημερωμένης διαφάνειας traction' },
+  'michalis-theodorou': { days: 4, step: 'Second call on the remaining €375K', stepEl: 'Δεύτερη κλήση για τα υπόλοιπα €375K' },
+};
+
 export type FundraisingOverlay = {
   created: InvestorLead[];
   status: Record<string, InvestorStatus>;
   docsStatus: Record<string, DocStatus>;
   docsUpdated: Record<string, string>;
+  followUps?: Record<string, { at: string | null; step: string | null }>;
 };
 
 export function emptyFundraisingOverlay(): FundraisingOverlay {
-  return { created: [], status: {}, docsStatus: {}, docsUpdated: {} };
+  return { created: [], status: {}, docsStatus: {}, docsUpdated: {}, followUps: {} };
 }
 
 function isInvestorStatus(value: unknown): value is InvestorStatus {
@@ -240,7 +250,7 @@ export function coerceFundraisingOverlay(parsed: Partial<FundraisingOverlay> | n
       if (docsStatus[id] && typeof value === 'string') docsUpdated[id] = value;
     }
   }
-  return { created, status, docsStatus, docsUpdated };
+  return { created, status, docsStatus, docsUpdated, followUps: parsed?.followUps && typeof parsed.followUps === 'object' ? parsed.followUps : {} };
 }
 
 export function isStaleHarborFundraisingSeed(blob: string): boolean {
@@ -281,7 +291,23 @@ export function resolveFundraisingLeads(overlay: Partial<FundraisingOverlay> = e
 }
 
 export function listFundraisingLeads(): InvestorLead[] {
-  return resolveFundraisingLeads(readFundraisingOverlay());
+  const overlay = readFundraisingOverlay();
+  const greek = typeof window !== 'undefined' && window.localStorage?.getItem('cfb_locale') === 'el';
+  const today = new Date();
+  return resolveFundraisingLeads(overlay).map((lead) => {
+    const set = overlay.followUps?.[lead.id];
+    if (set) return { ...lead, nextFollowUp: set.at ?? undefined, nextStep: set.step ?? undefined };
+    const seed = SEED_FOLLOW_UPS[lead.id];
+    if (!seed) return lead;
+    const at = new Date(today.getTime() + seed.days * 86_400_000).toISOString().slice(0, 10);
+    return { ...lead, nextFollowUp: at, nextStep: greek ? seed.stepEl : seed.step };
+  });
+}
+
+/** The showcase's way of saving a next step: this tab only, like its stages. */
+export function setFundraisingFollowUp(id: string, at: string | null, step: string | null) {
+  const overlay = readFundraisingOverlay();
+  writeFundraisingOverlay({ ...overlay, followUps: { ...overlay.followUps, [id]: { at, step } } });
 }
 
 export function resolveFundraisingDocs(overlay: Partial<FundraisingOverlay> = emptyFundraisingOverlay()): DataRoomDoc[] {

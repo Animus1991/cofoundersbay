@@ -1428,6 +1428,114 @@ export const ACTION_DECLARATIONS = [
     confirmLabel: { en: 'Create milestone', el: 'Δημιουργία ορόσημου' },
   },
   {
+    id: 'set_theme',
+    kind: 'mutation',
+    label: { en: 'Change the theme', el: 'Αλλαγή θέματος' },
+    description: {
+      en: 'Switch the colour theme on this device.',
+      el: 'Αλλάζει το χρωματικό θέμα σε αυτή τη συσκευή.',
+    },
+    params: [
+      {
+        name: 'theme',
+        type: 'string',
+        required: true,
+        enumValues: ['dark', 'light', 'lilac', 'system', 'alliance', 'cofounder', 'minimal', 'apricot', 'terra'],
+        description: { en: 'The theme to switch to.', el: 'Το θέμα που θα ενεργοποιηθεί.' },
+      },
+    ],
+    writes: true,
+    invalidates: [],
+    reversal: {
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible. The undo puts back the theme you had.',
+        el: 'Πλήρως αναστρέψιμο. Η αναίρεση επαναφέρει το θέμα που είχατε.',
+      },
+    },
+    navigatesOnSuccess: false,
+    confirmLabel: { en: 'Change theme', el: 'Αλλαγή θέματος' },
+  },
+  {
+    id: 'set_language',
+    kind: 'mutation',
+    label: { en: 'Change the language', el: 'Αλλαγή γλώσσας' },
+    description: {
+      en: 'Switch the language of the product and of the assistant’s answers.',
+      el: 'Αλλάζει τη γλώσσα της πλατφόρμας και των απαντήσεων του βοηθού.',
+    },
+    params: [
+      {
+        name: 'language',
+        type: 'string',
+        required: true,
+        enumValues: ['en', 'el', 'es', 'fr', 'de', 'it', 'pt', 'zh', 'ja'],
+        description: { en: 'The language code.', el: 'Ο κωδικός της γλώσσας.' },
+      },
+    ],
+    writes: true,
+    invalidates: [],
+    reversal: {
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible. The undo puts back the language you had.',
+        el: 'Πλήρως αναστρέψιμο. Η αναίρεση επαναφέρει τη γλώσσα που είχατε.',
+      },
+    },
+    navigatesOnSuccess: false,
+    confirmLabel: { en: 'Change language', el: 'Αλλαγή γλώσσας' },
+  },
+  {
+    id: 'set_investor_followup',
+    kind: 'mutation',
+    label: { en: 'Set a next step with an investor', el: 'Ορισμός επόμενου βήματος με επενδυτή' },
+    description: {
+      en: 'Give an investor on the round a next step and a date. It then shows on the home, the calendar and the notifications page until it is moved or cleared.',
+      el: 'Δίνει σε έναν επενδυτή του γύρου επόμενο βήμα και ημερομηνία. Εμφανίζεται μετά στην αρχική, στο ημερολόγιο και στις ειδοποιήσεις, ώσπου να μετακινηθεί ή να καθαριστεί.',
+    },
+    params: [
+      {
+        name: 'investor',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'The investor’s name or firm, as on the Fundraising page.',
+          el: 'Το όνομα ή η εταιρεία του επενδυτή, όπως στη σελίδα Χρηματοδότησης.',
+        },
+      },
+      {
+        name: 'date',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'The day, as YYYY-MM-DD.',
+          el: 'Η ημέρα, σε μορφή ΕΕΕΕ-ΜΜ-ΗΗ.',
+        },
+      },
+      {
+        name: 'step',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'What to do that day, e.g. "Send the updated deck".',
+          el: 'Τι θα γίνει εκείνη την ημέρα, π.χ. «Αποστολή του ενημερωμένου deck».',
+        },
+      },
+    ],
+    writes: true,
+    invalidates: ['fundraising'],
+    reversal: {
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible. The step it had is read first and the undo puts exactly that back.',
+        el: 'Πλήρως αναστρέψιμο. Το προηγούμενο βήμα διαβάζεται πρώτα και η αναίρεση το επαναφέρει ακριβώς.',
+      },
+    },
+    auditSubject: { param: 'investor', entityType: 'investor' },
+    navigatesOnSuccess: false,
+    confirmLabel: { en: 'Save the next step', el: 'Αποθήκευση βήματος' },
+  },
+  {
     id: 'update_milestone_status',
     kind: 'mutation',
     label: { en: 'Update a milestone’s status', el: 'Ενημέρωση κατάστασης ορόσημου' },

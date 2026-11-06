@@ -9,6 +9,9 @@
  */
 export const TOAST_EL: Record<string, string> = {
   "Code copied": "Ο κωδικός αντιγράφηκε",
+  "Next step saved": "Το επόμενο βήμα αποθηκεύτηκε",
+  "Next step cleared": "Το επόμενο βήμα καθαρίστηκε",
+  "Could not save the next step": "Το επόμενο βήμα δεν αποθηκεύτηκε",
   "Account linked": "Ο λογαριασμός συνδέθηκε",
   "Link removed": "Η σύνδεση αφαιρέθηκε",
   "Could not change the link": "Η σύνδεση δεν άλλαξε",

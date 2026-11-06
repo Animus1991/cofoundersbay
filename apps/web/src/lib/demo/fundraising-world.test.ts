@@ -86,7 +86,7 @@ describe('the API’s words on the page’s cards', () => {
   it('maps a lead, with the committed amount over the first guess', () => {
     const lead = {
       id: 'l1', investorName: 'Ada', investorFirm: 'Aegean', investorType: 'VC', stageFocus: 'Seed', checkSizeText: '€25K–€150K',
-      status: 'due_diligence' as const, committedAmount: null, currency: 'EUR', lastContactAt: NOW, notes: 'Warm', isVerifiedOnPlatform: false, linkedAccount: null,
+      status: 'due_diligence' as const, committedAmount: null, currency: 'EUR', lastContactAt: NOW, notes: 'Warm', isVerifiedOnPlatform: false, linkedAccount: null, nextFollowUpAt: null, nextStep: null,
     };
     expect(leadFromApi(lead)).toMatchObject({ name: 'Ada', firm: 'Aegean', status: 'dd', checkSize: '€25K–€150K', lastContact: NOW, notes: 'Warm' });
     expect(leadFromApi({ ...lead, status: 'committed', committedAmount: 250000 }).checkSize).toBe('€250,000');

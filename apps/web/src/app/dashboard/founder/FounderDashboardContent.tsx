@@ -83,6 +83,7 @@ import { isMilestoneOverdue } from '@/lib/milestone-order';
 import { useToast } from '@/components/ui/toast';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { useInvestorFollowUps } from '@/lib/follow-ups';
 const FOUNDER_TOUR: TourStep[] = [
   {
     target: 'founder-stats',
@@ -639,6 +640,7 @@ export default function FounderDashboardContent() {
   });
   const nextOpenMilestone = openMilestonesByDue[0];
   // The card answers "what is due next"; the full list, done ones included, is /milestones.
+  const { due: dueFollowUps } = useInvestorFollowUps();
   const upcomingMilestones = openMilestonesByDue.slice(0, 5);
   const moreOpenMilestoneCount = openMilestones.length - upcomingMilestones.length;
   // The same calendar-day rule as /milestones (lib/milestone-order), so the
@@ -1316,7 +1318,7 @@ export default function FounderDashboardContent() {
         {/* GitHub's home: a greeting over one question box and the jobs to
             start from. The weekly brief the header's field used to send is
             the "My week" chip. */}
-        <HomeAskHero role="founder" name={own?.displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
+        <HomeAskHero role="founder" followUpsDue={dueFollowUps.length} name={own?.displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
 
         {showFirstMove && (
           <FounderFirstMove

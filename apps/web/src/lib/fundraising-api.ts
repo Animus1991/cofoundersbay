@@ -38,6 +38,8 @@ export type ApiLead = {
   committedAmount: number | null;
   currency: string;
   lastContactAt: string | null;
+  nextFollowUpAt: string | null;
+  nextStep: string | null;
   notes: string | null;
   isVerifiedOnPlatform: boolean;
   /** The investor's own account: what lets them open what is shared. */
@@ -99,6 +101,8 @@ export type LeadInput = {
   status?: ApiLeadStatus;
   committedAmount?: number | null;
   notes?: string | null;
+  nextFollowUpAt?: string | null;
+  nextStep?: string | null;
 };
 
 export const ROUND_TYPES: Array<{ value: string; en: string; el: string }> = [
@@ -144,6 +148,8 @@ export function leadFromApi(lead: ApiLead): InvestorLead {
     checkSize: lead.committedAmount ? `${symbol}${lead.committedAmount.toLocaleString('en-GB')}` : (lead.checkSizeText ?? ''),
     status: FROM_API_STATUS[lead.status],
     lastContact: lead.lastContactAt ?? undefined,
+    nextFollowUp: lead.nextFollowUpAt ?? undefined,
+    nextStep: lead.nextStep ?? undefined,
     notes: lead.notes ?? undefined,
     isVerified: lead.isVerifiedOnPlatform,
   };
