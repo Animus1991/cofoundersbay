@@ -260,9 +260,14 @@ function InvestorCard({
             <>
               {type ? <BilingualText en={type.en} el={type.el} compact /> : null}
               {type && (investor.firmName || investor.firmRole || investor.headline) ? ' · ' : null}
-              {investor.firmName || investor.firmRole
-                ? [investor.firmName, investor.firmRole].filter(Boolean).join(' · ')
-                : investor.headline}
+              {investor.firmName || investor.firmRole ? (
+                <>
+                  {investor.firmName}
+                  {investor.firmName && investor.firmRole ? ' · ' : null}
+                  {/* Its own node, so the catalogue can translate the role. */}
+                  {investor.firmRole ? <span>{investor.firmRole}</span> : null}
+                </>
+              ) : investor.headline}
             </>
           ) : undefined}
           meta={investor.isActivelyScouting ? (

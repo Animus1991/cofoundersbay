@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
+import { PROJECT_STAGE_KEYS, projectEl, projectEn } from '@/lib/i18n';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { STATUS } from '@/lib/semantic-colors';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
@@ -262,7 +263,7 @@ export default function LegalHubPage() {
                     <span className="font-medium"><BilingualText en="Decide first:" el="Αποφασίστε πρώτα:" compact /></span>{' '}
                     {say(t.decide)}
                   </p>
-                  <CardFoot meta={<span className="text-2xs text-muted-foreground">{t.stages.join(' · ')}</span>}>
+                  <CardFoot meta={<span className="text-2xs text-muted-foreground">{t.stages.map((stage) => say({ en: projectEn(PROJECT_STAGE_KEYS[stage]), el: projectEl(PROJECT_STAGE_KEYS[stage]) })).join(' · ')}</span>}>
                     <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => ask(draftPrompt(t))} data-testid={`legal-draft-${t.id}`}>
                       <Sparkles className="icon-sm" aria-hidden="true" />
                       <BilingualText en="Draft with assistant" el="Σύνταξη με τον βοηθό" compact />
