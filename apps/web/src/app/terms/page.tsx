@@ -8,6 +8,8 @@ import { LegalText } from '@/components/common/LegalText';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { LegalDraftNotice, useLegalText } from '@/components/common/LegalDraftNotice';
+import { TERMS_EL } from '@/lib/legal/terms-el';
 
 const LAST_UPDATED = 'March 20, 2026';
 const LAST_UPDATED_EL = '20 Μαρτίου 2026';
@@ -138,6 +140,7 @@ We will respond to inquiries within a reasonable timeframe.`,
 ];
 
 export default function TermsPage() {
+  const legal = useLegalText(sections, TERMS_EL);
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -167,10 +170,7 @@ export default function TermsPage() {
           <p className="text-sm text-muted-foreground">
             <BilingualText en={`Last updated: ${LAST_UPDATED}`} el={`Τελευταία ενημέρωση: ${LAST_UPDATED_EL}`} compact />
           </p>
-          {/* Legal text is not machine-translated: a paraphrase could promise something the policy does not. */}
-          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-            <BilingualText en="These terms are written in English; the English text is the version that applies." el="Οι παρακάτω όροι είναι γραμμένοι στα Αγγλικά· ισχύει το αγγλικό κείμενο." keepSecondaryOnMobile wrap />
-          </p>
+          <LegalDraftNotice offered={legal.offered} showingGreek={legal.showingGreek} onToggle={legal.toggle} noun={{ en: 'These terms are', el: 'Το κείμενο είναι' }} />
         </div>
       </section>
 
@@ -179,7 +179,7 @@ export default function TermsPage() {
         <div className="mx-auto max-w-4xl px-4 py-8">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4"><BilingualText en="Table of Contents" el="Περιεχόμενα" compact /></h2>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {sections.map((section) => (
+            {legal.sections.map((section) => (
               <a
                 key={section.id}
                 href={`#${section.id}`}
@@ -196,7 +196,7 @@ export default function TermsPage() {
       {/* Content */}
       <MainLandmark className="mx-auto max-w-4xl px-4 py-12">
         <div className="space-y-12">
-          {sections.map((section) => (
+          {legal.sections.map((section) => (
             <Card key={section.id} id={section.id} className="scroll-mt-20 border-border">
               <CardContent className="space-y-4">
                 <CardHead

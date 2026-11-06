@@ -1,10 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, CalendarClock, FileText, Scale, ShieldAlert, Sparkles } from 'lucide-react';
 import {
   LEGAL_CATEGORIES,
+  LEGAL_CHECKLIST,
+  LEGAL_CHECKLIST_PHASES,
   LEGAL_STATUS_COPY,
   LEGAL_TEMPLATES,
   isLegalCategory,
@@ -25,6 +27,18 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { cn } from '@/lib/utils';
 
 type Filter = 'all' | LegalCategoryId;
+
+/** Ticks stay in this browser: a planning aid, not a record of compliance. */
+const CHECKLIST_KEY = 'cfb:legal-checklist';
+
+function readChecklist(): string[] {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(CHECKLIST_KEY) ?? '[]') as unknown;
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
+}
 
 const FILTERS: Array<{ value: Filter; en: string; el: string }> = [
   { value: 'all', en: 'All', el: 'Όλα' },
@@ -48,6 +62,20 @@ export default function LegalHubPage() {
   const { primary } = useLanguagePreference();
   const say = (b: { en: string; el: string }) => (primary === 'el' ? b.el : b.en);
   const [filter, setFilter] = useState<Filter>('all');
+  const [done, setDone] = useState<string[]>([]);
+  useEffect(() => setDone(readChecklist()), []);
+  const setItem = (id: string, on: boolean) => {
+    setDone((prev) => {
+      const next = on ? [...new Set([...prev, id])] : prev.filter((x) => x !== id);
+      try {
+        window.localStorage.setItem(CHECKLIST_KEY, JSON.stringify(next));
+      } catch {
+        // Storage blocked: the tick holds for this visit.
+      }
+      return next;
+    });
+  };
+  const nextStep = LEGAL_CHECKLIST.find((item) => !done.includes(item.id));
 
   const templates = useMemo(
     () => (filter === 'all' ? LEGAL_TEMPLATES : LEGAL_TEMPLATES.filter((t) => t.category === filter)),
@@ -62,11 +90,29 @@ export default function LegalHubPage() {
       : `Draft a starter outline of a "${t.name.en}" for my startup, leaving blanks for: ${t.decide.en} Explain each clause in plain words.`;
   const officeHoursPrompt =
     primary === 'el'
-      ? 'Ετοίμασε μια εκδήλωση «Legal office hours» στο ημερολόγιό μου: 15λεπτη νομική συνεδρία με δικηγόρο startups, μέσα στις επόμενες 5 εργάσιμες ημέρες στις 15:00.'
-      : 'Draft an event "Legal office hours": 15 minutes with a startup lawyer, within the next 5 working days at 15:00.';
+      ? 'Ετοίμασε μια εκδήλωση «Νομικές ερωτήσεις» στο ημερολόγιό μου: 15 λεπτά για τις νομικές μου ερωτήσεις με τον δικηγόρο μου, μέσα στις επόμενες 5 εργάσιμες ημέρες στις 15:00.'
+      : 'Draft an event "Legal questions": 15 minutes for my legal questions with my own lawyer, within the next 5 working days at 15:00.';
 
   usePageControls([
     choiceControl('legal_category', 'Show one legal category', 'Μία νομική κατηγορία', FILTERS, filter, (v) => setFilter(isLegalCategory(v) ? v : 'all')),
+    {
+      id: 'legal_tick',
+      labelEn: 'Tick a step on the legal checklist (kept in this browser)',
+      labelEl: 'Σημείωση βήματος στη νομική λίστα (μένει σε αυτόν τον browser)',
+      writes: true,
+      options: LEGAL_CHECKLIST.filter((item) => !done.includes(item.id)).map((item) => ({ value: item.id, labelEn: item.title.en, labelEl: item.title.el })),
+      run: (value) => { if (value) setItem(value, true); },
+      undo: (value) => (value ? { control: 'legal_untick', value } : undefined),
+    },
+    {
+      id: 'legal_untick',
+      labelEn: 'Untick a step on the legal checklist',
+      labelEl: 'Αφαίρεση σημείωσης από τη νομική λίστα',
+      writes: true,
+      options: LEGAL_CHECKLIST.filter((item) => done.includes(item.id)).map((item) => ({ value: item.id, labelEn: item.title.en, labelEl: item.title.el })),
+      run: (value) => { if (value) setItem(value, false); },
+      undo: (value) => (value ? { control: 'legal_tick', value } : undefined),
+    },
   ]);
   usePageList([
     {
@@ -75,6 +121,13 @@ export default function LegalHubPage() {
       labelEl: 'Νομικά πρότυπα σε αυτή τη σελίδα',
       rows: templates.map((t) => `${t.name.en} — ${LEGAL_STATUS_COPY[t.status].en}`),
       rowsEl: templates.map((t) => `${t.name.el} — ${LEGAL_STATUS_COPY[t.status].el}`),
+    },
+    {
+      id: 'legal_checklist',
+      labelEn: 'Legal checklist',
+      labelEl: 'Νομική λίστα ελέγχου',
+      rows: LEGAL_CHECKLIST.map((item) => `${done.includes(item.id) ? '(done) ' : ''}${item.title.en}`),
+      rowsEl: LEGAL_CHECKLIST.map((item) => `${done.includes(item.id) ? '(έγινε) ' : ''}${item.title.el}`),
     },
   ]);
 
@@ -109,11 +162,11 @@ export default function LegalHubPage() {
               <CardHead
                 mark={<CalendarClock className="icon-md text-primary-accessible" aria-hidden="true" />}
                 title={<BilingualText en="Legal office hours" el="Νομικές ώρες γραφείου" compact />}
-                subtitle={<BilingualText en="15 minutes with a startup lawyer. Booked into your calendar by the assistant — it asks before it writes." el="15 λεπτά με δικηγόρο startups. Το κλείνει ο βοηθός στο ημερολόγιό σας — ρωτά πριν γράψει." wrap />}
+                subtitle={<BilingualText en="Set aside 15 minutes for your questions, with your own lawyer. CoFounderBay does not provide one; the assistant adds it to your calendar and asks before it writes." el="Κρατήστε 15 λεπτά για τις ερωτήσεις σας, με τον δικό σας δικηγόρο. Το CoFounderBay δεν παρέχει δικηγόρο· ο βοηθός το βάζει στο ημερολόγιό σας και ρωτά πριν γράψει." wrap />}
               />
               <Button className="w-full gap-2" onClick={() => ask(officeHoursPrompt)} data-testid="legal-book-office-hours">
                 <CalendarClock className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Book 15 min" el="Κλείστε 15′" compact />
+                <BilingualText en="Set aside 15 min" el="Κρατήστε 15′" compact />
               </Button>
               <p className="text-xs text-muted-foreground">
                 <BilingualText
@@ -125,6 +178,52 @@ export default function LegalHubPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* What to sort out, in the order it comes up. */}
+        <Card data-testid="legal-checklist">
+          <CardContent className="space-y-4 pt-5">
+            <CardHead
+              title={<BilingualText en="Your legal checklist" el="Η νομική σας λίστα" compact />}
+              subtitle={<BilingualText en="What a founding team in Greece usually sorts out, in the order it comes up. General guidance, not legal or tax advice: check each step with your lawyer and accountant. Ticks stay in this browser." el="Όσα συνήθως τακτοποιεί μια ιδρυτική ομάδα στην Ελλάδα, με τη σειρά που προκύπτουν. Γενική καθοδήγηση, όχι νομική ή φορολογική συμβουλή: ελέγξτε κάθε βήμα με τον δικηγόρο και τον λογιστή σας. Οι σημειώσεις μένουν σε αυτόν τον browser." wrap />}
+              aside={<span className="text-xs tabular-nums text-muted-foreground">{done.length}/{LEGAL_CHECKLIST.length}</span>}
+              asideStays
+            />
+            {LEGAL_CHECKLIST_PHASES.map((phase) => (
+              <section key={phase.id} className="space-y-2" aria-label={say(phase.label)}>
+                <h3 className="text-xs font-medium text-muted-foreground"><BilingualText en={phase.label.en} el={phase.label.el} compact /></h3>
+                <ul className="divide-y divide-border rounded-xl border border-border/60">
+                  {LEGAL_CHECKLIST.filter((item) => item.phase === phase.id).map((item) => {
+                    const template = item.template ? LEGAL_TEMPLATES.find((t) => t.id === item.template) : undefined;
+                    const ticked = done.includes(item.id);
+                    return (
+                      <li key={item.id} className="flex flex-wrap items-start gap-3 px-3 py-2.5">
+                        <input
+                          id={`legal-step-${item.id}`}
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 shrink-0"
+                          checked={ticked}
+                          onChange={(e) => setItem(item.id, e.target.checked)}
+                        />
+                        <label htmlFor={`legal-step-${item.id}`} className="min-w-0 flex-1 space-y-0.5">
+                          <span className={cn('block text-sm font-medium', ticked && 'text-muted-foreground line-through')}>{say(item.title)}</span>
+                          <span className="block text-xs text-muted-foreground">{say(item.detail)}</span>
+                        </label>
+                        {template && !ticked ? (
+                          <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => ask(draftPrompt(template))}>
+                            <BilingualText en="Draft with assistant" el="Σύνταξη με τον βοηθό" compact />
+                          </Button>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))}
+            {nextStep ? null : (
+              <p className="text-sm text-muted-foreground"><BilingualText en="Every step is ticked. Revisit the list when the company changes." el="Όλα τα βήματα είναι σημειωμένα. Ξαναδείτε τη λίστα όταν αλλάξει η εταιρεία." wrap /></p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Templates by the moment they are needed. */}
         <Tabs value={filter} onValueChange={(v) => setFilter(isLegalCategory(v) ? v : 'all')} className="space-y-4">
