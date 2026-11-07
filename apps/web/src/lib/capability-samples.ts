@@ -111,6 +111,7 @@ export const CAPABILITY_SAMPLES: Record<string, { en: string; el: string }> = {
   close_need_card: { en: 'Close my Athens intros card as filled', el: 'Κλείσε την κάρτα για τις γνωριμίες στην Αθήνα ως καλυμμένη' },
   triage_notifications: { en: 'Mark the rest of my notifications read', el: 'Σήμανε τις υπόλοιπες ειδοποιήσεις ως αναγνωσμένες' },
   set_notification_pref: { en: 'Stop event emails', el: 'Σταμάτα τα email για εκδηλώσεις' },
+  draft_investor_email: { en: 'Write an email to Irini Kosta', el: 'Γράψε email στην Irini Kosta' },
   draft_program_application: { en: 'Draft my application to “Pre-seed Bootcamp”', el: 'Ετοίμασε την αίτησή μου στο «Pre-seed Bootcamp»' },
   draft_expert_review: { en: 'Draft the review Sofia asked of me', el: 'Ετοίμασε την αξιολόγηση που μου ζήτησε η Σοφία' },
 };

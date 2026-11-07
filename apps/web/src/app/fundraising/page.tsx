@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -50,6 +50,8 @@ import {
   listFundraisingLeads,
   listFundraisingDocs,
   addFundraisingLead,
+  readDemoCapTable,
+  writeDemoCapTable,
   moveFundraisingLead,
   markFundraisingDocStatus,
   fundraisingPipelineStats,
@@ -73,8 +75,13 @@ import { Counter } from '@/components/ui/counter';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ShareRoomDialog, type ShareDoc, type ShareLead, type ShareRoomActions } from '@/components/fundraising/ShareRoomDialog';
 import { FollowUpDialog } from '@/components/fundraising/FollowUpDialog';
+import { CapTableView } from '@/components/fundraising/CapTableView';
+import { InvestorEmailDialog, type InvestorEmailTarget } from '@/components/fundraising/InvestorEmailDialog';
 import { isFollowUpDue, isFollowUpLate, type FollowUpLead } from '@/lib/follow-ups';
 import { qk } from '@/lib/query-keys';
+import { getMeProfile } from '@/lib/api';
+import { useFormDraft } from '@/lib/form-draft';
+import type { CapTableHolder } from '@cofounderbay/shared';
 import {
   ROUND_CURRENCIES,
   ROUND_TYPES,
@@ -180,6 +187,15 @@ function LeadName({ lead, className, as: Tag = 'p' }: { lead: InvestorLead; clas
 }
 
 /** The next step on a lead: when it is, whether it has come, and the way to change it. */
+/** Opens the note in the founder's own mail app, from the step written down for this investor. */
+function LeadEmail({ lead, onEmail }: { lead: InvestorLead; onEmail: (lead: InvestorLead) => void }) {
+  return (
+    <button type="button" className="tap-extend-y text-left text-xs font-medium text-muted-foreground hover:text-foreground" onClick={() => onEmail(lead)}>
+      <BilingualText en={fundraisingEn('email_write')} el={fundraisingEl('email_write')} compact />
+    </button>
+  );
+}
+
 function LeadNextStep({ lead, primary, onEdit }: { lead: InvestorLead; primary: 'en' | 'el'; onEdit: (lead: InvestorLead) => void }) {
   if (!lead.nextFollowUp) {
     return lead.status === 'committed' || lead.status === 'passed' ? null : (
@@ -201,7 +217,7 @@ function LeadNextStep({ lead, primary, onEdit }: { lead: InvestorLead; primary: 
   );
 }
 
-type NewLead = { name: string; firm?: string; type: string; stage: string; checkSize: string; status: InvestorStatus; notes?: string; committed: number | null };
+type NewLead = { name: string; firm?: string; email?: string; type: string; stage: string; checkSize: string; status: InvestorStatus; notes?: string; committed: number | null };
 
 function AddLeadModal({
   open,
@@ -222,6 +238,7 @@ function AddLeadModal({
   const [name, setName] = useState('');
   const panelRef = useModalA11y<HTMLFormElement>(open, onClose);
   const [firm, setFirm] = useState('');
+  const [email, setEmail] = useState('');
   const [type, setType] = useState<string>('Angel');
   const [stage, setStage] = useState('Pre-Seed / Seed');
   const [checkSize, setCheckSize] = useState('€25K–€150K');
@@ -240,6 +257,7 @@ function AddLeadModal({
       await onSave({
         name: name.trim(),
         firm: firm.trim() || undefined,
+        email: email.trim() || undefined,
         type,
         stage,
         checkSize,
@@ -287,6 +305,10 @@ function AddLeadModal({
         <div className="space-y-1.5">
           <Label htmlFor="name"><BilingualText en={fundraisingEn('field_name')} el={fundraisingEl('field_name')} compact /> *</Label>
           <Input id="name" className={BUILDER_BTN} required value={name} onChange={(e) => setName(e.target.value)} placeholder={t(fundraisingEn('name_ph'), fundraisingEl('name_ph'))} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="lead-email"><BilingualText en={fundraisingEn('field_email')} el={fundraisingEl('field_email')} compact /></Label>
+          <Input id="lead-email" type="email" className={BUILDER_BTN} value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
@@ -664,11 +686,13 @@ function PipelineView({
   onAdd,
   onMove,
   onFollowUp,
+  onEmail,
 }: {
   leads: InvestorLead[];
   onAdd: (status: InvestorStatus) => void;
   onMove: (id: string, status: InvestorStatus) => void;
   onFollowUp: (lead: InvestorLead) => void;
+  onEmail: (lead: InvestorLead) => void;
 }) {
   const { primary } = useLanguagePreference();
   const byStage = PIPELINE_STAGES.reduce<Record<InvestorStatus, InvestorLead[]>>((acc, s) => {
@@ -722,6 +746,7 @@ function PipelineView({
                         </p>
                       )}
                       <LeadNextStep lead={lead} primary={primary} onEdit={onFollowUp} />
+                      <LeadEmail lead={lead} onEmail={onEmail} />
                       {lead.lastContact && (
                         <p className="text-xs text-muted-foreground">
                           <BilingualText en={fundraisingEn('last_contact')} el={fundraisingEl('last_contact')} compact />
@@ -1051,11 +1076,13 @@ function InvestorListView({
   leads,
   onMove,
   onFollowUp,
+  onEmail,
   harborLive,
 }: {
   leads: InvestorLead[];
   onMove: (id: string, status: InvestorStatus) => void;
   onFollowUp: (lead: InvestorLead) => void;
+  onEmail: (lead: InvestorLead) => void;
   /** Only the showcase may brief the assistant with Harbor's round. */
   harborLive: boolean;
 }) {
@@ -1105,7 +1132,10 @@ function InvestorListView({
                     : lead.notes}
                 </p>
               )}
-              <LeadNextStep lead={lead} primary={primary} onEdit={onFollowUp} />
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                <LeadNextStep lead={lead} primary={primary} onEdit={onFollowUp} />
+                <LeadEmail lead={lead} onEmail={onEmail} />
+              </div>
               {/* The date says what it is, as the Kanban card does. */}
               <CardFoot
                 meta={lead.lastContact ? (
@@ -1246,6 +1276,7 @@ export default function FundraisingPage() {
     keep(await createFundraisingLead({
       investorName: lead.name,
       investorFirm: lead.firm ?? null,
+      investorEmail: lead.email ?? null,
       investorType: lead.type,
       stageFocus: lead.stage || null,
       checkSizeText: lead.checkSize || null,
@@ -1253,6 +1284,19 @@ export default function FundraisingPage() {
       committedAmount: lead.committed,
       notes: lead.notes ?? null,
     }));
+  }
+
+  // A real account's lives on the round; the showcase keeps its own for the session.
+  const [demoCapTable, setDemoCapTable] = useState<CapTableHolder[]>([]);
+  useEffect(() => { if (showDemoData) setDemoCapTable(readDemoCapTable()); }, [showDemoData]);
+  const capTable = showDemoData ? demoCapTable : saved?.round?.capTable ?? [];
+  async function saveCapTable(next: CapTableHolder[]) {
+    if (showDemoData) {
+      writeDemoCapTable(next);
+      setDemoCapTable(next);
+      return;
+    }
+    if (savedRound) keep(await updateFundraisingRound(savedRound.apiId, { capTable: next }));
   }
 
   async function saveRound(input: RoundInput) {
@@ -1275,6 +1319,19 @@ export default function FundraisingPage() {
    */
   const [shareOpen, setShareOpen] = useState(false);
   const [followUpFor, setFollowUpFor] = useState<InvestorLead | null>(null);
+  const [emailTo, setEmailTo] = useState<InvestorEmailTarget | null>(null);
+  // The assistant's note (draft_investor_email): filled here, sent only from the founder's own mail app.
+  useFormDraft('investor_email', (fields) => {
+    if (typeof fields.name !== 'string') return;
+    setEmailTo({
+      name: fields.name,
+      email: typeof fields.to === 'string' ? fields.to : undefined,
+      subject: typeof fields.subject === 'string' ? fields.subject : undefined,
+      body: typeof fields.body === 'string' ? fields.body : undefined,
+    });
+  });
+  const { data: me } = useQuery({ queryKey: qk('me', 'profile'), queryFn: getMeProfile, enabled: Boolean(emailTo), staleTime: 60_000, retry: 0 });
+  const emailSender = me?.profile?.displayName ?? null;
   const roomShare: DemoRoomShare = hydrated ? readDemoRoomShare() : { links: {}, shared: [] };
   const shareLeads: ShareLead[] = live
     ? (saved?.leads ?? []).map((l) => ({ id: l.id, name: l.investorName, firm: l.investorFirm ?? undefined, account: l.linkedAccount }))
@@ -1330,6 +1387,7 @@ export default function FundraisingPage() {
       { value: 'pipeline', en: 'Pipeline', el: 'Pipeline' },
       { value: 'kanban', en: 'Kanban', el: 'Kanban' },
       { value: 'dataroom', en: 'Data room', el: 'Data room' },
+      { value: 'captable', en: 'Cap table', el: 'Cap table' },
     ], view, setView),
     {
       // Opens the form at the chosen stage; nothing is stored until the
@@ -1541,6 +1599,9 @@ export default function FundraisingPage() {
                 <BilingualText en={fundraisingEn('tab_dataroom')} el={fundraisingEl('tab_dataroom')} compact />
                 <Counter value={docs.length} />
               </TabsTrigger>
+              <TabsTrigger value="captable" className="rounded-xl">
+                <BilingualText en={fundraisingEn('tab_captable')} el={fundraisingEl('tab_captable')} compact />
+              </TabsTrigger>
             </TabsList>
             {/* Find investors / Add lead live in the page header actions -
                 rendering them here again was the same control twice. */}
@@ -1557,18 +1618,29 @@ export default function FundraisingPage() {
                 </CardContent>
               </Card>
             ) : (
-              <InvestorListView leads={leads} onMove={handleMove} onFollowUp={setFollowUpFor} harborLive={harborLive} />
+              <InvestorListView leads={leads} onMove={handleMove} onFollowUp={setFollowUpFor} onEmail={setEmailTo} harborLive={harborLive} />
             )}
           </TabsContent>
           <TabsContent value="kanban" className="mt-4">
-            <PipelineView leads={leads} onAdd={openAdd} onMove={handleMove} onFollowUp={setFollowUpFor} />
+            <PipelineView leads={leads} onAdd={openAdd} onMove={handleMove} onFollowUp={setFollowUpFor} onEmail={setEmailTo} />
           </TabsContent>
           <TabsContent value="dataroom" className="mt-4">
             <DataRoomView docs={docs} onChange={refresh} onShare={() => setShareOpen(true)} actions={roomActions} />
           </TabsContent>
+          <TabsContent value="captable" className="mt-4">
+            {live && !savedRound ? (
+              <Card className="rounded-xl border-dashed">
+                <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                  <BilingualText en={fundraisingEn('captable_needs_round')} el={fundraisingEl('captable_needs_round')} compact wrap />
+                </CardContent>
+              </Card>
+            ) : (
+              <CapTableView holders={capTable} onSave={saveCapTable} />
+            )}
+          </TabsContent>
         </Tabs>
         </>}
-        <ShareRoomDialog open={shareOpen} onOpenChange={setShareOpen} leads={shareLeads} docs={shareDocs} actions={shareActions} />
+        <ShareRoomDialog open={shareOpen} onOpenChange={setShareOpen} leads={shareLeads} docs={shareDocs} actions={shareActions} withLinks={live} />
         <FollowUpDialog
           lead={followUpFor}
           onClose={() => setFollowUpFor(null)}
@@ -1581,6 +1653,8 @@ export default function FundraisingPage() {
             refresh();
           }}
         />
+
+        <InvestorEmailDialog target={emailTo} sender={emailSender} onClose={() => setEmailTo(null)} />
 
         {/* Resources moved to the page rail ('resources' section). */}
         {/* Round size, committed amounts and check sizes appear above. */}

@@ -32,7 +32,8 @@ export type FormDraftId =
   // Since §111 (docs §107.7-4): a programme's application note, and a review
   // asked of the reader. Both pages are per item; the draft names the item.
   | 'program_application'
-  | 'expert_review';
+  | 'expert_review'
+  | 'investor_email';
 export type FormDraftFields = Record<string, string | boolean>;
 
 /** Where each draft is filled in. */
@@ -48,6 +49,7 @@ export const FORM_DRAFT_ROUTES: Record<FormDraftId, string> = {
   provider_listing: '/provider/profile',
   program_application: '/programs',
   expert_review: '/expert-reviews?tab=asked',
+  investor_email: '/fundraising',
 };
 
 const KEY = (id: FormDraftId) => `cfb_form_draft:${id}`;

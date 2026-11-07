@@ -35,6 +35,10 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
   tab_pipeline: { en: 'Pipeline', el: 'Pipeline' },
   tab_kanban: { en: 'Kanban', el: 'Kanban' },
   tab_dataroom: { en: 'Data room', el: 'Data room' },
+  tab_captable: { en: 'Cap table', el: 'Cap table' },
+  field_email: { en: 'Email', el: 'Email' },
+  email_write: { en: 'Write an email', el: 'Γράψτε email' },
+  captable_needs_round: { en: 'Set up your round first. The cap table is kept with it.', el: 'Ορίστε πρώτα τον γύρο σας. Η μετοχική σύνθεση φυλάσσεται μαζί του.' },
 
   round_active: { en: 'Active', el: 'Ενεργός' },
   round_planning: { en: 'Planning', el: 'Σχεδιασμός' },

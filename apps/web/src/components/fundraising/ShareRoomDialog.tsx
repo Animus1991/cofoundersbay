@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
+import { RoomLinks } from '@/components/fundraising/RoomLinks';
 import { fundraisingEl, fundraisingEn, useFundraisingPrimaryText } from '@/lib/i18n/strings-fundraising';
 import { initialsOf } from '@/lib/utils';
 
@@ -134,12 +135,15 @@ export function ShareRoomDialog({
   leads,
   docs,
   actions,
+  withLinks = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   leads: ShareLead[];
   docs: ShareDoc[];
   actions: ShareRoomActions;
+  /** A real account's round: the showcase has no files to open from a link. */
+  withLinks?: boolean;
 }) {
   const { success, error: showError } = useToast();
   const linked = leads.filter((l) => l.account).length;
@@ -212,6 +216,7 @@ export function ShareRoomDialog({
           )}
         </section>
 
+        {withLinks ? <RoomLinks sharedCount={shared} /> : null}
         <DialogFooter className="items-center gap-3 sm:justify-between">
           <p className="text-xs text-muted-foreground" aria-live="polite">
             <BilingualText

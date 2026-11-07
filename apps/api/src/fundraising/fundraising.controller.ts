@@ -5,7 +5,7 @@ import { memoryStorage } from 'multer';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FundraisingService } from './fundraising.service';
-import { createLeadSchema, createRoundSchema, documentFieldsSchema, investorSearchSchema, shareDocumentsSchema, updateDocumentSchema, updateLeadSchema, updateRoundSchema } from './fundraising.schemas';
+import { createLeadSchema, createRoomLinkSchema, createRoundSchema, documentFieldsSchema, investorSearchSchema, shareDocumentsSchema, updateDocumentSchema, updateLeadSchema, updateRoundSchema } from './fundraising.schemas';
 
 type Me = { id: string };
 
@@ -75,6 +75,21 @@ export class FundraisingController {
   @Delete('documents/:id')
   removeDocument(@CurrentUser() user: Me, @Param('id') id: string) {
     return this.fundraising.removeDocument(user.id, id);
+  }
+
+  @Get('links')
+  roomLinks(@CurrentUser() user: Me) {
+    return this.fundraising.listRoomLinks(user.id);
+  }
+
+  @Post('links')
+  createRoomLink(@CurrentUser() user: Me, @Body() body: unknown) {
+    return this.fundraising.createRoomLink(user.id, createRoomLinkSchema.parse(body));
+  }
+
+  @Delete('links/:id')
+  revokeRoomLink(@CurrentUser() user: Me, @Param('id') id: string) {
+    return this.fundraising.revokeRoomLink(user.id, id);
   }
 
   /** Always a download, under a policy that keeps anything active inert. */

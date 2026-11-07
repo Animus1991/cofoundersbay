@@ -92,6 +92,7 @@ import {
   listFundraisingDocs,
   listFundraisingLeads,
   type InvestorStatus,
+  readDemoCapTable,
 } from '@/lib/fundraising-demo';
 import { docFromApi, getFundraising, leadFromApi, roundFromApi } from '@/lib/fundraising-api';
 import { readShowSamples } from '@/contexts/DemoDataContext';
@@ -102,6 +103,7 @@ import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
 import { calendarDaysUntil } from '@/lib/calendar-days';
 import { isFollowUpDue, withFollowUps } from '@/lib/follow-ups';
+import { capTableShares } from '@cofounderbay/shared';
 import { isMilestoneOverdue } from '@/lib/milestone-order';
 import { roleFamily } from '@/lib/role-family';
 
@@ -1041,6 +1043,7 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     }
     const el = locale === 'el';
     const parts: string[] = [];
+    const owners = capTableShares(samples ? readDemoCapTable() : saved?.round?.capTable ?? []);
     if (round) {
       const pct = round.target ? Math.round((round.raised / round.target) * 100) : 0;
       const line = [
@@ -1068,6 +1071,9 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     }
     if (drafts.length) {
       parts.push(`${t('Data-room documents still in draft:')} ${drafts.slice(0, LIMIT).map((d) => (el ? d.nameEl ?? d.name : d.name)).join(listSeparator(locale))}.`);
+    }
+    if (owners.length) {
+      parts.push(t('Cap table: {list}.', { list: owners.slice(0, LIMIT).map((holder) => `${holder.name} ${Math.round(holder.share * 100)}%`).join(listSeparator(locale)) }));
     }
     return { section: parts.join('\n\n'), citations: [], actions };
   },

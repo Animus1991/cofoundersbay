@@ -821,6 +821,15 @@ function detectFollowUp(rawMessage: string): { investor: string; date: string; s
   return { investor: person[1], date, ...(step ? { step } : {}) };
 }
 
+/** "Write an email to Irini Kosta", «γράψε email στην Irini Kosta». A name is what makes it a draft, not a question about email. */
+function detectInvestorEmail(rawMessage: string): { investor: string } | undefined {
+  const asks = /(?:write|draft|send|compose|γράψε|γραψε|στείλε|στειλε|ετοίμασε|ετοιμασε|σύνταξε|συνταξε)\b.*\b(?:e-?mail|mail|μέιλ|μειλ)\b/iu.test(rawMessage)
+    || /(?:γράψε|γραψε|στείλε|στειλε|ετοίμασε|ετοιμασε|σύνταξε|συνταξε).*(?:e-?mail|mail|μέιλ|μειλ)/iu.test(rawMessage);
+  if (!asks) return undefined;
+  const person = rawMessage.match(/(?:\bto|στον|στην|στο|σε)\s+([A-ZΑ-ΩΆ-Ώ][\p{L}'’.-]*(?:\s+[A-ZΑ-ΩΆ-Ώ][\p{L}'’.-]*){0,3})/u);
+  return person ? { investor: person[1].trim() } : undefined;
+}
+
 /** «Άλλαξε τη διαφάνεια Πρόβλημα σε: …», "rewrite slide 2 to: …". The colon marks where the new text starts. */
 function detectSlideRewrite(rawMessage: string): { slide: string; content: string } | undefined {
   const hit = rawMessage.match(/(?:άλλαξε|αλλαξε|ξαναγράψε|ξαναγραψε|γράψε|γραψε|βάλε|βαλε|rewrite|change|update|set)\s+(?:the\s+|τη\s+|την\s+|στη\s+|στην\s+)?(?:slide|διαφάνεια|διαφανεια)\s+(.+?)(?:\s+(?:to|σε))?\s*:\s*(.+)$/iu);
@@ -1306,6 +1315,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   if (language) add('set_language', { language });
   const followUp = detectFollowUp(rawMessage);
   if (followUp) add('set_investor_followup', followUp);
+  const investorEmail = detectInvestorEmail(rawMessage);
+  if (investorEmail) add('draft_investor_email', investorEmail);
   const slideRewrite = detectSlideRewrite(rawMessage);
   if (slideRewrite) add('set_pitch_slide', slideRewrite);
   const builderWrite = slideRewrite ? undefined : detectBuilderWrite(rawMessage);

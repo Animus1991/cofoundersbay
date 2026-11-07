@@ -60,7 +60,7 @@ export function partOfDay(hour: number): Part {
  * - Under them, "Your pages": what the reader pinned and opens most, each
  *   with its `G` number (`YourPagesRow`, docs §107).
  */
-export function HomeAskHero({ role, name, lead, followUpsDue = 0 }: { role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number }) {
+export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true }: { role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean }) {
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
   const popup = usePopupChatOptional();
@@ -243,7 +243,7 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0 }: { role: Home
         </div>
       </form>
 
-      <HomeActionShelf actions={config.actions} now={now} run={run} />
+      <HomeActionShelf actions={config.actions} now={showWaiting ? now : []} run={run} />
 
       {/* The reader's own pages: pinned, then the most opened (docs §107). */}
       <YourPagesRow />

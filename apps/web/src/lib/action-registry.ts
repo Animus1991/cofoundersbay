@@ -64,6 +64,7 @@ import {
 } from '@/lib/api';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { findLeadByName, saveFollowUp } from '@/lib/follow-ups';
+import { investorEmailDraft } from '@/lib/investor-email';
 import { APP_LOCALES, applyLocale, getStoredLocale } from '@/lib/locale';
 import { applyTheme, type ThemeName } from '@/lib/themes';
 import { pitchDeckEditor } from '@/lib/pitch-deck-bridge';
@@ -819,6 +820,21 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
   // A programme's application note, filled on its page; nothing is sent
   // (docs §107.7-4, §111). Without the model's words, the note starts from
   // the profile's facts and leaves the rest in brackets.
+  draft_investor_email: async (payload) => {
+    const lead = await findLeadByName(requireString(payload, 'investor'));
+    if (!lead) return { ok: false, error: 'No investor on your round matches that name' };
+    const me = await getMeProfile().catch(() => null);
+    const start = investorEmailDraft(lead, me?.profile?.displayName ?? null, readerLanguage());
+    const ask = typeof payload?.__ask === 'string' ? payload.__ask.trim() : '';
+    stashFormDraft('investor_email', {
+      name: lead.name,
+      to: lead.email ?? '',
+      subject: requireString(payload, 'subject').trim() || start.subject,
+      body: requireString(payload, 'body').trim() || start.body,
+    }, ask || undefined);
+    return { ok: true, href: '/fundraising' };
+  },
+
   draft_program_application: async (payload) => {
     let programId = requireString(payload, 'programId');
     const list = await listPrograms({ limit: 50 });

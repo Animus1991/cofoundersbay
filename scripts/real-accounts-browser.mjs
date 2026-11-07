@@ -265,6 +265,71 @@ try {
   body = await founder.page.evaluate(() => document.body.innerText);
   check('fundraising: it shows who opened the file', body.includes('Το άνοιξαν: Δοκιμή Επενδυτής'));
   await shot(founder, 'data-room-opened');
+
+  // A link for someone without an account (docs §114): made on the page, opened with no session.
+  await founder.page.getByRole('button', { name: /Κοινοποίηση data room/ }).first().click();
+  await founder.page.waitForTimeout(800);
+  const links = founder.page.locator('[data-room-links]');
+  check('link: offered on a real account', await links.isVisible());
+  await links.getByLabel('Για ποιον είναι').fill('Για την Εύα');
+  await links.getByRole('button', { name: /Δημιουργία συνδέσμου/ }).click();
+  await founder.page.waitForTimeout(1500);
+  const address = await links.locator('input[readonly]').inputValue();
+  check('link: the address is shown once', /\/dd\//.test(address), address.slice(0, 40));
+  const stranger = await browser.newContext({ viewport: { width: 390, height: 780 } });
+  const outside = await stranger.newPage();
+  await outside.goto(address, { waitUntil: 'domcontentloaded' });
+  await outside.waitForTimeout(2600);
+  body = await outside.evaluate(() => document.body.innerText);
+  check('link: opens with no account', body.includes('Κοινό έγγραφο'), body.slice(0, 80));
+  check('link: and not the private file', !body.includes('Ιδιωτικό έγγραφο'));
+  const file = await outside.evaluate(async () => (await fetch(document.querySelector('a[href*="/documents/"]').href)).status);
+  check('link: the file downloads', file === 200, String(file));
+  await links.getByRole('button', { name: /Ανάκληση/ }).first().click();
+  await founder.page.waitForTimeout(1200);
+  await outside.reload({ waitUntil: 'domcontentloaded' });
+  await outside.waitForTimeout(2600);
+  body = await outside.evaluate(() => document.body.innerText);
+  check('link: a revoked link no longer opens', body.includes('δεν ανοίγει') && !body.includes('Κοινό έγγραφο'), body.slice(0, 80));
+  await stranger.close();
+  await founder.page.keyboard.press('Escape');
+
+  // The cap table and the note to an investor, on the live path.
+  await open(founder, '/fundraising', 3000);
+  await founder.page.getByRole('tab', { name: /Cap table/ }).click();
+  await founder.page.waitForTimeout(600);
+  await founder.page.getByLabel('Κάτοχος').fill('Δοκιμή Ιδρυτής');
+  await founder.page.getByLabel('Μετοχές').fill('900');
+  await founder.page.locator('[data-cap-table]').getByRole('button', { name: /Προσθήκη/ }).click();
+  await founder.page.waitForTimeout(1500);
+  await open(founder, '/fundraising', 3000);
+  await founder.page.getByRole('tab', { name: /Cap table/ }).click();
+  await founder.page.waitForTimeout(600);
+  check('cap table: it survives a reload', (await founder.page.locator('[data-cap-table]').innerText()).includes('Δοκιμή Ιδρυτής'));
+  await founder.page.getByRole('tab', { name: /Pipeline/ }).click();
+  await founder.page.waitForTimeout(500);
+  await founder.page.getByRole('button', { name: /Γράψτε email/ }).first().click();
+  await founder.page.waitForTimeout(800);
+  check('email: starts from the next step', (await founder.page.locator('#investor-email-body').inputValue()).length > 20);
+  await founder.page.keyboard.press('Escape');
+
+  // Steps on a milestone, and the home that reads it.
+  const due = await call(founder, 'POST', '/api/milestones', { title: 'Δοκιμή ορόσημο', dueDate: '2026-01-01' });
+  check('milestone: saves', due.status < 300, String(due.status));
+  await open(founder, '/milestones', 3000);
+  const steps = founder.page.locator('[data-milestone-checklist]').first();
+  await steps.locator('button').first().click();
+  await steps.getByPlaceholder(/Ένα βήμα/).fill('Πρώτο βήμα');
+  await steps.getByRole('button', { name: /Προσθήκη/ }).last().click();
+  await founder.page.waitForTimeout(1200);
+  await steps.getByRole('checkbox').first().click();
+  await founder.page.waitForTimeout(1500);
+  const saved = await call(founder, 'GET', `/api/milestones/${due.data.id}`);
+  check('milestone: a tick reaches the database', saved.data?.progress === 100 && saved.data?.checklist?.[0]?.done === true, JSON.stringify(saved.data?.checklist ?? null).slice(0, 80));
+  body = await open(founder, '/dashboard', 3000);
+  check('home: Today names the overdue milestone', (await founder.page.locator('[data-home-today]').innerText()).includes('Δοκιμή ορόσημο'));
+  body = await open(founder, '/notifications', 3000);
+  check('notifications: and so does this page', body.includes('Εκπρόθεσμο ορόσημο: Δοκιμή ορόσημο'));
 } catch (e) {
   check('ran to the end', false, e.message.split('\n')[0].slice(0, 180));
 } finally {

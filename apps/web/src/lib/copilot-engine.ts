@@ -301,6 +301,8 @@ const WAVE_C_WRITES = new Set<string>([
   // A programme application note and a review asked of the reader (§111):
   // named by the programme's title and by who asked.
   'draft_program_application', 'draft_expert_review',
+  // An email to an investor (§114): named by who it is for.
+  'draft_investor_email',
 ]);
 
 export function actionsFromToolCalls(
@@ -981,7 +983,7 @@ export async function runCopilotTurn(
     // with the thing it acts on named so two cards are never ambiguous.
     if (WAVE_C_WRITES.has(tool.name)) {
       const target =
-        tool.args?.groupName || tool.args?.programTitle || tool.args?.email || tool.args?.requesterName ||
+        tool.args?.groupName || tool.args?.programTitle || tool.args?.email || tool.args?.requesterName || tool.args?.investor ||
         tool.args?.title || tool.args?.name || tool.args?.headline || tool.args?.bio || '';
       // A card with nothing to act on would only fail once confirmed; asking
       // first is the shorter path. Answering a request carries its decision

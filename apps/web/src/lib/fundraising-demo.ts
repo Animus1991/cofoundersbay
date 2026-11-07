@@ -1,3 +1,4 @@
+import { readCapTable, type CapTableHolder } from '@cofounderbay/shared';
 import { attachDemoPhotos, demoPortrait } from '@/lib/demo/photos';
 import { previewClockOffsetMs } from '@/lib/preview-api';
 import { calendarDaysUntil } from '@/lib/calendar-days';
@@ -27,6 +28,7 @@ export type InvestorLead = {
   logoUrl?: string;
   nameEl?: string;
   firm?: string;
+  email?: string;
   type: string;
   stage: string;
   checkSize: string;
@@ -60,6 +62,31 @@ export type DataRoomDoc = {
 
 const STORAGE_KEY = 'cfb:demo-fundraising';
 const ROOM_SHARE_KEY = 'cfb:demo-room-share:v1';
+const CAP_TABLE_KEY = 'cfb:demo-cap-table:v1';
+
+/** The showcase's cap table: a sample until someone changes it, then theirs for the session. */
+const SAMPLE_CAP_TABLE: CapTableHolder[] = [
+  { id: 'cap-alex', name: 'Alex Demo', kind: 'founder', shares: 7_500_000 },
+  { id: 'cap-angels', name: 'Athens Tech Angels', kind: 'investor', shares: 1_000_000 },
+  { id: 'cap-pool', name: 'Option pool', kind: 'pool', shares: 1_500_000 },
+];
+
+export function readDemoCapTable(): CapTableHolder[] {
+  try {
+    const raw = typeof window !== 'undefined' ? window.sessionStorage.getItem(CAP_TABLE_KEY) : null;
+    return (raw ? readCapTable(JSON.parse(raw)) : null) ?? SAMPLE_CAP_TABLE;
+  } catch {
+    return SAMPLE_CAP_TABLE;
+  }
+}
+
+export function writeDemoCapTable(next: CapTableHolder[]): void {
+  try {
+    window.sessionStorage.setItem(CAP_TABLE_KEY, JSON.stringify(next));
+  } catch {
+    // A session without storage keeps the sample.
+  }
+}
 
 /** The showcase's sharing, in this tab only, like the rest of its overlay. */
 export type DemoRoomShare = { links: Record<string, { id: string; displayName: string }>; shared: string[] };

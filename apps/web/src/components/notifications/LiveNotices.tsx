@@ -8,6 +8,7 @@ import { listCommitmentThreads, type CommitmentThreadSummary } from '@/lib/commi
 import { nextAction, waitsOnMe } from '@/lib/commitments-next';
 import { useInvestorFollowUps, type FollowUpLead } from '@/lib/follow-ups';
 import { isMilestoneOverdue } from '@/lib/milestone-order';
+import { PREVIEW_MILESTONE_EL } from '@/lib/i18n/strings-milestones';
 import { qk } from '@/lib/query-keys';
 
 export type LiveNotice = { key: string; href: string; en: string; el: string };
@@ -46,13 +47,14 @@ export function liveNotices({ followUps, milestones, threads }: {
       key: 'milestone',
       href: '/milestones',
       en: late.length === 1 ? `Overdue milestone: ${late[0].title}` : `${late.length} milestones are overdue`,
-      el: late.length === 1 ? `Εκπρόθεσμο ορόσημο: ${late[0].title}` : `Εκπρόθεσμα ορόσημα: ${late.length}`,
+      el: late.length === 1 ? `Εκπρόθεσμο ορόσημο: ${PREVIEW_MILESTONE_EL[late[0].title]?.title ?? late[0].title}` : `Εκπρόθεσμα ορόσημα: ${late.length}`,
     });
   }
   return notices;
 }
 
-export function LiveNotices() {
+/** What is due now and who reads it: the notifications page and the home, from the same answers. */
+export function useLiveNotices(): { notices: LiveNotice[]; followUps: FollowUpLead[] } {
   const { due } = useInvestorFollowUps();
   // The keys the milestones page and the home read, so they share one answer.
   const { data: milestones } = useQuery({
@@ -67,7 +69,11 @@ export function LiveNotices() {
     staleTime: 30_000,
     retry: 0,
   });
-  const notices = liveNotices({ followUps: due, milestones: milestones?.milestones ?? [], threads: threads ?? [] });
+  return { notices: liveNotices({ followUps: due, milestones: milestones?.milestones ?? [], threads: threads ?? [] }), followUps: due };
+}
+
+export function LiveNotices() {
+  const { notices } = useLiveNotices();
   if (notices.length === 0) return null;
   return (
     <div className="space-y-2" data-live-notices="">

@@ -4878,6 +4878,7 @@ model FundraisingRound {
 
   preMoneyValuation Decimal?              @db.Decimal(18, 2)
   equityOffered    Decimal?               @db.Decimal(5, 4) // e.g. 0.15 = 15%
+  capTable         Json                   @default("[]") // CapTableHolder[]: who owns what today
 
   leadInvestorName String?
   leadInvestorId   String?                // Link to platform investor profile
@@ -4892,6 +4893,7 @@ model FundraisingRound {
   updatedAt        DateTime               @updatedAt
 
   leads            InvestorPipelineLead[]
+  dataRoomLinks    DataRoomLink[]
   documents        DataRoomDocument[]
 
   @@index([ownerId])
@@ -6051,6 +6053,24 @@ model StartupReadinessReport {
 // Data Room Access Log — Investor access tracking per document
 // Enables transparency in fundraising data room activity
 // ─────────────────────────────────────────────────────────────────────────────
+
+/// A link for someone without an account: the round's shared files, until it
+/// ends or is revoked. Only the hash is kept, so the link cannot be read back.
+model DataRoomLink {
+  id           String           @id @default(uuid())
+  roundId      String
+  round        FundraisingRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  createdById  String
+  tokenHash    String           @unique
+  label        String?
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  openCount    Int              @default(0)
+  lastOpenedAt DateTime?
+  createdAt    DateTime         @default(now())
+
+  @@index([roundId])
+}
 
 model DataRoomAccessLog {
   id           String           @id @default(uuid())

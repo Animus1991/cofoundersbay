@@ -1,11 +1,12 @@
+import { readCapTable } from '@cofounderbay/shared';
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
-import { randomBytes } from 'crypto';
-import type { DataRoomDocCategory, DataRoomDocument, FundraisingRound, InvestorLeadStatus, InvestorPipelineLead, Prisma } from '@prisma/client';
+import { createHash, randomBytes } from 'crypto';
+import type { DataRoomDocCategory, DataRoomDocument, DataRoomLink, FundraisingRound, InvestorLeadStatus, InvestorPipelineLead, Prisma } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadsService } from '../uploads/uploads.service';
 import { validateUpload } from '../uploads/upload-validation';
-import type { CreateLead, CreateRound, ShareDocuments, UpdateDocument, UpdateLead, UpdateRound } from './fundraising.schemas';
+import type { CreateLead, CreateRoomLink, CreateRound, ShareDocuments, UpdateDocument, UpdateLead, UpdateRound } from './fundraising.schemas';
 
 const COMMITTED: InvestorLeadStatus = 'committed';
 
@@ -21,6 +22,7 @@ function leadView(lead: InvestorPipelineLead, people: Map<string, Person>) {
     id: lead.id,
     investorName: lead.investorName,
     investorFirm: lead.investorFirm,
+    investorEmail: lead.investorEmail,
     investorType: lead.investorType,
     stageFocus: lead.stageFocus,
     checkSizeText: lead.checkSizeText,
@@ -56,6 +58,21 @@ function documentView(doc: DataRoomDocument, openings?: Openings) {
   };
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const hashToken = (token: string) => createHash('sha256').update(token).digest('hex');
+
+function roomLinkView(link: DataRoomLink) {
+  return {
+    id: link.id,
+    label: link.label,
+    expiresAt: link.expiresAt.toISOString(),
+    revokedAt: link.revokedAt?.toISOString() ?? null,
+    openCount: link.openCount,
+    lastOpenedAt: link.lastOpenedAt?.toISOString() ?? null,
+    createdAt: link.createdAt.toISOString(),
+  };
+}
+
 function roundView(round: FundraisingRound, leads: InvestorPipelineLead[]) {
   const committed = leads.filter((l) => l.status === COMMITTED);
   return {
@@ -73,6 +90,7 @@ function roundView(round: FundraisingRound, leads: InvestorPipelineLead[]) {
     leadInvestorName: round.leadInvestorName,
     closingDate: round.closingDate?.toISOString() ?? null,
     description: round.description,
+    capTable: readCapTable(round.capTable) ?? [],
   };
 }
 
@@ -373,6 +391,84 @@ export class FundraisingService {
     // The row is gone either way: a file that will not delete is logged, not shown.
     if (doc.fileUrl) await this.uploads.deletePrivateFile(doc.fileUrl).catch((err: unknown) => this.logger.warn(`Data room file not deleted: ${String(err)}`));
     return this.state(ownerId);
+  }
+
+  /**
+   * A link for someone without an account (docs §114). The token is answered
+   * once and only its hash is kept. It shows the files marked as shared, so
+   * taking a file back from investors takes it from the link too.
+   */
+  async createRoomLink(ownerId: string, input: CreateRoomLink) {
+    const round = await this.ensureRound(ownerId);
+    const shared = await this.prisma.dataRoomDocument.count({ where: { roundId: round.id, sharedWithLeads: true, fileUrl: { not: null } } });
+    if (shared === 0) throw new BadRequestException('Share at least one file first');
+    const token = randomBytes(32).toString('base64url');
+    const link = await this.prisma.dataRoomLink.create({
+      data: {
+        roundId: round.id,
+        createdById: ownerId,
+        tokenHash: hashToken(token),
+        label: input.label,
+        expiresAt: new Date(Date.now() + input.days * DAY_MS),
+      },
+    });
+    return { token, link: roomLinkView(link) };
+  }
+
+  async listRoomLinks(ownerId: string) {
+    const rounds = await this.prisma.fundraisingRound.findMany({ where: { ownerId }, select: { id: true } });
+    const links = await this.prisma.dataRoomLink.findMany({
+      where: { roundId: { in: rounds.map((r) => r.id) } },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+    return links.map(roomLinkView);
+  }
+
+  /** Revoked, not deleted: the owner keeps the record that it existed and was opened. */
+  async revokeRoomLink(ownerId: string, id: string) {
+    const link = await this.prisma.dataRoomLink.findFirst({ where: { id, round: { ownerId } } });
+    if (!link) throw new NotFoundException('Link not found');
+    if (!link.revokedAt) await this.prisma.dataRoomLink.update({ where: { id }, data: { revokedAt: new Date() } });
+    return this.listRoomLinks(ownerId);
+  }
+
+  /** An ended link, a revoked one and one that never existed answer the same. */
+  private async liveRoomLink(token: string) {
+    const link = await this.prisma.dataRoomLink.findUnique({ where: { tokenHash: hashToken(token) }, include: { round: true } });
+    if (!link || link.revokedAt || link.expiresAt.getTime() <= Date.now()) throw new NotFoundException('Link not found');
+    const owner = await this.prisma.user.findUnique({ where: { id: link.round.ownerId }, select: { moderationStatus: true } });
+    if (owner?.moderationStatus !== 'active') throw new NotFoundException('Link not found');
+    return link;
+  }
+
+  async readRoomLink(token: string) {
+    const link = await this.liveRoomLink(token);
+    const documents = await this.prisma.dataRoomDocument.findMany({
+      where: { roundId: link.roundId, sharedWithLeads: true, fileUrl: { not: null } },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, name: true, category: true, fileName: true, fileSizeBytes: true },
+    });
+    return {
+      roundName: link.round.name,
+      founderName: await this.nameOf(link.round.ownerId),
+      expiresAt: link.expiresAt.toISOString(),
+      documents,
+    };
+  }
+
+  async openRoomLinkFile(token: string, documentId: string) {
+    const link = await this.liveRoomLink(token);
+    const doc = await this.prisma.dataRoomDocument.findFirst({
+      where: { id: documentId, roundId: link.roundId, sharedWithLeads: true, fileUrl: { not: null } },
+    });
+    if (!doc?.fileUrl) throw new NotFoundException('Document not found');
+    const buffer = await this.uploads.readPrivateFile(doc.fileUrl);
+    await this.prisma.$transaction([
+      this.prisma.dataRoomLink.update({ where: { id: link.id }, data: { openCount: { increment: 1 }, lastOpenedAt: new Date() } }),
+      this.prisma.dataRoomDocument.update({ where: { id: doc.id }, data: { viewCount: { increment: 1 } } }),
+    ]);
+    return { buffer, fileName: doc.fileName ?? doc.name, mimeType: doc.fileMimeType ?? 'application/octet-stream' };
   }
 
   /**

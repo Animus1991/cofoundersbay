@@ -141,6 +141,53 @@ async function runProductChecks({ base, db, results, password, privateDir, uploa
   await alice.request('PATCH', `/fundraising/leads/${leadId}`, { platformUserId: null });
   check('unlinking_ends_access', (await bob.raw(`/fundraising/documents/${docId}/file`)).status === 404 && (await bob.request('GET', '/fundraising/shared')).data.rooms.length === 0);
   await alice.request('PATCH', `/fundraising/leads/${leadId}`, { platformUserId: bid });
+  // ── What docs §114 added ─────────────────────────────
+  const holders = [{ id: 'h1', name: 'Alice', kind: 'founder', shares: 900 }, { id: 'h2', name: 'Pool', kind: 'pool', shares: 100 }];
+  const capped = await alice.request('PATCH', `/fundraising/rounds/${roundId}`, { capTable: holders });
+  check('cap_table_stored', capped.status === 200 && capped.data.round.capTable.length === 2 && (await db.fundraisingRound.findUnique({ where: { id: roundId } })).capTable.length === 2);
+  check('cap_table_refuses_a_bad_holder', (await alice.request('PATCH', `/fundraising/rounds/${roundId}`, { capTable: [{ ...holders[0], shares: -1 }] })).status === 400);
+  check('cap_table_refuses_another_member', (await bob.request('PATCH', `/fundraising/rounds/${roundId}`, { capTable: holders })).status === 404);
+  const emailed = await alice.request('POST', '/fundraising/leads', { investorName: 'Eve Investor', investorEmail: 'eve@fund.example' });
+  check('investor_email_stored', emailed.status === 201 && emailed.data.leads.some((l) => l.investorEmail === 'eve@fund.example'));
+  check('investor_email_refuses_a_bad_address', (await alice.request('POST', '/fundraising/leads', { investorName: 'Eve', investorEmail: 'nope' })).status === 400);
+
+  check('link_needs_a_session', [401, 403].includes((await anonymous.request('POST', '/fundraising/links', { days: 7 })).status));
+  check('link_needs_a_shared_file', (await bob.request('POST', '/fundraising/links', { days: 7 })).status === 400);
+  check('link_lasts_thirty_days_at_most', (await alice.request('POST', '/fundraising/links', { days: 31 })).status === 400);
+  const made = await alice.request('POST', '/fundraising/links', { label: 'For Eve', days: 7 });
+  check('link_made', made.status === 201 && made.data.token.length > 40);
+  const token = made.data.token;
+  const linkId = made.data.link.id;
+  const linkRow = await db.dataRoomLink.findUnique({ where: { id: linkId } });
+  check('link_keeps_only_a_hash', linkRow.tokenHash.length === 64 && !JSON.stringify(linkRow).includes(token));
+  const opened = await anonymous.request('GET', `/public/data-room/${token}`);
+  check('link_opens_without_an_account', opened.status === 200 && opened.data.founderName === 'Alice' && opened.data.documents.some((d) => d.id === docId));
+  check('link_hides_the_key', !JSON.stringify(opened.data).includes(row.fileUrl));
+  const views = (await db.dataRoomDocument.findUnique({ where: { id: docId } })).viewCount;
+  check('link_downloads', (await anonymous.raw(`/public/data-room/${token}/documents/${docId}/file`)).status === 200);
+  check('link_counts_the_opening', (await db.dataRoomLink.findUnique({ where: { id: linkId } })).openCount === 1 && (await db.dataRoomDocument.findUnique({ where: { id: docId } })).viewCount === views + 1);
+  check('a_wrong_link_is_404', (await anonymous.request('GET', '/public/data-room/not-a-token')).status === 404);
+  await alice.request('POST', '/fundraising/documents/sharing', { documentIds: [docId], shared: false });
+  check('unsharing_takes_it_from_the_link', (await anonymous.raw(`/public/data-room/${token}/documents/${docId}/file`)).status === 404);
+  await alice.request('POST', '/fundraising/documents/sharing', { documentIds: [docId], shared: true });
+  check('another_member_cannot_revoke', (await bob.request('DELETE', `/fundraising/links/${linkId}`)).status === 404);
+  const revoked = await alice.request('DELETE', `/fundraising/links/${linkId}`);
+  check('revoke_keeps_the_record', revoked.status === 200 && revoked.data.find((l) => l.id === linkId).revokedAt !== null);
+  check('a_revoked_link_is_404', (await anonymous.request('GET', `/public/data-room/${token}`)).status === 404);
+  check('a_revoked_link_gives_no_file', (await anonymous.raw(`/public/data-room/${token}/documents/${docId}/file`)).status === 404);
+  const short = await alice.request('POST', '/fundraising/links', { days: 1 });
+  await db.dataRoomLink.update({ where: { id: short.data.link.id }, data: { expiresAt: new Date(Date.now() - 1000) } });
+  check('an_ended_link_is_404', (await anonymous.request('GET', `/public/data-room/${short.data.token}`)).status === 404);
+
+  const steps = [{ id: 's1', text: 'One', done: true }, { id: 's2', text: 'Two', done: false }];
+  const stepped = await alice.request('POST', '/milestones', { title: 'Ship the beta', checklist: steps });
+  check('milestone_takes_steps', stepped.status === 201 && stepped.data.progress === 50 && stepped.data.checklist.length === 2);
+  const msId = stepped.data.id;
+  const ticked = await alice.request('PATCH', `/milestones/${msId}`, { checklist: steps.map((step) => ({ ...step, done: true })) });
+  check('milestone_ticks_set_progress', ticked.status === 200 && ticked.data.progress === 100 && (await db.milestone.findUnique({ where: { id: msId } })).progress === 100);
+  check('milestone_refuses_bad_steps', (await alice.request('PATCH', `/milestones/${msId}`, { checklist: 'nope' })).status === 400);
+  check('milestone_steps_refuse_a_stranger', [403, 404].includes((await bob.request('PATCH', `/milestones/${msId}`, { checklist: [] })).status));
+
   check('stranger_cannot_delete', (await bob.request('DELETE', `/fundraising/documents/${docId}`)).status === 404);
   check('delete_removes_the_row', (await alice.request('DELETE', `/fundraising/documents/${docId}`)).status === 200 && await db.dataRoomDocument.count() === 0);
   check('delete_removes_the_file', !fs.existsSync(path.join(privateDir, row.fileUrl)));

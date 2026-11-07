@@ -1,3 +1,4 @@
+import type { CapTableHolder } from '@cofounderbay/shared';
 import { apiRequest, getApiBase } from '@/lib/api';
 import type { DataRoomDoc, FundRound, InvestorLead, InvestorStatus } from '@/lib/fundraising-demo';
 
@@ -23,6 +24,7 @@ export type ApiRound = {
   leadInvestorName: string | null;
   closingDate: string | null;
   description: string | null;
+  capTable?: CapTableHolder[];
 };
 
 export type LinkedAccount = { id: string; displayName: string; avatarUrl: string | null; headline: string | null };
@@ -31,6 +33,7 @@ export type ApiLead = {
   id: string;
   investorName: string;
   investorFirm: string | null;
+  investorEmail?: string | null;
   investorType: string | null;
   stageFocus: string | null;
   checkSizeText: string | null;
@@ -90,11 +93,13 @@ export type RoundInput = {
   closingDate: string | null;
   leadInvestorName: string | null;
   status?: ApiRound['status'];
+  capTable?: CapTableHolder[];
 };
 
 export type LeadInput = {
   investorName: string;
   investorFirm?: string | null;
+  investorEmail?: string | null;
   investorType?: string | null;
   stageFocus?: string | null;
   checkSizeText?: string | null;
@@ -142,6 +147,7 @@ export function leadFromApi(lead: ApiLead): InvestorLead {
     id: lead.id,
     name: lead.investorName,
     firm: lead.investorFirm ?? undefined,
+    email: lead.investorEmail ?? undefined,
     type: lead.investorType ?? 'Angel',
     stage: lead.stageFocus ?? '',
     // A committed amount is the fact; the range was the first guess.
@@ -189,6 +195,44 @@ export function roundFromApi(round: ApiRound): FundRound & { investors: number; 
     leadInvestor: round.leadInvestorName ?? undefined,
     investors: round.investors,
   };
+}
+
+export type RoomLink = {
+  id: string;
+  label: string | null;
+  expiresAt: string;
+  revokedAt: string | null;
+  openCount: number;
+  lastOpenedAt: string | null;
+  createdAt: string;
+};
+
+export type PublicRoom = {
+  roundName: string;
+  founderName: string;
+  expiresAt: string;
+  documents: Array<{ id: string; name: string; category: string; fileName: string | null; fileSizeBytes: number | null }>;
+};
+
+export function listRoomLinks(): Promise<RoomLink[]> {
+  return apiRequest('/api/fundraising/links');
+}
+
+/** The token comes back this once: the API keeps only its hash. */
+export function createRoomLink(body: { label: string | null; days: number }): Promise<{ token: string; link: RoomLink }> {
+  return apiRequest('/api/fundraising/links', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export function revokeRoomLink(id: string): Promise<RoomLink[]> {
+  return apiRequest(`/api/fundraising/links/${id}`, { method: 'DELETE' });
+}
+
+export function getPublicRoom(token: string): Promise<PublicRoom> {
+  return apiRequest(`/api/public/data-room/${encodeURIComponent(token)}`);
+}
+
+export function publicRoomFileHref(token: string, documentId: string): string {
+  return `${getApiBase()}/api/public/data-room/${encodeURIComponent(token)}/documents/${encodeURIComponent(documentId)}/file`;
 }
 
 export function getFundraising(): Promise<FundraisingState> {

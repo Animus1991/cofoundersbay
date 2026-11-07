@@ -59,7 +59,7 @@ import {
 import { FounderPaths } from '@/components/dashboard/FounderPaths';
 import { FounderPhoneHome } from '@/components/dashboard/FounderPhoneHome';
 import { listCommitmentThreads } from '@/lib/commitments-api';
-import { nextAction as ladderNextAction, waitsOnMe } from '@/lib/commitments-next';
+import { waitsOnMe } from '@/lib/commitments-next';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { ProgressSegments } from '@/components/dashboard/ProgressSegments';
 import { Sparkline } from '@/components/charts/Sparkline';
@@ -81,7 +81,7 @@ import { useApiAvailability } from '@/hooks/useApiAvailability';
 import { useConnectionWith } from '@/hooks/useConnectionWith';
 import { isMilestoneOverdue } from '@/lib/milestone-order';
 import { useToast } from '@/components/ui/toast';
-import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
+import { HomeToday } from '@/components/dashboard/HomeToday';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { useInvestorFollowUps } from '@/lib/follow-ups';
 
@@ -421,7 +421,6 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
 
 export default function FounderDashboardContent() {
   const { hasSession, mounted } = useSession();
-  const { ask } = useAskAssistant();
   const { showDemoData } = useDemoData();
   const { primary } = useLanguagePreference();
   const sayOne = useBilingualString();
@@ -682,34 +681,20 @@ export default function FounderDashboardContent() {
             el: `${openMilestones.length} ανοιχτά`,
           };
   const attentionItems: AttentionItem[] = [];
-  // A person is waiting on the founder's answer on the ladder: that comes first.
   const waitingThreads = (ladderThreads ?? []).filter(waitsOnMe);
-  const firstWaiting = waitingThreads[0];
-  const firstWaitingStep = firstWaiting ? ladderNextAction(firstWaiting) : null;
-  // It leads the page in the waiting flash (HomeNextStep), the same anatomy
-  // every role's home uses for what waits on the reader; the chips below keep
-  // the rest, so it is not said twice.
-  const waitingNext = firstWaiting && firstWaitingStep
-    ? {
-        href: `/commitments/${encodeURIComponent(firstWaiting.cardId)}?thread=${encodeURIComponent(firstWaiting.id)}`,
-        titleEn: firstWaitingStep.en,
-        titleEl: firstWaitingStep.el,
-        more: waitingThreads.length - 1,
-      }
-    : null;
   // The chips carry what nothing else on the page says (docs §70). Unread
   // messages have their tile; intro requests lead the row under the question
   // box ("Intro requests 1", which asks the assistant to go through them) and
   // keep their badge on Connections; the weakest readiness dimension is the
   // "Lowest:" link in the progress card below. Each was a second chip for
   // the same fact, one row away.
-  if (nextOpenMilestone) {
+  // An overdue one is in Today, at the top of the page.
+  if (nextOpenMilestone && !nextIsOverdue) {
     attentionItems.push({
       href: '/milestones',
       glyph: 'flag',
-      en: `${nextIsOverdue ? 'Overdue' : 'Next'}: ${nextOpenMilestone.titleEn}`,
-      el: `${nextIsOverdue ? 'Εκπρόθεσμο' : 'Επόμενο'}: ${nextOpenMilestone.titleEl}`,
-      urgent: nextIsOverdue,
+      en: `Next: ${nextOpenMilestone.titleEn}`,
+      el: `Επόμενο: ${nextOpenMilestone.titleEl}`,
       // Below 640px the phone home names this milestone in a card of its own.
       phoneHidden: true,
     });
@@ -1361,7 +1346,7 @@ export default function FounderDashboardContent() {
         {/* GitHub's home: a greeting over one question box and the jobs to
             start from. The weekly brief the header's field used to send is
             the "My week" chip. */}
-        <HomeAskHero role="founder" followUpsDue={dueFollowUps.length} name={own?.displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
+        <HomeAskHero role="founder" followUpsDue={dueFollowUps.length} showWaiting={false} name={own?.displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
 
         {showFirstMove && (
           <FounderFirstMove
@@ -1376,27 +1361,7 @@ export default function FounderDashboardContent() {
           />
         )}
 
-        {waitingNext ? (
-          <HomeNextStep
-            tone="waiting"
-            kickerEn="Waiting on you"
-            kickerEl="Σας περιμένει"
-            titleEn={waitingNext.titleEn}
-            titleEl={waitingNext.titleEl}
-            reasonEn={waitingNext.more > 0 ? `${waitingNext.more} more on Commitments` : undefined}
-            reasonEl={waitingNext.more > 0 ? `${waitingNext.more} ακόμη στις Δεσμεύσεις` : undefined}
-            href={waitingNext.href}
-            glyph="pact"
-            actionEn="Open"
-            actionEl="Άνοιγμα"
-            askEn="Ask"
-            askEl="Ρωτήστε"
-            onAsk={() => ask({
-              en: `What should I do next here: ${waitingNext.titleEn}`,
-              el: `Τι να κάνω στη συνέχεια εδώ: ${waitingNext.titleEl}`,
-            })}
-          />
-        ) : null}
+        <HomeToday />
 
         {/* The unfinished thing and the next people lead at every width.
             Activity, the first person, the milestone and the calendar stay
@@ -1571,7 +1536,7 @@ export default function FounderDashboardContent() {
 
           {/* Beside readiness: whether the people the startup needs are coming -
               each need card's outcome and the steps waiting on the founder. */}
-          <CommitmentOutcomes waitingShownAbove={!!waitingNext} />
+          <CommitmentOutcomes waitingShownAbove={waitingThreads.length > 0} />
 
           {/* What the October round added, each with the place to try it. */}
           <WhatsNewPanel audience="founder" />

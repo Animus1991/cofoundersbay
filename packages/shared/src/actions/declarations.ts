@@ -2821,6 +2821,31 @@ export const ACTION_DECLARATIONS = [
     confirmLabel: { en: 'Open filled application', el: 'Άνοιγμα συμπληρωμένης αίτησης' },
   },
   {
+    id: 'draft_investor_email',
+    kind: 'mutation',
+    label: { en: 'Draft an email to an investor', el: 'Πρόχειρο email σε επενδυτή' },
+    description: {
+      en: 'Open the Fundraising page with an email to one investor on the round filled in, starting from the next step written for them. It opens in the founder’s own mail app; nothing is sent from the platform.',
+      el: 'Ανοίγει τη σελίδα Χρηματοδότηση με ένα email προς έναν επενδυτή του γύρου συμπληρωμένο, από το επόμενο βήμα που έχει γραφτεί γι’ αυτόν. Ανοίγει στο δικό σας πρόγραμμα email· από την πλατφόρμα δεν στέλνεται τίποτα.',
+    },
+    params: [
+      { name: 'investor', type: 'string', required: true, description: { en: 'The investor’s name or firm, as on the Fundraising page.', el: 'Το όνομα ή η εταιρεία του επενδυτή, όπως στη σελίδα Χρηματοδότηση.' } },
+      { name: 'subject', type: 'string', required: false, description: { en: 'The subject line. Left out, it comes from the next step.', el: 'Το θέμα. Αν λείπει, βγαίνει από το επόμενο βήμα.' } },
+      { name: 'body', type: 'string', required: false, description: { en: 'The message. Left out, a short note is written from the next step.', el: 'Το μήνυμα. Αν λείπει, γράφεται ένα σύντομο σημείωμα από το επόμενο βήμα.' } },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is sent. The page opens with the note filled; you read it and open it in your mail app, or leave and nothing happens.',
+        el: 'Δεν στέλνεται τίποτα. Η σελίδα ανοίγει με το σημείωμα συμπληρωμένο· το διαβάζετε και το ανοίγετε στο email σας, ή φεύγετε και δεν γίνεται τίποτα.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Open filled email', el: 'Άνοιγμα συμπληρωμένου email' },
+  },
+  {
     id: 'draft_expert_review',
     kind: 'mutation',
     label: { en: 'Draft a review asked of me', el: 'Πρόχειρη αξιολόγηση που μου ζητήθηκε' },

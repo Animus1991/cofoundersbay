@@ -29,6 +29,7 @@ const PUBLIC_PREFIXES = [
   '/c/',         // public need cards /c/[token], shared by their author
   '/pitch/',     // published pitch decks /pitch/[id]; unpublished ones answer "not found"
   '/u/',         // public founder updates /u/[token], shared by their author
+  '/dd/',        // a founder's shared files /dd/[token], while the link lives (docs §114)
   // Share links are for stakeholders without an account (ArtifactShareLink);
   // behind the sign-in redirect they could never be opened by them.
   '/share/',
