@@ -771,6 +771,7 @@ model Message {
   editedAt       DateTime?
   deletedAt      DateTime?
   readAt         DateTime?
+  forwarded      Boolean             @default(false)
   attachments    MessageAttachment[]
 
   @@index([conversationId, createdAt])

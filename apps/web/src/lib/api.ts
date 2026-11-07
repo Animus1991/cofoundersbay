@@ -837,6 +837,8 @@ export type MessageItem = {
   senderId: string;
   body: string;
   createdAt: string;
+  editedAt?: string | null;
+  forwarded?: boolean;
   sender: {
     id: string;
     displayName: string;

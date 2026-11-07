@@ -38,12 +38,19 @@ export type ConversationSummaryDto = {
   updatedAt: string;
 };
 
+type ForwardedAttachment = { uploadId: string | null; url: string; mimeType: string | null; fileName: string | null; sizeBytes: number | null };
+
+/** How long a sent message can still be corrected, as in the messengers people know. */
+const EDIT_WINDOW_MS = 15 * 60 * 1000;
+
 export type MessageDto = {
   id: string;
   conversationId: string;
   senderId: string;
   body: string;
   createdAt: string;
+  editedAt: string | null;
+  forwarded: boolean;
   sender: {
     id: string;
     displayName: string;
@@ -191,6 +198,8 @@ export class MessagingService {
           },
         },
         messages: {
+          // A deleted message must not live on as the inbox preview.
+          where: { deletedAt: null },
           orderBy: { createdAt: 'desc' },
           take: 1,
           select: { id: true, body: true, senderId: true, createdAt: true },
@@ -285,7 +294,7 @@ export class MessagingService {
     if (!participant) throw new ForbiddenException('Not a participant');
 
     const messages = await this.prisma.message.findMany({
-      where: { conversationId },
+      where: { conversationId, deletedAt: null },
       orderBy: { createdAt: 'asc' },
       take: Math.min(Math.max(limit, 1), 200),
       include: {
@@ -317,6 +326,8 @@ export class MessagingService {
       senderId: m.senderId,
       body: m.body,
       createdAt: m.createdAt.toISOString(),
+      editedAt: m.editedAt?.toISOString() ?? null,
+      forwarded: m.forwarded,
       sender: {
         id: m.sender.id,
         displayName: m.sender.profile?.displayName ?? m.sender.email,
@@ -389,6 +400,7 @@ export class MessagingService {
     conversationId: string,
     body: string,
     attachmentUploadIds?: string[],
+    forwardedFrom?: { attachments: ForwardedAttachment[] },
   ): Promise<MessageDto> {
     const trimmed = body?.trim();
     if (!trimmed) throw new BadRequestException('Message body is required');
@@ -448,16 +460,20 @@ export class MessagingService {
           conversationId,
           senderId: userId,
           body: trimmed,
-          ...(uploads.length
+          forwarded: Boolean(forwardedFrom),
+          ...(uploads.length || forwardedFrom?.attachments.length
             ? {
                 attachments: {
-                  create: uploads.map((u) => ({
-                    uploadId: u.id,
-                    url: u.url,
-                    mimeType: u.mimeType ?? null,
-                    fileName: u.originalName ?? null,
-                    sizeBytes: u.sizeBytes ?? null,
-                  })),
+                  create: [
+                    ...uploads.map((u) => ({
+                      uploadId: u.id,
+                      url: u.url,
+                      mimeType: u.mimeType ?? null,
+                      fileName: u.originalName ?? null,
+                      sizeBytes: u.sizeBytes ?? null,
+                    })),
+                    ...(forwardedFrom?.attachments ?? []),
+                  ],
                 },
               }
             : {}),
@@ -494,6 +510,8 @@ export class MessagingService {
       senderId: message.senderId,
       body: message.body,
       createdAt: message.createdAt.toISOString(),
+      editedAt: null,
+      forwarded: message.forwarded,
       sender: {
         id: message.sender.id,
         displayName: message.sender.profile?.displayName ?? message.sender.email,
@@ -539,6 +557,93 @@ export class MessagingService {
   }
 
   // ── Conversation Validation ───────────────────────────────────────────────
+
+  /**
+   * The sender's own message, and only while it may still change. A validated
+   * conversation stays as written: its transcript carries a hash of the words,
+   * so a later edit would quietly break what two people agreed on.
+   */
+  private async changeableMessage(userId: string, conversationId: string, messageId: string) {
+    await this.ensureParticipant(userId, conversationId);
+    const message = await this.prisma.message.findFirst({
+      where: { id: messageId, conversationId, deletedAt: null },
+      select: { id: true, senderId: true, createdAt: true },
+    });
+    if (!message) throw new NotFoundException('Message not found');
+    if (message.senderId !== userId) throw new ForbiddenException('Only the sender can change a message');
+    const validation = await this.prisma.conversationValidation.findUnique({
+      where: { conversationId },
+      select: { transcriptAvailable: true },
+    });
+    if (validation?.transcriptAvailable) {
+      throw new ForbiddenException('This conversation is validated, so its messages stay as written');
+    }
+    return message;
+  }
+
+  async editMessage(userId: string, conversationId: string, messageId: string, body: string): Promise<MessageDto> {
+    const trimmed = body?.trim();
+    if (!trimmed) throw new BadRequestException('Message body is required');
+    if (trimmed.length > 5000) throw new BadRequestException('Message too long');
+    const message = await this.changeableMessage(userId, conversationId, messageId);
+    if (Date.now() - message.createdAt.getTime() > EDIT_WINDOW_MS) {
+      throw new BadRequestException('A message can be edited for 15 minutes');
+    }
+    const updated = await this.prisma.message.update({
+      where: { id: messageId },
+      data: { body: trimmed, editedAt: new Date() },
+      include: {
+        sender: { select: { id: true, email: true, role: true, profile: { select: { displayName: true, avatarUrl: true } } } },
+        attachments: { select: { id: true, url: true, mimeType: true, fileName: true, sizeBytes: true } },
+      },
+    });
+    return {
+      id: updated.id,
+      conversationId: updated.conversationId,
+      senderId: updated.senderId,
+      body: updated.body,
+      createdAt: updated.createdAt.toISOString(),
+      editedAt: updated.editedAt?.toISOString() ?? null,
+      forwarded: updated.forwarded,
+      sender: {
+        id: updated.sender.id,
+        displayName: updated.sender.profile?.displayName ?? updated.sender.email,
+        avatarUrl: updated.sender.profile?.avatarUrl ?? null,
+        role: updated.sender.role,
+      },
+      attachments: updated.attachments.map((a) => ({
+        id: a.id,
+        url: a.url,
+        mimeType: a.mimeType ?? null,
+        fileName: a.fileName ?? null,
+        sizeBytes: a.sizeBytes ?? null,
+      })),
+    };
+  }
+
+  /** Soft: the row stays, so a validated transcript and the other side's export are not rewritten. */
+  async deleteMessage(userId: string, conversationId: string, messageId: string): Promise<{ id: string; conversationId: string }> {
+    await this.changeableMessage(userId, conversationId, messageId);
+    await this.prisma.message.update({ where: { id: messageId }, data: { deletedAt: new Date() } });
+    return { id: messageId, conversationId };
+  }
+
+  /**
+   * A copy into another conversation the member is in, marked as forwarded. The
+   * member must be able to read the original, and the target goes through the
+   * same checks as any message, a block included.
+   */
+  async forwardMessage(userId: string, messageId: string, targetConversationId: string): Promise<MessageDto> {
+    const source = await this.prisma.message.findFirst({
+      where: { id: messageId, deletedAt: null, conversation: { participants: { some: { userId } } } },
+      select: {
+        body: true,
+        attachments: { select: { uploadId: true, url: true, mimeType: true, fileName: true, sizeBytes: true } },
+      },
+    });
+    if (!source) throw new NotFoundException('Message not found');
+    return this.sendMessage(userId, targetConversationId, source.body, undefined, { attachments: source.attachments });
+  }
 
   private async ensureParticipant(userId: string, conversationId: string) {
     const p = await this.prisma.conversationParticipant.findUnique({

@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { extname } from 'node:path';
 
-export type UploadPolicy = 'avatar' | 'attachment';
+export type UploadPolicy = 'avatar' | 'attachment' | 'message';
 
 export type ValidatedUpload = {
   extension: string;
@@ -12,6 +12,8 @@ type DetectedType = ValidatedUpload & {
   acceptedExtensions: readonly string[];
   acceptedMimeTypes: readonly string[];
   image: boolean;
+  /** A voice note. Taken only in a message, so nowhere else starts accepting media. */
+  audio?: boolean;
 };
 
 function startsWith(buffer: Buffer, bytes: readonly number[]): boolean {
@@ -23,6 +25,16 @@ function ascii(buffer: Buffer, start: number, length: number): string {
 }
 
 function detectedBinaryType(buffer: Buffer, originalExtension: string): DetectedType | null {
+  // What MediaRecorder writes: WebM in Chromium and Firefox, MP4 in Safari.
+  if (startsWith(buffer, [0x1a, 0x45, 0xdf, 0xa3])) {
+    return { extension: '.webm', mimeType: 'audio/webm', acceptedExtensions: ['.webm'], acceptedMimeTypes: ['audio/webm', 'video/webm'], image: false, audio: true };
+  }
+  if (ascii(buffer, 0, 4) === 'OggS') {
+    return { extension: '.ogg', mimeType: 'audio/ogg', acceptedExtensions: ['.ogg', '.oga'], acceptedMimeTypes: ['audio/ogg', 'application/ogg'], image: false, audio: true };
+  }
+  if (ascii(buffer, 4, 4) === 'ftyp') {
+    return { extension: '.m4a', mimeType: 'audio/mp4', acceptedExtensions: ['.m4a', '.mp4'], acceptedMimeTypes: ['audio/mp4', 'audio/x-m4a', 'video/mp4'], image: false, audio: true };
+  }
   if (startsWith(buffer, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) {
     return { extension: '.png', mimeType: 'image/png', acceptedExtensions: ['.png'], acceptedMimeTypes: ['image/png'], image: true };
   }
@@ -127,6 +139,9 @@ export function validateUpload(file: Express.Multer.File, policy: UploadPolicy):
   }
   if (!detected.acceptedMimeTypes.includes(claimedMime)) {
     throw new BadRequestException('The file MIME type does not match its content');
+  }
+  if (detected.audio && policy !== 'message') {
+    throw new BadRequestException('Audio can be sent only in a message');
   }
   if (policy === 'avatar' && !detected.image) {
     throw new BadRequestException('Avatars must be PNG, JPEG, GIF, WebP, AVIF, BMP, or ICO images');

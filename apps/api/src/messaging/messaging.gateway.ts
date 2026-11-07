@@ -25,6 +25,27 @@ const sendSchema = z.object({
   attachmentUploadIds: z.array(z.string().uuid()).max(5).optional(),
 });
 
+const editSchema = z.object({
+  conversationId: z.string().uuid(),
+  messageId: z.string().uuid(),
+  body: z.string().min(1).max(5000),
+});
+
+const deleteSchema = z.object({
+  conversationId: z.string().uuid(),
+  messageId: z.string().uuid(),
+});
+
+const forwardSchema = z.object({
+  messageId: z.string().uuid(),
+  conversationId: z.string().uuid(),
+});
+
+/** What a client can show: a refused change comes back as an answer, not as a dropped event. */
+function refusal(err: unknown): { ok: false; error: string } {
+  return { ok: false, error: err instanceof Error ? err.message : 'That did not go through' };
+}
+
 const joinSchema = z.object({
   conversationId: z.string().uuid(),
 });
@@ -152,6 +173,57 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
 
     await client.join(input.conversationId);
     return { ok: true };
+  }
+
+  @SubscribeMessage('message:edit')
+  async handleEdit(
+    @ConnectedSocket() client: AuthedSocket,
+    @MessageBody() body: unknown,
+  ) {
+    const userId = client.data.user?.id;
+    if (!userId) return { ok: false, error: 'Not signed in' };
+    try {
+      const input = editSchema.parse(body);
+      const message = await this.messaging.editMessage(userId, input.conversationId, input.messageId, input.body);
+      client.to(input.conversationId).emit('message:updated', { message });
+      return { ok: true, message };
+    } catch (err) {
+      return refusal(err);
+    }
+  }
+
+  @SubscribeMessage('message:delete')
+  async handleDelete(
+    @ConnectedSocket() client: AuthedSocket,
+    @MessageBody() body: unknown,
+  ) {
+    const userId = client.data.user?.id;
+    if (!userId) return { ok: false, error: 'Not signed in' };
+    try {
+      const input = deleteSchema.parse(body);
+      const removed = await this.messaging.deleteMessage(userId, input.conversationId, input.messageId);
+      client.to(input.conversationId).emit('message:removed', removed);
+      return { ok: true };
+    } catch (err) {
+      return refusal(err);
+    }
+  }
+
+  @SubscribeMessage('message:forward')
+  async handleForward(
+    @ConnectedSocket() client: AuthedSocket,
+    @MessageBody() body: unknown,
+  ) {
+    const userId = client.data.user?.id;
+    if (!userId) return { ok: false, error: 'Not signed in' };
+    try {
+      const input = forwardSchema.parse(body);
+      const message = await this.messaging.forwardMessage(userId, input.messageId, input.conversationId);
+      client.to(input.conversationId).emit('message:new', { message });
+      return { ok: true, message };
+    } catch (err) {
+      return refusal(err);
+    }
   }
 
   @SubscribeMessage('message:send')

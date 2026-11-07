@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { Check, X } from 'lucide-react';
 import { ConversationList, type Conversation, type InboxReadState } from '@/components/messaging/ConversationList';
 import { ChatWindow, NoChatSelected, type Message, type NoChatState } from '@/components/messaging/ChatWindow';
+import { ForwardMessageDialog } from '@/components/messaging/ForwardMessageDialog';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -45,7 +47,7 @@ import {
   type MessageItem,
   type ConnectionRequestItem,
 } from '@/lib/api';
-import { createMessagingSocket, type ServerToClientEvents } from '@/lib/messagingSocket';
+import { createMessagingSocket, type MessageReply, type ServerToClientEvents } from '@/lib/messagingSocket';
 import { useSession } from '@/hooks/useSession';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useMessaging } from '@/contexts/MessagingContext';
@@ -73,12 +75,24 @@ function mapConversation(s: ConversationSummary): Conversation {
   };
 }
 
+/** What the server says when it refuses a change. */
+const MESSAGE_REFUSALS_EL: Record<string, string> = {
+  'A message can be edited for 15 minutes': 'Ένα μήνυμα επεξεργάζεται για 15 λεπτά.',
+  'This conversation is validated, so its messages stay as written': 'Η συνομιλία είναι επικυρωμένη, οπότε τα μηνύματα μένουν όπως γράφτηκαν.',
+  'Only the sender can change a message': 'Μόνο όποιος το έστειλε μπορεί να το αλλάξει.',
+  'Cannot message this user': 'Δεν μπορείτε να στείλετε μήνυμα σε αυτό το μέλος.',
+  'Not connected': 'Χωρίς σύνδεση.',
+  'No answer from the server': 'Δεν υπήρξε απάντηση από τον διακομιστή.',
+};
+
 function mapMessage(m: MessageItem, currentUserId: string): Message {
   return {
     id: m.id,
     senderId: m.senderId,
     content: m.body,
     timestamp: new Date(m.createdAt),
+    editedAt: m.editedAt ? new Date(m.editedAt) : null,
+    forwarded: m.forwarded,
     status: m.senderId === currentUserId ? 'sent' : 'read',
     attachments: m.attachments?.length
       ? m.attachments.map((a) => ({
@@ -271,6 +285,8 @@ export default function MessagesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { success, error: showError } = useToast();
+  const confirm = useConfirm();
+  const [forwarding, setForwarding] = useState<Message | null>(null);
   const t = useMessagesPrimaryText();
   const { primary } = useLanguagePreference();
   const { open: openAskAi } = usePopupChat();
@@ -358,6 +374,17 @@ export default function MessagesPage() {
       }
     };
 
+    const onUpdated: ServerToClientEvents['message:updated'] = ({ message }) => {
+      setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, content: message.body, editedAt: message.editedAt ? new Date(message.editedAt) : null } : m)));
+    };
+    const onRemoved: ServerToClientEvents['message:removed'] = ({ id, conversationId }) => {
+      setMessages((prev) => prev.filter((m) => m.id !== id));
+      // The list keeps its own preview, which must not go on showing the words.
+      void listMessageConversations().then(({ conversations: list }) => {
+        const fresh = list.find((c) => c.id === conversationId);
+        if (fresh) setConversations((prev) => prev.map((c) => (c.id === conversationId ? { ...c, lastMessage: fresh.lastMessage?.body ?? '' } : c)));
+      }).catch(() => {});
+    };
     const onAck: ServerToClientEvents['message:ack'] = ({ tempId, message }) => {
       if (!tempId) return;
       setMessages((prev) =>
@@ -451,6 +478,8 @@ export default function MessagesPage() {
         socketRef.current = socket;
         socket.on('message:new', onNew);
         socket.on('message:ack', onAck);
+        socket.on('message:updated', onUpdated);
+        socket.on('message:removed', onRemoved);
         socket.on('typing:start', onTypingStart);
         socket.on('typing:stop', onTypingStop);
         socket.on('presence:update', onPresence);
@@ -472,6 +501,8 @@ export default function MessagesPage() {
       mounted = false;
       socket?.off('message:new', onNew);
       socket?.off('message:ack', onAck);
+      socket?.off('message:updated', onUpdated);
+      socket?.off('message:removed', onRemoved);
       socket?.off('typing:start', onTypingStart);
       socket?.off('typing:stop', onTypingStop);
       socket?.off('presence:update', onPresence);
@@ -750,7 +781,8 @@ export default function MessagesPage() {
       timestamp: new Date(),
       status: preview && (!s || !s.connected) ? 'sent' : 'sending',
       attachments: attachments?.length
-        ? attachments.slice(0, 5).map((f) => ({ type: f.type || 'file', url: '', name: f.name }))
+        // A voice note plays at once in the demo, which has no upload to wait for.
+        ? attachments.slice(0, 5).map((f) => ({ type: f.type || 'file', url: preview && f.type.startsWith('audio/') ? URL.createObjectURL(f) : '', name: f.name }))
         : undefined,
     };
 
@@ -818,6 +850,75 @@ export default function MessagesPage() {
           : c
       )
     );
+  };
+
+  // Editing, deleting and forwarding ask the server and wait for its answer, so a
+  // refused change (the time window, a validated conversation) never looks done.
+  const askServer = (event: 'message:edit' | 'message:delete' | 'message:forward', payload: { conversationId: string; messageId: string; body?: string }) =>
+    new Promise<MessageReply>((resolve) => {
+      const s = socketRef.current;
+      if (!s?.connected) {
+        resolve({ ok: false, error: 'Not connected' });
+        return;
+      }
+      (s.timeout(8000).emit as unknown as (name: string, data: unknown, answer: (err: Error | null, reply: MessageReply) => void) => void)(
+        event,
+        payload,
+        (err, reply) => resolve(err ? { ok: false, error: 'No answer from the server' } : reply),
+      );
+    });
+  const refusal = (reason?: string) => (reason ? t(reason, MESSAGE_REFUSALS_EL[reason] ?? reason) : undefined);
+
+  const handleEditMessage = async (messageId: string, body: string) => {
+    if (!selectedConversation) return;
+    const before = messages.find((m) => m.id === messageId);
+    setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, content: body, editedAt: new Date() } : m)));
+    if (isPreviewDemo()) return;
+    const reply = await askServer('message:edit', { conversationId: selectedConversation.id, messageId, body });
+    if (reply.ok) return;
+    if (before) setMessages((prev) => prev.map((m) => (m.id === messageId ? before : m)));
+    showError(t(messagesEn('edit_failed'), messagesEl('edit_failed')), refusal(reply.error));
+  };
+
+  const handleDeleteMessage = async (message: Message) => {
+    if (!selectedConversation) return;
+    const agreed = await confirm({
+      title: t(messagesEn('delete_title'), messagesEl('delete_title')),
+      description: t(messagesEn('delete_hint'), messagesEl('delete_hint')),
+      confirmLabel: t(messagesEn('delete'), messagesEl('delete')),
+    });
+    if (!agreed) return;
+    if (!isPreviewDemo()) {
+      const reply = await askServer('message:delete', { conversationId: selectedConversation.id, messageId: message.id });
+      if (!reply.ok) {
+        showError(t(messagesEn('delete_failed'), messagesEl('delete_failed')), refusal(reply.error));
+        return;
+      }
+    }
+    const remaining = messages.filter((m) => m.id !== message.id);
+    setMessages(remaining);
+    setConversations((prev) => prev.map((c) => (c.id === selectedConversation.id ? { ...c, lastMessage: remaining[remaining.length - 1]?.content ?? '' } : c)));
+    success(t(messagesEn('deleted'), messagesEl('deleted')));
+  };
+
+  const handleForward = async (conversationId: string) => {
+    const message = forwarding;
+    setForwarding(null);
+    if (!message) return;
+    if (isPreviewDemo()) {
+      await apiRequest(`/api/messages/conversations/${encodeURIComponent(conversationId)}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({ body: message.content }),
+      }).catch(() => {});
+    } else {
+      const reply = await askServer('message:forward', { conversationId, messageId: message.id });
+      if (!reply.ok) {
+        showError(t(messagesEn('forward_failed'), messagesEl('forward_failed')), refusal(reply.error));
+        return;
+      }
+    }
+    setConversations((prev) => prev.map((c) => (c.id === conversationId ? { ...c, lastMessage: message.content, lastMessageTime: new Date() } : c)));
+    success(t(messagesEn('forward_done'), messagesEl('forward_done')));
   };
 
   // Handle pin
@@ -1304,6 +1405,9 @@ export default function MessagesPage() {
                   messages={messages}
                   currentUserId={currentUserId}
                   onSendMessage={handleSendMessage}
+                  onEditMessage={(id, body) => { void handleEditMessage(id, body); }}
+                  onDeleteMessage={(message) => { void handleDeleteMessage(message); }}
+                  onForwardMessage={setForwarding}
                   onTypingStart={handleTypingStart}
                   onTypingStop={handleTypingStop}
                   isRecipientTyping={isRecipientTyping}
@@ -1395,6 +1499,13 @@ export default function MessagesPage() {
         candidates={composeCandidates}
         connectionsFailed={connectionsFailed}
         onPick={(userId) => void handleComposePick(userId)}
+      />
+      <ForwardMessageDialog
+        open={forwarding !== null}
+        preview={forwarding?.content ?? ''}
+        targets={conversations.filter((c) => c.id !== selectedConversation?.id).map((c) => ({ id: c.id, recipientName: c.recipientName, recipientAvatar: c.recipientAvatar }))}
+        onClose={() => setForwarding(null)}
+        onForward={(id) => { void handleForward(id); }}
       />
     </AppShell>
   );

@@ -174,7 +174,9 @@ const nextConfig: NextConfig = {
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       `connect-src ${connectSrc.join(' ')}`,
-      "media-src 'self' blob: https:",
+      // Voice notes play from the API: on another origin in production, and over
+      // plain http in development, often at a LAN address set in .env.
+      `media-src 'self' blob: https: ${apiOrigin} ${isProduction ? '' : 'http:'}`.trim(),
       "worker-src 'self' blob:",
       // Daily.co rooms are iframed, and the research canvas plus the PDF
       // annotation viewer iframe arbitrary document URLs — including blob:

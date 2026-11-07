@@ -7,10 +7,15 @@ import { isPreviewDemo } from '@/lib/preview-demo';
 export type ServerToClientEvents = {
   'message:new': (payload: { message: MessageItem }) => void;
   'message:ack': (payload: { tempId: string | null; message: MessageItem }) => void;
+  'message:updated': (payload: { message: MessageItem }) => void;
+  'message:removed': (payload: { id: string; conversationId: string }) => void;
   'typing:start': (payload: { conversationId: string; userId: string }) => void;
   'typing:stop': (payload: { conversationId: string; userId: string }) => void;
   'presence:update': (payload: { userId: string; isOnline: boolean }) => void;
 };
+
+/** How the server answers a change: refused, it says why. */
+export type MessageReply = { ok: boolean; error?: string; message?: MessageItem };
 
 export type ClientToServerEvents = {
   'message:send': (payload: {
@@ -19,6 +24,9 @@ export type ClientToServerEvents = {
     tempId?: string;
     attachmentUploadIds?: string[];
   }) => void;
+  'message:edit': (payload: { conversationId: string; messageId: string; body: string }, answer: (reply: MessageReply) => void) => void;
+  'message:delete': (payload: { conversationId: string; messageId: string }, answer: (reply: MessageReply) => void) => void;
+  'message:forward': (payload: { conversationId: string; messageId: string }, answer: (reply: MessageReply) => void) => void;
   'conversation:join': (payload: { conversationId: string }) => void;
   'typing:start': (payload: { conversationId: string }) => void;
   'typing:stop': (payload: { conversationId: string }) => void;

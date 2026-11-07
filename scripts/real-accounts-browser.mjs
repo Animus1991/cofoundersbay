@@ -30,7 +30,8 @@ const check = (name, ok, detail = '') => {
   console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ` — ${detail}` : ''}`);
 };
 
-const browser = await chromium.launch();
+// A stand-in microphone, so a voice note can be recorded with no device and no prompt.
+const browser = await chromium.launch({ args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
 const pageErrors = [];
 const serverErrors = new Set();
 
@@ -90,6 +91,12 @@ async function open(m, path, wait = 2600) {
   return m.page.evaluate(() => document.body.innerText);
 }
 
+async function openThread(m, name) {
+  await open(m, '/messages', 3500);
+  await m.page.getByText(name).filter({ visible: true }).first().click({ force: true, timeout: 10000 }); // The row has a covering link, which is what a tap lands on.
+  await m.page.waitForTimeout(1500);
+}
+
 async function shot(m, name) {
   if (SHOTS) await m.page.screenshot({ path: join(SHOTS, `real-${m.label}-${name}.png`) });
 }
@@ -115,13 +122,15 @@ const english = /wants to connect|accepted your connection|New message from|gave
 
 const founder = await member('founder', 'founder');
 const investor = await member('investor', 'investor');
+const mentor = await member('mentor', 'founder');
 
 try {
   await register(founder);
   await register(investor);
+  await register(mentor);
 
   // A name, so that what the other member reads is about a person.
-  for (const [m, name] of [[founder, 'Δοκιμή Ιδρυτής'], [investor, 'Δοκιμή Επενδυτής']]) {
+  for (const [m, name] of [[founder, 'Δοκιμή Ιδρυτής'], [investor, 'Δοκιμή Επενδυτής'], [mentor, 'Δοκιμή Τρίτο Μέλος']]) {
     const saved = await call(m, 'PATCH', '/api/me/profile', { displayName: name, headline: 'Δοκιμαστικό προφίλ' });
     check(`${m.label}: the profile saves a name`, saved.status < 300, saved.status < 300 ? '' : `${saved.status} ${JSON.stringify(saved.data).slice(0, 160)}`);
   }
@@ -143,21 +152,79 @@ try {
   // Write: the composer goes over the socket, which nothing else here exercises.
   const direct = await call(founder, 'POST', '/api/messages/conversations/direct', { userId: investor.id });
   check('message: a conversation opens', direct.status < 300 && direct.data?.conversationId, String(direct.status));
-  await open(founder, '/messages', 3500);
-  await founder.page.getByText('Δοκιμή Επενδυτής').first().click().catch(() => {});
-  await founder.page.waitForTimeout(1200);
+  await openThread(founder, 'Δοκιμή Επενδυτής');
   const composer = founder.page.getByPlaceholder(/Πληκτρολογήστε/).first();
   const words = `Δοκιμαστικό μήνυμα ${stamp}`;
   await composer.fill(words);
   await composer.press('Enter');
   await founder.page.waitForTimeout(2500);
   await shot(founder, 'message-sent');
-  await open(investor, '/messages', 3500);
-  await investor.page.getByText('Δοκιμή Ιδρυτής').first().click().catch(() => {});
-  await investor.page.waitForTimeout(1500);
+  await openThread(investor, 'Δοκιμή Ιδρυτής');
   body = await investor.page.evaluate(() => document.body.innerText);
   check('message: it reaches the other member', body.includes(words));
   await shot(investor, 'message-read');
+
+  // Change what was said: the founder corrects one message and takes another back.
+  const bubble = (m, text) => m.page.getByText(text, { exact: false }).last();
+  await bubble(founder, words).hover();
+  await founder.page.getByTitle(/Επεξεργασία/).first().click();
+  const corrected = `Διορθωμένο μήνυμα ${stamp}`;
+  await composer.fill(corrected);
+  await composer.press('Enter');
+  await founder.page.waitForTimeout(1500);
+  await openThread(investor, 'Δοκιμή Ιδρυτής');
+  body = await investor.page.evaluate(() => document.body.innerText);
+  check('edit: the other member reads the correction', body.includes(corrected) && !body.includes(words));
+  check('edit: and sees that it changed', body.includes('επεξεργάστηκε'));
+
+  const regret = `Μήνυμα προς διαγραφή ${stamp}`;
+  await composer.fill(regret);
+  await composer.press('Enter');
+  await founder.page.waitForTimeout(1800);
+  await bubble(founder, regret).hover();
+  await founder.page.getByTitle(/Διαγραφή/).first().click();
+  await founder.page.getByRole('dialog').getByRole('button', { name: 'Διαγραφή' }).click();
+  await founder.page.waitForTimeout(1500);
+  await openThread(investor, 'Δοκιμή Ιδρυτής');
+  body = await investor.page.evaluate(() => document.body.innerText);
+  check('delete: it is gone for the other member', !body.includes(regret));
+
+  // A voice note: recorded, uploaded, and playable on the other side.
+  await founder.page.getByRole('button', { name: /Εγγραφή φωνητικού μηνύματος/ }).click();
+  await founder.page.waitForTimeout(1600);
+  check('voice: the recording shows', await founder.page.locator('[data-voice-banner]').isVisible());
+  await founder.page.locator('[data-voice-banner]').getByRole('button', { name: /Αποστολή/ }).click();
+  await founder.page.waitForTimeout(3000);
+  await shot(founder, 'voice-sent');
+  await openThread(investor, 'Δοκιμή Ιδρυτής');
+  const note = investor.page.locator('[data-voice-note]').last();
+  check('voice: the other member gets a player', await note.count() > 0);
+  // The element itself, so the page's Content-Security-Policy is part of the test.
+  const playable = await note.evaluate((audio) => new Promise((resolve) => {
+    const done = () => resolve({ ready: audio.readyState, error: audio.error?.code ?? null, src: audio.src.slice(0, 60) });
+    if (audio.readyState >= 1) done();
+    audio.addEventListener('loadedmetadata', done, { once: true });
+    audio.addEventListener('error', done, { once: true });
+    audio.load();
+    setTimeout(done, 6000);
+  }));
+  check('voice: the browser can play it', playable.ready >= 1 && !playable.error, JSON.stringify(playable));
+  await shot(investor, 'voice-read');
+
+  // Forward: to a third member, marked as forwarded.
+  const toThird = await call(founder, 'POST', '/api/messages/conversations/direct', { userId: mentor.id });
+  check('forward: a second conversation opens', toThird.status < 300, String(toThird.status));
+  await openThread(founder, 'Δοκιμή Επενδυτής');
+  await shot(founder, 'before-forward');
+  await bubble(founder, corrected).hover({ timeout: 8000 });
+  await founder.page.getByTitle(/Προώθηση/).first().click();
+  await founder.page.waitForTimeout(500);
+  await founder.page.locator('[data-forward-targets]').getByText('Δοκιμή Τρίτο Μέλος').click();
+  await founder.page.waitForTimeout(1800);
+  await openThread(mentor, 'Δοκιμή Ιδρυτής');
+  body = await mentor.page.evaluate(() => document.body.innerText);
+  check('forward: the third member reads it', body.includes(corrected));
+  check('forward: marked as forwarded', body.includes('Προωθημένο'));
 
   // Share: a linked investor sees a shared file and nothing else.
   const lead = await call(founder, 'POST', '/api/fundraising/leads', {
@@ -201,7 +268,7 @@ try {
 } catch (e) {
   check('ran to the end', false, e.message.split('\n')[0].slice(0, 180));
 } finally {
-  for (const m of [founder, investor]) {
+  for (const m of [founder, investor, mentor]) {
     if (!m.registered) continue;
     const gone = await call(m, 'POST', '/api/account/delete', { password, email: m.email });
     check(`${m.label}: the account deletes itself`, gone.status < 300, `${gone.status} ${gone.status < 300 ? '' : JSON.stringify(gone.data).slice(0, 200)}`);

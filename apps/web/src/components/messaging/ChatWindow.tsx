@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
+import { useVoiceRecorder, voiceRecordingSupported } from '@/hooks/useVoiceRecorder';
 import Link from 'next/link';
 import {
   Send,
@@ -18,6 +19,9 @@ import {
   X,
   Copy,
   Reply,
+  Forward,
+  Pencil,
+  Mic,
   ChevronUp,
   ChevronDown,
   ListFilter,
@@ -67,7 +71,12 @@ export type Message = {
   attachments?: { type: string; url: string; name: string }[];
   reactions?: { emoji: string; count: number }[];
   replyTo?: { id: string; content: string; senderName: string };
+  editedAt?: Date | null;
+  forwarded?: boolean;
 };
+
+/** As the API allows it: after this a sent message stays as written. */
+const EDIT_WINDOW_MS = 15 * 60 * 1000;
 
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '😮', '🙏', '🔥'];
 
@@ -85,6 +94,9 @@ type ChatWindowProps = {
   messages: Message[];
   currentUserId: string;
   onSendMessage: (content: string, attachments?: File[]) => void;
+  onEditMessage?: (messageId: string, body: string) => void;
+  onDeleteMessage?: (message: Message) => void;
+  onForwardMessage?: (message: Message) => void;
   onBack?: () => void;
   onReport?: () => void;
   onBlock?: () => void;
@@ -145,6 +157,9 @@ function MessageBubble({
   recipientName,
   onReply,
   onReact,
+  onEdit,
+  onDelete,
+  onForward,
   highlight,
   hit = 'none',
   lang,
@@ -157,6 +172,9 @@ function MessageBubble({
   recipientName: string;
   onReply?: (msg: Message) => void;
   onReact?: (messageId: string, emoji: string) => void;
+  onEdit?: (msg: Message) => void;
+  onDelete?: (msg: Message) => void;
+  onForward?: (msg: Message) => void;
   /** The thread search's words, marked where they occur. */
   highlight?: string;
   /** 'active' is the hit the search is on; 'hit' any other match. */
@@ -164,6 +182,9 @@ function MessageBubble({
 }) {
   const [showActions, setShowActions] = useState(false);
   const [copied, setCopied] = useState(false);
+  // A message still on its way has no id the server knows.
+  const sent = !message.id.startsWith('temp-');
+  const editable = isOwn && sent && Boolean(onEdit) && !message.attachments?.length && Date.now() - message.timestamp.getTime() < EDIT_WINDOW_MS;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content).then(() => {
@@ -222,6 +243,12 @@ function MessageBubble({
               hit === 'hit' && 'ring-1 ring-ring/40',
             )}
           >
+            {message.forwarded ? (
+              <p className="mb-0.5 flex items-center gap-1 text-2xs opacity-70" data-forwarded="">
+                <Forward className="h-3 w-3" aria-hidden="true" />
+                <BilingualText en={messagesEn('forwarded')} el={messagesEl('forwarded')} compact />
+              </p>
+            ) : null}
             <p className="text-sm whitespace-pre-wrap break-words">
               {PREVIEW_MESSAGE_EL[message.content]
                 ? <BilingualText en={message.content} el={PREVIEW_MESSAGE_EL[message.content]} wrap />
@@ -237,7 +264,9 @@ function MessageBubble({
             </p>
             {message.attachments?.length ? (
               <div className="mt-2 space-y-1">
-                {message.attachments.map((a, idx) => (
+                {message.attachments.map((a, idx) => (a.type.startsWith('audio/') && a.url ? (
+                  <audio key={`${message.id}-att-${idx}`} controls preload="metadata" src={a.url} className="h-10 w-60 max-w-full" data-voice-note="" />
+                ) : (
                   <a
                     key={`${message.id}-att-${idx}`}
                     href={a.url || undefined}
@@ -253,7 +282,7 @@ function MessageBubble({
                     <Paperclip className="icon-sm shrink-0" />
                     {a.name}
                   </a>
-                ))}
+                )))}
               </div>
             ) : null}
           </div>
@@ -306,6 +335,45 @@ function MessageBubble({
                   />
                 </span>
               </button>
+              {sent && onForward ? (
+                <button
+                  type="button"
+                  className="inline-flex h-11 items-center gap-1 rounded-full px-2 transition-colors hover:bg-secondary/80 sm:h-8 sm:px-1.5"
+                  title={bilingualAria(messagesEn('forward'), messagesEl('forward'))}
+                  onClick={() => onForward(message)}
+                >
+                  <Forward className="icon-sm text-muted-foreground" />
+                  <span className="text-xs font-medium text-foreground sm:sr-only">
+                    <BilingualText en={messagesEn('forward')} el={messagesEl('forward')} compact />
+                  </span>
+                </button>
+              ) : null}
+              {editable ? (
+                <button
+                  type="button"
+                  className="inline-flex h-11 items-center gap-1 rounded-full px-2 transition-colors hover:bg-secondary/80 sm:h-8 sm:px-1.5"
+                  title={bilingualAria(messagesEn('edit'), messagesEl('edit'))}
+                  onClick={() => onEdit?.(message)}
+                >
+                  <Pencil className="icon-sm text-muted-foreground" />
+                  <span className="text-xs font-medium text-foreground sm:sr-only">
+                    <BilingualText en={messagesEn('edit')} el={messagesEl('edit')} compact />
+                  </span>
+                </button>
+              ) : null}
+              {isOwn && sent && onDelete ? (
+                <button
+                  type="button"
+                  className="inline-flex h-11 items-center gap-1 rounded-full px-2 transition-colors hover:bg-secondary/80 sm:h-8 sm:px-1.5"
+                  title={bilingualAria(messagesEn('delete'), messagesEl('delete'))}
+                  onClick={() => onDelete(message)}
+                >
+                  <Trash2 className="icon-sm text-muted-foreground" />
+                  <span className="text-xs font-medium text-foreground sm:sr-only">
+                    <BilingualText en={messagesEn('delete')} el={messagesEl('delete')} compact />
+                  </span>
+                </button>
+              ) : null}
             </div>
           )}
 
@@ -329,6 +397,9 @@ function MessageBubble({
 
         <div className={cn('flex items-center gap-1 mt-1', isOwn ? 'justify-end' : 'justify-start')}>
           <span className="text-2xs tabular-nums text-muted-foreground">{clockTime(message.timestamp, lang)}</span>
+          {message.editedAt ? (
+            <span className="text-2xs text-muted-foreground" data-edited=""><BilingualText en={messagesEn('edited')} el={messagesEl('edited')} compact /></span>
+          ) : null}
           {isOwn && (
             <span className="text-muted-foreground">
               {message.status === 'sending' && <span className="text-2xs" title="Sending">•</span>}
@@ -374,6 +445,9 @@ export function ChatWindow({
   messages,
   currentUserId,
   onSendMessage,
+  onEditMessage,
+  onDeleteMessage,
+  onForwardMessage,
   onBack,
   onReport,
   onBlock,
@@ -421,6 +495,15 @@ export function ChatWindow({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [editing, setEditing] = useState<Message | null>(null);
+  const voice = useVoiceRecorder((file) => onSendMessage(t(messagesEn('voice_note'), messagesEl('voice_note')), [file]));
+  const [canRecord, setCanRecord] = useState(false);
+  useEffect(() => { setCanRecord(voiceRecordingSupported()); }, []);
+  const [voiceProblem, setVoiceProblem] = useState<'voice_denied' | 'voice_unavailable' | null>(null);
+  const startVoice = async () => {
+    const failure = await voice.start();
+    setVoiceProblem(failure === 'denied' ? 'voice_denied' : failure ? 'voice_unavailable' : null);
+  };
   const [localReactions, setLocalReactions] = useState<Record<string, { emoji: string; count: number }[]>>({});
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
@@ -471,6 +554,14 @@ export function ChatWindow({
 
   // Handle send
   const handleSend = () => {
+    if (editing) {
+      const body = inputValue.trim();
+      if (!body) return;
+      if (body !== editing.content) onEditMessage?.(editing.id, body);
+      setEditing(null);
+      setInputValue('');
+      return;
+    }
     if (!inputValue.trim() && pendingFiles.length === 0) return;
     onSendMessage(inputValue.trim(), pendingFiles.length ? pendingFiles : undefined);
     setInputValue('');
@@ -889,6 +980,9 @@ export function ChatWindow({
                     recipientName={conversation.recipientName}
                     onReply={(m) => { setReplyTo(m); textareaRef.current?.focus(); }}
                     onReact={handleReact}
+                    onEdit={onEditMessage ? (m) => { setReplyTo(null); setEditing(m); applyDraft(m.content); } : undefined}
+                    onDelete={onDeleteMessage}
+                    onForward={onForwardMessage}
                   />
                 </div>
               );
@@ -929,6 +1023,42 @@ export function ChatWindow({
             <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setReplyTo(null)} aria-label={bilingualAria(messagesEn('cancel_reply'), messagesEl('cancel_reply'))}>
               <X className="icon-sm" />
             </Button>
+          </div>
+        )}
+
+        {editing && (
+          <div className="mb-2 flex items-center gap-2 rounded-xl border border-border bg-secondary/40 px-3 py-1.5" data-editing-banner="">
+            <Pencil className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+            <p className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
+              <BilingualText en={messagesEn('editing')} el={messagesEl('editing')} compact />
+            </p>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5 shrink-0"
+              onClick={() => { setEditing(null); setInputValue(''); }}
+              aria-label={bilingualAria(messagesEn('voice_cancel'), messagesEl('voice_cancel'))}
+            >
+              <X className="icon-sm" />
+            </Button>
+          </div>
+        )}
+
+        {voiceProblem && (
+          <p className="mb-2 text-xs text-muted-foreground" role="alert">
+            <BilingualText en={messagesEn(voiceProblem)} el={messagesEl(voiceProblem)} wrap />
+          </p>
+        )}
+
+        {voice.recording && (
+          <div className="mb-2 flex items-center gap-2 rounded-xl border border-border bg-secondary/40 px-3 py-1.5" data-voice-banner="">
+            <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-destructive" aria-hidden="true" />
+            <p className="min-w-0 flex-1 text-xs font-medium text-foreground" role="status">
+              <BilingualText en={messagesEn('voice_recording')} el={messagesEl('voice_recording')} compact />
+              <span className="ml-1 tabular-nums text-muted-foreground">{Math.floor(voice.seconds / 60)}:{String(voice.seconds % 60).padStart(2, '0')}</span>
+            </p>
+            <Button variant="ghost" size="sm" onClick={voice.cancel}><BilingualText en={messagesEn('voice_cancel')} el={messagesEl('voice_cancel')} compact /></Button>
+            <Button size="sm" onClick={voice.stop}><BilingualText en={messagesEn('voice_send')} el={messagesEl('voice_send')} compact /></Button>
           </div>
         )}
 
@@ -991,6 +1121,18 @@ export function ChatWindow({
           >
             <Paperclip className="icon-md" />
           </Button>
+          {canRecord && !voice.recording && !editing ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 shrink-0 rounded-full"
+              onClick={() => { void startVoice(); }}
+              aria-label={bilingualAria(messagesEn('voice'), messagesEl('voice'))}
+            >
+              <Mic className="icon-md" />
+            </Button>
+          ) : null}
           <Textarea
             ref={textareaRef}
             value={inputValue}

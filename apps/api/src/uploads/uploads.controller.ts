@@ -67,7 +67,7 @@ export class UploadsController {
     @CurrentUser() user: { id: string },
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.persistUpload({ userId: user.id, file, kind: 'message_attachment', prefix: 'msg', policy: 'attachment' });
+    return this.persistUpload({ userId: user.id, file, kind: 'message_attachment', prefix: 'msg', policy: 'message' });
   }
 
   @Post('research-asset')
