@@ -7,7 +7,7 @@
     "dev:clean": "node ./scripts/dev.js --clean",
     "prebuild": "node ../../scripts/ensure-supported-node.cjs web-build && pnpm --filter @cofounderbay/shared run build",
     "prestart": "node ../../scripts/ensure-supported-node.cjs web-start",
-    "build": "npx next build",
+    "build": "npx next build --webpack",
     "start": "npx next start",
     "lint": "eslint src",
     "test": "vitest run --config ../../.devin/vitest.config.ts",
@@ -53,11 +53,11 @@
     "html-to-image": "^1.11.13",
     "lucide-react": "^0.564.0",
     "mermaid": "^11.13.0",
-    "next": "^15.5.25",
+    "next": "^16.4.5",
     "postcss": "^8.5.18",
     "posthog-js": "^1.434.15",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "recharts": "^2.15.4",
     "socket.io-client": "^4.8.3",
     "tailwind-merge": "^3.5.0",
@@ -68,7 +68,7 @@
   "devDependencies": {
     "@axe-core/playwright": "4.10.2",
     "@eslint/eslintrc": "^3",
-    "@opennextjs/cloudflare": "^1.20.6",
+    "@opennextjs/cloudflare": "^1.20.16",
     "@playwright/test": "1.56.0",
     "@testing-library/dom": "10.4.1",
     "@testing-library/react": "16.3.0",
@@ -77,12 +77,12 @@
     "@types/react-dom": "^19.2.3",
     "@types/webpack": "^5.28.5",
     "eslint": "^9.39.5",
-    "eslint-config-next": "^15.5.25",
+    "eslint-config-next": "^16.4.5",
     "jsdom": "26.1.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.6",
     "vitest": "5.0.2",
     "webpack": "^5.111.0",
-    "wrangler": "^4.130.0"
+    "wrangler": "^4.148.0"
   }
 }

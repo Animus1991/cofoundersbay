@@ -124,6 +124,9 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
   });
 
   const vrs = prefetched ?? data;
+  // Above the early returns: below them, loading and then loaded render a
+  // different number of hooks, and React takes the page down.
+  const [dimensionsOpen, setDimensionsOpen] = useState(false);
 
   if (isLoading && !vrs) {
     return (
@@ -149,7 +152,6 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
   // rendered "weight 1%" three times, which reads as though each dimension were
   // worth one percent. Express it as its share of the total instead, which is
   // correct whether the API sends 1/1/1 or 40/35/25.
-  const [dimensionsOpen, setDimensionsOpen] = useState(false);
   const weightTotal = vrs.dimensions.reduce((sum, d) => sum + (Number(d.weight) || 0), 0);
   const weightShare = (weight: number): number | null => {
     const w = Number(weight);

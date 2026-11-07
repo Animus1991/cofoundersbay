@@ -11,9 +11,6 @@ const nextConfig: NextConfig = {
   distDir: process.env.CFB_NEXT_DIST_DIR || '.next',
   reactStrictMode: true,
   transpilePackages: ['@cofounderbay/shared'],
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   allowedDevOrigins,
   devIndicators: false,
   // Performance optimizations
@@ -80,9 +77,9 @@ const nextConfig: NextConfig = {
     },
   },
 
-  // Turbopack is the dev compiler (enabled via `next dev --turbopack` in scripts/dev.js).
-  // Declaring the key keeps Turbopack/webpack config resolution explicit. The webpack()
-  // hook below still runs for `next build` (production), which uses webpack.
+  // Turbopack is the dev compiler. Next 16 builds with it too unless told otherwise,
+  // and `npm run build` passes --webpack: the production bundle stays what it was
+  // through the upgrade, and the webpack() hook below keeps running.
   turbopack: {},
 
   async rewrites() {
