@@ -20,6 +20,7 @@ import { isPreviewDemo } from '@/lib/preview-demo';
 import { planCopilotTools, detectPersonName, asksAboutThisPage, asksAboutSamples, railSectionFor, pageControlFor, pageListFor } from '@/lib/copilot-planner';
 import { AREA_READERS, isAreaRead } from '@/lib/copilot-reads';
 import { pageKey, pageLabel } from '@/lib/usage-profile';
+import { BUILDER_FIELDS } from '@/lib/builder-fields';
 import { replyStyleTarget } from '@/lib/reply-style';
 import { planWeek, wantsWeekPlan } from '@/lib/week-plan';
 import { NOTHING_TO_TRIAGE, notificationPrefTarget, triageSplit, triageTarget } from '@/lib/notification-chat';
@@ -98,6 +99,12 @@ export type PageContextPacket = {
  * renders exactly what it rendered before.
  */
 type Translator = (source: string, vars?: TranslateVars) => string;
+
+/** The label the page uses, on the card a founder confirms. */
+function builderFieldName(key: unknown, locale?: string): string | undefined {
+  const field = BUILDER_FIELDS.find((item) => item.key === key);
+  return field ? (locale === 'el' ? field.el : field.en) : undefined;
+}
 
 function translatorFor(locale?: string): Translator {
   const resolved: AppLocale = locale && isAppLocale(locale) ? locale : 'en';
@@ -1010,12 +1017,12 @@ export async function runCopilotTurn(
 
     // The look, the language and a next step with an investor (docs §112):
     // each card names what it will set, so a confirm is an informed one.
-    if (tool.name === 'set_theme' || tool.name === 'set_language' || tool.name === 'set_investor_followup' || tool.name === 'set_pitch_slide') {
+    if (tool.name === 'set_theme' || tool.name === 'set_language' || tool.name === 'set_investor_followup' || tool.name === 'set_pitch_slide' || tool.name === 'set_builder_field') {
       const args = tool.args ?? {};
       const target = tool.name === 'set_investor_followup'
         ? [args.investor, args.date, args.step].filter(Boolean).join(' · ')
-        : tool.name === 'set_pitch_slide'
-          ? [args.slide, args.content].filter(Boolean).join(' · ')
+        : tool.name === 'set_pitch_slide' || tool.name === 'set_builder_field'
+          ? [args.slide ?? builderFieldName(args.field, replyLocale), args.content].filter(Boolean).join(' · ')
           : String(args.theme ?? args.language ?? '');
       actions.push(
         ...actionsFromToolCalls([{ name: tool.name, args, writes: true, droppedArgs: [] }], replyLocale).map((action) =>

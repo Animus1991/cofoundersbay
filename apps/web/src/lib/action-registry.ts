@@ -67,6 +67,7 @@ import { findLeadByName, saveFollowUp } from '@/lib/follow-ups';
 import { APP_LOCALES, applyLocale, getStoredLocale } from '@/lib/locale';
 import { applyTheme, type ThemeName } from '@/lib/themes';
 import { pitchDeckEditor } from '@/lib/pitch-deck-bridge';
+import { BUILDER_FIELDS, builderEditor } from '@/lib/builder-fields';
 import { demoCriterionState, toggleDemoCriterion } from '@/lib/readiness-demo';
 import { PAGE_REGISTRY, getPageMeta } from '@/lib/page-registry';
 import { runCanvasCommand } from '@/lib/canvas/canvas-command-bus';
@@ -581,6 +582,16 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     if (from === theme) return { ok: false, error: 'That theme is already on' };
     applyTheme(theme as ThemeName);
     return { ok: true, undo: { from } };
+  },
+
+  set_builder_field: async (payload) => {
+    const field = BUILDER_FIELDS.find((item) => item.key === requireString(payload, 'field'));
+    const content = requireString(payload, 'content').trim();
+    if (!field || !content) return { ok: false, error: 'Say which block, and what it should read' };
+    const editor = builderEditor();
+    if (!editor) return { ok: false, error: 'Open the Builder first, then ask again' };
+    const change = await editor.setField(field, content);
+    return { ok: true, undo: change };
   },
 
   set_pitch_slide: async (payload) => {
@@ -1169,6 +1180,15 @@ const UNDOS: Record<UndoableActionId, Undo> = {
     const from = requireString(context, 'from');
     if (!THEME_NAMES.includes(from as ThemeName)) return { ok: false, error: 'No previous theme to restore' };
     applyTheme(from as ThemeName);
+    return { ok: true };
+  },
+
+  set_builder_field: async (_payload, context) => {
+    const editor = builderEditor();
+    const document = requireString(context, 'document');
+    const key = requireString(context, 'key');
+    if (!editor || !key || (document !== 'bmc' && document !== 'ideaCore')) return { ok: false, error: 'Open the Builder first, then undo' };
+    await editor.restoreField(document, key, requireString(context, 'before'));
     return { ok: true };
   },
 

@@ -1491,6 +1491,40 @@ export const ACTION_DECLARATIONS = [
     confirmLabel: { en: 'Rewrite slide', el: 'Αλλαγή διαφάνειας' },
   },
   {
+    id: 'set_builder_field',
+    kind: 'mutation',
+    label: { en: 'Write in the Builder', el: 'Γράψιμο στο Builder' },
+    description: {
+      en: 'Replace one block of the business model canvas or the idea core, and save it.',
+      el: 'Αντικαθιστά ένα πεδίο του καμβά ή του πυρήνα της ιδέας και το αποθηκεύει.',
+    },
+    params: [
+      {
+        name: 'field',
+        type: 'string',
+        required: true,
+        description: { en: 'The block, for example channels or problemStatement.', el: 'Το πεδίο, για παράδειγμα channels ή problemStatement.' },
+      },
+      {
+        name: 'content',
+        type: 'string',
+        required: true,
+        description: { en: 'The new text.', el: 'Το νέο κείμενο.' },
+      },
+    ],
+    writes: true,
+    invalidates: [],
+    reversal: {
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible. The undo puts back the text the block had, and saves it.',
+        el: 'Πλήρως αναστρέψιμο. Η αναίρεση επαναφέρει το κείμενο που είχε το πεδίο και το αποθηκεύει.',
+      },
+    },
+    navigatesOnSuccess: false,
+    confirmLabel: { en: 'Write it', el: 'Να γραφτεί' },
+  },
+  {
     id: 'set_language',
     kind: 'mutation',
     label: { en: 'Change the language', el: 'Αλλαγή γλώσσας' },

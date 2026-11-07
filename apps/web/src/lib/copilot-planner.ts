@@ -1,3 +1,4 @@
+import { findBuilderField } from '@/lib/builder-fields';
 import { readNaturalSearch } from '@cofounderbay/shared';
 import { resolveRouteTarget } from '@/lib/action-registry';
 import { canShortcut } from '@/lib/usage-profile';
@@ -823,6 +824,14 @@ function detectSlideRewrite(rawMessage: string): { slide: string; content: strin
   return slide && content ? { slide, content } : undefined;
 }
 
+/** «Άλλαξε τα Κανάλια σε: …», "set the value proposition to: …". Only a block the Builder has. */
+function detectBuilderWrite(rawMessage: string): { field: string; content: string } | undefined {
+  const hit = rawMessage.match(/(?:άλλαξε|αλλαξε|ξαναγράψε|ξαναγραψε|γράψε|γραψε|βάλε|βαλε|rewrite|change|update|set|write)\s+(.{3,40}?)(?:\s+(?:to|σε))?\s*:\s*(.+)$/iu);
+  const field = hit?.[1] ? findBuilderField(hit[1]) : undefined;
+  const content = hit?.[2]?.trim();
+  return field && content ? { field: field.key, content } : undefined;
+}
+
 export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const message = rawMessage.trim().toLowerCase();
   if (!message) return [{ name: 'get_graph', args: {} }];
@@ -1291,6 +1300,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   if (followUp) add('set_investor_followup', followUp);
   const slideRewrite = detectSlideRewrite(rawMessage);
   if (slideRewrite) add('set_pitch_slide', slideRewrite);
+  const builderWrite = slideRewrite ? undefined : detectBuilderWrite(rawMessage);
+  if (builderWrite) add('set_builder_field', builderWrite);
 
   // How the assistant answers (docs §110): «απάντα πιο σύντομα», "no emoji".
   const replyStyle = detectReplyStyle(rawMessage);

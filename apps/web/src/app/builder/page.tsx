@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { registerBuilderEditor, type BuilderField } from '@/lib/builder-fields';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
@@ -9,8 +10,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { BuilderWorkspace, type BuilderWorkspaceDialog } from '@/components/builder/BuilderWorkspace';
 import { WorkspaceNameEditor } from '@/components/builder/WorkspaceNameEditor';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
-import { IdeaCore, ideaCoreCompletion } from '@/components/builder/IdeaCore';
-import { BusinessModelCanvas, bmcCompletion } from '@/components/builder/BusinessModelCanvas';
+import { IdeaCore, ideaCoreCompletion, pickIdeaCore, type IdeaCoreData } from '@/components/builder/IdeaCore';
+import { BusinessModelCanvas, bmcCompletion, pickBmc, type BMCData } from '@/components/builder/BusinessModelCanvas';
 import { MarketAnalysis, marketCompletion } from '@/components/builder/MarketAnalysis';
 import { MVPPlanner, mvpCompletion } from '@/components/builder/MVPPlanner';
 import { FinancialPlanning, financialCompletion } from '@/components/builder/FinancialPlanning';
@@ -251,6 +252,28 @@ function BuilderPageContent() {
       const doc = await saveStageSection(section, data);
       if (doc) await updateDocument(doc.id, { completionPercent });
     });
+
+  // The assistant's way into the canvas and the idea core. It writes the document
+  // of the block it was given, whichever tab is open, and the open form follows.
+  const writeBlock = async (document: BuilderField['document'], key: string, content: string) => {
+    const type = document === 'bmc' ? 'business_model_canvas' : 'idea_core';
+    const doc = documents.find((d) => d.type === type) ?? await createDocument(type, builderDocLabel(type, 'en'));
+    const current = (document === 'bmc' ? pickBmc(doc.content) : pickIdeaCore(doc.content)) as Record<string, unknown>;
+    const before = typeof current[key] === 'string' ? current[key] : '';
+    const next = { ...current, [key]: content };
+    await updateDocumentSection(doc.id, document, next);
+    await updateDocument(doc.id, {
+      completionPercent: document === 'bmc' ? bmcCompletion(next as unknown as BMCData) : ideaCoreCompletion(next as unknown as IdeaCoreData),
+    });
+    await selectDocument(doc.id);
+    return before;
+  };
+  const writeBlockRef = useRef(writeBlock);
+  writeBlockRef.current = writeBlock;
+  useEffect(() => registerBuilderEditor({
+    setField: async (field, content) => ({ document: field.document, key: field.key, before: await writeBlockRef.current(field.document, field.key, content) }),
+    restoreField: async (document, key, content) => { await writeBlockRef.current(document, key, content); },
+  }), []);
 
   const handleSavePitch = (data: PitchDeckData) =>
     handleSave('pitchDeck', data, pitchDeckCompletion(data.slides ?? []));

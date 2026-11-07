@@ -87,3 +87,6 @@ credentials.json
 # Uploaded files: public ones, and the private data room
 apps/api/uploads/
 apps/api/private-uploads/
+
+# Written by Next 16 on first run
+apps/web/AGENTS.md
