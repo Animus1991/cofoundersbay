@@ -141,7 +141,7 @@ export function NeedCard({
         <Heading className="card-title text-foreground">{card.title || '—'}</Heading>
         {owner ? (
           <div className="flex min-w-0 items-center gap-2.5 pt-1.5">
-            <Avatar className="h-8 w-8" data-keep-icon="">
+            <Avatar className="h-10 w-10" data-keep-icon="">
               <AvatarImage src={owner.avatarUrl ?? undefined} alt="" />
               <AvatarFallback className="bg-primary/15 text-2xs text-foreground">{initialsOf(owner.displayName)}</AvatarFallback>
             </Avatar>
@@ -170,7 +170,8 @@ export function NeedCard({
           data-need-card-group="needs-and-offer"
           className="grid grid-cols-1 gap-y-3 md:grid-cols-2 md:gap-x-4 md:gap-y-0"
         >
-          {card.missing ? <Field label={CMT.missing}>{card.missing}</Field> : null}
+          {/* On a wall two lines say who is wanted; the card's own page says the rest. */}
+          {card.missing ? <Field label={CMT.missing}>{compact ? <span className="line-clamp-2">{card.missing}</span> : card.missing}</Field> : null}
           <Field label={CMT.offer} tone="offer">
             <span className="block font-medium">{card.offer?.role || '—'}</span>
             {offerLine.length ? <span className="block font-medium tabular-nums">{offerLine.join(' · ')}</span> : null}
@@ -192,7 +193,7 @@ export function NeedCard({
         {card.category ? <li>{card.category}</li> : null}
         {card.isRemote ? <li><BilingualText en={CMT.remote.en} el={CMT.remote.el} compact /></li> : null}
         {card.place ? <li>{card.place}</li> : null}
-        {card.stage ? <li><StatusText value={card.stage} /></li> : null}
+        {card.stage && !compact ? <li><StatusText value={card.stage} /></li> : null}
         {card.commitment ? <li><StatusText value={card.commitment} /></li> : null}
       </ul>
 

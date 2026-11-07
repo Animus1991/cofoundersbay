@@ -140,7 +140,7 @@ function MentorCard({
         <CardHead
           mark={(
             <div className="relative">
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-20 w-20">
                 <AvatarImage src={mentor.avatarUrl ?? undefined} alt="" />
                 <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                   {initialsOf(mentor.displayName)}

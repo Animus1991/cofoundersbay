@@ -15,6 +15,7 @@ import {
 } from '@cofounderbay/shared';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
+import { PhoneFold } from '@/components/common/PhoneFold';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -190,7 +191,8 @@ export default function LegalHubPage() {
               asideStays
             />
             {LEGAL_CHECKLIST_PHASES.map((phase) => (
-              <section key={phase.id} className="space-y-2" aria-label={say(phase.label)}>
+              <PhoneFold key={phase.id} title={phase.label} defaultOpen={nextStep?.phase === phase.id}>
+              <section className="space-y-2" aria-label={say(phase.label)}>
                 <h3 className="text-xs font-medium text-muted-foreground"><BilingualText en={phase.label.en} el={phase.label.el} compact /></h3>
                 <ul className="divide-y divide-border rounded-xl border border-border/60">
                   {LEGAL_CHECKLIST.filter((item) => item.phase === phase.id).map((item) => {
@@ -219,6 +221,7 @@ export default function LegalHubPage() {
                   })}
                 </ul>
               </section>
+              </PhoneFold>
             ))}
             {nextStep ? null : (
               <p className="text-sm text-muted-foreground"><BilingualText en="Every step is ticked. Revisit the list when the company changes." el="Όλα τα βήματα είναι σημειωμένα. Ξαναδείτε τη λίστα όταν αλλάξει η εταιρεία." wrap /></p>

@@ -67,7 +67,7 @@ function MenteeCard({ relationship, upcomingBookings = 0 }: { relationship: Ment
             // The public page reads a username; a member opens the profile
             // by id, as the requests page does.
             <Link href={`/profiles/${relationship.menteeId}`} aria-label={displayName}>
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-14 w-14">
                 <AvatarImage src={mentee?.avatarUrl || undefined} alt="" />
                 <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                   {initials}

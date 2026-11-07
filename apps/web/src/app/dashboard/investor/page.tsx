@@ -41,6 +41,8 @@ import { formatCompactMoney } from '@/lib/i18n/format';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { dealEventTitleEl } from '@/lib/i18n/deal-events';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { HomeFold } from '@/components/dashboard/HomeFold';
+import { HomeToday } from '@/components/dashboard/HomeToday';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { homeSnapshot } from '@/lib/home-snapshot';
 import { isPreviewDemo } from '@/lib/preview-demo';
@@ -242,7 +244,8 @@ export default function InvestorDashboard() {
       descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
     >
       <div className="space-y-6">
-        <HomeAskHero role="investor" name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
+        <HomeAskHero role="investor" showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
+        <HomeToday />
 
         {!dealsLoading && active[0] ? (
           <HomeNextStep
@@ -283,6 +286,7 @@ export default function InvestorDashboard() {
           />
         </div>
 
+        <HomeFold storageKey="cfb.dashboard.investor.full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             {/* Active deals first: they are what needs a decision. */}
@@ -436,6 +440,7 @@ export default function InvestorDashboard() {
         {/* After the work. The active deal and the figures stay the first
             glance; this list is what shipped, and it is still one press away. */}
         <WhatsNewPanel audience="investor" />
+        </HomeFold>
       </div>
     </AppShell>
   );

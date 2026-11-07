@@ -205,7 +205,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
         <div className="space-y-2">
           <CardHead
             mark={(
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-14 w-14">
                 <AvatarImage src={review.expertAvatar} alt="" />
                 <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
                   {initialsOf(review.expertName)}

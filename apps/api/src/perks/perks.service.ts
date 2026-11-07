@@ -15,6 +15,7 @@ import { PrismaService } from '../prisma/prisma.service';
 type PerkRow = {
   id: string;
   partner: string;
+  logoUrl: string | null;
   title: string;
   titleEl: string | null;
   summary: string;
@@ -38,6 +39,7 @@ type PerkRow = {
 const PERK_SELECT = {
   id: true,
   partner: true,
+  logoUrl: true,
   title: true,
   titleEl: true,
   summary: true,
@@ -72,6 +74,7 @@ export class PerksService {
     return {
       id: row.id,
       partner: row.partner,
+      logoUrl: row.logoUrl,
       title: row.title,
       titleEl: row.titleEl,
       summary: row.summary,

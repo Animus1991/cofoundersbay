@@ -41,6 +41,8 @@ import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { HomeFold } from '@/components/dashboard/HomeFold';
+import { HomeToday } from '@/components/dashboard/HomeToday';
 import { formatFee } from '@/lib/mentor-fee';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { homeSnapshot, mentorHomePriority } from '@/lib/home-snapshot';
@@ -345,7 +347,8 @@ export default function MentorDashboard() {
       descriptionEl="Συνεδρίες, αιτήματα καθοδηγούμενων, αξιολογήσεις και έσοδα με μια ματιά."
     >
       <div className="space-y-6">
-        <HomeAskHero role="mentor" name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
+        <HomeAskHero role="mentor" showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
+        <HomeToday />
 
         {/* One next step, before everything else. Within the hour it stays the
             status line; otherwise the next session, or the first request. */}
@@ -425,6 +428,7 @@ export default function MentorDashboard() {
           />
         </div>
 
+        <HomeFold storageKey="cfb.dashboard.mentor.full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             {/* Requests lead when there are any: they wait on this mentor. */}
@@ -526,6 +530,7 @@ export default function MentorDashboard() {
         {/* After the work. The next session and the figures stay the first
             glance; this list is what shipped, and it is still one press away. */}
         <WhatsNewPanel audience="mentor" />
+        </HomeFold>
       </div>
     </AppShell>
   );

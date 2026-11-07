@@ -9,6 +9,7 @@ export interface CreateMarketplaceServiceDto {
   category?: MarketplaceCategory;
   providerName: string;
   providerLogo?: string;
+  coverImageUrl?: string;
   pricing?: string;
   contactUrl?: string;
   websiteUrl?: string;
@@ -22,6 +23,7 @@ export interface UpdateMarketplaceServiceDto {
   category?: MarketplaceCategory;
   providerName?: string;
   providerLogo?: string;
+  coverImageUrl?: string;
   pricing?: string;
   contactUrl?: string;
   websiteUrl?: string;
@@ -50,6 +52,7 @@ export class MarketplaceService {
         category: dto.category || 'other',
         providerName: dto.providerName,
         providerLogo: dto.providerLogo,
+        coverImageUrl: dto.coverImageUrl,
         pricing: dto.pricing,
         contactUrl: dto.contactUrl,
         websiteUrl: dto.websiteUrl,
@@ -104,6 +107,7 @@ export class MarketplaceService {
         // The member behind the listing: the web opens a conversation with them.
         providerUserId: s.createdById,
         providerLogo: s.providerLogo,
+        coverImageUrl: s.coverImageUrl,
         pricing: s.pricing,
         contactUrl: s.contactUrl,
         websiteUrl: s.websiteUrl,
@@ -132,6 +136,7 @@ export class MarketplaceService {
       category: service.category,
       providerName: service.providerName,
       providerLogo: service.providerLogo,
+      coverImageUrl: service.coverImageUrl,
       pricing: service.pricing,
       contactUrl: service.contactUrl,
       websiteUrl: service.websiteUrl,
@@ -165,6 +170,7 @@ export class MarketplaceService {
         ...(dto.category && { category: dto.category }),
         ...(dto.providerName && { providerName: dto.providerName }),
         ...(dto.providerLogo !== undefined && { providerLogo: dto.providerLogo }),
+        ...(dto.coverImageUrl !== undefined && { coverImageUrl: dto.coverImageUrl }),
         ...(dto.pricing !== undefined && { pricing: dto.pricing }),
         ...(dto.contactUrl !== undefined && { contactUrl: dto.contactUrl }),
         ...(dto.websiteUrl !== undefined && { websiteUrl: dto.websiteUrl }),

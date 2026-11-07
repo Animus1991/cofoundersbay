@@ -27,6 +27,7 @@ type Draft = {
   terms: string;
   code: string;
   redeemUrl: string;
+  logoUrl: string;
   expiresAt: string;
   category: PerkCategory;
   stages: PerkStage[];
@@ -45,6 +46,7 @@ const EMPTY: Draft = {
   terms: '',
   code: '',
   redeemUrl: '',
+  logoUrl: '',
   expiresAt: '',
   category: 'software',
   stages: [],
@@ -139,6 +141,7 @@ export function AddPerkDialog({ open, onClose, onCreated }: { open: boolean; onC
           {text('howToRedeemEl', 'How to redeem, in Greek', 'Πώς εξαργυρώνεται, στα ελληνικά', PERK_LIMITS.howToRedeem, { long: true })}
           {text('code', 'Code', 'Κωδικός', PERK_LIMITS.code, { hint: 'A code, a link, or both.' })}
           {text('redeemUrl', 'Redeem link (https)', 'Σύνδεσμος εξαργύρωσης (https)', PERK_LIMITS.url, { type: 'url' })}
+          {text('logoUrl', 'Partner logo (https, optional)', 'Λογότυπο συνεργάτη (https, προαιρετικά)', PERK_LIMITS.url)}
           {text('terms', 'Terms', 'Όροι', PERK_LIMITS.terms, { long: true })}
           {text('expiresAt', 'Ends on (optional)', 'Λήγει στις (προαιρετικά)', 10, { type: 'date' })}
           {problem ? (

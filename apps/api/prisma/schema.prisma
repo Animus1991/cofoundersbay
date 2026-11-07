@@ -1026,6 +1026,7 @@ model JobPosting {
   description String?  @db.Text
   role        String? // e.g. "Founder", "Technical Co-Founder"
   location    String?
+  logoUrl     String? // the company's, when it is not the poster's own face
   isRemote    Boolean  @default(false)
   isActive    Boolean  @default(true)
   isFeatured  Boolean  @default(false)
@@ -1473,6 +1474,7 @@ model LearningResource {
 model MarketplaceService {
   id           String              @id @default(uuid())
   title        String
+  coverImageUrl String?
   description  String?             @db.Text
   category     MarketplaceCategory @default(other)
   providerName String
@@ -7867,6 +7869,7 @@ model ScoutProposal {
 model Perk {
   id            String      @id @default(uuid())
   partner       String
+  logoUrl       String?
   title         String
   titleEl       String?
   summary       String      @db.Text

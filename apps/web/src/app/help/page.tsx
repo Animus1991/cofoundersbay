@@ -16,6 +16,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { PhoneFold } from '@/components/common/PhoneFold';
 import { bilingualAria } from '@/lib/i18n/format';
 import { HELP_FAQ_EL, HELP_TOPIC_EL } from '@/lib/i18n/strings-help';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
@@ -480,7 +481,8 @@ export default function HelpPage() {
         ) : (
           <div className="space-y-4">
             {displayCategories.map((category) => (
-              <Card key={category.id} className="shadow-sm border-border">
+              <PhoneFold key={category.id} title={{ en: category.title, el: HELP_TOPIC_EL[category.id]?.title ?? category.title }}>
+              <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 space-y-1.5">
@@ -503,6 +505,7 @@ export default function HelpPage() {
                   ))}
                 </CardContent>
               </Card>
+              </PhoneFold>
             ))}
           </div>
         )}

@@ -19,6 +19,7 @@ import {
 } from '@/lib/api';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { NetworkTabs } from '@/components/network/NetworkTabs';
 import { MessageButton } from '@/components/common/PersonActions';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { bilingualInline, formatDate } from '@/lib/i18n/format';
@@ -165,7 +166,7 @@ function EndorsementCard({
         <CardHead
           mark={(
             <Link href={`/profiles/${user.id}`} aria-label={bilingualInline(`Open ${user.name}'s profile`, `Άνοιγμα προφίλ: ${user.name}`)}>
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-14 w-14">
                 <AvatarImage src={user.avatar} alt="" />
                 <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initials}</AvatarFallback>
               </Avatar>
@@ -603,6 +604,7 @@ export default function EndorsementsPage() {
   return (
     <AppShell rail={rail}>
       <div className="space-y-6 pb-10">
+        <NetworkTabs />
         {showDemoData && (
           <SampleDataNotice
             surface="Endorsements"

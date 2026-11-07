@@ -99,8 +99,8 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
       <CardContent className="space-y-3">
         <CardHead
           mark={(
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={job.creator?.avatarUrl ?? undefined} alt="" />
+            <Avatar className={cn('h-14 w-14', job.logoUrl && 'rounded-xl')}>
+              <AvatarImage src={job.logoUrl ?? job.creator?.avatarUrl ?? undefined} alt="" />
               <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
                 {initialsOf(job.creator?.displayName ?? '')}
               </AvatarFallback>
@@ -198,7 +198,7 @@ function JobSkeleton() {
 
 function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const { success, error: showError } = useToast();
-  const [form, setForm] = useState({ title: '', role: '', location: '', isRemote: false });
+  const [form, setForm] = useState({ title: '', role: '', location: '', logoUrl: '', isRemote: false });
   const set = (k: keyof typeof form, v: string | boolean) => setForm((p) => ({ ...p, [k]: v }));
 
   const mutation = useMutation({
@@ -207,6 +207,7 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
         title: form.title.trim(),
         role: form.role.trim() || undefined,
         location: form.location.trim() || undefined,
+        logoUrl: form.logoUrl.trim() || undefined,
         isRemote: form.isRemote,
       }),
     onSuccess: () => {
@@ -249,6 +250,12 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
               onChange={(e) => set('role', e.target.value)}
               maxLength={80}
             />
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="job-logo" className="text-sm font-medium">
+              <BilingualText en="Company logo (https, optional)" el="Λογότυπο εταιρείας (https, προαιρετικά)" compact />
+            </label>
+            <Input id="job-logo" type="url" value={form.logoUrl} onChange={(e) => set('logoUrl', e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <label htmlFor="job-f3" className="text-sm font-medium">

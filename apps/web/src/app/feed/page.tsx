@@ -977,6 +977,17 @@ export default function FeedPage() {
             {/* Create Post */}
             <FeedPostComposer onPost={handlePost} />
 
+            {/* Below `lg` the rail is a sheet, so the topics also sit here, one press from a filter. */}
+            {!tag && (trendingData?.topics ?? []).length > 0 ? (
+              <div className="flex gap-1.5 overflow-x-auto pb-1 lg:hidden" data-feed-topics="" role="group" aria-label={bilingualAria('Trending topics', 'Θέματα της στιγμής')}>
+                {(trendingData?.topics ?? []).slice(0, 6).map((topic) => (
+                  <button key={topic.tag} type="button" onClick={() => setTag(topic.tag)} className="tap-target-y shrink-0 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:text-foreground">
+                    #{topic.tag}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
             {tag && (
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm text-muted-foreground">

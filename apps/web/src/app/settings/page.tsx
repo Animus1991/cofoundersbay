@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
+import { PhoneFold } from '@/components/common/PhoneFold';
 import { StatusText } from '@/components/common/StatusText';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -1002,9 +1003,9 @@ export default function SettingsPage() {
             </ul>
           </nav>
           <LanguageCard />
-          <AppearanceCard />
+          <PhoneFold anchor="appearance" title={{ en: 'Appearance', el: 'Εμφάνιση' }}><AppearanceCard /></PhoneFold>
           {/* Pins, counts and suggestions (docs §107). */}
-          <YourPagesSettingsCard />
+          <PhoneFold anchor="your-pages" title={{ en: 'Your pages', el: 'Οι σελίδες σας' }}><YourPagesSettingsCard /></PhoneFold>
           {/* Short account cards in two explicit columns. A flowing grid would
               stretch every row to its taller half. The long sections
               (notifications, verification, open to, privacy, danger zone)
@@ -1013,6 +1014,7 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
             <div className="min-w-0 space-y-6">
               {/* Billing */}
+              <PhoneFold anchor="billing" title={{ en: 'Plan and billing', el: 'Πλάνο και χρεώσεις' }}>
               <Card id="billing" className="scroll-mt-16 shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -1101,9 +1103,11 @@ export default function SettingsPage() {
                   )}
                 </CardContent>
               </Card>
+              </PhoneFold>
 
 
               {/* Connected accounts */}
+              <PhoneFold anchor="connected-accounts" title={{ en: 'Connected accounts', el: 'Συνδεδεμένοι λογαριασμοί' }}>
               <Card id="connected-accounts" className="scroll-mt-16 shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -1186,9 +1190,11 @@ export default function SettingsPage() {
                   )}
                 </CardContent>
               </Card>
+              </PhoneFold>
 
 
               {/* Account section */}
+              <PhoneFold anchor="account" title={{ en: 'Account', el: 'Λογαριασμός' }}>
               <Card id="account" className="scroll-mt-16 shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -1232,11 +1238,13 @@ export default function SettingsPage() {
                   </p>
                 </CardContent>
               </Card>
+              </PhoneFold>
 
             </div>
 
             <div className="min-w-0 space-y-6">
               {/* Password Change */}
+              <PhoneFold anchor="change-password" title={{ en: 'Password', el: 'Κωδικός' }}>
               <Card id="change-password" className="scroll-mt-16 shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -1304,9 +1312,11 @@ export default function SettingsPage() {
                   </form>
                 </CardContent>
               </Card>
+              </PhoneFold>
 
 
               {/* Security — 2FA */}
+              <PhoneFold anchor="security" title={{ en: 'Security', el: 'Ασφάλεια' }}>
               <Card id="security" className="scroll-mt-16 shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -1336,11 +1346,13 @@ export default function SettingsPage() {
                   )}
                 </CardContent>
               </Card>
+              </PhoneFold>
 
 
             </div>
           </div>
               {/* Notifications: the quick view of /settings/notifications. */}
+              <PhoneFold anchor="notifications" title={{ en: 'Notifications', el: 'Ειδοποιήσεις' }}>
               <Card id="notifications" className="scroll-mt-16 shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1423,10 +1435,12 @@ export default function SettingsPage() {
                   </div>
                 </CardContent>
               </Card>
+              </PhoneFold>
 
           {/* Verification, "Open to" and the ten "How you like to work"
               questions moved to the profile (docs §99). One card says where,
               for whoever still looks for them here. */}
+          <PhoneFold anchor="on-your-profile" title={{ en: 'On your profile', el: 'Στο προφίλ σας' }}>
           <Card id="on-your-profile" className="scroll-mt-16">
             <CardHeader>
               <CardTitle><BilingualText en="On your profile" el="Στο προφίλ σας" compact /></CardTitle>
@@ -1450,8 +1464,10 @@ export default function SettingsPage() {
               </Button>
             </CardContent>
           </Card>
-          <PrivacyCard />
+          </PhoneFold>
+          <PhoneFold anchor="privacy" title={{ en: 'Privacy', el: 'Απόρρητο' }}><PrivacyCard /></PhoneFold>
           {/* Danger Zone */}
+          <PhoneFold anchor="danger-zone" title={{ en: 'Danger zone', el: 'Επικίνδυνη ζώνη' }}>
           <Card id="danger-zone" className="scroll-mt-16 border-destructive/30">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2 text-destructive-accessible">
@@ -1496,6 +1512,7 @@ export default function SettingsPage() {
               <DeleteAccountDialog open={deleteOpen} onOpenChange={setDeleteOpen} />
             </CardContent>
           </Card>
+          </PhoneFold>
         </div>
       )}
     </AppShell>

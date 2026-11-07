@@ -625,10 +625,11 @@ export default function LearningPage() {
           </span>
         </div>
 
-        <TabsContent value={activeTab} className="space-y-6">
+        {/* On a phone what to read comes first, with its picture; the paths follow. */}
+        <TabsContent value={activeTab} className="flex flex-col gap-6">
       {/* Learning Paths */}
       {activeTab === 'all' && (
-        <div className="space-y-3">
+        <div className="space-y-3 max-sm:order-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Target className="icon-sm text-muted-foreground" />
@@ -652,7 +653,7 @@ export default function LearningPage() {
         </div>
       )}
 
-      <div id="learning-results" className="scroll-mt-16 space-y-6">
+      <div id="learning-results" className="scroll-mt-16 space-y-6 max-sm:order-1">
       {/* Recommended for you */}
       {recommendedResources.length > 0 && activeTab === 'all' && (
         <div className="space-y-3">

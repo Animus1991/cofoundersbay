@@ -6,6 +6,7 @@ export type JobPostingView = {
   title: string;
   role: string | null;
   location: string | null;
+  logoUrl: string | null;
   isRemote: boolean;
   isFeatured: boolean;
   /** The poster's id, so a reader can open their profile or message them. */
@@ -24,6 +25,7 @@ export class JobsService {
       description?: string | null;
       role?: string | null;
       location?: string | null;
+      logoUrl?: string | null;
       isRemote?: boolean;
     },
   ): Promise<JobPostingView & { description: string | null; createdAt: string }> {
@@ -34,6 +36,7 @@ export class JobsService {
         description: data.description ?? null,
         role: data.role ?? null,
         location: data.location ?? null,
+        logoUrl: data.logoUrl ?? null,
         isRemote: data.isRemote ?? false,
         isActive: true,
       },
@@ -46,6 +49,7 @@ export class JobsService {
       title: job.title,
       role: job.role,
       location: job.location,
+      logoUrl: job.logoUrl,
       isRemote: job.isRemote,
       isFeatured: job.isFeatured,
       description: job.description,
@@ -73,6 +77,7 @@ export class JobsService {
       title: job.title,
       role: job.role,
       location: job.location,
+      logoUrl: job.logoUrl,
       isRemote: job.isRemote,
       isFeatured: job.isFeatured,
       description: job.description,
@@ -111,6 +116,7 @@ export class JobsService {
       title: j.title,
       role: j.role,
       location: j.location,
+      logoUrl: j.logoUrl,
       isRemote: j.isRemote,
       isFeatured: j.isFeatured,
       creator: {

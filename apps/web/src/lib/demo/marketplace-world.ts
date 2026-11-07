@@ -14,6 +14,8 @@ export type DemoProvider = {
   /** The member behind the listing: "Message" and "Request" open a conversation with them. */
   providerUserId?: string;
   providerAvatar?: string;
+  /** A listing's own picture, when the provider gave one. */
+  coverImage?: string;
   providerTitle: string;
   title: string;
   description: string;

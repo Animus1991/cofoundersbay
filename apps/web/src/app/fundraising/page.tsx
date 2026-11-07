@@ -77,7 +77,7 @@ import { ShareRoomDialog, type ShareDoc, type ShareLead, type ShareRoomActions }
 import { FollowUpDialog } from '@/components/fundraising/FollowUpDialog';
 import { CapTableView } from '@/components/fundraising/CapTableView';
 import { InvestorEmailDialog, type InvestorEmailTarget } from '@/components/fundraising/InvestorEmailDialog';
-import { isFollowUpDue, isFollowUpLate, type FollowUpLead } from '@/lib/follow-ups';
+import { isFollowUpDue, isFollowUpLate, withFollowUps, type FollowUpLead } from '@/lib/follow-ups';
 import { qk } from '@/lib/query-keys';
 import { getMeProfile } from '@/lib/api';
 import { useFormDraft } from '@/lib/form-draft';
@@ -1299,6 +1299,8 @@ export default function FundraisingPage() {
     if (savedRound) keep(await updateFundraisingRound(savedRound.apiId, { capTable: next }));
   }
 
+  const dueLeads = withFollowUps(leads).filter(isFollowUpDue);
+
   async function saveRound(input: RoundInput) {
     keep(savedRound ? await updateFundraisingRound(savedRound.apiId, input) : await createFundraisingRound(input));
   }
@@ -1557,6 +1559,27 @@ export default function FundraisingPage() {
             </CardContent>
           </Card>
         ) : <>
+        {dueLeads.length > 0 ? (
+          <Card data-followups-due="">
+            <CardContent className="space-y-2">
+              <h2 className="card-title"><BilingualText en={fundraisingEn('followup_due_title')} el={fundraisingEl('followup_due_title')} compact /></h2>
+              <ul className="divide-y divide-border">
+                {dueLeads.map((lead) => (
+                  <li key={lead.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2">
+                    <span className="min-w-0 flex-1">
+                      <LeadName lead={lead} as="span" className="text-sm font-medium text-foreground" />
+                      {lead.nextStep ? <span className="block text-xs text-muted-foreground">{lead.nextStep}</span> : null}
+                    </span>
+                    <LeadEmail lead={lead} onEmail={setEmailTo} />
+                    <button type="button" className="tap-extend-y text-xs font-medium text-muted-foreground hover:text-foreground" onClick={() => setFollowUpFor(lead)}>
+                      <BilingualText en={fundraisingEn('followup_change')} el={fundraisingEl('followup_change')} compact />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        ) : null}
         {round ? (
           <RoundCard round={round} onAdd={() => openAdd('committed')} onEdit={savedRound ? () => setRoundFormOpen(true) : undefined} />
         ) : (

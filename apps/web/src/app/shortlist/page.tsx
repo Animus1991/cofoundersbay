@@ -49,6 +49,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn, initialsOf } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
+import { NetworkTabs } from '@/components/network/NetworkTabs';
 import { shortlistEn, shortlistEl } from '@/lib/i18n/strings-shortlist';
 import { formatDate } from '@/lib/i18n/format';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -65,6 +66,7 @@ import {
 } from '@/lib/api';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { CardMoreMenu, type CardMoreItem } from '@/components/common/CardMoreMenu';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { ASK } from '@/lib/page-questions';
 import { elWord } from '@/lib/rows-el';
@@ -191,7 +193,7 @@ function ShortlistCard({
               {/* The shared avatar, so a photo that does not load falls back
                   to the initials: a bare <img> left an empty 40px gap in
                   front of the name (docs §87). */}
-              <Avatar className="h-10 w-10 ring-2 ring-border/50 transition-all hover:ring-primary/40">
+              <Avatar className="h-14 w-14 ring-2 ring-border/50 transition-all hover:ring-primary/40">
                 <AvatarImage src={profile?.avatarUrl ?? undefined} alt="" />
                 <AvatarFallback className="bg-muted text-sm font-semibold text-muted-foreground">
                   {profile?.displayName ? initialsOf(profile.displayName) : <User className="icon-md" aria-hidden="true" />}
@@ -264,25 +266,6 @@ function ShortlistCard({
           />
         </div>
 
-        {/* The reader's own label for this person, as a row of choices. */}
-        <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label={bilingualAria(shortlistEn('label'), shortlistEl('label'))}>
-          <span className="text-xs font-medium text-muted-foreground"><BilingualText en={shortlistEn('label')} el={shortlistEl('label')} compact /></span>
-          {(Object.entries(STATUS_CONFIG) as [NonNullable<StatusLabel>, typeof STATUS_CONFIG[NonNullable<StatusLabel>]][]).map(([key, cfg]) => (
-            <button
-              key={key}
-              aria-pressed={statusLabel === key}
-              onClick={() => setStatusLabel(statusLabel === key ? null : key)}
-              className={cn(
-                'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs transition-all',
-                statusLabel === key ? cfg.color : 'border-border text-muted-foreground hover:border-border',
-              )}
-            >
-              <cfg.icon className="h-3 w-3" aria-hidden="true" />
-              <BilingualText en={shortlistEn(cfg.key)} el={shortlistEl(cfg.key)} compact />
-            </button>
-          ))}
-        </div>
-
         {/* The reader's note: a quoted sentence on the card, not a tile in it. */}
         {!editingNote && item.note && (
           <p className="card-body italic text-muted-foreground">&ldquo;{item.note}&rdquo;</p>
@@ -304,27 +287,28 @@ function ShortlistCard({
             />
           )}
         >
-          {/* Quiet but always visible: hover-only controls do not exist on
-              touch, and a saved person is not a guessing game. */}
-          <div className="flex items-center gap-0.5">
-            <button onClick={() => setEditingNote((v) => !v)} title={say(shortlistEn('note_edit'), shortlistEl('note_edit'))} aria-label={say(shortlistEn('note_edit'), shortlistEl('note_edit'))} className={iconAction}>
-              <Edit2 className="icon-sm" />
-            </button>
-            <Link href={`/messages?to=${item.userId}`} title={say(shortlistEn('message'), shortlistEl('message'))} aria-label={say(shortlistEn('message'), shortlistEl('message'))} className={iconAction}>
-              <MessageCircle className="icon-sm" />
-            </Link>
-            <Link href={`/profiles/${item.userId}`} title={say(shortlistEn('view_profile'), shortlistEl('view_profile'))} aria-label={say(shortlistEn('view_profile'), shortlistEl('view_profile'))} className={iconAction}>
-              <ExternalLink className="icon-sm" />
-            </Link>
-            <button onClick={() => onRemove(item.userId)} title={say(shortlistEn('remove'), shortlistEl('remove'))} aria-label={say(shortlistEn('remove'), shortlistEl('remove'))} className={cn(iconAction, 'hover:bg-destructive/10 hover:text-destructive-accessible')}>
-              <Trash2 className="icon-sm" />
-            </button>
-          </div>
-          <Button variant="outline" size="sm" className="gap-1" asChild>
-            <Link href={`/matches/compare?ids=${item.userId}`}>
-              <GitMerge className="icon-sm" /> <BilingualText en={shortlistEn('compare')} el={shortlistEl('compare')} compact />
+          <Button size="sm" className="gap-1.5" asChild>
+            <Link href={`/messages?to=${item.userId}`}>
+              <MessageCircle className="icon-sm" /> <BilingualText en={shortlistEn('message')} el={shortlistEl('message')} compact />
             </Link>
           </Button>
+          <CardMoreMenu
+            name={profile?.displayName ?? say(shortlistEn('view_profile'), shortlistEl('view_profile'))}
+            items={[
+              { key: 'compare', en: shortlistEn('compare'), el: shortlistEl('compare'), icon: GitMerge, href: `/matches/compare?ids=${item.userId}` },
+              { key: 'note', en: shortlistEn('note_edit'), el: shortlistEl('note_edit'), icon: Edit2, onSelect: () => setEditingNote((v) => !v) },
+              // The reader's own label: choosing it again takes it off.
+              ...(Object.entries(STATUS_CONFIG) as [NonNullable<StatusLabel>, typeof STATUS_CONFIG[NonNullable<StatusLabel>]][]).map(([key, cfg]) => ({
+                key: `label-${key}`,
+                en: shortlistEn(cfg.key),
+                el: shortlistEl(cfg.key),
+                icon: cfg.icon as CardMoreItem['icon'],
+                onSelect: () => setStatusLabel(statusLabel === key ? null : key),
+              })),
+              { key: 'profile', en: shortlistEn('view_profile'), el: shortlistEl('view_profile'), icon: ExternalLink, href: `/profiles/${item.userId}` },
+              { key: 'remove', en: shortlistEn('remove'), el: shortlistEl('remove'), icon: Trash2, onSelect: () => onRemove(item.userId), destructive: true },
+            ]}
+          />
         </CardFoot>
       </CardContent>
     </Card>
@@ -549,6 +533,7 @@ export default function ShortlistPage() {
       descriptionEl={shortlistEl('page_description')}
     >
       <div className="space-y-6 pb-10">
+        <NetworkTabs />
 
         {/* Toolbar — search, sort, view and compare act on saved profiles, so
             they wait until there is at least one (and a read that worked). */}

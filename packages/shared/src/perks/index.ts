@@ -52,6 +52,8 @@ export const PERK_COPY = {
 export interface PerkView {
   id: string;
   partner: string;
+  /** The partner's logo, an https link. */
+  logoUrl: string | null;
   title: string;
   titleEl: string | null;
   summary: string;
@@ -79,6 +81,7 @@ export interface PerkView {
 
 export interface PerkInput {
   partner: string;
+  logoUrl: string | null;
   title: string;
   titleEl: string | null;
   summary: string;
@@ -166,6 +169,7 @@ export function readPerkInput(body: unknown): { ok: true; value: PerkInput } | {
     termsEl: text(b, 'termsEl', PERK_LIMITS.terms, false),
     code: text(b, 'code', PERK_LIMITS.code, false),
     redeemUrl: text(b, 'redeemUrl', PERK_LIMITS.url, false),
+    logoUrl: text(b, 'logoUrl', PERK_LIMITS.url, false),
   };
   for (const v of Object.values(fields)) {
     if (v && typeof v === 'object') return { ok: false, error: v.error };
@@ -182,6 +186,8 @@ export function readPerkInput(body: unknown): { ok: true; value: PerkInput } | {
     if (url.protocol !== 'https:') return { ok: false, error: 'redeemUrl must start with https://' };
   }
   if (!fields.code && !redeemUrl) return { ok: false, error: 'A perk needs a code or a redeem link' };
+  const logoUrl = fields.logoUrl as string | null;
+  if (logoUrl && !/^https:\/\/\S+$/.test(logoUrl)) return { ok: false, error: 'logoUrl must start with https://' };
   let expiresAt: string | null = null;
   if (b.expiresAt !== undefined && b.expiresAt !== null && b.expiresAt !== '') {
     const t = typeof b.expiresAt === 'string' ? Date.parse(b.expiresAt) : NaN;
@@ -193,6 +199,7 @@ export function readPerkInput(body: unknown): { ok: true; value: PerkInput } | {
     ok: true,
     value: {
       partner: fields.partner as string,
+      logoUrl,
       title: fields.title as string,
       titleEl: fields.titleEl as string | null,
       summary: fields.summary as string,

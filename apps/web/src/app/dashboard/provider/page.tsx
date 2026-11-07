@@ -42,6 +42,8 @@ import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { priceEl } from '@/lib/i18n/units';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { HomeFold } from '@/components/dashboard/HomeFold';
+import { HomeToday } from '@/components/dashboard/HomeToday';
 import { FactLine } from '@/components/common/FactLine';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 
@@ -263,7 +265,8 @@ export default function ProviderDashboard() {
       descriptionEl="Αιτήματα, ενεργά έργα, υπηρεσίες και αξιολογήσεις — σε μία προβολή."
     >
       <div className="space-y-6">
-        <HomeAskHero role="provider" name={profile?.profile?.displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
+        <HomeAskHero role="provider" showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
+        <HomeToday />
 
         {!inquiriesLoading && waiting[0] ? (
           <HomeNextStep
@@ -318,6 +321,7 @@ export default function ProviderDashboard() {
           />
         </div>
 
+        <HomeFold storageKey="cfb.dashboard.provider.full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             {/* Only what waits on the provider: settled inquiries are projects
@@ -506,6 +510,7 @@ export default function ProviderDashboard() {
         {/* After the work. The inquiry that waits and the figures stay the
             first glance; this list is what shipped, and it is still one press away. */}
         <WhatsNewPanel audience="provider" />
+        </HomeFold>
       </div>
     </AppShell>
   );

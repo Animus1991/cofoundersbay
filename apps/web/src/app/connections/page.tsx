@@ -42,6 +42,7 @@ import { STATUS } from '@/lib/semantic-colors';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { NetworkTabs } from '@/components/network/NetworkTabs';
 import { connectionsEn, connectionsEl } from '@/lib/i18n/strings-connections';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
@@ -135,7 +136,7 @@ function ConnectionCard({
         <CardHead
           mark={(
             <Link href={`/profiles/${other.id}`} aria-label={bilingualAria(`Open ${other.displayName}'s profile`, `Άνοιγμα προφίλ: ${other.displayName}`)}>
-              <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+              <Avatar className="h-14 w-14 ring-2 ring-primary/20">
                 <AvatarImage src={other.avatarUrl ?? undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
                   {initialsOf(other.displayName)}
@@ -185,7 +186,7 @@ function IntroRequestCard({
         <CardHead
           mark={(
             <Link href={`/profiles/${sender.id}`} aria-label={bilingualAria(`Open ${sender.displayName}'s profile`, `Άνοιγμα προφίλ: ${sender.displayName}`)}>
-              <Avatar className="h-10 w-10 ring-2 ring-primary/30">
+              <Avatar className="h-14 w-14 ring-2 ring-primary/30">
                 <AvatarImage src={sender.avatarUrl ?? undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
                   {initialsOf(sender.displayName)}
@@ -473,6 +474,7 @@ export default function ConnectionsPage() {
       rail={rail}
     >
       <div className="space-y-6 pb-10">
+      <NetworkTabs />
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
           <TabsTrigger value="received" className="gap-2">

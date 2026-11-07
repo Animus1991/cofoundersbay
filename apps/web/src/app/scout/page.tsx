@@ -73,7 +73,7 @@ function ProposalCard({ p, actions }: { p: ScoutProposal; actions: React.ReactNo
         <CardHead
           mark={(
             <Link href={`/profiles/${encodeURIComponent(p.person.id)}`} aria-label={bilingualAria(`Open ${p.person.displayName}'s profile`, `Άνοιγμα προφίλ: ${p.person.displayName}`)}>
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-16 w-16">
                 <AvatarImage src={p.person?.avatarUrl ?? undefined} alt="" />
                 <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(p.person.displayName)}</AvatarFallback>
               </Avatar>

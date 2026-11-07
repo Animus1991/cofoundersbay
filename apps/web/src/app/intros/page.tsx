@@ -10,6 +10,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailStats } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
+import { NetworkTabs } from '@/components/network/NetworkTabs';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -82,7 +83,7 @@ function IntroCard({
           <CardHead
             mark={(
               <Link href={`/profiles/${encodeURIComponent(person.id)}`} aria-label={bilingualAria(`Open ${person.displayName}'s profile`, `Άνοιγμα προφίλ: ${person.displayName}`)}>
-                <Avatar className="h-10 w-10">
+                <Avatar className="h-14 w-14">
                   <AvatarImage src={person.avatarUrl ?? undefined} alt="" />
                   <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(person.displayName)}</AvatarFallback>
                 </Avatar>
@@ -322,6 +323,7 @@ function IntrosContent() {
   return (
     <AppShell rail={rail}>
       <div className="space-y-6">
+        <NetworkTabs />
         <Tabs value={tab} onValueChange={(v) => setTab(v === 'sent' || v === 'received' ? v : 'forward')} className="space-y-4">
           <TabsList>
             {TABS.map((t) => (

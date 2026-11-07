@@ -1,5 +1,6 @@
 'use client';
 
+import { CoverImage } from '@/components/common/CoverImage';
 import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -125,6 +126,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
         !provider.isAvailable && 'surface-inactive',
       )}
     >
+      <CoverImage src={provider.coverImage} className="rounded-t-[inherit]" />
       <CardContent className="flex flex-1 flex-col gap-3">
         {/* The service is the title and the person sits beside the mark.
             The specialism and the rating are their own lines: they start on
@@ -324,6 +326,7 @@ export default function MarketplacePage() {
     websiteUrl: s.websiteUrl ?? undefined,
     contactUrl: s.contactUrl ?? undefined,
     providerAvatar: s.providerLogo ?? undefined,
+    coverImage: s.coverImageUrl ?? undefined,
     providerUserId: s.providerUserId ?? undefined,
   }));
 
@@ -462,23 +465,6 @@ export default function MarketplacePage() {
             askAiPrompt={ASK.marketplaceSample}
           />
         )}
-        {/* Banner CTA for providers */}
-        <Card className="border-primary-muted bg-primary-subtle">
-          <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="card-title text-foreground"><BilingualText en="Are you a service provider?" el="Είστε πάροχος υπηρεσιών;" compact wrap /></h2>
-              <p className="card-body mt-0.5 text-muted-foreground"><BilingualText en="List your services where founders on CoFounderBay look for help" el="Καταχωρίστε τις υπηρεσίες σας εκεί όπου οι ιδρυτές του CoFounderBay αναζητούν βοήθεια" wrap /></p>
-            </div>
-            {/* Theirs turns a dead button into a real link to /provider/services;
-                our icon-size token is kept. */}
-            <Button size="sm" className="shrink-0" asChild>
-              <Link href="/provider/services">
-                <Plus className="mr-1.5 icon-sm" /><BilingualText en="List Your Service" el="Καταχώριση υπηρεσίας" compact />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
         {/* Search — sort and the availability filter live in the rail */}
         <div className={cn('relative max-w-xl', toolbarHidden && 'hidden')}>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
@@ -592,6 +578,24 @@ export default function MarketplacePage() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* For the few who list, under what most came for. */}
+        <Card className="border-primary-muted bg-primary-subtle">
+          <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="card-title text-foreground"><BilingualText en="Are you a service provider?" el="Είστε πάροχος υπηρεσιών;" compact wrap /></h2>
+              <p className="card-body mt-0.5 text-muted-foreground"><BilingualText en="List your services where founders on CoFounderBay look for help" el="Καταχωρίστε τις υπηρεσίες σας εκεί όπου οι ιδρυτές του CoFounderBay αναζητούν βοήθεια" wrap /></p>
+            </div>
+            {/* Theirs turns a dead button into a real link to /provider/services;
+                our icon-size token is kept. */}
+            <Button size="sm" className="shrink-0" asChild>
+              <Link href="/provider/services">
+                <Plus className="mr-1.5 icon-sm" /><BilingualText en="List Your Service" el="Καταχώριση υπηρεσίας" compact />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
       </div>
     </AppShell>
   );

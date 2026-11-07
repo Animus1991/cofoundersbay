@@ -23,7 +23,7 @@ import { DemoRefusal } from './demo-refusal';
 const STORAGE_KEY = 'cfb:demo-perks:v1';
 const DAY = 86_400_000;
 
-type Seed = Omit<PerkView, 'claimed' | 'claimedAt' | 'expiresAt' | 'claimCount' | 'active'> & {
+type Seed = Omit<PerkView, 'claimed' | 'claimedAt' | 'expiresAt' | 'claimCount' | 'active' | 'logoUrl'> & {
   /** Days until the offer ends, from now; null for no end. */
   endsInDays: number | null;
   /** Other members' claims, so the count is not the reader's alone. */
@@ -222,8 +222,8 @@ function persist() {
 }
 
 /** An empty logo field, which the demo photos fill with a picture of the partner's trade. */
-function withPartnerLogo<T extends object>(view: T): T & { partnerLogo: null } {
-  return { ...view, partnerLogo: null };
+function withPartnerLogo<T extends object>(view: T): T & { partnerLogo: null; logoUrl: null } {
+  return { ...view, partnerLogo: null, logoUrl: null };
 }
 
 export function resetDemoPerks() {
@@ -243,6 +243,7 @@ function all(state: State, now: number): Array<{ perk: PerkView; createdAt: numb
       createdAt: now - (i + 1) * 3 * DAY,
       perk: {
         ...rest,
+        logoUrl: null,
         expiresAt: endsInDays === null ? null : new Date(now + endsInDays * DAY).toISOString(),
         active: !state.off.includes(s.id),
         claimCount: others + (claimedAt ? 1 : 0),

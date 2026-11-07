@@ -91,7 +91,7 @@ function InquiryCard({
       <CardContent className="space-y-3">
         <CardHead
           mark={(
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-14 w-14">
               <AvatarImage src={inquiry.clientAvatar} alt="" />
               <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(inquiry.clientName)}</AvatarFallback>
             </Avatar>

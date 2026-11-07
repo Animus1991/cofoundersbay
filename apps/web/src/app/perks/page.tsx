@@ -77,6 +77,7 @@ function PerkCard({
   onToggle?: () => void;
 }) {
   const { success, error: showError } = useToast();
+  const [details, setDetails] = useState(false);
   const left = daysLeft(perk, now);
   const fit = perkFit(perk, stage);
   const facts = [
@@ -112,8 +113,8 @@ function PerkCard({
       <CardContent className="flex h-full flex-col gap-3">
         <CardHead
           mark={(
-            <Avatar className="h-10 w-10 rounded-xl" data-keep-icon="">
-              <AvatarImage src={(perk as PerkView & { partnerLogo?: string | null }).partnerLogo ?? undefined} alt="" className="rounded-xl" />
+            <Avatar className="h-14 w-14 rounded-xl" data-keep-icon="">
+              <AvatarImage src={perk.logoUrl ?? (perk as PerkView & { partnerLogo?: string | null }).partnerLogo ?? undefined} alt="" className="rounded-xl" />
               <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initialsOf(perk.partner)}</AvatarFallback>
             </Avatar>
           )}
@@ -144,10 +145,6 @@ function PerkCard({
         <p className="card-body font-medium text-foreground">
           <BilingualText en={perk.value} el={perk.valueEl ?? perk.value} compact wrap />
         </p>
-        <p className="card-body text-muted-foreground">
-          <BilingualText en={perk.summary} el={perk.summaryEl ?? perk.summary} wrap />
-        </p>
-        <FactLine items={facts} />
         {stage && fit === 'match' && !admin ? (
           <p className="text-xs text-muted-foreground">
             <BilingualText en="Named for your stage." el="Για το στάδιό σας." compact />
@@ -177,11 +174,26 @@ function PerkCard({
             ) : null}
           </div>
         ) : null}
-        {perk.terms ? (
-          <p className="text-xs text-muted-foreground">
-            <BilingualText en={`Terms: ${perk.terms}`} el={`Όροι: ${perk.termsEl ?? perk.terms}`} wrap />
+        {/* What it is and its terms, on request: the card says what you get. */}
+        <button
+          type="button"
+          aria-expanded={details}
+          onClick={() => setDetails((value) => !value)}
+          className="tap-extend-y self-start text-xs font-medium text-muted-foreground hover:text-foreground"
+        >
+          {details ? <BilingualText en="Fewer details" el="Λιγότερα" compact /> : <BilingualText en="Details" el="Λεπτομέρειες" compact />}
+        </button>
+        <div hidden={!details} className="space-y-2">
+          <p className="card-body text-muted-foreground">
+            <BilingualText en={perk.summary} el={perk.summaryEl ?? perk.summary} wrap />
           </p>
-        ) : null}
+          <FactLine items={facts} />
+          {perk.terms ? (
+            <p className="text-xs text-muted-foreground">
+              <BilingualText en={`Terms: ${perk.terms}`} el={`Όροι: ${perk.termsEl ?? perk.terms}`} wrap />
+            </p>
+          ) : null}
+        </div>
         <div className="mt-auto">
         <CardFoot
           meta={
@@ -204,7 +216,7 @@ function PerkCard({
             </Button>
           ) : !perk.claimed && onClaim ? (
             <Button size="sm" disabled={busy} onClick={onClaim}>
-              <BilingualText en="Claim and show the code" el="Διεκδίκηση και εμφάνιση κωδικού" compact />
+              <BilingualText en="Claim" el="Διεκδίκηση" compact />
             </Button>
           ) : null}
         </CardFoot>

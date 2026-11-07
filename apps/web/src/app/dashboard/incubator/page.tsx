@@ -45,6 +45,8 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { bilingualAria } from '@/lib/i18n/format';
 import { demoMark } from '@/lib/demo/photos';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { HomeFold } from '@/components/dashboard/HomeFold';
+import { HomeToday } from '@/components/dashboard/HomeToday';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { homeSnapshot } from '@/lib/home-snapshot';
 import { isPreviewDemo } from '@/lib/preview-demo';
@@ -253,7 +255,8 @@ export default function IncubatorDashboard() {
       }
     >
       <div className="space-y-6">
-        <HomeAskHero role="incubator" name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
+        <HomeAskHero role="incubator" showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
+        <HomeToday />
 
         {!loading && nextApplication ? (
           <HomeNextStep
@@ -327,6 +330,7 @@ export default function IncubatorDashboard() {
           />
         </div>
 
+        <HomeFold storageKey="cfb.dashboard.incubator.full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             {/* Decisions first: each application waits on this organisation.
@@ -532,6 +536,7 @@ export default function IncubatorDashboard() {
         {/* After the work. The application that waits and the figures stay
             the first glance; this list is what shipped, and it is still one press away. */}
         <WhatsNewPanel audience="org" />
+        </HomeFold>
       </div>
     </AppShell>
   );

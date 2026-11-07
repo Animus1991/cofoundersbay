@@ -20,6 +20,7 @@ const createJobSchema = z.object({
   description: z.string().trim().max(5000).optional(),
   role: z.string().trim().max(80).optional(),
   location: z.string().trim().max(120).optional(),
+  logoUrl: z.string().trim().url().startsWith('https://').max(500).optional(),
   isRemote: z.boolean().optional(),
 });
 

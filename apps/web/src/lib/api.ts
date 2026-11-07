@@ -2086,6 +2086,8 @@ export type JobPostingView = {
   title: string;
   role: string | null;
   location: string | null;
+  /** The company's logo, when the poster gave one; the poster's face otherwise. */
+  logoUrl?: string | null;
   isRemote: boolean;
   type?: string;
   isFeatured?: boolean;
@@ -2914,6 +2916,7 @@ export async function createJobPosting(body: {
   description?: string;
   role?: string;
   location?: string;
+  logoUrl?: string;
   isRemote?: boolean;
 }): Promise<{ job: JobPostingView }> {
   return apiRequest('/api/jobs', {
@@ -3330,6 +3333,7 @@ export interface MarketplaceServiceItem {
   /** The member who listed the service; the marketplace opens a conversation with them. */
   providerUserId?: string | null;
   providerLogo: string | null;
+  coverImageUrl?: string | null;
   pricing: string | null;
   contactUrl: string | null;
   websiteUrl: string | null;
@@ -3384,6 +3388,7 @@ export async function createMarketplaceService(body: {
   category?: MarketplaceCategory;
   providerName: string;
   providerLogo?: string;
+  coverImageUrl?: string;
   pricing?: string;
   contactUrl?: string;
   websiteUrl?: string;

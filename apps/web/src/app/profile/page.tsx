@@ -9,6 +9,7 @@ import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { VerifiedBadge } from '@/components/commitments/VerifiedBadge';
 import { ProfileHero } from '@/components/profile/ProfileHero';
 import { ProfileActivity, ProfileExperience, SimilarProfiles } from '@/components/profile/ProfileSections';
+import { PhoneFold } from '@/components/common/PhoneFold';
 import { StatusText, statusEl } from '@/components/common/StatusText';
 import { cn } from '@/lib/utils';
 
@@ -685,8 +686,8 @@ export default function ProfilePage() {
             </Card>
 
           {/* What this person has published, and the roles they have held. */}
-          <ProfileActivity userId={profile.userId} own />
-          <ProfileExperience payload={rolePayload} own />
+          <PhoneFold title={{ en: 'Activity', el: 'Δραστηριότητα' }}><ProfileActivity userId={profile.userId} own /></PhoneFold>
+          <PhoneFold title={{ en: 'Experience and education', el: 'Εμπειρία και εκπαίδευση' }}><ProfileExperience payload={rolePayload} own /></PhoneFold>
 
           {/* The one skills card: each skill once, with its level and the
               work that shows it. "Top Skills & Proficiency" listed the same

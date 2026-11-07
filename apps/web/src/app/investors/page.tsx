@@ -19,6 +19,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { CardMoreMenu } from '@/components/common/CardMoreMenu';
+import { FactLine } from '@/components/common/FactLine';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
@@ -210,6 +212,7 @@ function InvestorCard({
   // them; a real account's sample rows have neither.
   const inDemo = useHydrated() && isPreviewDemo();
   const sampleReasonId = useId();
+  const [showFacts, setShowFacts] = useState(false);
   const initials = initialsOf(investor.displayName);
   const checkSize = formatCheckSize(investor.checkSizeMin, investor.checkSizeMax);
   const type = investor.investorType ? TYPE_LABEL[investor.investorType] : null;
@@ -238,7 +241,7 @@ function InvestorCard({
       <CardContent className="space-y-3">
         <CardHead
           mark={(
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-16 w-16">
               <AvatarImage src={investor.avatarUrl} alt="" />
               <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary-accessible">
                 {initials}
@@ -300,7 +303,21 @@ function InvestorCard({
         {/* The facts side by side where the card is wide: one column of
             five captions made each card about 480px tall at 1440 and the
             directory of seven 3,500px (docs §86). The order stays. */}
-        <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+        <FactLine
+          items={[
+            checkSize ? <span key="cheque" className="font-semibold tabular-nums text-foreground">{checkSize}</span> : null,
+            ...stages.slice(0, 2).map((stage) => <BilingualText key={stage.en} en={stage.en} el={stage.el} compact />),
+          ]}
+        />
+        <button
+          type="button"
+          aria-expanded={showFacts}
+          onClick={() => setShowFacts((value) => !value)}
+          className="tap-extend-y text-xs font-medium text-muted-foreground hover:text-foreground"
+        >
+          {showFacts ? <BilingualText en="Less" el="Λιγότερα" compact /> : <BilingualText en="More" el="Περισσότερα" compact />}
+        </button>
+        <div hidden={!showFacts} className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
         {investor.industries.length ? (
           <CardFact en="Sectors" el="Τομείς">
             <TagList label={bilingualInline('Sectors', 'Τομείς')}>
@@ -368,17 +385,13 @@ function InvestorCard({
             </div>
           ) : (
             <>
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/profiles/${investor.userId}`}>
-                  <BilingualText en="Profile" el="Προφίλ" compact />
-                </Link>
-              </Button>
-              <AskIntroButton targetId={investor.userId} targetName={investor.displayName} />
               <Button size="sm" asChild>
                 <Link href={`/messages?to=${investor.userId}`}>
                   <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
                 </Link>
               </Button>
+              <AskIntroButton targetId={investor.userId} targetName={investor.displayName} />
+              <CardMoreMenu name={investor.displayName} items={[{ key: 'profile', en: 'Profile', el: 'Προφίλ', href: `/profiles/${investor.userId}` }]} />
             </>
           )}
         </div>

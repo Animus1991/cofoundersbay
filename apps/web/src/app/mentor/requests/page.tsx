@@ -76,7 +76,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
         <CardHead
           mark={(
             <Link href={`/profiles/${request.requesterId}`} aria-label={`${displayName}`}>
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-14 w-14">
                 <AvatarImage src={request.requester?.avatarUrl || undefined} alt="" />
                 <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                   {initials}
