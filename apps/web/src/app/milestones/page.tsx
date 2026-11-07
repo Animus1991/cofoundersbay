@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { CalendarRange, Plus, CheckCircle2, Clock, ArrowRight, Edit2, Trash2, RefreshCw, MoreVertical, Search, LayoutGrid, LayoutList, Columns3, X, Share2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { MilestoneChecklist } from '@/components/milestones/MilestoneChecklist';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { CANCELLED, choiceControl, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
@@ -41,6 +42,7 @@ import {
   deleteMilestone,
   type Milestone,
   type MilestoneStatus,
+  type MilestoneStep,
   type MilestonePriority,
 } from '@/lib/api';
 import { MilestoneFormModal } from './MilestoneFormModal';
@@ -101,12 +103,14 @@ function MilestoneCard({
   onEdit,
   onStatusChange,
   onDelete,
+  onSteps,
   inBoard = false,
 }: {
   item: Milestone;
   onEdit: (m: Milestone) => void;
   onStatusChange: (id: string, status: MilestoneStatus) => void;
   onDelete: (id: string) => void;
+  onSteps: (id: string, steps: MilestoneStep[]) => void;
   /** On the board the column already names the status, so the card does not repeat it. */
   inBoard?: boolean;
 }) {
@@ -174,6 +178,8 @@ function MilestoneCard({
               : item.description}
           </p>
         )}
+
+        <MilestoneChecklist steps={item.checklist ?? []} onChange={(steps) => onSteps(item.id, steps)} />
 
         {/* Foot: when it is due and with whom at the left; progress and the menu at the right. */}
         <CardFoot
@@ -286,11 +292,13 @@ function MilestoneTimeline({
   onEdit,
   onStatusChange,
   onDelete,
+  onSteps,
 }: {
   items: Milestone[];
   onEdit: (m: Milestone) => void;
   onStatusChange: (id: string, status: MilestoneStatus) => void;
   onDelete: (id: string) => void;
+  onSteps: (id: string, steps: MilestoneStep[]) => void;
 }) {
   const { primary } = useLanguagePreference();
   const monthName = (month: string) =>
@@ -305,7 +313,7 @@ function MilestoneTimeline({
           </h2>
           <div className="space-y-3 border-l border-border pl-3 sm:pl-4">
             {inMonth.map((m) => (
-              <MilestoneCard key={m.id} item={m} onEdit={onEdit} onStatusChange={onStatusChange} onDelete={onDelete} />
+              <MilestoneCard key={m.id} item={m} onEdit={onEdit} onStatusChange={onStatusChange} onDelete={onDelete} onSteps={onSteps} />
             ))}
           </div>
         </section>
@@ -319,11 +327,13 @@ function MilestoneBoard({
   onEdit,
   onStatusChange,
   onDelete,
+  onSteps,
 }: {
   items: Milestone[];
   onEdit: (m: Milestone) => void;
   onStatusChange: (id: string, status: MilestoneStatus) => void;
   onDelete: (id: string) => void;
+  onSteps: (id: string, steps: MilestoneStep[]) => void;
 }) {
   const statuses: MilestoneStatus[] = items.some((m) => m.status === 'cancelled') ? [...BOARD_STATUSES, 'cancelled'] : BOARD_STATUSES;
   return (
@@ -340,7 +350,7 @@ function MilestoneBoard({
             </h2>
             {column.length ? (
               column.map((m) => (
-                <MilestoneCard key={m.id} item={m} onEdit={onEdit} onStatusChange={onStatusChange} onDelete={onDelete} inBoard />
+                <MilestoneCard key={m.id} item={m} onEdit={onEdit} onStatusChange={onStatusChange} onDelete={onDelete} onSteps={onSteps} inBoard />
               ))
             ) : (
               <p className="rounded-xl border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
@@ -504,6 +514,27 @@ export default function MilestonesPage() {
       showError(t(milestoneEn('fail_update'), milestoneEl('fail_update')), t(milestoneEn('try_again'), milestoneEl('try_again')));
     },
   });
+
+  // A tick shows at once and says nothing: a toast on every step would be noise.
+  // A failed save puts the list back and says so.
+  const stepsMut = useMutation({
+    mutationFn: ({ id, steps }: { id: string; steps: MilestoneStep[] }) => updateMilestone(id, { checklist: steps }),
+    onMutate: async ({ id, steps }) => {
+      await qc.cancelQueries({ queryKey });
+      const previous = qc.getQueryData(queryKey);
+      qc.setQueryData(queryKey, (old: typeof data) => (old ? {
+        ...old,
+        milestones: old.milestones.map((m) => (m.id === id ? { ...m, checklist: steps } : m)),
+      } : old));
+      return { previous };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previous) qc.setQueryData(queryKey, context.previous);
+      showError(t(milestoneEn('fail_update'), milestoneEl('fail_update')), t(milestoneEn('try_again'), milestoneEl('try_again')));
+    },
+    onSettled: () => { qc.invalidateQueries({ queryKey: qk('milestones') }); },
+  });
+  const handleSteps = (id: string, steps: MilestoneStep[]) => stepsMut.mutate({ id, steps });
 
   const deleteMut = useMutation({
     mutationFn: deleteMilestone,
@@ -919,6 +950,7 @@ export default function MilestonesPage() {
               onEdit={setEditTarget}
               onStatusChange={handleStatusChange}
               onDelete={handleDelete}
+              onSteps={handleSteps}
             />
           ) : viewMode === 'timeline' ? (
             <MilestoneTimeline
@@ -926,6 +958,7 @@ export default function MilestonesPage() {
               onEdit={setEditTarget}
               onStatusChange={handleStatusChange}
               onDelete={handleDelete}
+              onSteps={handleSteps}
             />
           ) : (
             <div className={cn(viewMode === 'grid' ? 'grid grid-cols-1 gap-3 sm:grid-cols-2' : 'space-y-3')}>
@@ -936,6 +969,7 @@ export default function MilestonesPage() {
                   onEdit={setEditTarget}
                   onStatusChange={handleStatusChange}
                   onDelete={handleDelete}
+                  onSteps={handleSteps}
                 />
               ))}
             </div>

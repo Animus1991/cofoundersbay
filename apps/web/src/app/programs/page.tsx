@@ -35,6 +35,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ApplicationTrack } from '@/components/programs/ApplicationTrack';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
@@ -227,10 +228,13 @@ function ProgramCard({
   program,
   isEnrolled,
   onApply,
+  showTrack = false,
 }: {
   program: ProgramItem;
   isEnrolled: boolean;
   onApply: (p: ProgramItem) => void;
+  /** In "Mine" the card says where the application stands, before the rest of it. */
+  showTrack?: boolean;
 }) {
   const fmtDate = useDateFormat();
   const TypeIcon = TYPE_ICONS[program.programType] ?? Award;
@@ -287,6 +291,8 @@ function ProgramCard({
             </Badge>
           )}
         />
+
+        {showTrack ? <ApplicationTrack status={program.myStatus} /> : null}
 
         {program.description && (
           <p className="card-body line-clamp-2 text-muted-foreground">{program.description}</p>
@@ -760,7 +766,7 @@ export default function ProgramsPage() {
             ) : (
               <div className="space-y-3">
                 {myPrograms.map((p) => (
-                  <ProgramCard key={p.id} program={p} isEnrolled={true} onApply={setApplyTarget} />
+                  <ProgramCard key={p.id} program={p} isEnrolled={true} onApply={setApplyTarget} showTrack />
                 ))}
               </div>
             )}

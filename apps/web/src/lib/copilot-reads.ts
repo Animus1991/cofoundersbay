@@ -102,6 +102,8 @@ import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
 import { calendarDaysUntil } from '@/lib/calendar-days';
 import { isFollowUpDue, withFollowUps } from '@/lib/follow-ups';
+import { isMilestoneOverdue } from '@/lib/milestone-order';
+import { roleFamily } from '@/lib/role-family';
 
 /**
  * What the assistant can read about the product areas it used to be blind to.
@@ -370,6 +372,9 @@ async function myOrganisationSlug(): Promise<string | null> {
   const memberships = asList<OrgMembershipItem>(result?.memberships);
   return memberships[0]?.organization?.slug ?? null;
 }
+
+/** Below this a readiness dimension is named in the studio check; the page's own "needs work" line. */
+const STUDIO_CHECK_WEAK = 50;
 
 export const AREA_READERS: Record<AreaReadId, Reader> = {
   async get_investor_board(_args, { t, locale }) {
@@ -1644,6 +1649,101 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
    * quicker ways the platform sees, each with the numbers behind it. A pin
    * it suggests comes back as a card to confirm; nothing changes unasked.
    */
+  // Every area in one answer (docs §114). An area that could not be read says
+  // so: it is not reported as in order, and it is not counted either way.
+  async get_studio_check(_args, { t, locale }) {
+    const settled = <T,>(result: PromiseSettledResult<T>): T | null => (result.status === 'fulfilled' ? result.value : null);
+    const [me, workspaces, readiness, milestones, threads, leads] = await Promise.allSettled([
+      getMeProfile(),
+      getWorkspaces({ limit: LIMIT, status: 'active' }),
+      getVentureReadiness(),
+      listMilestones({ limit: 100 }),
+      listCommitmentThreads('all'),
+      readShowSamples() ? Promise.resolve(listFundraisingLeads()) : getFundraising().then((saved) => (saved?.leads ?? []).map(leadFromApi)),
+    ]);
+    const profile = settled(me)?.profile ?? null;
+    const founder = !profile || roleFamily(profile.role) === 'founder';
+
+    type Area = { name: string; read: boolean; problem: string | null; action: CopilotAction };
+    const areas: Area[] = [];
+
+    const missing = !profile ? [] : [
+      !profile.avatarUrl ? t('photo') : '',
+      !profile.headline?.trim() ? t('headline') : '',
+      !profile.bio?.trim() ? t('about you') : '',
+      !profile.location?.trim() ? t('location') : '',
+      !profile.skills?.length ? t('skills') : '',
+    ].filter(Boolean);
+    areas.push({
+      name: t('Profile'),
+      read: Boolean(profile),
+      problem: missing.length ? t('Missing: {list}.', { list: missing.join(listSeparator(locale)) }) : null,
+      action: openArea(t, '/profile/edit', t('Edit your profile'), t('Change your headline, bio or location.')),
+    });
+
+    if (founder) {
+      const list = settled(workspaces);
+      areas.push({
+        name: 'Startup Builder',
+        read: list !== null,
+        problem: asList<BuilderWorkspace>(list?.data).length === 0 ? t('No workspace yet.') : null,
+        action: openArea(t, '/builder', t('Open Startup Builder'), t('Create or open a workspace.')),
+      });
+      const scored = settled(readiness);
+      const weakest = scored?.lowestDimension;
+      const label = weakest ? (locale === 'el' ? ventureDimensionEl(weakest.key, weakest.label) : weakest.label) : '';
+      areas.push({
+        name: t('Readiness'),
+        read: typeof scored?.overall === 'number',
+        // The weakest area is worth naming until it stops being weak; a score alone asks nothing.
+        problem: weakest && weakest.score < STUDIO_CHECK_WEAK ? t('{score}/100. Weakest: {label}.', { score: Math.round(scored?.overall ?? 0), label }) : null,
+        action: openArea(t, '/readiness', t('Open readiness'), t('See what raises each score.')),
+      });
+    }
+
+    const rows = settled(milestones);
+    const late = asList<Milestone>(rows?.milestones).filter((milestone) => isMilestoneOverdue(milestone)).length;
+    areas.push({
+      name: t('Milestones'),
+      read: rows !== null,
+      problem: late > 0 ? t('Overdue: {count}.', { count: late }) : null,
+      action: openArea(t, '/milestones', t('Open milestones'), t('Track, reorder and complete them.')),
+    });
+
+    const ladder = settled(threads);
+    const waiting = asList<CommitmentThreadSummary>(ladder).filter(waitsOnMe).length;
+    areas.push({
+      name: t('Commitments'),
+      read: ladder !== null,
+      problem: waiting > 0 ? t('Waiting on you: {count}.', { count: waiting }) : null,
+      action: openArea(t, '/commitments', t('Open commitments'), t('Need cards, responses and what waits on you.')),
+    });
+
+    if (founder) {
+      const saved = settled(leads);
+      const due = withFollowUps(saved ?? []).filter(isFollowUpDue).length;
+      areas.push({
+        name: t('Fundraising'),
+        read: saved !== null,
+        problem: due > 0 ? t('Follow-ups due: {count}.', { count: due }) : null,
+        action: openArea(t, '/fundraising', t('Open fundraising'), t('Your round, the investors you are talking to and the data room.')),
+      });
+    }
+
+    const read = areas.filter((area) => area.read);
+    const needing = read.filter((area) => area.problem);
+    return {
+      section: [
+        needing.length
+          ? t('Studio check. Areas that need something: {count} of {total}.', { count: needing.length, total: read.length })
+          : t('Studio check: nothing needs you in the areas I could read.'),
+        ...areas.map((area) => `• **${area.name}** — ${!area.read ? t('Could not be read right now.') : area.problem ?? t('In order.')}`),
+      ].join('\n'),
+      citations: [],
+      actions: needing.slice(0, LIMIT).map((area) => area.action),
+    };
+  },
+
   async get_usage_insights(_args, { t, locale }) {
     const now = Date.now();
     const store = readUsage();

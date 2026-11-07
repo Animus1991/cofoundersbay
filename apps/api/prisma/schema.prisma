@@ -2525,6 +2525,7 @@ model Milestone {
   completedAt DateTime?
   progress    Int             @default(0) // 0-100 percent
   notes       String?         @db.Text
+  checklist   Json            @default("[]") // MilestoneStep[]: once there are steps they set progress
 
   // Optional link to a connection
   connectionRequestId String?

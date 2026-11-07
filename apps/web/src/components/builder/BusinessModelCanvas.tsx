@@ -127,7 +127,7 @@ export function pickBmc(raw: unknown): Partial<BMCData> {
   return next;
 }
 
-function hydrateBmc(raw: unknown): BMCData {
+export function hydrateBmc(raw: unknown): BMCData {
   return { ...EMPTY_BMC, ...pickBmc(raw) };
 }
 

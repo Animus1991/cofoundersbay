@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { readMilestoneSteps, stepsProgress, type MilestoneStep } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 
 export type MilestoneStatus = 'todo' | 'in_progress' | 'blocked' | 'completed' | 'cancelled';
@@ -14,6 +15,7 @@ export interface CreateMilestoneDto {
   progress?: number;
   notes?: string;
   collaboratorId?: string;
+  checklist?: MilestoneStep[];
 }
 
 export interface UpdateMilestoneDto extends Partial<CreateMilestoneDto> {
@@ -134,6 +136,11 @@ export class MilestonesService {
       notes: dto.notes,
     };
 
+    const steps = readMilestoneSteps(dto.checklist) ?? [];
+    if (steps.length > 0) {
+      data.checklist = steps;
+      data.progress = stepsProgress(steps);
+    }
     if (dto.dueDate) data.dueDate = new Date(dto.dueDate);
     if (dto.collaboratorId && dto.collaboratorId !== userId) {
       data.collaboratorId = dto.collaboratorId;
@@ -179,6 +186,13 @@ export class MilestonesService {
     if (dto.dueDate !== undefined) data.dueDate = dto.dueDate ? new Date(dto.dueDate) : null;
     if (dto.progress !== undefined) data.progress = Math.min(100, Math.max(0, dto.progress));
     if (dto.notes !== undefined) data.notes = dto.notes;
+    if (dto.checklist !== undefined) {
+      const steps = readMilestoneSteps(dto.checklist) ?? [];
+      data.checklist = steps;
+      // Ticks set the bar while there are steps. A finished milestone stays at
+      // 100: reopening it is its own act, not a side effect of unticking.
+      if (steps.length > 0 && existing.status !== 'completed' && dto.status !== 'completed') data.progress = stepsProgress(steps);
+    }
     if (dto.collaboratorId !== undefined) {
       data.collaboratorId = dto.collaboratorId || null;
     }
@@ -231,6 +245,7 @@ export class MilestonesService {
       completedAt: m.completedAt ? m.completedAt.toISOString() : null,
       progress: m.progress ?? 0,
       notes: m.notes ?? null,
+      checklist: readMilestoneSteps(m.checklist) ?? [],
       createdAt: m.createdAt.toISOString(),
       updatedAt: m.updatedAt.toISOString(),
     };

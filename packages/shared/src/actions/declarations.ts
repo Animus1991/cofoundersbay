@@ -673,6 +673,17 @@ export const ACTION_DECLARATIONS = [
     roles: ['admin', 'super_admin'],
   },
   {
+    id: 'get_studio_check',
+    kind: 'read',
+    label: { en: 'Check the whole studio', el: 'Έλεγχος όλου του studio' },
+    description: {
+      en: 'Go through the signed-in member’s studio in one answer: profile, milestones and commitments, and for a founder the Startup Builder, readiness and fundraising, with what each one is missing and where to fix it.',
+      el: 'Περνά όλο το studio του μέλους σε μία απάντηση: προφίλ, ορόσημα και δεσμεύσεις, και για ιδρυτή το Startup Builder, την ετοιμότητα και τη χρηματοδότηση, με το τι λείπει από το καθένα και πού διορθώνεται.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     // Read in the browser: the counts never leave the reader's device
     // (apps/web/src/lib/usage-profile.ts, docs §107).
     id: 'get_usage_insights',

@@ -105,6 +105,7 @@ export const HOME_ASK: Record<HomeRole, { scopes: HomeAskScope[]; actions: HomeA
         glyph: 'wallet',
         items: [
           // The deck is built from the Startup Builder documents, so that is what is read.
+          { id: 'audit', en: 'Audit my studio', el: 'Έλεγχος του studio', glyph: 'target', tool: 'get_studio_check', prompt: { en: 'Audit my studio: go through every area and say what is missing.', el: 'Κάνε έλεγχο στο studio μου: πέρασε κάθε περιοχή και πες μου τι λείπει.' } },
           { id: 'deck', en: "What my pitch deck is missing", el: 'Τι λείπει από το pitch deck', glyph: 'target', tool: 'get_builder_state', prompt: { en: 'What is missing from my pitch deck in the Startup Builder?', el: 'Τι λείπει από το pitch deck μου στον Startup Builder;' } },
           { id: 'investors', en: 'Investors who fit my round', el: 'Επενδυτές για τον γύρο μου', glyph: 'wallet', tool: 'search_people', prompt: { en: 'Show me investors for my round.', el: 'Δείξε μου επενδυτές για τον γύρο μου.' } },
           { id: 'update', en: "This month's investor update", el: 'Η ενημέρωση επενδυτών του μήνα', glyph: 'chart', tool: 'draft_founder_update', prompt: { en: "Draft this month's investor update from what changed.", el: 'Γράψε την ενημέρωση επενδυτών αυτού του μήνα από ό,τι άλλαξε.' } },

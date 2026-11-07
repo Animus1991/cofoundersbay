@@ -1,3 +1,4 @@
+import { readMilestoneSteps } from '@cofounderbay/shared';
 import {
   Controller, Get, Post, Patch, Delete,
   Body, Param, Query, UseGuards, BadRequestException,
@@ -60,6 +61,9 @@ export class MilestonesController {
     if (body.progress !== undefined && (body.progress < 0 || body.progress > 100)) {
       throw new BadRequestException('Progress must be between 0 and 100');
     }
+    if (body.checklist !== undefined && !readMilestoneSteps(body.checklist)) {
+      throw new BadRequestException('Checklist must be a list of steps');
+    }
     return this.milestones.create(user.id, body);
   }
 
@@ -71,6 +75,9 @@ export class MilestonesController {
   ) {
     if (body.progress !== undefined && (body.progress < 0 || body.progress > 100)) {
       throw new BadRequestException('Progress must be between 0 and 100');
+    }
+    if (body.checklist !== undefined && !readMilestoneSteps(body.checklist)) {
+      throw new BadRequestException('Checklist must be a list of steps');
     }
     return this.milestones.update(id, user.id, body);
   }

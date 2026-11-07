@@ -10,8 +10,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { BuilderWorkspace, type BuilderWorkspaceDialog } from '@/components/builder/BuilderWorkspace';
 import { WorkspaceNameEditor } from '@/components/builder/WorkspaceNameEditor';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
-import { IdeaCore, ideaCoreCompletion, pickIdeaCore, type IdeaCoreData } from '@/components/builder/IdeaCore';
-import { BusinessModelCanvas, bmcCompletion, pickBmc, type BMCData } from '@/components/builder/BusinessModelCanvas';
+import { IdeaCore, hydrateIdeaCore, ideaCoreCompletion, type IdeaCoreData } from '@/components/builder/IdeaCore';
+import { BusinessModelCanvas, bmcCompletion, hydrateBmc, type BMCData } from '@/components/builder/BusinessModelCanvas';
 import { MarketAnalysis, marketCompletion } from '@/components/builder/MarketAnalysis';
 import { MVPPlanner, mvpCompletion } from '@/components/builder/MVPPlanner';
 import { FinancialPlanning, financialCompletion } from '@/components/builder/FinancialPlanning';
@@ -258,7 +258,8 @@ function BuilderPageContent() {
   const writeBlock = async (document: BuilderField['document'], key: string, content: string) => {
     const type = document === 'bmc' ? 'business_model_canvas' : 'idea_core';
     const doc = documents.find((d) => d.type === type) ?? await createDocument(type, builderDocLabel(type, 'en'));
-    const current = (document === 'bmc' ? pickBmc(doc.content) : pickIdeaCore(doc.content)) as Record<string, unknown>;
+    // Every block, the way the form saves them: the completion figure reads them all.
+    const current = (document === 'bmc' ? hydrateBmc(doc.content) : hydrateIdeaCore(doc.content)) as unknown as Record<string, unknown>;
     const before = typeof current[key] === 'string' ? current[key] : '';
     const next = { ...current, [key]: content };
     await updateDocumentSection(doc.id, document, next);

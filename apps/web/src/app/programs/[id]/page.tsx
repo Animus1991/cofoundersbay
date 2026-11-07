@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { ApiError, acceptsApplications, applyToProgram, getMyPrograms, getProgram } from '@/lib/api';
+import { ApplicationTrack } from '@/components/programs/ApplicationTrack';
 import { ORG_POLICY_PROBLEM_COPY } from '@cofounderbay/shared';
 import { useCoverFailed } from '@/hooks/useCoverFailed';
 import { programsEl, programsEn } from '@/lib/i18n/strings-programs';
@@ -80,7 +81,8 @@ export default function ProgramDetailPage() {
     retry: 0,
   });
   const program = data?.program ?? null;
-  const enrolled = Boolean(program && (mine?.programs ?? []).some((p) => p.id === program.id));
+  const myEntry = program ? (mine?.programs ?? []).find((p) => p.id === program.id) : undefined;
+  const enrolled = Boolean(myEntry);
 
   const apply = useMutation({
     mutationFn: () => applyToProgram(id, note.trim() ? { coverNote: note.trim() } : undefined),
@@ -288,10 +290,12 @@ export default function ProgramDetailPage() {
                 )}
               </h2>
               {enrolled ? (
-                <Badge className="gap-1.5" variant="secondary">
-                  <CheckCircle2 className="icon-sm" aria-hidden="true" />
-                  <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
-                </Badge>
+                myEntry?.myStatus ? <ApplicationTrack status={myEntry.myStatus} /> : (
+                  <Badge className="gap-1.5" variant="secondary">
+                    <CheckCircle2 className="icon-sm" aria-hidden="true" />
+                    <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
+                  </Badge>
+                )
               ) : closed ? (
                 <p className="card-body text-muted-foreground">
                   <BilingualText

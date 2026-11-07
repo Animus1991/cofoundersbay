@@ -84,7 +84,7 @@ export function pickIdeaCore(raw: unknown): Partial<IdeaCoreData> {
   return next;
 }
 
-function hydrateIdeaCore(raw: unknown): IdeaCoreData {
+export function hydrateIdeaCore(raw: unknown): IdeaCoreData {
   return { ...EMPTY_IDEA, ...pickIdeaCore(raw) };
 }
 

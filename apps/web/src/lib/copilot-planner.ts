@@ -259,6 +259,11 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     keys: ['moderation queue', 'open report*', 'pending report*', 'reported user*', 'reports waiting', 'reports to review', 'reports for review', 'ουρα ελεγχου', 'αναφορες σε αναμονη', 'ανοιχτες αναφορες', 'αναφορες για ελεγχο'],
     tool: 'get_moderation_queue',
   },
+  // The whole studio in one answer (docs §114).
+  {
+    keys: ['audit my studio', 'studio audit', 'studio check', 'check my studio', 'check my whole studio', 'ελεγχος studio', 'ελεγχος του studio', 'ελεγχο στο studio', 'ελεγχο σε ολο το studio', 'ελεγξε το studio'],
+    tool: 'get_studio_check',
+  },
   // How the reader uses the platform, and the quicker ways it suggests (docs §107).
   {
     keys: [
@@ -835,6 +840,9 @@ function detectBuilderWrite(rawMessage: string): { field: string; content: strin
 export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const message = rawMessage.trim().toLowerCase();
   if (!message) return [{ name: 'get_graph', args: {} }];
+
+  // Typed as a command, it is the whole request (docs §114).
+  if (message === '/audit') return [{ name: 'get_studio_check', args: {} }];
 
   const tools: PlannedTool[] = [];
   const add = (name: CopilotToolName, args: Record<string, string> = {}) => {

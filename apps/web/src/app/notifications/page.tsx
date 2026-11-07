@@ -41,7 +41,7 @@ import { useToast } from '@/components/ui/toast';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
 import { elWord } from '@/lib/rows-el';
-import { useInvestorFollowUps } from '@/lib/follow-ups';
+import { LiveNotices } from '@/components/notifications/LiveNotices';
 import { notificationEl } from '@/lib/notification-text';
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
@@ -256,7 +256,6 @@ const NotificationRow = memo(function NotificationRow({
 });
 
 export default function NotificationsPage() {
-  const { due: dueFollowUps } = useInvestorFollowUps();
   const router = useRouter();
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState('all');
@@ -638,21 +637,7 @@ export default function NotificationsPage() {
       askAi={ASK.notifications}
     >
       <div className="space-y-6">
-        {/* Worked out from the round, not sent: moving or clearing the step
-            takes this away, so it never outlives what it was about. */}
-        {dueFollowUps.length > 0 ? (
-          <Link href="/fundraising" className="flex items-center justify-between gap-3 rounded-xl border border-status-warning-border bg-status-warning-bg px-4 py-3 text-sm text-foreground transition-colors hover:border-primary/40">
-            <span className="min-w-0">
-              <BilingualText
-                en={dueFollowUps.length === 1 ? `Follow-up due with ${dueFollowUps[0].name}` : `${dueFollowUps.length} investor follow-ups are due`}
-                el={dueFollowUps.length === 1 ? `Έφτασε το follow-up με ${dueFollowUps[0].nameEl ?? dueFollowUps[0].name}` : `Έφτασαν ${dueFollowUps.length} follow-up επενδυτών`}
-                compact
-                wrap
-              />
-            </span>
-            <span className="shrink-0 font-medium"><BilingualText en="Open" el="Άνοιγμα" compact /></span>
-          </Link>
-        ) : null}
+        <LiveNotices />
         {/* Notification list */}
         <Card className="overflow-hidden">
           {/* The inbox's own header, as on GitHub: which notifications are

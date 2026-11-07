@@ -2,6 +2,7 @@ import { resolvePreviewApiNow } from '@/lib/preview-api';
 import { leavePreviewDemoForRealAccount } from '@/lib/preview-demo';
 import type { AssistantFeedbackCounts, AssistantFeedbackReason, CompatAnswers, CompatComparison, MentorListingInput, ProviderListingInput, PublicStats, TransparencyReport } from '@cofounderbay/shared';
 import { isAssistantFeedbackReason } from '@cofounderbay/shared';
+import type { MilestoneStep } from '@cofounderbay/shared';
 
 // Returns the API base URL evaluated at call time — not module load time.
 // Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
@@ -4879,6 +4880,7 @@ export async function resetPassword(token: string, password: string): Promise<{ 
 
 // --- Milestones ---
 
+export type { MilestoneStep };
 export type MilestoneStatus = 'todo' | 'in_progress' | 'blocked' | 'completed' | 'cancelled';
 export type MilestonePriority = 'low' | 'medium' | 'high';
 
@@ -4902,6 +4904,8 @@ export interface Milestone {
   completedAt: string | null;
   progress: number;
   notes: string | null;
+  /** Absent on a row read before steps existed. */
+  checklist?: MilestoneStep[];
   createdAt: string;
   updatedAt: string;
 }
@@ -4962,6 +4966,7 @@ export async function updateMilestone(id: string, data: Partial<{
   progress: number;
   notes: string;
   collaboratorId: string | null;
+  checklist: MilestoneStep[];
 }>): Promise<Milestone> {
   return apiRequest(`/api/milestones/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 }

@@ -29,6 +29,7 @@ import { previewProposalsApi } from './demo/proposals-world';
 import { previewScoutApi } from './demo/scout-world';
 import { attachDemoPhotos } from './demo/photos';
 import { messageSnippet, readProjectDelivery, textMatches } from '@cofounderbay/shared';
+import { stepsProgress, type MilestoneStep } from '@cofounderbay/shared';
 import { PREVIEW_MESSAGE_EL } from './i18n/strings-messages';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis, placeVariants } from '@cofounderbay/shared';
@@ -5287,7 +5288,11 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
           : status !== 'completed'
             ? null
             : found.completedAt,
-        progress: completing ? 100 : typeof body.progress === 'number' ? body.progress : found.progress,
+        progress: completing
+          ? 100
+          : Array.isArray(body.checklist) && body.checklist.length > 0 && status !== 'completed'
+            ? stepsProgress(body.checklist as MilestoneStep[])
+            : typeof body.progress === 'number' ? body.progress : found.progress,
       };
       previewMilestones = previewMilestones.map((m) => (m.id === found.id ? next : m));
       return next;

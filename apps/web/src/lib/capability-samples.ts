@@ -57,6 +57,7 @@ export const CAPABILITY_SAMPLES: Record<string, { en: string; el: string }> = {
   get_org_members: { en: 'Who are the newest organisation members?', el: 'Ποια είναι τα νεότερα μέλη του οργανισμού;' },
   get_platform_stats: { en: 'How many users does the platform have?', el: 'Πόσοι χρήστες έχει η πλατφόρμα;' },
   get_moderation_queue: { en: 'What is in the moderation queue?', el: 'Τι υπάρχει στην ουρά ελέγχου;' },
+  get_studio_check: { en: 'Check my whole studio', el: 'Κάνε έλεγχο σε όλο το studio μου' },
   get_usage_insights: { en: 'How can I work faster here?', el: 'Πώς μπορώ να δουλεύω πιο γρήγορα εδώ;' },
   navigate: { en: 'Open matches', el: 'Άνοιξε τις αντιστοιχίσεις' },
   open_rail_section: { en: 'Show me the filters on this page', el: 'Δείξε μου τα φίλτρα αυτής της σελίδας' },

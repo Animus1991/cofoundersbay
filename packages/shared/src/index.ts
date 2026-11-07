@@ -5,6 +5,7 @@ export * from './actions';
 export * from './canvas';
 
 export * from './commitments';
+export * from './milestones';
 export * from './verification';
 export * from './import';
 export * from './updates';

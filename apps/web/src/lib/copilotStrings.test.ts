@@ -38,6 +38,8 @@ const ENGINE = readFileSync(ENGINE_PATH, 'utf8') + '\n' + readFileSync(READS_PAT
 const NOT_USER_FACING = new Set([
   // Route and API paths, ids and payload keys.
   'compose from existing endpoints',
+  // The product's name, the same in every language.
+  'Startup Builder',
 ]);
 
 /** Prose = a quoted literal with a space in it, or one carrying a placeholder. */
