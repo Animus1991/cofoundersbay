@@ -1,6 +1,7 @@
 'use client';
 
 import { BilingualText } from '@/components/common/BilingualText';
+import { InfoHint } from '@/components/common/InfoHint';
 import { useEffect, useState } from 'react';
 import { readNaturalSearch, SEARCH_QUALIFIER_EXAMPLES } from '@cofounderbay/shared';
 import {
@@ -284,20 +285,21 @@ export function SearchFilters({
                 while the field is empty and Enter reads words at all. Each is
                 a button that types itself, so the syntax is learned by use. */}
             {onSearchAsTyped && !filters.q && (
-              // One line that scrolls on a phone: wrapped, these rows put the first result under the fold.
-              <p className="mt-1.5 flex items-center gap-x-2 gap-y-1 overflow-x-auto text-2xs text-muted-foreground sm:flex-wrap sm:overflow-visible" data-search-qualifiers="">
-                <span className="shrink-0"><BilingualText en="Or narrow with" el="Ή περιορίστε με" compact /></span>
+              // One press away: as a row these pushed the first result down on every visit.
+              <InfoHint className="mt-1.5" title={{ en: 'Or narrow with', el: 'Ή περιορίστε με' }}>
+                <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 {SEARCH_QUALIFIER_EXAMPLES.map((q) => (
-                  <button
-                    key={q.en}
-                    type="button"
-                    onClick={() => updateFilter('q', `${primaryIsGreek ? q.el : q.en} `)}
-                    className="shrink-0 rounded border border-input bg-transparent px-1.5 py-px font-mono text-2xs text-muted-foreground hover:border-foreground/25 hover:text-foreground"
-                  >
-                    {primaryIsGreek ? q.el : q.en}
-                  </button>
-                ))}
-              </p>
+                    <button
+                      key={q.en}
+                      type="button"
+                      onClick={() => updateFilter('q', `${primaryIsGreek ? q.el : q.en} `)}
+                      className="shrink-0 rounded border border-input bg-transparent px-1.5 py-px font-mono text-2xs text-muted-foreground hover:border-foreground/25 hover:text-foreground"
+                    >
+                      {primaryIsGreek ? q.el : q.en}
+                    </button>
+                  ))}
+                </span>
+              </InfoHint>
             )}
           </div>
 

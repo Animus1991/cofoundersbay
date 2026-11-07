@@ -49,9 +49,9 @@ import { FactLine } from '@/components/common/FactLine';
 import { explainMatch, viewerFacts, type ExplainedReason } from '@/lib/match-explain';
 import { axisCopy, compatSummary, completenessCopy, frictionCopy, strengthTerms } from '@/lib/match-vs-copy';
 import { ensureExtraCatalog } from '@/lib/i18n/translate';
-import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { PersonCard } from '@/components/common/PersonCard';
 import { PageFacts } from '@/components/common/PageFacts';
-import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK } from '@/lib/page-questions';
 
@@ -357,7 +357,7 @@ function CommitmentLine({ commitment }: { commitment: CommitmentLink }) {
   );
 }
 
-/* ── List-view row component ─────────────────────────────────────────────── */
+/* ── List-view row component ─────────────────────────────────── */
 function MatchListRow({
   hit,
   reasons,
@@ -369,6 +369,7 @@ function MatchListRow({
   onPass,
   onSave,
   onBreakdown,
+  onPreview,
   commitment,
 }: {
   hit: SearchHit;
@@ -382,115 +383,58 @@ function MatchListRow({
   onPass: () => void;
   onSave: () => void;
   onBreakdown: () => void;
+  onPreview?: () => void;
 }) {
   const score = scoreOf(hit);
   const tier = score === null ? null : getTier(score);
   const colors = tier ? tierStyle(tier) : STATUS.neutral;
-  const stroke = tier ? TIER_STROKE[tier] : 'hsl(var(--border))';
-  const initials = hit.displayName.slice(0, 2).toUpperCase();
-  const circ = 2 * Math.PI * 23;
   const primaryIsMessage = matchPrimary(connection, hit.displayName, { onConnect, onAccept, onMessage })?.key === 'message';
+  const first = reasons[0];
 
-  // The Connections card in a row: the score ring around the person's circle
-  // is the mark (2.5rem, as every card's), the name and headline beside it,
-  // the tier at the right; skills, reasons and the foot on the ring's edge.
+  // The same person as on the grid, in a row: the reasons, the skills and the
+  // rest of the foot are in the preview and in the menu.
   return (
-    <Card className="shadow-sm border-border hover:border-primary/30 transition-all group">
-      <CardContent className="space-y-3">
-        <CardHead
-          mark={(
-            <div data-card-mark="" className="relative h-10 w-10 shrink-0">
-              <svg viewBox="0 0 52 52" className="absolute inset-0 h-10 w-10" aria-hidden="true">
-                <circle cx={26} cy={26} r={23} fill="none" stroke="hsl(var(--border))" strokeWidth={3} />
-                <circle cx={26} cy={26} r={23} fill="none" stroke={stroke} strokeWidth={3}
-                  strokeDasharray={`${((score ?? 0) / 100) * circ} ${circ}`}
-                  strokeDashoffset={circ * 0.25}
-                  strokeLinecap="round" />
-              </svg>
-              <Link href={`/profiles/${hit.userId}`} className="absolute inset-1 rounded-full" aria-label={bilingualAria(`Open ${hit.displayName}'s profile`, `Άνοιγμα προφίλ: ${hit.displayName}`)}>
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={hit.avatarUrl ?? undefined} alt="" />
-                  <AvatarFallback className="text-xs font-semibold">{initials}</AvatarFallback>
-                </Avatar>
-              </Link>
-            </div>
-          )}
-          title={(
-            <PersonHovercard userId={hit.userId}><Link href={`/profiles/${hit.userId}`} className="transition-colors hover:text-primary-accessible">{hit.displayName}</Link></PersonHovercard>
-          )}
-          subtitle={hit.headline ? <span className="line-clamp-1">{hit.headline}</span> : undefined}
-          // The place, and where a commitment stands, on the title's edge;
-          // the tier is the head's one pill at the right.
-          meta={(hit.location || commitment) ? (
-            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              {hit.location ? <span>{hit.location}</span> : null}
-              {commitment ? <CommitmentLine commitment={commitment} /> : null}
-            </span>
-          ) : undefined}
-          aside={tier && score !== null ? (
-            <Badge variant="outline" className={cn('border text-xs tabular-nums', colors.chip)}>
-              <BilingualText en={`${matchesEn(`tier_${tier}` as const)} · ${score}%`} el={`${matchesEl(`tier_${tier}` as const)} · ${score}%`} compact />
-            </Badge>
-          ) : (
-            <span className="text-xs text-muted-foreground"><BilingualText en="No score yet" el="Χωρίς βαθμολογία ακόμη" compact /></span>
-          )}
-        />
-
-        {/* Skills and the two most telling reasons: facts on the ring's edge. */}
-        {((hit.skillNames ?? []).length > 0 || reasons.length > 0) && (
-          <div className="space-y-1">
-            <FactLine
-              items={[...(hit.skillNames ?? []).slice(0, 5), (hit.skillNames ?? []).length > 5 ? `+${(hit.skillNames ?? []).length - 5}` : null]}
-            />
-            <FactLine
-              label={bilingualAria('Why you match', 'Γιατί ταιριάζετε')}
-              items={reasons.slice(0, 2).map((r) => <BilingualText key={r.en} en={r.en} el={r.el} compact />)}
-            />
-          </div>
-        )}
-
-        {/* Foot: pass and save at the left, the next steps at the right.
-            Round icons on a phone; from 640px they carry their word, so the
-            width is auto - with `!`, because the global rule that squares
-            every h-10 w-10 button on a desktop outranks sm:w-auto, and the
-            words spilled over the circles. */}
-        <CardFoot
-          meta={(
-            <div className="flex items-center gap-1.5">
-              <button onClick={onPass}
-                className="flex h-10 w-10 items-center justify-center gap-1.5 rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible sm:!w-auto sm:px-3"
-                aria-label={bilingualAria(`Pass on ${hit.displayName}`, `Παράλειψη: ${hit.displayName}`)}>
-                <X className="icon-sm" />
-                <span className="hidden sm:inline text-xs"><BilingualText en="Pass" el="Παράλειψη" compact /></span>
-              </button>
-              <button onClick={onSave}
-                className={cn('flex h-10 w-10 items-center justify-center gap-1.5 rounded-full border border-border transition-colors sm:!w-auto sm:px-3', isSaved ? STATUS.warning.icon : 'text-muted-foreground hover:text-status-warning')}
-                aria-pressed={isSaved}
-                aria-label={isSaved
-                  ? bilingualAria(`${hit.displayName} is on your shortlist`, `${hit.displayName}: στη λίστα σας`)
-                  : bilingualAria(`Save ${hit.displayName} to your shortlist`, `Αποθήκευση: ${hit.displayName} στη λίστα σας`)}>
-                {isSaved ? <BookmarkCheck className="icon-sm" /> : <Bookmark className="icon-sm" />}
-                <span className="hidden sm:inline text-xs"><BilingualText en={isSaved ? 'Saved' : 'Save'} el={isSaved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
-              </button>
-            </div>
-          )}
-        >
-          <Button size="sm" variant="ghost" onClick={onBreakdown} className="gap-1.5 text-muted-foreground hover:text-primary-accessible">
-            <BarChart3 className="icon-sm" /> <BilingualText en="Compatibility" el="Συμβατότητα" compact />
-          </Button>
-          {!primaryIsMessage && (
-            <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
-              <MessageCircle className="icon-sm" /> <BilingualText en="Message" el="Μήνυμα" compact />
-            </Button>
-          )}
-          <PrimaryAction hit={hit} connection={connection} onConnect={onConnect} onAccept={onAccept} onMessage={onMessage} />
-        </CardFoot>
-      </CardContent>
-    </Card>
+    <PersonCard
+      userId={hit.userId}
+      name={hit.displayName}
+      avatarUrl={hit.avatarUrl}
+      role={hit.role}
+      headline={hit.headline}
+      photo="md"
+      onOpen={onPreview}
+      meta={(hit.location || commitment) ? (
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          {hit.location ? <span>{hit.location}</span> : null}
+          {commitment ? <CommitmentLine commitment={commitment} /> : null}
+        </span>
+      ) : undefined}
+      aside={tier && score !== null ? (
+        <Badge variant="outline" className={cn('border text-xs tabular-nums', colors.chip)}>
+          <BilingualText en={`${matchesEn(`tier_${tier}` as const)} · ${score}%`} el={`${matchesEl(`tier_${tier}` as const)} · ${score}%`} compact />
+        </Badge>
+      ) : (
+        <span className="text-xs text-muted-foreground"><BilingualText en="No score yet" el="Χωρίς βαθμολογία ακόμη" compact /></span>
+      )}
+      fact={first ? <span className="line-clamp-2"><BilingualText en={first.en} el={first.el} compact wrap /></span> : undefined}
+      primary={<PrimaryAction hit={hit} connection={connection} onConnect={onConnect} onAccept={onAccept} onMessage={onMessage} />}
+      more={[
+        { key: 'compatibility', en: 'Compatibility', el: 'Συμβατότητα', icon: BarChart3, onSelect: onBreakdown },
+        ...(primaryIsMessage ? [] : [{ key: 'message', en: 'Message', el: 'Μήνυμα', icon: MessageCircle, onSelect: onMessage }]),
+        {
+          key: 'save',
+          en: isSaved ? 'Saved to your shortlist' : 'Save to shortlist',
+          el: isSaved ? 'Στη λίστα σας' : 'Αποθήκευση στη λίστα',
+          icon: isSaved ? BookmarkCheck : Bookmark,
+          onSelect: onSave,
+        },
+        ...(onPreview ? [{ key: 'reasons', en: 'All reasons', el: 'Όλοι οι λόγοι', icon: ArrowRight, onSelect: onPreview }] : []),
+        { key: 'profile', en: 'Full profile', el: 'Πλήρες προφίλ', icon: ArrowRight, href: `/profiles/${hit.userId}` },
+        { key: 'pass', en: 'Pass', el: 'Παράλειψη', icon: X, onSelect: onPass, destructive: true },
+      ]}
+    />
   );
 }
 
-/* ── Match Preview Panel ─────────────────────────────────────────────────── */
 function MatchPreviewPanel({
   hit, reasons, savedIds, connection, commitment, onClose, onConnect, onAccept, onMessage, onSave, onPass, onBreakdown,
 }: {
@@ -1327,7 +1271,16 @@ export default function MatchesPage() {
                   Secondary filters (role, location, availability) and sort
                   live in the page rail - the expanded panel that used to sit
                   here duplicated them, so it is gone rather than doubled. */}
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-0.5" data-tour="matches-tiers">
+              {/* On a phone one choice instead of five pills; the same filter either way. */}
+              <select
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm sm:hidden"
+                aria-label={bilingualAria('Filter by match tier', 'Φίλτρο κατά βαθμίδα')}
+                value={activeFilter}
+                onChange={(event) => setActiveFilter(event.target.value as FilterKey)}
+              >
+                {TIER_TABS.map((tab) => <option key={tab.key} value={tab.key}>{sayOne(tab.labelEn, tab.labelEl)} ({counts[tab.key]})</option>)}
+              </select>
+              <div className="hidden items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-0.5 sm:flex" data-tour="matches-tiers">
                 {TIER_TABS.map(tab => {
                   const isActive = activeFilter === tab.key;
                   return (
@@ -1381,21 +1334,17 @@ export default function MatchesPage() {
                     <Search className="icon-sm" />
                   </button>
 
-                  <div className="flex items-center gap-1 rounded-lg border border-border p-0.5">
-                    {([
-                      { mode: 'grid2' as ViewMode, icon: LayoutGrid, title: bilingualAria('Two columns', 'Δύο στήλες'), small: false, mobile: true },
-                      { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: bilingualAria('Three columns', 'Τρεις στήλες'), small: true, mobile: false },
-                      { mode: 'list'  as ViewMode, icon: List,       title: bilingualAria('List', 'Λίστα'), small: false, mobile: true },
-                    ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean; mobile: boolean }[]).map(({ mode, icon: Icon, title, small, mobile }) => (
-                      <button key={mode} onClick={() => setViewMode(mode)} title={title} aria-label={title} aria-pressed={viewMode === mode}
-                        className={cn('h-9 items-center justify-center rounded-xl px-2 transition-all',
-                          mobile ? 'flex' : 'hidden sm:flex',
-                          viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
-                        <Icon className={cn('icon-sm', small && 'scale-90')} />
-                        {mode === 'grid3' && <span className="ml-0.5 text-2xs font-bold">3</span>}
-                      </button>
-                    ))}
-                  </div>
+                  {/* One choice instead of three buttons; three columns need the width. */}
+                  <select
+                    className="h-10 rounded-lg border border-border bg-background px-2 text-xs text-muted-foreground"
+                    aria-label={bilingualAria('View', 'Προβολή')}
+                    value={viewMode}
+                    onChange={(event) => setViewMode(event.target.value as ViewMode)}
+                  >
+                    <option value="grid2">{sayOne('Two columns', 'Δύο στήλες')}</option>
+                    <option value="grid3">{sayOne('Three columns', 'Τρεις στήλες')}</option>
+                    <option value="list">{sayOne('List', 'Λίστα')}</option>
+                  </select>
 
                   {lastPassed && (
                     <Button size="sm" variant="ghost" onClick={handleUndoPass} aria-label={bilingualAria('Undo the last pass', 'Αναίρεση της τελευταίας παράλειψης')} className="gap-1.5 text-xs h-8 text-muted-foreground px-2 sm:px-3">
@@ -1509,6 +1458,7 @@ export default function MatchesPage() {
                         onPass={() => handlePass(hit.id, hit.displayName, hit.userId)}
                         onSave={() => void handleSave(hit.userId, hit.displayName)}
                         onBreakdown={() => setBreakdownTarget(hit)}
+                        onPreview={!selectMode ? () => setPreviewTarget(hit) : undefined}
                       />
                     );
                   })}

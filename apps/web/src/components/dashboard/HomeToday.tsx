@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { useLiveNotices, type LiveNotice } from '@/components/notifications/LiveNotices';
@@ -8,7 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
+import { listNotifications } from '@/lib/api';
 import { nowStartingPoints, type HomeAskNow } from '@/lib/home-ask';
+import { qk } from '@/lib/query-keys';
+import { readLastVisit, sinceLastVisit } from '@/lib/since-last-visit';
 import { bilingualAria } from '@/lib/i18n/format';
 
 export type TodayRow = {
@@ -69,11 +74,23 @@ export function HomeToday() {
   const counts = useUnreadCounts();
   const { notices, followUps } = useLiveNotices();
   const rows = todayRows(notices, nowStartingPoints({ ...counts, followUps: followUps.length }));
-  if (rows.length === 0) return null;
+  // After mount: the clock and the storage are the reader's, not the server's.
+  const [lastVisit, setLastVisit] = useState<number | null>(null);
+  useEffect(() => { setLastVisit(readLastVisit()); }, []);
+  const { data: recent } = useQuery({
+    queryKey: qk('notifications', 'recent'),
+    queryFn: () => listNotifications({ limit: 30 }),
+    enabled: lastVisit !== null,
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const since = sinceLastVisit(recent?.notifications ?? [], lastVisit);
+  if (rows.length === 0 && !since) return null;
   return (
     <Card data-home-today="">
       <CardContent className="space-y-2">
         <h2 className="card-title"><BilingualText en="Today" el="Σήμερα" compact /></h2>
+        {since ? <p className="text-xs text-muted-foreground" data-home-since=""><BilingualText en={since.en} el={since.el} compact wrap /></p> : null}
         <ul className="divide-y divide-border">
           {rows.map((row) => (
             <li key={row.key} className="flex items-center gap-3 py-2">

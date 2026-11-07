@@ -44,6 +44,7 @@ import { AnimatedList } from '@/components/common/AnimatedList';
 import { SearchFilters, type SearchFiltersValues } from '@/components/discover/SearchFilters';
 import { DiscoverCurated } from '@/components/discover/DiscoverCurated';
 import { ProfileCard, ProfileCardSkeleton, type ProfileCardData } from '@/components/discover/ProfileCard';
+import { InfoHint } from '@/components/common/InfoHint';
 import { FailedLine } from '@/components/dashboard/SectionCard';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -722,9 +723,10 @@ export default function DiscoverPage() {
                 <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground">
                   <BilingualText en={PROMOTED_COPY.label.en} el={PROMOTED_COPY.label.el} compact />
                 </span>
-                <span className="min-w-0 flex-1 text-xs text-muted-foreground">
+                {/* The label stays in view: a paid place is always said. What it means is one press away. */}
+                <InfoHint title={{ en: 'What this means', el: 'Τι σημαίνει' }} className="flex-1">
                   <BilingualText en={PROMOTED_COPY.disclosure.en} el={PROMOTED_COPY.disclosure.el} wrap />
-                </span>
+                </InfoHint>
               </div>
               {/* The same columns as the results under it: the promoted card
                   was half the row wide beside cards a third wide. */}

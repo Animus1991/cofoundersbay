@@ -14,6 +14,7 @@ vi.mock('@/components/notifications/LiveNotices', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/components/notifications/LiveNotices')>()),
   useLiveNotices: () => live,
 }));
+vi.mock('@tanstack/react-query', () => ({ useQuery: () => ({ data: undefined }) }));
 vi.mock('@/components/common/BilingualText', () => ({ BilingualText: ({ en }: { en: string }) => <span>{en}</span> }));
 vi.mock('@/components/icons/CfbGlyph', () => ({ CfbGlyph: () => <svg /> }));
 vi.mock('@/hooks/useAskAssistant', () => ({ useAskAssistant: () => ({ ask }) }));

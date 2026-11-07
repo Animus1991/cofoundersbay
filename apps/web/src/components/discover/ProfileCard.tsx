@@ -10,6 +10,7 @@ import {
   UserPlus,
   Flag,
   Share2,
+  Sparkles,
   Star,
   Check,
 } from 'lucide-react';
@@ -37,6 +38,8 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { StatusText, statusEl } from '@/components/common/StatusText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { PersonCard } from '@/components/common/PersonCard';
+import { useAskAssistant } from '@/hooks/useAskAssistant';
 
 export type ProfileCardData = {
   id: string;
@@ -138,6 +141,7 @@ function ProfileCardInner({
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [reporting, setReporting] = useState(false);
   const { success, error: toastError } = useToast();
+  const { ask } = useAskAssistant();
 
   // "Share profile" and "Report" had no handler.
   const shareProfile = async () => {
@@ -398,78 +402,61 @@ function ProfileCardInner({
     );
   }
 
-  // Default variant: the Connections card. Circle, name with its role,
-  // headline and place; the score at the right; skills and the foot on the
-  // avatar's edge.
+  // Default variant: the same person as on every list (PersonCard): the face,
+  // the skills as the one fact, one action; the rest in the menu.
+  const askMatch = profile.matchScore && profile.matchScore >= 60 ? {
+    en: `Why is ${profile.displayName} (${profile.role}) a ${profile.matchScore}% match? Skills: ${profile.skills.slice(0, 4).join(', ')}.`,
+    el: `Γιατί ταιριάζω ${profile.matchScore}% με ${profile.displayName} (${statusEl(profile.role) ?? profile.role}); Δεξιότητες: ${profile.skills.slice(0, 4).join(', ')}.`,
+  } : null;
   return (
-    <Card className={cn('group hover:border-primary/30 transition-all hover:-translate-y-0.5', className)}>
-      <CardContent className="space-y-3">
-        <CardHead
-          mark={profileLink(
-            cn('ring-2', ROLE_RING_COLORS[profile.role] || 'ring-border/40'),
-            'bg-primary/10 text-primary-accessible font-semibold',
-            profile.isVerified ? (
-              <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-status-success-mark ring-2 ring-card">
-                <svg className="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </span>
-            ) : null,
-          )}
-          title={nameWithRole}
-          subtitle={profile.headline ? <span className="person-subtitle line-clamp-2">{profile.headline}</span> : undefined}
-          meta={profile.location ?? undefined}
-          aside={profile.matchScore && profile.matchScore > 0 ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary-accessible">
-              <Star className="icon-sm fill-current" aria-hidden="true" />
-              {profile.matchScore}%
-            </span>
-          ) : undefined}
-        />
-
-        {/* Skills */}
-        {profile.skills.length > 0 && (
-          <FactLine items={[...profile.skills.slice(0, 4), profile.skills.length > 4 ? `+${profile.skills.length - 4}` : null]} />
-        )}
-
-        {/* AI Insight for matches: outlined, so its box sits on the axis. */}
-        {profile.matchScore && profile.matchScore >= 60 && (
-          <AIInsightButton
-            prompt={{
-              en: `Why is ${profile.displayName} (${profile.role}) a ${profile.matchScore}% match? Skills: ${profile.skills.slice(0, 4).join(', ')}`,
-              el: `Γιατί ταιριάζω ${profile.matchScore}% με ${profile.displayName} (${statusEl(profile.role) ?? profile.role}); Δεξιότητες: ${profile.skills.slice(0, 4).join(', ')}`,
-            }}
-            agentId="matching"
-            context={{ matchScore: profile.matchScore, targetName: profile.displayName, role: profile.role, skills: profile.skills }}
-            label="AI match analysis"
-            labelEl="Ανάλυση αντιστοίχισης με AI"
-            variant="outline"
-            size="sm"
-          />
-        )}
-
-        {/* Actions */}
-        <CardFoot>
-          {connectButton('secondary')}
-          <Button onClick={onMessage} size="sm" variant={connected ? 'secondary' : 'ghost'} className="min-w-10 gap-1.5 sm:min-w-0 sm:px-3" aria-label="Message · Μήνυμα">
+    <>
+      <PersonCard
+        userId={profile.userId}
+        name={profile.displayName}
+        avatarUrl={profile.avatarUrl}
+        role={profile.role}
+        headline={profile.headline ? <span className="person-subtitle">{profile.headline}</span> : undefined}
+        meta={profile.location ?? undefined}
+        className={className}
+        photoMark={profile.isVerified ? (
+          <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-status-success-mark ring-2 ring-background" title={bilingualAria('Verified', 'Επαληθευμένο')}>
+            <Check className="h-2.5 w-2.5 text-white" aria-hidden="true" />
+          </span>
+        ) : undefined}
+        aside={profile.matchScore && profile.matchScore > 0 ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary-accessible">
+            <Star className="icon-sm fill-current" aria-hidden="true" />
+            {profile.matchScore}%
+          </span>
+        ) : undefined}
+        fact={profile.skills.length > 0 ? (
+          <FactLine items={[...profile.skills.slice(0, 3), profile.skills.length > 3 ? `+${profile.skills.length - 3}` : null]} />
+        ) : undefined}
+        primary={connected ? (
+          <Button onClick={onMessage} size="sm" className="gap-1.5">
             <MessageCircle className="icon-sm" />
-            <span className={connected ? undefined : 'hidden sm:inline'}><BilingualText en="Message" el="Μήνυμα" compact /></span>
+            <BilingualText en="Message" el="Μήνυμα" compact />
           </Button>
-          <Button aria-label="Save"
-            variant="ghost"
-            size="icon"
-            onClick={handleBookmark}
-            aria-pressed={bookmarked}
-            className={cn(
-              'h-10 w-10 flex-shrink-0',
-              bookmarked ? 'text-status-warning' : 'text-muted-foreground hover:text-status-warning'
-            )}
-          >
-            <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
-          </Button>
-        </CardFoot>
-      </CardContent>
-    </Card>
+        ) : connectButton('default')}
+        more={[
+          ...(connected ? [] : [{ key: 'message', en: 'Message', el: 'Μήνυμα', icon: MessageCircle, onSelect: onMessage }]),
+          {
+            key: 'save',
+            en: bookmarked ? 'Saved' : 'Save',
+            el: bookmarked ? 'Αποθηκεύτηκε' : 'Αποθήκευση',
+            icon: Bookmark,
+            onSelect: handleBookmark,
+          },
+          ...(askMatch ? [{ key: 'analysis', en: 'AI match analysis', el: 'Ανάλυση αντιστοίχισης με AI', icon: Sparkles, onSelect: () => ask(askMatch) }] : []),
+          { key: 'share', en: 'Share profile', el: 'Κοινοποίηση προφίλ', icon: Share2, onSelect: () => void shareProfile() },
+          ...(profile.linkedinUrl ? [{ key: 'linkedin', en: 'LinkedIn', el: 'LinkedIn', icon: ExternalLink, onSelect: () => window.open(profile.linkedinUrl ?? '', '_blank', 'noopener,noreferrer') }] : []),
+          { key: 'report', en: 'Report', el: 'Αναφορά', icon: Flag, onSelect: () => setReporting(true), destructive: true },
+        ]}
+      />
+      {reporting && (
+        <ReportBlockModal open onOpenChange={setReporting} userId={profile.userId} userName={profile.displayName} mode="report" />
+      )}
+    </>
   );
 }
 

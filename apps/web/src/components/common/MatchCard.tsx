@@ -2,25 +2,21 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { UserPlus, X, MessageCircle, Bookmark, TrendingUp, ChevronDown, ChevronUp, Check, Clock } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight, UserPlus, X, MessageCircle, Bookmark, TrendingUp, ChevronDown, Check, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { RoleBadge } from './RoleBadge';
 import { BilingualText } from './BilingualText';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
-import { pressableProps } from '@/lib/pressable';
 import type { CommitmentStep } from '@cofounderbay/shared';
 import { StepChip } from '@/components/commitments/OutcomeChip';
 import { FactLine } from '@/components/common/FactLine';
 import { matchReasonCopy } from '@/lib/match-reason';
 import { splitReasons } from '@/lib/match-explain';
 import { matchesEl, matchesEn } from '@/lib/i18n/strings-matches';
-import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
-import { PersonHovercard } from '@/components/common/PersonHovercard';
+import type { CardMoreItem } from '@/components/common/CardMoreMenu';
+import { PersonCard } from '@/components/common/PersonCard';
 type MatchReason = {
   type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
   text: string;
@@ -214,12 +210,10 @@ function MatchCardInner({
 }: MatchCardProps) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [showAllReasons, setShowAllReasons] = useState(false);
-  const { stroke, glow, colors } = getScoreTier(compatibilityScore);
+  const { stroke } = getScoreTier(compatibilityScore);
   const reasonCopies: ReasonCopy[] = reasons ? [...reasons] : matchReasons.map((reason) => matchReasonCopy(reason.text));
-  // Two causes on the card; the rest behind one disclosure that adds them
-  // under the two, instead of a toggle that listed the first one again.
-  const { face, rest } = splitReasons(reasonCopies);
-  const shownReasons = showAllReasons ? reasonCopies : face;
+  // One cause on the card, the most telling; the rest are one press away.
+  const { face, rest } = splitReasons(reasonCopies, 1);
 
   const handleBookmark = () => {
     setBookmarked(!bookmarked);
@@ -231,59 +225,50 @@ function MatchCardInner({
   // already sent is said, not offered again.
   const state: MatchConnection = connection ?? 'none';
   const primary = matchPrimary(state, displayName, { onConnect: onLike, onAccept, onMessage });
-  const messageInCluster = Boolean(onMessage) && primary?.key !== 'message';
 
+  // Everything the card could always do, in the order it is reached for.
+  const more: CardMoreItem[] = [
+    onBreakdown
+      ? { key: 'compatibility', en: 'Compatibility', el: 'Συμβατότητα', icon: TrendingUp, onSelect: onBreakdown }
+      : { key: 'compatibility', en: 'Compatibility', el: 'Συμβατότητα', icon: TrendingUp, href: `/matches/${userId}` },
+    ...(onMessage && primary?.key !== 'message' ? [{ key: 'message', en: 'Message', el: 'Μήνυμα', icon: MessageCircle, onSelect: onMessage }] : []),
+    ...(onBookmark ? [{
+      key: 'save',
+      en: bookmarked ? 'Saved to your shortlist' : 'Save to shortlist',
+      el: bookmarked ? 'Στη λίστα επιλογών' : 'Αποθήκευση στη λίστα',
+      icon: Bookmark,
+      onSelect: handleBookmark,
+    }] : []),
+    ...(rest.length > 0 ? [{
+      key: 'reasons',
+      en: `All reasons (${reasonCopies.length})`,
+      el: `Όλοι οι λόγοι (${reasonCopies.length})`,
+      icon: ChevronDown,
+      // The preview panel lists them where a page has one; a card on its own opens them in place.
+      onSelect: onClick ?? (() => setShowAllReasons((value) => !value)),
+    }] : []),
+    { key: 'profile', en: 'Full profile', el: 'Πλήρες προφίλ', icon: ArrowRight, href: `/profiles/${userId}` },
+    ...(onPass ? [{ key: 'pass', en: 'Pass', el: 'Παράλειψη', icon: X, onSelect: onPass, destructive: true }] : []),
+  ];
+
+  const shown = showAllReasons ? reasonCopies : face;
   return (
-    <Card
-      className={cn(
-        'group relative overflow-hidden transition-all duration-200',
-        'hover:border-primary/30',
-        isSelected && 'ring-2 ring-primary ring-offset-1',
-        onClick && 'cursor-pointer',
-        className
-      )}
-      style={{ '--hover-glow': glow } as React.CSSProperties}
-      onClick={(e) => {
-        if (onClick && !(e.target as HTMLElement).closest('button, a')) {
-          onClick();
-        }
-      }}
-      // A link role keeps the inner action buttons announced (role="button"
-      // would flatten them); the label keeps the card's name from becoming
-      // its entire text content.
-      {...(onClick ? pressableProps({ role: 'link', label: bilingualAria(`Preview ${displayName}`, `Προεπισκόπηση: ${displayName}`) }) : {})}
-    >
-      {/* Left score-color border strip */}
-      <div
-        className="absolute left-0 inset-y-0 w-0.5 transition-all duration-200 group-hover:w-1"
-        style={{ background: stroke }}
-      />
-
-      {/* The Connections card: the person's circle, the name with its role,
-          the headline under it, the score at the right of the head; facts,
-          the reasons and the foot all start on the avatar's edge. */}
-      <CardContent className="space-y-3">
-        <CardHead
-          mark={(
-            <Link href={`/profiles/${userId}`} aria-label={bilingualAria(`Open ${displayName}'s profile`, `Άνοιγμα προφίλ: ${displayName}`)}>
-              <Avatar className="h-10 w-10 border border-border transition-transform group-hover:scale-105">
-                <AvatarImage src={avatarUrl || undefined} alt="" />
-                <AvatarFallback className="bg-muted text-foreground text-sm font-semibold">
-                  {displayName.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
-          )}
-          title={(
-            <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              <PersonHovercard userId={userId}><Link href={`/profiles/${userId}`} className="transition-colors hover:text-primary-accessible">{displayName}</Link></PersonHovercard>
-              <RoleBadge role={role} size="sm" />
-            </span>
-          )}
-          subtitle={headline ? <span className="line-clamp-2">{headline}</span> : undefined}
-          // Where a commitment stands: a state on the title's edge, under
-          // the headline, so the head keeps one thing at its right.
-          meta={commitment ? (
+    <PersonCard
+      userId={userId}
+      name={displayName}
+      avatarUrl={avatarUrl}
+      role={role}
+      headline={headline}
+      edge={stroke}
+      onOpen={onClick}
+      selected={Boolean(isSelected)}
+      className={className}
+      // Where they are, and where a commitment stands: states on the title's
+      // edge, so the head keeps one thing at its right.
+      meta={location || timezone || commitment ? (
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+          <FactLine items={[location, timezone]} />
+          {commitment ? (
             commitment.line ? (
               <Link
                 href={commitment.href}
@@ -300,143 +285,54 @@ function MatchCardInner({
                 <StepChip step={commitment.step} />
               </Link>
             )
-          ) : undefined}
-          aside={(
-            <>
-              {/* Selection checkbox (compare mode): beside the score, never
-                  over the avatar. */}
-              {onSelect && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); onSelect(); }}
-                  className="flex h-10 w-10 items-center justify-center rounded-md"
-                  aria-pressed={Boolean(isSelected)}
-                  aria-label={bilingualAria(`Select ${displayName}`, `Επιλογή: ${displayName}`)}
-                >
-                  <span className={cn(
-                    'flex h-5 w-5 items-center justify-center rounded-sm border-2 transition-colors',
-                    isSelected ? 'bg-primary border-primary' : 'bg-background/80 border-border hover:border-primary'
-                  )}>
-                    {isSelected && <Check className="icon-sm text-primary-foreground" />}
-                  </span>
-                </button>
-              )}
-              <ScoreBadge score={compatibilityScore} />
-            </>
-          )}
-        />
-
-        {/* Place, time zone and skills: facts on one muted line each. */}
-        {(location || timezone || skills.length > 0) && (
-          <div className="space-y-1">
-            <FactLine items={[location, timezone]} />
-            <FactLine items={[...skills.slice(0, 4), skills.length > 4 ? `+${skills.length - 4}` : null]} />
-          </div>
-        )}
-
-        {/* Why you match: the two most telling causes, with their facts. */}
-        {shownReasons.length > 0 && (
-          <ul className="space-y-1" aria-label={bilingualAria('Why you match', 'Γιατί ταιριάζετε')}>
-            {shownReasons.map((copy, i) => (
-              <li key={`${copy.en}-${i}`} className="flex items-start gap-2 text-xs text-foreground">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: stroke }} aria-hidden="true" />
-                <span className="min-w-0 flex-1"><BilingualText en={copy.en} el={copy.el} compact wrap /></span>
-              </li>
-            ))}
-          </ul>
-        )}
-        {rest.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setShowAllReasons(!showAllReasons)}
-            aria-expanded={showAllReasons}
-            // tap-target-y: a 16px-tall disclosure is under the 24px target minimum.
-            className={cn('flex tap-target-y items-center gap-1.5 text-xs font-medium transition-colors', colors.text)}
-          >
-            {showAllReasons
-              ? <BilingualText en="Fewer reasons" el="Λιγότεροι λόγοι" compact />
-              : <BilingualText en={`All reasons (${reasonCopies.length})`} el={`Όλοι οι λόγοι (${reasonCopies.length})`} compact />}
-            {showAllReasons ? <ChevronUp className="icon-sm" /> : <ChevronDown className="icon-sm" />}
-          </button>
-        )}
-
-        {/* Foot: the quick answers at the left, the next steps at the right. */}
-        <CardFoot
-          meta={(onPass || messageInCluster || onBookmark) ? (
-            <div className="flex items-center gap-1.5">
-              {onPass && (
-                <button
-                  onClick={onPass}
-                  aria-label={bilingualAria(`Pass on ${displayName}`, `Παράλειψη: ${displayName}`)}
-                  title={bilingualAria(`Pass on ${displayName}`, `Παράλειψη: ${displayName}`)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
-                >
-                  <X className="icon-sm" />
-                </button>
-              )}
-              {messageInCluster && (
-                <button
-                  onClick={onMessage}
-                  aria-label={bilingualAria(`Message ${displayName}`, `Μήνυμα προς ${displayName}`)}
-                  title={bilingualAria(`Message ${displayName}`, `Μήνυμα προς ${displayName}`)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary-accessible"
-                >
-                  <MessageCircle className="icon-sm" />
-                </button>
-              )}
-              {onBookmark && (
-                <button
-                  onClick={handleBookmark}
-                  aria-pressed={bookmarked}
-                  aria-label={
-                    bookmarked
-                      ? bilingualAria(`${displayName} is on your shortlist`, `${displayName}: στη λίστα επιλογών`)
-                      : bilingualAria(`Save ${displayName} to shortlist`, `Αποθήκευση ${displayName} στη λίστα`)
-                  }
-                  className={cn(
-                    'flex h-10 w-10 items-center justify-center rounded-full border border-border transition-colors',
-                    bookmarked ? STATUS.warning.icon : cn('text-muted-foreground', 'hover:text-status-warning')
-                  )}
-                >
-                  <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
-                </button>
-              )}
-            </div>
-          ) : undefined}
-        >
-          {onBreakdown ? (
-            <Button
-              size="sm"
-              variant="outline"
-              className={cn('gap-1.5', colors.border, colors.text)}
-              style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }}
-              onClick={onBreakdown}
-            >
-              <TrendingUp className="icon-sm" />
-              <BilingualText en="Compatibility" el="Συμβατότητα" compact />
-            </Button>
-          ) : (
-            <Button size="sm" variant="outline" className={cn('gap-1.5', colors.text)} style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }} asChild>
-              <Link href={`/matches/${userId}`}>
-                <TrendingUp className="icon-sm" />
-                <BilingualText en="Compatibility" el="Συμβατότητα" compact />
-              </Link>
-            </Button>
-          )}
-
-          {primary ? (
-            <Button onClick={primary.onClick} size="sm" className="gap-1.5" aria-label={primary.aria}>
-              <primary.Icon className="icon-sm" />
-              <BilingualText en={primary.en} el={primary.el} compact />
-            </Button>
-          ) : state === 'sent' ? (
-            <span className="inline-flex min-h-9 items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="icon-sm" aria-hidden="true" />
-              <BilingualText en="Request sent" el="Το αίτημα στάλθηκε" compact />
-            </span>
           ) : null}
-        </CardFoot>
-      </CardContent>
-    </Card>
+        </span>
+      ) : undefined}
+      aside={(
+        <>
+          {/* Selection checkbox (compare mode): beside the score, never
+              over the avatar. */}
+          {onSelect && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onSelect(); }}
+              className="flex h-10 w-10 items-center justify-center rounded-md"
+              aria-pressed={Boolean(isSelected)}
+              aria-label={bilingualAria(`Select ${displayName}`, `Επιλογή: ${displayName}`)}
+            >
+              <span className={cn(
+                'flex h-5 w-5 items-center justify-center rounded-sm border-2 transition-colors',
+                isSelected ? 'bg-primary border-primary' : 'bg-background/80 border-border hover:border-primary'
+              )}>
+                {isSelected && <Check className="icon-sm text-primary-foreground" />}
+              </span>
+            </button>
+          )}
+          <ScoreBadge score={compatibilityScore} />
+        </>
+      )}
+      fact={shown.length > 0 ? (
+        <ul className="space-y-1" aria-label={bilingualAria('Why you match', 'Γιατί ταιριάζετε')}>
+          {shown.map((copy, i) => (
+            <li key={`${copy.en}-${i}`} className="flex items-start gap-2">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: stroke }} aria-hidden="true" />
+              <span className={cn('min-w-0 flex-1', !showAllReasons && 'line-clamp-2')}><BilingualText en={copy.en} el={copy.el} compact wrap /></span>
+            </li>
+          ))}
+        </ul>
+      ) : undefined}
+      primary={primary ? (
+        <Button onClick={primary.onClick} size="sm" className="gap-1.5" aria-label={primary.aria}>
+          <primary.Icon className="icon-sm" />
+          <BilingualText en={primary.en} el={primary.el} compact />
+        </Button>
+      ) : state === 'sent' ? (
+        <span className="inline-flex min-h-9 items-center gap-1.5 text-xs text-muted-foreground">
+          <Clock className="icon-sm" aria-hidden="true" />
+          <BilingualText en="Request sent" el="Το αίτημα στάλθηκε" compact />
+        </span>
+      ) : null}
+      more={more}
+    />
   );
 }
 

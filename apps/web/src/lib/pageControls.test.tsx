@@ -520,6 +520,7 @@ describe('pages that offer controls', () => {
       'src/components/research/BoardSettingsPanel.tsx': 'canvas settings, not a list',
       'src/components/builder/BranchPanel.tsx': 'builder branch tools, reached through the builder capabilities',
       'src/components/social/ShareButton.tsx': 'share targets that leave the app',
+      'src/components/common/CardMoreMenu.tsx': 'the shared menu; each page that hands it actions registers them as its own controls',
       'src/components/common/ThemeToggle.tsx': 'app chrome',
       'src/components/layout/UserMenu.tsx': 'app chrome',
       'src/components/layout/TopBar.tsx': 'app chrome',

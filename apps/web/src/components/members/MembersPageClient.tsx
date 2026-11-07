@@ -36,7 +36,8 @@ import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
-import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { PersonCard } from '@/components/common/PersonCard';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { RoleName } from '@/components/common/RoleName';
@@ -185,52 +186,28 @@ function MemberCard({ member, viewMode, onConnect, onMessage, connection = 'none
     </>
   );
 
-  // Grid and list share the Endorsements card: avatar, name and role, then
-  // the bio, skills and facts on the avatar's edge. The grid card was
-  // centred, with the role in lowercase as a pill.
+  // The same person as on every list. Completeness stays on the list view,
+  // which is for comparing; here it was a bar about someone else's form.
   if (isGridView) {
     return (
-      <Card className="card-interactive hover-lift group transition-all duration-300">
-        <CardContent className="space-y-3">
-          <CardHead
-            mark={mark}
-            title={name}
-            subtitle={role}
-            aside={isOnline ? (
-              <span className="text-status-success"><BilingualText en="Online" el="Σε σύνδεση" compact /></span>
-            ) : undefined}
-          />
-
-          {member.bio && (
-            <p className="card-body line-clamp-2 text-muted-foreground">
-              {member.bio}
-            </p>
-          )}
-
-          <div className="space-y-1">
-            <FactLine
-              items={[...(member.skills ?? []).slice(0, 3), (member.skills?.length ?? 0) > 3 ? `+${(member.skills?.length ?? 0) - 3}` : null]}
-            />
-            <FactLine items={[member.location]} />
-          </div>
-
-          {/* Profile completeness: a label and its figure over the bar. */}
-          <div>
-            <div className="mb-1 flex items-center justify-between gap-3 text-xs">
-              <span className="text-muted-foreground"><BilingualText en="Profile completeness" el="Πληρότητα προφίλ" compact /></span>
-              <span className={cn('font-semibold tabular-nums', scoreColor(completeness))}>{completeness}%</span>
-            </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-secondary/60" role="presentation">
-              <div
-                className={cn('h-full rounded-full transition-all', completeness >= 80 ? 'bg-status-success-mark' : completeness >= 50 ? 'bg-status-warning-mark' : 'bg-primary/60')}
-                style={{ width: `${completeness}%` }}
-              />
-            </div>
-          </div>
-
-          <CardFoot>{actions}</CardFoot>
-        </CardContent>
-      </Card>
+      <PersonCard
+        userId={member.userId}
+        name={member.displayName}
+        avatarUrl={member.avatarUrl}
+        role={member.role}
+        headline={member.bio}
+        meta={member.location ?? undefined}
+        nameMark={<PersonVerifiedBadge userId={member.userId} />}
+        photoMark={isOnline ? (
+          <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background" title={bilingualInline('Online', 'Σε σύνδεση')}>
+            <span className="h-2.5 w-2.5 rounded-full bg-status-success-mark ring-1 ring-background" />
+          </span>
+        ) : undefined}
+        fact={(member.skills?.length ?? 0) > 0 ? (
+          <FactLine items={[...(member.skills ?? []).slice(0, 3), (member.skills?.length ?? 0) > 3 ? `+${(member.skills?.length ?? 0) - 3}` : null]} />
+        ) : undefined}
+        primary={actions}
+      />
     );
   }
 

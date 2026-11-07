@@ -290,7 +290,7 @@ try {
   await outside.reload({ waitUntil: 'domcontentloaded' });
   await outside.waitForTimeout(2600);
   body = await outside.evaluate(() => document.body.innerText);
-  check('link: a revoked link no longer opens', body.includes('δεν ανοίγει') && !body.includes('Κοινό έγγραφο'), body.slice(0, 80));
+  check('link: a revoked link no longer opens', /δεν ανοίγει|does not open/.test(body) && !body.includes('Κοινό έγγραφο'), body.slice(-120));
   await stranger.close();
   await founder.page.keyboard.press('Escape');
 

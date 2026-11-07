@@ -60,7 +60,8 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { FactLine } from '@/components/common/FactLine';
 import { matchReasonCopy } from '@/lib/match-reason';
-import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { PersonCard } from '@/components/common/PersonCard';
 import { bilingualAria } from '@/lib/i18n/format';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { useConnectionActions } from '@/hooks/useConnectionWith';
@@ -170,50 +171,13 @@ function BreakdownModal({
 }
 
 // Rich feedback dropdown
-const FEEDBACK_OPTIONS: { label: string; value: MatchFeedbackType; icon: LucideIcon; color?: string }[] = [
-  { label: 'Great match!', value: 'accepted', icon: ThumbsUp, color: 'text-status-success' },
-  { label: 'Not relevant', value: 'not_relevant', icon: EyeOff },
-  { label: 'Not now', value: 'not_now', icon: Clock },
-  { label: 'Better fit wanted', value: 'better_fit_wanted', icon: Search },
-  { label: 'Decline', value: 'declined', icon: ThumbsDown, color: 'text-status-danger' },
+const FEEDBACK_OPTIONS: { label: string; labelEl: string; value: MatchFeedbackType; icon: LucideIcon }[] = [
+  { label: 'Great match!', labelEl: 'Πολύ καλό ταίριασμα', value: 'accepted', icon: ThumbsUp },
+  { label: 'Not relevant', labelEl: 'Δεν με αφορά', value: 'not_relevant', icon: EyeOff },
+  { label: 'Not now', labelEl: 'Όχι τώρα', value: 'not_now', icon: Clock },
+  { label: 'Better fit wanted', labelEl: 'Θέλω καλύτερο ταίριασμα', value: 'better_fit_wanted', icon: Search },
+  { label: 'Decline', labelEl: 'Απόρριψη', value: 'declined', icon: ThumbsDown },
 ];
-
-function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => void }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative">
-      <Button aria-label="Feedback"
-        size="icon"
-        variant="ghost"
-        className="h-7 w-7 text-muted-foreground"
-        onClick={() => setOpen(p => !p)}
-        title="Feedback"
-      >
-        <ChevronDown className="icon-sm" />
-      </Button>
-      {open && (
-        <>
-          <div aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 bottom-8 z-50 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-[160px]">
-            {FEEDBACK_OPTIONS.map(opt => (
-              <button
-                key={opt.value}
-                className={cn(
-                  'flex items-center gap-2 w-full px-3 py-2 text-xs hover:bg-muted transition-colors',
-                  opt.color ?? 'text-foreground'
-                )}
-                onClick={() => { onFeedback(opt.value); setOpen(false); }}
-              >
-                <opt.icon className="h-3 w-3" />
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
 
 /** Either payload the recommendations endpoint can return. */
 type RecommendationHit = (SearchHit & { matchScore?: number; matchReasons?: string[] }) | MatchSuggestion;
@@ -283,6 +247,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave, connection = '
   } = normaliseHit(hit);
 
   const [breakdownOpen, setBreakdownOpen] = useState(false);
+  const firstReason = reasons.length > 0 ? matchReasonCopy(reasons[0]) : null;
 
   return (
     <>
@@ -294,126 +259,61 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave, connection = '
       explanation={explanation}
       reasons={reasons}
     />
-    {/* The Connections card: circle, name, headline and place; the score
-        and role at the right; reasons, skills and the foot on the avatar's
-        edge, never indented under the name. */}
-    <Card className="group hover:border-primary/30 transition-colors">
-      <CardContent className="space-y-3">
-        <CardHead
-          mark={(
-            <Link
-              href={`/profiles/${userId}`}
-              aria-label={bilingualAria(`Open ${displayName}'s profile`, `Άνοιγμα προφίλ: ${displayName}`)}
-              onClick={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}
-            >
-              <Avatar className="h-10 w-10 ring-2 ring-border group-hover:ring-primary/20 transition-all">
-                <AvatarImage src={avatarUrl ?? undefined} alt="" />
-                <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary-accessible">
-                  {initialsOf(displayName)}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
+    {/* The same person as on Matches: one reason on the card. The others, the
+        skills and every way of answering are in the breakdown and the menu. */}
+    <PersonCard
+      userId={userId}
+      name={displayName}
+      avatarUrl={avatarUrl}
+      role={role}
+      headline={headline}
+      meta={location ?? undefined}
+      onProfileOpen={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}
+      aside={(score > 0 || confidence !== null) ? (
+        <>
+          {score > 0 && <MatchScoreBadge score={score} />}
+          {confidence !== null && (
+            <span title={`Confidence: ${confidence}%`} className="flex items-center gap-0.5 text-xs tabular-nums text-muted-foreground">
+              <ShieldCheck className="icon-sm" />
+              {confidence}%
+            </span>
           )}
-          title={(
-            <Link
-              href={`/profiles/${userId}`}
-              className="person-name transition-colors hover:text-primary-accessible"
-              onClick={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}
-            >
-              {displayName}
-            </Link>
-          )}
-          subtitle={headline ? <span className="line-clamp-1">{headline}</span> : undefined}
-          meta={location ?? undefined}
-          aside={(score > 0 || confidence !== null || role) ? (
-            <>
-              {score > 0 && <MatchScoreBadge score={score} />}
-              {confidence !== null && (
-                <span title={`Confidence: ${confidence}%`} className="flex items-center gap-0.5 text-xs tabular-nums text-muted-foreground">
-                  <ShieldCheck className="icon-sm" />
-                  {confidence}%
-                </span>
-              )}
-              {/* The role badge every other card uses: "Cofounder" here was
-                  "Founder" on Explore and the inbox. */}
-              {role && (
-                <span className="hidden sm:inline-flex">
-                  <RoleBadge role={role} size="sm" />
-                </span>
-              )}
-            </>
-          ) : undefined}
-        />
-
-        {/* The reasons. Their bars by dimension are in "Score breakdown";
-            a "Why this match?" line under them opened three of the same
-            bars in the card (docs §86). */}
-        {reasons.length > 0 && (
-          <FactLine items={reasons.slice(0, 3).map((reason) => {
-            const copy = matchReasonCopy(reason);
-            return <BilingualText key={copy.en} en={copy.en} el={copy.el} compact />;
-          })} />
-        )}
-
-        {/* Skills: facts, not chips. */}
-        {skills.length > 0 && (
-          <FactLine items={[...skills.slice(0, 4), skills.length > 4 ? `+${skills.length - 4}` : null]} />
-        )}
-
-        <CardFoot
-          meta={(
-            <div className="flex items-center gap-1">
-              {onSave && (
-                <Button aria-label="Save match"
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 text-muted-foreground hover:text-primary-accessible"
-                  title="Save match"
-                  onClick={() => onSave(userId)}
-                >
-                  <BookmarkPlus className="icon-sm" />
-                </Button>
-              )}
-              <Button aria-label="Good match"
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7 text-muted-foreground hover:text-status-success"
-                title="Good match"
-                onClick={() => onFeedback(userId, 'accepted')}
-              >
-                <ThumbsUp className="icon-sm" />
-              </Button>
-              <FeedbackMenu onFeedback={(fb) => onFeedback(userId, fb)} />
-            </div>
-          )}
-        >
-          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setBreakdownOpen(true)}>
-            <TrendingUp className="icon-sm" />
-            <BilingualText en="Score breakdown" el="Ανάλυση βαθμολογίας" compact />
-          </Button>
-          {connection === 'received' && onAccept ? (
-            <Button size="sm" className="gap-1.5" onClick={() => onAccept(userId)} aria-label={bilingualAria(`Accept ${displayName}'s request`, `Αποδοχή αιτήματος από ${displayName}`)}>
-              <BilingualText en="Accept" el="Αποδοχή" compact />
-            </Button>
-          ) : connection === 'sent' ? (
-            <Button size="sm" variant="ghost" disabled title={bilingualAria('Your request is waiting for their answer', 'Το αίτημά σας περιμένει απάντηση')}>
-              <BilingualText en="Request sent" el="Το αίτημα στάλθηκε" compact />
-            </Button>
-          ) : connection === 'connected' ? (
-            <Button size="sm" asChild>
-              <Link href={`/messages?to=${encodeURIComponent(userId)}`}>
-                <BilingualText en="Message" el="Μήνυμα" compact />
-              </Link>
-            </Button>
-          ) : (
-            <Button size="sm" className="gap-1.5" onClick={() => onConnect(userId)}>
-              <UserPlus className="icon-sm" />
-              <BilingualText en="Connect" el="Σύνδεση" compact />
-            </Button>
-          )}
-        </CardFoot>
-      </CardContent>
-    </Card>
+        </>
+      ) : undefined}
+      fact={firstReason ? <span className="line-clamp-2"><BilingualText en={firstReason.en} el={firstReason.el} compact wrap /></span> : undefined}
+      primary={connection === 'received' && onAccept ? (
+        <Button size="sm" className="gap-1.5" onClick={() => onAccept(userId)} aria-label={bilingualAria(`Accept ${displayName}'s request`, `Αποδοχή αιτήματος από ${displayName}`)}>
+          <BilingualText en="Accept" el="Αποδοχή" compact />
+        </Button>
+      ) : connection === 'sent' ? (
+        <Button size="sm" variant="ghost" disabled title={bilingualAria('Your request is waiting for their answer', 'Το αίτημά σας περιμένει απάντηση')}>
+          <BilingualText en="Request sent" el="Το αίτημα στάλθηκε" compact />
+        </Button>
+      ) : connection === 'connected' ? (
+        <Button size="sm" asChild>
+          <Link href={`/messages?to=${encodeURIComponent(userId)}`}>
+            <BilingualText en="Message" el="Μήνυμα" compact />
+          </Link>
+        </Button>
+      ) : (
+        <Button size="sm" className="gap-1.5" onClick={() => onConnect(userId)}>
+          <UserPlus className="icon-sm" />
+          <BilingualText en="Connect" el="Σύνδεση" compact />
+        </Button>
+      )}
+      more={[
+        { key: 'breakdown', en: 'Score breakdown', el: 'Ανάλυση βαθμολογίας', icon: TrendingUp, onSelect: () => setBreakdownOpen(true) },
+        ...(onSave ? [{ key: 'save', en: 'Save match', el: 'Αποθήκευση', icon: BookmarkPlus, onSelect: () => onSave(userId) }] : []),
+        ...FEEDBACK_OPTIONS.map((option) => ({
+          key: option.value,
+          en: option.label,
+          el: option.labelEl,
+          icon: option.icon,
+          onSelect: () => onFeedback(userId, option.value),
+          destructive: option.value === 'declined',
+        })),
+      ]}
+    />
     </>
   );
 }

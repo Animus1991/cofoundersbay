@@ -1,0 +1,881 @@
+{
+ "controls": {
+  "/achievements": [
+   "achievement_category",
+   "achievement_view"
+  ],
+  "/activity": [
+   "activity_tab",
+   "activity_type",
+   "load_more",
+   "mark_all_read"
+  ],
+  "/admin/analytics": [
+   "export_csv",
+   "refresh",
+   "time_range"
+  ],
+  "/admin/audit-log": [
+   "action_filter",
+   "entity_type",
+   "export_csv",
+   "next_page",
+   "previous_page",
+   "refresh"
+  ],
+  "/admin/automations": [
+   "activate_rule",
+   "automation_tab",
+   "delete_rule",
+   "edit_rule",
+   "new_rule",
+   "pause_rule",
+   "trigger_rule"
+  ],
+  "/admin/billing": [
+   "billing_tab",
+   "cancel_subscription",
+   "deactivate_coupon",
+   "extend_trial",
+   "new_coupon",
+   "override_plan",
+   "refresh",
+   "status_filter"
+  ],
+  "/admin/communities": [
+   "status_filter",
+   "visibility_filter"
+  ],
+  "/admin/community-management": [
+   "communities_shown"
+  ],
+  "/admin/content-moderation": [
+   "queue_tab"
+  ],
+  "/admin/dashboard": [
+   "period",
+   "refresh"
+  ],
+  "/admin/domains": [
+   "select_organisation"
+  ],
+  "/admin/feature-flags": [
+   "flag_tab",
+   "new_flag"
+  ],
+  "/admin/mentorship-management": [
+   "open_mentor",
+   "roster_filter"
+  ],
+  "/admin": [
+   "admin_tab",
+   "ban_reported_user",
+   "ban_user",
+   "delete_cohort",
+   "dismiss_report",
+   "export_audit_log",
+   "feature_event",
+   "feature_job",
+   "reactivate_user",
+   "refresh",
+   "remove_event",
+   "remove_job",
+   "resolve_report",
+   "suspend_user"
+  ],
+  "/admin/programs": [
+   "archive_program",
+   "export_csv",
+   "open_program",
+   "refresh",
+   "status_filter",
+   "type_filter"
+  ],
+  "/admin/reports": [
+   "export_csv",
+   "open_report",
+   "priority_filter",
+   "queue_tab",
+   "refresh",
+   "type_filter"
+  ],
+  "/admin/security-monitoring": [
+   "clear_filters",
+   "level_filter"
+  ],
+  "/admin/taxonomy": [
+   "category_filter",
+   "delete_skill",
+   "edit_skill",
+   "new_skill"
+  ],
+  "/admin/tenants": [
+   "branding_filter",
+   "create_tenant",
+   "export_csv",
+   "refresh",
+   "status_filter",
+   "tenant_settings"
+  ],
+  "/admin/user-detail/[id]": [
+   "change_role",
+   "set_account_status"
+  ],
+  "/admin/user-management": [
+   "export_csv",
+   "page",
+   "quick_view",
+   "role_filter",
+   "sort",
+   "status_filter"
+  ],
+  "/admin/users": [
+   "export_csv",
+   "refresh",
+   "role_",
+   "role_filter",
+   "status_filter"
+  ],
+  "/analytics": [
+   "period",
+   "refresh",
+   "tab"
+  ],
+  "/builder/applications": [
+   "active_program",
+   "focus_application_question",
+   "save_applications"
+  ],
+  "/builder/calculators": [
+   "calculator"
+  ],
+  "/builder": [
+   "active_program",
+   "delete_slide",
+   "duplicate_slide",
+   "focus_application_question",
+   "move_slide_down",
+   "move_slide_up",
+   "save_applications",
+   "tab"
+  ],
+  "/builder/pitch-deck": [
+   "delete_slide",
+   "duplicate_slide",
+   "move_slide_down",
+   "move_slide_up"
+  ],
+  "/calendar": [
+   "event_type"
+  ],
+  "/coaching": [
+   "cancel_booking",
+   "find_coach",
+   "tab"
+  ],
+  "/commitments/[id]": [
+   "accept_interest",
+   "accept_latest_terms",
+   "brief_scout_from_card",
+   "close_card_filled",
+   "close_deal_room",
+   "confirm_terms_talk",
+   "copy_public_link",
+   "decline_interest",
+   "open_response",
+   "reopen_card",
+   "retract_confirmation",
+   "revoke_public_link",
+   "send_interest",
+   "step_back",
+   "withdraw_card",
+   "withdraw_interest"
+  ],
+  "/commitments": [
+   "close_card_filled",
+   "commitments_tab",
+   "copy_public_link",
+   "kind_filter",
+   "outcome_filter",
+   "reopen_card",
+   "revoke_public_link",
+   "withdraw_card"
+  ],
+  "/compare": [
+   "add_to_comparison",
+   "connect_with_person",
+   "copy_comparison_link",
+   "remove_from_comparison"
+  ],
+  "/connections": [
+   "accept_request",
+   "connect_suggested",
+   "decline_request",
+   "tab"
+  ],
+  "/data-room/[id]": [
+   "data_room_tab",
+   "delete_document",
+   "download_document",
+   "folder",
+   "revoke_access",
+   "share_access",
+   "upload",
+   "view_mode"
+  ],
+  "/data-room": [
+   "download_shared_document"
+  ],
+  "/discover": [
+   "connect_with",
+   "discover_tab",
+   "message_person",
+   "reset_filters",
+   "role_filter",
+   "save_person",
+   "save_search",
+   "search_as_typed",
+   "sort",
+   "view"
+  ],
+  "/endorsements": [
+   "approve_endorsement",
+   "decline_endorsement",
+   "endorsements_tab",
+   "give_endorsement"
+  ],
+  "/events/[id]": [
+   "add_to_calendar",
+   "copy_event_link",
+   "rsvp"
+  ],
+  "/events": [
+   "format",
+   "kind",
+   "share_event",
+   "tab",
+   "view"
+  ],
+  "/expert-reviews": [
+   "expert_tab",
+   "find_expert"
+  ],
+  "/feed": [
+   "clear_tag",
+   "feed_tab",
+   "like_post",
+   "load_more",
+   "refresh",
+   "report_author",
+   "save_post",
+   "share_post",
+   "show_tag",
+   "unlike_post",
+   "unsave_post"
+  ],
+  "/fundraising": [
+   "add_lead",
+   "fundraising_view",
+   "move_to_",
+   "open_room_sharing",
+   "share_document",
+   "unshare_document"
+  ],
+  "/groups/[groupId]": [
+   "delete_own_post",
+   "group_section",
+   "open_member"
+  ],
+  "/groups/manage": [
+   "copy_invite_link",
+   "delete_group"
+  ],
+  "/groups/moderation": [
+   "report_tab"
+  ],
+  "/groups": [
+   "category",
+   "create",
+   "join_group",
+   "leave_group",
+   "sort",
+   "tab",
+   "type"
+  ],
+  "/help": [
+   "clear_filters",
+   "help_topic",
+   "open_question"
+  ],
+  "/intros": [
+   "intros_tab"
+  ],
+  "/investor/analytics": [
+   "period",
+   "tab"
+  ],
+  "/investor/pipeline": [
+   "move_to_",
+   "passed_deals",
+   "starred_only"
+  ],
+  "/investor/portfolio": [
+   "chart",
+   "export_investment",
+   "export_portfolio"
+  ],
+  "/investor/scouting": [
+   "add_to_pipeline",
+   "industry",
+   "sort",
+   "stage",
+   "unwatch_startup",
+   "view_mode",
+   "watch_startup"
+  ],
+  "/investor/watchlist": [
+   "add_to_pipeline",
+   "alerts_off",
+   "alerts_on",
+   "alerts_only",
+   "remove_from_watchlist",
+   "watchlist_tab"
+  ],
+  "/investors": [
+   "investor_scouting",
+   "investor_sort",
+   "investor_stage",
+   "investor_type"
+  ],
+  "/jobs": [
+   "clear_search",
+   "draft_application",
+   "employment_type",
+   "post_job",
+   "role_filter",
+   "save_job",
+   "saved_only",
+   "unsave_job"
+  ],
+  "/learning": [
+   "category",
+   "clear_filters",
+   "learning_tab",
+   "resource_type",
+   "toggle_saved"
+  ],
+  "/legal": [
+   "legal_category",
+   "legal_tick",
+   "legal_untick"
+  ],
+  "/marketplace": [
+   "availability",
+   "category",
+   "sort"
+  ],
+  "/matches/[userId]": [
+   "copy_match_link",
+   "propose_collaboration",
+   "remove_from_shortlist",
+   "save_to_shortlist"
+  ],
+  "/matches/compare": [
+   "add_to_comparison",
+   "remove_from_comparison"
+  ],
+  "/matches": [
+   "availability",
+   "connect_with",
+   "match_tier",
+   "message_match",
+   "pass_match",
+   "role_filter",
+   "shortlist_match",
+   "sort",
+   "unpass_match",
+   "unshortlist_match",
+   "view"
+  ],
+  "/members": [
+   "availability",
+   "clear_filters",
+   "industry",
+   "location",
+   "role",
+   "skill",
+   "sort",
+   "view"
+  ],
+  "/mentor/availability": [
+   "add_slot",
+   "remove_slot",
+   "save_availability",
+   "time_zone"
+  ],
+  "/mentor/earnings": [
+   "export_csv",
+   "period"
+  ],
+  "/mentor/mentees": [
+   "message_mentee",
+   "schedule_with_mentee"
+  ],
+  "/mentor/requests": [
+   "accept_request",
+   "decline_request",
+   "request_tab"
+  ],
+  "/mentor/reviews": [
+   "rating_filter"
+  ],
+  "/mentor/sessions": [
+   "cancel_booking",
+   "cancel_session",
+   "confirm_booking",
+   "reschedule_session",
+   "schedule_session",
+   "session_notes",
+   "session_tab"
+  ],
+  "/mentoring": [
+   "mentor_area",
+   "mentor_expertise",
+   "mentor_price",
+   "mentor_service",
+   "mentoring_section",
+   "open_booking",
+   "open_review_request",
+   "sessions_filter"
+  ],
+  "/messages": [
+   "archive_conversation",
+   "block_person",
+   "inbox_tab",
+   "new_message",
+   "open_conversation",
+   "pin_conversation",
+   "report_person",
+   "unpin_conversation"
+  ],
+  "/milestones": [
+   "category_filter",
+   "delete_milestone",
+   "edit_milestone",
+   "mark_",
+   "priority_filter",
+   "status_filter",
+   "view"
+  ],
+  "/notifications": [
+   "category",
+   "delete_notification",
+   "mark_all_read",
+   "mark_read",
+   "mark_shown_read",
+   "restore_unread",
+   "save_notification",
+   "unread_only",
+   "unsave_notification"
+  ],
+  "/opportunities": [
+   "accept_proposal",
+   "alert_new_need_cards",
+   "decline_proposal",
+   "draft_approach",
+   "opportunity_tab",
+   "opportunity_type",
+   "opportunity_view",
+   "post_opportunity",
+   "remote_only",
+   "save_listing",
+   "saved_only",
+   "unsave_listing"
+  ],
+  "/org/[slug]/admin": [
+   "cancel_invitation",
+   "export_members",
+   "invite_member",
+   "make_admin",
+   "make_member",
+   "reactivate_member",
+   "remove_member",
+   "resend_invitation",
+   "role_filter",
+   "status_filter",
+   "suspend_member"
+  ],
+  "/org/analytics": [
+   "export",
+   "period",
+   "refresh"
+  ],
+  "/org/applications": [
+   "accept_application",
+   "clear_filters",
+   "program_filter",
+   "reject_application",
+   "review_application",
+   "status_tab"
+  ],
+  "/org/cohorts/[id]": [
+   "cohort_tab",
+   "copy_cohort_link",
+   "export_participants",
+   "open_participant",
+   "run_cohort_matching"
+  ],
+  "/org/cohorts": [
+   "clear_filters",
+   "open_cohort",
+   "status_filter"
+  ],
+  "/org/events": [
+   "clear_filters",
+   "duplicate_event",
+   "event_tab"
+  ],
+  "/org/members": [
+   "clear_filters",
+   "member_tab"
+  ],
+  "/org/mentors": [
+   "accept_mentor_request",
+   "clear_search",
+   "decline_mentor_request"
+  ],
+  "/org/programs": [
+   "archive_program",
+   "clear_filters"
+  ],
+  "/org/startups": [
+   "clear_filters",
+   "program_filter",
+   "status_filter"
+  ],
+  "/perks": [
+   "claim_perk",
+   "perk_category",
+   "perk_stage",
+   "perks_tab",
+   "switch_off_perk",
+   "switch_on_perk"
+  ],
+  "/profile": [
+   "copy_profile_link",
+   "edit_profile",
+   "open_reputation",
+   "open_settings"
+  ],
+  "/profiles/[userId]": [
+   "accept_connection_from_person",
+   "ask_for_introduction",
+   "connect_with_person",
+   "copy_profile_link",
+   "follow_updates",
+   "message_person"
+  ],
+  "/programs/[id]": [
+   "apply_to_program"
+  ],
+  "/programs": [
+   "apply_to_program",
+   "program_status",
+   "program_tab",
+   "program_type",
+   "refresh"
+  ],
+  "/projects/[projectId]": [
+   "apply_role",
+   "delete_project",
+   "request_join",
+   "share_project",
+   "star_project",
+   "unstar_project"
+  ],
+  "/projects": [
+   "industry_filter",
+   "share_project",
+   "stage_filter",
+   "star_project",
+   "tab",
+   "unstar_project",
+   "view"
+  ],
+  "/provider/analytics": [
+   "export_daily",
+   "export_metrics",
+   "period",
+   "refresh"
+  ],
+  "/provider/inquiries": [
+   "convert_inquiry",
+   "decline_inquiry",
+   "inquiry_tab",
+   "reply_inquiry"
+  ],
+  "/provider/projects": [
+   "complete_project",
+   "open_progress_form",
+   "project_tab",
+   "view_project"
+  ],
+  "/provider/services": [
+   "add_service",
+   "delete_service",
+   "edit_service",
+   "hide_service",
+   "publish_service"
+  ],
+  "/readiness": [
+   "reassess",
+   "view_mode"
+  ],
+  "/recommendations": [
+   "connect_with",
+   "min_score",
+   "not_relevant",
+   "recommendation_tab",
+   "refresh",
+   "save_person",
+   "unsave_person"
+  ],
+  "/referrals": [
+   "copy_link",
+   "referrals_tab"
+  ],
+  "/reputation": [
+   "mark_badges_seen",
+   "reputation_tab"
+  ],
+  "/research/[boardId]": [
+   "ask_canvas_ai"
+  ],
+  "/research": [
+   "archive_board",
+   "board_filter",
+   "delete_board",
+   "duplicate_board",
+   "pin_board",
+   "restore_board",
+   "sort",
+   "unpin_board",
+   "view"
+  ],
+  "/saved-searches": [
+   "alerts_off",
+   "alerts_on",
+   "delete_search",
+   "edit_search",
+   "new_search",
+   "run_search"
+  ],
+  "/scout": [
+   "dismiss_scout_proposal",
+   "restore_scout_proposal",
+   "run_scout",
+   "save_scout_proposal",
+   "scout_tab"
+  ],
+  "/search": [
+   "ask_search_ai",
+   "category",
+   "open_result",
+   "recent_search"
+  ],
+  "/settings/ai": [
+   "creativity",
+   "default_agent",
+   "feature_off",
+   "feature_on",
+   "preferred_model",
+   "response_length",
+   "response_style",
+   "save_ai_preferences"
+  ],
+  "/settings/billing": [
+   "edit_billing_contact",
+   "open_billing_portal",
+   "open_invoice"
+  ],
+  "/settings/data-export": [
+   "download_export",
+   "exclude_category",
+   "include_category"
+  ],
+  "/settings/notifications": [
+   "automation_off",
+   "automation_on",
+   "digest_frequency",
+   "quiet_hours",
+   "save_digest"
+  ],
+  "/settings": [
+   "email_digest",
+   "go_to_section",
+   "in_app_off",
+   "in_app_on",
+   "language",
+   "language_display",
+   "manage_subscription",
+   "set_appear_in_search",
+   "set_message_policy",
+   "set_public_profile",
+   "set_show_name_when_viewing",
+   "theme",
+   "upgrade"
+  ],
+  "/shortlist": [
+   "compare_mode",
+   "remove_saved",
+   "role_filter",
+   "sort",
+   "view"
+  ],
+  "/startups/[id]": [
+   "move_deal_stage"
+  ],
+  "/tenant/analytics": [
+   "period"
+  ],
+  "/tenant/automation": [
+   "automation_tab",
+   "delete_rule",
+   "rule_filter",
+   "run_rule"
+  ],
+  "/tenant/domains": [
+   "remove_domain",
+   "set_primary_domain",
+   "verify_domain"
+  ],
+  "/tenant/members": [
+   "invite_members",
+   "make_",
+   "remove_member",
+   "role_filter",
+   "status_filter"
+  ],
+  "/tenant/programs": [
+   "archive_program",
+   "create_program",
+   "edit_program",
+   "status_filter"
+  ],
+  "/updates": [
+   "copy_update_link",
+   "delete_update",
+   "make_update_followers_only",
+   "make_update_public",
+   "updates_tab"
+  ]
+ },
+ "capabilities": [
+  "analytics_set_period",
+  "apply_to_program",
+  "canvas_command",
+  "close_need_card",
+  "create_event",
+  "create_milestone",
+  "draft_event",
+  "draft_expert_review",
+  "draft_founder_update",
+  "draft_investor_email",
+  "draft_mentor_listing",
+  "draft_milestone",
+  "draft_need_card",
+  "draft_profile",
+  "draft_program_application",
+  "draft_project",
+  "draft_provider_listing",
+  "draft_scout_brief",
+  "express_interest",
+  "follow_person",
+  "get_analytics",
+  "get_availability",
+  "get_bookings",
+  "get_builder_state",
+  "get_commitments",
+  "get_connections",
+  "get_endorsements",
+  "get_events",
+  "get_expert_reviews",
+  "get_founder_updates",
+  "get_fundraising",
+  "get_graph",
+  "get_groups",
+  "get_inquiries",
+  "get_intros",
+  "get_investor_board",
+  "get_invites",
+  "get_jobs",
+  "get_learning",
+  "get_legal_templates",
+  "get_match_detail",
+  "get_mentor_requests",
+  "get_mentors",
+  "get_mentorship_sessions",
+  "get_messages",
+  "get_milestones",
+  "get_moderation_queue",
+  "get_my_programs",
+  "get_notifications",
+  "get_opportunities",
+  "get_org_cohorts",
+  "get_org_members",
+  "get_perks",
+  "get_platform_stats",
+  "get_profile",
+  "get_profile_viewers",
+  "get_programs",
+  "get_readiness",
+  "get_recommendations",
+  "get_reputation",
+  "get_research_boards",
+  "get_scout",
+  "get_services",
+  "get_shortlist",
+  "get_skill_evidence",
+  "get_studio_check",
+  "get_team_gaps",
+  "get_usage_insights",
+  "investor_move_stage",
+  "investor_track_startup",
+  "join_group",
+  "leave_group",
+  "link_skill_evidence",
+  "navigate",
+  "open_rail_section",
+  "pin_shortcut",
+  "readiness_tick_criterion",
+  "request_intro",
+  "respond_to_connection",
+  "respond_to_mentor_request",
+  "rsvp_event",
+  "run_page_command",
+  "run_scout",
+  "search_messages",
+  "search_people",
+  "send_connection",
+  "send_invite",
+  "set_builder_field",
+  "set_investor_followup",
+  "set_language",
+  "set_notification_pref",
+  "set_open_to",
+  "set_pitch_slide",
+  "set_reply_style",
+  "set_theme",
+  "shortlist_add",
+  "shortlist_remove",
+  "start_or_send_message",
+  "triage_notifications",
+  "unpin_shortcut",
+  "update_milestone_status",
+  "update_profile",
+  "use_page_control",
+  "where_is",
+  "workspace_create",
+  "write_endorsement"
+ ]
+}
