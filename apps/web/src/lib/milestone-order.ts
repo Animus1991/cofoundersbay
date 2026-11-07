@@ -48,3 +48,19 @@ export function orderMilestones<T extends Dated>(items: readonly T[], now = Date
     return doneA ? db - da : da - db;
   });
 }
+
+/**
+ * Milestones by the month they fall in, earliest first, for the timeline. The
+ * key is the month of the stored date, in UTC as every date here is, and a
+ * milestone with no date waits at the end under `null`.
+ */
+export function milestoneMonths<T extends { dueDate: string | null }>(items: readonly T[]): { month: string | null; items: T[] }[] {
+  const groups = new Map<string | null, T[]>();
+  for (const item of [...items].sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? ''))) {
+    const month = item.dueDate ? item.dueDate.slice(0, 7) : null;
+    groups.set(month, [...(groups.get(month) ?? []), item]);
+  }
+  const dated = [...groups.entries()].filter(([month]) => month !== null).sort(([a], [b]) => String(a).localeCompare(String(b)));
+  const undated = groups.get(null);
+  return [...dated, ...(undated ? [[null, undated] as const] : [])].map(([month, list]) => ({ month, items: list }));
+}

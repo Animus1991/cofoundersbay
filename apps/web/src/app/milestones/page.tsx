@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Plus, CheckCircle2, Clock, ArrowRight, Edit2, Trash2, RefreshCw, MoreVertical, Search, LayoutGrid, LayoutList, Columns3, X, Share2 } from 'lucide-react';
+import { CalendarRange, Plus, CheckCircle2, Clock, ArrowRight, Edit2, Trash2, RefreshCw, MoreVertical, Search, LayoutGrid, LayoutList, Columns3, X, Share2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -45,7 +45,7 @@ import {
 } from '@/lib/api';
 import { MilestoneFormModal } from './MilestoneFormModal';
 import { qk } from '@/lib/query-keys';
-import { isMilestoneDueSoon, isMilestoneOverdue, orderMilestones } from '@/lib/milestone-order';
+import { isMilestoneDueSoon, isMilestoneOverdue, milestoneMonths, orderMilestones } from '@/lib/milestone-order';
 import { useApiAvailability } from '@/hooks/useApiAvailability';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { elWord } from '@/lib/rows-el';
@@ -280,6 +280,40 @@ const BOARD_STATUSES: MilestoneStatus[] = ['todo', 'in_progress', 'blocked', 'co
  * count it. The cards are the list's own, menu and all; moving one is the
  * card's status action, so the board needs no drag to stay complete.
  */
+/** What falls when: the same cards, by month, for planning a stretch of time (docs §113). */
+function MilestoneTimeline({
+  items,
+  onEdit,
+  onStatusChange,
+  onDelete,
+}: {
+  items: Milestone[];
+  onEdit: (m: Milestone) => void;
+  onStatusChange: (id: string, status: MilestoneStatus) => void;
+  onDelete: (id: string) => void;
+}) {
+  const { primary } = useLanguagePreference();
+  const monthName = (month: string) =>
+    new Date(`${month}-01T00:00:00Z`).toLocaleDateString(primary === 'el' ? 'el-GR' : 'en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  return (
+    <div className="space-y-6" data-milestone-timeline="">
+      {milestoneMonths(items).map(({ month, items: inMonth }) => (
+        <section key={month ?? 'undated'} className="min-w-0 space-y-3">
+          <h2 className="flex items-center gap-2 px-1 text-sm font-medium text-foreground">
+            {month ? monthName(month) : <BilingualText en={milestoneEn('timeline_undated')} el={milestoneEl('timeline_undated')} compact />}
+            <Counter value={inMonth.length} />
+          </h2>
+          <div className="space-y-3 border-l border-border pl-3 sm:pl-4">
+            {inMonth.map((m) => (
+              <MilestoneCard key={m.id} item={m} onEdit={onEdit} onStatusChange={onStatusChange} onDelete={onDelete} />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
 function MilestoneBoard({
   items,
   onEdit,
@@ -385,7 +419,7 @@ export default function MilestonesPage() {
   const [priorityFilter, setPriorityFilter] = useState<MilestonePriority | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'board'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'board' | 'timeline'>('list');
   const [editTarget, setEditTarget] = useState<Milestone | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -537,7 +571,8 @@ export default function MilestonesPage() {
       { value: 'list', en: 'List', el: 'Λίστα' },
       { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
       { value: 'board', en: 'Board by status', el: 'Πίνακας ανά κατάσταση' },
-    ], viewMode, (v) => setViewMode(v as 'list' | 'grid' | 'board')),
+      { value: 'timeline', en: 'Timeline by month', el: 'Χρονολόγιο ανά μήνα' },
+    ], viewMode, (v) => setViewMode(v as 'list' | 'grid' | 'board' | 'timeline')),
     // The row menu's own actions over the rows on screen: set a status
     // (the same update the status menu makes), edit, and delete - which
     // still asks first.
@@ -720,6 +755,13 @@ export default function MilestonesPage() {
                   aria-label={bilingualAria(milestoneEn('view_board'), milestoneEl('view_board'))}
                   aria-pressed={viewMode === 'board'}
                 ><Columns3 className="icon-sm" /></button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('timeline')}
+                  className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'timeline' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+                  aria-label={bilingualAria(milestoneEn('view_timeline'), milestoneEl('view_timeline'))}
+                  aria-pressed={viewMode === 'timeline'}
+                ><CalendarRange className="icon-sm" /></button>
               </div>
               <Button type="button" variant="ghost" size="icon" className={`ml-auto h-8 w-8 ${BUILDER_BTN}`} onClick={() => refetch()} aria-label={bilingualAria(milestoneEn('refresh'), milestoneEl('refresh'))}>
                 <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
@@ -873,6 +915,13 @@ export default function MilestonesPage() {
         ) : (
           viewMode === 'board' ? (
             <MilestoneBoard
+              items={milestones}
+              onEdit={setEditTarget}
+              onStatusChange={handleStatusChange}
+              onDelete={handleDelete}
+            />
+          ) : viewMode === 'timeline' ? (
+            <MilestoneTimeline
               items={milestones}
               onEdit={setEditTarget}
               onStatusChange={handleStatusChange}
