@@ -50,17 +50,32 @@ export function orderMilestones<T extends Dated>(items: readonly T[], now = Date
 }
 
 /**
- * Milestones by the month they fall in, earliest first, for the timeline. The
- * key is the month of the stored date, in UTC as every date here is, and a
- * milestone with no date waits at the end under `null`.
+ * Milestones by the month they fall in, for the timeline. What still needs work
+ * leads: this month and later, and any past month with something open, earliest
+ * first. Then what has no date, and last the past months that are finished,
+ * newest first, so the first screen is never a list of work already done. The
+ * key is the month of the stored date, in UTC as every date here is.
  */
-export function milestoneMonths<T extends { dueDate: string | null }>(items: readonly T[]): { month: string | null; items: T[] }[] {
+export function milestoneMonths<T extends { status: string; dueDate: string | null }>(
+  items: readonly T[],
+  now: Date = new Date(),
+): { month: string | null; items: T[] }[] {
   const groups = new Map<string | null, T[]>();
   for (const item of [...items].sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? ''))) {
     const month = item.dueDate ? item.dueDate.slice(0, 7) : null;
     groups.set(month, [...(groups.get(month) ?? []), item]);
   }
-  const dated = [...groups.entries()].filter(([month]) => month !== null).sort(([a], [b]) => String(a).localeCompare(String(b)));
+  const thisMonth = now.toISOString().slice(0, 7);
+  const done = (list: T[]) => list.every((item) => item.status === 'completed' || item.status === 'cancelled');
+  const dated = [...groups.entries()]
+    .filter((entry): entry is [string, T[]] => entry[0] !== null)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, list]) => ({ month, items: list }));
+  const finished = (group: { month: string; items: T[] }) => group.month < thisMonth && done(group.items);
   const undated = groups.get(null);
-  return [...dated, ...(undated ? [[null, undated] as const] : [])].map(([month, list]) => ({ month, items: list }));
+  return [
+    ...dated.filter((group) => !finished(group)),
+    ...(undated ? [{ month: null, items: undated }] : []),
+    ...dated.filter(finished).reverse(),
+  ];
 }
