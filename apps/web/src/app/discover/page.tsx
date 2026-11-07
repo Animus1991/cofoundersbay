@@ -42,6 +42,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/common/EmptyState';
 import { AnimatedList } from '@/components/common/AnimatedList';
 import { SearchFilters, type SearchFiltersValues } from '@/components/discover/SearchFilters';
+import { DiscoverCurated } from '@/components/discover/DiscoverCurated';
 import { ProfileCard, ProfileCardSkeleton, type ProfileCardData } from '@/components/discover/ProfileCard';
 import { FailedLine } from '@/components/dashboard/SectionCard';
 import { useToast } from '@/components/ui/toast';
@@ -768,6 +769,9 @@ export default function DiscoverPage() {
               })}
             </AnimatedList>
           )}
+
+          {/* For someone browsing: once there is a search, the results are the page. */}
+          {!filters.q.trim() ? <DiscoverCurated /> : null}
         </TabsContent>
 
         {/* Top Matches: the people the engine suggests, best score first,

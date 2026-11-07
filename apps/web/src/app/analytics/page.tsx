@@ -698,12 +698,7 @@ export default function AnalyticsPage() {
                 /></span>
               </p>
 
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {metrics.map((metric) => (
-                  <MetricCard key={metric.label} metric={metric} onOpenTab={setTab} />
-                ))}
-              </div>
-
+              {/* What to do about it comes first: six numbers said nothing until here. */}
               {declining.length > 0 && (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-status-warning-border/50 bg-status-warning-bg/40 p-4">
                   {/* A status callout set like a card head: the title on the
@@ -744,6 +739,12 @@ export default function AnalyticsPage() {
                   </div>
                 </div>
               )}
+
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+                {metrics.map((metric) => (
+                  <MetricCard key={metric.label} metric={metric} onOpenTab={setTab} />
+                ))}
+              </div>
 
               {metrics.length > 0 && <ProfileFunnel metrics={metrics} />}
 

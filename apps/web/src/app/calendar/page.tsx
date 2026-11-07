@@ -507,6 +507,13 @@ export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(now.getUTCMonth());
   const [currentYear, setCurrentYear] = useState(now.getUTCFullYear());
   const [selectedDate, setSelectedDate] = useState(now);
+  // The month sits under the day on a phone, so choosing a date goes back up to it.
+  const selectDay = (date: Date) => {
+    setSelectedDate(date);
+    if (window.matchMedia('(max-width: 639px)').matches) {
+      document.getElementById('calendar-day')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
   const [typeFilter, setTypeFilter] = useState<EventType | 'all'>('all');
   const [view, setView] = useState<'calendar' | 'week' | 'list'>('calendar');
 
@@ -746,8 +753,10 @@ export default function CalendarPage() {
 
         {view === 'calendar' ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
-            {/* Left: Mini calendar */}
-            <div className="space-y-4">
+            {/* Left: Mini calendar. On a phone it follows the day and what is
+                coming: the month filled the first screen, and nobody opens a
+                calendar to look at a grid. */}
+            <div className="space-y-4 max-sm:order-2">
               <Card>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
@@ -764,7 +773,7 @@ export default function CalendarPage() {
                     year={currentYear}
                     month={currentMonth}
                     selectedDate={selectedDate}
-                    onSelectDate={setSelectedDate}
+                    onSelectDate={selectDay}
                     events={filteredEvents}
                   />
                 </CardContent>
@@ -773,7 +782,7 @@ export default function CalendarPage() {
             </div>
 
             {/* Right: Selected day events + upcoming */}
-            <div className="space-y-6">
+            <div id="calendar-day" className="scroll-mt-20 space-y-6 max-sm:order-1">
               {failedParts.length > 0 && !isSample ? (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-status-warning-border bg-status-warning-bg px-4 py-3">
                   <p role="alert" className="text-sm text-foreground">

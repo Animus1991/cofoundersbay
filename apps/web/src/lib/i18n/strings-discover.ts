@@ -5,6 +5,9 @@ import type { BilingualPair } from './types';
  */
 export const DISCOVER_STRINGS: Record<string, BilingualPair> = {
   page_title: { en: 'Explore', el: 'Εξερεύνηση' },
+  curated_events: { en: 'Coming up', el: 'Επόμενες εκδηλώσεις' },
+  curated_groups: { en: 'Popular communities', el: 'Δημοφιλείς κοινότητες' },
+  curated_all: { en: 'See all', el: 'Όλες' },
   page_description: {
     en: 'Discover founders, mentors, investors, and team members',
     el: 'Ανακαλύψτε ιδρυτές, μέντορες, επενδυτές και μέλη ομάδας',
