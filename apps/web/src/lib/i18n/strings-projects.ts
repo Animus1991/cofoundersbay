@@ -107,6 +107,7 @@ export const PROJECT_STRINGS: Record<string, BilingualPair> = {
   step_review: { en: 'Review', el: 'Επισκόπηση' },
   basics_title: { en: 'Basic information', el: 'Βασικά στοιχεία' },
   basics_desc: { en: 'Name the idea and say what done looks like.', el: 'Ονομάστε την ιδέα και πείτε τι σημαίνει «ολοκληρώθηκε».' },
+  field_logo: { en: 'Logo (an https link, optional)', el: 'Λογότυπο (σύνδεσμος https, προαιρετικό)' },
   field_name: { en: 'Project name', el: 'Όνομα έργου' },
   name_ph: { en: 'e.g. Harbor GTM board', el: 'π.χ. Πίνακας GTM του Harbor' },
   field_tagline: { en: 'Tagline', el: 'Σλόγκαν' },

@@ -226,7 +226,7 @@ function UpdatesContent() {
   );
 
   return (
-    <AppShell rail={rail}>
+    <AppShell rail={rail} leadAsHint>
       <div className="space-y-6">
         <Tabs value={tab} onValueChange={(v) => setTab(v === 'mine' ? 'mine' : 'following')} className="space-y-4">
           <TabsList>

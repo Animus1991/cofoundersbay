@@ -526,7 +526,9 @@ export default function SavedSearchesPage() {
           />
         ) : (
           <div className="space-y-3">
-            {searches.map((search) => (
+            {/* The searches with new results first (docs §115); the rest keep the
+                API's order (the sort is stable). */}
+            {[...searches].sort((x, y) => Number((y.newResults ?? 0) > 0) - Number((x.newResults ?? 0) > 0)).map((search) => (
               <SearchCard
                 key={search.id}
                 search={search}

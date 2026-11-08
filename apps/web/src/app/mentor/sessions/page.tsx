@@ -50,7 +50,12 @@ type SessionActions = {
   onNotes: (s: MentorshipSessionItem) => void;
 };
 
-function SessionCard({ session, next = false, onReschedule, onCancel, onNotes }: { session: MentorshipSessionItem; next?: boolean } & SessionActions) {
+function SessionCard({ session, next = false, counterpart, onReschedule, onCancel, onNotes }: {
+  session: MentorshipSessionItem;
+  next?: boolean;
+  /** The mentee, whose face sits on the date tile as it does on /coaching (docs §115). */
+  counterpart?: { displayName: string; avatarUrl: string | null } | null;
+} & SessionActions) {
   const statusColors: Record<string, string> = {
     scheduled: 'bg-status-info-bg text-status-info border-status-info-border',
     completed: 'bg-status-success-bg text-status-success border-status-success-border',
@@ -69,7 +74,7 @@ function SessionCard({ session, next = false, onReschedule, onCancel, onNotes }:
     <Card className="transition-all hover:border-primary/20">
       <CardContent className="space-y-3">
         <CardHead
-          mark={<SessionDateTile date={scheduledDate} />}
+          mark={<SessionDateTile date={scheduledDate} face={counterpart ? { src: counterpart.avatarUrl, name: counterpart.displayName } : null} />}
           title={session.title || <BilingualText en="Mentorship session" el="Συνεδρία καθοδήγησης" compact />}
           subtitle={formattedTime}
           aside={(
@@ -279,7 +284,7 @@ export default function MentorSessionsPage() {
   const nextKey = upcomingRows[0]?.key;
   const renderRow = (u: UnifiedSession) =>
     u.source === 'mentorship' && u.session ? (
-      <SessionCard key={u.key} session={u.session} next={u.key === nextKey} {...actions} />
+      <SessionCard key={u.key} session={u.session} next={u.key === nextKey} counterpart={u.counterpart} {...actions} />
     ) : u.booking ? (
       <BookingCard
         key={u.key}

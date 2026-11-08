@@ -165,6 +165,25 @@ const CATEGORY_CONFIG: Record<
   },
 };
 
+const TYPE_CATEGORY: Record<SearchResult['type'], Exclude<SearchCategory, 'all' | 'mentors'>> = {
+  user: 'people',
+  job: 'jobs',
+  event: 'events',
+  group: 'groups',
+  opportunity: 'opportunities',
+};
+
+/** The hits as groups of one kind each, in the order each kind first appears; one unnamed group when not grouping. */
+function groupResults(rows: SearchResult[], byKind: boolean): Array<{ key: string; label: { en: string; el: string } | null; rows: SearchResult[] }> {
+  if (!byKind) return [{ key: 'all', label: null, rows }];
+  const groups = new Map<SearchResult['type'], SearchResult[]>();
+  for (const row of rows) groups.set(row.type, [...(groups.get(row.type) ?? []), row]);
+  return [...groups.entries()].map(([type, list]) => {
+    const config = CATEGORY_CONFIG[TYPE_CATEGORY[type]];
+    return { key: type, label: { en: config.labelEn, el: config.labelEl }, rows: list };
+  });
+}
+
 function SearchResultSkeleton() {
   return (
     <div className="flex items-start gap-4 p-4 border-b border-border">
@@ -663,9 +682,22 @@ export default function SearchPage() {
                   />
                 </p>
               </div>
-              <div className="space-y-3">
-                {results.filter((result) => Boolean(result?.href)).map((result) => (
-                  <ResultCard key={`${result.type}-${result.id}`} result={result} />
+              {/* Under "All", one group per kind, in the order the most
+                  relevant hit of each came (docs §115); each row is the same
+                  card. A single kind is one list, as before. */}
+              <div className="space-y-6">
+                {groupResults(results.filter((result) => Boolean(result?.href)), category === 'all').map((group) => (
+                  <section key={group.key} className="space-y-3" aria-labelledby={group.label ? `search-group-${group.key}` : undefined} data-search-group={group.key}>
+                    {group.label ? (
+                      <h2 id={`search-group-${group.key}`} className="text-xs font-medium text-muted-foreground">
+                        <BilingualText en={group.label.en} el={group.label.el} compact />
+                        <span className="ml-1.5 tabular-nums">{group.rows.length}</span>
+                      </h2>
+                    ) : null}
+                    {group.rows.map((result) => (
+                      <ResultCard key={`${result.type}-${result.id}`} result={result} />
+                    ))}
+                  </section>
                 ))}
               </div>
             </>

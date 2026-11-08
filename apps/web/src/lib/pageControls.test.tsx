@@ -519,6 +519,8 @@ describe('pages that offer controls', () => {
       'src/components/research/BoardExport.tsx': 'an export-format menu inside the canvas',
       'src/components/research/BoardSettingsPanel.tsx': 'canvas settings, not a list',
       'src/components/builder/BranchPanel.tsx': 'builder branch tools, reached through the builder capabilities',
+      // §115: on a phone the toolbar's four buttons are one menu; neither form is a list row.
+      'src/components/builder/CollabToolbar.tsx': 'the document toolbar (history, variants, proposals, share) folded into one menu on a phone; builder tools, as BranchPanel',
       'src/components/social/ShareButton.tsx': 'share targets that leave the app',
       'src/components/common/CardMoreMenu.tsx': 'the shared menu; each page that hands it actions registers them as its own controls',
       'src/components/common/ThemeToggle.tsx': 'app chrome',

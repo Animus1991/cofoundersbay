@@ -1,5 +1,8 @@
 'use client';
 
+import { CoverImage } from '@/components/common/CoverImage';
+import { openFirst } from '@/lib/program-order';
+import { demoCover } from '@/lib/demo/photos';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
@@ -68,6 +71,7 @@ function toPageProgram(item: ProgramItem): Program {
     capacity: item.capacity ?? 0,
     enrolled: item.participantCount,
     description: item.description ?? undefined,
+    coverImageUrl: item.coverImageUrl ?? null,
   };
 }
 
@@ -83,6 +87,7 @@ type Program = {
   capacity: number;
   enrolled: number;
   description?: string;
+  coverImageUrl?: string | null;
 };
 
 const ORG_PROGRAM_STATUS_TONE: Record<Program['status'], StatusTone> = {
@@ -175,6 +180,8 @@ function ProgramCard({ program, sample = false }: { program: Program; /** A samp
 
   return (
     <Card className="transition-all hover:border-primary/30">
+      {/* The programme's picture, as on /programs; a sample one gets the demo's. */}
+      <CoverImage src={program.coverImageUrl ?? (sample ? demoCover(program.id, 960, 320, [program.name, program.type]) : null)} className="rounded-t-[inherit]" />
       <CardContent className="space-y-3">
         <CardHead
           mark={(
@@ -277,7 +284,7 @@ export default function OrgProgramsPage() {
     const matchesSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
     return matchesSearch && matchesStatus;
-  });
+  }).sort(openFirst);
 
   const filtersActive = !!search || statusFilter !== 'all';
   const clearFilters = () => { setSearch(''); setStatusFilter('all'); };

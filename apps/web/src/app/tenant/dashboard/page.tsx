@@ -23,6 +23,7 @@ import { formatRelativeTime, initialsOf } from '@/lib/utils';
 import { getTenantMembers, listEvents, listOrganizationPrograms } from '@/lib/api';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
+import { HomeToday } from '@/components/dashboard/HomeToday';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { EmptyLine, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
@@ -156,6 +157,8 @@ export default function TenantDashboardPage() {
       }
     >
       <div className="space-y-6">
+        {/* What waits on the reader, as on every role's home (docs §115). */}
+        <HomeToday />
         {upcomingEvents[0] ? (
           <HomeNextStep
             kickerEn="Next event"

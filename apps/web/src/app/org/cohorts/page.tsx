@@ -40,6 +40,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { EmptyOrgCohorts, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { CoverImage } from '@/components/common/CoverImage';
+import { openFirst } from '@/lib/program-order';
+import { demoCover } from '@/lib/demo/photos';
 import { FactLine } from '@/components/common/FactLine';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
@@ -95,6 +98,7 @@ function toPageCohort(item: CohortItem): Cohort {
       start != null && end != null && end > start
         ? Math.max(0, Math.min(100, Math.round(((now - start) / (end - start)) * 100)))
         : 0,
+    coverImageUrl: item.imageUrl ?? null,
   };
 }
 
@@ -111,6 +115,8 @@ type Cohort = {
   progress: number;
   avgReadiness?: number;
   mentorCoverage?: number; // % of startups with assigned mentor
+  /** The cohort's picture; a sample cohort gets the demo's. */
+  coverImageUrl?: string | null;
 };
 
 const COHORT_STATUS_TONE: Record<Cohort['status'], StatusTone> = {
@@ -119,7 +125,7 @@ const COHORT_STATUS_TONE: Record<Cohort['status'], StatusTone> = {
   completed: 'neutral',
 };
 
-function CohortCard({ cohort }: { cohort: Cohort }) {
+function CohortCard({ cohort, sample = false }: { cohort: Cohort; sample?: boolean }) {
   const statusColors = STATUS[COHORT_STATUS_TONE[cohort.status]];
   // The Programs card: the cohort's rounded square, its name over the
   // programme, the state and the menu at the right; the facts and the
@@ -157,6 +163,8 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
 
   return (
     <Card className="transition-all hover:border-primary/30">
+      {/* The cover on the running cohort only (docs §115): the one the page is for. */}
+      <CoverImage src={cohort.status === 'active' ? cohort.coverImageUrl ?? (sample ? demoCover(cohort.id, 960, 320, [cohort.name, cohort.program]) : null) : null} className="rounded-t-[inherit] sm:max-h-40" />
       <CardContent className="space-y-3">
         <CardHead
           mark={(
@@ -278,7 +286,7 @@ export default function OrgCohortsPage() {
       c.program.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
     return matchesSearch && matchesStatus;
-  });
+  }).sort(openFirst);
 
   // Offered to the assistant: the status filter, opening a cohort, and the
   // cohorts on screen. Editing and archiving stay with platform admins (the
@@ -405,7 +413,7 @@ export default function OrgCohortsPage() {
         {/* Cohorts List */}
         <div className="space-y-3">
           {filteredCohorts.map((cohort) => (
-            <CohortCard key={cohort.id} cohort={cohort} />
+            <CohortCard key={cohort.id} cohort={cohort} sample={isSample} />
           ))}
           {reading && cohorts.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="h-32" />)}
           {!reading && filteredCohorts.length === 0 && (

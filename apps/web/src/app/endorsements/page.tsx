@@ -602,7 +602,7 @@ export default function EndorsementsPage() {
   const loadingList = !showDemoData && (tab === 'received' ? receivedLoading : givenLoading);
 
   return (
-    <AppShell rail={rail}>
+    <AppShell rail={rail} leadAsHint>
       <div className="space-y-6 pb-10">
         <NetworkTabs />
         {showDemoData && (

@@ -344,7 +344,7 @@ export function LandingHome() {
             eyebrow={{ en: 'What protects you', el: 'Τι σας προστατεύει' }}
             title={{ en: 'Checked before it is published, protected while you talk', el: 'Ελέγχεται πριν δημοσιευτεί, προστατεύεται όσο μιλάτε' }}
           />
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <ul className="sm:grid sm:grid-cols-2 gap-4 xl:grid-cols-4 max-sm:-mx-6 max-sm:flex max-sm:snap-x max-sm:overflow-x-auto max-sm:px-6 max-sm:pb-2 max-sm:*:w-72 max-sm:*:shrink-0 max-sm:*:snap-start">
             {PROTECTIONS.map(({ icon: Icon, title, desc }) => (
               <li key={title.en} className="min-w-0 space-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5">
                 {/* The Endorsements card's head: a 2.5rem mark beside the
@@ -415,7 +415,7 @@ export function LandingHome() {
             eyebrow={{ en: 'Roles', el: 'Ρόλοι' }}
             title={{ en: 'Built for every role in a founding team’s first year', el: 'Φτιαγμένο για κάθε ρόλο στον πρώτο χρόνο μιας ιδρυτικής ομάδας' }}
           />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="sm:grid sm:grid-cols-2 gap-4 lg:grid-cols-4 max-sm:-mx-6 max-sm:flex max-sm:snap-x max-sm:overflow-x-auto max-sm:px-6 max-sm:pb-2 max-sm:*:w-72 max-sm:*:shrink-0 max-sm:*:snap-start">
             {PERSONAS.map(({ icon: Icon, role, headline, bullets, join, start }) => (
               <Card key={role.en} className="h-full">
                 <CardHeader className="pb-3">
@@ -450,7 +450,7 @@ export function LandingHome() {
             title={{ en: 'What is built, and where to try it', el: 'Τι έχει χτιστεί, και πού να το δοκιμάσετε' }}
             lead={{ en: 'You can try each of them in the demo.', el: 'Μπορείτε να δοκιμάσετε καθένα από αυτά στο demo.' }}
           />
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="sm:grid sm:grid-cols-2 gap-5 lg:grid-cols-3 max-sm:-mx-6 max-sm:flex max-sm:snap-x max-sm:overflow-x-auto max-sm:px-6 max-sm:pb-2 max-sm:*:w-72 max-sm:*:shrink-0 max-sm:*:snap-start">
             {FEATURES.map(({ icon: Icon, title, desc }) => (
               <div key={title.en} className="min-w-0 space-y-3 rounded-2xl border border-border bg-card/70 p-4 sm:p-5">
                 <CardHead

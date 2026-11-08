@@ -37,6 +37,7 @@ export const ACHIEVEMENTS_STRINGS: Record<string, BilingualPair> = {
 
   // ── Achievement card ──
   progress: { en: 'Progress', el: 'Πρόοδος' },
+  next_badge: { en: 'Next badge', el: 'Επόμενο έμβλημα' },
   have_this: { en: 'have this', el: 'έχουν αυτό' },
   unlocked_on: { en: 'Unlocked', el: 'Ξεκλειδώθηκε' },
 

@@ -253,6 +253,39 @@ export default function ReputationPage() {
     },
   ]);
 
+  // How to earn more, next to the score it explains, not at the end of the page.
+  const tipsCard = (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="icon-sm text-muted-foreground" aria-hidden />
+              <BilingualText en={reputationEn('tips_title')} el={reputationEl('tips_title')} />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Columns 24px apart: each tip's hover surface reaches 12px past its text. */}
+            <div className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+              {(
+                [
+                  { icon: Hammer, tone: 'text-status-info bg-status-info-bg', title: 'tip_build_title', desc: 'tip_build_desc', href: '/builder' },
+                  { icon: Target, tone: 'text-status-success bg-status-success-bg', title: 'tip_milestone_title', desc: 'tip_milestone_desc', href: '/milestones' },
+                  { icon: Zap, tone: 'text-status-accent bg-status-accent-bg', title: 'tip_feedback_title', desc: 'tip_feedback_desc', href: '/expert-reviews' },
+                ] as const
+              ).map((tip) => {
+                return (
+                  <Link key={tip.title} href={tip.href} className="axis-row flex gap-3 rounded-md py-2.5 transition-colors hover:bg-accent">
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium"><BilingualText en={reputationEn(tip.title)} el={reputationEl(tip.title)} /></span>
+                      <span className="mt-0.5 block text-xs text-muted-foreground"><BilingualText en={reputationEn(tip.desc)} el={reputationEl(tip.desc)} /></span>
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+  );
+
   return (
     <AppShell
       actions={
@@ -370,6 +403,8 @@ export default function ReputationPage() {
                 )}
               </CardContent>
             </Card>
+
+            {tipsCard}
 
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
               <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-none border-b bg-transparent p-0">
@@ -523,36 +558,7 @@ export default function ReputationPage() {
           </>
         )}
 
-        {/* Tips — kept, and now they describe the real ladder rather than "get likes". */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="icon-sm text-muted-foreground" aria-hidden />
-              <BilingualText en={reputationEn('tips_title')} el={reputationEl('tips_title')} />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Columns 24px apart: each tip's hover surface reaches 12px past its text. */}
-            <div className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
-              {(
-                [
-                  { icon: Hammer, tone: 'text-status-info bg-status-info-bg', title: 'tip_build_title', desc: 'tip_build_desc', href: '/builder' },
-                  { icon: Target, tone: 'text-status-success bg-status-success-bg', title: 'tip_milestone_title', desc: 'tip_milestone_desc', href: '/milestones' },
-                  { icon: Zap, tone: 'text-status-accent bg-status-accent-bg', title: 'tip_feedback_title', desc: 'tip_feedback_desc', href: '/expert-reviews' },
-                ] as const
-              ).map((tip) => {
-                return (
-                  <Link key={tip.title} href={tip.href} className="axis-row flex gap-3 rounded-md py-2.5 transition-colors hover:bg-accent">
-                    <span className="min-w-0">
-                      <span className="block text-sm font-medium"><BilingualText en={reputationEn(tip.title)} el={reputationEl(tip.title)} /></span>
-                      <span className="mt-0.5 block text-xs text-muted-foreground"><BilingualText en={reputationEn(tip.desc)} el={reputationEl(tip.desc)} /></span>
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+        {failed ? tipsCard : null}
       </div>
     </AppShell>
   );

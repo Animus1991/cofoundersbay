@@ -128,6 +128,7 @@ export const MILESTONE_STRINGS: Record<string, BilingualPair> = {
   fail_delete: { en: 'Failed to delete', el: 'Αποτυχία διαγραφής' },
   try_again: { en: 'Please try again', el: 'Δοκιμάστε ξανά' },
   creating: { en: 'Creating…', el: 'Δημιουργία…' },
+  more_details: { en: 'More details', el: 'Περισσότερα στοιχεία' },
   due_optional: { en: 'Due date (optional)', el: 'Προθεσμία (προαιρετικό)' },
   // A colon, so the Greek needs no case agreement with the page names after it.
   link_into: { en: 'Connected pages:', el: 'Συνδεδεμένες σελίδες:' },

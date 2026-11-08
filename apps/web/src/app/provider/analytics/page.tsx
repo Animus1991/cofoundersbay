@@ -230,6 +230,14 @@ export default function ProviderAnalyticsPage() {
     return sayOne(fmt('en-GB'), fmt('el-GR'));
   };
   const inquiryChange = changeVs(book.inquiries, bookBefore.inquiries);
+  // What the figures say, before the figures (docs §115): the window's
+  // inquiries against the window before, from the same rows as the cards.
+  const conclusion = bookRead && (book.inquiries > 0 || bookBefore.inquiries > 0)
+    ? {
+        en: `${book.inquiries} ${book.inquiries === 1 ? 'inquiry' : 'inquiries'} in this period, ${book.inquiries === bookBefore.inquiries ? 'the same as' : book.inquiries > bookBefore.inquiries ? 'up from' : 'down from'} ${bookBefore.inquiries} the period before.`,
+        el: `Αιτήματα αυτή την περίοδο: ${book.inquiries}· την προηγούμενη: ${bookBefore.inquiries}.`,
+      }
+    : null;
   const valueChange = changeVs(book.agreedValue, bookBefore.agreedValue);
   // Relative, like the other cards ("N% vs last period"), not points.
   const responseChange = changeVs(book.responseRate, bookBefore.responseRate);
@@ -483,6 +491,12 @@ export default function ProviderAnalyticsPage() {
           />
         </p>
         )}
+
+        {conclusion ? (
+          <p className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground" data-analytics-conclusion="">
+            <BilingualText en={conclusion.en} el={conclusion.el} compact wrap />
+          </p>
+        ) : null}
 
         {/* The book: counted from the inquiries in both modes (docs §97). */}
         {bookFailed ? (

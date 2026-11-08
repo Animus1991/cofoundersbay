@@ -384,8 +384,11 @@ export default function MatchDetailPage() {
           )}
         </div>
 
+        {/* On a phone the reasons and the shared strengths come first and the
+            axes and the frictions after them (docs §115): the first screen
+            says why, the rest how. Two columns from lg, as before. */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
+          <div className="space-y-6 lg:col-span-2 max-lg:order-3">
             <SectionCard title="Core compatibility" titleEl="Βασική συμβατότητα" icon={ListChecks} contentClassName="space-y-4">
               {breakdown.map((item) => <FactorRow key={item.key} item={item} />)}
             </SectionCard>
@@ -395,9 +398,9 @@ export default function MatchDetailPage() {
               <CompatibilityList comparison={compatibility} answeredByYou={myCompat.data?.answered} />
             </SectionCard>
           </div>
-          <div className="space-y-6">
+          <div className="max-lg:contents lg:space-y-6">
             {data.reasons.length > 0 && (
-              <SectionCard title="Why this match" titleEl="Γιατί ταιριάζετε" icon={ThumbsUp} contentClassName="space-y-3">
+              <SectionCard className="max-lg:order-1" title="Why this match" titleEl="Γιατί ταιριάζετε" icon={ThumbsUp} contentClassName="space-y-3">
                 {data.reasons.map((r) => (
                   <p key={r} className="card-body flex items-start gap-2.5 text-muted-foreground">
                     <CheckCircle className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
@@ -407,7 +410,7 @@ export default function MatchDetailPage() {
               </SectionCard>
             )}
             {sharedStrengths.length > 0 && (
-              <SectionCard title="Shared strengths" titleEl="Κοινά δυνατά σημεία">
+              <SectionCard className="max-lg:order-2" title="Shared strengths" titleEl="Κοινά δυνατά σημεία">
                 <div className="flex flex-wrap gap-2">
                   {strengthTerms(sharedStrengths).map((term) => (
                     <Badge key={term.en} variant="success" className="gap-1">
@@ -419,7 +422,7 @@ export default function MatchDetailPage() {
               </SectionCard>
             )}
             {frictionPoints.length > 0 && (
-              <SectionCard title="Potential friction" titleEl="Πιθανές τριβές" icon={AlertTriangle} contentClassName="space-y-0 divide-y divide-border">
+              <SectionCard className="max-lg:order-4" title="Potential friction" titleEl="Πιθανές τριβές" icon={AlertTriangle} contentClassName="space-y-0 divide-y divide-border">
                 {/* Rows on the card, not warning tiles in it: the glyph in
                     front of the title, the advice under it on the card's
                     axis. */}

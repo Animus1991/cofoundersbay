@@ -16,9 +16,9 @@ import { cn } from '@/lib/utils';
  * the progress bar, so the figure on the card is a fact rather than a guess.
  * Closed by default: a card with no open steps reads as it did.
  */
-export function MilestoneChecklist({ steps, onChange }: { steps: MilestoneStep[]; onChange: (next: MilestoneStep[]) => void }) {
+export function MilestoneChecklist({ steps, onChange, defaultOpen = false }: { steps: MilestoneStep[]; onChange: (next: MilestoneStep[]) => void; defaultOpen?: boolean }) {
   const say = useBilingualString();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [text, setText] = useState('');
   const done = steps.filter((step) => step.done).length;
   const full = steps.length >= MILESTONE_STEP_LIMITS.steps;

@@ -22,6 +22,8 @@ import { requiredCompletion, type ApplicationTemplate } from './application-mode
  * surface already has a rail of its own and a second one would overwrite it.
  * Same controls, two homes — never both on the same screen.
  */
+const PICKER_ORDER: Record<ApplicationTemplate['status'], number> = { 'in-progress': 0, completed: 1, submitted: 2, draft: 3 };
+
 export function ApplicationProgramsChrome({
   applications,
   activeApp,
@@ -76,9 +78,14 @@ export function ApplicationProgramsChrome({
     }
   };
 
+  // The applications being worked on first, the untouched templates under
+  // them (docs §115). Only the order on screen: the list itself, and what is
+  // saved, keep theirs. The sort is stable.
+  const shown = [...applications].sort((a, b) => PICKER_ORDER[a.status] - PICKER_ORDER[b.status]);
+
   const picker = (
     <div className={layout === 'cards' ? 'grid grid-cols-1 gap-4 md:grid-cols-2' : 'space-y-2'}>
-      {applications.map((app) => {
+      {shown.map((app) => {
         const completion = requiredCompletion(app);
         const on = activeApp === app.id;
         return (

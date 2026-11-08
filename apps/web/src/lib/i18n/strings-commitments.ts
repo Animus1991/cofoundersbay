@@ -37,6 +37,7 @@ export const CMT = {
   exists: { en: 'What already exists', el: 'Τι υπάρχει ήδη' },
   goal: { en: 'The outcome it is for', el: 'Το αποτέλεσμα που επιδιώκεται' },
   missing: { en: 'Who is missing', el: 'Ποιος λείπει' },
+  sentences_how: { en: 'What each sentence says', el: 'Τι λέει κάθε πρόταση' },
   exists_hint: { en: 'One sentence: product, traction, money already in.', el: 'Μία πρόταση: προϊόν, έλξη, χρήματα που έχουν ήδη μπει.' },
   goal_hint: { en: 'One sentence: what this person helps reach, and by when.', el: 'Μία πρόταση: τι βοηθά να πετύχετε αυτό το πρόσωπο και έως πότε.' },
   missing_hint: { en: 'One sentence: the person, by what they have done.', el: 'Μία πρόταση: το πρόσωπο, με βάση όσα έχει κάνει.' },

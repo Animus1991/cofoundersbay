@@ -17,10 +17,30 @@ import { TransparencyService } from '../transparency/transparency.service';
  */
 
 const personSelect = { id: true, profile: { select: { displayName: true, headline: true, avatarUrl: true } } } as const;
-type PersonRow = { id: string; profile: { displayName: string | null; headline: string | null; avatarUrl: string | null } | null };
+type PersonRow = {
+  id: string;
+  profile: { displayName: string | null; headline: string | null; avatarUrl: string | null } | null;
+  builderWorkspacesOwned?: Array<{ logoUrl: string | null }>;
+};
+
+/**
+ * An update's author, with the logo of the company they are building (docs
+ * §115): an update has no picture of its own, and the founder's workspace
+ * logo is the one the rest of the product already shows for that company.
+ */
+const authorSelect = {
+  ...personSelect,
+  builderWorkspacesOwned: { where: { logoUrl: { not: null } }, select: { logoUrl: true }, orderBy: { updatedAt: 'desc' }, take: 1 },
+} as const;
 
 function person(p: PersonRow | null | undefined) {
-  return { id: p?.id ?? '', displayName: p?.profile?.displayName ?? 'Member', headline: p?.profile?.headline ?? null, avatarUrl: p?.profile?.avatarUrl ?? null };
+  return {
+    id: p?.id ?? '',
+    displayName: p?.profile?.displayName ?? 'Member',
+    headline: p?.profile?.headline ?? null,
+    avatarUrl: p?.profile?.avatarUrl ?? null,
+    logoUrl: p?.builderWorkspacesOwned?.[0]?.logoUrl ?? null,
+  };
 }
 
 function metricsOf(row: FounderUpdate): Array<{ label: string; value: string }> {
@@ -118,7 +138,7 @@ export class FounderUpdatesService {
         publicToken: v.visibility === 'public' ? randomBytes(12).toString('base64url') : null,
         milestoneId: v.milestoneId,
       },
-      include: { author: { select: personSelect } },
+      include: { author: { select: authorSelect } },
     });
     const followers = await this.prisma.userFollow.findMany({ where: { followingId: authorId }, select: { followerId: true }, take: 500 });
     const name = (row.author as PersonRow | null)?.profile?.displayName ?? 'A founder you follow';
@@ -131,7 +151,7 @@ export class FounderUpdatesService {
   }
 
   async mine(authorId: string) {
-    const rows = await this.prisma.founderUpdate.findMany({ where: { authorId }, include: { author: { select: personSelect } }, orderBy: { createdAt: 'desc' }, take: 100 });
+    const rows = await this.prisma.founderUpdate.findMany({ where: { authorId }, include: { author: { select: authorSelect } }, orderBy: { createdAt: 'desc' }, take: 100 });
     return { updates: rows.map((r) => this.shape(r, authorId)) };
   }
 
@@ -140,7 +160,7 @@ export class FounderUpdatesService {
     const follows = await this.prisma.userFollow.findMany({ where: { followerId: viewerId }, select: { followingId: true } });
     const ids = follows.map((f) => f.followingId);
     if (!ids.length) return { updates: [] };
-    const rows = await this.prisma.founderUpdate.findMany({ where: { authorId: { in: ids } }, include: { author: { select: personSelect } }, orderBy: { createdAt: 'desc' }, take: 50 });
+    const rows = await this.prisma.founderUpdate.findMany({ where: { authorId: { in: ids } }, include: { author: { select: authorSelect } }, orderBy: { createdAt: 'desc' }, take: 50 });
     return { updates: rows.map((r) => this.shape(r, viewerId)) };
   }
 
@@ -156,12 +176,12 @@ export class FounderUpdatesService {
       ? null
       : await this.prisma.userFollow.findUnique({ where: { followerId_followingId: { followerId: viewerId, followingId: authorId } } });
     const where: Prisma.FounderUpdateWhereInput = own || follows ? { authorId } : { authorId, visibility: 'public' };
-    const rows = await this.prisma.founderUpdate.findMany({ where, include: { author: { select: personSelect } }, orderBy: { createdAt: 'desc' }, take: 20 });
+    const rows = await this.prisma.founderUpdate.findMany({ where, include: { author: { select: authorSelect } }, orderBy: { createdAt: 'desc' }, take: 20 });
     return { updates: rows.map((r) => this.shape(r, viewerId)), following: own ? null : Boolean(follows) };
   }
 
   async get(viewerId: string, id: string) {
-    const row = await this.prisma.founderUpdate.findUnique({ where: { id }, include: { author: { select: personSelect } } });
+    const row = await this.prisma.founderUpdate.findUnique({ where: { id }, include: { author: { select: authorSelect } } });
     if (!row) throw new NotFoundException('Update not found');
     if (row.authorId !== viewerId && row.visibility !== 'public') {
       const follows = await this.prisma.userFollow.findUnique({ where: { followerId_followingId: { followerId: viewerId, followingId: row.authorId } } });
@@ -172,10 +192,10 @@ export class FounderUpdatesService {
 
   /** No account needed; no ids in the answer. */
   async getPublic(token: string) {
-    const row = await this.prisma.founderUpdate.findUnique({ where: { publicToken: token }, include: { author: { select: personSelect } } });
+    const row = await this.prisma.founderUpdate.findUnique({ where: { publicToken: token }, include: { author: { select: authorSelect } } });
     if (!row || row.visibility !== 'public') throw new NotFoundException('This update is not public');
     const { id: _id, author, mine: _mine, publicToken: _t, milestoneId: _m, ...rest } = this.shape(row, null);
-    return { update: { ...rest, author: { displayName: author.displayName, headline: author.headline, avatarUrl: author.avatarUrl } } };
+    return { update: { ...rest, author: { displayName: author.displayName, headline: author.headline, avatarUrl: author.avatarUrl, logoUrl: author.logoUrl } } };
   }
 
   async setVisibility(authorId: string, id: string, visibility: unknown) {
@@ -186,7 +206,7 @@ export class FounderUpdatesService {
     const updated = await this.prisma.founderUpdate.update({
       where: { id },
       data: { visibility: next, publicToken: next === 'public' ? (row.publicToken ?? randomBytes(12).toString('base64url')) : null },
-      include: { author: { select: personSelect } },
+      include: { author: { select: authorSelect } },
     });
     return { update: this.shape(updated, authorId) };
   }

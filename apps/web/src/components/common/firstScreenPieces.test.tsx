@@ -3,6 +3,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { CardMoreMenu } from './CardMoreMenu';
 import { CoverImage } from './CoverImage';
 import { InfoHint } from './InfoHint';
+import { PhoneFold } from './PhoneFold';
+import { SessionDateTile } from '@/components/mentoring/SessionDateTile';
 
 vi.mock('@/components/common/BilingualText', () => ({ BilingualText: ({ en }: { en: string }) => <span>{en}</span> }));
 vi.mock('next/link', () => ({ default: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a> }));
@@ -15,6 +17,8 @@ vi.mock('@/components/ui/dropdown-menu', () => ({
     asChild ? <>{children}</> : <div role="menuitem" onClick={onSelect}>{children}</div>
   ),
 }));
+
+vi.mock('@/lib/i18n/useDateFormat', () => ({ useDateFormat: () => (d: Date, o?: Intl.DateTimeFormatOptions) => d.toLocaleDateString('en-GB', { ...o, timeZone: 'UTC' }) }));
 
 afterEach(cleanup);
 
@@ -60,5 +64,27 @@ describe('a picture across a card', () => {
   it('is nothing without a source', () => {
     const { container } = render(<CoverImage src={null} />);
     expect(container.firstChild).toBeNull();
+  });
+});
+
+describe('a section folded on a phone', () => {
+  it('opens by itself when what it holds was filled, and keeps its fields mounted while closed', () => {
+    const { rerender } = render(<PhoneFold title={{ en: 'More details', el: 'Περισσότερα στοιχεία' }}><input aria-label="Notes" /></PhoneFold>);
+    const fold = document.querySelector('[data-phone-fold]') as HTMLElement;
+    expect(fold.dataset.phoneFold).toBe('closed');
+    expect(screen.getByLabelText('Notes')).toBeTruthy();
+    rerender(<PhoneFold title={{ en: 'More details', el: 'Περισσότερα στοιχεία' }} openWhen><input aria-label="Notes" /></PhoneFold>);
+    expect(fold.dataset.phoneFold).toBe('open');
+    expect(screen.getByRole('button', { name: 'More details' }).getAttribute('aria-expanded')).toBe('true');
+  });
+});
+
+describe('the date a session opens with', () => {
+  it('carries the other person on its corner, and only when there is one', () => {
+    const { container, rerender } = render(<SessionDateTile date={new Date('2026-11-12T10:00:00Z')} />);
+    expect(container.querySelector('[data-session-face]')).toBeNull();
+    expect(container.textContent).toContain('12');
+    rerender(<SessionDateTile date={new Date('2026-11-12T10:00:00Z')} face={{ src: null, name: 'Elena Papadopoulos' }} />);
+    expect(container.querySelector('[data-session-face]')?.textContent).toBe('EP');
   });
 });

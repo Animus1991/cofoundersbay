@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useCoverFailed } from '@/hooks/useCoverFailed';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +24,30 @@ export function CoverImage({ src, eager = false, className }: { src: string | nu
       referrerPolicy="no-referrer"
       data-cover=""
       className={cn('aspect-[3/1] w-full object-cover max-sm:h-28 max-sm:aspect-auto', className)}
+    />
+  );
+}
+
+/**
+ * The same picture, small, in a row (docs §115): where a list is a column of
+ * full-width rows, a 3:1 band would make each row a screen tall, so the cover
+ * stands in the row's mark place instead. Without a picture, or when it fails,
+ * the row's own mark shows, as before.
+ */
+export function CoverThumb({ src, fallback }: { src: string | null | undefined; fallback: ReactNode }) {
+  const cover = useCoverFailed(src);
+  if (!src || cover.failed) return <>{fallback}</>;
+  return (
+    <img
+      ref={cover.ref}
+      onError={cover.onError}
+      src={src}
+      alt=""
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      data-cover-thumb=""
+      data-card-mark=""
+      className="h-10 w-16 shrink-0 rounded-lg object-cover"
     />
   );
 }

@@ -11,15 +11,23 @@ import { cn } from '@/lib/utils';
  * assistant lands on something visible. Closing hides it only with CSS: every
  * field stays mounted, so nothing typed or loaded is lost.
  */
-export function PhoneFold({ title, anchor, defaultOpen = false, children, className }: {
+export function PhoneFold({ title, anchor, defaultOpen = false, openWhen = false, children, className }: {
   title: { en: string; el: string };
   /** The id inside it that a link may point to. */
   anchor?: string;
   defaultOpen?: boolean;
+  /** Opens it when this turns true: a form's optional fields that a draft filled are not left hidden. */
+  openWhen?: boolean;
   children: ReactNode;
   className?: string;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = useState(defaultOpen || openWhen);
+  // Opened when `openWhen` turns true, during render rather than in an effect.
+  const [sawOpenWhen, setSawOpenWhen] = useState(openWhen);
+  if (openWhen !== sawOpenWhen) {
+    setSawOpenWhen(openWhen);
+    if (openWhen) setOpen(true);
+  }
 
   useEffect(() => {
     if (!anchor) return undefined;

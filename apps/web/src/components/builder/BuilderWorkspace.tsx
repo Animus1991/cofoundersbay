@@ -882,6 +882,10 @@ export function BuilderWorkspace({
   const nextMilestones = readinessAssessment?.nextMilestones ?? [];
   const showReviewNudge = !reviewDismissed && inProgressDocs >= 2;
   const notStartedTypes = DEFAULT_DOC_TYPES.filter((type) => !documents.some((d) => d.type === type));
+  // The document last worked on that is not finished: what "Continue" opens.
+  const leftOff = documents
+    .filter((d) => docStatus(d) === 'in-progress' || docStatus(d) === 'reviewed')
+    .reduce<BuilderDocument | null>((latest, d) => (!latest || Date.parse(d.updatedAt) > Date.parse(latest.updatedAt) ? d : latest), null);
   const dismissReview = () => {
     setReviewDismissed(true);
     localStorage.setItem(BUILDER_REVIEW_DISMISS_KEY, 'true');
@@ -890,6 +894,31 @@ export function BuilderWorkspace({
   return (
     <div className="min-w-0 space-y-6 overflow-x-clip">
       <PageRail sections={extraRailSections ? [...rail, ...extraRailSections] : rail} />
+
+      {/* The stage in progress first, a press from where it was left (docs
+          §115); the documents to start stay, under it. */}
+      {leftOff ? (
+        <Card className="min-w-0" data-builder-left-off="">
+          <CardContent className="flex flex-wrap items-center gap-3">
+            <div data-card-mark="" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+              <CfbGlyph name={docGlyph(leftOff.type)} className="icon-md" aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1 space-y-1">
+              <p className="type-caption text-muted-foreground">
+                <BilingualText en={builderEn('left_off')} el={builderEl('left_off')} compact />
+              </p>
+              <p className="card-title min-w-0"><DocTitle title={leftOff.title} wrap /></p>
+              <div className="flex items-center gap-2.5">
+                <Progress value={leftOff.completionPercent} className="h-1 max-w-48 flex-1" />
+                <span className="type-caption tabular-nums text-muted-foreground">{leftOff.completionPercent}%</span>
+              </div>
+            </div>
+            <Button size="sm" className={BUILDER_BTN} onClick={() => openDocument(leftOff)}>
+              <BilingualText en={builderEn('continue_doc')} el={builderEl('continue_doc')} compact />
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card className="min-w-0">
         <CardHeader className="flex flex-col gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">

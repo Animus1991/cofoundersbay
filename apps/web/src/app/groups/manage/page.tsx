@@ -44,6 +44,8 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { CoverThumb } from '@/components/common/CoverImage';
+import { demoCover } from '@/lib/demo/photos';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { demoMark } from '@/lib/demo/photos';
@@ -62,6 +64,8 @@ type ManagedGroup = {
   isActive: boolean;
   lastActivity: string;
   pendingRequests?: number;
+  /** The community's picture, as on /groups; a sample one gets the demo's. */
+  coverImageUrl?: string | null;
 };
 
 const PRIVACY_CONFIG = {
@@ -82,7 +86,7 @@ type GroupActions = {
   onDelete: (g: ManagedGroup) => PageControlRunResult | Promise<PageControlRunResult>;
 };
 
-function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & GroupActions) {
+function GroupCard({ group, sample = false, onInvite, onDelete }: { group: ManagedGroup; sample?: boolean } & GroupActions) {
   const privacyCfg = PRIVACY_CONFIG[group.privacy];
 
   // The Opportunities card: the community's mark and name with its kind,
@@ -91,14 +95,20 @@ function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & Grou
   return (
     <Card className={cn('transition-all hover:border-primary/20', !group.isActive && 'surface-inactive')}>
       <CardContent className="space-y-3">
+        {/* A small cover in the row's mark place (docs §115): the plan's "small cover in the row"; a 3:1 band made each row a screen tall. */}
         <CardHead
           mark={(
-            <Avatar className="h-10 w-10 rounded-xl">
-              <AvatarImage src={demoMark(group.name, [group.category])} alt="" className="rounded-xl" />
-              <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
-                {group.name ? initialsOf(group.name) : '?'}
-              </AvatarFallback>
-            </Avatar>
+            <CoverThumb
+              src={group.coverImageUrl ?? (sample ? demoCover(group.id, 320, 200, [group.name, group.category]) : null)}
+              fallback={(
+                <Avatar className="h-10 w-10 rounded-xl">
+                  <AvatarImage src={demoMark(group.name, [group.category])} alt="" className="rounded-xl" />
+                  <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
+                    {group.name ? initialsOf(group.name) : '?'}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+            />
           )}
           title={(
             <Link href={`/groups/${group.id}`} className="transition-colors hover:text-primary-accessible">
@@ -222,6 +232,7 @@ export default function ManageGroupsPage() {
           role: g.memberRole as ManagedGroup['role'],
           isActive: true,
           lastActivity: fmtDate(g.updatedAt, { day: 'numeric', month: 'short' }),
+          coverImageUrl: g.coverImageUrl,
         })),
     [data, fmtDate],
   );
@@ -265,9 +276,10 @@ export default function ManageGroupsPage() {
     },
   };
 
+  // The communities with requests waiting first (docs §115); the sort is stable.
   const filtered = groups.filter(g =>
     !search || g.name.toLowerCase().includes(search.toLowerCase()) || g.category.toLowerCase().includes(search.toLowerCase())
-  );
+  ).sort((a, b) => (b.pendingRequests ?? 0) - (a.pendingRequests ?? 0));
 
   const totalMembers = groups.reduce((s, g) => s + g.memberCount, 0);
   const pendingTotal = groups.reduce((s, g) => s + (g.pendingRequests ?? 0), 0);
@@ -361,7 +373,7 @@ export default function ManageGroupsPage() {
         {/* Groups */}
         <div className="space-y-3">
           {filtered.map(group => (
-            <GroupCard key={group.id} group={group} {...actions} />
+            <GroupCard key={group.id} group={group} sample={showingSample} {...actions} />
           ))}
           {filtered.length === 0 && !failed && !isLoading && (
             search ? (

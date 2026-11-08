@@ -41,6 +41,8 @@ import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { CoverImage } from '@/components/common/CoverImage';
+import { demoCover } from '@/lib/demo/photos';
 import { statusEl } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
 import { PageFacts } from '@/components/common/PageFacts';
@@ -63,6 +65,8 @@ type OrgEvent = {
   capacity: number;
   speakers?: string[];
   description: string;
+  /** The event's picture, as on /events; a sample event gets the demo's. */
+  coverImageUrl?: string | null;
 };
 
 const TYPE_CONFIG: Record<OrgEvent['type'], { label: string; labelEl: string; tone: StatusTone }> = {
@@ -120,6 +124,7 @@ function toOrgEvent(item: EventItem, fmtDate: (v: string | number | Date, o?: In
     attendees: item.attendeesCount,
     capacity: item.capacity ?? 0,
     description: item.description,
+    coverImageUrl: item.coverImageUrl ?? null,
   };
 }
 
@@ -253,6 +258,7 @@ function EventCard({ event, onDuplicate, sample = false }: { event: OrgEvent; on
 
   return (
     <Card className="transition-all hover:border-primary/30">
+      <CoverImage src={event.coverImageUrl ?? (sample ? demoCover(event.id, 960, 320, [event.title, event.type]) : null)} className="rounded-t-[inherit]" />
       <CardContent className="space-y-3">
         <CardHead
           mark={(

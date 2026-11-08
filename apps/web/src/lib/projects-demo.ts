@@ -373,6 +373,8 @@ export function createDemoProject(input: {
   maxTeamSize: number;
   rolesNeeded: string[];
   tags: string[];
+  /** The project's logo, an https address; the cards draw it as they do the samples'. */
+  logoUrl?: string;
 }): DemoProject {
   const now = new Date().toISOString();
   const project: DemoProject = {
@@ -385,6 +387,7 @@ export function createDemoProject(input: {
     industry: input.industry,
     location: input.location.trim(),
     website: input.website.trim(),
+    logoUrl: input.logoUrl && /^https:\/\/\S+$/.test(input.logoUrl.trim()) ? input.logoUrl.trim() : undefined,
     teamSize: 1,
     maxTeamSize: input.maxTeamSize,
     createdAt: now,

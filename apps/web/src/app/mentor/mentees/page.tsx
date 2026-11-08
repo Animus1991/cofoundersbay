@@ -154,7 +154,9 @@ export default function MenteesPage() {
   });
 
   const relationships = data?.relationships || [];
-  const activeRelationships = relationships.filter((r) => r.status === 'active');
+  // Who needs the mentor first (docs §115): an active mentee with no session
+  // on the calendar; the sort is stable.
+  const activeRelationships = relationships.filter((r) => r.status === 'active').sort((a, b) => Number(Boolean(a.nextSessionAt)) - Number(Boolean(b.nextSessionAt)));
   const completedRelationships = relationships.filter((r) => r.status === 'completed');
   const pausedRelationships = relationships.filter((r) => r.status === 'paused');
 

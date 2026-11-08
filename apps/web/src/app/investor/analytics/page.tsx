@@ -220,6 +220,16 @@ export default function InvestorAnalyticsPage() {
 
   const months = period === '3m' ? 3 : period === '6m' ? 6 : 12;
   const rows = useMemo(() => monthly(deals, months), [deals, months]);
+  // What the figures say, before the figures (docs §115): the deals added this
+  // month against last month's, from the rows the monthly chart draws.
+  const thisMonth = rows.length >= 2 ? rows[rows.length - 1].added : null;
+  const lastMonth = rows.length >= 2 ? rows[rows.length - 2].added : null;
+  const conclusion = thisMonth !== null && lastMonth !== null && (thisMonth > 0 || lastMonth > 0)
+    ? {
+        en: `${thisMonth} ${thisMonth === 1 ? 'deal' : 'deals'} added this month, ${thisMonth === lastMonth ? 'the same as' : thisMonth > lastMonth ? 'up from' : 'down from'} ${lastMonth} last month.`,
+        el: `Νέες συμφωνίες αυτόν τον μήνα: ${thisMonth}· τον προηγούμενο: ${lastMonth}.`,
+      }
+    : null;
   const sectors = useMemo(() => tally(deals.map((d) => d.industry), UNSPECIFIED), [deals]);
   const cities = useMemo(() => tally(deals.map((d) => d.location?.split(',')[0]), UNSPECIFIED), [deals]);
   const holdings = deals.filter((d) => d.investedCents != null && d.investedCents > 0);
@@ -280,6 +290,11 @@ export default function InvestorAnalyticsPage() {
       }
     >
       <div className="space-y-6">
+        {conclusion && !dealsLoading && !dealsFailed ? (
+          <p className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground" data-analytics-conclusion="">
+            <BilingualText en={conclusion.en} el={conclusion.el} compact wrap />
+          </p>
+        ) : null}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6">
           {kpis.map((k) => (
             <MetricTile key={k.label} icon={k.icon} label={k.label} labelEl={k.labelEl} value={durationEl(k.value) ? <BilingualText en={k.value} el={durationEl(k.value)} compact /> : k.value} caption={k.caption} captionEl={k.captionEl} />

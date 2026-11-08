@@ -3674,6 +3674,8 @@ export type CohortItem = {
   capacity: number | null;
   isPublic: boolean;
   isActive: boolean;
+  /** The cohort's picture, when its organiser set one. */
+  imageUrl?: string | null;
   createdAt: string;
   updatedAt: string;
   organizerId: string;

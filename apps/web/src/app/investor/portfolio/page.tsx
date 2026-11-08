@@ -493,6 +493,15 @@ export default function InvestorPortfolioPage() {
           ))}
         </div>
 
+        {/* The companies first; how the whole moved over time under them. */}
+        <div className="space-y-3">
+          {/* What needs attention first (docs §115): a live holding below what
+              went in; the rest keep their order. */}
+          {[...investments].sort((a, b) => Number(!(a.status === 'active' && a.returnPct < 0)) - Number(!(b.status === 'active' && b.returnPct < 0))).map((investment) => (
+            <InvestmentCard key={investment.id} investment={investment} live={isLive} />
+          ))}
+        </div>
+
         {/* Charts */}
         <Tabs value={chartTab} onValueChange={setChartTab}>
           <TabsList>
@@ -520,13 +529,6 @@ export default function InvestorPortfolioPage() {
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Portfolio List */}
-        <div className="space-y-3">
-          {investments.map((investment) => (
-            <InvestmentCard key={investment.id} investment={investment} live={isLive} />
-          ))}
-        </div>
       </div>
     </AppShell>
   );

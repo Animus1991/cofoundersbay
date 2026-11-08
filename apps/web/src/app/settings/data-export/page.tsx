@@ -140,25 +140,6 @@ export default function DataExportPage() {
           <BilingualText en="Back to Settings" el="Επιστροφή στις ρυθμίσεις" compact />
         </Link>
 
-        <Card className="border-primary-muted bg-primary-subtle">
-          <CardContent className="space-y-3">
-            <CardHead
-              mark={
-                <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                  <Shield className="icon-md" aria-hidden="true" />
-                </div>
-              }
-              title={<BilingualText en="Your Data Rights" el="Τα δικαιώματά σας στα δεδομένα" compact />}
-            />
-            <p className="card-body text-muted-foreground">
-                  <BilingualText
-                    en="Under GDPR you can receive a copy of your personal data in a portable format. The file is built when you ask for it and is not kept on our servers. Passwords, sign-in tokens and two-factor secrets are never included."
-                    el="Βάσει GDPR μπορείτε να λάβετε αντίγραφο των προσωπικών σας δεδομένων σε φορητή μορφή. Το αρχείο δημιουργείται όταν το ζητάτε και δεν φυλάσσεται στους διακομιστές μας. Κωδικοί, διακριτικά σύνδεσης και μυστικά δύο παραγόντων δεν περιλαμβάνονται ποτέ."
-                    wrap
-                  />
-            </p>
-          </CardContent>
-        </Card>
 
         <Card className="border-border shadow-sm">
           <CardHeader>
@@ -211,6 +192,27 @@ export default function DataExportPage() {
                   : <BilingualText en="Download my data" el="Λήψη των δεδομένων μου" compact />}
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* What the law gives you, under the choice it is about. */}
+        <Card className="border-primary-muted bg-primary-subtle">
+          <CardContent className="space-y-3">
+            <CardHead
+              mark={
+                <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                  <Shield className="icon-md" aria-hidden="true" />
+                </div>
+              }
+              title={<BilingualText en="Your Data Rights" el="Τα δικαιώματά σας στα δεδομένα" compact />}
+            />
+            <p className="card-body text-muted-foreground">
+                  <BilingualText
+                    en="Under GDPR you can receive a copy of your personal data in a portable format. The file is built when you ask for it and is not kept on our servers. Passwords, sign-in tokens and two-factor secrets are never included."
+                    el="Βάσει GDPR μπορείτε να λάβετε αντίγραφο των προσωπικών σας δεδομένων σε φορητή μορφή. Το αρχείο δημιουργείται όταν το ζητάτε και δεν φυλάσσεται στους διακομιστές μας. Κωδικοί, διακριτικά σύνδεσης και μυστικά δύο παραγόντων δεν περιλαμβάνονται ποτέ."
+                    wrap
+                  />
+            </p>
           </CardContent>
         </Card>
 

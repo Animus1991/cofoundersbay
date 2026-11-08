@@ -137,7 +137,7 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
         aside={(
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" aria-label={bilingualAria(`Open actions for ${deal.name}`, `Ενέργειες για ${deal.name}`)}>
+              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity [@media(hover:none)]:opacity-100" aria-label={bilingualAria(`Open actions for ${deal.name}`, `Ενέργειες για ${deal.name}`)}>
                 <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
@@ -199,9 +199,24 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
           )}
         </p>
       )}
-      <p className="text-xs text-muted-foreground">
-        <RelativeTime date={deal.lastActivity} format={formatRelativeTime} />
-      </p>
+      {/* One move on the tile (docs §115): the next stage, a press away; the
+          other moves stay in the menu, which touch screens now also show. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+        <p className="text-xs text-muted-foreground">
+          <RelativeTime date={deal.lastActivity} format={formatRelativeTime} />
+        </p>
+        {onMove && next ? (
+          <button
+            type="button"
+            data-deal-next=""
+            className="tap-extend-y inline-flex min-w-0 items-center gap-1 text-xs font-medium text-primary-accessible hover:underline focus-ring"
+            onClick={() => onMove(deal, next)}
+          >
+            <BilingualText en={`Move to ${stageName(next).label}`} el={`Μετακίνηση σε ${stageName(next).labelEl}`} compact />
+            <ArrowRight className="h-3 w-3 shrink-0" aria-hidden="true" />
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

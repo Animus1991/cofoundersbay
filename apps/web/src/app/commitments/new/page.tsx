@@ -21,6 +21,7 @@ import {
 } from '@cofounderbay/shared';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
+import { InfoHint } from '@/components/common/InfoHint';
 import { StatusText, statusEl } from '@/components/common/StatusText';
 import { FormDraftNotice } from '@/components/common/FormDraftNotice';
 import { Button } from '@/components/ui/button';
@@ -100,6 +101,7 @@ function Field({
   id,
   label,
   hint,
+  hintFolded = false,
   children,
   count,
   max,
@@ -107,6 +109,8 @@ function Field({
   id: string;
   label: { en: string; el: string };
   hint?: { en: string; el: string };
+  /** The hint is shown together above the fields; here it stays the field's description for a screen reader. */
+  hintFolded?: boolean;
   children: React.ReactNode;
   count?: number;
   max?: number;
@@ -119,7 +123,7 @@ function Field({
           <span className={cn('text-2xs tabular-nums', count > max ? 'text-status-danger' : 'text-muted-foreground')}>{count}/{max}</span>
         ) : null}
       </div>
-      {hint ? <p id={`${id}-hint`} className="text-xs text-muted-foreground"><BilingualText en={hint.en} el={hint.el} wrap /></p> : null}
+      {hint ? <p id={`${id}-hint`} className={hintFolded ? 'sr-only' : 'text-xs text-muted-foreground'}><BilingualText en={hint.en} el={hint.el} wrap /></p> : null}
       {children}
     </div>
   );
@@ -363,6 +367,20 @@ function PostingGuide() {
             <Card>
               <CardHeader>
                 <CardTitle><BilingualText en="Three sentences" el="Τρεις προτάσεις" compact /></CardTitle>
+                {/* What each sentence says, one press away (docs §115): three
+                    paragraphs of guidance stood between the fields. The
+                    example inside each field stays. */}
+                <InfoHint title={CMT.sentences_how}>
+                  <ul className="space-y-1">
+                    {([[CMT.exists, CMT.exists_hint], [CMT.goal, CMT.goal_hint], [CMT.missing, CMT.missing_hint]] as const).map(([label, hint]) => (
+                      <li key={label.en}>
+                        <span className="font-medium text-foreground"><BilingualText en={label.en} el={label.el} compact /></span>
+                        {' — '}
+                        <BilingualText en={hint.en} el={hint.el} compact wrap />
+                      </li>
+                    ))}
+                  </ul>
+                </InfoHint>
               </CardHeader>
               <CardContent className="space-y-4">
                 {(
@@ -372,7 +390,7 @@ function PostingGuide() {
                     ['missing', CMT.missing, CMT.missing_hint, CMT.missing_example],
                   ] as const
                 ).map(([key, label, hint, example]) => (
-                  <Field key={key} id={`card-${key}`} label={label} hint={hint} count={form[key].length} max={NEED_CARD_LIMITS.sentence}>
+                  <Field key={key} id={`card-${key}`} label={label} hint={hint} hintFolded count={form[key].length} max={NEED_CARD_LIMITS.sentence}>
                     <Textarea
                       id={`card-${key}`}
                       {...text(key)}

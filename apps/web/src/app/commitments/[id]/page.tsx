@@ -511,6 +511,21 @@ function Board() {
     );
   }
 
+  const needCardBlock = (
+    <Card>
+      <CardContent>
+        <NeedCard card={card} headingLevel={2} />
+        {card.projectRef ? (
+          <p className="pt-4 text-sm">
+            <Link href={`/projects/${encodeURIComponent(card.projectRef)}`} className="text-primary-accessible underline-offset-4 hover:underline">
+              <BilingualText en="Open the project" el="Άνοιγμα του έργου" compact />
+            </Link>
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+
   return (
     <AppShell
       showHelp
@@ -548,18 +563,9 @@ function Board() {
       }
     >
       <div className="space-y-6">
-        <Card>
-          <CardContent>
-            <NeedCard card={card} headingLevel={2} />
-            {card.projectRef ? (
-              <p className="pt-4 text-sm">
-                <Link href={`/projects/${encodeURIComponent(card.projectRef)}`} className="text-primary-accessible underline-offset-4 hover:underline">
-                  <BilingualText en="Open the project" el="Άνοιγμα του έργου" compact />
-                </Link>
-              </p>
-            ) : null}
-          </CardContent>
-        </Card>
+        {/* With a conversation open, its step leads and the card's text
+            follows (docs §115); before one, the card is read first. */}
+        {activeThreadId ? null : needCardBlock}
 
         {isOwner ? (
           <Card>
@@ -625,6 +631,7 @@ function Board() {
             </CardContent>
           </Card>
         )}
+        {activeThreadId ? needCardBlock : null}
       </div>
     </AppShell>
   );

@@ -607,7 +607,7 @@ export default function ExpertReviewsPage() {
   ];
 
   return (
-    <AppShell showHelp rail={rail} askAi={ASK.expertReviews}>
+    <AppShell showHelp rail={rail} askAi={ASK.expertReviews} leadAsHint>
       <div className="space-y-6 pb-10">
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>

@@ -30,6 +30,7 @@ import {
 import { ASK } from '@/lib/page-questions';
 import { useUnsavedForm } from '@/hooks/useUnsavedForm';
 import { DraftOffer, UnsavedMark } from '@/components/common/UnsavedNotice';
+import { PhoneFold } from '@/components/common/PhoneFold';
 
 const CATEGORIES = ['product', 'fundraising', 'hiring', 'partnerships', 'growth', 'other'] as const;
 const PRIORITIES: { value: MilestonePriority; color: string }[] = [
@@ -111,6 +112,7 @@ export default function NewMilestonePage() {
   });
 
   const canSubmit = title.trim().length > 0 && !mutation.isPending;
+  const optionalFilled = Boolean(description.trim() || notes.trim()) || category !== 'product' || priority !== 'medium';
 
   return (
     <AppShell
@@ -169,67 +171,6 @@ export default function NewMilestonePage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="description">
-                  <BilingualText en={milestoneEn('field_desc')} el={milestoneEl('field_desc')} compact />
-                </Label>
-                <Textarea
-                  id="description"
-                  className="rounded-xl"
-                  placeholder={t(milestoneEn('desc_ph'), milestoneEl('desc_ph'))}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                  maxLength={500}
-                />
-              </div>
-
-              {/* One column on a phone: half of a 320-430px card could not hold
-                  the three priorities, and «Υψηλή» ran 17-52px past the edge (docs §107). */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <p id="page-cap1-cap" className="text-sm font-medium leading-tight"><BilingualText en={milestoneEn('field_category')} el={milestoneEl('field_category')} compact /></p>
-                  <div role="group" aria-labelledby="page-cap1-cap" className="flex flex-wrap gap-1.5">
-                    {CATEGORIES.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => setCategory(c)}
-                        className={cn(
-                          'rounded-full border px-3 py-1 text-xs font-medium transition-all',
-                          category === c
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border bg-background text-muted-foreground hover:border-primary/50',
-                        )}
-                      >
-                        <BilingualText en={milestoneEn(MILESTONE_CATEGORY_KEYS[c])} el={milestoneEl(MILESTONE_CATEGORY_KEYS[c])} compact />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <p id="page-cap2-cap" className="text-sm font-medium leading-tight"><BilingualText en={milestoneEn('field_priority')} el={milestoneEl('field_priority')} compact /></p>
-                  <div role="group" aria-labelledby="page-cap2-cap" className="flex gap-1.5">
-                    {PRIORITIES.map((p) => (
-                      <button
-                        key={p.value}
-                        type="button"
-                        onClick={() => setPriority(p.value)}
-                        className={cn(
-                          'flex-1 rounded-xl border px-2 py-1.5 text-xs font-medium transition-all',
-                          priority === p.value
-                            ? `${p.color} border-transparent ring-2 ring-primary/30`
-                            : 'border-border bg-background text-muted-foreground hover:border-primary/40',
-                        )}
-                      >
-                        <BilingualText en={milestoneEn(MILESTONE_PRIORITY_KEYS[p.value])} el={milestoneEl(MILESTONE_PRIORITY_KEYS[p.value])} compact />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
                 <Label htmlFor="dueDate">
                   <BilingualText en={milestoneEn('due_optional')} el={milestoneEl('due_optional')} compact />
                 </Label>
@@ -243,20 +184,87 @@ export default function NewMilestonePage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="notes">
-                  <BilingualText en={milestoneEn('field_notes')} el={milestoneEl('field_notes')} compact />
-                </Label>
-                <Textarea
-                  id="notes"
-                  className="rounded-xl"
-                  placeholder={t(milestoneEn('notes_ph'), milestoneEl('notes_ph'))}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={2}
-                  maxLength={1000}
-                />
-              </div>
+              {/* The title and the date first; the rest is optional and folds on a
+                  phone (docs §115). It opens by itself when a draft filled any of it. */}
+              <PhoneFold title={{ en: milestoneEn('more_details'), el: milestoneEl('more_details') }} openWhen={optionalFilled}>
+                <div className="space-y-5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="description">
+                      <BilingualText en={milestoneEn('field_desc')} el={milestoneEl('field_desc')} compact />
+                    </Label>
+                    <Textarea
+                      id="description"
+                      className="rounded-xl"
+                      placeholder={t(milestoneEn('desc_ph'), milestoneEl('desc_ph'))}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={3}
+                      maxLength={500}
+                    />
+                  </div>
+
+                  {/* One column on a phone: half of a 320-430px card could not hold
+                      the three priorities, and «Υψηλή» ran 17-52px past the edge (docs §107). */}
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <p id="page-cap1-cap" className="text-sm font-medium leading-tight"><BilingualText en={milestoneEn('field_category')} el={milestoneEl('field_category')} compact /></p>
+                      <div role="group" aria-labelledby="page-cap1-cap" className="flex flex-wrap gap-1.5">
+                        {CATEGORIES.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setCategory(c)}
+                            className={cn(
+                              'rounded-full border px-3 py-1 text-xs font-medium transition-all',
+                              category === c
+                                ? 'border-primary bg-primary text-primary-foreground'
+                                : 'border-border bg-background text-muted-foreground hover:border-primary/50',
+                            )}
+                          >
+                            <BilingualText en={milestoneEn(MILESTONE_CATEGORY_KEYS[c])} el={milestoneEl(MILESTONE_CATEGORY_KEYS[c])} compact />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <p id="page-cap2-cap" className="text-sm font-medium leading-tight"><BilingualText en={milestoneEn('field_priority')} el={milestoneEl('field_priority')} compact /></p>
+                      <div role="group" aria-labelledby="page-cap2-cap" className="flex gap-1.5">
+                        {PRIORITIES.map((p) => (
+                          <button
+                            key={p.value}
+                            type="button"
+                            onClick={() => setPriority(p.value)}
+                            className={cn(
+                              'flex-1 rounded-xl border px-2 py-1.5 text-xs font-medium transition-all',
+                              priority === p.value
+                                ? `${p.color} border-transparent ring-2 ring-primary/30`
+                                : 'border-border bg-background text-muted-foreground hover:border-primary/40',
+                            )}
+                          >
+                            <BilingualText en={milestoneEn(MILESTONE_PRIORITY_KEYS[p.value])} el={milestoneEl(MILESTONE_PRIORITY_KEYS[p.value])} compact />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="notes">
+                      <BilingualText en={milestoneEn('field_notes')} el={milestoneEl('field_notes')} compact />
+                    </Label>
+                    <Textarea
+                      id="notes"
+                      className="rounded-xl"
+                      placeholder={t(milestoneEn('notes_ph'), milestoneEl('notes_ph'))}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      rows={2}
+                      maxLength={1000}
+                    />
+                  </div>
+                </div>
+              </PhoneFold>
 
               <div className="flex items-center justify-end gap-3 border-t border-border pt-2">
                 <UnsavedMark dirty={unsaved.dirty} className="mr-auto" />

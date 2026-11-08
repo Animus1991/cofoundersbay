@@ -321,7 +321,7 @@ function IntrosContent() {
   const busy = act.isPending;
 
   return (
-    <AppShell rail={rail}>
+    <AppShell rail={rail} leadAsHint>
       <div className="space-y-6">
         <NetworkTabs />
         <Tabs value={tab} onValueChange={(v) => setTab(v === 'sent' || v === 'received' ? v : 'forward')} className="space-y-4">

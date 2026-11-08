@@ -16,6 +16,8 @@ export const REFERRALS_STRINGS: Record<string, BilingualPair> = {
   // ── The four counters ──
   stat_invited: { en: 'Invited', el: 'Προσκλήθηκαν' },
   stat_signed_up: { en: 'Signed Up', el: 'Εγγράφηκαν' },
+  link_signed_up: { en: 'signed up from your invitations', el: 'εγγράφηκαν από τις προσκλήσεις σας' },
+  link_signed_up_one: { en: 'signed up from your invitations', el: 'εγγράφηκε από τις προσκλήσεις σας' },
   stat_rewarded: { en: 'Rewarded', el: 'Ανταμείφθηκαν' },
   stat_earned: { en: 'Earned', el: 'Κερδίσατε' },
 

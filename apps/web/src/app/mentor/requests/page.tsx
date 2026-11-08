@@ -33,6 +33,7 @@ import {
 } from '@/lib/api';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { CardMoreMenu } from '@/components/common/CardMoreMenu';
 import { StatusText } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
@@ -125,20 +126,15 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
                 )}
                 <BilingualText en="Accept" el="Αποδοχή" compact />
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={onDecline}
-                disabled={isResponding}
-              >
-                <BilingualText en="Decline" el="Απόρριψη" compact />
-              </Button>
-              <Button size="sm" variant="ghost" asChild>
-                <Link href={`/messages?to=${request.requesterId}`}>
-                  <MessageCircle className="icon-sm mr-1" aria-hidden="true" />
-                  <BilingualText en="Message" el="Μήνυμα" compact />
-                </Link>
-              </Button>
+              {/* The card's one decision is Accept; Decline and Message do
+                  what their buttons did, one press away (docs §115). */}
+              <CardMoreMenu
+                name={displayName}
+                items={[
+                  { key: 'message', en: 'Message', el: 'Μήνυμα', icon: MessageCircle, href: `/messages?to=${request.requesterId}` },
+                  { key: 'decline', en: 'Decline', el: 'Απόρριψη', onSelect: onDecline, disabled: isResponding, destructive: true },
+                ]}
+              />
             </>
           )}
           {request.status === 'accepted' && (
@@ -187,7 +183,8 @@ export default function MentorRequestsPage() {
   });
 
   const requests = data?.requests || [];
-  const pendingRequests = requests.filter((r) => r.status === 'pending');
+  // The longest waiting first (docs §115).
+  const pendingRequests = requests.filter((r) => r.status === 'pending').sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));
   const acceptedRequests = requests.filter((r) => r.status === 'accepted');
   const declinedRequests = requests.filter((r) => r.status === 'declined');
 

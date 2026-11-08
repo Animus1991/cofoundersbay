@@ -36,6 +36,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { Button } from '@/components/ui/button';
@@ -111,7 +112,8 @@ function isDemoSessionId(id: string): boolean {
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 
-const DEMO_SESSIONS: CoachingSession[] = [
+// Each sample coach gets the demo's portrait under `coachAvatar`, as the demo's people do elsewhere.
+const DEMO_SESSIONS: CoachingSession[] = attachDemoPhotos([
   {
     id: '1',
     coachName: 'Elena Papadopoulos',
@@ -162,7 +164,7 @@ const DEMO_SESSIONS: CoachingSession[] = [
     ],
     rating: 4,
   },
-];
+]);
 
 /**
  * Locale dates after mount so SSR (UTC) and the browser timezone do not mismatch.
@@ -248,7 +250,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
     <Card className="overflow-hidden">
       <CardContent className="space-y-3">
         <CardHead
-          mark={<SessionDateTile date={new Date(session.scheduledAt)} />}
+          mark={<SessionDateTile date={new Date(session.scheduledAt)} face={{ src: session.coachAvatar, name: session.coachName }} />}
           title={session.title}
           subtitle={<BilingualText en={`With ${session.coachName} · ${session.coachTitle}`} el={`Με ${session.coachName} · ${session.coachTitle}`} compact wrap />}
           aside={(

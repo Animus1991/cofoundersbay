@@ -53,6 +53,7 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Counter } from '@/components/ui/counter';
+import { PhoneStickyAction } from '@/components/common/PhoneStickyAction';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const REACTIONS = ['👍', '❤️', '🔥', '🎉', '💡'];
@@ -531,7 +532,7 @@ export default function GroupDetailPage() {
   return (
     <AppShell rail={rail}>
       {/* Cover / Header */}
-      <div className="space-y-6">
+      <div className={cn('space-y-6', !isMember && 'max-sm:pb-20')}>
         <button
           onClick={() => router.push('/groups')}
           type="button"
@@ -592,6 +593,7 @@ export default function GroupDetailPage() {
               {(() => {
                 const membership = (
                   <Button
+                    id="group-membership"
                     variant={isMember ? 'outline' : 'default'}
                     className="w-full gap-2 shrink-0 sm:w-auto"
                     disabled={togglingMembership}
@@ -762,6 +764,15 @@ export default function GroupDetailPage() {
           </Card>
         )}
       </div>
+      {/* Join stays in reach on a phone once the header scrolls away (docs
+          §115); a member's Leave stays in the header only. */}
+      {!isMember ? (
+        <PhoneStickyAction watchId="group-membership" label={{ en: 'Join this community', el: 'Συμμετοχή στην κοινότητα' }}>
+          <Button className="min-h-11 w-full gap-2" disabled={togglingMembership} onClick={() => void handleToggleMembership()}>
+            {togglingMembership ? <Loader2 className="icon-sm animate-spin" /> : <BilingualText en="Join" el="Συμμετοχή" compact />}
+          </Button>
+        </PhoneStickyAction>
+      ) : null}
     </AppShell>
   );
 }

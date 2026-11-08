@@ -1161,19 +1161,41 @@ export function PitchDeckBuilder({
                       <BilingualText en={builderEn('pitch_add_remaining')} el={builderEl('pitch_add_remaining')} compact />
                     </Button>
                   </CardHeader>
+                  {/* On a phone the first missing slide stays a chip and the
+                      rest are one menu (docs §115): ten chips were a third of
+                      the first screen. Wider screens keep every chip. */}
                   <CardContent className="flex flex-wrap gap-2">
-                    {missingTemplates.map((template) => (
+                    {missingTemplates.map((template, i) => (
                       <button
                         key={template.type}
                         type="button"
                         onClick={() => addSlide(template.type)}
-                        className="chip tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring"
+                        className={cn('chip tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring', i > 0 && 'max-sm:hidden')}
                         aria-label={bilingualAria(`Add ${builderEn(template.titleKey)}`, `Προσθήκη: ${builderEl(template.titleKey)}`)}
                       >
                         <Plus className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                         <BilingualText en={builderEn(template.titleKey)} el={builderEl(template.titleKey)} compact />
                       </button>
                     ))}
+                    {missingTemplates.length > 1 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button type="button" data-pitch-more-missing="" className="chip tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring sm:hidden">
+                            <span className="tabular-nums">+{missingTemplates.length - 1}</span>
+                            <BilingualText en={builderEn('pitch_more_slides')} el={builderEl('pitch_more_slides')} compact />
+                            <ChevronDown className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          {missingTemplates.slice(1).map((template) => (
+                            <DropdownMenuItem key={template.type} onSelect={() => addSlide(template.type)}>
+                              <Plus className="mr-2 icon-sm text-muted-foreground" aria-hidden="true" />
+                              <BilingualText en={builderEn(template.titleKey)} el={builderEl(template.titleKey)} compact />
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </CardContent>
                 </Card>
               )}
@@ -1192,20 +1214,42 @@ export function PitchDeckBuilder({
                     )}
                   </CardHeader>
                   <CardContent className="flex flex-wrap gap-2">
-                    {emptySlides.map((slide) => {
+                    {emptySlides.map((slide, i) => {
                       const index = data.slides.findIndex((item) => item.id === slide.id);
                       return (
                         <button
                           key={slide.id}
                           type="button"
                           onClick={() => setCurrentSlideIndex(index)}
-                          className="chip tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring"
+                          className={cn('chip tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring', i > 0 && 'max-sm:hidden')}
                         >
                           <span className="font-mono text-2xs text-muted-foreground">{index + 1}</span>
                           <span className="min-w-0">{renderSlideTitle(slide)}</span>
                         </button>
                       );
                     })}
+                    {emptySlides.length > 1 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button type="button" data-pitch-more-empty="" className="chip tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring sm:hidden">
+                            <span className="tabular-nums">+{emptySlides.length - 1}</span>
+                            <BilingualText en={builderEn('pitch_more_slides')} el={builderEl('pitch_more_slides')} compact />
+                            <ChevronDown className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          {emptySlides.slice(1).map((slide) => {
+                            const index = data.slides.findIndex((item) => item.id === slide.id);
+                            return (
+                              <DropdownMenuItem key={slide.id} onSelect={() => setCurrentSlideIndex(index)}>
+                                <span className="mr-2 font-mono text-2xs text-muted-foreground">{index + 1}</span>
+                                <span className="min-w-0">{renderSlideTitle(slide)}</span>
+                              </DropdownMenuItem>
+                            );
+                          })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </CardContent>
                 </Card>
               )}

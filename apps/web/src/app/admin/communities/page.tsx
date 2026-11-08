@@ -55,6 +55,8 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { CoverThumb } from '@/components/common/CoverImage';
+import { demoCover } from '@/lib/demo/photos';
 import { RailStats } from '@/components/layout/RailParts';
 import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { FactLine } from '@/components/common/FactLine';
@@ -87,6 +89,7 @@ function toCommunity(group: GroupView): Community {
     postCount: group.postCount,
     createdAt: group.createdAt,
     status: 'active',
+    coverImageUrl: group.coverImageUrl,
   };
 }
 
@@ -103,14 +106,19 @@ type Community = {
   tenant?: string;
   /** The group's own privacy, kept so Edit can seed its form exactly. */
   privacy?: GroupPrivacy;
+  /** The community's picture, as on /groups. */
+  coverImageUrl?: string | null;
 };
 
 function CommunityCard({
   community,
+  sample = false,
   onEdit,
   onDelete,
 }: {
   community: Community;
+  /** A sample row: it gets the demo's picture, as the sample rows elsewhere do. */
+  sample?: boolean;
   onEdit: (c: Community) => void;
   onDelete: (c: Community) => void;
 }) {
@@ -132,15 +140,21 @@ function CommunityCard({
     // the sentence and the facts on the mark's edge.
     <Card className="transition-all hover:border-primary/20">
       <CardContent className="space-y-3">
+        {/* A small cover in the row's mark place (docs §115): the plan's "small cover in the row"; a 3:1 band made each row a screen tall. */}
         <CardHead
           mark={(
             <Link href={`/groups/${community.id}`} aria-label={bilingualInline(`Open ${community.name}`, `Άνοιγμα: ${community.name}`)}>
-              <Avatar className="h-10 w-10 rounded-xl">
-                <AvatarImage src={demoMark(community.name, [community.category])} alt="" className="rounded-xl" />
-                <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold">
-                  {initialsOf(community.name)}
-                </AvatarFallback>
-              </Avatar>
+              <CoverThumb
+                src={community.coverImageUrl ?? (sample ? demoCover(community.id, 320, 200, [community.name, community.category]) : null)}
+                fallback={(
+                  <Avatar className="h-10 w-10 rounded-xl">
+                    <AvatarImage src={demoMark(community.name, [community.category])} alt="" className="rounded-xl" />
+                    <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold">
+                      {initialsOf(community.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+              />
             </Link>
           )}
           title={(
@@ -356,6 +370,7 @@ export default function AdminCommunitiesPage() {
   const communities: Community[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_COMMUNITIES;
 
 
+  // The flagged ones first (docs §115); the sort is stable.
   const filteredCommunities = communities.filter((c) => {
     const matchesSearch =
       !search ||
@@ -364,7 +379,7 @@ export default function AdminCommunitiesPage() {
     const matchesVisibility = visibility === 'all' || c.visibility === visibility;
     const matchesStatus = status === 'all' || c.status === status;
     return matchesSearch && matchesVisibility && matchesStatus;
-  });
+  }).sort((a, b) => Number(b.status === 'flagged') - Number(a.status === 'flagged'));
 
   const activeFilterCount = (visibility !== 'all' ? 1 : 0) + (status !== 'all' ? 1 : 0);
 
@@ -502,7 +517,7 @@ export default function AdminCommunitiesPage() {
         {/* Communities List */}
         <div className="space-y-3">
           {filteredCommunities.map((community) => (
-            <CommunityCard key={community.id} community={community} onEdit={openEdit} onDelete={confirmDelete} />
+            <CommunityCard key={community.id} community={community} sample={live.length === 0} onEdit={openEdit} onDelete={confirmDelete} />
           ))}
           {filteredCommunities.length === 0 && (
             <Card>

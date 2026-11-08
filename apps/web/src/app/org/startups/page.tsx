@@ -34,6 +34,7 @@ import { EmptyOrgStartups, namedChoice, namedFilters, namedQuery } from '@/compo
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { cn, initialsOf } from '@/lib/utils';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
@@ -96,6 +97,8 @@ type Startup = {
   status: 'active' | 'graduated' | 'paused' | 'dropped';
   readinessScore: number | null;
 };
+
+const ATTENTION_ORDER: Record<Startup['status'], number> = { paused: 0, active: 1, graduated: 2, dropped: 3 };
 
 const STARTUP_STATUS_TONE: Record<Startup['status'], StatusTone> = {
   active: 'success',
@@ -214,8 +217,8 @@ function StartupCard({ startup, sample = false }: { startup: Startup; /** A samp
   );
 }
 
-/** Shown to an organisation whose cohorts are still empty. */
-const SEED_STARTUPS: Startup[] = [
+/** Shown to an organisation whose cohorts are still empty; each gets its sector's picture, as the pipeline's samples do. */
+const SEED_STARTUPS: Startup[] = attachDemoPhotos([
   {
     id: '1',
     name: 'NeuralFlow',
@@ -268,7 +271,7 @@ const SEED_STARTUPS: Startup[] = [
     status: 'active',
     readinessScore: 42,
   },
-];
+], { logoKey: 'logoUrl' });
 
 export default function OrgStartupsPage() {
   const sayOne = useBilingualString();
@@ -317,6 +320,9 @@ export default function OrgStartupsPage() {
 
 
   const scored = startups.filter((s) => s.readinessScore != null);
+  // What needs the organisation first (docs §115): a paused startup, then the
+  // active ones; graduated and dropped ones after. The sort is stable, so the
+  // order within each state is the one the API gave.
   const filteredStartups = startups.filter((s) => {
     const matchesSearch =
       !search ||
@@ -325,7 +331,7 @@ export default function OrgStartupsPage() {
     const matchesProgram = program === 'all' || s.program === program;
     const matchesStatus = status === 'all' || s.status === status;
     return matchesSearch && matchesProgram && matchesStatus;
-  });
+  }).sort((a, b) => ATTENTION_ORDER[a.status] - ATTENTION_ORDER[b.status]);
 
   const programs = [...new Set(startups.map((s) => s.program))];
 

@@ -278,28 +278,8 @@ export default function ProjectDetailPage() {
               <TabsContent value="overview" className="space-y-6">
                 {/* What the project needs and offers for it, as a need card. */}
                 <ProjectNeedCard projectId={project.id} owned={owned} />
-                <Card>
-                  <CardHeader>
-                    <CardTitle><BilingualText en={projectEn('about')} el={projectEl('about')} compact /></CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      {/* Seed projects carry a Greek translation with the same
-                          paragraph structure; pair paragraphs by index. User
-                          projects have no `descriptionEl` and render as typed. */}
-                      {(() => {
-                        const elParas = project.descriptionEl?.split('\n\n') ?? [];
-                        return project.description.split('\n\n').map((p, i) => (
-                          <p key={i} className="card-body text-muted-foreground">
-                            {elParas[i] ? <BilingualText en={p} el={elParas[i]} wrap /> : p}
-                          </p>
-                        ));
-                      })()}
-                    </div>
-                    <FactLine className="mt-4" items={project.tags} />
-                  </CardContent>
-                </Card>
-
+                {/* The open roles before the description (docs §115): what a visitor
+                    can do here, then what the project is. */}
                 {project.rolesNeeded.length > 0 && (
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
@@ -361,6 +341,28 @@ export default function ProjectDetailPage() {
                   </CardContent>
                 </Card>
                 )}
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle><BilingualText en={projectEn('about')} el={projectEl('about')} compact /></CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      {/* Seed projects carry a Greek translation with the same
+                          paragraph structure; pair paragraphs by index. User
+                          projects have no `descriptionEl` and render as typed. */}
+                      {(() => {
+                        const elParas = project.descriptionEl?.split('\n\n') ?? [];
+                        return project.description.split('\n\n').map((p, i) => (
+                          <p key={i} className="card-body text-muted-foreground">
+                            {elParas[i] ? <BilingualText en={p} el={elParas[i]} wrap /> : p}
+                          </p>
+                        ));
+                      })()}
+                    </div>
+                    <FactLine className="mt-4" items={project.tags} />
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               <TabsContent value="team" className="space-y-4">

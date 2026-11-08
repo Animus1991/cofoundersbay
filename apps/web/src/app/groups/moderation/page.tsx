@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import Link from 'next/link';
 import {
   Shield,
@@ -31,7 +31,6 @@ import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates
 import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
-import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { STATUS } from '@/lib/semantic-colors';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -92,7 +91,12 @@ function ageLabel(hours: number): { en: string; el: string } {
   return { en: `${days}d ago`, el: `πριν ${days} ημ.` };
 }
 
+const REASON_EN = 'Sample report - group reports have no queue yet';
+const REASON_EL = 'Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά.';
+
 function ReportCard({ report }: { report: ModerationReport }) {
+  const reasonId = useId();
+  const reasonTitle = bilingualAria(REASON_EN, REASON_EL);
   const typeCfg = TYPE_CONFIG[report.type];
   const statusCfg = STATUS_CONFIG[report.status];
   const StatusIcon = statusCfg.icon;
@@ -156,21 +160,25 @@ function ReportCard({ report }: { report: ModerationReport }) {
             <span key="by"><BilingualText en="Reported by" el="Αναφορά από" compact />: <span className="font-medium text-foreground">{report.reportedBy}</span></span>,
           ]}
         />
+        {/* The three answers on one line on a phone (docs §115): "Ban" is the
+            short name there, the full one from sm, and the reason they wait
+            is said once under them (on a phone; the tooltip elsewhere), not
+            under each of the three. Disabled, a filled button would read as
+            pressable, so all three are outlined, as WithDisabledReason does. */}
         <CardFoot meta={<BilingualText en={ageLabel(report.reportedHoursAgo).en} el={ageLabel(report.reportedHoursAgo).el} compact />}>
           {report.status === 'pending' && (
             <>
-              <WithDisabledReason reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά.">
-                <Button size="sm" disabled><CheckCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Resolve" el="Επίλυση" compact /></Button>
-              </WithDisabledReason>
-              <WithDisabledReason reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά.">
-                <Button size="sm" variant="outline" disabled><XCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Dismiss" el="Απόρριψη" compact /></Button>
-              </WithDisabledReason>
-              <WithDisabledReason reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά.">
-                <Button size="sm" variant="outline" className="border-destructive/30 text-destructive-accessible" disabled><Ban className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Ban User" el="Αποκλεισμός χρήστη" compact /></Button>
-              </WithDisabledReason>
+              <Button size="sm" variant="outline" disabled title={reasonTitle} aria-describedby={reasonId}><CheckCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Resolve" el="Επίλυση" compact /></Button>
+              <Button size="sm" variant="outline" disabled title={reasonTitle} aria-describedby={reasonId}><XCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Dismiss" el="Απόρριψη" compact /></Button>
+              <Button size="sm" variant="outline" className="border-destructive/30 text-destructive-accessible" disabled title={reasonTitle} aria-describedby={reasonId}><Ban className="mr-1 icon-sm" aria-hidden="true" /><span className="sm:hidden"><BilingualText en="Ban" el="Αποκλεισμός" compact /></span><span className="max-sm:hidden"><BilingualText en="Ban User" el="Αποκλεισμός χρήστη" compact /></span></Button>
             </>
           )}
         </CardFoot>
+        {report.status === 'pending' ? (
+          <p id={reasonId} className="text-2xs leading-snug text-muted-foreground sm:sr-only">
+            <BilingualText en={REASON_EN} el={REASON_EL} compact wrap />
+          </p>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -287,7 +295,8 @@ export default function GroupsModerationPage() {
             <TabsTrigger value="all"><BilingualText en="All" el="Όλες" compact /><Counter value={reports.length} /></TabsTrigger>
           </TabsList>
           <TabsContent value={activeTab} className="mt-4 space-y-3">
-            {filtered.map(report => <ReportCard key={report.id} report={report} />)}
+            {/* The oldest report first (docs §115). */}
+            {[...filtered].sort((a, b) => b.reportedHoursAgo - a.reportedHoursAgo).map(report => <ReportCard key={report.id} report={report} />)}
             {filtered.length === 0 && (
               search ? (
                 <NoFilterResults entity="reports" onClear={() => setSearch('')} active={[{ en: `“${search}”`, el: `«${search}»` }]} />

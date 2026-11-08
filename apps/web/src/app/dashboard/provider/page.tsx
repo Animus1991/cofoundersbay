@@ -447,6 +447,33 @@ export default function ProviderDashboard() {
               ]}
             />
 
+            <SectionCard title="Recent reviews" titleEl="Πρόσφατες αξιολογήσεις" icon={Star} action={{ href: '/provider/reviews', label: 'All', labelEl: 'Όλες' }} contentClassName="card-rows">
+              {reviews.map((review) => (
+                <figure key={review.id} className="space-y-1.5">
+                  <figcaption>
+                    <RowHead
+                      title={review.client}
+                      asideStays
+                      aside={(
+                        <span className="flex items-center gap-0.5" role="img" aria-label={bilingualAria(`${review.rating} out of 5`, `${review.rating} από 5`)}>
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} className={cn('h-3.5 w-3.5', i < review.rating ? 'fill-status-warning text-status-warning' : 'text-muted-foreground/40')} aria-hidden="true" />
+                          ))}
+                        </span>
+                      )}
+                    />
+                  </figcaption>
+                  <blockquote className="card-body text-muted-foreground">{review.comment}</blockquote>
+                </figure>
+              ))}
+              {reviewsFailed ? (
+                <FailedLine en="Your reviews could not be read just now." el="Οι αξιολογήσεις σας δεν διαβάστηκαν αυτή τη στιγμή." busy={reviewsFetching} onRetry={() => void refetchReviews()} />
+              ) : !reviewsLoading && reviews.length === 0 && (
+                <EmptyLine en="Clients rate the work when a project completes." el="Οι πελάτες αξιολογούν τη δουλειά όταν ολοκληρώνεται ένα έργο." />
+              )}
+            </SectionCard>
+
+            {/* Performance under the reviews (docs §115): what clients said first, the figures after it. */}
             <SectionCard title="Performance" titleEl="Απόδοση" contentClassName="space-y-4">
               {!inquiriesKnown && !bookUnread ? (
                 <p className="text-sm text-muted-foreground">{EM_DASH}</p>
@@ -477,32 +504,6 @@ export default function ProviderDashboard() {
                 />
               </p>
               </>)}
-            </SectionCard>
-
-            <SectionCard title="Recent reviews" titleEl="Πρόσφατες αξιολογήσεις" icon={Star} action={{ href: '/provider/reviews', label: 'All', labelEl: 'Όλες' }} contentClassName="card-rows">
-              {reviews.map((review) => (
-                <figure key={review.id} className="space-y-1.5">
-                  <figcaption>
-                    <RowHead
-                      title={review.client}
-                      asideStays
-                      aside={(
-                        <span className="flex items-center gap-0.5" role="img" aria-label={bilingualAria(`${review.rating} out of 5`, `${review.rating} από 5`)}>
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} className={cn('h-3.5 w-3.5', i < review.rating ? 'fill-status-warning text-status-warning' : 'text-muted-foreground/40')} aria-hidden="true" />
-                          ))}
-                        </span>
-                      )}
-                    />
-                  </figcaption>
-                  <blockquote className="card-body text-muted-foreground">{review.comment}</blockquote>
-                </figure>
-              ))}
-              {reviewsFailed ? (
-                <FailedLine en="Your reviews could not be read just now." el="Οι αξιολογήσεις σας δεν διαβάστηκαν αυτή τη στιγμή." busy={reviewsFetching} onRetry={() => void refetchReviews()} />
-              ) : !reviewsLoading && reviews.length === 0 && (
-                <EmptyLine en="Clients rate the work when a project completes." el="Οι πελάτες αξιολογούν τη δουλειά όταν ολοκληρώνεται ένα έργο." />
-              )}
             </SectionCard>
           </div>
         </div>

@@ -97,7 +97,7 @@ export function BookingCard({
     <Card className="card-interactive">
       <CardContent className="space-y-3">
         <CardHead
-          mark={<SessionDateTile date={start} />}
+          mark={<SessionDateTile date={start} face={other ? { src: other.avatarUrl, name: other.displayName } : null} />}
           title={(
             <span className="flex flex-wrap items-baseline gap-x-2">
               <PersonHovercard userId={otherUserId}><Link href={`/profiles/${otherUserId}`}

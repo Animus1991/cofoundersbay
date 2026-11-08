@@ -386,6 +386,27 @@ export default function InvestorDashboard() {
               ]}
             />
 
+            <SectionCard title="Recent activity" titleEl="Πρόσφατη δραστηριότητα" icon={Eye} contentClassName="card-rows">
+              {/* Activity rows on the section's axis: the move, then the
+                  company and when, without a bullet column in front. */}
+              {activity.map((a) => (
+                <Link key={a.id} href={`/startups/${a.dealId}`} className="axis-row block rounded-md transition-colors hover:bg-accent focus-ring">
+                  <RowHead
+                    title={<span className="block truncate first-letter:uppercase"><BilingualText en={a.title} el={dealEventTitleEl(a.title)} compact /></span>}
+                    subtitle={<>{a.dealName} · <RelativeTime date={a.createdAt} /></>}
+                  />
+                </Link>
+              ))}
+              {activityLoading ? (
+                <Skeleton className="h-12" />
+              ) : activityFailed ? (
+                <FailedLine en="Recent activity could not be read just now." el="Η πρόσφατη δραστηριότητα δεν διαβάστηκε αυτή τη στιγμή." busy={activityFetching} onRetry={() => void refetchActivity()} />
+              ) : activity.length === 0 && (
+                <EmptyLine en="Moves, notes and meetings on your deals show up here." el="Κινήσεις, σημειώσεις και συναντήσεις στις συμφωνίες σας εμφανίζονται εδώ." />
+              )}
+            </SectionCard>
+
+            {/* The board mix under the activity (docs §115): what moved first, the shape of the board after it. */}
             <SectionCard title="Board mix" titleEl="Σύνθεση πίνακα" contentClassName="space-y-4">
               {dealsLoading ? (
                 <Skeleton className="h-16" />
@@ -413,26 +434,6 @@ export default function InvestorDashboard() {
                   <BilingualText en="Edit investment focus" el="Επεξεργασία εστίασης" />
                 </Link>
               </Button>
-            </SectionCard>
-
-            <SectionCard title="Recent activity" titleEl="Πρόσφατη δραστηριότητα" icon={Eye} contentClassName="card-rows">
-              {/* Activity rows on the section's axis: the move, then the
-                  company and when, without a bullet column in front. */}
-              {activity.map((a) => (
-                <Link key={a.id} href={`/startups/${a.dealId}`} className="axis-row block rounded-md transition-colors hover:bg-accent focus-ring">
-                  <RowHead
-                    title={<span className="block truncate first-letter:uppercase"><BilingualText en={a.title} el={dealEventTitleEl(a.title)} compact /></span>}
-                    subtitle={<>{a.dealName} · <RelativeTime date={a.createdAt} /></>}
-                  />
-                </Link>
-              ))}
-              {activityLoading ? (
-                <Skeleton className="h-12" />
-              ) : activityFailed ? (
-                <FailedLine en="Recent activity could not be read just now." el="Η πρόσφατη δραστηριότητα δεν διαβάστηκε αυτή τη στιγμή." busy={activityFetching} onRetry={() => void refetchActivity()} />
-              ) : activity.length === 0 && (
-                <EmptyLine en="Moves, notes and meetings on your deals show up here." el="Κινήσεις, σημειώσεις και συναντήσεις στις συμφωνίες σας εμφανίζονται εδώ." />
-              )}
             </SectionCard>
           </div>
         </div>

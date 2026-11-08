@@ -184,6 +184,16 @@ export default function TenantAnalyticsPage() {
     choiceControl('period', 'Analytics period', 'Περίοδος αναλυτικών', PERIODS.map((p) => ({ value: p.value, en: p.en, el: p.el })), period, (v) => setPeriod(v as typeof period)),
   ]);
 
+  // Joined last month against the month before; nothing is said without both.
+  const joinedLast = growth.length >= 3 ? growth[growth.length - 1].count - growth[growth.length - 2].count : null;
+  const joinedBefore = growth.length >= 3 ? growth[growth.length - 2].count - growth[growth.length - 3].count : null;
+  const growthLine = joinedLast !== null && joinedBefore !== null && (joinedLast > 0 || joinedBefore > 0)
+    ? {
+        en: `${joinedLast} ${joinedLast === 1 ? 'member' : 'members'} joined this month, ${joinedLast >= joinedBefore ? 'up from' : 'down from'} ${joinedBefore} the month before.`,
+        el: `Νέα μέλη αυτόν τον μήνα: ${joinedLast}· τον προηγούμενο: ${joinedBefore}.`,
+      }
+    : null;
+
   return (
     <AppShell
       title="Analytics"
@@ -204,6 +214,12 @@ export default function TenantAnalyticsPage() {
       )}
     >
       <div className="space-y-6">
+        {/* What the figures say, before the figures: the month just gone against the one before. */}
+        {growthLine ? (
+          <p className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground" data-analytics-conclusion="">
+            <BilingualText en={growthLine.en} el={growthLine.el} compact wrap />
+          </p>
+        ) : null}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <MetricTile
             icon={Users}

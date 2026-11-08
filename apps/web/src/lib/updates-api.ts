@@ -6,6 +6,8 @@ export interface UpdatePerson {
   displayName: string;
   headline: string | null;
   avatarUrl: string | null;
+  /** The logo of the company the author builds (their workspace's), on an update's author. */
+  logoUrl?: string | null;
 }
 
 export interface FounderUpdate {
@@ -25,7 +27,7 @@ export interface FounderUpdate {
 
 /** The public page's shape: the author's name and headline, no ids. */
 export interface PublicFounderUpdate {
-  author: { displayName: string; headline: string | null; avatarUrl: string | null };
+  author: { displayName: string; headline: string | null; avatarUrl: string | null; logoUrl?: string | null };
   title: string;
   body: string;
   metrics: Array<{ label: string; value: string }>;
@@ -39,7 +41,14 @@ const str = (v: unknown, d = ''): string => (typeof v === 'string' ? v : d);
 
 function toPerson(raw: unknown): UpdatePerson {
   const p = rec(raw);
-  return { id: str(p.id), displayName: str(p.displayName, 'Member'), headline: typeof p.headline === 'string' ? p.headline : null, avatarUrl: typeof p.avatarUrl === 'string' ? p.avatarUrl : null };
+  return {
+    id: str(p.id),
+    displayName: str(p.displayName, 'Member'),
+    headline: typeof p.headline === 'string' ? p.headline : null,
+    avatarUrl: typeof p.avatarUrl === 'string' ? p.avatarUrl : null,
+    // The company's logo, when the author has a workspace with one (docs §115).
+    logoUrl: typeof p.logoUrl === 'string' ? p.logoUrl : null,
+  };
 }
 
 function toMetrics(raw: unknown): Array<{ label: string; value: string }> {
@@ -108,7 +117,7 @@ export async function getPublicUpdate(token: string): Promise<PublicFounderUpdat
   if (!u.title) return null;
   const a = rec(u.author);
   return {
-    author: { displayName: str(a.displayName, 'Member'), headline: typeof a.headline === 'string' ? a.headline : null, avatarUrl: typeof a.avatarUrl === 'string' ? a.avatarUrl : null },
+    author: { displayName: str(a.displayName, 'Member'), headline: typeof a.headline === 'string' ? a.headline : null, avatarUrl: typeof a.avatarUrl === 'string' ? a.avatarUrl : null, logoUrl: typeof a.logoUrl === 'string' ? a.logoUrl : null },
     title: str(u.title),
     body: str(u.body),
     metrics: toMetrics(u.metrics),

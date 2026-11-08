@@ -1,5 +1,8 @@
 'use client';
 
+import { CoverImage } from '@/components/common/CoverImage';
+import { EventCard, type EventData } from '@/components/events/EventCard';
+import { useStoredUser } from '@/hooks/useStoredUser';
 import { useFormDraft } from '@/lib/form-draft';
 import { FormDraftNotice } from '@/components/common/FormDraftNotice';
 import { useState, useEffect } from 'react';
@@ -84,6 +87,7 @@ function FormSection({ icon: Icon, title, titleEl, children }: { icon: typeof Ca
  */
 export default function CreateEventPage() {
   const sayOne = useBilingualString();
+  const me = useStoredUser();
   const { primary } = useLanguagePreference();
   const router = useRouter();
   const { success, error: showError } = useToast();
@@ -101,6 +105,7 @@ export default function CreateEventPage() {
     isOnline: false,
     meetingUrl: '',
     capacity: '',
+    coverImageUrl: '',
   });
 
   const set = (key: keyof typeof form, value: string | boolean) =>
@@ -176,6 +181,7 @@ export default function CreateEventPage() {
         isOnline: form.isOnline,
         meetingUrl: form.meetingUrl.trim() || undefined,
         capacity: form.capacity ? parseInt(form.capacity, 10) : undefined,
+        coverImageUrl: form.coverImageUrl.trim() || undefined,
       });
       unsaved.markSaved();
       success('Event created', form.title.trim());
@@ -197,6 +203,28 @@ export default function CreateEventPage() {
     ? (form.meetingUrl.trim() ? <BilingualText en="Online" el="Διαδικτυακά" compact /> : null)
     : form.location.trim() || null;
   const capacity = form.capacity ? parseInt(form.capacity, 10) : null;
+  // The listing's own card, as /events will show it (docs §115), once there
+  // is a start to put on it; until then the guide card below says what to add.
+  const previewStart = form.startAt ? new Date(form.startAt) : null;
+  const previewEvent: EventData | null = previewStart && !Number.isNaN(previewStart.getTime())
+    ? {
+        id: 'preview',
+        title: form.title.trim() || sayOne('Untitled event', 'Εκδήλωση χωρίς τίτλο'),
+        description: form.description.trim(),
+        type: form.isOnline ? 'online' : 'in-person',
+        startDate: previewStart,
+        endDate: form.endAt && !Number.isNaN(new Date(form.endAt).getTime()) ? new Date(form.endAt) : new Date(previewStart.getTime() + 2 * 3_600_000),
+        location: form.isOnline ? undefined : form.location.trim() || undefined,
+        meetingUrl: form.isOnline ? form.meetingUrl.trim() || undefined : undefined,
+        coverImage: /^https:\/\/\S+$/.test(form.coverImageUrl.trim()) ? form.coverImageUrl.trim() : undefined,
+        hostName: me?.displayName ?? sayOne('You', 'Εσείς'),
+        hostAvatar: me?.avatarUrl,
+        hostRole: me?.role ?? '',
+        attendeesCount: 0,
+        maxAttendees: capacity && capacity > 0 ? capacity : undefined,
+        tags: [form.type.replaceAll('_', ' ')],
+      }
+    : null;
   const checklist = [
     { done: Boolean(form.title.trim()), en: 'A title', el: 'Τίτλος', required: true },
     { done: Boolean(form.startAt), en: 'A start time', el: 'Ώρα έναρξης', required: true },
@@ -227,6 +255,11 @@ export default function CreateEventPage() {
             </p>
           ) : null}
           <FormSection icon={Calendar} title="Basic information" titleEl="Βασικά στοιχεία">
+            {/* The picture is what people recognise the event by on every list, so it comes first. */}
+            <FormField htmlFor="event-cover" label={<BilingualText en="Cover picture (https link, optional)" el="Εικόνα εξωφύλλου (σύνδεσμος https, προαιρετικά)" compact />}>
+              <Input id="event-cover" type="url" value={form.coverImageUrl} onChange={(e) => set('coverImageUrl', e.target.value)} placeholder="https://" />
+            </FormField>
+            {/^https:\/\/\S+$/.test(form.coverImageUrl.trim()) ? <CoverImage src={form.coverImageUrl.trim()} eager className="rounded-xl" /> : null}
             <FormField htmlFor="event-title" required label={<BilingualText en="Event title" el="Τίτλος εκδήλωσης" compact />}>
               <Input
                 placeholder={sayOne('e.g. Founder Meetup Athens Q2', 'π.χ. Συνάντηση ιδρυτών Αθήνα Q2')}
@@ -375,8 +408,19 @@ export default function CreateEventPage() {
 
         {/* How the listing will read, and what it still lacks. */}
         <aside aria-label={bilingualAria('Preview', 'Προεπισκόπηση')} className="min-w-0 space-y-4 lg:sticky lg:top-24">
-          {/* The listing as it will read: the event card's own head (mark,
-              title, kind), then the facts and the sentence on the mark's edge. */}
+          {previewEvent ? (
+            <div className="space-y-2" data-event-preview="">
+              <p className="text-xs font-medium text-muted-foreground">
+                <BilingualText en="Preview, as on Events" el="Προεπισκόπηση, όπως στις Εκδηλώσεις" compact />
+              </p>
+              {/* Shown, not used: its buttons answer nothing until the event exists. */}
+              <div inert>
+                <EventCard event={previewEvent} />
+              </div>
+            </div>
+          ) : (
+          // The listing as it will read: the event card's own head (mark,
+          // title, kind), then the facts and the sentence on the mark's edge.
           <Card>
             <CardContent className="space-y-3">
               <p className="text-xs font-medium text-muted-foreground">
@@ -414,6 +458,7 @@ export default function CreateEventPage() {
               ) : null}
             </CardContent>
           </Card>
+          )}
 
           <Card>
             <CardHeader>

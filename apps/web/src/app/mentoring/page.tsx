@@ -80,6 +80,9 @@ const AVAIL_CONFIG = {
   limited:   { en: 'Limited',   el: 'Περιορισμένη', color: 'text-status-warning',                          bg: 'bg-status-warning-bg',   dot: 'bg-status-warning-mark'   },
 } as const;
 
+const AVAIL_RANK: Record<string, number> = { available: 0, limited: 1, busy: 3 };
+const availabilityRank = (status: string | null | undefined) => (status ? AVAIL_RANK[status] ?? 2 : 2);
+
 const PRICE_FILTERS = ['Any', 'Free', 'Paid'] as const;
 type PriceFilter = typeof PRICE_FILTERS[number];
 const PRICE_OPTIONS = [
@@ -464,7 +467,7 @@ function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelatio
     <Card>
       <CardContent className="space-y-3">
         <CardHead
-          mark={<SessionDateTile date={start} />}
+          mark={<SessionDateTile date={start} face={{ src: other.avatarUrl, name: other.displayName }} />}
           title={(
             <span className="flex flex-wrap items-baseline gap-x-2">
               <PersonHovercard userId={other.id}><Link href={`/profiles/${other.id}`} className="person-name transition-colors hover:text-primary-accessible">{other.displayName}</Link></PersonHovercard>
@@ -700,9 +703,12 @@ export default function MentoringPage() {
   // counts; coaching and reviews by the service's own areas (docs §111).
   const facets = service === 'mentoring' ? expertiseFacets(pricedMentors, selectedExpertise, MAX_EXPERTISE_CHIPS) : [];
   const chips = areaChips(pricedMentors, service, areaKeys(service), area);
-  const filteredMentors = service === 'mentoring'
+  // Who is free this week first (docs §115): available, then limited, then
+  // those who do not say, then busy. Stable, so the match order holds within each.
+  const filteredMentors = (service === 'mentoring'
     ? withExpertise(pricedMentors, selectedExpertise)
-    : area ? pricedMentors.filter((m) => areasOf(m, service).includes(area)) : pricedMentors;
+    : area ? pricedMentors.filter((m) => areasOf(m, service).includes(area)) : pricedMentors
+  ).slice().sort((a, b) => availabilityRank(a.availabilityStatus) - availabilityRank(b.availabilityStatus));
   // Reviewers come from their own read; a list not yet read is not empty.
   const directoryLoading = mentorsQueryLoading || (service === 'review' && expertsLoading);
   const reviewersFailed = service === 'review' && expertsError && !expertData;

@@ -1,6 +1,7 @@
 import { FOUNDER_UPDATE_PROBLEM_COPY, readFounderUpdate } from '@cofounderbay/shared';
 import { DemoRefusal } from './demo-refusal';
 import { recordDemoRefusal } from './transparency-world';
+import { demoMark } from './photos';
 
 /**
  * Following and founder updates in the preview demo.
@@ -19,7 +20,7 @@ const ME = 'preview-demo-user';
 const STORAGE_KEY = 'cfb:demo-updates:v1';
 const DAY = 86_400_000;
 
-type Person = { id: string; displayName: string; headline: string | null; avatarUrl: null };
+type Person = { id: string; displayName: string; headline: string | null; avatarUrl: null; logoUrl?: string | null };
 
 const PEOPLE: Record<string, Person> = {
   [ME]: { id: ME, displayName: 'Alex Demo', headline: 'Founder · Athens founder networks', avatarUrl: null },
@@ -154,7 +155,20 @@ export function resetDemoUpdates() {
   }
 }
 
-const person = (id: string): Person => PEOPLE[id] ?? { id, displayName: 'Member', headline: null, avatarUrl: null };
+/**
+ * The two founders' companies carry their logos, as their workspaces would.
+ * Drawn when asked for: `demoMark` answers only in the demo's browser, which
+ * is not yet known when this module loads.
+ */
+const COMPANY: Record<string, [string, string[]]> = {
+  'user-elena': ['Harbor', ['health']],
+  'user-sofia': ['Meltemi', ['travel']],
+};
+const person = (id: string): Person => {
+  const base = PEOPLE[id] ?? { id, displayName: 'Member', headline: null, avatarUrl: null };
+  const company = COMPANY[id];
+  return { ...base, logoUrl: company ? demoMark(company[0], company[1]) ?? null : null };
+};
 
 function shape(u: DemoUpdate, now: number) {
   const mine = u.authorId === ME;
@@ -214,7 +228,7 @@ export function previewUpdatesApi(pathname: string, method: string, body: Record
     const row = state.updates.find((u) => u.publicToken === parts[3] && u.visibility === 'public');
     if (!row) throw new DemoRefusal(404, 'This update is not public', { messageEl: 'Αυτή η ενημέρωση δεν είναι δημόσια.' });
     const { id: _id, author, mine: _mine, publicToken: _t, milestoneId: _m, ...rest } = shape(row, now);
-    return { update: { ...rest, author: { displayName: author.displayName, headline: author.headline, avatarUrl: author.avatarUrl } } };
+    return { update: { ...rest, author: { displayName: author.displayName, headline: author.headline, avatarUrl: author.avatarUrl, logoUrl: author.logoUrl ?? null } } };
   }
   if (parts.length === 3 && parts[2] === 'mine' && method === 'GET') {
     return { updates: state.updates.filter((u) => u.authorId === ME).sort(newest).map((u) => shape(u, now)) };

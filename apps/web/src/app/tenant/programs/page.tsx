@@ -60,6 +60,9 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { CoverImage } from '@/components/common/CoverImage';
+import { openFirst } from '@/lib/program-order';
+import { demoCover } from '@/lib/demo/photos';
 import { FactLine } from '@/components/common/FactLine';
 import { formatDate } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
@@ -88,6 +91,8 @@ type Program = {
   startDate: string;
   endDate: string;
   progress: number;
+  /** The programme's picture, as on /programs. */
+  coverImageUrl?: string | null;
 };
 
 const PROGRAM_TYPES = [
@@ -129,6 +134,7 @@ function toViewProgram(p: ProgramItem & { name?: string; _count?: { participants
     startDate: fmtDate(p.startDate),
     endDate: fmtDate(p.endDate),
     progress: scheduleProgress(p.startDate, p.endDate),
+    coverImageUrl: p.coverImageUrl ?? null,
   };
 }
 
@@ -197,6 +203,8 @@ function ProgramCard({
   // the schedule's progress on the mark's edge.
   return (
     <Card className="transition-all hover:border-primary/30">
+      {/* The programme's picture, as on /programs; a sample one gets the demo's. */}
+      <CoverImage src={program.coverImageUrl ?? (live ? null : demoCover(program.id, 960, 320, [program.name, program.type]))} className="rounded-t-[inherit]" />
       <CardContent className="space-y-3">
         <CardHead
           mark={(
@@ -356,7 +364,7 @@ export default function TenantProgramsPage() {
       (!search ||
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         p.description.toLowerCase().includes(search.toLowerCase()))
-  );
+  ).sort(openFirst);
   const statusFilterOn = statusFilter !== 'current';
   const archivedCount = programs.filter((p) => p.status === 'archived').length;
 

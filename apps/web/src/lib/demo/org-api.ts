@@ -112,6 +112,9 @@ function cohortItem(prog: OrgProgram, iso: Iso) {
     capacity: prog.capacity,
     isPublic: true,
     isActive: prog.status === 'active',
+    // The API's row carries the field (Cohort.imageUrl); empty here, so the
+    // demo's picture fills it as it does every other card's.
+    imageUrl: null,
     createdAt: iso(prog.start - 30, 10),
     updatedAt: iso(-1, 10),
     organizerId: 'user-anna',

@@ -1431,9 +1431,9 @@ export default function ProfileEditPage() {
           </Tabs>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          <Card className="sticky top-6">
+        {/* Sidebar. Below lg it leads: what is missing first, then the form. */}
+        <div className="space-y-6 max-lg:order-first">
+          <Card className="lg:sticky lg:top-6">
             <CardHeader>
               <CardTitle><BilingualText en="Profile Strength" el="Πληρότητα προφίλ" compact /></CardTitle>
             </CardHeader>

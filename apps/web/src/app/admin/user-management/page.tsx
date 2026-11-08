@@ -728,11 +728,9 @@ export default function AdminUserManagementPage() {
                       <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[user.status])}>
                         <StatusText value={user.status} />
                       </Badge>
+                      {/* The row's actions in one menu (docs §115): Quick view was
+                          a button of its own on every row. */}
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 gap-1 sm:w-auto sm:px-2" onClick={() => setDetailUser(user)} aria-label={`Quick view ${user.name}`}>
-                          <Eye className="icon-sm" />
-                          <span className="hidden sm:inline text-xs"><BilingualText en="Quick view" el="Γρήγορη προβολή" compact /></span>
-                        </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Actions for ${user.name}`}>
@@ -740,6 +738,9 @@ export default function AdminUserManagementPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onSelect={() => setDetailUser(user)}>
+                              <Eye className="mr-2 icon-sm" /> <BilingualText en="Quick view" el="Γρήγορη προβολή" compact />
+                            </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                               <Link href={`/admin/user-detail/${user.id}`}><BilingualText en="Open full profile" el="Άνοιγμα πλήρους προφίλ" compact /></Link>
                             </DropdownMenuItem>

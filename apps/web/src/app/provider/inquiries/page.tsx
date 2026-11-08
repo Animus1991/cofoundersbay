@@ -21,7 +21,6 @@ import { listServiceInquiries, updateServiceInquiry, type ServiceInquiryItem } f
 import { useToast } from '@/components/ui/toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -81,8 +80,8 @@ function InquiryCard({
 
   const config = statusConfig[inquiry.status];
   const StatusIcon = config.icon;
-  // A new inquiry's foot carries Reply and the client's profile; the menu
-  // said both again (docs §95). It keeps them for the others, which have no foot.
+  // A new inquiry's foot carries Reply; the menu said it again (docs §95). It
+  // keeps Reply for the others, which have no foot, and the profile for all.
   const footed = inquiry.status === 'new';
 
   return (
@@ -140,7 +139,9 @@ function InquiryCard({
                     >
                       <BilingualText en="Mark as Converted" el="Σήμανση ως πελάτη" compact />
                     </DropdownMenuItem>
-                    {footed ? null : inquiry.clientId ? (
+                    {/* The profile is in the menu on every card: the card's foot
+                        carries Reply alone (docs §115). */}
+                    {inquiry.clientId ? (
                       <DropdownMenuItem asChild>
                         <Link href={`/profiles/${inquiry.clientId}`}><BilingualText en="View Profile" el="Προβολή προφίλ" compact /></Link>
                       </DropdownMenuItem>
@@ -171,8 +172,8 @@ function InquiryCard({
         <p className="card-body text-muted-foreground first-letter:uppercase">{inquiry.message}</p>
         {inquiry.status === 'new' && (
           <CardFoot>
-                {/* Both had no handler; they do what the menu's Reply and
-                    View Profile do. */}
+                {/* One button (docs §115): Reply, which the menu's Reply does
+                    for the others. The client's profile is in the menu. */}
                 <Button
                   size="sm"
                   disabled={!inquiry.clientId}
@@ -184,16 +185,6 @@ function InquiryCard({
                 >
                   <BilingualText en="Reply" el="Απάντηση" compact />
                 </Button>
-                {inquiry.clientId ? (
-                  // "View Details" opened the client's profile; it says so.
-                  <Button size="sm" variant="outline" asChild>
-                    <Link href={`/profiles/${inquiry.clientId}`}><BilingualText en="View profile" el="Προβολή προφίλ" compact /></Link>
-                  </Button>
-                ) : (
-                  <WithDisabledReason reasonEn="This client has no profile to open" reasonEl="Ο πελάτης δεν έχει προφίλ για προβολή">
-                    <Button size="sm" variant="outline" disabled><BilingualText en="View profile" el="Προβολή προφίλ" compact /></Button>
-                  </WithDisabledReason>
-                )}
           </CardFoot>
         )}
       </CardContent>

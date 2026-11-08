@@ -21,6 +21,7 @@ import { usePageRail } from './PageRailContext';
 import { PageHeaderSlot } from './PageHeaderSlot';
 import { recordInAppView } from '@/lib/in-app-history';
 import { PageLead } from './PageLead';
+import { InfoHint } from '@/components/common/InfoHint';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -254,6 +255,11 @@ type AppShellProps = {
    * Omit it and nothing changes: a page without a rail keeps the full width.
    */
   rail?: PageRailSection[];
+  /**
+   * The line under the title waits behind an ⓘ (docs §115): for a page whose
+   * list is what people come back for, read once and then in the way.
+   */
+  leadAsHint?: boolean;
 };
 
 /**
@@ -278,6 +284,7 @@ export function AppShell({
   titleClassName,
   askAi,
   rail,
+  leadAsHint = false,
 }: AppShellProps) {
   const insideFrame = useContext(InAppShellFrame);
   const pathname = usePathname() ?? '/';
@@ -343,7 +350,11 @@ export function AppShell({
                     <BilingualText en={pageTitle} el={pageTitleEl} />
                   </h1>
                 )}
-                {pageDescription && <PageLead en={pageDescription} el={pageDescriptionEl} />}
+                {pageDescription && (leadAsHint ? (
+                  <InfoHint title={{ en: 'About this page', el: 'Σχετικά με τη σελίδα' }} className="mt-1">
+                    <BilingualText en={pageDescription} el={pageDescriptionEl} wrap />
+                  </InfoHint>
+                ) : <PageLead en={pageDescription} el={pageDescriptionEl} />)}
               </div>
               {(actions || showHelp || pinnable) && (
                 // One group from `sm`. On a phone its two halves take their own

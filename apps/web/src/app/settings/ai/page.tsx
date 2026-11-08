@@ -37,6 +37,7 @@ import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { applyLocale, getStoredLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { PhoneFold } from '@/components/common/PhoneFold';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { choiceControl, usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -352,6 +353,7 @@ export default function AISettingsPage() {
 
         <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
           {/* Model Settings */}
+          <PhoneFold title={{ en: 'Model and answers', el: 'Μοντέλο και απαντήσεις' }}>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -480,6 +482,7 @@ export default function AISettingsPage() {
               </div>
             </CardContent>
           </Card>
+          </PhoneFold>
 
           {/* Response Style */}
           <Card>

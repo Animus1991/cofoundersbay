@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -68,6 +69,13 @@ export function CopilotEmptyState({
   const role = useRoleOptional()?.primaryRole;
   const audience = starterAudience(role);
   const { reads, writes } = copilotStartersFor(surface, { pathname, role });
+  // On /ai, three to start with (docs §115): the page's own questions lead,
+  // then one change to make. The rest are a press away here and in "/".
+  const [allStarters, setAllStarters] = useState(false);
+  const folded = isPage && !allStarters;
+  const readsShown = folded ? reads.slice(0, writes.length ? 2 : 3) : reads;
+  const writesShown = folded ? writes.slice(0, 1) : writes;
+  const hiddenStarters = reads.length + writes.length - readsShown.length - writesShown.length;
   const intro = INTRO[audience];
   // The platform's best suggestion from how the reader moves around (docs
   // §107), when it has one; the question it asks is get_usage_insights'.
@@ -114,11 +122,21 @@ export function CopilotEmptyState({
             : 'gap-4',
         )}
       >
-        <StarterColumn kind="read" items={reads} onAsk={onAsk} className={isPage && writes.length ? 'md:pr-8 lg:pr-10' : undefined} />
-        {writes.length ? (
-          <StarterColumn kind="write" items={writes} onAsk={onAsk} className={isPage ? 'md:pl-8 lg:pl-10' : undefined} />
+        <StarterColumn kind="read" items={readsShown} onAsk={onAsk} className={isPage && writes.length ? 'md:pr-8 lg:pr-10' : undefined} />
+        {writesShown.length ? (
+          <StarterColumn kind="write" items={writesShown} onAsk={onAsk} className={isPage ? 'md:pl-8 lg:pl-10' : undefined} />
         ) : null}
       </div>
+      {hiddenStarters > 0 ? (
+        <button
+          type="button"
+          data-more-starters=""
+          className="tap-target-y mt-3 inline-flex items-center self-start text-sm font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+          onClick={() => setAllStarters(true)}
+        >
+          {sayOne(`More suggestions (${hiddenStarters})`, `Περισσότερες προτάσεις (${hiddenStarters})`)}
+        </button>
+      ) : null}
       {/* On /ai from lg the threads column beside this keeps "What I can do",
           which opens the same page; one link to it in view, not two (docs §85).
           Below lg that column is folded, so this one stays. */}

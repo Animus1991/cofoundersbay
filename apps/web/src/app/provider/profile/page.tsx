@@ -295,8 +295,9 @@ export default function ProviderProfilePage() {
           <CardContent className="space-y-3">
             <CardHead
               titleAs="h2"
+              // A picture clients can make out (docs §115): it was 40px.
               mark={(
-                <Avatar className="h-10 w-10 rounded-xl ring-2 ring-primary/20">
+                <Avatar className="h-16 w-16 rounded-xl ring-2 ring-primary/20">
                   <AvatarImage src={avatarUrl ?? undefined} alt="" />
                   <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
                     {initialsOf(displayName)}

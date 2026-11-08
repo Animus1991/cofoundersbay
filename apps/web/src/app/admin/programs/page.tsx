@@ -2,6 +2,9 @@
 
 import { StatusText } from '@/components/common/StatusText';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { CoverThumb } from '@/components/common/CoverImage';
+import { openFirst } from '@/lib/program-order';
+import { demoCover } from '@/lib/demo/photos';
 import { FactLine } from '@/components/common/FactLine';
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -74,6 +77,8 @@ type Program = {
   startDate: string;
   endDate: string;
   progress: number;
+  /** The programme's picture, as on /programs. */
+  coverImageUrl?: string | null;
 };
 
 const PROGRAM_STATUS_TONE: Record<Program['status'], StatusTone> = {
@@ -117,15 +122,19 @@ function toProgram(p: ProgramItem): Program {
     startDate: monthYear(p.startDate),
     endDate: monthYear(p.endDate),
     progress: elapsed(p.startDate, p.endDate),
+    coverImageUrl: p.coverImageUrl ?? null,
   };
 }
 
 function ProgramCard({
   program,
+  sample = false,
   onView,
   onArchive,
 }: {
   program: Program;
+  /** A sample row: it gets the demo's picture, as the sample rows elsewhere do. */
+  sample?: boolean;
   onView: (p: Program) => void;
   onArchive: (p: Program) => void;
 }) {
@@ -137,11 +146,17 @@ function ProgramCard({
     // sentence, the facts and the progress on the mark's edge.
     <Card className="transition-all hover:border-primary/20">
       <CardContent className="space-y-3">
+        {/* A small cover in the row's mark place (docs §115): the plan's "small cover in the row"; a 3:1 band made each row a screen tall. */}
         <CardHead
           mark={(
-            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-              <Award className="icon-md" aria-hidden="true" />
-            </div>
+            <CoverThumb
+              src={program.coverImageUrl ?? (sample ? demoCover(program.id, 320, 200, [program.name, program.type]) : null)}
+              fallback={(
+                <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                  <Award className="icon-md" aria-hidden="true" />
+                </div>
+              )}
+            />
           )}
           title={program.name}
           subtitle={(
@@ -301,7 +316,7 @@ export default function AdminProgramsPage() {
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
     const matchesType = typeFilter === 'all' || p.type === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
-  });
+  }).sort(openFirst);
 
   // Types are whatever the programmes call themselves; the filter offers the
   // ones present rather than a list that could name a type nobody uses.
@@ -520,7 +535,7 @@ export default function AdminProgramsPage() {
         {/* Programs List */}
         <div className="space-y-3">
           {filteredPrograms.map((program) => (
-            <ProgramCard key={program.id} program={program} onView={setViewing} onArchive={archive} />
+            <ProgramCard key={program.id} program={program} sample={showingSample} onView={setViewing} onArchive={archive} />
           ))}
           {filteredPrograms.length === 0 && (
             <Card>

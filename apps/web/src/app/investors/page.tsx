@@ -239,65 +239,99 @@ function InvestorCard({
   return (
     <Card className="group overflow-hidden transition-all hover:border-primary/30">
       <CardContent className="space-y-3">
-        <CardHead
-          mark={(
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={investor.avatarUrl} alt="" />
-              <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary-accessible">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-          )}
-          title={(
-            <span className="inline-flex max-w-full items-center gap-1.5">
-              <span className="min-w-0 break-words">{investor.displayName}</span>
-              {investor.isVerified && (
-                <BadgeCheck
-                  className={cn('icon-sm shrink-0', STATUS.info.icon)}
-                  aria-label={bilingualInline('Verified', 'Επαληθευμένος')}
-                />
-              )}
-            </span>
-          )}
-          subtitle={type || investor.firmName || investor.firmRole || investor.headline ? (
-            <>
-              {type ? <BilingualText en={type.en} el={type.el} compact /> : null}
-              {type && (investor.firmName || investor.firmRole || investor.headline) ? ' · ' : null}
-              {investor.firmName || investor.firmRole ? (
-                <>
-                  {investor.firmName}
-                  {investor.firmName && investor.firmRole ? ' · ' : null}
-                  {/* Its own node, so the catalogue can translate the role. */}
-                  {investor.firmRole ? <span>{investor.firmRole}</span> : null}
-                </>
-              ) : investor.headline}
-            </>
-          ) : undefined}
-          meta={investor.isActivelyScouting ? (
-            <span className="inline-flex items-center gap-1 text-xs text-primary-accessible">
-              <CheckCircle2 className="icon-sm" aria-hidden="true" />
-              <BilingualText en="Actively scouting" el="Αναζητά ενεργά" compact />
-            </span>
-          ) : undefined}
-          asideStays
-          aside={(
-            <button
-              aria-label={saved
-                ? bilingualInline(`Remove ${investor.displayName} from your shortlist`, `Αφαίρεση ${investor.displayName} από τη λίστα σας`)
-                : bilingualInline(`Save ${investor.displayName} to your shortlist`, `Αποθήκευση ${investor.displayName} στη λίστα σας`)}
-              aria-pressed={saved}
-              type="button"
-              onClick={onToggleSave}
-              className="tap-target flex items-center gap-1 rounded-md p-1 transition-colors hover:bg-muted sm:px-1.5"
-            >
-              <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
-              <span className="hidden sm:inline text-xs"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
-            </button>
-          )}
-        />
+        {/* On a phone two small cards share a row (docs §115): the face, the
+            name and the kind, with Save on the corner. The thesis is under
+            More there; from sm the card's full head, as before. */}
+        <div className="relative sm:hidden" data-investor-compact="">
+          <Avatar className="h-14 w-14">
+            <AvatarImage src={investor.avatarUrl} alt="" />
+            <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary-accessible">{initials}</AvatarFallback>
+          </Avatar>
+          <button
+            aria-label={saved
+              ? bilingualInline(`Remove ${investor.displayName} from your shortlist`, `Αφαίρεση ${investor.displayName} από τη λίστα σας`)
+              : bilingualInline(`Save ${investor.displayName} to your shortlist`, `Αποθήκευση ${investor.displayName} στη λίστα σας`)}
+            aria-pressed={saved}
+            type="button"
+            onClick={onToggleSave}
+            className="tap-target absolute right-0 top-0 flex items-center rounded-md p-1 transition-colors hover:bg-muted"
+          >
+            <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
+          </button>
+          <p className="card-title mt-2 line-clamp-2 break-words">
+            {investor.displayName}
+            {investor.isVerified ? (
+              <BadgeCheck className={cn('ml-1 inline icon-sm align-[-2px]', STATUS.info.icon)} aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />
+            ) : null}
+          </p>
+          {/* The kind, else what the full head would say under the name. */}
+          {type ? (
+            <p className="truncate text-xs text-muted-foreground"><BilingualText en={type.en} el={type.el} compact /></p>
+          ) : investor.firmName || investor.firmRole || investor.headline ? (
+            <p className="truncate text-xs text-muted-foreground">{investor.firmName || investor.firmRole || investor.headline}</p>
+          ) : null}
+        </div>
+        <div className="max-sm:hidden">
+          <CardHead
+            mark={(
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={investor.avatarUrl} alt="" />
+                <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary-accessible">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            title={(
+              <span className="inline-flex max-w-full items-center gap-1.5">
+                <span className="min-w-0 break-words">{investor.displayName}</span>
+                {investor.isVerified && (
+                  <BadgeCheck
+                    className={cn('icon-sm shrink-0', STATUS.info.icon)}
+                    aria-label={bilingualInline('Verified', 'Επαληθευμένος')}
+                  />
+                )}
+              </span>
+            )}
+            subtitle={type || investor.firmName || investor.firmRole || investor.headline ? (
+              <>
+                {type ? <BilingualText en={type.en} el={type.el} compact /> : null}
+                {type && (investor.firmName || investor.firmRole || investor.headline) ? ' · ' : null}
+                {investor.firmName || investor.firmRole ? (
+                  <>
+                    {investor.firmName}
+                    {investor.firmName && investor.firmRole ? ' · ' : null}
+                    {/* Its own node, so the catalogue can translate the role. */}
+                    {investor.firmRole ? <span>{investor.firmRole}</span> : null}
+                  </>
+                ) : investor.headline}
+              </>
+            ) : undefined}
+            meta={investor.isActivelyScouting ? (
+              <span className="inline-flex items-center gap-1 text-xs text-primary-accessible">
+                <CheckCircle2 className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Actively scouting" el="Αναζητά ενεργά" compact />
+              </span>
+            ) : undefined}
+            asideStays
+            aside={(
+              <button
+                aria-label={saved
+                  ? bilingualInline(`Remove ${investor.displayName} from your shortlist`, `Αφαίρεση ${investor.displayName} από τη λίστα σας`)
+                  : bilingualInline(`Save ${investor.displayName} to your shortlist`, `Αποθήκευση ${investor.displayName} στη λίστα σας`)}
+                aria-pressed={saved}
+                type="button"
+                onClick={onToggleSave}
+                className="tap-target flex items-center gap-1 rounded-md p-1 transition-colors hover:bg-muted sm:px-1.5"
+              >
+                <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
+                <span className="hidden sm:inline text-xs"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
+              </button>
+            )}
+          />
+        </div>
 
         {investor.thesisSummary && (
-          <p className="card-body line-clamp-2 text-muted-foreground">{investor.thesisSummary}</p>
+          <p className="card-body line-clamp-2 text-muted-foreground max-sm:hidden">{investor.thesisSummary}</p>
         )}
 
         {/* The facts side by side where the card is wide: one column of
@@ -317,7 +351,11 @@ function InvestorCard({
         >
           {showFacts ? <BilingualText en="Less" el="Λιγότερα" compact /> : <BilingualText en="More" el="Περισσότερα" compact />}
         </button>
-        <div hidden={!showFacts} className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+        {/* A class, not `hidden`: the grid's own display would win over the attribute. */}
+        <div className={cn(showFacts ? 'grid' : 'hidden', 'grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3')}>
+        {investor.thesisSummary ? (
+          <p className="card-body text-muted-foreground sm:hidden">{investor.thesisSummary}</p>
+        ) : null}
         {investor.industries.length ? (
           <CardFact en="Sectors" el="Τομείς">
             <TagList label={bilingualInline('Sectors', 'Τομείς')}>
@@ -386,8 +424,9 @@ function InvestorCard({
           ) : (
             <>
               <Button size="sm" asChild>
-                <Link href={`/messages?to=${investor.userId}`}>
-                  <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
+                <Link href={`/messages?to=${investor.userId}`} aria-label={bilingualInline(`Message ${investor.displayName} directly`, `Απευθείας μήνυμα: ${investor.displayName}`)}>
+                  <span className="sm:hidden"><BilingualText en="Message" el="Μήνυμα" compact /></span>
+                  <span className="max-sm:hidden"><BilingualText en="Message directly" el="Απευθείας μήνυμα" compact /></span>
                 </Link>
               </Button>
               <AskIntroButton targetId={investor.userId} targetName={investor.displayName} />
@@ -667,9 +706,14 @@ export default function InvestorsPage() {
                   </CardContent>
                 </Card>
               ))
-            : filtered.map((inv) => (
-                <InvestorCard key={inv.id} investor={inv} saved={isSaved(inv)} onToggleSave={() => void toggleSave(inv)} />
-              ))}
+            : (
+              // Two small cards a row on a phone, one wide card a row from sm (docs §115).
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-1">
+                {filtered.map((inv) => (
+                  <InvestorCard key={inv.id} investor={inv} saved={isSaved(inv)} onToggleSave={() => void toggleSave(inv)} />
+                ))}
+              </div>
+            )}
           {/* Not under a failed read: "No investors have joined yet" stood
               under "could not be loaded" (docs §86). */}
           {!isLoading && !isError && filtered.length === 0 && (

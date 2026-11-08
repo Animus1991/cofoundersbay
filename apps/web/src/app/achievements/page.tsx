@@ -559,6 +559,13 @@ export default function AchievementsPage() {
     if (categoryFilter !== 'all' && achievement.category !== categoryFilter) return false;
     return true;
   }));
+  // The badge nearest to unlocking, first (docs §115): what the reader is
+  // about to earn and what is missing. It leaves the list under it, so it is
+  // never shown twice. Unlocked badges and the leaderboard are untouched.
+  const nextBadge = activeTab === 'all' || activeTab === 'locked'
+    ? filteredAchievements.find((a) => !a.unlocked && a.total > 0 && a.progress > 0 && a.progress < a.total) ?? null
+    : null;
+  const listed = nextBadge ? filteredAchievements.filter((a) => a.id !== nextBadge.id) : filteredAchievements;
 
   const categories = [
     { value: 'all', labelEn: 'All', labelEl: 'Όλες', icon: undefined as (typeof Users | undefined) },
@@ -736,13 +743,21 @@ export default function AchievementsPage() {
           </Card>
         ) : (
           <>
+              {nextBadge ? (
+                <section className="space-y-2" data-next-badge="">
+                  <h2 className="text-xs font-medium text-muted-foreground">
+                    <BilingualText en={achievementsEn('next_badge')} el={achievementsEl('next_badge')} compact />
+                  </h2>
+                  <AchievementCard achievement={nextBadge} />
+                </section>
+              ) : null}
               <div data-tour="achievements-stats">
                 <UserStatsCard stats={stats} rank={board?.me.rank ?? null} />
               </div>
               {activeTab === 'all' && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2" data-tour="achievements-list">
-                {filteredAchievements && filteredAchievements.length > 0 ? (
-                  filteredAchievements.map((achievement, index) => (
+                {(listed.length > 0 || nextBadge) ? (
+                  listed.map((achievement, index) => (
                     <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
                   ))
                 ) : (
@@ -777,8 +792,8 @@ export default function AchievementsPage() {
 
               {activeTab === 'locked' && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                {filteredAchievements && filteredAchievements.length > 0 ? (
-                  filteredAchievements.map((achievement, index) => (
+                {(listed.length > 0 || nextBadge) ? (
+                  listed.map((achievement, index) => (
                     <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
                   ))
                 ) : (

@@ -643,7 +643,7 @@ export default function NotificationsPage() {
           {/* The inbox's own header, as on GitHub: which notifications are
               shown (all or unread, and the category if one is chosen) on the
               left, the action on all of them on the right. */}
-          <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2.5 sm:px-6">
+          <div className="flex flex-wrap items-center gap-1.5 border-b border-border px-4 py-2.5 sm:gap-2 sm:px-6">
             <div role="group" aria-label={bilingualAria('Show', 'Εμφάνιση')} className="inline-flex rounded-lg border border-border p-0.5">
               {([
                 { value: 'all', en: notificationsEn('filter_all'), el: notificationsEl('filter_all') },
@@ -656,7 +656,7 @@ export default function NotificationsPage() {
                   aria-pressed={view === option.value}
                   onClick={() => setView(option.value)}
                   className={cn(
-                    'tap-target-y inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                    'tap-target-y inline-flex items-center rounded-md px-2 py-1 text-xs font-medium transition-colors sm:px-2.5',
                     view === option.value ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
@@ -680,16 +680,23 @@ export default function NotificationsPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="ml-auto h-8 gap-1.5 px-2.5 text-xs"
+                className="ml-auto h-8 gap-1.5 px-2.5 text-xs max-sm:w-8 max-sm:px-0"
                 onClick={categoryChosen ? markShownWithUndo : markAllWithUndo}
                 disabled={markAllRead.isPending || markShownRead.isPending}
+                title={categoryChosen
+                  ? bilingualAria('Mark these read', 'Σήμανση αυτών ως αναγνωσμένων')
+                  : bilingualAria(notificationsEn('mark_all_read'), notificationsEl('mark_all_read'))}
               >
-                <CheckCheck className="icon-sm" aria-hidden="true" />
-                {categoryChosen ? (
-                  <BilingualText en="Mark these read" el="Σήμανση αυτών ως αναγνωσμένων" compact />
-                ) : (
-                  <BilingualText en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} compact />
-                )}
+                <span data-keep-icon="" className="sm:hidden"><CheckCheck className="icon-sm" aria-hidden="true" /></span>
+                {/* The inbox's tools on one row on a phone (docs §115): the
+                    words stay for a screen reader and in the tooltip. */}
+                <span className="max-sm:sr-only">
+                  {categoryChosen ? (
+                    <BilingualText en="Mark these read" el="Σήμανση αυτών ως αναγνωσμένων" compact />
+                  ) : (
+                    <BilingualText en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} compact />
+                  )}
+                </span>
               </Button>
             ) : null}
           </div>

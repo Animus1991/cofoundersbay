@@ -366,9 +366,10 @@ export default function ProviderServicesPage() {
       refresh();
     }
   };
+  // The live services first (docs §115); the sort is stable.
   const filteredServices = services.filter((s) =>
     !search || s.name.toLowerCase().includes(search.toLowerCase())
-  );
+  ).sort((a, b) => Number(b.isActive) - Number(a.isActive));
 
   // Offered to the assistant: Add Service and the card's live switch, Edit
   // and Delete (which still asks) - refused on the sample listings, whose

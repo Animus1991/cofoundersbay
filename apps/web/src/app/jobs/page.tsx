@@ -42,6 +42,7 @@ import { useToast } from '@/components/ui/toast';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardMoreMenu } from '@/components/common/CardMoreMenu';
 import { StatusText } from '@/components/common/StatusText';
 import { SaveItemButton, useSavedItems, useSaveToggle } from '@/components/common/SaveItemButton';
 import { jobsEn, jobsEl } from '@/lib/i18n/strings-jobs';
@@ -88,6 +89,7 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
   const sayOne = useBilingualString();
   const { ask } = useAskAssistant();
   const notMine = !job.creator?.id || job.creator.id !== myId;
+  const canAsk = Boolean(job.creator?.id && job.creator.id !== myId);
   // The Opportunities card: the poster's mark, the role's title with the
   // poster and the kind of work under it, then the facts and the actions,
   // all on the mark's left edge.
@@ -138,32 +140,14 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
           ]}
         />
 
+        {/* One button (docs §115): asking the poster about the role, or the
+            assistant's draft where there is no poster to ask. Saving stays a
+            mark; the poster's profile and the draft are in the menu and do
+            what their buttons did. */}
         <CardFoot>
           <SaveItemButton kind="job" itemId={job.id} title={job.title} />
-          {/* "View" linked to /discover (API) or back to /jobs (demo) for
-              every role; it opens the poster's profile when the poster is known. */}
-          {job.creator?.id ? (
-            <Button variant="outline" size="sm" className="gap-1" asChild>
-              <Link href={`/profiles/${job.creator.id}`}>
-                <ExternalLink className="icon-sm" aria-hidden="true" />
-                <BilingualText en="View poster" el="Προβολή εκδότη" compact />
-              </Link>
-            </Button>
-          ) : null}
-          {/* The assistant drafts the application from the reader's profile
-              and says what is missing (it came with the Opportunities "Jobs"
-              tab, which this page replaces; docs §111). Not on one's own role. */}
-          {notMine ? (
-            <Button variant="outline" size="sm" onClick={() => ask(applicationPrompt(job))}>
-              <BilingualText en="Draft application" el="Σύνταξη αίτησης" compact />
-            </Button>
-          ) : null}
-          {/* A candidate's next step. A role had no way to answer it: "Post
-              a role so candidates can apply", and nothing to apply with.
-              The conversation opens with a first line the reader edits
-              before sending (the marketplace's "Request" does the same). */}
-          {job.creator?.id && job.creator.id !== myId ? (
-            <Button variant="outline" size="sm" asChild>
+          {canAsk && job.creator?.id ? (
+            <Button size="sm" asChild>
               <Link
                 href={`/messages?to=${encodeURIComponent(job.creator.id)}&text=${encodeURIComponent(sayOne(
                   `Hi ${job.creator.displayName.split(' ')[0]}, I'm interested in the ${job.title} role. `,
@@ -174,7 +158,18 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
                 <BilingualText en="Ask about the role" el="Ερώτηση για τη θέση" compact />
               </Link>
             </Button>
+          ) : notMine ? (
+            <Button variant="outline" size="sm" onClick={() => ask(applicationPrompt(job))}>
+              <BilingualText en="Draft application" el="Σύνταξη αίτησης" compact />
+            </Button>
           ) : null}
+          <CardMoreMenu
+            name={job.title}
+            items={[
+              ...(job.creator?.id ? [{ key: 'poster', en: 'View poster', el: 'Προβολή εκδότη', icon: ExternalLink, href: `/profiles/${job.creator.id}` }] : []),
+              ...(canAsk && notMine ? [{ key: 'draft', en: 'Draft application', el: 'Σύνταξη αίτησης', onSelect: () => ask(applicationPrompt(job)) }] : []),
+            ]}
+          />
         </CardFoot>
       </CardContent>
     </Card>

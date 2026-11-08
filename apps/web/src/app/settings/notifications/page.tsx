@@ -23,6 +23,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
+import { PhoneFold } from '@/components/common/PhoneFold';
 import { settingsEn, settingsEl } from '@/lib/i18n/strings-settings';
 import { cn } from '@/lib/utils';
 import { getNotificationPreferences, updateNotificationPreferences } from '@/lib/api';
@@ -319,6 +320,7 @@ export default function NotificationPreferencesPage() {
         </div>
 
         {/* Notification types: one matrix, the channels as columns. */}
+        <PhoneFold title={{ en: 'What you are told about', el: 'Για τι ειδοποιείστε' }}>
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
@@ -412,6 +414,7 @@ export default function NotificationPreferencesPage() {
             })}
           </CardContent>
         </Card>
+        </PhoneFold>
 
       </div>
     </AppShell>

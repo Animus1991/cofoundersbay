@@ -24,6 +24,7 @@ import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 import { bilingualAria } from '@/lib/i18n/format';
 import { StatusText, statusEl, statusEn } from '@/components/common/StatusText';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { PhoneStickyAction } from '@/components/common/PhoneStickyAction';
 
 type Rsvp = 'going' | 'interested' | 'not_going';
 
@@ -293,7 +294,7 @@ export default function EventDetailPage() {
         </div>
 
         <aside className="space-y-4">
-          <Card>
+          <Card id="event-rsvp">
             <CardHeader>
               <CardTitle>
                 <BilingualText en="Your RSVP" el="Η απάντησή σας" compact />
@@ -351,6 +352,27 @@ export default function EventDetailPage() {
           </Card>
         </aside>
       </div>
+      {/* The answer stays in reach on a phone while the RSVP card is off
+          screen (docs §115): the same three answers, sent the same way. */}
+      {!ended ? (
+        <PhoneStickyAction watchId="event-rsvp" label={{ en: 'Your RSVP', el: 'Η απάντησή σας' }}>
+          <div className="grid grid-cols-3 gap-2">
+            {RSVP_OPTIONS.map((o) => (
+              <Button
+                key={o.value}
+                size="sm"
+                variant={event.viewerRsvp === o.value ? 'default' : 'outline'}
+                aria-pressed={event.viewerRsvp === o.value}
+                disabled={o.value === 'going' && full}
+                onClick={() => void respond(o.value)}
+                className="min-w-0 px-2"
+              >
+                <BilingualText en={o.en} el={o.el} compact />
+              </Button>
+            ))}
+          </div>
+        </PhoneStickyAction>
+      ) : null}
     </AppShell>
   );
 }

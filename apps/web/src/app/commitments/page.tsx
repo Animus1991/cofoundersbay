@@ -428,6 +428,7 @@ export default function CommitmentsPage() {
       showHelp
       rail={rail}
       askAi={ASK.commitments}
+      leadAsHint
       actions={
         <Button className="gap-2" asChild>
           <Link href="/commitments/new">

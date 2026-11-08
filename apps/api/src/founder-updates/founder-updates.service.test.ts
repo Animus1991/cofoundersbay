@@ -22,8 +22,8 @@ describe('founder update rules', () => {
 function setup() {
   const follows: Array<{ followerId: string; followingId: string; createdAt: Date }> = [];
   const updates: Record<string, any>[] = [];
-  const users: Record<string, { id: string; profile: { displayName: string; headline: string | null; avatarUrl: null } }> = {
-    elena: { id: 'elena', profile: { displayName: 'Elena', headline: 'Founder', avatarUrl: null } },
+  const users: Record<string, { id: string; profile: { displayName: string; headline: string | null; avatarUrl: null }; builderWorkspacesOwned?: Array<{ logoUrl: string | null }> }> = {
+    elena: { id: 'elena', profile: { displayName: 'Elena', headline: 'Founder', avatarUrl: null }, builderWorkspacesOwned: [{ logoUrl: 'https://cdn.example/harbor.png' }] },
     marcus: { id: 'marcus', profile: { displayName: 'Marcus', headline: null, avatarUrl: null } },
     sofia: { id: 'sofia', profile: { displayName: 'Sofia', headline: null, avatarUrl: null } },
   };
@@ -108,7 +108,11 @@ describe('FounderUpdatesService', () => {
     const asReader = await service.get('sofia', update.id);
     expect(asReader.update.publicToken).toBeNull();
     const pub = await service.getPublic(update.publicToken as string);
-    expect(pub.update).toMatchObject({ title: 'Seed round open', author: { displayName: 'Elena', headline: 'Founder' } });
+    expect(pub.update).toMatchObject({ title: 'Seed round open', author: { displayName: 'Elena', headline: 'Founder', logoUrl: 'https://cdn.example/harbor.png' } });
+    // The company's logo comes with the author; one without a workspace logo has none.
+    expect(update.author.logoUrl).toBe('https://cdn.example/harbor.png');
+    const { update: sofias } = await service.create('sofia', { title: 'Pilot live', body: 'Two lines booked.', visibility: 'public' });
+    expect(sofias.author.logoUrl).toBeNull();
     expect(JSON.stringify(pub)).not.toMatch(/"id"|elena"|up-1/);
     await service.setVisibility('elena', update.id, 'followers');
     await expect(service.getPublic(update.publicToken as string)).rejects.toBeInstanceOf(NotFoundException);

@@ -43,6 +43,7 @@ import {
   getConnectionStatus,
   getOrCreateDirectConversation,
   respondToConnectionRequest,
+  getMatchVs,
 } from '@/lib/api';
 import { useConnectionWith } from '@/hooks/useConnectionWith';
 import { hasInAppPrevious } from '@/lib/in-app-history';
@@ -168,6 +169,17 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     else router.push('/discover');
   };
 
+  // The pair's one number, beside the name (docs §115): the same read, and the
+  // same cache entry, as the match page "How we fit" opens. No number is shown
+  // when the engine gave none or the read failed.
+  const fit = useQuery({
+    queryKey: qk('matching', 'vs', userId),
+    queryFn: () => getMatchVs(userId),
+    enabled: Boolean(viewerId) && viewerId !== userId && Boolean(userId),
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
+  const fitScore = typeof fit.data?.overall?.score === 'number' && fit.data.overall.score > 0 ? Math.round(fit.data.overall.score) : null;
   const { data: connStatus } = useQuery({
     queryKey: qk('connection-status', userId),
     queryFn: () => getConnectionStatus(userId),
@@ -438,7 +450,16 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
         <ProfileHero
           name={profile.displayName}
           avatarUrl={profile.avatarUrl}
-          nameBadge={<PersonVerifiedBadge userId={userId} />}
+          nameBadge={(
+            <>
+              <PersonVerifiedBadge userId={userId} />
+              {fitScore !== null ? (
+                <span data-profile-fit="" className="inline-flex items-center rounded-full border border-primary/30 bg-primary/5 px-2 py-0.5 text-xs font-medium tabular-nums text-primary-accessible">
+                  <BilingualText en={`${fitScore}% match`} el={`${fitScore}% ταίριασμα`} compact />
+                </span>
+              ) : null}
+            </>
+          )}
           headline={profile.headline}
           meta={[
             profile.location ? <><MapPin className="icon-sm shrink-0" aria-hidden="true" />{profile.location}</> : null,

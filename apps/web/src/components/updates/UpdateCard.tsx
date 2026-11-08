@@ -22,7 +22,7 @@ export function UpdateCard({
 }: {
   update: {
     id?: string;
-    author: { displayName: string; headline: string | null; avatarUrl: string | null };
+    author: { displayName: string; headline: string | null; avatarUrl: string | null; /** The founder's company logo, when they set one. */ logoUrl?: string | null };
     title: string;
     body: string;
     metrics: Array<{ label: string; value: string }>;
@@ -45,7 +45,20 @@ export function UpdateCard({
       <Card className={cn('transition-all hover:border-primary/20', highlight && 'border-primary/40')}>
         <CardContent className="space-y-3">
           <CardHead
-            mark={(
+            mark={update.author?.logoUrl ? (
+              // The company's logo with the founder's face on its corner
+              // (docs §115): an update is about the company, sent by a person.
+              <span className="relative block h-10 w-10 shrink-0" data-keep-icon="" data-update-logo="">
+                <Avatar className="h-10 w-10 rounded-xl">
+                  <AvatarImage src={update.author.logoUrl} alt="" className="rounded-xl" />
+                  <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initialsOf(update.author.displayName)}</AvatarFallback>
+                </Avatar>
+                <Avatar className="absolute -bottom-1 -right-1 h-5 w-5 border-2 border-card">
+                  {update.author.avatarUrl ? <AvatarImage src={update.author.avatarUrl} alt="" /> : null}
+                  <AvatarFallback className="bg-primary/10 text-2xs font-semibold text-primary-accessible">{initialsOf(update.author.displayName)}</AvatarFallback>
+                </Avatar>
+              </span>
+            ) : (
               <Avatar className="h-10 w-10" data-keep-icon="">
                 {update.author?.avatarUrl ? <AvatarImage src={update.author.avatarUrl} alt="" /> : null}
                 <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(update.author?.displayName ?? '')}</AvatarFallback>

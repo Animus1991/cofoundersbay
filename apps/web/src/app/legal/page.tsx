@@ -136,52 +136,8 @@ export default function LegalHubPage() {
   return (
     <AppShell showHelp askAi={ASK_LEGAL}>
       <div className="space-y-6">
-        {/* The two things to do first, before any template. */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
-          <Card className="border-status-danger-border/40">
-            <CardContent className="space-y-3 pt-5">
-              <CardHead
-                mark={<ShieldAlert className={cn('icon-md', STATUS.danger.icon)} aria-hidden="true" />}
-                title={<BilingualText en="Sign these first" el="Υπογράψτε πρώτα αυτά" compact />}
-                subtitle={<BilingualText en="The two documents a lawyer asks about before anything else." el="Τα δύο έγγραφα που ρωτά πρώτα ένας δικηγόρος." wrap />}
-              />
-              <ul className="space-y-2" data-testid="legal-critical-list">
-                {critical.map((t) => (
-                  <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/60 px-3 py-2">
-                    <span className="min-w-0 text-sm font-medium">{say(t.name)}</span>
-                    <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={() => ask(draftPrompt(t))} data-testid={`legal-critical-draft-${t.id}`}>
-                      <Sparkles className="icon-sm" aria-hidden="true" />
-                      <BilingualText en="Draft with assistant" el="Σύνταξη με τον βοηθό" compact />
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="space-y-3 pt-5">
-              <CardHead
-                mark={<CalendarClock className="icon-md text-primary-accessible" aria-hidden="true" />}
-                title={<BilingualText en="Legal office hours" el="Νομικές ώρες γραφείου" compact />}
-                subtitle={<BilingualText en="Set aside 15 minutes for your questions, with your own lawyer. CoFounderBay does not provide one; the assistant adds it to your calendar and asks before it writes." el="Κρατήστε 15 λεπτά για τις ερωτήσεις σας, με τον δικό σας δικηγόρο. Το CoFounderBay δεν παρέχει δικηγόρο· ο βοηθός το βάζει στο ημερολόγιό σας και ρωτά πριν γράψει." wrap />}
-              />
-              <Button className="w-full gap-2" onClick={() => ask(officeHoursPrompt)} data-testid="legal-book-office-hours">
-                <CalendarClock className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Set aside 15 min" el="Κρατήστε 15′" compact />
-              </Button>
-              <p className="text-xs text-muted-foreground">
-                <BilingualText
-                  en="Not legal advice. Templates are starting points to review with counsel in your jurisdiction."
-                  el="Δεν αποτελεί νομική συμβουλή. Τα πρότυπα είναι αφετηρία για έλεγχο με δικηγόρο στη δικαιοδοσία σας."
-                  wrap
-                />
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* What to sort out, in the order it comes up. */}
+        {/* What to sort out, in the order it comes up: the reader's own list
+            first (docs §115), the two documents to sign under it. */}
         <Card data-testid="legal-checklist">
           <CardContent className="space-y-4 pt-5">
             <CardHead
@@ -228,6 +184,51 @@ export default function LegalHubPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* The two things to do first, before any template. */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
+          <Card className="border-status-danger-border/40">
+            <CardContent className="space-y-3 pt-5">
+              <CardHead
+                mark={<ShieldAlert className={cn('icon-md', STATUS.danger.icon)} aria-hidden="true" />}
+                title={<BilingualText en="Sign these first" el="Υπογράψτε πρώτα αυτά" compact />}
+                subtitle={<BilingualText en="The two documents a lawyer asks about before anything else." el="Τα δύο έγγραφα που ρωτά πρώτα ένας δικηγόρος." wrap />}
+              />
+              <ul className="space-y-2" data-testid="legal-critical-list">
+                {critical.map((t) => (
+                  <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/60 px-3 py-2">
+                    <span className="min-w-0 text-sm font-medium">{say(t.name)}</span>
+                    <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={() => ask(draftPrompt(t))} data-testid={`legal-critical-draft-${t.id}`}>
+                      <Sparkles className="icon-sm" aria-hidden="true" />
+                      <BilingualText en="Draft with assistant" el="Σύνταξη με τον βοηθό" compact />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="space-y-3 pt-5">
+              <CardHead
+                mark={<CalendarClock className="icon-md text-primary-accessible" aria-hidden="true" />}
+                title={<BilingualText en="Legal office hours" el="Νομικές ώρες γραφείου" compact />}
+                subtitle={<BilingualText en="Set aside 15 minutes for your questions, with your own lawyer. CoFounderBay does not provide one; the assistant adds it to your calendar and asks before it writes." el="Κρατήστε 15 λεπτά για τις ερωτήσεις σας, με τον δικό σας δικηγόρο. Το CoFounderBay δεν παρέχει δικηγόρο· ο βοηθός το βάζει στο ημερολόγιό σας και ρωτά πριν γράψει." wrap />}
+              />
+              <Button className="w-full gap-2" onClick={() => ask(officeHoursPrompt)} data-testid="legal-book-office-hours">
+                <CalendarClock className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Set aside 15 min" el="Κρατήστε 15′" compact />
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                <BilingualText
+                  en="Not legal advice. Templates are starting points to review with counsel in your jurisdiction."
+                  el="Δεν αποτελεί νομική συμβουλή. Τα πρότυπα είναι αφετηρία για έλεγχο με δικηγόρο στη δικαιοδοσία σας."
+                  wrap
+                />
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Templates by the moment they are needed. */}
         <Tabs value={filter} onValueChange={(v) => setFilter(isLegalCategory(v) ? v : 'all')} className="space-y-4">

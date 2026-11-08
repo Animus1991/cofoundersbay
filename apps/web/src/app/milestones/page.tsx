@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { CalendarRange, Plus, CheckCircle2, Clock, ArrowRight, Edit2, Trash2, RefreshCw, MoreVertical, Search, LayoutGrid, LayoutList, Columns3, X, Share2 } from 'lucide-react';
+import { ListChecks, CalendarRange, Plus, CheckCircle2, Clock, ArrowRight, Edit2, Trash2, RefreshCw, MoreVertical, Search, LayoutGrid, LayoutList, Columns3, X, Share2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { MilestoneChecklist } from '@/components/milestones/MilestoneChecklist';
 import { AppShell } from '@/components/layout/AppShell';
@@ -115,6 +115,7 @@ function MilestoneCard({
   inBoard?: boolean;
 }) {
   const { primary } = useLanguagePreference();
+  const [stepsOpen, setStepsOpen] = useState(false);
   const status = STATUS_CONFIG[item.status];
   const priority = PRIORITY_CONFIG[item.priority];
   // Calendar days where the reader is (lib/milestone-order): "Overdue" on
@@ -126,6 +127,7 @@ function MilestoneCard({
 
   return (
     <Card
+      data-milestone-card=""
       className={cn(
         'group relative transition-all hover:border-primary/20',
         // No opacity fade on a completed row. Fading the container fades its text
@@ -179,7 +181,11 @@ function MilestoneCard({
           </p>
         )}
 
-        <MilestoneChecklist steps={item.checklist ?? []} onChange={(steps) => onSteps(item.id, steps)} />
+        {/* A line only on a milestone that has steps; adding the first is in the menu,
+            so twelve cards do not each carry an "Add steps". */}
+        {(item.checklist ?? []).length > 0 || stepsOpen ? (
+          <MilestoneChecklist steps={item.checklist ?? []} onChange={(steps) => onSteps(item.id, steps)} defaultOpen={stepsOpen} />
+        ) : null}
 
         {/* Foot: when it is due and with whom at the left; progress and the menu at the right. */}
         <CardFoot
@@ -238,6 +244,12 @@ function MilestoneCard({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
+                  {(item.checklist ?? []).length === 0 ? (
+                    <DropdownMenuItem onSelect={() => setStepsOpen(true)} className="gap-2" data-add-steps="">
+                      <ListChecks className="icon-sm" aria-hidden="true" />
+                      <BilingualText en="Add steps" el="Προσθήκη βημάτων" compact />
+                    </DropdownMenuItem>
+                  ) : null}
                   <DropdownMenuItem onSelect={() => onEdit(item)} className="gap-2">
                     <Edit2 className="icon-sm text-muted-foreground" />
                     <BilingualText en={milestoneEn('edit')} el={milestoneEl('edit')} compact />

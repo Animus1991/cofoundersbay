@@ -310,8 +310,9 @@ export default function MentorProfilePage() {
             {/* The preview reads like a person's card elsewhere: the circle,
                 the name over the headline, and the facts on its edge. */}
             <CardHead
+              // The photo at the size founders meet it on /mentoring (docs §115).
               mark={(
-                <Avatar className="h-10 w-10">
+                <Avatar className="h-20 w-20">
                   <AvatarImage src={avatarUrl ?? undefined} alt="" />
                   <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                     {initialsOf(displayName)}

@@ -54,6 +54,10 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   // The badges beside these buttons are document completeness, not the
   // readiness dimension of the same name in the card next to it.
   quick_actions_hint: { en: 'How complete each document is', el: 'Πόσο συμπληρωμένο είναι κάθε έγγραφο' },
+  left_off: { en: 'Where you left off', el: 'Εκεί που σταματήσατε' },
+  continue_doc: { en: 'Continue', el: 'Συνέχεια' },
+  pitch_more_slides: { en: 'more', el: 'ακόμη' },
+  collab_menu: { en: 'Collaboration', el: 'Συνεργασία' },
   documents_to_start: { en: 'Documents to start', el: 'Έγγραφα για να ξεκινήσετε' },
   documents_to_start_hint: { en: 'The ones not started yet; started documents are under Documents.', el: 'Όσα δεν έχουν ξεκινήσει· τα υπόλοιπα είναι στα Έγγραφα.' },
   all_documents_started: { en: 'Every document is started. Open them under Documents.', el: 'Όλα τα έγγραφα έχουν ξεκινήσει. Ανοίξτε τα στα Έγγραφα.' },

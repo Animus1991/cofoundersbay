@@ -45,6 +45,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn, initialsOf } from '@/lib/utils';
@@ -234,7 +235,21 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                 <DropdownMenuContent align="end">
                   {/* View Details, Add to Pipeline, Add to Watchlist and
                       Request Intro were the card's own View, Add to pipeline,
-                      Watch and Intro a second time (docs §93). */}
+                      Watch and Intro a second time (docs §93). The card now
+                      keeps one of View and Add to pipeline; the other, and
+                      Intro, are here (docs §115). */}
+                  {href ? (
+                    <DropdownMenuItem disabled={addToPipeline.isPending} onSelect={() => addToPipeline.mutate()}>
+                      <GanttChart className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Add to pipeline" el="Προσθήκη στο pipeline" compact />
+                    </DropdownMenuItem>
+                  ) : null}
+                  <UnavailableMenuItem
+                    icon={<MessageCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                    en="Intro"
+                    el="Γνωριμία"
+                    reasonEn="Scouted startups are not linked to founder accounts yet"
+                    reasonEl="Οι νεοφυείς επιχειρήσεις της αναζήτησης δεν συνδέονται ακόμη με λογαριασμούς ιδρυτών"
+                  />
                   <UnavailableMenuItem
                     icon={<GitCompare className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
                     en="Compare"
@@ -276,26 +291,18 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
           </div>
         </div>
 
+        {/* One button (docs §115): the deal when it is on the board, else
+            adding it there. */}
         <CardFoot>
           {href ? (
             <Button size="sm" variant="default" asChild>
               <Link href={href}><Eye className="mr-1 icon-sm" /><BilingualText en="View" el="Προβολή" compact /></Link>
             </Button>
           ) : (
-            <Button size="sm" variant="default" disabled title="Add it to the pipeline to open the deal. Προσθέστε το στο pipeline για να ανοίξει η συμφωνία.">
-              <Eye className="mr-1 icon-sm" /><BilingualText en="View" el="Προβολή" compact />
+            <Button size="sm" variant="default" disabled={addToPipeline.isPending} onClick={() => addToPipeline.mutate()}>
+              <GanttChart className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Add to pipeline" el="Προσθήκη στο pipeline" compact />
             </Button>
           )}
-          {/* Both had no handler: Pipeline is the menu's Add to Pipeline,
-              and Intro has no founder account to reach yet. */}
-          <Button size="sm" variant="outline" disabled={addToPipeline.isPending} onClick={() => addToPipeline.mutate()}>
-            <GanttChart className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Add to pipeline" el="Προσθήκη στο pipeline" compact />
-          </Button>
-          <WithDisabledReason reasonEn="Scouted startups are not linked to founder accounts yet" reasonEl="Οι νεοφυείς επιχειρήσεις της αναζήτησης δεν συνδέονται ακόμη με λογαριασμούς ιδρυτών">
-            <Button size="sm" variant="outline" disabled>
-              <MessageCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Intro" el="Γνωριμία" compact />
-            </Button>
-          </WithDisabledReason>
         </CardFoot>
       </CardContent>
     </Card>

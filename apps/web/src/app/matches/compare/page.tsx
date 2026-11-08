@@ -278,6 +278,26 @@ export default function MatchComparePage() {
           </SectionCard>
         )}
 
+        {/* The conclusion before the evidence: who to talk to first, then why. */}
+        {people.length >= 2 && (
+          <SectionCard title="What the comparison says" titleEl="Τι λέει η σύγκριση" icon={Brain}>
+            <p className="card-body text-muted-foreground">
+              <BilingualText en={summary.en} el={summary.el} wrap />
+            </p>
+            {overallLeader >= 0 && (
+              <div className="flex flex-wrap gap-3 pt-2">
+                <MessageButton userId={people[overallLeader].userId} displayName={people[overallLeader].displayName} variant="default" size="md" />
+                <Button asChild variant="outline" size="md">
+                  <Link href={`/matches/${people[overallLeader].userId}`}>
+                    <Target className="mr-2 icon-sm" aria-hidden="true" />
+                    <BilingualText en="View full analysis" el="Πλήρης ανάλυση" compact />
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </SectionCard>
+        )}
+
         {/* A label column and a person side by side do not fit a phone: the table
             cut the name, the headline and Connect at the edge. */}
         {people.length > 0 && (
@@ -417,24 +437,6 @@ export default function MatchComparePage() {
           </div>
         )}
 
-        {people.length >= 2 && (
-          <SectionCard title="What the comparison says" titleEl="Τι λέει η σύγκριση" icon={Brain}>
-            <p className="card-body text-muted-foreground">
-              <BilingualText en={summary.en} el={summary.el} wrap />
-            </p>
-            {overallLeader >= 0 && (
-              <div className="flex flex-wrap gap-3 pt-2">
-                <MessageButton userId={people[overallLeader].userId} displayName={people[overallLeader].displayName} variant="default" size="md" />
-                <Button asChild variant="outline" size="md">
-                  <Link href={`/matches/${people[overallLeader].userId}`}>
-                    <Target className="mr-2 icon-sm" aria-hidden="true" />
-                    <BilingualText en="View full analysis" el="Πλήρης ανάλυση" compact />
-                  </Link>
-                </Button>
-              </div>
-            )}
-          </SectionCard>
-        )}
       </div>
     </AppShell>
   );

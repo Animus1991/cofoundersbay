@@ -727,7 +727,14 @@ export default function ProgramsPage() {
             ) : (
               // No "3 programs found": the tab above counts the same list.
               <div className="space-y-3">
-                {filtered.map((p) => (
+                {/* The open ones first, the nearest deadline at the top (docs §115); the rest keep their order. */}
+                {[...filtered].sort((a, b) => {
+                  const open = Number(!acceptsApplications(a)) - Number(!acceptsApplications(b));
+                  if (open !== 0) return open;
+                  const da = a.applicationDeadline ? Date.parse(a.applicationDeadline) : Number.POSITIVE_INFINITY;
+                  const db = b.applicationDeadline ? Date.parse(b.applicationDeadline) : Number.POSITIVE_INFINITY;
+                  return da === db ? 0 : da < db ? -1 : 1;
+                }).map((p) => (
                   <ProgramCard key={p.id} program={p} isEnrolled={enrolledIds.has(p.id)} onApply={setApplyTarget} />
                 ))}
               </div>

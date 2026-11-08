@@ -81,6 +81,16 @@ export default function AdminAnalyticsPage() {
     totalTenants: Array.isArray(tenants) ? tenants.length : null,
   };
   const dash = '\u2014';
+  // What the figures say, before the figures (docs §115). The stats carry no
+  // earlier period, so the sentence compares none: the range's active share
+  // of the members, and how many joined in it.
+  const rangeLabel = RANGES.find((r) => r.value === range) ?? RANGES[2];
+  const conclusion = METRICS.totalUsers && METRICS.activeUsers != null && METRICS.newUsers != null
+    ? {
+        en: `${rangeLabel.en}: ${METRICS.activeUsers} of ${METRICS.totalUsers} users active (${Math.round((METRICS.activeUsers / METRICS.totalUsers) * 100)}%), ${METRICS.newUsers} new.`,
+        el: `${rangeLabel.el}: ενεργοί ${METRICS.activeUsers} από ${METRICS.totalUsers} χρήστες (${Math.round((METRICS.activeUsers / METRICS.totalUsers) * 100)}%), νέοι ${METRICS.newUsers}.`,
+      }
+    : null;
 
   const exportMetrics = () =>
     downloadCsv('platform-analytics', ['metric', 'value'], [
@@ -135,6 +145,11 @@ export default function AdminAnalyticsPage() {
         </div>
       }
     >
+      {conclusion ? (
+        <p className="mb-4 rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground" data-analytics-conclusion="">
+          <BilingualText en={conclusion.en} el={conclusion.el} compact wrap />
+        </p>
+      ) : null}
       <HelpCallout id="admin-analytics" title="Reading these metrics">
         <p>
           <strong>Active</strong> and <strong>new users</strong> are counted over the selected range; the other figures are platform totals. Role charts show signup mix — use this to

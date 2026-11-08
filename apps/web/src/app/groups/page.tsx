@@ -494,6 +494,9 @@ export default function GroupsPage() {
     <AppShell
       showHelp
       rail={rail}
+      // The line under the title waits behind ⓘ, so the first card fits a
+      // phone's first screen whole (docs §115); the cards are as they were.
+      leadAsHint
       actions={discoverEmpty ? undefined : (
         <Button className="gap-2" onClick={() => setShowCreateModal(true)}>
           <Plus className="icon-sm" />
@@ -530,7 +533,8 @@ export default function GroupsPage() {
 
         </div>
 
-        <TabsContent value={activeTab} className="space-y-6 mt-0">
+        {/* A step tighter on a phone, so the first card fits whole (docs §115). */}
+        <TabsContent value={activeTab} className="mt-0 space-y-6 max-sm:space-y-4">
           {/* Search & Filters (discover only) */}
           {activeTab === 'discover' && (
             <div className="space-y-3">
@@ -579,8 +583,10 @@ export default function GroupsPage() {
             </div>
           )}
 
-          {/* Result count */}
-          {!listLoading && displayGroups.length > 0 && (
+          {/* Result count. Over the featured row it sits on that row's
+              heading line instead, so the first card fits a phone's first
+              screen whole (docs §115). */}
+          {!listLoading && displayGroups.length > 0 && topGroups.length === 0 && (
             <p className="text-xs text-muted-foreground px-0.5">
               {activeTab === 'my-groups'
                 ? <BilingualText en={`${displayGroups.length} joined`} el={`${displayGroups.length} με συμμετοχή`} compact />
@@ -598,6 +604,12 @@ export default function GroupsPage() {
                     ? <BilingualText en="Trending now" el="Σε άνοδο τώρα" compact />
                     : <BilingualText en="Top communities" el="Κορυφαίες κοινότητες" compact />}
                 </h2>
+                <span className="text-xs text-muted-foreground">
+                  {'· '}
+                  {activeTab === 'my-groups'
+                    ? <BilingualText en={`${displayGroups.length} joined`} el={`${displayGroups.length} με συμμετοχή`} compact />
+                    : <BilingualText en={`${displayGroups.length} found`} el={`${displayGroups.length} βρέθηκαν`} compact />}
+                </span>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {topGroups.map((g, i) => (

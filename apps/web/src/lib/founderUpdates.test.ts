@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { followPerson, getMyUpdates, getUpdatesFeed, unfollowPerson, type FounderUpdate } from '@/lib/updates-api';
+import { followPerson, getMyUpdates, getUpdatesFeed, toFounderUpdate, unfollowPerson, type FounderUpdate } from '@/lib/updates-api';
 import { previewUpdatesApi, resetDemoUpdates } from '@/lib/demo/updates-world';
 import { executeAction, isUndoable, undoAction } from './action-registry';
 import { AREA_READERS } from './copilot-reads';
@@ -47,7 +47,8 @@ describe('the demo world', () => {
 
   it('serves a public update without ids, and stops when it goes back to followers', () => {
     const pub = api('/api/updates/public/demo-alex-sept');
-    expect(pub.update.author).toEqual({ displayName: 'Alex Demo', headline: 'Founder · Athens founder networks', avatarUrl: null });
+    // The company logo travels with the author (docs §115); the demo's own account has none.
+    expect(pub.update.author).toEqual({ displayName: 'Alex Demo', headline: 'Founder · Athens founder networks', avatarUrl: null, logoUrl: null });
     expect(JSON.stringify(pub)).not.toMatch(/"id"|preview-demo-user|upd-me/);
     api('/api/updates/upd-me-1/visibility', 'PATCH', { visibility: 'followers' });
     expect(() => api('/api/updates/public/demo-alex-sept')).toThrow(/not public/);
@@ -122,5 +123,14 @@ describe('the assistant', () => {
     const outcome = await executeAction('draft_founder_update', { title: 'September', body: 'Twelve interviews.', visibility: 'public', publicToken: 'x' });
     expect(outcome).toMatchObject({ ok: true, href: '/updates' });
     expect(takeFormDraft('founder_update')).toEqual({ title: 'September', body: 'Twelve interviews.', visibility: 'public' });
+  });
+});
+
+describe('an update read from the API', () => {
+  it('keeps the company logo its author comes with, and none when there is none', () => {
+    // The card draws the logo; the reader once dropped every field it did not name (docs §115).
+    const withLogo = toFounderUpdate({ id: 'u1', title: 'T', body: 'B', author: { id: 'a', displayName: 'Elena', headline: null, avatarUrl: null, logoUrl: 'https://cdn.example/harbor.png' } });
+    expect(withLogo.author.logoUrl).toBe('https://cdn.example/harbor.png');
+    expect(toFounderUpdate({ id: 'u2', title: 'T', body: 'B', author: { id: 'b', displayName: 'Sofia' } }).author.logoUrl).toBeNull();
   });
 });

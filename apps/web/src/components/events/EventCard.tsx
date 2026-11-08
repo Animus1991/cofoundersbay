@@ -143,6 +143,7 @@ export function EventCard({
                 size="sm"
                 variant={rsvped ? 'secondary' : 'default'}
                 onClick={handleRsvp}
+                aria-pressed={rsvped}
                 disabled={isFull && !rsvped}
                 className="flex-shrink-0"
               >
@@ -154,7 +155,7 @@ export function EventCard({
                 ) : isFull ? (
                   <BilingualText en="Full" el="Πλήρες" compact />
                 ) : (
-                  <BilingualText en="RSVP" el="Δήλωση συμμετοχής" compact />
+                  <BilingualText en="Going" el="Θα έρθω" compact />
                 )}
               </Button>
             )}
@@ -173,9 +174,12 @@ export function EventCard({
   if (variant === 'featured') {
     return (
       <Card className={cn('group overflow-hidden', className)}>
-        {/* Cover image */}
+        {/* Cover image. On a phone the card is the first screen's: a lower
+            cover, and the sentence, the host and the tags left to the event's
+            page, so "Going" is in view and the next card shows under it
+            (docs §115). */}
         {event.coverImage && (
-          <div className={cn('relative overflow-hidden', cover.failed ? 'h-24 bg-muted/60' : 'h-48')}>
+          <div className={cn('relative overflow-hidden', cover.failed ? 'h-24 bg-muted/60' : 'h-48 max-sm:h-28')}>
             {cover.failed ? null : (
               <>
                 <img
@@ -218,7 +222,7 @@ export function EventCard({
             {event.title}
           </Link>
           
-          <p className="card-body mt-2 text-muted-foreground line-clamp-2">
+          <p className="card-body mt-2 text-muted-foreground line-clamp-2 max-sm:hidden">
             {event.description}
           </p>
           
@@ -232,7 +236,7 @@ export function EventCard({
           />
           
           {/* Host */}
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-4 flex items-center gap-3 max-sm:hidden">
             <Avatar className="h-8 w-8">
               {/* The name sits beside it, so the photo is decorative (WCAG 1.1.1). */}
               <AvatarImage src={event.hostAvatar || undefined} alt="" />
@@ -248,11 +252,11 @@ export function EventCard({
           
           {/* Tags */}
           {event.tags && event.tags.length > 0 && (
-            <FactLine className="mt-4" items={event.tags} />
+            <FactLine className="mt-4 max-sm:hidden" items={event.tags} />
           )}
           
           {/* Actions */}
-          <div className="mt-5 flex items-center justify-between pt-4 border-t border-border">
+          <div className="mt-5 flex items-center justify-between pt-4 border-t border-border max-sm:mt-3 max-sm:pt-3">
             <FactLine
               items={[
                 <BilingualText key="count" en={`${event.attendeesCount} attending`} el={`${event.attendeesCount} συμμετέχουν`} compact />,
@@ -278,6 +282,7 @@ export function EventCard({
               <Button
                 variant={rsvped ? 'secondary' : 'default'}
                 onClick={handleRsvp}
+                aria-pressed={rsvped}
                 disabled={isFull && !rsvped}
               >
                 {rsvped ? (
@@ -288,7 +293,7 @@ export function EventCard({
                 ) : isFull ? (
                   <BilingualText en="Full" el="Πλήρες" compact />
                 ) : (
-                  <BilingualText en="RSVP" el="Δήλωση συμμετοχής" compact />
+                  <BilingualText en="Going" el="Θα έρθω" compact />
                 )}
               </Button>
             </div>
@@ -353,6 +358,7 @@ export function EventCard({
             variant={rsvped ? 'secondary' : 'default'}
             size="sm"
             onClick={handleRsvp}
+            aria-pressed={rsvped}
             disabled={isFull && !rsvped}
           >
             {rsvped ? (
@@ -363,7 +369,7 @@ export function EventCard({
             ) : isFull ? (
               <BilingualText en="Full" el="Πλήρες" compact />
             ) : (
-              <BilingualText en="RSVP" el="Δήλωση συμμετοχής" compact />
+              <BilingualText en="Going" el="Θα έρθω" compact />
             )}
           </Button>
           <Button aria-label="Save"

@@ -472,6 +472,7 @@ export default function ConnectionsPage() {
     <AppShell
       showHelp
       rail={rail}
+      leadAsHint
     >
       <div className="space-y-6 pb-10">
       <NetworkTabs />

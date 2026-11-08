@@ -40,6 +40,7 @@ import {
   XCircle,
   Clock,
   AlertCircle,
+  MoreHorizontal,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
@@ -322,6 +323,55 @@ export function CollabToolbar({
     <TooltipProvider>
       <div className={cn('flex min-w-0 flex-wrap items-center gap-1.5', className)}>
 
+        {/* On a phone the four are one menu (docs §115): as icons they were
+            four unnamed presses on the first screen. Wider screens keep the
+            buttons, with their names. */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              data-collab-menu=""
+              className="relative h-8 px-2.5 text-muted-foreground hover:text-foreground sm:hidden"
+              aria-label={bilingualAria(
+                `${builderEn('collab_menu')}${openProposals.length ? ` (${openProposals.length} pending)` : ''}`,
+                `${builderEl('collab_menu')}${openProposals.length ? ` (${openProposals.length} σε εκκρεμότητα)` : ''}`,
+              )}
+            >
+              <MoreHorizontal className="icon-sm" aria-hidden="true" />
+              {openBranches.length + openProposals.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-2xs font-medium text-primary-foreground">
+                  {openBranches.length + openProposals.length}
+                </span>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {onHistoryClick && (
+              <DropdownMenuItem onSelect={onHistoryClick}>
+                <History className="mr-2 icon-sm" aria-hidden="true" />
+                <BilingualText en={builderEn('collab_history')} el={builderEl('collab_history')} compact />
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onSelect={() => setShowBranchPanel(true)}>
+              <GitBranch className="mr-2 icon-sm" aria-hidden="true" />
+              <BilingualText en={builderEn('collab_variants')} el={builderEl('collab_variants')} compact />
+              {openBranches.length > 0 && <span className="ml-auto pl-3 text-xs tabular-nums text-muted-foreground">{openBranches.length}</span>}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setShowReviewPanel(true)}>
+              <ClipboardCheck className="mr-2 icon-sm" aria-hidden="true" />
+              <BilingualText en={builderEn('collab_proposals')} el={builderEl('collab_proposals')} compact />
+              {openProposals.length > 0 && <span className="ml-auto pl-3 text-xs tabular-nums text-muted-foreground">{openProposals.length}</span>}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setShowShareDialog(true)}>
+              <Share2 className="mr-2 icon-sm" aria-hidden="true" />
+              <BilingualText en={builderEn('collab_share')} el={builderEl('collab_share')} compact />
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <div className="hidden min-w-0 flex-wrap items-center gap-1.5 sm:flex">
+
         {/* ── Version History ────────────────────────────────────────────── */}
         {onHistoryClick && (
           <Tooltip>
@@ -435,6 +485,7 @@ export function CollabToolbar({
             <BilingualText en={builderEn('collab_share_tip')} el={builderEl('collab_share_tip')} compact />
           </TooltipContent>
         </Tooltip>
+        </div>
 
         {/* ── Dialogs / Panels ──────────────────────────────────────────── */}
         <ShareLinkDialog

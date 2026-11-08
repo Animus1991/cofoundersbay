@@ -366,6 +366,7 @@ export default function AdminReportsPage() {
     resolve.mutate({ id: report.id, resolution });
 
 
+  // What waits first, the oldest of it at the top (docs §115).
   const filteredReports = reports.filter((r) => {
     const matchesSearch =
       !search ||
@@ -375,7 +376,7 @@ export default function AdminReportsPage() {
     const matchesPriority = priority === 'all' || r.priority === priority;
     const matchesTab = activeTab === 'all' || r.status === activeTab;
     return matchesSearch && matchesType && matchesPriority && matchesTab;
-  });
+  }).sort((a, b) => Number(a.status !== 'pending') - Number(b.status !== 'pending') || Date.parse(a.createdAt) - Date.parse(b.createdAt));
 
   const statusCounts = {
     all: reports.length,

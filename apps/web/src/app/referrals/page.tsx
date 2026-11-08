@@ -140,7 +140,11 @@ const DEMO_REFERRALS: Referral[] = attachDemoPhotos([
  * for nobody. Invitations that should be tracked go through /invite, which
  * records them (POST /invites) and is what the list below reads.
  */
-function ReferralLink({ onCopy }: { onCopy?: (copy: () => void) => void }) {
+function ReferralLink({ onCopy, signedUp = null }: {
+  onCopy?: (copy: () => void) => void;
+  /** How many have signed up from the reader's invitations; null when unread. */
+  signedUp?: number | null;
+}) {
   const { success } = useToast();
   const { primary } = useLanguagePreference();
   const [origin, setOrigin] = useState('https://cofounderbay.com');
@@ -193,6 +197,17 @@ function ReferralLink({ onCopy }: { onCopy?: (copy: () => void) => void }) {
             <BilingualText en={referralsEn('copy')} el={referralsEl('copy')} compact wrap />
           </Button>
         </div>
+        {/* What the link has done so far, under it (docs §115). */}
+        {signedUp != null ? (
+          <p className="text-sm text-muted-foreground" data-referral-signed-up="">
+            <span className="font-semibold tabular-nums text-foreground">{signedUp}</span>{' '}
+            <BilingualText
+              en={referralsEn(signedUp === 1 ? 'link_signed_up_one' : 'link_signed_up')}
+              el={referralsEl(signedUp === 1 ? 'link_signed_up_one' : 'link_signed_up')}
+              compact
+            />
+          </p>
+        ) : null}
 
         <div className="flex flex-wrap gap-2">
           <Button size="sm" asChild>
@@ -484,7 +499,10 @@ export default function ReferralsPage() {
           />
         )}
 
-        <ReferralLink onCopy={(copy) => { copyRef.current = copy; }} />
+        <ReferralLink
+          onCopy={(copy) => { copyRef.current = copy; }}
+          signedUp={readFailed || isLoading ? null : referrals.filter((r) => r.status !== 'pending' && r.status !== 'expired').length}
+        />
 
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">

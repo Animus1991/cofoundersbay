@@ -209,6 +209,16 @@ export default function OrgAnalyticsPage() {
     sessions: sessions.filter((s) => monthKey(new Date(s.scheduledAt)) === monthKey(d)).length,
   }));
   const recentMonths = sessionsByMonth.slice(-3);
+  // What the figures say, before the figures (docs §115): this month's
+  // applications against last month's, from the trend the chart draws.
+  const thisMonth = trend.length >= 2 ? trend[trend.length - 1].applications : null;
+  const lastMonth = trend.length >= 2 ? trend[trend.length - 2].applications : null;
+  const conclusion = thisMonth !== null && lastMonth !== null && (thisMonth > 0 || lastMonth > 0)
+    ? {
+        en: `${thisMonth} ${thisMonth === 1 ? 'application' : 'applications'} this month, ${thisMonth === lastMonth ? 'the same as' : thisMonth > lastMonth ? 'up from' : 'down from'} ${lastMonth} last month.`,
+        el: `Αιτήσεις αυτόν τον μήνα: ${thisMonth}· τον προηγούμενο: ${lastMonth}.`,
+      }
+    : null;
   const perMonth = Math.round(recentMonths.reduce((sum, m) => sum + m.sessions, 0) / recentMonths.length);
 
   // ── Who is in the organisation ──────────────────────────────────────────
@@ -322,6 +332,11 @@ export default function OrgAnalyticsPage() {
       )}
     >
       <div className="space-y-6">
+        {conclusion && !loading && !participantsFailed ? (
+          <p className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground" data-analytics-conclusion="">
+            <BilingualText en={conclusion.en} el={conclusion.el} compact wrap />
+          </p>
+        ) : null}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <MetricTile
             icon={Rocket}

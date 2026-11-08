@@ -335,16 +335,23 @@ const NEXT_TIER: Record<ScoreLevel, { score: number; en: string; el: string } | 
 function ScoreEmblem({
   score,
   dimensions,
+  compact = false,
 }: {
   score: number;
   dimensions: { key: string; pct: number; labelEn: string; labelEl: string }[];
+  /**
+   * The phone's emblem (docs §115): a smaller ring with the same figure, the
+   * tier under it and no pips, so the weakest dimensions fit beside it. The
+   * dimensions stay links in that list and in the cards below.
+   */
+  compact?: boolean;
 }) {
   const glowId = `cfb-score-glow-${useId().replace(/:/g, '')}`;
-  const size = 184;
-  const pad = 24;
+  const size = compact ? 128 : 184;
+  const pad = compact ? 0 : 24;
   const cx = size / 2;
   const cy = size / 2;
-  const r = 78;
+  const r = compact ? 54 : 78;
   const circ = 2 * Math.PI * r;
   const status = scoreToStatus(score);
   const colors = scoreColors(status);
@@ -372,7 +379,8 @@ function ScoreEmblem({
             glow filter, no inset shadow — they read as a stain on the card
             seam beside this emblem. */}
         <div
-          className="pointer-events-none absolute left-1/2 top-1/2 h-[184px] w-[184px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/15 bg-primary/[0.04]"
+          style={{ width: size, height: size }}
+          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/15 bg-primary/[0.04]"
           aria-hidden="true"
         />
         <svg
@@ -408,12 +416,14 @@ function ScoreEmblem({
             {score}
             <span className="text-sm font-medium text-muted-foreground">/100</span>
           </span>
-          <span className={cn('page-stat-label rounded-full px-2.5 py-0.5 font-semibold leading-none', colors.bg, colors.text)}>
-            <BilingualText en={STATUS_LABEL[status].en} el={STATUS_LABEL[status].el} compact />
-          </span>
+          {compact ? null : (
+            <span className={cn('page-stat-label rounded-full px-2.5 py-0.5 font-semibold leading-none', colors.bg, colors.text)}>
+              <BilingualText en={STATUS_LABEL[status].en} el={STATUS_LABEL[status].el} compact />
+            </span>
+          )}
         </div>
         </div>
-        {dimensions.map((dim, index) => {
+        {compact ? null : dimensions.map((dim, index) => {
           const angle = (-90 + (index * 360) / dimensions.length) * (Math.PI / 180);
           const x = pad + cx + pipR * Math.cos(angle);
           const y = pad + cy + pipR * Math.sin(angle);
@@ -437,6 +447,11 @@ function ScoreEmblem({
           );
         })}
       </div>
+      {compact ? (
+        <span className={cn('page-stat-label rounded-full px-2.5 py-0.5 font-semibold leading-none', colors.bg, colors.text)}>
+          <BilingualText en={STATUS_LABEL[status].en} el={STATUS_LABEL[status].el} compact />
+        </span>
+      ) : null}
       {next && ptsToNext > 0 && (
         <p className="text-xs tabular-nums text-muted-foreground">
           <BilingualText
@@ -1326,16 +1341,23 @@ export default function ReadinessPage() {
                   />
                 </p>
               </div>
-              <div className="flex flex-col items-start gap-5 lg:flex-row lg:items-center lg:gap-8">
-              <ScoreEmblem
-                score={overallScore}
-                dimensions={dimensions.map((d) => ({
-                  key: d.key,
-                  pct: Math.round((d.score / d.maxScore) * 100),
-                  labelEn: d.labelEn,
-                  labelEl: d.labelEl,
-                }))}
-              />
+              {/* On a phone the smaller emblem, with what to do next and the
+                  weakest dimensions beside it (docs §115); from sm as before. */}
+              <div className="flex flex-row items-start gap-4 sm:flex-col sm:gap-5 lg:flex-row lg:items-center lg:gap-8">
+              {([true, false] as const).map((compact) => (
+                <div key={String(compact)} className={compact ? 'shrink-0 sm:hidden' : 'max-sm:hidden'}>
+                  <ScoreEmblem
+                    compact={compact}
+                    score={overallScore}
+                    dimensions={dimensions.map((d) => ({
+                      key: d.key,
+                      pct: Math.round((d.score / d.maxScore) * 100),
+                      labelEn: d.labelEn,
+                      labelEl: d.labelEl,
+                    }))}
+                  />
+                </div>
+              ))}
               <div className="flex min-w-0 w-full flex-1 flex-col items-start gap-4">
               {nextOpen && (
                 <Link

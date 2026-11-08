@@ -241,6 +241,9 @@ function ApplicationCard({
           )}
         />
 
+        {/* The facts, and the card's one button as the last of them (docs
+            §115): the review the name also opens, where Accept and Reject are.
+            On a line of its own it was a row more on every card. */}
         <FactLine
           items={[
             application.program,
@@ -249,6 +252,17 @@ function ApplicationCard({
             application.score !== undefined
               ? <BilingualText key="score" en={`Score: ${application.score}/100`} el={`Βαθμολογία: ${application.score}/100`} compact />
               : null,
+            <button
+              key="review"
+              type="button"
+              data-application-review=""
+              data-pending={application.status === 'pending' ? '' : undefined}
+              aria-label={bilingualAria(`Review ${application.startupName}`, `Αξιολόγηση: ${application.startupName}`)}
+              onClick={() => onReview(application)}
+              className="tap-extend-y font-medium text-primary-accessible underline-offset-2 hover:underline focus-ring"
+            >
+              <BilingualText en="Review" el="Αξιολόγηση" compact />
+            </button>,
           ]}
         />
       </CardContent>
@@ -392,6 +406,7 @@ export default function OrgApplicationsPage() {
   }, [linked, applications, programs]);
 
 
+  // The ones waiting for a decision first (docs §115); the sort is stable.
   const filteredApplications = applications.filter((a) => {
     const matchesSearch =
       !search ||
@@ -400,7 +415,7 @@ export default function OrgApplicationsPage() {
     const matchesProgram = program === 'all' || a.program === program;
     const matchesTab = activeTab === 'all' || a.status === activeTab;
     return matchesSearch && matchesProgram && matchesTab;
-  });
+  }).sort((a, b) => Number(a.status !== 'pending') - Number(b.status !== 'pending'));
 
   /** Program names present in the rows on screen, for the filter. */
   const programNames = [...new Set(applications.map((a) => a.program))];

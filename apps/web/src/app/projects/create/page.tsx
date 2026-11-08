@@ -35,7 +35,8 @@ import {
   PROJECT_STAGE_FULL_KEYS,
   PROJECT_COMMON_ROLES,
 } from '@/lib/i18n/strings-projects';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import {
   createDemoProject,
@@ -80,6 +81,7 @@ export default function CreateProjectPage() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [logoUrl, setLogoUrl] = useState('');
   const [name, setName] = useState('');
   const [tagline, setTagline] = useState('');
   const [description, setDescription] = useState('');
@@ -110,12 +112,13 @@ export default function CreateProjectPage() {
   // What is entered and not created yet, across the four steps: asked about
   // before leaving, kept as a draft in this tab and offered back (docs §105).
   const fields = useMemo(
-    () => ({ name, tagline, description, status, industry, location, website, maxTeamSize, rolesNeeded, tags }),
-    [name, tagline, description, status, industry, location, website, maxTeamSize, rolesNeeded, tags],
+    () => ({ logoUrl, name, tagline, description, status, industry, location, website, maxTeamSize, rolesNeeded, tags }),
+    [logoUrl, name, tagline, description, status, industry, location, website, maxTeamSize, rolesNeeded, tags],
   );
   const restoreFields = useCallback((d: Partial<typeof fields>) => {
     const str = (v: unknown) => (typeof v === 'string' ? v : '');
     const list = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
+    setLogoUrl(str(d.logoUrl));
     setName(str(d.name));
     setTagline(str(d.tagline));
     setDescription(str(d.description));
@@ -183,6 +186,7 @@ export default function CreateProjectPage() {
         maxTeamSize: Number(maxTeamSize) || 5,
         rolesNeeded,
         tags,
+        logoUrl,
       });
       unsaved.markSaved();
       success('Project created', 'It is now visible to potential co-founders.');
@@ -273,6 +277,13 @@ export default function CreateProjectPage() {
               <CardDescription><BilingualText en={projectEn('basics_desc')} el={projectEl('basics_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* The logo first (docs §115): it is the project's face on every card. */}
+              <div className="space-y-2">
+                <Label htmlFor="logo">
+                  <BilingualText en={projectEn('field_logo')} el={projectEl('field_logo')} compact />
+                </Label>
+                <Input id="logo" type="url" inputMode="url" className="rounded-xl" placeholder="https://" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="name">
                   <BilingualText en={projectEn('field_name')} el={projectEl('field_name')} compact /> *
@@ -560,7 +571,13 @@ export default function CreateProjectPage() {
           <Card>
             <CardContent className="space-y-3">
               <CardHead
-                mark={(
+                mark={/^https:\/\/\S+$/.test(logoUrl.trim()) ? (
+                  // The list card's mark: the logo in a rounded square.
+                  <Avatar className="h-10 w-10 rounded-xl">
+                    <AvatarImage src={logoUrl.trim()} alt="" className="rounded-xl" />
+                    <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initialsOf(name.trim() || '?')}</AvatarFallback>
+                  </Avatar>
+                ) : (
                   <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
                     <CfbGlyph name={PROJECT_STATUS_GLYPH[status]} className="icon-md" />
                   </div>

@@ -317,8 +317,10 @@ try {
   const due = await call(founder, 'POST', '/api/milestones', { title: 'Δοκιμή ορόσημο', dueDate: '2026-01-01' });
   check('milestone: saves', due.status < 300, String(due.status));
   await open(founder, '/milestones', 3000);
+  await founder.page.locator('[data-milestone-card] [aria-haspopup="menu"]').first().click();
+  await founder.page.locator('[data-add-steps]').click();
+  await founder.page.waitForTimeout(400);
   const steps = founder.page.locator('[data-milestone-checklist]').first();
-  await steps.locator('button').first().click();
   await steps.getByPlaceholder(/Ένα βήμα/).fill('Πρώτο βήμα');
   await steps.getByRole('button', { name: /Προσθήκη/ }).last().click();
   await founder.page.waitForTimeout(1200);

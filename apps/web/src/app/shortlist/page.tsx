@@ -531,6 +531,7 @@ export default function ShortlistPage() {
       titleEl={shortlistEl('page_title')}
       description={shortlistEn('page_description')}
       descriptionEl={shortlistEl('page_description')}
+      leadAsHint
     >
       <div className="space-y-6 pb-10">
         <NetworkTabs />

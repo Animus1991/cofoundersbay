@@ -249,7 +249,12 @@ export default function PerksPage() {
   const managed = useQuery({ queryKey: qk('perks', 'admin'), queryFn: adminListPerks, enabled: isAdmin });
 
   const all = offers.data ?? [];
-  const shown = category === 'all' ? all : all.filter((p) => p.category === category);
+  // With a stage chosen, the perks named for it first, then those for every
+  // stage, then the rest (docs §115); the sort is stable.
+  const FIT_RANK = { match: 0, any: 1, other: 2 } as const;
+  const shown = (category === 'all' ? all : all.filter((p) => p.category === category))
+    .slice()
+    .sort((a, b) => FIT_RANK[perkFit(a, stage === 'any' ? null : stage)] - FIT_RANK[perkFit(b, stage === 'any' ? null : stage)]);
   const claimed = claimedQuery.data ?? [];
   const adminRows = managed.data ?? [];
   const offersFailed = offers.isError && !offers.data;

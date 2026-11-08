@@ -501,10 +501,11 @@ export default function InvestorWatchlistPage() {
   }));
   const activity = liveActivity.length > 0 ? liveActivity : showDemoData ? MOCK_ACTIVITY : [];
 
+  // What moved last first (docs §115): the newest activity at the top.
   const filtered = watched.filter(
     s => (!search || s.name.toLowerCase().includes(search.toLowerCase()) || s.tagline.toLowerCase().includes(search.toLowerCase()))
       && (!alertsOnly || s.alertsEnabled)
-  );
+  ).sort((a, b) => Date.parse(b.lastActivity) - Date.parse(a.lastActivity));
 
   const alertCount = watched.filter(s => s.alertsEnabled).length;
 
