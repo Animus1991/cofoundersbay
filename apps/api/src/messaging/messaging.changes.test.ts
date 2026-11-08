@@ -20,6 +20,7 @@ function setup(opts: { sender?: string; ageMinutes?: number; validated?: boolean
   const prisma = {
     conversationParticipant: { findUnique: vi.fn().mockResolvedValue(opts.participant === false ? null : { conversationId: 'c1' }) },
     conversationValidation: { findUnique: vi.fn().mockResolvedValue(opts.validated ? { transcriptAvailable: true } : null) },
+    conversation: { update: vi.fn().mockResolvedValue({}) },
     message: {
       findFirst: vi.fn().mockResolvedValue(found ? message : null),
       update: vi.fn().mockImplementation(({ data }: { data: { body?: string; editedAt?: Date } }) => Promise.resolve({
@@ -35,6 +36,7 @@ function setup(opts: { sender?: string; ageMinutes?: number; validated?: boolean
       })),
     },
   };
+  (prisma as { $transaction: unknown }).$transaction = vi.fn(async (fn: (tx: typeof prisma) => Promise<unknown>) => fn(prisma));
   const service = new MessagingService(prisma as never, {} as never, {} as never);
   return { service, prisma };
 }
@@ -82,6 +84,22 @@ describe('deleting a message', () => {
     const { service, prisma } = setup();
     await expect(service.deleteMessage('me', 'c1', 'm1')).resolves.toEqual({ id: 'm1', conversationId: 'c1' });
     expect(prisma.message.update.mock.calls[0]?.[0]).toMatchObject({ data: { deletedAt: expect.any(Date) } });
+  });
+
+  it('moves the inbox time to the newest message that is still visible', async () => {
+    const older = new Date('2026-11-01T10:00:00.000Z');
+    const { service, prisma } = setup();
+    prisma.message.findFirst.mockResolvedValueOnce({
+      id: 'm1',
+      senderId: 'me',
+      createdAt: new Date(),
+    });
+    prisma.message.findFirst.mockResolvedValueOnce({ createdAt: older });
+    await service.deleteMessage('me', 'c1', 'm1');
+    expect(prisma.conversation.update).toHaveBeenCalledWith({
+      where: { id: 'c1' },
+      data: { lastMessageAt: older },
+    });
   });
 
   it('has no time limit, but keeps the other rules', async () => {

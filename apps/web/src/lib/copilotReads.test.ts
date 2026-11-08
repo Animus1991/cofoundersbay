@@ -292,9 +292,17 @@ describe('reading the founder fundraising board', () => {
   });
 
   it('says there is nothing yet when samples are off and the member added no lead', async () => {
+    vi.spyOn(await import('@/lib/fundraising-api'), 'getFundraising').mockResolvedValue({ round: null, leads: [], documents: [] });
     const read = await AREA_READERS.get_fundraising({}, en);
     expect(read.section).toMatch(/^No round and no investor leads yet\./);
     expect(read.section).not.toContain('Harbor');
+  });
+
+  it('says the round was not read when the account cannot be reached', async () => {
+    vi.spyOn(await import('@/lib/fundraising-api'), 'getFundraising').mockRejectedValue(new Error('down'));
+    const read = await AREA_READERS.get_fundraising({}, en);
+    expect(read.section).toMatch(/^Your round could not be read just now\./);
+    expect(read.section).not.toMatch(/^No round and no investor leads yet\./);
   });
 });
 

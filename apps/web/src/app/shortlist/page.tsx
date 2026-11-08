@@ -99,6 +99,13 @@ const STATUS_CONFIG: Record<NonNullable<StatusLabel>, { key: string; color: stri
   not_relevant: { key: 'status_not_relevant', color: 'bg-muted text-muted-foreground', icon: Ban },
 };
 
+/** Either shape `GET /api/recommendations` can return: search hits carry `matchScore`, the matching list carries `score`. */
+function recommendationScore(hit: { matchScore?: number; score?: number }): number | undefined {
+  if ('profile' in hit && typeof hit.score === 'number') return hit.score;
+  if (typeof hit.matchScore === 'number') return hit.matchScore;
+  return undefined;
+}
+
 function ShortlistCardSkeleton({ grid }: { grid?: boolean }) {
   return (
     <div className={cn('rounded-xl border border-border bg-card p-4 space-y-3', grid && 'flex flex-col')}>
@@ -353,7 +360,8 @@ export default function ShortlistPage() {
   const matchScores = useMemo(() => {
     const map = new Map<string, number>();
     for (const hit of recommended?.suggestions ?? []) {
-      if (hit.matchScore != null) map.set(hit.userId, hit.matchScore);
+      const score = recommendationScore(hit);
+      if (score != null) map.set(hit.userId, score);
     }
     return map;
   }, [recommended]);

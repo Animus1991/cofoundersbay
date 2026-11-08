@@ -624,7 +624,20 @@ export class MessagingService {
   /** Soft: the row stays, so a validated transcript and the other side's export are not rewritten. */
   async deleteMessage(userId: string, conversationId: string, messageId: string): Promise<{ id: string; conversationId: string }> {
     await this.changeableMessage(userId, conversationId, messageId);
-    await this.prisma.message.update({ where: { id: messageId }, data: { deletedAt: new Date() } });
+    await this.prisma.$transaction(async (tx) => {
+      await tx.message.update({ where: { id: messageId }, data: { deletedAt: new Date() } });
+      // The inbox sorts on this time. Leaving the deleted message's time in
+      // place kept a thread above conversations whose visible words are newer.
+      const latest = await tx.message.findFirst({
+        where: { conversationId, deletedAt: null },
+        orderBy: { createdAt: 'desc' },
+        select: { createdAt: true },
+      });
+      await tx.conversation.update({
+        where: { id: conversationId },
+        data: { lastMessageAt: latest?.createdAt ?? null },
+      });
+    });
     return { id: messageId, conversationId };
   }
 

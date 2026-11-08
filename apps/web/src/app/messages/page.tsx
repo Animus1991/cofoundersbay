@@ -376,6 +376,12 @@ export default function MessagesPage() {
 
     const onUpdated: ServerToClientEvents['message:updated'] = ({ message }) => {
       setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, content: message.body, editedAt: message.editedAt ? new Date(message.editedAt) : null } : m)));
+      const editedAt = new Date(message.createdAt).getTime();
+      setConversations((prev) => prev.map((c) => (
+        c.id === message.conversationId && c.lastMessageTime && new Date(c.lastMessageTime).getTime() === editedAt
+          ? { ...c, lastMessage: message.body }
+          : c
+      )));
     };
     const onRemoved: ServerToClientEvents['message:removed'] = ({ id, conversationId }) => {
       setMessages((prev) => prev.filter((m) => m.id !== id));
@@ -872,11 +878,17 @@ export default function MessagesPage() {
   const handleEditMessage = async (messageId: string, body: string) => {
     if (!selectedConversation) return;
     const before = messages.find((m) => m.id === messageId);
+    const conversationId = selectedConversation.id;
+    const isLatest = messages[messages.length - 1]?.id === messageId;
     setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, content: body, editedAt: new Date() } : m)));
+    if (isLatest) setConversations((prev) => prev.map((c) => (c.id === conversationId ? { ...c, lastMessage: body } : c)));
     if (isPreviewDemo()) return;
-    const reply = await askServer('message:edit', { conversationId: selectedConversation.id, messageId, body });
+    const reply = await askServer('message:edit', { conversationId, messageId, body });
     if (reply.ok) return;
-    if (before) setMessages((prev) => prev.map((m) => (m.id === messageId ? before : m)));
+    if (before) {
+      setMessages((prev) => prev.map((m) => (m.id === messageId ? before : m)));
+      if (isLatest) setConversations((prev) => prev.map((c) => (c.id === conversationId ? { ...c, lastMessage: before.content } : c)));
+    }
     showError(t(messagesEn('edit_failed'), messagesEl('edit_failed')), refusal(reply.error));
   };
 

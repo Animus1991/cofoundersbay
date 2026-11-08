@@ -521,6 +521,10 @@ export function ChatWindow({
     setInputValue(initialDraft ?? '');
   }, [conversation.id, initialDraft, initialSearch]);
 
+  // The window stays mounted when another thread opens, so the recorder's own
+  // unmount cleanup never runs. Leaving mid-note drops it and frees the mic.
+  useEffect(() => () => { voice.cancel(); }, [conversation.id, voice.cancel]);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!window.matchMedia('(min-width: 768px)').matches) return;

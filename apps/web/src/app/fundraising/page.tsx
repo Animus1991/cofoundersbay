@@ -810,7 +810,7 @@ function RoomUpload({ onUpload }: { onUpload: RoomActions['upload'] }) {
     setBusy(true);
     try {
       await onUpload(file, category);
-      success('Document added', 'It is stored privately and only you can open it.');
+      success('Document added', 'It is stored privately. Only you and the investors you give access to can open it.');
     } catch (err) {
       showError('Could not add the document', err instanceof Error ? err.message : undefined);
     } finally {

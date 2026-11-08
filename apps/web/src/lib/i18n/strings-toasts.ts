@@ -376,7 +376,7 @@ export const TOAST_EL: Record<string, string> = {
   "Could not remove the document": "Το έγγραφο δεν αφαιρέθηκε",
   "Could not download the document": "Το έγγραφο δεν κατέβηκε",
   "Could not update the document": "Το έγγραφο δεν ενημερώθηκε",
-  "It is stored privately and only you can open it.": "Αποθηκεύτηκε ιδιωτικά και μόνο εσείς μπορείτε να το ανοίξετε.",
+  "It is stored privately. Only you and the investors you give access to can open it.": "Αποθηκεύτηκε ιδιωτικά. Το ανοίγετε μόνο εσείς και οι επενδυτές στους οποίους δίνετε πρόσβαση.",
   // The assistant: 👍 / 👎 under an answer (§111).
   "Could not save your rating": "Η αξιολόγηση δεν αποθηκεύτηκε",
   // The API's refusal when a member limits who may start a conversation
