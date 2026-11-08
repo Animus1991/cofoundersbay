@@ -64,7 +64,6 @@ describe('where the panel sits', () => {
   // between them pushed the figures and the lists below the fold. The
   // founder home already kept it last; the other homes follow.
   const homes: { file: string; audience: string }[] = [
-    { file: 'dashboard/founder/FounderDashboardContent.tsx', audience: 'founder' },
     { file: 'dashboard/investor/page.tsx', audience: 'investor' },
     { file: 'dashboard/mentor/page.tsx', audience: 'mentor' },
     { file: 'dashboard/provider/page.tsx', audience: 'provider' },

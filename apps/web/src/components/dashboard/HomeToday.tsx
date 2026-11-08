@@ -69,11 +69,16 @@ export function todayRows(notices: LiveNotice[], now: HomeAskNow[]): TodayRow[] 
   return rows.filter((row): row is TodayRow => row !== null);
 }
 
-export function HomeToday() {
-  const { ask } = useAskAssistant();
+/** What waits on the reader, in Today's order: the card here, the count on the feed. */
+export function useTodayRows() {
   const counts = useUnreadCounts();
   const { notices, followUps } = useLiveNotices();
-  const rows = todayRows(notices, nowStartingPoints({ ...counts, followUps: followUps.length }));
+  return { rows: todayRows(notices, nowStartingPoints({ ...counts, followUps: followUps.length })) };
+}
+
+export function HomeToday() {
+  const { ask } = useAskAssistant();
+  const { rows } = useTodayRows();
   // After mount: the clock and the storage are the reader's, not the server's.
   const [lastVisit, setLastVisit] = useState<number | null>(null);
   useEffect(() => { setLastVisit(readLastVisit()); }, []);

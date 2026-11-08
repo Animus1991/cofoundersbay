@@ -1199,7 +1199,7 @@ const PEOPLE = [
     // The API filters `investmentStages` on the role payload's `stages`.
     investmentStages: ['pre-seed', 'seed'],
     lastSeenSecondsAgo: null,
-    joinedAt: '2026-09-01T09:00:00.000Z',
+    joinedAt: previewIsoInDays(-5, 9),
   },
 ];
 

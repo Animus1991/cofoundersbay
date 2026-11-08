@@ -60,7 +60,7 @@ export function partOfDay(hour: number): Part {
  * - Under them, "Your pages": what the reader pinned and opens most, each
  *   with its `G` number (`YourPagesRow`, docs §107).
  */
-export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true }: { role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean }) {
+export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true, plain = false }: { role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean; /** Only the question box: the shortcuts live in the page's tools (docs §116). */ plain?: boolean }) {
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
   const popup = usePopupChatOptional();
@@ -223,11 +223,13 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <span className="ml-auto hidden text-2xs text-muted-foreground sm:inline">
-            <BilingualText en="Enter to send · Shift+Enter for a new line · / for commands" el="Enter για αποστολή · Shift+Enter για νέα γραμμή · / για εντολές" compact />
-          </span>
+          {plain ? null : (
+            <span className="ml-auto hidden text-2xs text-muted-foreground sm:inline">
+              <BilingualText en="Enter to send · Shift+Enter for a new line · / for commands" el="Enter για αποστολή · Shift+Enter για νέα γραμμή · / για εντολές" compact />
+            </span>
+          )}
           {/* Dictation on phones sits beside Send (docs §107.7-7, §111). */}
-          <span className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0">
+          <span className={cn('ml-auto flex shrink-0 items-center gap-1', !plain && 'sm:ml-0')}>
             <DictationButton value={value} onChange={setValue} size="small" />
             <Button
               type="submit"
@@ -243,10 +245,10 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
         </div>
       </form>
 
-      <HomeActionShelf actions={config.actions} now={showWaiting ? now : []} run={run} />
+      {plain ? null : <HomeActionShelf actions={config.actions} now={showWaiting ? now : []} run={run} />}
 
       {/* The reader's own pages: pinned, then the most opened (docs §107). */}
-      <YourPagesRow />
+      {plain ? null : <YourPagesRow />}
     </section>
   );
 }

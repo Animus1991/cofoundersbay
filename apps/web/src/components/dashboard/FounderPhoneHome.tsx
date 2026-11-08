@@ -109,6 +109,7 @@ function seenToday(lastSeenAt?: number | null): boolean {
  * page that already exists. The wider column still holds the full lists.
  */
 export function FounderPhoneHome({
+  leadOnly = false,
   showResume,
   matches,
   matchesSettled = true,
@@ -122,6 +123,8 @@ export function FounderPhoneHome({
   demoEvents,
   showDemoEvents,
 }: {
+  /** Only the unfinished thing and the people (docs §116), the people each with a reason. */
+  leadOnly?: boolean;
   showResume: boolean;
   matches: SearchHit[];
   /** The list has answered (or failed): an empty card may say so. */
@@ -142,6 +145,7 @@ export function FounderPhoneHome({
 }) {
   const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
+  const [leadNow] = useState(() => Date.now());
   const [sentTo, setSentTo] = useState<string | null>(null);
   const sample = isPreviewDemo();
   const people = matches.filter((person) => person?.userId).slice(0, 8);
@@ -236,7 +240,7 @@ export function FounderPhoneHome({
       ) : null}
 
       {showMatches ? (
-        <Card>
+        <Card data-tour="founder-people">
           {/* The card is the matches figure too: how many, how many are
               excellent, and the way to the list (it was a separate "Top
               Matches 4" tile one row below; docs §70). */}
@@ -281,7 +285,28 @@ export function FounderPhoneHome({
                 </Button>
               </div>
             ) : null}
-            <div className={cn('flex min-w-0 gap-3 overflow-x-auto pb-1', people.length === 0 && 'hidden')}>
+            {leadOnly && people.length > 0 ? (
+              <ul className="divide-y divide-border" data-home-matches="">
+                {people.slice(0, 3).map((person) => {
+                  const reason = explainMatch(person, viewer ?? null, { nowMs: leadNow })[0] ?? null;
+                  return (
+                    <li key={person.userId}>
+                      <Link href={`/profiles/${person.userId}`} className="flex items-center gap-3 py-2.5 first:pt-0 focus-ring">
+                        <Avatar className="h-12 w-12 shrink-0">
+                          <AvatarImage src={person.avatarUrl ?? undefined} alt="" />
+                          <AvatarFallback>{initialsOf(person.displayName)}</AvatarFallback>
+                        </Avatar>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium text-foreground">{person.displayName}</span>
+                          {reason ? <span className="block truncate text-xs text-muted-foreground"><BilingualText en={reason.en} el={reason.el} compact /></span> : null}
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+            <div className={cn('flex min-w-0 gap-3 overflow-x-auto pb-1', (people.length === 0 || leadOnly) && 'hidden')}>
               {people.map((person) => (
                 <Link
                   key={person.userId}
@@ -304,6 +329,7 @@ export function FounderPhoneHome({
     </div>
     ) : null}
 
+    {leadOnly ? null : (
     <div className="min-w-0 space-y-6 lg:hidden">
       <Card>
         <CardHeader className="pb-3">
@@ -532,6 +558,7 @@ export function FounderPhoneHome({
         </CardContent>
       </Card>
     </div>
+    )}
     </>
   );
 }

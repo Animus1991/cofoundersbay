@@ -212,6 +212,12 @@ export function viewerFacts(
   };
 }
 
+/** Whether the profile says who it is looking for (the "Looking for" field of profile edit). */
+export function saysLookingFor(profile: { rolePayload?: Record<string, unknown> | null } | null | undefined): boolean {
+  const payload = profile?.rolePayload ?? {};
+  return texts(payload.rolesSought).length > 0 || texts(payload.lookingFor).length > 0;
+}
+
 function defaultTermEl(term: string): string {
   return translate('el', term);
 }

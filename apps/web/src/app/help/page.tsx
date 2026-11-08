@@ -9,6 +9,7 @@ import {
   BookOpen, Zap, Heart, Flag,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { FounderStartSection } from '@/components/home/FounderStartSection';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -466,6 +467,9 @@ export default function HelpPage() {
             </button>
           </div>
         )}
+
+        {/* A founder's way in; it left the first page (docs §116). */}
+        {searchQuery ? null : <FounderStartSection />}
 
         {/* FAQ Content */}
         {displayCategories.length === 0 ? (

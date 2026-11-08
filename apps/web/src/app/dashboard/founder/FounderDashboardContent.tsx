@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2, Circle, AlertCircle, ChevronDown } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -28,8 +28,6 @@ import {
   respondToConnectionRequest,
   getVentureReadiness,
   type SearchHit,
-  getAnalyticsMetrics,
-  getAnalyticsProfileViews,
   listMilestones,
   getDashboardActivity,
 } from '@/lib/api';
@@ -39,30 +37,24 @@ import {
   FUNDRAISING_SEED_LEADS,
 } from '@/lib/fundraising-demo';
 import {
-  OnboardingChecklist,
   buildOnboardingSteps,
   useOnboardingChecklistDismissed,
 } from '@/components/gamification/OnboardingChecklist';
-import { NextActionBanner, deriveNextAction } from '@/components/gamification/NextActionBanner';
-import { VentureReadinessCard } from '@/components/gamification/VentureReadinessCard';
 import { CommitmentOutcomes } from '@/components/commitments/CommitmentOutcomes';
-import { WhatsNewPanel, WhatsNewRail } from '@/components/dashboard/WhatsNewPanel';
+import { WhatsNewRail } from '@/components/dashboard/WhatsNewPanel';
+import { YourPagesRow } from '@/components/dashboard/YourPages';
+import { HomeContinue } from '@/components/home/HomeContinue';
+import { HomeVariantSwitch } from '@/components/home/HomeVariantSwitch';
 import {
   FIRST_MOVE_LATER_KEY,
-  FULL_DASHBOARD_KEY,
   FounderFirstMove,
-  RestOfDashboardToggle,
   firstMoveLayout,
   useFirstMoveState,
   useStoredFlag,
 } from '@/components/dashboard/FounderFirstMove';
-import { FounderPaths } from '@/components/dashboard/FounderPaths';
 import { FounderPhoneHome } from '@/components/dashboard/FounderPhoneHome';
 import { listCommitmentThreads } from '@/lib/commitments-api';
 import { waitsOnMe } from '@/lib/commitments-next';
-import { MetricTile } from '@/components/dashboard/MetricTile';
-import { ProgressSegments } from '@/components/dashboard/ProgressSegments';
-import { Sparkline } from '@/components/charts/Sparkline';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
@@ -75,9 +67,8 @@ import { PREVIEW_MILESTONE_EL } from '@/lib/i18n/strings-milestones';
 import { activityTimeAgoPair, activityTitleEl } from '@/lib/i18n/activity-titles';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
-import { explainMatch, viewerFacts, type ViewerFacts } from '@/lib/match-explain';
+import { explainMatch, saysLookingFor, viewerFacts, type ViewerFacts } from '@/lib/match-explain';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
-import { useApiAvailability } from '@/hooks/useApiAvailability';
 import { useConnectionWith } from '@/hooks/useConnectionWith';
 import { isMilestoneOverdue } from '@/lib/milestone-order';
 import { useToast } from '@/components/ui/toast';
@@ -86,37 +77,21 @@ import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { useInvestorFollowUps } from '@/lib/follow-ups';
 
 /** Remembered only under 1024px. Wide screens always show this block. */
-const LOWER_DASHBOARD_KEY = 'cfb:founder-dashboard-lower';
-const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 const FOUNDER_TOUR: TourStep[] = [
   {
-    target: 'founder-stats',
-    titleEn: 'Your live counts, not a second score',
-    titleEl: 'Ζωντανά πλήθη, όχι δεύτερη βαθμολογία',
-    bodyEn: 'Profile views, unread messages and milestone completion; your matches are counted on the card of faces above. A dash means the metric was not recorded — it is not zero. Each tile opens the page that owns that number.',
-    bodyEl: 'Προβολές προφίλ, μη αναγνωσμένα μηνύματα και ολοκλήρωση οροσήμων· οι αντιστοιχίσεις μετριούνται στην κάρτα με τα πρόσωπα από πάνω. Η παύλα σημαίνει ότι η μέτρηση δεν καταγράφηκε — όχι μηδέν. Κάθε πλακίδιο ανοίγει τη σελίδα που κατέχει αυτόν τον αριθμό.',
+    target: 'founder-today',
+    titleEn: 'What is waiting on you',
+    titleEl: 'Ό,τι σας περιμένει',
+    bodyEn: 'Everything that needs an answer from you, in one list, with the person first. Each row opens where to answer it.',
+    bodyEl: 'Ό,τι χρειάζεται απάντηση από εσάς, σε μία λίστα, με το άτομο πρώτο. Κάθε γραμμή ανοίγει εκεί όπου απαντάτε.',
   },
   {
-    target: 'founder-checklist',
-    titleEn: 'Finish the checklist before the banner',
-    titleEl: 'Ολοκληρώστε τη λίστα πριν το banner',
-    bodyEn: 'These steps unlock matching and the Builder. The “next action” banner stays hidden while this list is open, so you are not told the same thing twice.',
-    bodyEl: 'Αυτά τα βήματα ξεκλειδώνουν την αντιστοίχιση και τον Builder. Το banner «επόμενη ενέργεια» μένει κρυφό όσο η λίστα είναι ανοιχτή, ώστε να μην ακούτε το ίδιο δύο φορές.',
-  },
-  {
-    target: 'founder-attention',
-    titleEn: 'Attention chips are the short list',
-    titleEl: 'Τα chips προσοχής είναι η σύντομη λίστα',
-    bodyEn: 'What no tile or card above already says: the next milestone, or the one that is overdue. Intro requests and unread messages lead the row under the question box; the weakest readiness dimension is named in the card below.',
-    bodyEl: 'Ό,τι δεν λέει ήδη κάποιο πλακίδιο ή κάρτα: το επόμενο ορόσημο ή όποιο έχει καθυστερήσει. Τα αιτήματα γνωριμίας και τα αδιάβαστα μηνύματα είναι στην αρχή της σειράς κάτω από το πλαίσιο ερωτήσεων· η πιο αδύναμη διάσταση ετοιμότητας ονομάζεται στην κάρτα από κάτω.',
-  },
-  {
-    target: 'founder-readiness',
-    titleEn: 'Readiness lives in one card',
-    titleEl: 'Η ετοιμότητα ζει σε μία κάρτα',
-    bodyEn: 'This is the investor-facing score across six dimensions. Completing criteria here updates the saved score. It is not the same number as “Founder progress” in the header.',
-    bodyEl: 'Αυτή είναι η βαθμολογία προς επενδυτές σε έξι διαστάσεις. Το τσεκάρισμα κριτηρίων ενημερώνει την αποθηκευμένη βαθμολογία. Δεν είναι ο ίδιος αριθμός με την «Πρόοδο ιδρυτή» στην κεφαλίδα.',
+    target: 'founder-people',
+    titleEn: 'The people worth meeting',
+    titleEl: 'Οι άνθρωποι που αξίζει να γνωρίσετε',
+    bodyEn: 'The best matches for what you are looking for, each with the reason. The full list is under Matches.',
+    bodyEl: 'Οι καλύτερες αντιστοιχίσεις για όσα ψάχνετε, η καθεμία με τον λόγο της. Η πλήρης λίστα είναι στις Αντιστοιχίσεις.',
   },
 ];
 
@@ -273,42 +248,6 @@ function RailListLink({ href, en, el }: { href: string; en: string; el: string }
   );
 }
 
-type AttentionItem = {
-  href: string;
-  glyph: CfbGlyphName;
-  en: string;
-  el: string;
-  urgent?: boolean;
-  /** Said by a card of its own below 640px (the phone home's next milestone). */
-  phoneHidden?: boolean;
-};
-
-function AttentionChips({
-  items,
-}: {
-  items: AttentionItem[];
-}) {
-  if (items.length === 0) return null;
-  const phoneEmpty = items.every((item) => item.phoneHidden);
-  return (
-    <ul className={cn('min-w-0 flex-wrap gap-2', phoneEmpty ? 'hidden sm:flex' : 'flex')} data-tour="founder-attention">
-      {items.map((item) => (
-        <li key={`${item.href}:${item.en}`} className={cn('min-w-0', item.phoneHidden && 'hidden sm:block')}>
-          <Link
-            href={item.href}
-            className="inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/50 sm:min-h-0"
-          >
-            <CfbGlyph name={item.glyph} className={cn('icon-sm shrink-0', item.urgent ? STATUS.danger.icon : 'text-muted-foreground')} />
-            <span className="min-w-0 truncate">
-              <BilingualText en={item.en} el={item.el} compact />
-            </span>
-          </Link>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 /**
  * A match as a row of the Top Matches card: the person's circle, the name
  * over the headline and the score at the right - the CardHead anatomy
@@ -433,7 +372,6 @@ export default function FounderDashboardContent() {
   });
   // The reader's side of each match's reasons (lib/match-explain).
   const viewer = useMemo(() => viewerFacts(profile?.profile ?? null), [profile]);
-  const apiAvailable = useApiAvailability();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   // Where each match's connection stands, on /matches' keys: the first match
@@ -467,54 +405,6 @@ export default function FounderDashboardContent() {
   const matchCount = matchList?.suggestions?.length;
   const excellentMatches = (matchList?.suggestions ?? []).filter((s) => (s.matchScore ?? 0) >= 80).length;
 
-  /*
-   * The same metrics /analytics charts, on the same 7-day period.
-   *
-   * The profile-views tile used to read `activeProfiles` off the platform
-   * stats - how many profiles are active across CoFounderBay, not how often
-   * this one was viewed - so it read 1,840 while the page behind its own link
-   * read 248. Sharing the query key with /analytics also means the two cannot
-   * drift apart in the cache.
-   */
-  const { data: userMetrics } = useQuery({
-    queryKey: qk('analytics', 'metrics', '7d'),
-    queryFn: () => getAnalyticsMetrics('7d'),
-    enabled: hasSession && mounted,
-    staleTime: 60_000,
-    retry: 0,
-  });
-
-  /** A change of exactly zero is a measurement; a missing one is not an arrow. */
-  const trendOf = (change: number | null | undefined) =>
-    typeof change === 'number'
-      ? { value: Math.abs(change), positive: change >= 0, en: dashboardEn('this_week'), el: dashboardEl('this_week') }
-      : undefined;
-  /*
-   * The days behind "Profile views": the same series the Analytics page
-   * charts on its Growth tab, drawn small beside the change (docs §107).
-   * Only a real series is drawn; a missing or one-day answer draws nothing.
-   */
-  const { data: profileViewSeries } = useQuery({
-    queryKey: qk('analytics', 'profile-views', '7d'),
-    queryFn: () => getAnalyticsProfileViews('7d'),
-    enabled: hasSession && mounted,
-    staleTime: 60_000,
-    retry: 0,
-  });
-  const profileViewPoints = (Array.isArray(profileViewSeries) ? profileViewSeries : [])
-    .filter((day) => typeof day?.date === 'string' && typeof day?.views === 'number')
-    .map((day) => ({ label: formatShortDate(day.date, primary === 'el' ? 'el' : 'en'), value: day.views }));
-
-  const profileViewsTrend = (() => {
-    const trend = trendOf(userMetrics?.profileViewsChange);
-    if (!trend) return undefined;
-    return {
-      ...trend,
-      en: `${trend.en}. Opens analytics`,
-      el: `${trend.el}. Ανοίγει τα αναλυτικά`,
-    };
-  })();
-
   const { data: recommendations, isFetched: recommendationsFetched } = useQuery({
     queryKey: queryKeys.recommendations,
     queryFn: () => getRecommendations({ limit: 5 }),
@@ -535,7 +425,6 @@ export default function FounderDashboardContent() {
    */
   const firstMove = useFirstMoveState(hasSession && mounted);
   const [firstMoveLater, setFirstMoveLater] = useStoredFlag(FIRST_MOVE_LATER_KEY);
-  const [fullDashboard, setFullDashboard] = useStoredFlag(FULL_DASHBOARD_KEY);
   const { data: ladderThreads } = useQuery({
     queryKey: qk('commitments', 'threads', 'all'),
     queryFn: () => listCommitmentThreads('all'),
@@ -572,7 +461,7 @@ export default function FounderDashboardContent() {
    * query keys - so the tile, the list under it and that page cannot disagree,
    * and marking one done on either surface refreshes the other.
    */
-  const { data: milestoneData, isLoading: milestonesLoading, isError: milestonesFailed } = useQuery({
+  const { data: milestoneData, isLoading: milestonesLoading } = useQuery({
     queryKey: qk('milestones', 'all', 'all'),
     queryFn: () => listMilestones({ limit: 100 }),
     enabled: hasSession && mounted,
@@ -650,56 +539,7 @@ export default function FounderDashboardContent() {
   // The same calendar-day rule as /milestones (lib/milestone-order), so the
   // home and the page agree on "Overdue" on the due day itself.
   const isPastDue = (m: DemoMilestone) => isMilestoneOverdue({ status: m.status, dueDate: m.dueDate || null });
-  const overdueMilestoneCount = openMilestones.filter(isPastDue).length;
-  // Under way and on time: started (in progress, or some progress) and not past its date.
-  const activeMilestoneCount = openMilestones.filter((m) => !isPastDue(m) && (m.status === 'in_progress' || m.progress > 0)).length;
-  const nextIsOverdue = !!nextOpenMilestone && isPastDue(nextOpenMilestone);
-  const messageCaption = unreadMessages === 0
-    ? { en: dashboardEn('inbox_clear'), el: dashboardEl('inbox_clear') }
-    : unreadMessages === 1
-      ? { en: '1 waiting', el: '1 σε αναμονή' }
-      : { en: `${unreadMessages} waiting`, el: `${unreadMessages} σε αναμονή` };
-  const milestoneCaption = milestones.length === 0
-    ? { en: dashboardEn('add_first_milestone'), el: dashboardEl('add_first_milestone') }
-    : completedMilestoneCount === milestones.length
-      ? { en: dashboardEn('milestones_all_complete'), el: dashboardEl('milestones_all_complete') }
-      : // A date on its own reads as the next deadline, even one that has passed.
-        overdueMilestoneCount > 0
-        ? {
-            en: `${openMilestones.length} open · ${overdueMilestoneCount} overdue`,
-            el: `${openMilestones.length} ανοιχτά · ${overdueMilestoneCount} ${overdueMilestoneCount === 1 ? 'εκπρόθεσμο' : 'εκπρόθεσμα'}`,
-          }
-        : // A real milestone may carry no due date, and the separator was printed
-        // before the date was: the caption read "6 ανοιχτά ·" and stopped.
-        nextOpenMilestone?.dueDate
-        ? {
-            en: `${openMilestones.length} open · next ${formatShortDate(nextOpenMilestone.dueDate, 'en')}`,
-            el: `${openMilestones.length} ανοιχτά · επόμενο ${formatShortDate(nextOpenMilestone.dueDate, 'el')}`,
-          }
-        : {
-            en: `${openMilestones.length} open`,
-            el: `${openMilestones.length} ανοιχτά`,
-          };
-  const attentionItems: AttentionItem[] = [];
   const waitingThreads = (ladderThreads ?? []).filter(waitsOnMe);
-  // The chips carry what nothing else on the page says (docs §70). Unread
-  // messages have their tile; intro requests lead the row under the question
-  // box ("Intro requests 1", which asks the assistant to go through them) and
-  // keep their badge on Connections; the weakest readiness dimension is the
-  // "Lowest:" link in the progress card below. Each was a second chip for
-  // the same fact, one row away.
-  // An overdue one is in Today, at the top of the page.
-  if (nextOpenMilestone && !nextIsOverdue) {
-    attentionItems.push({
-      href: '/milestones',
-      glyph: 'flag',
-      en: `Next: ${nextOpenMilestone.titleEn}`,
-      el: `Επόμενο: ${nextOpenMilestone.titleEl}`,
-      // Below 640px the phone home names this milestone in a card of its own.
-      phoneHidden: true,
-    });
-  }
-
   /**
    * The dashboard's own figures, for the assistant.
    *
@@ -730,7 +570,7 @@ export default function FounderDashboardContent() {
 
   const onboardingSteps = buildOnboardingSteps({
     hasProfile:      !!(profile?.profile?.displayName && profile?.profile?.headline),
-    hasPreferences:  !!((profile?.profile as { lookingFor?: unknown[] } | undefined)?.lookingFor && ((profile?.profile as { lookingFor?: unknown[] }).lookingFor as unknown[])?.length > 0),
+    hasPreferences:  saysLookingFor(profile?.profile),
     hasConnection:   (vrs?.signals?.connectionCount ?? 0) > 0,
     hasBoard:        (vrs?.signals?.boardCount ?? 0) > 0,
     hasArtifact:     (vrs?.signals?.docCount ?? 0) > 0,
@@ -739,62 +579,12 @@ export default function FounderDashboardContent() {
   const checklistDismissed = useOnboardingChecklistDismissed();
   const checklistDone = onboardingSteps.every((s) => s.done);
 
-  // The first move, and the fold over the rest for a founder just starting.
-  const { showFirstMove, restFoldable, restFolded } = firstMoveLayout({
+  const { showFirstMove } = firstMoveLayout({
     state: firstMove.state,
     later: firstMoveLater,
     checklistDone,
     checklistDismissed,
-    full: fullDashboard,
-  });
-
-  // Under 1024px the long cards (readiness through what's new) sit behind one
-  // labelled control. A founder who is just starting already has that fold
-  // (RestOfDashboardToggle), so this one stays out of their way. The first
-  // visit stays open: the tour points at the checklist and the readiness card.
-  const [lowerOpen, setLowerOpen] = useState(true);
-  useIsoLayoutEffect(() => {
-    const mq = window.matchMedia('(max-width: 1023px)');
-    const apply = () => {
-      if (!mq.matches) {
-        setLowerOpen(true);
-        return;
-      }
-      let choice: string | null = null;
-      let tourDone = false;
-      try {
-        choice = window.localStorage.getItem(LOWER_DASHBOARD_KEY);
-        tourDone = Object.keys(window.localStorage).some(
-          (key) => key.startsWith('cfb.tour.founder-dashboard.') && window.localStorage.getItem(key) === 'done',
-        );
-      } catch {
-        choice = null;
-      }
-      if (choice === '1' || choice === '0') setLowerOpen(choice === '1');
-      else setLowerOpen(!tourDone);
-    };
-    apply();
-    mq.addEventListener('change', apply);
-    return () => mq.removeEventListener('change', apply);
-  }, []);
-  const toggleLower = useCallback(() => {
-    setLowerOpen((open) => {
-      const next = !open;
-      try { window.localStorage.setItem(LOWER_DASHBOARD_KEY, next ? '1' : '0'); } catch { /* private mode */ }
-      return next;
-    });
-  }, []);
-  const showLowerFold = !restFoldable;
-
-  const nextAction = deriveNextAction({
-    hasProfile:      !!(profile?.profile?.displayName && profile?.profile?.headline),
-    hasPreferences:  !!((profile?.profile as { lookingFor?: unknown[] } | undefined)?.lookingFor && ((profile?.profile as { lookingFor?: unknown[] }).lookingFor as unknown[])?.length > 0),
-    connectionCount: vrs?.signals?.connectionCount ?? 0,
-    boardCount:      vrs?.signals?.boardCount ?? 0,
-    docCount:        vrs?.signals?.docCount ?? 0,
-    vrsLowestKey:    vrs?.lowestDimension?.key,
-    pendingRequests,
-    unreadMessages,
+    full: false,
   });
 
   if (!mounted) {
@@ -1145,6 +935,7 @@ export default function FounderDashboardContent() {
       labelEl: 'Γρήγορες ενέργειες',
       content: (
         <div className="space-y-3">
+          <YourPagesRow />
           {/* No card title: the rail section above it is already called "Quick actions". */}
           <Card>
             <CardContent>
@@ -1302,8 +1093,16 @@ export default function FounderDashboardContent() {
       ),
     },
     {
-      // GitHub keeps its changelog in the dashboard's right column; this is
-      // the same list as the card at the foot of the page, always reachable.
+      // Where the need cards stand. It left the column (docs §116); what
+      // waits on the founder is in Today.
+      id: 'commitments',
+      glyph: 'people',
+      labelEn: 'Commitments',
+      labelEl: 'Δεσμεύσεις',
+      content: <CommitmentOutcomes waitingShownAbove={waitingThreads.length > 0} />,
+    },
+    {
+      // GitHub keeps its changelog in the dashboard's right column.
       id: 'whats-new',
       glyph: 'spark',
       labelEn: 'What’s new',
@@ -1322,31 +1121,18 @@ export default function FounderDashboardContent() {
       askAi={false}
       // No "Founder" badge beside "Founder dashboard": the title says it
       // (docs §70).
-      actions={
-        vrs ? (
-          /* Jumps to the founder progress card below. It opened /readiness,
-             whose score is a different measure (the company's readiness for
-             investors), so "Progress: 52%" led to a page that said 61. Shown
-             once the score is read: "0%" while the API was down was a figure
-             nobody measured. */
-          <Button variant="outline" size="sm" className="gap-1.5" asChild>
-            <a href="#founder-progress">
-              <CfbGlyph name="chart" className="icon-sm" />
-              <BilingualText en={`Founder progress: ${founderProgress}%`} el={`Πρόοδος ιδρυτή: ${founderProgress}%`} compact />
-            </a>
-          </Button>
-        ) : undefined
-      }
     >
       {/* The tour points at the figures, checklist and readiness: it waits for
           the card list to answer and never plays over a folded dashboard. */}
-      <FirstRunTour tourId="founder-dashboard" steps={FOUNDER_TOUR} ready={mounted && firstMove.settled && !restFolded} />
+      <FirstRunTour tourId="founder-dashboard" steps={FOUNDER_TOUR} ready={mounted && firstMove.settled} />
       <div className="min-w-0 space-y-6 overflow-x-clip">
 
         {/* GitHub's home: a greeting over one question box and the jobs to
             start from. The weekly brief the header's field used to send is
             the "My week" chip. */}
-        <HomeAskHero role="founder" followUpsDue={dueFollowUps.length} showWaiting={false} name={own?.displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
+        <HomeVariantSwitch current="dashboard" />
+
+        <HomeAskHero role="founder" followUpsDue={dueFollowUps.length} showWaiting={false} plain name={own?.displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
 
         {showFirstMove && (
           <FounderFirstMove
@@ -1361,14 +1147,15 @@ export default function FounderDashboardContent() {
           />
         )}
 
-        <HomeToday />
+        {/* Three things and no more (docs §116): what waits on the founder,
+            the one thing in progress, the people worth meeting. The figures
+            are on Analytics, the score on Readiness, the first steps and the
+            three doors on Help, and the shortcuts in the page's tools. */}
+        <div data-tour="founder-today"><HomeToday /></div>
 
-        {/* The unfinished thing and the next people lead at every width.
-            Activity, the first person, the milestone and the calendar stay
-            until the rail takes them at 1024px. A tablet has no rail, so
-            hiding them from 640px dropped those four cards. */}
         <FounderPhoneHome
-          showResume={!showFirstMove}
+          leadOnly
+          showResume={false}
           matches={recommendations?.suggestions ?? []}
           matchesSettled={recommendationsFetched}
           matchCount={matchCount}
@@ -1382,166 +1169,7 @@ export default function FounderDashboardContent() {
           showDemoEvents={showDemoData}
         />
 
-        {restFoldable && (
-          <RestOfDashboardToggle
-            open={!restFolded}
-            onToggle={() => setFullDashboard(restFolded)}
-            controls="founder-dashboard-rest"
-            stepsDone={onboardingSteps.filter((s) => s.done).length}
-            stepsTotal={onboardingSteps.length}
-          />
-        )}
-
-        <div id="founder-dashboard-rest" hidden={restFolded} className="min-w-0 space-y-6">
-          {/* Three figures. The matches count lives on the card of faces
-              above (FounderPhoneHome), with its "3 excellent" and View all: a
-              "Top Matches 4" tile one row under "Top Matches" and its four
-              faces was the same list twice (docs §70). A read that failed
-              is a dash, never 0 ("Inbox is clear", "0/0" while the API was
-              down). */}
-          <div className="grid min-w-0 grid-cols-1 gap-3 min-[480px]:grid-cols-2 min-[480px]:gap-4 lg:grid-cols-3" data-tour="founder-stats">
-            <MetricTile
-              align="center"
-              glyph="profile"
-              label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
-              value={userMetrics?.profileViews ?? '—'}
-              trend={profileViewsTrend}
-              trendVisual={profileViewPoints.length > 1 ? <Sparkline points={profileViewPoints} /> : undefined}
-              caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
-              captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
-              href="/analytics"
-            />
-            <MetricTile
-              align="center"
-              glyph="messages"
-              label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
-              value={apiAvailable ? unreadMessages : '—'}
-              href="/messages"
-              caption={apiAvailable ? messageCaption.en : 'Not read: the server is unavailable. Opens messages'}
-              captionEl={apiAvailable ? messageCaption.el : 'Δεν διαβάστηκε: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα μηνύματα'}
-            />
-            <div className="min-w-0 min-[480px]:col-span-2 lg:col-span-1">
-              <MetricTile
-                align="center"
-                glyph="flag"
-                label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
-                value={milestonesFailed && milestones.length === 0 ? '—' : `${completedMilestoneCount}/${milestones.length}`}
-                href="/milestones"
-                // Finished, under way, late, and the open rest, along the tile's edge (docs §107).
-                edge={milestones.length > 0 ? (
-                  <ProgressSegments
-                    total={milestones.length}
-                    segments={[
-                      { key: 'done', value: completedMilestoneCount, tone: 'done' },
-                      { key: 'active', value: activeMilestoneCount, tone: 'active' },
-                      { key: 'late', value: overdueMilestoneCount, tone: 'late' },
-                    ]}
-                  />
-                ) : undefined}
-                caption={milestonesFailed && milestones.length === 0 ? 'Not read: the server is unavailable. Opens milestones' : milestoneCaption.en}
-                captionEl={milestonesFailed && milestones.length === 0 ? 'Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα ορόσημα' : milestoneCaption.el}
-              />
-            </div>
-          </div>
-
-          <AttentionChips items={attentionItems} />
-
-          {showLowerFold && (
-            <Button
-              type="button"
-              variant="outline"
-              className="h-auto min-h-11 w-full justify-between gap-3 py-2.5 text-left lg:hidden"
-              aria-expanded={lowerOpen}
-              aria-controls="founder-dashboard-lower"
-              onClick={toggleLower}
-            >
-              <span className="min-w-0">
-                <span className="block text-sm font-medium text-foreground">
-                  {lowerOpen ? (
-                    <BilingualText en="Show less" el="Λιγότερα" compact />
-                  ) : (
-                    <BilingualText en="More on this dashboard" el="Περισσότερα στον πίνακα" compact />
-                  )}
-                </span>
-                <span className="block text-xs font-normal text-muted-foreground">
-                  <BilingualText
-                    en="Readiness, first steps, paths, commitments, what’s new"
-                    el="Ετοιμότητα, πρώτα βήματα, διαδρομές, δεσμεύσεις, τι νέο υπάρχει"
-                    wrap
-                  />
-                </span>
-              </span>
-              <ChevronDown className={cn('icon-sm shrink-0 text-muted-foreground transition-transform', lowerOpen && 'rotate-180')} aria-hidden="true" />
-            </Button>
-          )}
-
-          <div id="founder-dashboard-lower" hidden={showLowerFold && !lowerOpen} className="min-w-0 space-y-6">
-          {/* Readiness — single home in the column.
-              Fundraising, matches, milestones and profile strength live in
-              the rail (`snapshot`) so this page stays a glance, not a stack. */}
-          {vrs && (
-            <div id="founder-progress" className="scroll-mt-24" data-tour="founder-readiness">
-              <VentureReadinessCard
-                  data={vrs}
-                  footer={
-                    <div className="space-y-2.5">
-                      {/* /readiness is the card's own line, "Investor and
-                          accelerator readiness is scored separately"; a
-                          "Startup readiness" button under it opened the same
-                          page under a third name (docs §70). */}
-                      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                        <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
-                          <Link href="/builder" className="w-full">
-                            <CfbGlyph name="builder" className="icon-sm" />
-                            <BilingualText en="Open Builder" el="Άνοιγμα Builder" compact wrap />
-                          </Link>
-                        </Button>
-                        <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
-                          <Link href="/expert-reviews" className="w-full">
-                            <CfbGlyph name="award" className="icon-sm" />
-                            <BilingualText en="Get Expert Review" el="Αξιολόγηση ειδικού" compact wrap />
-                          </Link>
-                        </Button>
-                      </div>
-                      <AskAiButton
-                        variant="ghost"
-                        className="w-full"
-                        prompt={ASK.dashReadiness}
-                        labelEn={dashboardEn('ask_ai_readiness')}
-                        labelEl={dashboardEl('ask_ai_readiness')}
-                      />
-                    </div>
-                  }
-                />
-            </div>
-          )}
-
-          {/* Getting-started checklist and the three doors, after the
-              figures: the AI Studio prototype's home goes next step, this
-              week, people, then what changed. A new founder still meets the
-              first move at the top (FounderFirstMove); this is the full list
-              (docs §64). */}
-          <OnboardingChecklist steps={onboardingSteps} />
-          <FounderPaths />
-
-          {/* One "what to do next" prompt at a time.
-              The checklist already names the next incomplete step and links to it,
-              so a NextActionBanner above it was a second copy of the same advice.
-              Once the checklist is finished or dismissed the banner takes over, so
-              the guidance is never lost. `undefined` means localStorage has not
-              been read yet — render nothing rather than flash the banner. */}
-          {nextAction && (checklistDone || checklistDismissed === true) && (
-            <NextActionBanner action={nextAction} />
-          )}
-
-          {/* Beside readiness: whether the people the startup needs are coming -
-              each need card's outcome and the steps waiting on the founder. */}
-          <CommitmentOutcomes waitingShownAbove={waitingThreads.length > 0} />
-
-          {/* What the October round added, each with the place to try it. */}
-          <WhatsNewPanel audience="founder" />
-          </div>
-        </div>
+        {showFirstMove ? null : <HomeContinue />}
       </div>
     </AppShell>
   );

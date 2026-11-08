@@ -19,6 +19,7 @@ import dynamic from 'next/dynamic';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { ASK, type AskPrompt } from '@/lib/page-questions';
 import { AppShell } from '@/components/layout/AppShell';
+import { FounderProgressCard } from '@/components/gamification/FounderProgressCard';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { usePageRail } from '@/components/layout/PageRailContext';
@@ -980,6 +981,7 @@ export default function ReadinessPage() {
   if (!isDemo && !workspaceId) {
     return (
       <AppShell actions={reassessAction} showHelp>
+        <div className="space-y-6">
         <Card><CardContent className="space-y-4">
           <p id="readiness-no-workspace" className="text-sm"><BilingualText en="Readiness is scored for one startup workspace, and none is open yet. Create yours or choose it in the Startup Builder." el="Η ετοιμότητα βαθμολογείται για έναν χώρο εργασίας startup και δεν έχει ανοίξει κανένας ακόμη. Δημιουργήστε ή επιλέξτε τον δικό σας στο Startup Builder." /></p>
           <div className="flex flex-wrap gap-2">
@@ -992,6 +994,8 @@ export default function ReadinessPage() {
             />
           </div>
         </CardContent></Card>
+        <FounderProgressCard />
+        </div>
       </AppShell>
     );
   }
@@ -1335,8 +1339,8 @@ export default function ReadinessPage() {
                     saw 52 on the dashboard and 61 here with no word on why. */}
                 <p className="mt-1.5 text-xs text-muted-foreground">
                   <BilingualText
-                    en="How ready the company is for investors. Your founder progress score on the dashboard measures your activity on the platform instead."
-                    el="Πόσο έτοιμη είναι η εταιρεία για επενδυτές. Ο βαθμός προόδου στον πίνακα ελέγχου μετρά τη δραστηριότητά σας στην πλατφόρμα."
+                    en="How ready the company is for investors. Your founder progress score, further down this page, measures your activity on the platform instead."
+                    el="Πόσο έτοιμη είναι η εταιρεία για επενδυτές. Ο βαθμός προόδου, πιο κάτω σε αυτή τη σελίδα, μετρά τη δραστηριότητά σας στην πλατφόρμα."
                     wrap
                   />
                 </p>
@@ -1576,6 +1580,9 @@ export default function ReadinessPage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* The founder's progress score: a different measure from the one above, and it left the first page (docs §116). */}
+        <FounderProgressCard />
 
       </div>
     </AppShell>

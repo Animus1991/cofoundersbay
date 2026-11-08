@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { explainMatch, splitReasons, viewerFacts, type ExplainedReason, type ViewerFacts } from './match-explain';
+import { explainMatch, saysLookingFor, splitReasons, viewerFacts, type ExplainedReason, type ViewerFacts } from './match-explain';
 
 const NOW = Date.parse('2026-10-21T12:00:00.000Z');
 // Greek terms without the on-demand catalog, so the test never depends on what loaded.
@@ -200,5 +200,18 @@ describe('why two members match', () => {
   it('puts two on the card and the rest behind the disclosure', () => {
     expect(splitReasons([1, 2, 3, 4])).toEqual({ face: [1, 2], rest: [3, 4] });
     expect(splitReasons([1])).toEqual({ face: [1], rest: [] });
+  });
+});
+
+describe('saysLookingFor', () => {
+  it('reads the field profile edit saves, and the older name', () => {
+    expect(saysLookingFor({ rolePayload: { rolesSought: ['Technical co-founder'] } })).toBe(true);
+    expect(saysLookingFor({ rolePayload: { lookingFor: ['Mentor'] } })).toBe(true);
+  });
+
+  it('is false for an empty answer or no profile', () => {
+    expect(saysLookingFor({ rolePayload: { rolesSought: [] } })).toBe(false);
+    expect(saysLookingFor({ rolePayload: null })).toBe(false);
+    expect(saysLookingFor(null)).toBe(false);
   });
 });

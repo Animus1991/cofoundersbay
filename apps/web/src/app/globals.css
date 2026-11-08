@@ -5081,16 +5081,23 @@ html[data-theme="studio"] [data-next-step='next'] > [data-keep-icon] {
   background-color: hsl(0 0% 100% / 0.1);
   color: hsl(var(--primary-foreground));
 }
-html[data-theme="studio"] [data-next-step='next'] > :is(a, button) {
+html[data-theme="studio"] [data-next-step='next'] [data-next-open] {
   background-color: hsl(var(--primary-foreground));
   border-color: hsl(var(--primary-foreground));
   color: hsl(var(--primary));
 }
-html[data-theme="studio"] [data-next-step='next'] > :is(a, button):hover {
+html[data-theme="studio"] [data-next-step='next'] [data-next-open]:hover {
   background-color: hsl(var(--secondary));
 }
-html[data-theme="studio"] [data-next-step='next'] > :is(a, button) .cfb-glyph [data-accent] {
+html[data-theme="studio"] [data-next-step='next'] [data-next-open] .cfb-glyph [data-accent] {
   color: inherit;
+}
+html[data-theme="studio"] [data-next-step='next'] [data-next-ask] {
+  color: hsl(var(--primary-foreground));
+}
+html[data-theme="studio"] [data-next-step='next'] [data-next-ask]:hover {
+  background-color: hsl(0 0% 100% / 0.1);
+  color: hsl(var(--primary-foreground));
 }
 
 /* Achievement meters keep the lively accents of the other themes (lilac,
