@@ -166,6 +166,7 @@ export const mentorWorkSections: NavSection[] = [
   {
     section: 'Dashboard',
     links: [
+      { href: '/home', label: 'Home', icon: LayoutDashboard },
       { href: '/dashboard/mentor', label: 'Overview', icon: LayoutDashboard },
       { href: '/mentor/earnings', label: 'Earnings', icon: Wallet },
       { href: '/mentor/reviews', label: 'Reviews', icon: Star },
@@ -202,6 +203,7 @@ export const investorWorkSections: NavSection[] = [
   {
     section: 'Dashboard',
     links: [
+      { href: '/home', label: 'Home', icon: LayoutDashboard },
       { href: '/dashboard/investor', label: 'Overview', icon: LayoutDashboard },
       { href: '/investor/analytics', label: 'Deal Analytics', icon: LineChart },
     ],
@@ -238,6 +240,7 @@ export const providerWorkSections: NavSection[] = [
   {
     section: 'Dashboard',
     links: [
+      { href: '/home', label: 'Home', icon: LayoutDashboard },
       { href: '/dashboard/provider', label: 'Overview', icon: LayoutDashboard },
       { href: '/provider/analytics', label: 'Analytics', icon: BarChart3 },
     ],
@@ -273,6 +276,7 @@ export const orgWorkSections: NavSection[] = [
   {
     section: 'Dashboard',
     links: [
+      { href: '/home', label: 'Home', icon: LayoutDashboard },
       { href: '/dashboard/incubator', label: 'Overview', icon: LayoutDashboard },
       { href: '/org/analytics', label: 'Analytics', icon: PieChart },
     ],
@@ -382,7 +386,8 @@ export const defaultWorkSections: NavSection[] = [
   {
     section: 'Dashboard',
     links: [
-      { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+      { href: '/home', label: 'Home', icon: LayoutDashboard },
+      { href: '/dashboard/founder', label: 'Overview', icon: LayoutDashboard },
       { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     ],
   },

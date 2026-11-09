@@ -13,30 +13,30 @@ export default function DashboardRouter() {
   useEffect(() => {
     if (isLoading) return;
 
-    // Route to role-specific dashboard. A founder's first page is /home (docs §117);
-    // the founder dashboard stays one link away, as Overview in the sidebar.
+    // Every member's first page is /home (docs §119); their role's dashboard stays
+    // one link away, as Overview in the sidebar. Platform staff keep the console.
     const roleRoutes: Record<string, string> = {
       aspiring_founder: '/home',
       existing_founder: '/home',
       cofounder_candidate: '/home',
       technical_talent: '/home',
       business_operator: '/home',
-      mentor: '/dashboard/mentor',
-      advisor: '/dashboard/mentor',
-      coach: '/dashboard/mentor',
-      course_creator: '/dashboard/mentor',
-      angel_investor: '/dashboard/investor',
-      vc_scout: '/dashboard/investor',
-      vc_analyst: '/dashboard/investor',
-      syndicate_manager: '/dashboard/investor',
-      incubator_admin: '/dashboard/incubator',
-      accelerator_admin: '/dashboard/incubator',
-      university_admin: '/dashboard/incubator',
-      venture_studio_admin: '/dashboard/incubator',
-      service_provider: '/dashboard/provider',
-      legal_partner: '/dashboard/provider',
-      finance_advisor: '/dashboard/provider',
-      recruiter: '/dashboard/provider',
+      mentor: '/home',
+      advisor: '/home',
+      coach: '/home',
+      course_creator: '/home',
+      angel_investor: '/home',
+      vc_scout: '/home',
+      vc_analyst: '/home',
+      syndicate_manager: '/home',
+      incubator_admin: '/home',
+      accelerator_admin: '/home',
+      university_admin: '/home',
+      venture_studio_admin: '/home',
+      service_provider: '/home',
+      legal_partner: '/home',
+      finance_advisor: '/home',
+      recruiter: '/home',
       platform_admin: '/admin/dashboard',
     };
 

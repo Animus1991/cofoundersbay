@@ -21,6 +21,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { NavIcon, sectionNavGlyphs } from '@/components/icons/CfbGlyph';
 import { useStoredUser } from '@/hooks/useStoredUser';
+import { memberRole } from '@/lib/role-home';
 import { useRoleOptional } from '@/contexts/RoleContext';
 import { useI18n } from '@/components/common/I18nProvider';
 
@@ -66,7 +67,7 @@ export function MobileNav() {
   }, [mobileNavOpen, setMobileNavOpen]);
 
   const sections = useMemo(
-    () => getSectionsForMode(mode, primaryRole ?? user?.role),
+    () => getSectionsForMode(mode, memberRole(primaryRole, user?.role)),
     [mode, primaryRole, user?.role],
   );
   const glyphs = useMemo(() => sectionNavGlyphs(sections), [sections]);

@@ -24,6 +24,7 @@ import { Logo, LogoIcon } from '@/components/brand/Logo';
 import { CfbGlyph, NavIcon, sectionNavGlyphs } from '@/components/icons/CfbGlyph';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useStoredUser } from '@/hooks/useStoredUser';
+import { memberRole } from '@/lib/role-home';
 import { useRoleOptional } from '@/contexts/RoleContext';
 import { NotificationsBell } from './NotificationsBell';
 import { UserMenu } from './UserMenu';
@@ -123,9 +124,9 @@ export function SideNav() {
 
   // primaryRole comes from RoleContext (root-level, API-backed — the single source
   // of truth per docs/AI_PLATFORM_UPGRADE_PLAN.md §1.2). user?.role is a coarser
-  // string cached in localStorage at login and only used as a fallback while
-  // RoleContext is still loading or if it failed to fetch.
-  const effectiveRole = primaryRole ?? user?.role;
+  // string cached in localStorage at login, used while RoleContext is loading or
+  // failed, and when the account has no role facet (lib/role-home, docs §119).
+  const effectiveRole = memberRole(primaryRole, user?.role);
   const sections = useMemo(
     () => getSectionsForMode(mode, effectiveRole),
     [mode, effectiveRole],

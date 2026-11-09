@@ -69,8 +69,8 @@ export function todayRows(notices: LiveNotice[], now: HomeAskNow[]): TodayRow[] 
   return rows.filter((row): row is TodayRow => row !== null);
 }
 
-/** What waits on the reader, in Today's order: the card here, the count on the feed. */
-function useTodayRows() {
+/** What waits on the reader, in Today's order: the card here, the count on the first page. */
+export function useTodayRows() {
   const counts = useUnreadCounts();
   const { notices, followUps } = useLiveNotices();
   return { rows: todayRows(notices, nowStartingPoints({ ...counts, followUps: followUps.length })) };
