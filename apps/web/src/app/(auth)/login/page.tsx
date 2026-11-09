@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { safeInternalPath } from '@/lib/return-to';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { login, discoverSSOByEmail, getSSOLoginUrl, type SSODiscoveryResult } from '@/lib/api';
+import { TOO_MANY_ATTEMPTS, isRateLimited } from '@/lib/rate-limit-message';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
@@ -102,7 +103,9 @@ function LoginPageContent() {
     } catch (err) {
       submittingRef.current = false;
       const msg = err instanceof Error ? err.message : 'Login failed';
-      if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('abort')) {
+      if (isRateLimited(err)) {
+        setError(TOO_MANY_ATTEMPTS);
+      } else if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('abort')) {
         setError({ en: 'Cannot reach server — check your connection or try again.', el: 'Δεν υπάρχει σύνδεση με τον διακομιστή — ελέγξτε τη σύνδεσή σας ή δοκιμάστε ξανά.' });
       } else if (msg.toLowerCase().includes('unauthorized') || msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('credentials')) {
         setError({ en: 'Incorrect email or password.', el: 'Λάθος email ή κωδικός πρόσβασης.' });

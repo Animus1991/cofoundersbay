@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { rememberReturnTo } from '@/lib/return-to';
 import { register as registerApi } from '@/lib/api';
+import { TOO_MANY_ATTEMPTS, isRateLimited } from '@/lib/rate-limit-message';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
@@ -125,7 +126,9 @@ export default function RegisterPage() {
     } catch (err) {
       submittingRef.current = false;
       const msg = err instanceof Error ? err.message : 'Registration failed';
-      if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('abort')) {
+      if (isRateLimited(err)) {
+        setError(TOO_MANY_ATTEMPTS);
+      } else if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('abort')) {
         setError({ en: 'Cannot reach server — check your connection or try again.', el: 'Δεν υπάρχει σύνδεση με τον διακομιστή — ελέγξτε τη σύνδεσή σας ή δοκιμάστε ξανά.' });
       } else if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('exists') || msg.toLowerCase().includes('conflict')) {
         setError({ en: 'An account with this email already exists. Try signing in.', el: 'Υπάρχει ήδη λογαριασμός με αυτό το email. Δοκιμάστε να συνδεθείτε.' });

@@ -64,7 +64,7 @@ export class AuthController {
     };
   }
 
-  // @Throttle({ default: { ttl: 60000, limit: 5 } })
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Post('login')
   async login(
     @Body() body: LoginDto,

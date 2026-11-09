@@ -3,7 +3,11 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 
 /** One signed-in browser: a cookie jar, the CSRF header, and JSON or raw responses. */
+// Each client is a visitor of its own: the API counts anonymous requests by address.
+let visitors = 0;
+
 function makeClient(base, paceMs = 0) {
+  const visitor = `198.51.100.${(visitors = (visitors % 250) + 1)}`;
   const cookies = new Map();
   const pace = () => (paceMs ? new Promise((resolve) => setTimeout(resolve, paceMs)) : undefined);
   const cookieHeader = () => [...cookies].map(([k, v]) => `${k}=${v}`).join('; ');
@@ -23,7 +27,7 @@ function makeClient(base, paceMs = 0) {
     cookies,
     async request(method, route, body, csrf = true) {
       await pace();
-      const headers = { 'Content-Type': 'application/json' };
+      const headers = { 'Content-Type': 'application/json', 'X-Forwarded-For': visitor };
       if (cookies.size) headers.Cookie = cookieHeader();
       if (csrf && cookies.has('cfb_csrf')) headers['x-csrf-token'] = cookies.get('cfb_csrf');
       const response = await fetch(base + route, {
@@ -88,6 +92,11 @@ async function runChecks({ base, db, requireApi, results }) {
   check('new_session_reads_saved_note', list.status === 200 && list.data.items?.some(item => item.userId === bid && item.note === 'updated note'));
   check('shortlist_delete', (await fresh.request('DELETE', `/shortlist/${bid}`)).status === 200);
   check('deleted_row_absent', await db.savedProfile.count() === 0);
+  // The limit on signing in stops one visitor guessing, and only that visitor.
+  const guesser = client();
+  const guesses = [];
+  for (let i = 0; i < 6; i += 1) guesses.push((await guesser.request('POST', '/auth/login', { email: 'founder@isolated.example', password: 'wrong-guess-123456' })).status);
+  check('login_limit_stops_the_sixth_guess', guesses.slice(0, 5).every((status) => status === 401) && guesses[5] === 429);
   check('wrong_password_rejected', (await client().request('POST', '/auth/login', { email: 'founder@isolated.example', password: 'Wrong-password-123!' })).status === 401);
   const oldRefresh = fresh.cookies.get('cfb_refresh');
   const refreshed = await fresh.request('POST', '/auth/refresh', {});
