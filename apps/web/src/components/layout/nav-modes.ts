@@ -123,6 +123,7 @@ export const founderWorkSections: NavSection[] = [
   {
     section: 'Dashboard',
     links: [
+      { href: '/home', label: 'Home', icon: LayoutDashboard },
       { href: '/dashboard/founder', label: 'Overview', icon: LayoutDashboard },
       { href: '/readiness', label: 'Readiness Score', icon: Gauge },
       { href: '/analytics', label: 'Analytics', icon: BarChart3 },

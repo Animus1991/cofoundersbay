@@ -4258,7 +4258,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
       ],
       permissions: ['*'],
       dashboard: {
-        defaultRoute: '/dashboard/founder',
+        defaultRoute: '/home',
         dashboardWidgets: [],
         sidebarItems: [],
         features: [],

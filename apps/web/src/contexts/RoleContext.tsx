@@ -100,11 +100,11 @@ const EMPTY_ROLE_STATE: DashboardContextResponse = {
 };
 
 const ROLE_DASHBOARD: Record<UserRoleType, string> = {
-  aspiring_founder: '/dashboard/founder',
-  existing_founder: '/dashboard/founder',
-  cofounder_candidate: '/dashboard/founder',
-  technical_talent: '/dashboard/founder',
-  business_operator: '/dashboard/founder',
+  aspiring_founder: '/home',
+  existing_founder: '/home',
+  cofounder_candidate: '/home',
+  technical_talent: '/home',
+  business_operator: '/home',
   mentor: '/dashboard/mentor',
   advisor: '/dashboard/mentor',
   coach: '/dashboard/mentor',

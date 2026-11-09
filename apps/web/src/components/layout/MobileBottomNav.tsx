@@ -12,7 +12,7 @@ import { useI18n } from '@/components/common/I18nProvider';
 import { bilingualAria } from '@/lib/i18n/format';
 
 const PRIMARY_TABS = [
-  { icon: Home, label: 'Home', labelEl: 'Αρχική', path: '/dashboard', match: ['/dashboard'] },
+  { icon: Home, label: 'Home', labelEl: 'Αρχική', path: '/dashboard', match: ['/dashboard', '/home'] },
   { icon: Compass, label: 'Discover', labelEl: 'Εξερεύνηση', path: '/discover', match: ['/discover'] },
   // The assistant is the product's centre, and a phone had no way to it but a
   // page's ask field. The profile moved off this bar for it: the avatar above

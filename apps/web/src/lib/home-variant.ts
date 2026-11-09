@@ -1,12 +1,11 @@
 /**
- * The three first pages under trial (docs §116). The owner compares them in
- * full and chooses which one people meet first; `/dashboard` stays where it
- * points until then. Afterwards this list is the one place to change it.
+ * What the comparison bar moves between (docs §117). The first page is the
+ * people with the feed under them; the owner is still looking at where the
+ * dashboard and the first visit belong. It goes once that is settled.
  */
-export type HomeVariant = 'people' | 'feed' | 'dashboard';
+export type HomeVariant = 'home' | 'dashboard';
 
 export const HOME_VARIANTS: ReadonlyArray<{ value: HomeVariant; href: string; en: string; el: string }> = [
-  { value: 'people', href: '/home/people', en: 'People first', el: 'Άνθρωποι πρώτα' },
-  { value: 'feed', href: '/home/feed', en: 'Feed', el: 'Ροή' },
-  { value: 'dashboard', href: '/dashboard', en: 'Dashboard', el: 'Πίνακας' },
+  { value: 'home', href: '/home', en: 'Home', el: 'Αρχική' },
+  { value: 'dashboard', href: '/dashboard/founder', en: 'Dashboard', el: 'Πίνακας' },
 ];

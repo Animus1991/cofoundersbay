@@ -13,13 +13,14 @@ export default function DashboardRouter() {
   useEffect(() => {
     if (isLoading) return;
 
-    // Route to role-specific dashboard
+    // Route to role-specific dashboard. A founder's first page is /home (docs §117);
+    // the founder dashboard stays one link away, as Overview in the sidebar.
     const roleRoutes: Record<string, string> = {
-      aspiring_founder: '/dashboard/founder',
-      existing_founder: '/dashboard/founder',
-      cofounder_candidate: '/dashboard/founder',
-      technical_talent: '/dashboard/founder',
-      business_operator: '/dashboard/founder',
+      aspiring_founder: '/home',
+      existing_founder: '/home',
+      cofounder_candidate: '/home',
+      technical_talent: '/home',
+      business_operator: '/home',
       mentor: '/dashboard/mentor',
       advisor: '/dashboard/mentor',
       coach: '/dashboard/mentor',
@@ -39,7 +40,7 @@ export default function DashboardRouter() {
       platform_admin: '/admin/dashboard',
     };
 
-    const targetRoute = (primaryRole && roleRoutes[primaryRole]) || '/dashboard/founder';
+    const targetRoute = (primaryRole && roleRoutes[primaryRole]) || '/home';
     router.replace(targetRoute);
   }, [primaryRole, isLoading, router]);
 

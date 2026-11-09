@@ -7,9 +7,9 @@ import { HOME_VARIANTS, type HomeVariant } from '@/lib/home-variant';
 import { cn } from '@/lib/utils';
 
 /**
- * Moves between the three first pages while the owner compares them (docs
- * §116). It goes when one is chosen. "First visit" shows the people page as a
- * brand-new account meets it, which the demo account otherwise would not.
+ * Moves between the first page and the dashboard while the owner compares
+ * them (docs §117). "First visit" shows the first page as a brand-new account
+ * meets it, which the demo account otherwise would not.
  */
 export function HomeVariantSwitch({ current, firstVisit = false }: { current: HomeVariant; firstVisit?: boolean }) {
   const item = (active: boolean) => cn(
@@ -30,7 +30,7 @@ export function HomeVariantSwitch({ current, firstVisit = false }: { current: Ho
           );
         })}
         <li>
-          <Link href="/home/people?first=1" aria-current={firstVisit ? 'page' : undefined} className={item(firstVisit)}>
+          <Link href="/home?first=1" aria-current={firstVisit ? 'page' : undefined} className={item(firstVisit)}>
             <BilingualText en="First visit" el="Πρώτη επίσκεψη" compact />
           </Link>
         </li>

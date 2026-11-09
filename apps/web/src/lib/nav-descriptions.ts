@@ -1,5 +1,6 @@
 /** Short tooltip descriptions for sidebar links — self-explanatory on first hover. */
 export const NAV_LINK_DESCRIPTIONS: Record<string, string> = {
+  '/home': 'People who fit, and what is happening around you',
   '/dashboard/founder': 'Startup overview, readiness, and next actions',
   '/dashboard/mentor': 'Sessions, requests, and mentee activity',
   '/dashboard/investor': 'Deal flow KPIs and portfolio snapshot',

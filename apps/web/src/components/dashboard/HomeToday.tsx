@@ -70,7 +70,7 @@ export function todayRows(notices: LiveNotice[], now: HomeAskNow[]): TodayRow[] 
 }
 
 /** What waits on the reader, in Today's order: the card here, the count on the feed. */
-export function useTodayRows() {
+function useTodayRows() {
   const counts = useUnreadCounts();
   const { notices, followUps } = useLiveNotices();
   return { rows: todayRows(notices, nowStartingPoints({ ...counts, followUps: followUps.length })) };

@@ -147,7 +147,7 @@ export function middleware(request: NextRequest) {
     applyPreviewDemoCookies(response, publicOrigin.startsWith('https:'));
     if (pathname === '/login' || pathname === '/register') {
       const redirectTo = request.nextUrl.searchParams.get('redirect');
-      const target = safeInternalPath(redirectTo) ?? '/dashboard/founder';
+      const target = safeInternalPath(redirectTo) ?? '/home';
       const bounce = NextResponse.redirect(new URL(target, publicOrigin));
       applyPreviewDemoCookies(bounce, publicOrigin.startsWith('https:'));
       return bounce;
@@ -166,7 +166,7 @@ export function middleware(request: NextRequest) {
   // for this. The client-only half of the demo session (localStorage) is filled
   // in on arrival by PreviewSessionGuard in the root layout.
   if (pathname === '/demo') {
-    const demoRedirect = NextResponse.redirect(new URL('/dashboard/founder', publicOrigin));
+    const demoRedirect = NextResponse.redirect(new URL('/home', publicOrigin));
     applyPreviewDemoCookies(demoRedirect, publicOrigin.startsWith('https:'));
     return demoRedirect;
   }
@@ -193,11 +193,11 @@ export function middleware(request: NextRequest) {
   if (pathname === '/dashboard') {
     const primaryRole = request.cookies.get('cfb_primary_role')?.value;
     const ROLE_ROUTES: Record<string, string> = {
-      aspiring_founder:    '/dashboard/founder',
-      existing_founder:    '/dashboard/founder',
-      cofounder_candidate: '/dashboard/founder',
-      technical_talent:    '/dashboard/founder',
-      business_operator:   '/dashboard/founder',
+      aspiring_founder:    '/home',
+      existing_founder:    '/home',
+      cofounder_candidate: '/home',
+      technical_talent:    '/home',
+      business_operator:   '/home',
       mentor:              '/dashboard/mentor',
       advisor:             '/dashboard/mentor',
       coach:               '/dashboard/mentor',
@@ -216,7 +216,7 @@ export function middleware(request: NextRequest) {
       recruiter:           '/dashboard/provider',
       platform_admin:      '/admin/dashboard',
     };
-    const target = (primaryRole && ROLE_ROUTES[primaryRole]) || (previewHost ? '/dashboard/founder' : null);
+    const target = (primaryRole && ROLE_ROUTES[primaryRole]) || (previewHost ? '/home' : null);
     if (target) {
       const redirect = NextResponse.redirect(new URL(target, publicOrigin));
       if (previewHost) applyPreviewDemoCookies(redirect, publicOrigin.startsWith('https:'));

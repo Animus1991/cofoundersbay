@@ -91,6 +91,7 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/connections': 'Συνδέσεις',
   '/dashboard': 'Επισκόπηση',
   '/dashboard/founder': 'Επισκόπηση',
+  '/home': 'Αρχική',
   '/dashboard/investor': 'Επισκόπηση',
   '/dashboard/mentor': 'Επισκόπηση',
   '/dashboard/provider': 'Επισκόπηση',
@@ -188,6 +189,8 @@ export const NAV_LABEL_EL: Record<string, string> = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const NAV_DESCRIPTION_EL: Record<string, string> = {
+  '/home':
+    'Άνθρωποι που ταιριάζουν και τι γίνεται γύρω σας',
   '/dashboard/founder':
     'Επισκόπηση της startup σας, ετοιμότητα και επόμενες ενέργειες',
   '/dashboard/mentor':

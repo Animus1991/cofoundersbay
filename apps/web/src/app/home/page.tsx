@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
@@ -8,6 +8,7 @@ import { Check, Circle } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { HomeContinue } from '@/components/home/HomeContinue';
+import { HomeFeedSection } from '@/components/home/HomeFeedSection';
 import { HomePeople } from '@/components/home/HomePeople';
 import { HomeVariantSwitch } from '@/components/home/HomeVariantSwitch';
 import { AppShell } from '@/components/layout/AppShell';
@@ -18,28 +19,32 @@ import { useConnectionWith } from '@/hooks/useConnectionWith';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { getMeProfile, getRecommendations } from '@/lib/api';
 import { saysLookingFor, viewerFacts } from '@/lib/match-explain';
-import { queryKeys } from '@/lib/query-keys';
+import { qk, queryKeys } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
 
+const PEOPLE_ON_TOP = 3;
+
 /**
- * The first page as people to meet (docs §116).
+ * The first page (docs §117): the people on top, what is happening around the
+ * reader below them, across the whole column.
  *
  * Someone new sees one sentence on what the platform is for, three people who
  * fit, and at most three steps. Someone who has started sees what waits on
  * them, a few people, and the one thing in progress. Everything else is a
  * page of its own in the menu.
  */
-function PeopleHome() {
+function Home() {
   const params = useSearchParams();
   const myId = useStoredUser()?.id ?? null;
   const { data: profile, isLoading: profileLoading } = useQuery({ queryKey: queryKeys.me.profile(), queryFn: getMeProfile, staleTime: 60_000, retry: 0 });
+  // The key /matches and the founder dashboard read, so the three lists agree.
   const { data: recommendations, isLoading: peopleLoading } = useQuery({
-    queryKey: queryKeys.recommendations,
-    queryFn: () => getRecommendations({ limit: 5 }),
-    staleTime: 60_000,
+    queryKey: qk('recommendations', 'matches', { limit: 50 }),
+    queryFn: () => getRecommendations({ limit: 50 }),
+    staleTime: 3 * 60_000,
     retry: 0,
   });
-  const { connectionWith } = useConnectionWith(Boolean(myId), myId);
+  const { connectionWith, settled } = useConnectionWith(Boolean(myId), myId);
 
   const me = profile?.profile;
   const steps = [
@@ -48,11 +53,16 @@ function PeopleHome() {
     { key: 'connect', done: [...connectionWith.values()].some((link) => link.state === 'connected'), en: 'Connect with one person', el: 'Συνδεθείτε με έναν άνθρωπο', href: '/matches' },
   ];
   const doneCount = steps.filter((step) => step.done).length;
-  // The comparison can ask for either state; otherwise the account decides.
+  // The comparison can ask for either state; otherwise the account decides,
+  // once it is known: a returning founder must not flash the first visit.
   const asked = params?.get('first');
-  const firstVisit = asked === '1' ? true : asked === '0' ? false : !profileLoading && doneCount < steps.length;
+  const firstVisit = asked === '1' ? true : asked === '0' ? false : !profileLoading && settled && doneCount < steps.length;
 
-  const people = recommendations?.suggestions ?? [];
+  const people = useMemo(() => recommendations?.suggestions ?? [], [recommendations]);
+  const shownAbove = useMemo(
+    () => new Set(people.filter((person) => person?.userId).slice(0, PEOPLE_ON_TOP).map((person) => person.userId)),
+    [people],
+  );
   const viewer = viewerFacts(profile?.profile ?? null);
   const loading = profileLoading || peopleLoading;
   const peopleBlock = loading ? (
@@ -60,7 +70,7 @@ function PeopleHome() {
       {[0, 1, 2].map((i) => <Skeleton key={i} className="h-56 rounded-2xl" />)}
     </div>
   ) : people.length > 0 ? (
-    <HomePeople matches={people} viewer={viewer} myId={myId} />
+    <HomePeople matches={people} viewer={viewer} myId={myId} limit={PEOPLE_ON_TOP} />
   ) : (
     <Card>
       <CardContent className="space-y-3">
@@ -73,6 +83,7 @@ function PeopleHome() {
       </CardContent>
     </Card>
   );
+  const feed = <HomeFeedSection people={people} shownAbove={shownAbove} />;
 
   if (firstVisit) {
     return (
@@ -84,7 +95,7 @@ function PeopleHome() {
         askAi={false}
       >
         <div className="space-y-6">
-          <HomeVariantSwitch current="people" firstVisit={asked === '1'} />
+          <HomeVariantSwitch current="home" firstVisit={asked === '1'} />
           <section className="space-y-3" aria-labelledby="home-first-people">
             <div className="flex items-baseline justify-between gap-3">
               <h2 id="home-first-people" className="card-title"><BilingualText en="People who fit" el="Άνθρωποι που ταιριάζουν" compact /></h2>
@@ -120,6 +131,7 @@ function PeopleHome() {
               </CardContent>
             </Card>
           </section>
+          {feed}
         </div>
       </AppShell>
     );
@@ -128,7 +140,7 @@ function PeopleHome() {
   return (
     <AppShell title="Home" titleEl="Αρχική" askAi={false}>
       <div className="space-y-6">
-        <HomeVariantSwitch current="people" />
+        <HomeVariantSwitch current="home" />
         <HomeToday />
         <section className="space-y-3" aria-labelledby="home-for-you">
           <div className="flex items-baseline justify-between gap-3">
@@ -140,15 +152,16 @@ function PeopleHome() {
           {peopleBlock}
         </section>
         <HomeContinue />
+        {feed}
       </div>
     </AppShell>
   );
 }
 
-export default function PeopleHomePage() {
+export default function HomePage() {
   return (
     <Suspense fallback={null}>
-      <PeopleHome />
+      <Home />
     </Suspense>
   );
 }

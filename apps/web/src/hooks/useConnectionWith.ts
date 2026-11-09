@@ -42,7 +42,10 @@ export function useConnectionWith(enabled: boolean, myId: string | null | undefi
     [connectionWith],
   );
 
-  return { connectionWith, connectionOf };
+  // Answered, so a missing connection means there is none.
+  const settled = enabled && !accepted.isLoading;
+
+  return { connectionWith, connectionOf, settled };
 }
 
 /**

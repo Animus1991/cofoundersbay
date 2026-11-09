@@ -63,6 +63,8 @@ const PATH_GLYPH: Record<string, CfbGlyphName> = {
   // Every role's home, whatever its last segment (/dashboard/mentor is the
   // mentor's overview, not the mentor glyph).
   '/dashboard': 'home',
+  // The first page is the people and what they are doing; Overview keeps the house.
+  '/home': 'feed',
   '/ai': 'spark',
   '/ai/capabilities': 'spark',
   '/settings/ai': 'spark',
