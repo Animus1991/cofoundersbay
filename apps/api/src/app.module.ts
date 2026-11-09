@@ -2,8 +2,10 @@ import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { PerformanceInterceptor } from './common/interceptors/performance.interceptor';
 import { LoggerModule } from 'nestjs-pino';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { throttleTracker } from './common/throttle-tracker';
+import { jwtAccessSecret } from './auth/strategies/jwt.strategy';
 import { CsrfMiddleware } from './auth/csrf.middleware';
 import { resolve } from 'path';
 import { PrismaModule } from './prisma/prisma.module';
@@ -101,10 +103,16 @@ function findEnvFiles(): string[] {
       envFilePath: findEnvFiles(),
       load: [appConfig],
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,  // 1 minute window
-      limit: 60,   // 60 requests per minute (global default)
-    }]),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        throttlers: [{
+          ttl: 60000,  // 1 minute window
+          limit: 60,   // 60 requests per minute to one endpoint (global default)
+        }],
+        getTracker: throttleTracker(jwtAccessSecret(config) ?? ''),
+      }),
+    }),
     CommonModule,
     CacheModule,
     PrismaModule,

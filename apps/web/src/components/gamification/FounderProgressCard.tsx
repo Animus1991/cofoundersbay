@@ -15,9 +15,9 @@ import { ASK } from '@/lib/page-questions';
 import { qk } from '@/lib/query-keys';
 
 /**
- * The founder's progress score, with what moves it (docs §116). It left the
- * first page for here: it means something once a founder is working on
- * readiness, and nothing on a first look.
+ * The founder's progress score, with what moves it, on Overview (docs §120). It
+ * measures activity on the platform, so it stays off Readiness, whose own score
+ * is the company's readiness for investors.
  */
 export function FounderProgressCard() {
   const { ask } = useAskAssistant();

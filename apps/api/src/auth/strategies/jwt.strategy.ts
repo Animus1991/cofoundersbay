@@ -15,17 +15,23 @@ export function extractJwtFromCookieOrHeader(req: Request): string | null {
   return ExtractJwt.fromAuthHeaderAsBearerToken()(req);
 }
 
+/** The key access tokens are signed with; the one rule for every reader of them. */
+export function jwtAccessSecret(config: ConfigService): string | undefined {
+  return (
+    config.get<string>('JWT_ACCESS_SECRET') ||
+    (process.env.NODE_ENV !== 'production'
+      ? 'dev-only-secret-min-32-characters-long'
+      : undefined)
+  );
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     private readonly config: ConfigService,
     private readonly authService: AuthService,
   ) {
-    const secret =
-      config.get<string>('JWT_ACCESS_SECRET') ||
-      (process.env.NODE_ENV !== 'production'
-        ? 'dev-only-secret-min-32-characters-long'
-        : undefined);
+    const secret = jwtAccessSecret(config);
     if (!secret || secret.length < 16) {
       throw new Error(
         'JWT_ACCESS_SECRET is required in production (min 16 chars). Copy .env.example to .env and set JWT_ACCESS_SECRET.',

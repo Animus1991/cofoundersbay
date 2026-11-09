@@ -29,6 +29,8 @@ import {
   getVentureReadiness,
   type SearchHit,
   listMilestones,
+  getAnalyticsMetrics,
+  getAnalyticsProfileViews,
   getDashboardActivity,
 } from '@/lib/api';
 import {
@@ -42,6 +44,11 @@ import {
 } from '@/components/gamification/OnboardingChecklist';
 import { CommitmentOutcomes } from '@/components/commitments/CommitmentOutcomes';
 import { WhatsNewRail } from '@/components/dashboard/WhatsNewPanel';
+import { MetricTile } from '@/components/dashboard/MetricTile';
+import { ProgressSegments } from '@/components/dashboard/ProgressSegments';
+import { Sparkline } from '@/components/charts/Sparkline';
+import { FounderProgressCard } from '@/components/gamification/FounderProgressCard';
+import { useApiAvailability } from '@/hooks/useApiAvailability';
 import { YourPagesRow } from '@/components/dashboard/YourPages';
 import { HomeContinue } from '@/components/home/HomeContinue';
 import {
@@ -86,11 +93,25 @@ const FOUNDER_TOUR: TourStep[] = [
     bodyEl: 'Ό,τι χρειάζεται απάντηση από εσάς, σε μία λίστα, με το άτομο πρώτο. Κάθε γραμμή ανοίγει εκεί όπου απαντάτε.',
   },
   {
+    target: 'founder-stats',
+    titleEn: 'Your live counts, not a second score',
+    titleEl: 'Ζωντανά πλήθη, όχι δεύτερη βαθμολογία',
+    bodyEn: 'Profile views, unread messages and milestone completion. A dash means the figure could not be read; it is not zero.',
+    bodyEl: 'Προβολές προφίλ, μη αναγνωσμένα μηνύματα και ολοκλήρωση οροσήμων. Παύλα σημαίνει ότι ο αριθμός δεν διαβάστηκε, όχι ότι είναι μηδέν.',
+  },
+  {
     target: 'founder-people',
     titleEn: 'The people worth meeting',
     titleEl: 'Οι άνθρωποι που αξίζει να γνωρίσετε',
     bodyEn: 'The best matches for what you are looking for, each with the reason. The full list is under Matches.',
     bodyEl: 'Οι καλύτερες αντιστοιχίσεις για όσα ψάχνετε, η καθεμία με τον λόγο της. Η πλήρης λίστα είναι στις Αντιστοιχίσεις.',
+  },
+  {
+    target: 'founder-readiness',
+    titleEn: 'Your progress on the platform',
+    titleEl: 'Η πρόοδός σας στην πλατφόρμα',
+    bodyEn: 'How far you have come on the platform and what would move it. It is a different number from the investor readiness score on the Readiness page.',
+    bodyEl: 'Πόσο έχετε προχωρήσει στην πλατφόρμα και τι θα το ανεβάσει. Είναι διαφορετικός αριθμός από την ετοιμότητα για επενδυτές στη σελίδα Ετοιμότητα.',
   },
 ];
 
@@ -371,6 +392,7 @@ export default function FounderDashboardContent() {
   });
   // The reader's side of each match's reasons (lib/match-explain).
   const viewer = useMemo(() => viewerFacts(profile?.profile ?? null), [profile]);
+  const apiAvailable = useApiAvailability();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   // Where each match's connection stands, on /matches' keys: the first match
@@ -403,6 +425,54 @@ export default function FounderDashboardContent() {
   });
   const matchCount = matchList?.suggestions?.length;
   const excellentMatches = (matchList?.suggestions ?? []).filter((s) => (s.matchScore ?? 0) >= 80).length;
+
+  /*
+   * The same metrics /analytics charts, on the same 7-day period.
+   *
+   * The profile-views tile used to read `activeProfiles` off the platform
+   * stats - how many profiles are active across CoFounderBay, not how often
+   * this one was viewed - so it read 1,840 while the page behind its own link
+   * read 248. Sharing the query key with /analytics also means the two cannot
+   * drift apart in the cache.
+   */
+  const { data: userMetrics } = useQuery({
+    queryKey: qk('analytics', 'metrics', '7d'),
+    queryFn: () => getAnalyticsMetrics('7d'),
+    enabled: hasSession && mounted,
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  /** A change of exactly zero is a measurement; a missing one is not an arrow. */
+  const trendOf = (change: number | null | undefined) =>
+    typeof change === 'number'
+      ? { value: Math.abs(change), positive: change >= 0, en: dashboardEn('this_week'), el: dashboardEl('this_week') }
+      : undefined;
+  /*
+   * The days behind "Profile views": the same series the Analytics page
+   * charts on its Growth tab, drawn small beside the change (docs §107).
+   * Only a real series is drawn; a missing or one-day answer draws nothing.
+   */
+  const { data: profileViewSeries } = useQuery({
+    queryKey: qk('analytics', 'profile-views', '7d'),
+    queryFn: () => getAnalyticsProfileViews('7d'),
+    enabled: hasSession && mounted,
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const profileViewPoints = (Array.isArray(profileViewSeries) ? profileViewSeries : [])
+    .filter((day) => typeof day?.date === 'string' && typeof day?.views === 'number')
+    .map((day) => ({ label: formatShortDate(day.date, primary === 'el' ? 'el' : 'en'), value: day.views }));
+
+  const profileViewsTrend = (() => {
+    const trend = trendOf(userMetrics?.profileViewsChange);
+    if (!trend) return undefined;
+    return {
+      ...trend,
+      en: `${trend.en}. Opens analytics`,
+      el: `${trend.el}. Ανοίγει τα αναλυτικά`,
+    };
+  })();
 
   const { data: recommendations, isFetched: recommendationsFetched } = useQuery({
     queryKey: queryKeys.recommendations,
@@ -460,7 +530,7 @@ export default function FounderDashboardContent() {
    * query keys - so the tile, the list under it and that page cannot disagree,
    * and marking one done on either surface refreshes the other.
    */
-  const { data: milestoneData, isLoading: milestonesLoading } = useQuery({
+  const { data: milestoneData, isLoading: milestonesLoading, isError: milestonesFailed } = useQuery({
     queryKey: qk('milestones', 'all', 'all'),
     queryFn: () => listMilestones({ limit: 100 }),
     enabled: hasSession && mounted,
@@ -538,6 +608,35 @@ export default function FounderDashboardContent() {
   // The same calendar-day rule as /milestones (lib/milestone-order), so the
   // home and the page agree on "Overdue" on the due day itself.
   const isPastDue = (m: DemoMilestone) => isMilestoneOverdue({ status: m.status, dueDate: m.dueDate || null });
+  const overdueMilestoneCount = openMilestones.filter(isPastDue).length;
+  // Under way and on time: started (in progress, or some progress) and not past its date.
+  const activeMilestoneCount = openMilestones.filter((m) => !isPastDue(m) && (m.status === 'in_progress' || m.progress > 0)).length;
+  const messageCaption = unreadMessages === 0
+    ? { en: dashboardEn('inbox_clear'), el: dashboardEl('inbox_clear') }
+    : unreadMessages === 1
+      ? { en: '1 waiting', el: '1 σε αναμονή' }
+      : { en: `${unreadMessages} waiting`, el: `${unreadMessages} σε αναμονή` };
+  const milestoneCaption = milestones.length === 0
+    ? { en: dashboardEn('add_first_milestone'), el: dashboardEl('add_first_milestone') }
+    : completedMilestoneCount === milestones.length
+      ? { en: dashboardEn('milestones_all_complete'), el: dashboardEl('milestones_all_complete') }
+      : // A date on its own reads as the next deadline, even one that has passed.
+        overdueMilestoneCount > 0
+        ? {
+            en: `${openMilestones.length} open · ${overdueMilestoneCount} overdue`,
+            el: `${openMilestones.length} ανοιχτά · ${overdueMilestoneCount} ${overdueMilestoneCount === 1 ? 'εκπρόθεσμο' : 'εκπρόθεσμα'}`,
+          }
+        : // A real milestone may carry no due date, and the separator was printed
+        // before the date was: the caption read "6 ανοιχτά ·" and stopped.
+        nextOpenMilestone?.dueDate
+        ? {
+            en: `${openMilestones.length} open · next ${formatShortDate(nextOpenMilestone.dueDate, 'en')}`,
+            el: `${openMilestones.length} ανοιχτά · επόμενο ${formatShortDate(nextOpenMilestone.dueDate, 'el')}`,
+          }
+        : {
+            en: `${openMilestones.length} open`,
+            el: `${openMilestones.length} ανοιχτά`,
+          };
   const waitingThreads = (ladderThreads ?? []).filter(waitsOnMe);
   /**
    * The dashboard's own figures, for the assistant.
@@ -1144,11 +1243,56 @@ export default function FounderDashboardContent() {
           />
         )}
 
-        {/* Three things and no more (docs §116): what waits on the founder,
-            the one thing in progress, the people worth meeting. The figures
-            are on Analytics, the score on Readiness, the first steps and the
-            three doors on Help, and the shortcuts in the page's tools. */}
+        {/* How the startup is doing (docs §120): what waits on the founder, the
+            live counts, the people, the one thing in progress, the progress
+            score. The first steps and the three doors are on Help, and the
+            shortcuts in the page's tools. */}
         <div data-tour="founder-today"><HomeToday /></div>
+
+        <div className="grid min-w-0 grid-cols-1 gap-3 min-[480px]:grid-cols-2 min-[480px]:gap-4 lg:grid-cols-3" data-tour="founder-stats">
+          <MetricTile
+            align="center"
+            glyph="profile"
+            label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
+            value={userMetrics?.profileViews ?? '—'}
+            trend={profileViewsTrend}
+            trendVisual={profileViewPoints.length > 1 ? <Sparkline points={profileViewPoints} /> : undefined}
+            caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
+            captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
+            href="/analytics"
+          />
+          <MetricTile
+            align="center"
+            glyph="messages"
+            label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
+            value={apiAvailable ? unreadMessages : '—'}
+            href="/messages"
+            caption={apiAvailable ? messageCaption.en : 'Not read: the server is unavailable. Opens messages'}
+            captionEl={apiAvailable ? messageCaption.el : 'Δεν διαβάστηκε: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα μηνύματα'}
+          />
+          <div className="min-w-0 min-[480px]:col-span-2 lg:col-span-1">
+            <MetricTile
+              align="center"
+              glyph="flag"
+              label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
+              value={milestonesFailed && milestones.length === 0 ? '—' : `${completedMilestoneCount}/${milestones.length}`}
+              href="/milestones"
+              // Finished, under way, late, and the open rest, along the tile's edge (docs §107).
+              edge={milestones.length > 0 ? (
+                <ProgressSegments
+                  total={milestones.length}
+                  segments={[
+                    { key: 'done', value: completedMilestoneCount, tone: 'done' },
+                    { key: 'active', value: activeMilestoneCount, tone: 'active' },
+                    { key: 'late', value: overdueMilestoneCount, tone: 'late' },
+                  ]}
+                />
+              ) : undefined}
+              caption={milestonesFailed && milestones.length === 0 ? 'Not read: the server is unavailable. Opens milestones' : milestoneCaption.en}
+              captionEl={milestonesFailed && milestones.length === 0 ? 'Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα ορόσημα' : milestoneCaption.el}
+            />
+          </div>
+        </div>
 
         <FounderPhoneHome
           leadOnly
@@ -1167,6 +1311,8 @@ export default function FounderDashboardContent() {
         />
 
         {showFirstMove ? null : <HomeContinue />}
+
+        <div data-tour="founder-readiness"><FounderProgressCard /></div>
       </div>
     </AppShell>
   );

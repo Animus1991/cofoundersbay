@@ -47,6 +47,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 import { requestIdMiddleware } from './common/filters/http-exception.filter';
 import appConfig from './common/config/app.config';
 import { Logger } from 'nestjs-pino';
+import { trustProxySetting } from './common/throttle-tracker';
 
 // ── Process-level crash guards ─────────────────────────────────────────────────
 // Ensure crash reasons are ALWAYS written to stderr before the process exits.
@@ -86,6 +87,9 @@ async function bootstrap() {
   });
   
   // Security & parsing middleware
+  // Which proxies may report the caller's address: without this every request
+  // behind one looks like it comes from the proxy (docs §120).
+  app.set('trust proxy', trustProxySetting(process.env.TRUST_PROXY));
   app.use(cookieParser());
   app.use(helmet({
     contentSecurityPolicy: config.nodeEnv === 'production' ? undefined : false,
