@@ -6,11 +6,8 @@ import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Check, Circle } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
-import { HomeToday } from '@/components/dashboard/HomeToday';
-import { HomeContinue } from '@/components/home/HomeContinue';
 import { HomeFeedSection } from '@/components/home/HomeFeedSection';
 import { HomePeople } from '@/components/home/HomePeople';
-import { HomeVariantSwitch } from '@/components/home/HomeVariantSwitch';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,13 +22,10 @@ import { cn } from '@/lib/utils';
 const PEOPLE_ON_TOP = 3;
 
 /**
- * The first page (docs §117): the people on top, what is happening around the
- * reader below them, across the whole column.
- *
- * Someone new sees one sentence on what the platform is for, three people who
- * fit, and at most three steps. Someone who has started sees what waits on
- * them, a few people, and the one thing in progress. Everything else is a
- * page of its own in the menu.
+ * The first page (docs §118), the same for everyone: one sentence on what the
+ * platform is for, three people who fit, the steps while any are left, then
+ * what is happening around the reader. One card to a row, across the whole
+ * column. What waits on the reader and the work in progress are on Overview.
  */
 function Home() {
   const params = useSearchParams();
@@ -53,10 +47,9 @@ function Home() {
     { key: 'connect', done: [...connectionWith.values()].some((link) => link.state === 'connected'), en: 'Connect with one person', el: 'Συνδεθείτε με έναν άνθρωπο', href: '/matches' },
   ];
   const doneCount = steps.filter((step) => step.done).length;
-  // The comparison can ask for either state; otherwise the account decides,
-  // once it is known: a returning founder must not flash the first visit.
-  const asked = params?.get('first');
-  const firstVisit = asked === '1' ? true : asked === '0' ? false : !profileLoading && settled && doneCount < steps.length;
+  // Finished steps go, once the account is known: a founder who has done them
+  // must not see them flash. `?first=1` shows them anyway, as a new account does.
+  const showSteps = params?.get('first') === '1' || (!profileLoading && settled && doneCount < steps.length);
 
   const people = useMemo(() => recommendations?.suggestions ?? [], [recommendations]);
   const shownAbove = useMemo(
@@ -66,8 +59,8 @@ function Home() {
   const viewer = viewerFacts(profile?.profile ?? null);
   const loading = profileLoading || peopleLoading;
   const peopleBlock = loading ? (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-      {[0, 1, 2].map((i) => <Skeleton key={i} className="h-56 rounded-2xl" />)}
+    <div className="space-y-4">
+      {[0, 1, 2].map((i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
     </div>
   ) : people.length > 0 ? (
     <HomePeople matches={people} viewer={viewer} myId={myId} limit={PEOPLE_ON_TOP} />
@@ -83,33 +76,31 @@ function Home() {
       </CardContent>
     </Card>
   );
-  const feed = <HomeFeedSection people={people} shownAbove={shownAbove} />;
 
-  if (firstVisit) {
-    return (
-      <AppShell
-        title="Find who you will build your company with"
-        titleEl="Βρείτε με ποιον θα χτίσετε την εταιρεία σας"
-        description="People who fit what you are looking for, and a way to start working with them."
-        descriptionEl="Άνθρωποι που ταιριάζουν με όσα ψάχνετε, και ένας τρόπος να ξεκινήσετε μαζί τους."
-        askAi={false}
-      >
-        <div className="space-y-6">
-          <HomeVariantSwitch current="home" firstVisit={asked === '1'} />
-          <section className="space-y-3" aria-labelledby="home-first-people">
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 id="home-first-people" className="card-title"><BilingualText en="People who fit" el="Άνθρωποι που ταιριάζουν" compact /></h2>
-              <Link href="/matches" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
-                <BilingualText en="See everyone" el="Δείτε όλους" compact />
-              </Link>
-            </div>
-            {peopleBlock}
-          </section>
-          <section aria-labelledby="home-first-steps">
+  return (
+    <AppShell
+      title="Find who you will build your company with"
+      titleEl="Βρείτε με ποιον θα χτίσετε την εταιρεία σας"
+      description="People who fit what you are looking for, and a way to start working with them."
+      descriptionEl="Άνθρωποι που ταιριάζουν με όσα ψάχνετε, και ένας τρόπος να ξεκινήσετε μαζί τους."
+      askAi={false}
+    >
+      <div className="space-y-6">
+        <section className="space-y-3" aria-labelledby="home-people">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="home-people" className="card-title"><BilingualText en="People who fit" el="Άνθρωποι που ταιριάζουν" compact /></h2>
+            <Link href="/matches" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
+              <BilingualText en="See everyone" el="Δείτε όλους" compact />
+            </Link>
+          </div>
+          {peopleBlock}
+        </section>
+        {showSteps ? (
+          <section aria-labelledby="home-steps">
             <Card>
               <CardContent className="space-y-3">
                 <div className="flex items-baseline justify-between gap-3">
-                  <h2 id="home-first-steps" className="card-title"><BilingualText en="To begin" el="Για να ξεκινήσετε" compact /></h2>
+                  <h2 id="home-steps" className="card-title"><BilingualText en="To begin" el="Για να ξεκινήσετε" compact /></h2>
                   <span className="text-xs tabular-nums text-muted-foreground">
                     <BilingualText en={`${doneCount} of ${steps.length}`} el={`${doneCount} από ${steps.length}`} compact />
                   </span>
@@ -131,28 +122,8 @@ function Home() {
               </CardContent>
             </Card>
           </section>
-          {feed}
-        </div>
-      </AppShell>
-    );
-  }
-
-  return (
-    <AppShell title="Home" titleEl="Αρχική" askAi={false}>
-      <div className="space-y-6">
-        <HomeVariantSwitch current="home" />
-        <HomeToday />
-        <section className="space-y-3" aria-labelledby="home-for-you">
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 id="home-for-you" className="card-title"><BilingualText en="For you" el="Για εσάς" compact /></h2>
-            <Link href="/matches" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
-              <BilingualText en="See everyone" el="Δείτε όλους" compact />
-            </Link>
-          </div>
-          {peopleBlock}
-        </section>
-        <HomeContinue />
-        {feed}
+        ) : null}
+        <HomeFeedSection people={people} shownAbove={shownAbove} />
       </div>
     </AppShell>
   );

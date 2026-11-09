@@ -17,7 +17,8 @@ import { qk } from '@/lib/query-keys';
 /**
  * People worth meeting, a few at a time (docs §116): the face, what they do,
  * the one reason they are here, and the next step with them. Everything the
- * full list can do stays on /matches.
+ * full list can do stays on /matches. One to a row (docs §118), the action at
+ * the right of the head, or under the text on a phone.
  */
 export function HomePeople({ matches, viewer, myId, limit = 3 }: {
   matches: SearchHit[];
@@ -43,7 +44,7 @@ export function HomePeople({ matches, viewer, myId, limit = 3 }: {
   const people = matches.filter((person) => person?.userId).slice(0, limit);
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3" data-home-people="">
+    <div className="space-y-4" data-home-people="">
       {people.map((person) => {
         const reason = explainMatch(person, viewer, { nowMs: Date.now() })[0] ?? null;
         const state = sentTo.has(person.userId) ? 'sent' : connectionOf(person.userId);
@@ -57,8 +58,8 @@ export function HomePeople({ matches, viewer, myId, limit = 3 }: {
             role={person.role}
             headline={person.headline}
             photo="xl"
-            fact={reason ? <span className="line-clamp-2"><BilingualText en={reason.en} el={reason.el} compact wrap /></span> : undefined}
-            primary={state === 'received' ? (
+            meta={reason ? <span className="line-clamp-2"><BilingualText en={reason.en} el={reason.el} compact wrap /></span> : undefined}
+            aside={state === 'received' ? (
               <Button size="sm" onClick={() => void accept(person.userId)} aria-label={bilingualAria(`Accept ${name}'s request`, `Αποδοχή αιτήματος: ${name}`)}>
                 <BilingualText en="Accept" el="Αποδοχή" compact />
               </Button>

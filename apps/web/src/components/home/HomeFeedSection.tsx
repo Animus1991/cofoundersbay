@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { CoverImage } from '@/components/common/CoverImage';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -24,46 +25,44 @@ const FIRST = 12;
 /** Joined within this many days: after that someone is simply a member. */
 const NEW_MEMBER_DAYS = 30;
 
-/** One entry: who, why it is here, what it says, one way in. */
+/** One entry to a row (docs §118): who, why it is here, one way in, what it says, its picture. */
 function FeedCard({ item }: { item: FeedItem }) {
   return (
     <article data-feed-item={item.kind}>
-      <Card className="flex h-full flex-col overflow-hidden">
-        <CoverImage src={item.image} className="rounded-t-[inherit] sm:max-h-48" />
-        <CardContent className="flex flex-1 flex-col gap-2">
-          <div className="flex items-start gap-3">
-            <Avatar className={cn('h-11 w-11 shrink-0', item.mark.square && 'rounded-xl')} data-keep-icon="">
-              {item.mark.src ? <AvatarImage src={item.mark.src} alt="" className={item.mark.square ? 'rounded-xl' : undefined} /> : null}
-              <AvatarFallback className={cn('bg-primary/10 font-semibold text-primary-accessible', item.mark.square && 'rounded-xl')}>{initialsOf(item.mark.name)}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-muted-foreground"><BilingualText en={item.why.en} el={item.why.el} compact wrap /></p>
-              <h3 className="card-title">
-                <Link href={item.href} className="transition-colors hover:text-primary-accessible">{item.title}</Link>
-              </h3>
-              {item.subtitle ? <p className="text-sm text-muted-foreground">{item.subtitle}</p> : null}
-            </div>
-          </div>
-          {item.body ? <p className="card-body line-clamp-3 text-muted-foreground first-letter:uppercase">{item.body}</p> : null}
-          <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-1">
-            <span className="text-xs text-muted-foreground">
-              {item.when ? <RelativeTime date={item.when} format={formatRelativeTime} /> : null}
-            </span>
-            <Button variant="outline" size="sm" asChild>
-              <Link href={item.href}><BilingualText en={item.action.en} el={item.action.el} compact /></Link>
-            </Button>
-          </div>
+      <Card className="overflow-hidden">
+        <CardContent className="space-y-3">
+          <CardHead
+            mark={(
+              <Avatar className={cn('h-11 w-11 shrink-0', item.mark.square && 'rounded-xl')} data-keep-icon="">
+                {item.mark.src ? <AvatarImage src={item.mark.src} alt="" className={item.mark.square ? 'rounded-xl' : undefined} /> : null}
+                <AvatarFallback className={cn('bg-primary/10 font-semibold text-primary-accessible', item.mark.square && 'rounded-xl')}>{initialsOf(item.mark.name)}</AvatarFallback>
+              </Avatar>
+            )}
+            title={<Link href={item.href} className="transition-colors hover:text-primary-accessible">{item.title}</Link>}
+            subtitle={item.subtitle}
+            meta={<BilingualText en={item.why.en} el={item.why.el} compact wrap />}
+            aside={(
+              <span className="flex items-center gap-3">
+                {item.when ? <span className="whitespace-nowrap text-xs text-muted-foreground"><RelativeTime date={item.when} format={formatRelativeTime} /></span> : null}
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={item.href}><BilingualText en={item.action.en} el={item.action.el} compact /></Link>
+                </Button>
+              </span>
+            )}
+          />
+          {item.body ? <p className="card-body line-clamp-3 max-w-[80ch] text-muted-foreground first-letter:uppercase">{item.body}</p> : null}
         </CardContent>
+        <CoverImage src={item.image} className="sm:max-h-[420px]" />
       </Card>
     </article>
   );
 }
 
 /**
- * What is happening around the reader, under the people (docs §117): the full
- * width of the column in the three columns of the people above it, each entry
- * saying why it is here. Only what the platform really holds appears, and
- * nothing already shown higher on the page appears twice.
+ * What is happening around the reader, under the people (docs §118): one entry
+ * to a row across the whole column, each saying why it is here. Only what the
+ * platform really holds appears, and nothing already shown higher on the page
+ * appears twice.
  */
 export function HomeFeedSection({ people, shownAbove }: { people: readonly SearchHit[]; shownAbove: ReadonlySet<string> }) {
   const fmtDate = useDateFormat();
@@ -223,9 +222,9 @@ export function HomeFeedSection({ people, shownAbove }: { people: readonly Searc
           <BilingualText en="The whole feed" el="Όλη η ροή" compact />
         </Link>
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {loading && curated.length === 0
-          ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-40 rounded-2xl" />)
+          ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-28 rounded-2xl" />)
           : curated.map((item) => <FeedCard key={item.id} item={item} />)}
       </div>
       {more > 0 ? (

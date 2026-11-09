@@ -44,7 +44,6 @@ import { CommitmentOutcomes } from '@/components/commitments/CommitmentOutcomes'
 import { WhatsNewRail } from '@/components/dashboard/WhatsNewPanel';
 import { YourPagesRow } from '@/components/dashboard/YourPages';
 import { HomeContinue } from '@/components/home/HomeContinue';
-import { HomeVariantSwitch } from '@/components/home/HomeVariantSwitch';
 import {
   FIRST_MOVE_LATER_KEY,
   FounderFirstMove,
@@ -1130,8 +1129,6 @@ export default function FounderDashboardContent() {
         {/* GitHub's home: a greeting over one question box and the jobs to
             start from. The weekly brief the header's field used to send is
             the "My week" chip. */}
-        <HomeVariantSwitch current="dashboard" />
-
         <HomeAskHero role="founder" followUpsDue={dueFollowUps.length} showWaiting={false} plain name={own?.displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
 
         {showFirstMove && (
