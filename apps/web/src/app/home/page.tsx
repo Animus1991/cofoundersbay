@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Check, Circle } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -19,6 +19,7 @@ import { useConnectionWith } from '@/hooks/useConnectionWith';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { getMeProfile, getRecommendations } from '@/lib/api';
 import { viewerFacts } from '@/lib/match-explain';
+import { usePageControls, usePageList } from '@/lib/page-controls';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { HOME_COPY, homeAudience, memberRole, overviewPathFor, saysWhatTheyWant } from '@/lib/role-home';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,7 @@ const PEOPLE_ON_TOP = 3;
  */
 function Home() {
   const params = useSearchParams();
+  const router = useRouter();
   const storedUser = useStoredUser();
   const myId = storedUser?.id ?? null;
   const roleContext = useRoleOptional();
@@ -64,6 +66,28 @@ function Home() {
   // A brand-new account's welcome notice is not something waiting on them.
   const waiting = waitingRows.length;
   const showWaiting = waitingRows.some((row) => row.key !== 'now-notifications') || (waiting > 0 && !showSteps);
+
+  // What waits, as Overview's Today lists it, and the way there.
+  usePageList([
+    {
+      id: 'waiting_on_you',
+      labelEn: 'Waiting on you',
+      labelEl: 'Σας περιμένουν',
+      rows: waitingRows.map((row) => `${row.en}${row.count ? ` ${row.count}` : ''}`),
+      rowsEl: waitingRows.map((row) => `${row.el}${row.count ? ` ${row.count}` : ''}`),
+    },
+  ]);
+  usePageControls([
+    {
+      id: 'open_waiting',
+      labelEn: 'Open what is waiting on you',
+      labelEl: 'Άνοιγμα όσων σας περιμένουν',
+      writes: false,
+      unavailableEn: waiting > 0 ? undefined : 'Nothing is waiting on you.',
+      unavailableEl: waiting > 0 ? undefined : 'Δεν σας περιμένει τίποτα.',
+      run: () => router.push(overviewPathFor(role)),
+    },
+  ]);
 
   const people = useMemo(() => recommendations?.suggestions ?? [], [recommendations]);
   const shownAbove = useMemo(

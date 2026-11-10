@@ -17,6 +17,7 @@ import { listCommitmentCards } from '@/lib/commitments-api';
 import { curateFeed, type FeedItem } from '@/lib/home-feed';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { explainMatch, viewerFacts } from '@/lib/match-explain';
+import { usePageControls, usePageList } from '@/lib/page-controls';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { getUpdatesFeed } from '@/lib/updates-api';
 import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
@@ -226,6 +227,39 @@ export function HomeFeedSection({ people, shownAbove, connectionOf }: { people: 
 
   const curated = useMemo(() => curateFeed(items, all ? items.length : FIRST), [items, all]);
   const more = items.length - curated.length;
+
+  // What is around the reader, as the entries say it, and the one control.
+  const KIND = {
+    person: { en: 'person', el: 'άνθρωπος' },
+    member: { en: 'new member', el: 'νέο μέλος' },
+    update: { en: 'founder update', el: 'ενημέρωση ιδρυτή' },
+    need: { en: 'need card', el: 'κάρτα ανάγκης' },
+    event: { en: 'event', el: 'εκδήλωση' },
+    program: { en: 'programme', el: 'πρόγραμμα' },
+    post: { en: 'post', el: 'ανάρτηση' },
+  } as const;
+  const rowOf = (item: FeedItem, lang: 'en' | 'el') => [KIND[item.kind]?.[lang], item.title, item.subtitle, item.why[lang]].filter(Boolean).join(' · ');
+  usePageList([
+    {
+      id: 'around_you',
+      labelEn: 'Around you',
+      labelEl: 'Γύρω σας',
+      rows: loading ? undefined : curated.map((item) => rowOf(item, 'en')),
+      rowsEl: loading ? undefined : curated.map((item) => rowOf(item, 'el')),
+      total: items.length,
+    },
+  ]);
+  usePageControls([
+    {
+      id: 'show_all_around_you',
+      labelEn: 'Show every entry around you',
+      labelEl: 'Εμφάνιση όλων των καταχωρίσεων γύρω σας',
+      writes: false,
+      unavailableEn: more > 0 ? undefined : 'Every entry is already shown.',
+      unavailableEl: more > 0 ? undefined : 'Εμφανίζονται ήδη όλες οι καταχωρίσεις.',
+      run: () => setAll(true),
+    },
+  ]);
 
   // With nothing to show the section is absent: the page above already says what to do next.
   if (!loading && curated.length === 0) return null;
