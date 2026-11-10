@@ -101,6 +101,14 @@ type PageRailCtx = {
    */
   registerRailPresence: (id: object) => () => void;
   /**
+   * True while a scrolling app frame is mounted. Such a frame keeps the
+   * strip's column free on its right even without a rail, and the chat
+   * launcher docks there instead of floating over the page's last column.
+   */
+  hasGutter: boolean;
+  /** The mounted frame registers its gutter; internal to AppShellFrame. */
+  registerGutter: (id: object) => () => void;
+  /**
    * Open the rail on a named section: a peek on the desktop, the sheet below
    * `lg`. This is how a keyboard shortcut, a canvas command or an assistant
    * action can take the reader straight to a tool instead of leaving them to
@@ -125,6 +133,8 @@ const PageRailContext = createContext<PageRailCtx>({
   setPeeked: () => {},
   hasRail: false,
   registerRailPresence: () => () => {},
+  hasGutter: false,
+  registerGutter: () => () => {},
   openRailSection: () => {},
   registerRailOpener: () => {},
   sections: [],
@@ -155,6 +165,16 @@ export function PageRailProvider({ children }: { children: ReactNode }) {
     return () => {
       railIds.current.delete(id);
       setHasRail(railIds.current.size > 0);
+    };
+  }, []);
+  const [hasGutter, setHasGutter] = useState(false);
+  const gutterIds = useRef(new Set<object>());
+  const registerGutter = useCallback((id: object) => {
+    gutterIds.current.add(id);
+    setHasGutter(true);
+    return () => {
+      gutterIds.current.delete(id);
+      setHasGutter(gutterIds.current.size > 0);
     };
   }, []);
   /* The opener belongs to whichever PageRail is mounted, so it lives in a ref
@@ -229,6 +249,8 @@ export function PageRailProvider({ children }: { children: ReactNode }) {
         setPeeked,
         hasRail,
         registerRailPresence,
+        hasGutter,
+        registerGutter,
         openRailSection,
         registerRailOpener,
         sections,

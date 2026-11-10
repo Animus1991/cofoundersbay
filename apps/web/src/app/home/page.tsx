@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Check, Circle } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
+import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { useTodayRows } from '@/components/dashboard/HomeToday';
 import { HomeFeedSection } from '@/components/home/HomeFeedSection';
 import { HomePeople } from '@/components/home/HomePeople';
@@ -47,7 +48,7 @@ function Home() {
     staleTime: 3 * 60_000,
     retry: 0,
   });
-  const { connectionWith, settled } = useConnectionWith(Boolean(myId), myId);
+  const { connectionWith, connectionOf, settled } = useConnectionWith(Boolean(myId), myId);
 
   const me = profile?.profile;
   const steps = [
@@ -110,6 +111,9 @@ function Home() {
       askAi={false}
     >
       <div className="space-y-6">
+        {/* The assistant is the first thing on the first page: the box alone,
+            its shortcuts stay on Overview. */}
+        <HomeAskHero role={audience === 'org' ? 'incubator' : audience} plain greeting={false} />
         {showWaiting ? (
           <Link
             href={overviewPathFor(role)}
@@ -161,7 +165,7 @@ function Home() {
             </Card>
           </section>
         ) : null}
-        <HomeFeedSection people={people} shownAbove={shownAbove} />
+        <HomeFeedSection people={people} shownAbove={shownAbove} connectionOf={connectionOf} />
       </div>
     </AppShell>
   );

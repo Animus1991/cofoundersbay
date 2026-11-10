@@ -5161,7 +5161,7 @@ html[data-theme="studio"] ::selection {
    what needs you and what to do next."). The page registry's description
    above it was a second introduction in a row, so on a page that carries
    the greeting the header shows the title alone (docs §64). */
-#main-content:has([data-home-ask]) [data-page-header] .page-lead {
+#main-content:has([data-home-ask="greeting"]) [data-page-header] .page-lead {
   display: none;
 }
 

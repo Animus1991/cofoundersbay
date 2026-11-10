@@ -20,7 +20,7 @@ export function ChatBubble() {
   // Read with the other contexts, above the early return below: a hook
   // called after `if (hidden) return null` runs on some renders and not
   // others, which is exactly the order change React refuses.
-  const { hasRail } = usePageRail();
+  const { hasRail, hasGutter } = usePageRail();
   const pathname = usePathname();
   const unreadMessages = useMessagingUnreadCount();
   const { isOpen, isMinimized, open, restore } = usePopupChat();
@@ -55,8 +55,9 @@ export function ChatBubble() {
   // Docked: on a page with a tools rail, the bubble lives at the foot of the
   // rail's strip, which is always empty there - floating beside the strip it
   // covered the right edge of the page (a card's Message button, the last
-  // column of percentages). Without a rail it floats in the corner as before.
-  const docked = hasRail;
+  // column of percentages). A page without a rail keeps the same column free
+  // (AppShellFrame), so it docks there too; outside the app frame it floats.
+  const docked = hasRail || hasGutter;
   const size = docked ? 40 : 52;
 
   const unreadEn = `${unreadMessages} unread message${unreadMessages === 1 ? '' : 's'}`;

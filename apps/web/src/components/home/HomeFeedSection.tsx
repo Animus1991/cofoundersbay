@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { MatchConnection } from '@/components/common/MatchCard';
 import { getMeProfile, getPersonalizedFeed, listEvents, listPrograms, searchProfiles, type SearchHit } from '@/lib/api';
 import { listCommitmentCards } from '@/lib/commitments-api';
 import { curateFeed, type FeedItem } from '@/lib/home-feed';
@@ -64,12 +65,25 @@ function FeedCard({ item }: { item: FeedItem }) {
  * platform really holds appears, and nothing already shown higher on the page
  * appears twice.
  */
-export function HomeFeedSection({ people, shownAbove }: { people: readonly SearchHit[]; shownAbove: ReadonlySet<string> }) {
+export function HomeFeedSection({ people, shownAbove, connectionOf }: { people: readonly SearchHit[]; shownAbove: ReadonlySet<string>; /** Where the reader stands with a post's author: only a connection is "your network". */ connectionOf?: (userId: string) => MatchConnection }) {
   const fmtDate = useDateFormat();
   const [all, setAll] = useState(false);
-  const opts = { staleTime: 60_000, retry: 0 } as const;
+  // The feed's own reads wait until the section is near the screen: the people
+  // and the steps above it are what a first visit is for.
+  const section = useRef<HTMLElement>(null);
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const node = section.current;
+    if (!node || typeof IntersectionObserver === 'undefined') { setNear(true); return undefined; }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) { setNear(true); observer.disconnect(); }
+    }, { rootMargin: '600px 0px' });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  const opts = { staleTime: 60_000, retry: 0, enabled: near } as const;
 
-  const profile = useQuery({ queryKey: queryKeys.me.profile(), queryFn: getMeProfile, ...opts });
+  const profile = useQuery({ queryKey: queryKeys.me.profile(), queryFn: getMeProfile, staleTime: 60_000, retry: 0 });
   const members = useQuery({ queryKey: qk('search', 'profiles', 'newest'), queryFn: () => searchProfiles({ sortBy: 'recent', limit: 8 }), ...opts });
   const updates = useQuery({ queryKey: qk('founder-updates', 'feed'), queryFn: getUpdatesFeed, ...opts });
   const needs = useQuery({ queryKey: qk('commitments', 'cards', 'home-feed'), queryFn: () => listCommitmentCards({}), ...opts });
@@ -77,7 +91,7 @@ export function HomeFeedSection({ people, shownAbove }: { people: readonly Searc
   const programs = useQuery({ queryKey: qk('programs', 'home-feed'), queryFn: () => listPrograms({ limit: 6 }), ...opts });
   const posts = useQuery({ queryKey: qk('feed', 'home-feed'), queryFn: () => getPersonalizedFeed({ limit: 6 }), ...opts });
 
-  const loading = [members, updates, needs, events, programs, posts].some((q) => q.isLoading);
+  const loading = !near || [members, updates, needs, events, programs, posts].some((q) => q.isLoading);
 
   const items = useMemo(() => {
     const now = Date.now();
@@ -193,7 +207,9 @@ export function HomeFeedSection({ people, shownAbove }: { people: readonly Searc
         id: `post-${p.id}`,
         kind: 'post',
         at: Date.parse(p.createdAt) || 0,
-        why: { en: 'From your network', el: 'Από το δίκτυό σας' },
+        why: connectionOf?.(p.author.id) === 'connected'
+          ? { en: 'From your network', el: 'Από το δίκτυό σας' }
+          : { en: 'From the community', el: 'Από την κοινότητα' },
         title: p.author.displayName,
         subtitle: p.author.headline,
         body: p.content,
@@ -206,7 +222,7 @@ export function HomeFeedSection({ people, shownAbove }: { people: readonly Searc
     });
 
     return list;
-  }, [profile.data, people, shownAbove, members.data, updates.data, needs.data, events.data, programs.data, posts.data, fmtDate]);
+  }, [profile.data, people, shownAbove, members.data, updates.data, needs.data, events.data, programs.data, posts.data, fmtDate, connectionOf]);
 
   const curated = useMemo(() => curateFeed(items, all ? items.length : FIRST), [items, all]);
   const more = items.length - curated.length;
@@ -215,7 +231,7 @@ export function HomeFeedSection({ people, shownAbove }: { people: readonly Searc
   if (!loading && curated.length === 0) return null;
 
   return (
-    <section className="space-y-3" aria-labelledby="home-around-you" data-home-feed="">
+    <section ref={section} className="space-y-3" aria-labelledby="home-around-you" data-home-feed="">
       <div className="flex items-baseline justify-between gap-3">
         <h2 id="home-around-you" className="card-title"><BilingualText en="Around you" el="Γύρω σας" compact /></h2>
         <Link href="/feed" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
