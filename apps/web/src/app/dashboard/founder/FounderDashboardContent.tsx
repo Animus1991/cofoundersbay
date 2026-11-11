@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -25,7 +25,6 @@ import {
   getMeProfile,
   getRecommendations,
   listConnectionRequests,
-  respondToConnectionRequest,
   getVentureReadiness,
   type SearchHit,
   listMilestones,
@@ -48,7 +47,6 @@ import { MetricTile } from '@/components/dashboard/MetricTile';
 import { ProgressSegments } from '@/components/dashboard/ProgressSegments';
 import { Sparkline } from '@/components/charts/Sparkline';
 import { FounderProgressCard } from '@/components/gamification/FounderProgressCard';
-import { useApiAvailability } from '@/hooks/useApiAvailability';
 import { YourPagesRow } from '@/components/dashboard/YourPages';
 import { HomeContinue } from '@/components/home/HomeContinue';
 import {
@@ -58,7 +56,6 @@ import {
   useFirstMoveState,
   useStoredFlag,
 } from '@/components/dashboard/FounderFirstMove';
-import { FounderPhoneHome } from '@/components/dashboard/FounderPhoneHome';
 import { listCommitmentThreads } from '@/lib/commitments-api';
 import { waitsOnMe } from '@/lib/commitments-next';
 import { RowHead } from '@/components/dashboard/SectionCard';
@@ -67,7 +64,7 @@ import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
 import { XPProgressWidget } from '@/components/gamification/XPProgressWidget';
 import { BadgesWidget } from '@/components/gamification/BadgesWidget';
 import { BilingualText } from '@/components/common/BilingualText';
-import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
 import { PREVIEW_MILESTONE_EL } from '@/lib/i18n/strings-milestones';
 import { activityTimeAgoPair, activityTitleEl } from '@/lib/i18n/activity-titles';
@@ -75,9 +72,7 @@ import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { explainMatch, saysLookingFor, viewerFacts, type ViewerFacts } from '@/lib/match-explain';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
-import { useConnectionWith } from '@/hooks/useConnectionWith';
 import { isMilestoneOverdue } from '@/lib/milestone-order';
-import { useToast } from '@/components/ui/toast';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { useInvestorFollowUps } from '@/lib/follow-ups';
@@ -94,17 +89,10 @@ const FOUNDER_TOUR: TourStep[] = [
   },
   {
     target: 'founder-stats',
-    titleEn: 'Your live counts, not a second score',
-    titleEl: 'Ζωντανά πλήθη, όχι δεύτερη βαθμολογία',
-    bodyEn: 'Profile views, unread messages and milestone completion. A dash means the figure could not be read; it is not zero.',
-    bodyEl: 'Προβολές προφίλ, μη αναγνωσμένα μηνύματα και ολοκλήρωση οροσήμων. Παύλα σημαίνει ότι ο αριθμός δεν διαβάστηκε, όχι ότι είναι μηδέν.',
-  },
-  {
-    target: 'founder-people',
-    titleEn: 'The people worth meeting',
-    titleEl: 'Οι άνθρωποι που αξίζει να γνωρίσετε',
-    bodyEn: 'The best matches for what you are looking for, each with the reason. The full list is under Matches.',
-    bodyEl: 'Οι καλύτερες αντιστοιχίσεις για όσα ψάχνετε, η καθεμία με τον λόγο της. Η πλήρης λίστα είναι στις Αντιστοιχίσεις.',
+    titleEn: 'What is due next, and how your profile is doing',
+    titleEl: 'Τι λήγει στη συνέχεια και πώς πάει το προφίλ σας',
+    bodyEn: 'Your next milestones with what is late, beside your profile views. A dash means the figure could not be read; it is not zero.',
+    bodyEl: 'Τα επόμενα ορόσημά σας με ό,τι έχει καθυστερήσει, δίπλα στις προβολές του προφίλ σας. Παύλα σημαίνει ότι ο αριθμός δεν διαβάστηκε, όχι ότι είναι μηδέν.',
   },
   {
     target: 'founder-readiness',
@@ -382,7 +370,6 @@ export default function FounderDashboardContent() {
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
   const { primary } = useLanguagePreference();
-  const sayOne = useBilingualString();
   const { messages: unreadMessages } = useUnreadCounts();
 
   const { data: profile } = useQuery({
@@ -392,24 +379,6 @@ export default function FounderDashboardContent() {
   });
   // The reader's side of each match's reasons (lib/match-explain).
   const viewer = useMemo(() => viewerFacts(profile?.profile ?? null), [profile]);
-  const apiAvailable = useApiAvailability();
-  const queryClient = useQueryClient();
-  const { success, error: showError } = useToast();
-  // Where each match's connection stands, on /matches' keys: the first match
-  // is offered Accept when their request waits, never a second Connect.
-  const { connectionWith, connectionOf } = useConnectionWith(hasSession && mounted, profile?.profile?.userId);
-  const acceptRequest = useCallback(async (userId: string, name: string) => {
-    const link = connectionWith.get(userId);
-    if (!link || link.state !== 'received') return;
-    try {
-      await respondToConnectionRequest(link.id, 'accepted');
-      success(sayOne('Connected', 'Η σύνδεση έγινε'), sayOne(`You are now connected with ${name}.`, `Είστε πλέον σε σύνδεση με ${name}.`));
-      await queryClient.invalidateQueries({ queryKey: qk('connections') });
-    } catch (err) {
-      showError(sayOne('Could not accept the request', 'Το αίτημα δεν έγινε αποδεκτό'), err instanceof Error ? err.message : undefined);
-    }
-  }, [connectionWith, queryClient, sayOne, showError, success]);
-
   /*
    * The Top Matches tile counts what /matches lists, on that page's own query
    * key, so the two cannot disagree. It read `matchesThisWeek` from the
@@ -424,7 +393,6 @@ export default function FounderDashboardContent() {
     enabled: hasSession && mounted,
   });
   const matchCount = matchList?.suggestions?.length;
-  const excellentMatches = (matchList?.suggestions ?? []).filter((s) => (s.matchScore ?? 0) >= 80).length;
 
   /*
    * The same metrics /analytics charts, on the same 7-day period.
@@ -474,7 +442,7 @@ export default function FounderDashboardContent() {
     };
   })();
 
-  const { data: recommendations, isFetched: recommendationsFetched } = useQuery({
+  const { data: recommendations } = useQuery({
     queryKey: queryKeys.recommendations,
     queryFn: () => getRecommendations({ limit: 5 }),
     enabled: hasSession && mounted,
@@ -603,7 +571,7 @@ export default function FounderDashboardContent() {
   const nextOpenMilestone = openMilestonesByDue[0];
   // The card answers "what is due next"; the full list, done ones included, is /milestones.
   const { due: dueFollowUps } = useInvestorFollowUps();
-  const upcomingMilestones = openMilestonesByDue.slice(0, 5);
+  const upcomingMilestones = openMilestonesByDue.slice(0, 3);
   const moreOpenMilestoneCount = openMilestones.length - upcomingMilestones.length;
   // The same calendar-day rule as /milestones (lib/milestone-order), so the
   // home and the page agree on "Overdue" on the due day itself.
@@ -611,11 +579,6 @@ export default function FounderDashboardContent() {
   const overdueMilestoneCount = openMilestones.filter(isPastDue).length;
   // Under way and on time: started (in progress, or some progress) and not past its date.
   const activeMilestoneCount = openMilestones.filter((m) => !isPastDue(m) && (m.status === 'in_progress' || m.progress > 0)).length;
-  const messageCaption = unreadMessages === 0
-    ? { en: dashboardEn('inbox_clear'), el: dashboardEl('inbox_clear') }
-    : unreadMessages === 1
-      ? { en: '1 waiting', el: '1 σε αναμονή' }
-      : { en: `${unreadMessages} waiting`, el: `${unreadMessages} σε αναμονή` };
   const milestoneCaption = milestones.length === 0
     ? { en: dashboardEn('add_first_milestone'), el: dashboardEl('add_first_milestone') }
     : completedMilestoneCount === milestones.length
@@ -697,6 +660,104 @@ export default function FounderDashboardContent() {
       </AppShell>
     );
   }
+
+  /*
+   * Milestones, in the column: what is due next, how many are done and how many
+   * are late. It was a card in the page's tools and a "5/12" tile in the column;
+   * the tile said the count and the card, one gesture away, said which.
+   */
+  const milestonesCard = (
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
+                  <CfbGlyph name="flag" className="icon-sm text-muted-foreground" />
+                  <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} compact />
+                  {milestones.length > 0 ? <span className="font-normal tabular-nums text-muted-foreground">{completedMilestoneCount}/{milestones.length}</span> : null}
+                </CardTitle>
+                <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
+                  <Link href="/milestones">
+                    <BilingualText en={dashboardEn('manage')} el={dashboardEl('manage')} compact />
+                    <ArrowRight className="icon-sm" />
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {milestones.length > 0 ? (
+                <div className="space-y-1.5">
+                  <ProgressSegments
+                    total={milestones.length}
+                    segments={[
+                      { key: 'done', value: completedMilestoneCount, tone: 'done' },
+                      { key: 'active', value: activeMilestoneCount, tone: 'active' },
+                      { key: 'late', value: overdueMilestoneCount, tone: 'late' },
+                    ]}
+                  />
+                  <p className="text-xs text-muted-foreground"><BilingualText en={milestoneCaption.en} el={milestoneCaption.el} compact wrap /></p>
+                </div>
+              ) : null}
+              {milestonesFailed && milestones.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en="Not read: the server is unavailable." el="Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος." wrap />
+                </p>
+              ) : null}
+              {usingDemoMilestones && (
+                <p className="text-xs text-muted-foreground">
+                  <BilingualText
+                    en="Sample timeline — manage live items on Milestones."
+                    el="Δείγμα χρονοδιαγράμματος — διαχειριστείτε τα πραγματικά στα Ορόσημα."
+                    compact
+                    wrap
+                  />
+                </p>
+              )}
+              {upcomingMilestones.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
+              {milestones.length > 0 && (moreOpenMilestoneCount > 0 || completedMilestoneCount > 0) && (
+                <p className="border-t border-border pt-3 text-xs text-muted-foreground">
+                  {/* Stacked: each language already joins its parts with "·". */}
+                  <BilingualText
+                    en={openMilestones.length === 0
+                      ? dashboardEn('milestones_all_complete')
+                      : [
+                          moreOpenMilestoneCount > 0 ? `${moreOpenMilestoneCount} more open` : null,
+                          completedMilestoneCount > 0 ? `${completedMilestoneCount} completed` : null,
+                        ].filter(Boolean).join(' · ')}
+                    el={openMilestones.length === 0
+                      ? dashboardEl('milestones_all_complete')
+                      : [
+                          moreOpenMilestoneCount > 0
+                            ? `${moreOpenMilestoneCount} ακόμη ${moreOpenMilestoneCount === 1 ? 'ανοιχτό' : 'ανοιχτά'}`
+                            : null,
+                          completedMilestoneCount > 0
+                            ? `${completedMilestoneCount} ${completedMilestoneCount === 1 ? 'ολοκληρωμένο' : 'ολοκληρωμένα'}`
+                            : null,
+                        ].filter(Boolean).join(' · ')}
+                    stacked
+                    wrap
+                  />
+                </p>
+              )}
+              {milestones.length === 0 && !usingDemoMilestones && !milestonesFailed && (
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText
+                    en={dashboardEn('add_first_milestone')}
+                    el={dashboardEl('add_first_milestone')}
+                  />
+                </p>
+              )}
+              {openMilestones.length > 0 && (
+                <AskAiButton
+                  variant="ghost"
+                  className="w-full"
+                  prompt={ASK.dashMilestones}
+                  labelEn={dashboardEn('ask_ai_milestones')}
+                  labelEl={dashboardEl('ask_ai_milestones')}
+                />
+              )}
+            </CardContent>
+          </Card>
+  );
 
   /*
    * Families that are not the dashboard's reason for existing.
@@ -880,78 +941,6 @@ export default function FounderDashboardContent() {
                     />
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-           {/* Milestones */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between gap-2">
-                <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
-                  <CfbGlyph name="flag" className="icon-sm text-muted-foreground" />
-                  <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} compact />
-                </CardTitle>
-                <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
-                  <Link href="/milestones">
-                    <BilingualText en={dashboardEn('manage')} el={dashboardEl('manage')} compact />
-                    <ArrowRight className="icon-sm" />
-                  </Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {usingDemoMilestones && (
-                <p className="text-xs text-muted-foreground">
-                  <BilingualText
-                    en="Sample timeline — manage live items on Milestones."
-                    el="Δείγμα χρονοδιαγράμματος — διαχειριστείτε τα πραγματικά στα Ορόσημα."
-                    compact
-                    wrap
-                  />
-                </p>
-              )}
-              {upcomingMilestones.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
-              {milestones.length > 0 && (moreOpenMilestoneCount > 0 || completedMilestoneCount > 0) && (
-                <p className="border-t border-border pt-3 text-xs text-muted-foreground">
-                  {/* Stacked: each language already joins its parts with "·". */}
-                  <BilingualText
-                    en={openMilestones.length === 0
-                      ? dashboardEn('milestones_all_complete')
-                      : [
-                          moreOpenMilestoneCount > 0 ? `${moreOpenMilestoneCount} more open` : null,
-                          completedMilestoneCount > 0 ? `${completedMilestoneCount} completed` : null,
-                        ].filter(Boolean).join(' · ')}
-                    el={openMilestones.length === 0
-                      ? dashboardEl('milestones_all_complete')
-                      : [
-                          moreOpenMilestoneCount > 0
-                            ? `${moreOpenMilestoneCount} ακόμη ${moreOpenMilestoneCount === 1 ? 'ανοιχτό' : 'ανοιχτά'}`
-                            : null,
-                          completedMilestoneCount > 0
-                            ? `${completedMilestoneCount} ${completedMilestoneCount === 1 ? 'ολοκληρωμένο' : 'ολοκληρωμένα'}`
-                            : null,
-                        ].filter(Boolean).join(' · ')}
-                    stacked
-                    wrap
-                  />
-                </p>
-              )}
-              {milestones.length === 0 && !usingDemoMilestones && (
-                <p className="text-sm text-muted-foreground">
-                  <BilingualText
-                    en={dashboardEn('add_first_milestone')}
-                    el={dashboardEl('add_first_milestone')}
-                  />
-                </p>
-              )}
-              {openMilestones.length > 0 && (
-                <AskAiButton
-                  variant="ghost"
-                  className="w-full"
-                  prompt={ASK.dashMilestones}
-                  labelEn={dashboardEn('ask_ai_milestones')}
-                  labelEl={dashboardEl('ask_ai_milestones')}
-                />
               )}
             </CardContent>
           </Card>
@@ -1249,68 +1238,28 @@ export default function FounderDashboardContent() {
             shortcuts in the page's tools. */}
         <div data-tour="founder-today"><HomeToday /></div>
 
-        <div className="grid min-w-0 grid-cols-1 gap-3 min-[480px]:grid-cols-2 min-[480px]:gap-4 lg:grid-cols-3" data-tour="founder-stats">
-          <MetricTile
-            align="center"
-            glyph="profile"
-            label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
-            value={userMetrics?.profileViews ?? '—'}
-            trend={profileViewsTrend}
-            trendVisual={profileViewPoints.length > 1 ? <Sparkline points={profileViewPoints} /> : undefined}
-            caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
-            captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
-            href="/analytics"
-          />
-          <MetricTile
-            align="center"
-            glyph="messages"
-            label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
-            value={apiAvailable ? unreadMessages : '—'}
-            href="/messages"
-            caption={apiAvailable ? messageCaption.en : 'Not read: the server is unavailable. Opens messages'}
-            captionEl={apiAvailable ? messageCaption.el : 'Δεν διαβάστηκε: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα μηνύματα'}
-          />
-          <div className="min-w-0 min-[480px]:col-span-2 lg:col-span-1">
+        {/* The work, not the inbox: what is due next beside how the profile is
+            doing. Unread messages and the late milestone are rows of Today
+            above, so their two tiles said the same thing twice; the people
+            are first on Home and in this page's tools. */}
+        <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-3" data-tour="founder-stats">
+          <div className="min-w-0 lg:col-span-2">{milestonesCard}</div>
+          {/* Beside it, not stretched to its height: the one figure and the one thing in progress. */}
+          <div className="min-w-0 space-y-4 lg:self-start">
             <MetricTile
               align="center"
-              glyph="flag"
-              label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
-              value={milestonesFailed && milestones.length === 0 ? '—' : `${completedMilestoneCount}/${milestones.length}`}
-              href="/milestones"
-              // Finished, under way, late, and the open rest, along the tile's edge (docs §107).
-              edge={milestones.length > 0 ? (
-                <ProgressSegments
-                  total={milestones.length}
-                  segments={[
-                    { key: 'done', value: completedMilestoneCount, tone: 'done' },
-                    { key: 'active', value: activeMilestoneCount, tone: 'active' },
-                    { key: 'late', value: overdueMilestoneCount, tone: 'late' },
-                  ]}
-                />
-              ) : undefined}
-              caption={milestonesFailed && milestones.length === 0 ? 'Not read: the server is unavailable. Opens milestones' : milestoneCaption.en}
-              captionEl={milestonesFailed && milestones.length === 0 ? 'Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα ορόσημα' : milestoneCaption.el}
+              glyph="profile"
+              label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
+              value={userMetrics?.profileViews ?? '—'}
+              trend={profileViewsTrend}
+              trendVisual={profileViewPoints.length > 1 ? <Sparkline points={profileViewPoints} /> : undefined}
+              caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
+              captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
+              href="/analytics"
             />
+            {showFirstMove ? null : <HomeContinue />}
           </div>
         </div>
-
-        <FounderPhoneHome
-          leadOnly
-          showResume={false}
-          matches={recommendations?.suggestions ?? []}
-          matchesSettled={recommendationsFetched}
-          matchCount={matchCount}
-          excellentMatches={excellentMatches}
-          connectionOf={connectionOf}
-          onAccept={acceptRequest}
-          viewer={viewer}
-          activity={activityItems}
-          milestone={nextOpenMilestone ?? null}
-          demoEvents={DEMO_EVENTS}
-          showDemoEvents={showDemoData}
-        />
-
-        {showFirstMove ? null : <HomeContinue />}
 
         <div data-tour="founder-readiness"><FounderProgressCard /></div>
       </div>
