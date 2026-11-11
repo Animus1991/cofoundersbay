@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Check, Circle } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { useTodayRows } from '@/components/dashboard/HomeToday';
 import { HomeFeedSection } from '@/components/home/HomeFeedSection';
@@ -25,6 +26,7 @@ import { HOME_COPY, homeAudience, memberRole, overviewPathFor, saysWhatTheyWant 
 import { cn } from '@/lib/utils';
 
 const PEOPLE_ON_TOP = 3;
+const WAITING_ON_TOP = 3;
 
 /**
  * The first page (docs §118-119), the same shape for every member: one sentence
@@ -138,19 +140,43 @@ function Home() {
         {/* The assistant is the first thing on the first page: the box alone,
             its shortcuts stay on Overview. */}
         <HomeAskHero role={audience === 'org' ? 'incubator' : audience} plain greeting={false} />
+        {/* What waits, here and not one page away: the first three in Today's
+            order (a person first), each row its own way in; the rest on Overview. */}
         {showWaiting ? (
-          <Link
-            href={overviewPathFor(role)}
-            data-home-waiting=""
-            className="flex items-center justify-between gap-3 rounded-xl border border-primary-muted bg-primary-subtle px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary/40"
-          >
-            <BilingualText
-              en={`${waiting} ${waiting === 1 ? 'thing is' : 'things are'} waiting on you`}
-              el={waiting === 1 ? 'Σας περιμένει 1 πράγμα' : `Σας περιμένουν ${waiting} πράγματα`}
-              compact
-            />
-            <span data-keep-icon=""><ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" /></span>
-          </Link>
+          <section aria-labelledby="home-waiting" data-home-waiting="">
+            <Card>
+              <CardContent className="space-y-1">
+                <div className="flex items-baseline justify-between gap-3">
+                  <h2 id="home-waiting" className="card-title">
+                    <BilingualText
+                      en={`${waiting} ${waiting === 1 ? 'thing is' : 'things are'} waiting on you`}
+                      el={waiting === 1 ? 'Σας περιμένει 1 πράγμα' : `Σας περιμένουν ${waiting} πράγματα`}
+                      compact
+                    />
+                  </h2>
+                  {waiting > WAITING_ON_TOP ? (
+                    <Link href={overviewPathFor(role)} className="tap-extend-y shrink-0 text-sm font-medium text-primary-accessible hover:underline" data-home-waiting-all="">
+                      <BilingualText en={`All ${waiting}`} el={`Όλα (${waiting})`} compact />
+                    </Link>
+                  ) : null}
+                </div>
+                <ul className="divide-y divide-border">
+                  {waitingRows.slice(0, WAITING_ON_TOP).map((row) => (
+                    <li key={row.key}>
+                      <Link href={row.href} className="group flex items-center gap-3 py-2.5 text-sm text-foreground transition-colors hover:text-primary-accessible" data-home-waiting-row={row.key}>
+                        <span data-keep-icon="" className="shrink-0 text-muted-foreground" aria-hidden="true"><CfbGlyph name={row.glyph} className="icon-sm" /></span>
+                        <span className="min-w-0 flex-1">
+                          <BilingualText en={row.en} el={row.el} compact wrap />
+                          {row.count ? <span className="ml-1.5 tabular-nums text-muted-foreground">{row.count}</span> : null}
+                        </span>
+                        <span data-keep-icon=""><ArrowRight className="icon-sm shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden="true" /></span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </section>
         ) : null}
         <section className="space-y-3" aria-labelledby="home-people">
           <div className="flex items-baseline justify-between gap-3">
@@ -159,7 +185,8 @@ function Home() {
               <BilingualText en="See everyone" el="Δείτε όλους" compact />
             </Link>
           </div>
-          {peopleBlock}
+          {/* Many names on one page: medium weight, so the section titles lead. */}
+          <div data-home-quiet="">{peopleBlock}</div>
         </section>
         {showSteps ? (
           <section aria-labelledby="home-steps">

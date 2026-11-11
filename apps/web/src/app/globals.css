@@ -5203,3 +5203,11 @@ select:disabled {
   color: hsl(var(--muted-foreground));
   cursor: not-allowed;
 }
+
+/* The first page names many people and entries, one title each. At the card
+   title's 600 every line was a heading and none led; here they are 500, and
+   the section titles ("People who fit", "Around you") keep the weight. */
+#main-content [data-home-quiet] .card-title,
+#main-content [data-home-quiet] .person-name {
+  font-weight: 500;
+}

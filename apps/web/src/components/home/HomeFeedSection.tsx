@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
-import { CoverImage } from '@/components/common/CoverImage';
+import { CoverThumb } from '@/components/common/CoverImage';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -23,23 +23,27 @@ import { getUpdatesFeed } from '@/lib/updates-api';
 import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
 
 const DAY = 86_400_000;
-const FIRST = 12;
+const FIRST = 8;
 /** Joined within this many days: after that someone is simply a member. */
 const NEW_MEMBER_DAYS = 30;
 
-/** One entry to a row (docs §118): who, why it is here, one way in, what it says, its picture. */
-function FeedCard({ item }: { item: FeedItem }) {
+/**
+ * One entry to a row (docs §118): who, why it is here, one way in, what it
+ * says. A picture stands small in the mark's place: as a band across the
+ * card, two events filled a screen each and the page ran to four screens.
+ */
+function FeedRow({ item }: { item: FeedItem }) {
+  const mark = (
+    <Avatar className={cn('h-11 w-11 shrink-0', item.mark.square && 'rounded-xl')} data-keep-icon="">
+      {item.mark.src ? <AvatarImage src={item.mark.src} alt="" className={item.mark.square ? 'rounded-xl' : undefined} /> : null}
+      <AvatarFallback className={cn('bg-primary/10 font-semibold text-primary-accessible', item.mark.square && 'rounded-xl')}>{initialsOf(item.mark.name)}</AvatarFallback>
+    </Avatar>
+  );
   return (
-    <article data-feed-item={item.kind}>
-      <Card className="overflow-hidden">
-        <CardContent className="space-y-3">
+    <li data-feed-item={item.kind} className="py-3.5 first:pt-0 last:pb-0">
+      <article className="space-y-1.5">
           <CardHead
-            mark={(
-              <Avatar className={cn('h-11 w-11 shrink-0', item.mark.square && 'rounded-xl')} data-keep-icon="">
-                {item.mark.src ? <AvatarImage src={item.mark.src} alt="" className={item.mark.square ? 'rounded-xl' : undefined} /> : null}
-                <AvatarFallback className={cn('bg-primary/10 font-semibold text-primary-accessible', item.mark.square && 'rounded-xl')}>{initialsOf(item.mark.name)}</AvatarFallback>
-              </Avatar>
-            )}
+            mark={<CoverThumb src={item.image} fallback={mark} className="h-11 w-11 rounded-xl" />}
             title={<Link href={item.href} className="transition-colors hover:text-primary-accessible">{item.title}</Link>}
             subtitle={item.subtitle}
             meta={<BilingualText en={item.why.en} el={item.why.el} compact wrap />}
@@ -52,11 +56,9 @@ function FeedCard({ item }: { item: FeedItem }) {
               </span>
             )}
           />
-          {item.body ? <p className="card-body line-clamp-3 max-w-[80ch] text-muted-foreground first-letter:uppercase">{item.body}</p> : null}
-        </CardContent>
-        <CoverImage src={item.image} className="sm:max-h-[420px]" />
-      </Card>
-    </article>
+          {item.body ? <p className="card-body line-clamp-2 max-w-[80ch] text-muted-foreground first-letter:uppercase">{item.body}</p> : null}
+      </article>
+    </li>
   );
 }
 
@@ -272,11 +274,19 @@ export function HomeFeedSection({ people, shownAbove, connectionOf }: { people: 
           <BilingualText en="The whole feed" el="Όλη η ροή" compact />
         </Link>
       </div>
-      <div className="space-y-4">
-        {loading && curated.length === 0
-          ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-28 rounded-2xl" />)
-          : curated.map((item) => <FeedCard key={item.id} item={item} />)}
-      </div>
+      {loading && curated.length === 0 ? (
+        <div className="space-y-4">
+          {[0, 1, 2].map((i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
+        </div>
+      ) : (
+        <Card>
+          <CardContent>
+            <ul className="divide-y divide-border" data-home-quiet="">
+              {curated.map((item) => <FeedRow key={item.id} item={item} />)}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
       {more > 0 ? (
         <div className="flex justify-center pt-2">
           <Button variant="outline" size="sm" onClick={() => setAll(true)} data-feed-more="">
