@@ -268,17 +268,17 @@ html {
     --shadow-color: 200 40% 18%;
     --shadow-strength: 1;
     --background: 210 8% 96.4%;
-    --foreground: 220 100% 3%;
+    --foreground: 215 14% 20%;
     --card: 210 12% 99.4%;
-    --card-foreground: 220 100% 3%;
+    --card-foreground: 215 14% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 100% 3%;
+    --popover-foreground: 215 14% 20%;
     --secondary: 210 8% 94.6%;
-    --secondary-foreground: 220 100% 3%;
+    --secondary-foreground: 215 14% 22%;
     --muted: 210 8% 94.2%;
     --muted-foreground: 210 5% 41%; /* 5.46 on card, 4.92 on muted */
     --accent: 210 10% 94%;             /* hover surface */
-    --accent-foreground: 220 15% 10%;
+    --accent-foreground: 215 14% 18%;
     --destructive: 2 30.5% 42.6%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 33.5% 38.8%;
@@ -329,19 +329,19 @@ html {
      (Claude 803ddb2 used --primary-emphasis / --destructive-emphasis). ──── */
   [data-theme="minimal"] {
     --background:        40 57.1% 91.8%; /* Windsurf page #f6eede */
-    --foreground:        30 8% 11%;
+    --foreground:        30 9% 20%;
     --card:              37 57.1% 94.5%; /* Windsurf card #f9f3e9 */
-    --card-foreground:   30 8% 12%;
+    --card-foreground:   30 9% 20%;
     --popover:           0 0% 100%;
-    --popover-foreground: 30 8% 12%;
+    --popover-foreground: 30 9% 20%;
 
     --secondary:         40 38% 89.4%;
-    --secondary-foreground: 30 8% 16%;
+    --secondary-foreground: 30 9% 22%;
     --muted:             40 34% 88.8%;
     --muted-foreground:  30 8% 33%;
 
     --accent:            43 24.1% 82.9%;
-    --accent-foreground: 30 8% 12%;     /* 14.24 — a tint, not a brand fill */
+    --accent-foreground: 30 9% 18%;     /* a tint, not a brand fill */
 
     --destructive:       6 33.5% 38.8%;  /* white on it: 7.03 */
     --destructive-foreground: 0 0% 100%;
@@ -360,17 +360,17 @@ html {
     --shadow-color: 24 30% 18%;
     --shadow-strength: 1;
     --background: 30 25% 95.5%;
-    --foreground: 24 10% 12%;
+    --foreground: 24 10% 20%;
     --card: 30 30% 98.4%;
-    --card-foreground: 24 10% 13%;
+    --card-foreground: 24 10% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 24 10% 13%;
+    --popover-foreground: 24 10% 20%;
     --secondary: 30 18% 93%;
-    --secondary-foreground: 24 10% 17%;
+    --secondary-foreground: 24 10% 22%;
     --muted: 30 18% 92.6%;
     --muted-foreground: 26 8% 38%;
     --accent: 30 22% 92.6%;            /* hover surface */
-    --accent-foreground: 24 10% 12%;
+    --accent-foreground: 24 10% 18%;
     --destructive: 350 30% 42.6%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 350 33% 38.8%;
@@ -387,17 +387,17 @@ html {
     --shadow-color: 336 25% 18%;
     --shadow-strength: 1;
     --background: 336 18% 95.8%;
-    --foreground: 336 12% 12%;
+    --foreground: 336 10% 20%;
     --card: 336 26% 98.6%;
-    --card-foreground: 336 12% 13%;
+    --card-foreground: 336 10% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 336 12% 13%;
+    --popover-foreground: 336 10% 20%;
     --secondary: 336 14% 93%;
-    --secondary-foreground: 336 10% 17%;
+    --secondary-foreground: 336 10% 22%;
     --muted: 336 14% 92.5%;
     --muted-foreground: 336 7% 38%;
     --accent: 336 18% 92.5%;            /* hover surface */
-    --accent-foreground: 336 10% 12%;
+    --accent-foreground: 336 10% 18%;
     --destructive: 2 30.5% 42.6%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 33.5% 38.8%;
@@ -509,7 +509,7 @@ html {
     --primary-mid: 120 41.74% 58%;        /* tints only (/5../40); the same green, 20% more chroma */
     --primary-accessible: 120 32% 30.5%;  /* #356735, links, >=5:1 on a card */
     --accent: 43 24.1% 82.9%;             /* Windsurf active nav #ded8c9 */
-    --accent-foreground: 30 8% 11%;
+    --accent-foreground: 30 9% 18%;
     --ring: 120 32% 36%;
   }
   html[data-theme="apricot"] {
@@ -518,7 +518,7 @@ html {
     --primary-mid: 23 50.5% 44%;              /* tints only (/5../40) */
     --primary-accessible: 23 44.8% 36%;
     --accent: 30 22% 92.6%;
-    --accent-foreground: 24 10% 12%;
+    --accent-foreground: 24 10% 18%;
     --ring: 23 44.8% 41.5%;
   }
   html[data-theme="terra"] {
@@ -527,7 +527,7 @@ html {
     --primary-mid: 335.59 26.5% 54%;          /* tints only (/5../40) */
     --primary-accessible: 336 27% 40%;    /* links, >=5:1 on a card, 4.9 on a /20 tint */
     --accent: 336 18% 92.5%;
-    --accent-foreground: 336 10% 12%;
+    --accent-foreground: 336 10% 18%;
     --ring: 336 27% 42%;
   }
   /* ── "Light" (data-theme="studio") — the AI Studio prototype's look,
@@ -537,7 +537,7 @@ html {
      The brand lilac stays as the mark only: the logotype's "Bay" and the
      one accent stroke of each platform glyph (Bay duo). Locked like the
      accent themes (html[data-theme] beats .role-*), so a role's hue does
-     not repaint it. Each value solved against its floor: foreground 16.7
+     not repaint it. Each value solved against its floor: foreground 11.4
      on the page, muted 5.27 on the page and 5.05 on muted, white on ink
      15.2, card edge 1.19, field edge 1.32, focus ring 5.27. Type is not
      touched. The previous Light is the "Lilac" theme (no data-theme). ── */
@@ -545,21 +545,21 @@ html {
     --shadow-color: 24 10% 10%;
     --shadow-strength: 1;
     --background: 60 9.1% 97.8%;          /* stone-50 #fafaf9, the page */
-    --foreground: 24 9.8% 10%;            /* stone-900 #1c1917 */
+    --foreground: 24 9% 20%;              /* warm stone charcoal, ~11.4:1 */
     --card: 0 0% 100%;
-    --card-foreground: 24 9.8% 10%;
+    --card-foreground: 24 9% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 24 9.8% 10%;
+    --popover-foreground: 24 9% 20%;
     --primary: 12 6.5% 15.1%;             /* stone-800 #292524, white label 15.2:1 */
     --primary-foreground: 0 0% 100%;
     --primary-mid: 24 8% 30%;             /* tints only (/5../40): warm greys, not a hue */
     --primary-accessible: 12 6.5% 15.1%;  /* links and kickers, 14.5:1 on the page */
     --secondary: 60 4.8% 95.9%;           /* stone-100 */
-    --secondary-foreground: 24 9.8% 10%;
+    --secondary-foreground: 24 9% 20%;
     --muted: 60 4.8% 95.9%;
     --muted-foreground: 25 6% 41%;        /* 5.51 on card, 5.27 on page, 5.05 on muted */
     --accent: 60 4.8% 95.9%;              /* hover surface */
-    --accent-foreground: 24 9.8% 10%;
+    --accent-foreground: 24 9% 20%;
     --destructive: 2 30.5% 42.6%;         /* white on it 6.31 */
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 33.5% 38.8%;
@@ -4394,9 +4394,9 @@ input[data-search-field][class~="border-input"]:focus-visible {
    Rem against the 16px root, restated against the 82% desktop root, and px
    on a phone like the reading scale; `.probes/card_audit.mjs` measures it. */
 .card-title {
-  font-size: 0.959710rem;
+  font-size: 0.915625rem;
   line-height: 1.35;
-  font-weight: 600;
+  font-weight: 500;
 }
 .card-subtitle {
   font-size: 0.87473575rem;
@@ -4415,7 +4415,7 @@ input[data-search-field][class~="border-input"]:focus-visible {
   line-height: 1.55;
 }
 @media (min-width: 1024px) {
-  .card-title { font-size: 1.17037814rem; }
+  .card-title { font-size: 1.11661585rem; }
   .card-subtitle { font-size: 1.06675091rem; }
   .card-body { font-size: 1.02855183rem; }
 }
@@ -4427,8 +4427,9 @@ input[data-search-field][class~="border-input"]:focus-visible {
 @media (min-width: 640px) {
   #main-content [data-card] h2.page-section,
   #main-content [data-card] h3.page-section:not(.page-section--compact) {
-    font-size: 0.959710rem;
+    font-size: 0.915625rem;
     line-height: 1.35;
+    font-weight: 550;
   }
   #main-content [data-rail-content] [data-card] h2.page-section,
   #main-content [data-rail-content] [data-card] h3.page-section {
@@ -4439,7 +4440,8 @@ input[data-search-field][class~="border-input"]:focus-visible {
 @media (min-width: 1024px) {
   #main-content [data-card] h2.page-section,
   #main-content [data-card] h3.page-section:not(.page-section--compact) {
-    font-size: 1.17037814rem;
+    font-size: 1.11661585rem;
+    font-weight: 550;
   }
   #main-content [data-rail-content] [data-card] h2.page-section,
   #main-content [data-rail-content] [data-card] h3.page-section {
@@ -5204,9 +5206,9 @@ select:disabled {
   cursor: not-allowed;
 }
 
-/* The first page names many people and entries, one title each. At the card
-   title's 600 every line was a heading and none led; here they are 500, and
-   the section titles ("People who fit", "Around you") keep the weight. */
+/* Card titles and person names use weight 500 across the platform so true
+   page and section headings lead without every card shouting in heavy bold. */
+#main-content .person-name,
 #main-content [data-home-quiet] .card-title,
 #main-content [data-home-quiet] .person-name {
   font-weight: 500;
