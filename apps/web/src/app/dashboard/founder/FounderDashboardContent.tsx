@@ -773,6 +773,95 @@ export default function FounderDashboardContent() {
    * product is rewarding you. Activity and events are a readout of
    * elsewhere, not the pulse.
    */
+  const fundraisingCard = (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
+            <CfbGlyph name="wallet" className="icon-sm text-muted-foreground" />
+            <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} compact />
+          </CardTitle>
+          <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
+            <Link href="/fundraising">
+              <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
+              <ArrowRight className="icon-sm" />
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {showDemoData ? (
+          <>
+            <div className="flex items-end justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">
+                  {fundRound.nameEl
+                    ? <BilingualText en={fundRound.name} el={fundRound.nameEl} compact />
+                    : fundRound.name}
+                </p>
+                <p className="card-body font-semibold tabular-nums text-foreground">
+                  {fundRound.currency}{(fundRound.raised / 1000).toFixed(0)}K
+                  <span className="ml-1 font-normal text-muted-foreground">
+                    / {fundRound.currency}{(fundRound.target / 1000).toFixed(0)}K
+                  </span>
+                </p>
+              </div>
+              <span className={cn(
+                'shrink-0 card-body font-semibold tabular-nums',
+                fundingPct >= 75 ? STATUS.success.icon : fundingPct >= 40 ? STATUS.warning.icon : 'text-muted-foreground'
+              )}>
+                {fundingPct}%
+              </span>
+            </div>
+            <Progress value={fundingPct} label={bilingualAria('Round progress', 'Πρόοδος γύρου')} className="h-2" />
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <CfbGlyph name="people" className="icon-sm" />
+                {fundStats.total}{' '}
+                <BilingualText
+                  en={dashboardEn(fundStats.total === 1 ? 'lead_tracked' : 'leads_tracked')}
+                  el={dashboardEl(fundStats.total === 1 ? 'lead_tracked' : 'leads_tracked')}
+                  compact
+                />
+              </span>
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
+                {fundStats.committed}{' '}
+                <BilingualText
+                  en={dashboardEn(fundStats.committed === 1 ? 'committed_one' : 'committed_count')}
+                  el={dashboardEl(fundStats.committed === 1 ? 'committed_one' : 'committed_count')}
+                  compact
+                />
+              </span>
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            <BilingualText
+              en={dashboardEn('fundraising_empty')}
+              el={dashboardEl('fundraising_empty')}
+              wrap
+            />
+          </p>
+        )}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+          <Button variant="outline" size="sm" className="gap-1.5" asChild>
+            <Link href="/investors">
+              <CfbGlyph name="discover" className="icon-sm" />
+              <BilingualText en={dashboardEn('find_investors')} el={dashboardEl('find_investors')} compact />
+            </Link>
+          </Button>
+          <AskAiButton
+            variant="ghost"
+            prompt={ASK.dashFundraising}
+            labelEn={dashboardEn('ask_ai_fundraising')}
+            labelEl={dashboardEl('ask_ai_fundraising')}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   const rail: PageRailSection[] = [
     {
       id: 'snapshot',
@@ -781,111 +870,7 @@ export default function FounderDashboardContent() {
       labelEl: 'Στιγμιότυπο εγχειρήματος',
       content: (
         <div className="space-y-4">
-          {/* Fundraising widget */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between gap-2">
-                <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
-                  <CfbGlyph name="wallet" className="icon-sm text-muted-foreground" />
-                  <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} compact />
-                </CardTitle>
-                <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
-                  <Link href="/fundraising">
-                    <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
-                    <ArrowRight className="icon-sm" />
-                  </Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {showDemoData ? (
-                  <>
-                    <div className="flex items-end justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-xs text-muted-foreground">
-                          {fundRound.nameEl
-                            ? <BilingualText en={fundRound.name} el={fundRound.nameEl} compact />
-                            : fundRound.name}
-                        </p>
-                        {/* The amount is a value inside the card, a step under its
-                            title (the card text ladder), not a display figure. */}
-                        <p className="card-body font-semibold tabular-nums text-foreground">
-                          {fundRound.currency}{(fundRound.raised / 1000).toFixed(0)}K
-                          <span className="ml-1 font-normal text-muted-foreground">
-                            / {fundRound.currency}{(fundRound.target / 1000).toFixed(0)}K
-                          </span>
-                        </p>
-                      </div>
-                      <span className={cn(
-                        'shrink-0 card-body font-semibold tabular-nums',
-                        fundingPct >= 75 ? STATUS.success.icon : fundingPct >= 40 ? STATUS.warning.icon : 'text-muted-foreground'
-                      )}>
-                        {fundingPct}%
-                      </span>
-                    </div>
-                    <Progress value={fundingPct} label={bilingualAria('Round progress', 'Πρόοδος γύρου')} className="h-2.5" />
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <CfbGlyph name="people" className="icon-sm" />
-                        {fundStats.total}{' '}
-                        <BilingualText
-                          en={dashboardEn(fundStats.total === 1 ? 'lead_tracked' : 'leads_tracked')}
-                          el={dashboardEl(fundStats.total === 1 ? 'lead_tracked' : 'leads_tracked')}
-                          compact
-                        />
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
-                        {fundStats.committed}{' '}
-                        <BilingualText
-                          en={dashboardEn(fundStats.committed === 1 ? 'committed_one' : 'committed_count')}
-                          el={dashboardEl(fundStats.committed === 1 ? 'committed_one' : 'committed_count')}
-                          compact
-                        />
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    <BilingualText
-                      en={dashboardEn('fundraising_empty')}
-                      el={dashboardEl('fundraising_empty')}
-                      wrap
-                    />
-                  </p>
-                )}
-                <div className="space-y-2.5">
-                  {/* One column in the rail (two side by side ran past its
-                      edge at 1440), two in the expanded view. */}
-                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                    <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
-                      <Link href="/fundraising" className="flex-1">
-                        <CfbGlyph name="wallet" className="icon-sm" />
-                        <BilingualText en={dashboardEn('manage_pipeline')} el={dashboardEl('manage_pipeline')} compact />
-                      </Link>
-                    </Button>
-                    <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
-                      <Link href="/investors" className="flex-1">
-                        <CfbGlyph name="discover" className="icon-sm" />
-                        <BilingualText en={dashboardEn('find_investors')} el={dashboardEl('find_investors')} compact />
-                      </Link>
-                    </Button>
-                  </div>
-                  {/* A card's question for the assistant sits under what it asks about,
-                      as on Founder progress: a header row has no room for both languages. */}
-                  <AskAiButton
-                    variant="ghost"
-                    className="w-full"
-                    prompt={ASK.dashFundraising}
-                    labelEn={dashboardEn('ask_ai_fundraising')}
-                    labelEl={dashboardEl('ask_ai_fundraising')}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-           {/* Top Matches */}
+          {/* Top Matches */}
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between gap-2">
@@ -1261,6 +1246,7 @@ export default function FounderDashboardContent() {
               href="/analytics"
             />
             {showFirstMove ? null : <HomeContinue />}
+            {fundraisingCard}
           </div>
         </div>
 

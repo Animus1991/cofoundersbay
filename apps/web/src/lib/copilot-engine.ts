@@ -823,24 +823,40 @@ export async function runCopilotTurn(
       const pool = people.length ? people : matches;
       const target = findPerson(pool, tool.args?.name || detectPersonName(userMessage));
       if (target) {
-        actions.push({
-          id: newId('connect'),
-          tool: 'send_connection',
-          title: t('Send intro to {name}', { name: target.displayName }),
-          description: `${t('This uses the same Connections API as the rest of the app.')} ${
-            target.headline ?? ''
-          }`.trim(),
-          confirmLabel: t('Send intro'),
-          payload: {
-            receiverId: target.userId,
-            message: t('Hi {firstName}, I’d like to connect on CoFounderBay.', {
-              firstName: target.displayName.split(' ')[0],
-            }),
-            displayName: target.displayName,
-          },
-          status: 'pending',
-          href: personHref(target),
-        });
+        const incoming = await listConnectionRequests({ type: 'received', limit: 50 })
+          .then((res) => (res?.connections ?? []).find((c) => c.requesterId === target.userId || c.requester?.id === target.userId))
+          .catch(() => undefined);
+        if (incoming) {
+          actions.push({
+            id: newId('conn'),
+            tool: 'respond_to_connection',
+            title: t('Accept {name}', { name: target.displayName }),
+            description: target.headline ?? t('Add them to your network.'),
+            confirmLabel: t('Accept'),
+            payload: { connectionId: incoming.id, decision: 'accepted' },
+            status: 'pending',
+            href: '/connections',
+          });
+        } else {
+          actions.push({
+            id: newId('connect'),
+            tool: 'send_connection',
+            title: t('Send intro to {name}', { name: target.displayName }),
+            description: `${t('This uses the same Connections API as the rest of the app.')} ${
+              target.headline ?? ''
+            }`.trim(),
+            confirmLabel: t('Send intro'),
+            payload: {
+              receiverId: target.userId,
+              message: t('Hi {firstName}, I’d like to connect on CoFounderBay.', {
+                firstName: target.displayName.split(' ')[0],
+              }),
+              displayName: target.displayName,
+            },
+            status: 'pending',
+            href: personHref(target),
+          });
+        }
       } else {
         sections.push(
           t('I need a specific person before I can send an intro. Name someone from Matches or Search.'),
@@ -1080,26 +1096,73 @@ export async function runCopilotTurn(
   }
 
   if (people.length || matches.length) {
-    const extras = (people.length ? people : matches).slice(0, 3).filter(
-      (p) => !actions.some((a) => a.tool === 'send_connection' && a.payload.receiverId === p.userId),
+    const [recvRes, sentRes, accRes] = await Promise.allSettled([
+      listConnectionRequests({ type: 'received', limit: 50 }),
+      listConnectionRequests({ type: 'sent', limit: 50 }),
+      listConnectionRequests({ type: 'accepted', limit: 50 }),
+    ]);
+    const incomingByUser = new Map<string, string>();
+    if (recvRes.status === 'fulfilled') {
+      for (const c of recvRes.value?.connections ?? []) {
+        const uid = c.requesterId ?? c.requester?.id;
+        if (uid && c.id) incomingByUser.set(uid, c.id);
+      }
+    }
+    const alreadyLinked = new Set<string>();
+    if (sentRes.status === 'fulfilled') {
+      for (const c of sentRes.value?.connections ?? []) {
+        const uid = c.receiverId ?? c.receiver?.id;
+        if (uid) alreadyLinked.add(uid);
+      }
+    }
+    if (accRes.status === 'fulfilled') {
+      for (const c of accRes.value?.connections ?? []) {
+        if (c.requesterId) alreadyLinked.add(c.requesterId);
+        if (c.receiverId) alreadyLinked.add(c.receiverId);
+        if (c.requester?.id) alreadyLinked.add(c.requester.id);
+        if (c.receiver?.id) alreadyLinked.add(c.receiver.id);
+      }
+    }
+    const candidates = (people.length ? people : matches).filter(
+      (p) =>
+        !alreadyLinked.has(p.userId) &&
+        !actions.some(
+          (a) =>
+            (a.tool === 'send_connection' && a.payload.receiverId === p.userId) ||
+            (a.tool === 'respond_to_connection' && a.payload.connectionId === incomingByUser.get(p.userId)),
+        ),
     );
-    for (const p of extras.slice(0, 2)) {
-      actions.push({
-        id: newId('connect'),
-        tool: 'send_connection',
-        title: t('Connect with {name}', { name: p.displayName }),
-        description: p.matchReasons?.join(' · ') || p.headline || t(p.role),
-        confirmLabel: t('Send intro'),
-        payload: {
-          receiverId: p.userId,
-          message: t('Hi {firstName}, I’d like to connect on CoFounderBay.', {
-            firstName: p.displayName.split(' ')[0],
-          }),
-          displayName: p.displayName,
-        },
-        status: 'pending',
-        href: personHref(p),
-      });
+    for (const p of candidates.slice(0, 2)) {
+      const incomingId = incomingByUser.get(p.userId);
+      if (incomingId) {
+        actions.push({
+          id: newId('conn'),
+          tool: 'respond_to_connection',
+          title: t('Accept {name}', { name: p.displayName }),
+          description: p.matchReasons?.join(' · ') || p.headline || t('Add them to your network.'),
+          confirmLabel: t('Accept'),
+          payload: { connectionId: incomingId, decision: 'accepted' },
+          status: 'pending',
+          href: '/connections',
+        });
+      } else {
+        actions.push({
+          id: newId('connect'),
+          tool: 'send_connection',
+          title: t('Connect with {name}', { name: p.displayName }),
+          description: p.matchReasons?.join(' · ') || p.headline || t(p.role),
+          confirmLabel: t('Send intro'),
+          payload: {
+            receiverId: p.userId,
+            message: t('Hi {firstName}, I’d like to connect on CoFounderBay.', {
+              firstName: p.displayName.split(' ')[0],
+            }),
+            displayName: p.displayName,
+          },
+          status: 'pending',
+          href: personHref(p),
+        });
+      }
     }
   }
 

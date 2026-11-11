@@ -21,7 +21,7 @@ import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { ASK, type AskPrompt } from '@/lib/page-questions';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { readinessEn, readinessEl } from '@/lib/i18n/strings-readiness';
@@ -256,8 +256,6 @@ function buildDemoAssessment(overlay: ReadinessOverlay = {}): AssessmentData {
     acceleratorReadiness: weightedScore('acceleratorWeight'), investorReadiness: weightedScore('investorWeight'),
   };
 }
-
-const DEMO_ASSESSMENT = buildDemoAssessment();
 
 /**
  * The last point on the history chart is today, so it has to follow whatever
@@ -528,8 +526,8 @@ function DimensionCard({
                 figure. The whole of the bar's side is the control that opens
                 it, so six dimensions are six lines until one is asked for. */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <div className="flex min-w-0 items-center gap-2 sm:w-80 sm:shrink-0">
-                <h3 className="card-title min-w-0 break-words text-foreground"><BilingualText en={dim.labelEn} el={dim.labelEl} compact wrap /></h3>
+              <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 md:w-[29rem] md:shrink-0">
+                <h3 className="card-title min-w-0 text-foreground"><BilingualText en={dim.labelEn} el={dim.labelEl} compact /></h3>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -796,11 +794,15 @@ export default function ReadinessPage() {
   const qc = useQueryClient();
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [mode, setMode] = useState<'live' | 'demo' | null>(null);
+  const [activeTab, setActiveTab] = useState<'dimensions' | 'benchmarks'>('dimensions');
   const [demoOverlay, setDemoOverlay] = useState<ReadinessOverlay>({});
   const isDemo = mode === 'demo';
   // Which dimensions the reader opened or closed; the weakest is open until they say otherwise.
   const [dimOpenChoice, setDimOpenChoice] = useState<Record<string, boolean>>({});
-  const setDimOpen = (key: string, open: boolean) => setDimOpenChoice((before) => ({ ...before, [key]: open }));
+  const setDimOpen = (key: string, open: boolean) => {
+    setDimOpenChoice((before) => ({ ...before, [key]: open }));
+    if (open) setActiveTab('dimensions');
+  };
   // The order is taken once per assessment shape: sorted live, a dimension
   // would move away under the reader as their ticks raised its score.
   const [dimOrder, setDimOrder] = useState<{ of: string; keys: string[] }>({ of: '', keys: [] });
@@ -809,7 +811,10 @@ export default function ReadinessPage() {
   useEffect(() => {
     const openFromHash = () => {
       const key = /^#dim-(.+)$/.exec(window.location.hash)?.[1];
-      if (key) setDimOpenChoice((before) => ({ ...before, [decodeURIComponent(key)]: true }));
+      if (key) {
+        setDimOpenChoice((before) => ({ ...before, [decodeURIComponent(key)]: true }));
+        setActiveTab('dimensions');
+      }
     };
     openFromHash();
     window.addEventListener('hashchange', openFromHash);
@@ -952,6 +957,40 @@ export default function ReadinessPage() {
   // endpoint stores nothing) and the live/showcase switch, through the same
   // handlers and the same conditions as the header buttons. Ticking a
   // criterion is `readiness_tick_criterion`, a capability of its own.
+  const allDimensions = useMemo(() => (apiData ? buildDimensions(apiData) : []), [apiData]);
+  const readyForLists = Boolean(mode) && (isDemo || (Boolean(workspaceId) && !isLoading && !isError && Boolean(apiData)));
+  usePageList([
+    {
+      id: 'readiness_dimensions',
+      labelEn: 'Readiness dimensions',
+      labelEl: 'Διαστάσεις ετοιμότητας',
+      rows: readyForLists
+        ? allDimensions
+            .slice()
+            .sort((a, b) => a.score / a.maxScore - b.score / b.maxScore)
+            .map((d) => {
+              const pct = Math.round((d.score / d.maxScore) * 100);
+              const met = d.criteria.filter((c) => c.completed).length;
+              const next = d.criteria.filter((c) => !c.completed).sort((a, b) => b.weight - a.weight)[0];
+              return `${d.labelEn} · ${pct}% (${met}/${d.criteria.length})${next ? ` · next: ${next.name} (+${next.weight}%)` : ''}`;
+            })
+        : undefined,
+      rowsEl: readyForLists
+        ? allDimensions
+            .slice()
+            .sort((a, b) => a.score / a.maxScore - b.score / b.maxScore)
+            .map((d) => {
+              const pct = Math.round((d.score / d.maxScore) * 100);
+              const met = d.criteria.filter((c) => c.completed).length;
+              const next = d.criteria.filter((c) => !c.completed).sort((a, b) => b.weight - a.weight)[0];
+              return `${d.labelEl} · ${pct}% (${met}/${d.criteria.length})${next ? ` · επόμενο: ${next.nameEl ?? next.name} (+${next.weight}%)` : ''}`;
+            })
+        : undefined,
+      total: allDimensions.length || undefined,
+      sample: isDemo,
+    },
+  ]);
+
   usePageControls([
     {
       id: 'reassess',
@@ -966,6 +1005,26 @@ export default function ReadinessPage() {
       { value: 'live', en: 'Live readiness', el: 'Ζωντανή ετοιμότητα' },
       { value: 'demo', en: 'Demo showcase', el: 'Επίδειξη' },
     ], mode ?? 'live', (v) => setMode(v as 'live' | 'demo')),
+    choiceControl('tab', 'Readiness tab', 'Καρτέλα ετοιμότητας', [
+      { value: 'dimensions', en: readinessEn('tab_all_dimensions'), el: readinessEl('tab_all_dimensions') },
+      { value: 'benchmarks', en: readinessEn('tab_benchmarks'), el: readinessEl('tab_benchmarks') },
+    ], activeTab, (v) => setActiveTab(v === 'benchmarks' ? 'benchmarks' : 'dimensions')),
+    {
+      id: 'focus_dimension',
+      labelEn: 'Open readiness dimension',
+      labelEl: 'Άνοιγμα διάστασης ετοιμότητας',
+      writes: false,
+      options: allDimensions.map((d) => ({ value: d.key, labelEn: d.labelEn, labelEl: d.labelEl })),
+      unavailableEn: readyForLists ? undefined : 'Readiness dimensions are not loaded yet.',
+      unavailableEl: readyForLists ? undefined : 'Οι διαστάσεις ετοιμότητας δεν έχουν φορτώσει ακόμη.',
+      run: (v) => {
+        if (!v) return;
+        setDimOpen(v, true);
+        if (typeof document !== 'undefined') {
+          setTimeout(() => document.getElementById(`dim-${v}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 0);
+        }
+      },
+    },
   ]);
 
   // A greyed Reassess said nothing about why (docs §79). The reason is already
@@ -1452,7 +1511,7 @@ export default function ReadinessPage() {
         {/* Tabs: dimensions and benchmarks stay in the column. Priority
             actions and history live in the rail — opening them here is the
             same gesture as the strip on the right. */}
-        <Tabs defaultValue="dimensions" className="min-w-0">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v === 'benchmarks' ? 'benchmarks' : 'dimensions')} className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
           <TabsList className="flex w-full justify-start sm:w-auto">
             <TabsTrigger value="dimensions" className="px-3 sm:px-4"><BilingualText en={readinessEn('tab_all_dimensions')} el={readinessEl('tab_all_dimensions')} compact /></TabsTrigger>
