@@ -2529,10 +2529,15 @@ html {
 
   .animate-bounce-subtle,
   .animate-pulse-slow,
-  .animate-spin-slow,
+  .animate-spin-slow {
+    animation: none;
+  }
+
   .animate-scale-in,
   .animate-fade-in-up {
     animation: none;
+    opacity: 1;
+    transform: none;
   }
 
   /* ── Chrome recedes ──────────────────────────────────────────────────── */

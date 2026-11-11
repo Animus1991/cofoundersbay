@@ -31,7 +31,6 @@ export function AnimatedList({
           className: cn(
             (child.props as { className?: string }).className,
             `animate-${animation}`,
-            'opacity-0 [animation-fill-mode:forwards]'
           ),
           style: {
             ...((child.props as { style?: React.CSSProperties }).style || {}),
