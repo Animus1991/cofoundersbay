@@ -76,7 +76,6 @@ export const ANALYTICS_STRINGS: Record<string, BilingualPair> = {
   build_profile: { en: 'Build your profile', el: 'Χτίστε το προφίλ σας' },
   grow_network: { en: 'Grow your network', el: 'Αναπτύξτε το δίκτυό σας' },
   follow_up: { en: 'Follow up with people you know', el: 'Συνεχίστε με όσους ήδη γνωρίζετε' },
-  plan_peak_hour: { en: 'Plan around your peak hour', el: 'Προγραμματίστε στην ώρα αιχμής' },
   reply_faster: { en: 'Reply in Messages', el: 'Απαντήστε στα Μηνύματα' },
   window_highlights: { en: 'This window', el: 'Αυτό το διάστημα' },
   export_csv: { en: 'CSV', el: 'CSV' },

@@ -658,16 +658,6 @@ export default function AnalyticsPage() {
                 </Link>
               </Button>
             ))}
-              <Button asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
-                <Link href="/calendar">
-                  <CfbGlyph name="calendar" className="icon-sm shrink-0 text-muted-foreground" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold leading-snug"><BilingualText en={analyticsEn('plan_peak_hour')} el={analyticsEl('plan_peak_hour')} wrap /></span>
-                    <span className="mt-0.5 block text-xs leading-snug text-muted-foreground"><BilingualText en="Block time around your peak hour." el="Κλείστε χρόνο γύρω από την ώρα αιχμής." wrap /></span>
-                  </span>
-                  <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-                </Link>
-              </Button>
           </div>
         </div>
       ),

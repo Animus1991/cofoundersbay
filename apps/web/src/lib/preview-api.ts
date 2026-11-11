@@ -2213,11 +2213,14 @@ const PREVIEW_ANALYTICS_OVERVIEW = {
     { id: 'post-hiring', type: 'post' as const, title: 'What I look for in a technical co-founder', views: 287, engagement: 48, date: NOW },
     { id: 'profile-me', type: 'profile' as const, title: 'Profile view spike after demo day', views: 154, engagement: 22, date: NOW },
   ],
+  // The API returns null for all four; the demo showed figures no account
+  // can have. The card stays in the page for when the endpoint measures
+  // them, and hides itself while every field is null.
   weeklySummary: {
-    mostActiveDay: 'Tuesday',
-    peakHour: '14:00–15:00',
-    avgResponseTime: '3h 20m',
-    totalInteractions: 261,
+    mostActiveDay: null,
+    peakHour: null,
+    avgResponseTime: null,
+    totalInteractions: null,
   },
 };
 

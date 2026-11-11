@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -263,10 +263,13 @@ function RailListLink({ href, en, el }: { href: string; en: string; el: string }
  * the card).
  */
 function MatchPreviewRow({ match, viewer }: { match: SearchHit; viewer: ViewerFacts | null }) {
+  // Stamped once at mount, like /discover: an impure read inside the render
+  // body is flagged, and this card only exists after mount anyway.
+  const [nowMs] = useState(() => Date.now());
   const score = match.matchScore ?? 0;
   const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? 'text-primary-accessible' : STATUS.warning.icon;
   // The most telling reason, as the person's card on /matches puts it first.
-  const reason = explainMatch(match, viewer, { nowMs: Date.now() })[0] ?? null;
+  const reason = explainMatch(match, viewer, { nowMs })[0] ?? null;
   return (
     <Link href={`/matches/${match.userId}`} className="axis-row group block rounded-md transition-colors hover:bg-accent focus-ring">
       <RowHead
