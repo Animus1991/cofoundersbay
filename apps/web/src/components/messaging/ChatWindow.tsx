@@ -802,21 +802,21 @@ export function ChatWindow({
         <div className="hidden flex-wrap items-center gap-1.5 border-t border-border px-3 py-2 sm:flex sm:px-4 sm:py-1.5">
           <Link
             href={`/profiles/${conversation.recipientId}`}
-            className="hidden items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted sm:inline-flex"
+            className="tap-target-y hidden items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted sm:inline-flex"
           >
             <CfbGlyph name="people" className="h-3 w-3" />
             {t(messagesEn('view_profile'), messagesEl('view_profile'))}
           </Link>
           <Link
             href={`/matches/${conversation.recipientId}`}
-            className="hidden items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted sm:inline-flex"
+            className="tap-target-y hidden items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted sm:inline-flex"
           >
             <CfbGlyph name="matches" className="h-3 w-3" />
             {t(messagesEn('view_match'), messagesEl('view_match'))}
           </Link>
           <Link
             href={`/calendar?with=${encodeURIComponent(conversation.recipientId)}`}
-            className="hidden items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted sm:inline-flex"
+            className="tap-target-y hidden items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted sm:inline-flex"
           >
             <CfbGlyph name="calendar" className="h-3 w-3" />
             {t(messagesEn('schedule_meet'), messagesEl('schedule_meet'))}
@@ -1142,6 +1142,7 @@ export function ChatWindow({
             value={inputValue}
             onChange={(e) => handleTyping(e.target.value)}
             onKeyDown={handleKeyDown}
+            aria-label={t(messagesEn('type_message'), messagesEl('type_message'))}
             placeholder={t(messagesEn('type_message'), messagesEl('type_message'))}
             rows={1}
             className="max-h-[120px] min-h-[40px] flex-1 resize-none border-0 bg-transparent px-1 py-2.5 shadow-none focus-visible:ring-0"

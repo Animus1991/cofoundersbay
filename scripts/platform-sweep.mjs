@@ -70,9 +70,11 @@ for (const route of routes) {
     const latin = (txt.match(/[A-Za-z]/g) || []).length;
     const words = txt.split(/\s+/).filter(Boolean).length;
     const unnamed = [...main.querySelectorAll('button,a[href],[role=button]')].filter((el) => {
+      if (el.closest('[aria-hidden="true"]')) return false;
       const s = getComputedStyle(el); if (s.display === 'none' || s.visibility === 'hidden') return false;
-      // An image link is named by its picture's alt (the tenant logo on /login).
-      const name = (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.getAttribute('title') || el.textContent || el.querySelector('img[alt]')?.getAttribute('alt') || '').trim();
+      // An image link is named by its picture's alt (the tenant logo on /login);
+      // a Radix switch is named by its <label for=id>.
+      const name = (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || (el.id && document.querySelector('label[for="' + CSS.escape(el.id) + '"]')?.textContent) || el.getAttribute('title') || el.textContent || el.querySelector('img[alt]')?.getAttribute('alt') || '').trim();
       return !name || /^\d+$/.test(name);
     }).length;
     const askAI = !!main.querySelector('[aria-label*="Ask AI" i],[aria-label*="Ρωτήστε" i],a[href^="/ai"],button[data-ask-ai]') || /Ask AI|Ρωτήστε το AI/.test(txt);
