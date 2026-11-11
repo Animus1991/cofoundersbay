@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   BarChart3,
   Clock,
@@ -46,6 +47,7 @@ import { HomeFold } from '@/components/dashboard/HomeFold';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { FactLine } from '@/components/common/FactLine';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { usePageControls, usePageList } from '@/lib/page-controls';
 
 /*
  * The provider's one home.
@@ -167,6 +169,7 @@ const DEMO_REVIEWS: DashReview[] = [
 ];
 
 export default function ProviderDashboard() {
+  const router = useRouter();
   const fmtDate = useDateFormat();
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
@@ -243,6 +246,39 @@ export default function ProviderDashboard() {
   const agreedValue = projects.reduce((sum, p) => sum + (p.agreedPrice ?? 0), 0);
   const avgRating = summary?.avgRating ?? (reviews.length ? Math.round((reviews.reduce((a, r) => a + r.rating, 0) / reviews.length) * 10) / 10 : null);
   const reviewCount = summary?.reviewCount ?? reviews.length;
+
+  usePageList([
+    {
+      id: 'open_inquiries',
+      labelEn: 'Open client inquiries',
+      labelEl: 'Ανοιχτά αιτήματα πελατών',
+      rows: !mounted || inquiriesLoading ? undefined : waiting.map((i) => `${i.clientName} · ${i.service} · ${INQUIRY_LABEL[i.status].en}`),
+      rowsEl: !mounted || inquiriesLoading ? undefined : waiting.map((i) => `${i.clientName} · ${i.service}`),
+      total: inquiries.length,
+      sample: liveInquiries.length === 0 && inquiries.length > 0,
+    },
+    {
+      id: 'client_projects',
+      labelEn: 'Client projects',
+      labelEl: 'Έργα πελατών',
+      rows: !mounted || projectsLoading ? undefined : projects.map((p) => `${p.clientName} · ${p.service} · ${p.status} · ${eur(p.agreedPrice, p.currency)}`),
+      rowsEl: !mounted || projectsLoading ? undefined : projects.map((p) => `${p.clientName} · ${p.service} · ${eur(p.agreedPrice, p.currency)}`),
+      sample: liveProjects.length === 0 && projects.length > 0,
+    },
+    {
+      id: 'services',
+      labelEn: 'Your services',
+      labelEl: 'Οι υπηρεσίες σας',
+      rows: !mounted || servicesLoading ? undefined : services.map((s) => `${s.title}${s.pricing ? ` · ${s.pricing}` : ''}`),
+      rowsEl: !mounted || servicesLoading ? undefined : services.map((s) => `${s.title}${s.pricing ? ` · ${priceEl(s.pricing)}` : ''}`),
+    },
+  ]);
+
+  usePageControls([
+    { id: 'open_inquiries', labelEn: 'Open client inquiries', labelEl: 'Άνοιγμα αιτημάτων πελατών', writes: false, run: () => router.push('/provider/inquiries') },
+    { id: 'open_projects', labelEn: 'Open client projects', labelEl: 'Άνοιγμα έργων πελατών', writes: false, run: () => router.push('/provider/projects') },
+    { id: 'open_services', labelEn: 'Manage services', labelEl: 'Διαχείριση υπηρεσιών', writes: false, run: () => router.push('/provider/services') },
+  ]);
 
   if (!mounted) {
     return (

@@ -107,12 +107,13 @@ export function HomeToday() {
               <Button
                 type="button"
                 variant="ghost"
-                size="sm"
-                className="shrink-0"
+                size="icon"
+                className="h-8 w-8 shrink-0 text-muted-foreground"
                 aria-label={bilingualAria(`Ask about: ${row.en}`, `Ρωτήστε για: ${row.el}`)}
+                title={bilingualAria(`Ask about: ${row.en}`, `Ρωτήστε για: ${row.el}`)}
                 onClick={() => ask(row.ask)}
               >
-                <BilingualText en="Ask" el="Ρωτήστε" compact />
+                <CfbGlyph name="spark" className="icon-sm" aria-hidden="true" />
               </Button>
             </li>
           ))}

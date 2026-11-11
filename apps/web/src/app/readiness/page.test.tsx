@@ -170,8 +170,7 @@ describe('live readiness and explicit showcase isolation', () => {
     localStorage.setItem('cfb_demo_data', '1');
     mount();
 
-    // Market ships two of five met, with the third criterion unmet and visible
-    // without expanding the card.
+    // Market ships two of five met, with the third criterion unmet and visible.
     expect(screen.getAllByText('2/5').length).toBeGreaterThan(0);
     fireEvent.click(await screen.findByRole('button', { name: /Competitive analysis completed/ }));
 

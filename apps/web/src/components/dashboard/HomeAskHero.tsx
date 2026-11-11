@@ -60,7 +60,7 @@ export function partOfDay(hour: number): Part {
  * - Under them, "Your pages": what the reader pinned and opens most, each
  *   with its `G` number (`YourPagesRow`, docs §107).
  */
-export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true, plain = false }: { role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean; /** Only the question box: the shortcuts live in the page's tools (docs §116). */ plain?: boolean }) {
+export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true, plain = false, greeting = true }: { /** Off where the page's own title already greets the reader (/home). */ greeting?: boolean; role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean; /** Only the question box: the shortcuts live in the page's tools (docs §116). */ plain?: boolean }) {
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
   const popup = usePopupChatOptional();
@@ -135,10 +135,10 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
   }
 
   return (
-    <section aria-labelledby={`${boxId}-title`} className="space-y-3" data-home-ask="" data-testid={`home-${role}-assistant`}>
+    <section aria-labelledby={greeting ? `${boxId}-title` : undefined} aria-label={greeting ? undefined : bilingualAria('Ask the assistant', 'Ρωτήστε τον βοηθό')} className="space-y-3" data-home-ask={greeting ? 'greeting' : 'box'} data-testid={`home-${role}-assistant`}>
       {/* The greeting as it was before the box arrived: one quiet line at
           body size, not a heading (the page title is the heading). */}
-      <p id={`${boxId}-title`} className="break-words text-sm text-muted-foreground" data-testid="home-greeting">
+      <p id={`${boxId}-title`} hidden={!greeting} className="break-words text-sm text-muted-foreground" data-testid="home-greeting">
         {/* Without a name the greeting is just the greeting: the homes used
             to fill in their role word, so a Greek reader met "Καλημέρα,
             Founder." (docs §70). */}

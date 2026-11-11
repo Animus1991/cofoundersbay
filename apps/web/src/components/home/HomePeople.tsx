@@ -12,6 +12,7 @@ import { useConnectionActions } from '@/hooks/useConnectionWith';
 import { sendConnectionRequest, type SearchHit } from '@/lib/api';
 import { bilingualAria } from '@/lib/i18n/format';
 import { explainMatch, type ViewerFacts } from '@/lib/match-explain';
+import { usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 
 /**
@@ -42,12 +43,38 @@ export function HomePeople({ matches, viewer, myId, limit = 3 }: {
   });
 
   const people = matches.filter((person) => person?.userId).slice(0, limit);
+  const stateOf = (userId: string) => (sentTo.has(userId) ? 'sent' : connectionOf(userId));
+
+  // The first page's people, as the cards say them, with where the
+  // connection stands. Connecting and accepting stay the assistant's own
+  // actions (send_connection with its Undo, respond_connection): a page
+  // command for the same write put two cards under one request.
+  const STATE_WORDS = {
+    none: { en: 'not connected', el: 'χωρίς σύνδεση' },
+    sent: { en: 'request sent', el: 'το αίτημα στάλθηκε' },
+    received: { en: 'sent you a request', el: 'σας έστειλε αίτημα' },
+    connected: { en: 'connected', el: 'σε σύνδεση' },
+  } as const;
+  const rowOf = (person: SearchHit, lang: 'en' | 'el') => {
+    const reason = explainMatch(person, viewer, { nowMs: Date.now() })[0];
+    return [person.displayName ?? '', person.headline, reason?.[lang], STATE_WORDS[stateOf(person.userId)]?.[lang]].filter(Boolean).join(' · ');
+  };
+  usePageList([
+    {
+      id: 'people_who_fit',
+      labelEn: 'People who fit',
+      labelEl: 'Άνθρωποι που ταιριάζουν',
+      rows: people.map((person) => rowOf(person, 'en')),
+      rowsEl: people.map((person) => rowOf(person, 'el')),
+      total: matches.length,
+    },
+  ]);
 
   return (
     <div className="space-y-4" data-home-people="">
       {people.map((person) => {
         const reason = explainMatch(person, viewer, { nowMs: Date.now() })[0] ?? null;
-        const state = sentTo.has(person.userId) ? 'sent' : connectionOf(person.userId);
+        const state = stateOf(person.userId);
         const name = person.displayName ?? '';
         return (
           <PersonCard

@@ -215,3 +215,23 @@ describe('saysLookingFor', () => {
     expect(saysLookingFor(null)).toBe(false);
   });
 });
+
+describe('a reader who is not building a company', () => {
+  const founder = { role: 'founder', skillNames: ['TypeScript', 'AI'], stage: 'mvp' };
+
+  it('is not told a founder completes their skills', () => {
+    for (const role of ['mentor', 'angel_investor', 'org', 'provider']) {
+      const viewer = viewerFacts({ role, skills: [{ skillName: 'Product' }], rolePayload: {} }) as ViewerFacts;
+      expect(codes(explainMatch(founder, viewer, options))).not.toContain('complement');
+    }
+    expect(codes(explainMatch(founder, ALEX, options))).toContain('complement');
+  });
+
+  it('reads what the founder is building, a provider included', () => {
+    const provider = viewerFacts({ role: 'provider', skills: [{ skillName: 'Legal' }], rolePayload: {} }) as ViewerFacts;
+    expect(provider.role).toBeNull();
+    expect(explainMatch(founder, provider, options)[0]).toMatchObject({ code: 'role', en: 'Building a company, at MVP stage' });
+    const mentor = viewerFacts({ role: 'mentor', rolePayload: {} }) as ViewerFacts;
+    expect(explainMatch(founder, mentor, options)[0]).toMatchObject({ code: 'role', en: 'Building a company, at MVP stage' });
+  });
+});

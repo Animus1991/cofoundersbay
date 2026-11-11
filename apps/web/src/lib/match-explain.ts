@@ -432,8 +432,11 @@ export function explainMatch(candidate: MatchCandidate, viewer: ViewerFacts | nu
     const theirs = [...new Map(candidate.skillNames.filter((s) => typeof s === 'string' && s.trim()).map((s) => [fold(s), s.trim()])).values()];
     const shared = theirs.filter((s) => mine.has(fold(s)));
     const added = theirs.filter((s) => !mine.has(fold(s)));
-    // "Complements your skills" means nothing to a reader who lists none.
-    if (viewer.skills.length && added.length) {
+    // "Complements your skills" means nothing to a reader who lists none, and
+    // it is a founder's reason: someone building a team reads what a person
+    // adds. A mentor, an investor, a provider or an organisation is not
+    // completing their own skills with a founder's (docs §119.5).
+    if (viewer.role === 'founder' && viewer.skills.length && added.length) {
       const terms = termsPair(added, termEl);
       out.push({
         code: 'complement',
@@ -547,8 +550,10 @@ function roleSentence(
     if (candidate === 'investor') return { en: 'Invests in startups', el: 'Επενδύει σε startups' };
     return null;
   }
+  // Anyone who is not building a company themselves, a provider included
+  // (no role family), reads what the founder is building.
+  if (candidate === 'founder') return building();
   if (viewer === 'mentor' || viewer === 'investor' || viewer === 'org') {
-    if (candidate === 'founder') return building();
     if (viewer === 'org' && candidate === 'mentor') return { en: 'Mentors founders', el: 'Καθοδηγεί ιδρυτές' };
   }
   return null;

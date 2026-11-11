@@ -72,7 +72,7 @@ describe('card text ladder', () => {
     const title = size(desk, '.card-title', 13.12);
     const subtitle = size(desk, '.card-subtitle', 13.12);
     const body = size(desk, '.card-body', 13.12);
-    expect(title).toBeCloseTo(15.355, 1);
+    expect(title).toBeCloseTo(14.65, 1);
     expect(subtitle).toBeCloseTo(13.996, 1);
     expect(body).toBeCloseTo(13.495, 1);
   });

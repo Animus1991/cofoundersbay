@@ -1,11 +1,15 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { usePageRail } from '@/components/layout/PageRailContext';
+import { usePageControls, usePageList } from '@/lib/page-controls';
+import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +29,6 @@ import {
   getMeProfile,
   getRecommendations,
   listConnectionRequests,
-  respondToConnectionRequest,
   getVentureReadiness,
   type SearchHit,
   listMilestones,
@@ -48,7 +51,6 @@ import { MetricTile } from '@/components/dashboard/MetricTile';
 import { ProgressSegments } from '@/components/dashboard/ProgressSegments';
 import { Sparkline } from '@/components/charts/Sparkline';
 import { FounderProgressCard } from '@/components/gamification/FounderProgressCard';
-import { useApiAvailability } from '@/hooks/useApiAvailability';
 import { YourPagesRow } from '@/components/dashboard/YourPages';
 import { HomeContinue } from '@/components/home/HomeContinue';
 import {
@@ -58,7 +60,6 @@ import {
   useFirstMoveState,
   useStoredFlag,
 } from '@/components/dashboard/FounderFirstMove';
-import { FounderPhoneHome } from '@/components/dashboard/FounderPhoneHome';
 import { listCommitmentThreads } from '@/lib/commitments-api';
 import { waitsOnMe } from '@/lib/commitments-next';
 import { RowHead } from '@/components/dashboard/SectionCard';
@@ -67,7 +68,7 @@ import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
 import { XPProgressWidget } from '@/components/gamification/XPProgressWidget';
 import { BadgesWidget } from '@/components/gamification/BadgesWidget';
 import { BilingualText } from '@/components/common/BilingualText';
-import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
 import { PREVIEW_MILESTONE_EL } from '@/lib/i18n/strings-milestones';
 import { activityTimeAgoPair, activityTitleEl } from '@/lib/i18n/activity-titles';
@@ -75,9 +76,7 @@ import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { explainMatch, saysLookingFor, viewerFacts, type ViewerFacts } from '@/lib/match-explain';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
-import { useConnectionWith } from '@/hooks/useConnectionWith';
 import { isMilestoneOverdue } from '@/lib/milestone-order';
-import { useToast } from '@/components/ui/toast';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { useInvestorFollowUps } from '@/lib/follow-ups';
@@ -94,17 +93,10 @@ const FOUNDER_TOUR: TourStep[] = [
   },
   {
     target: 'founder-stats',
-    titleEn: 'Your live counts, not a second score',
-    titleEl: 'Ζωντανά πλήθη, όχι δεύτερη βαθμολογία',
-    bodyEn: 'Profile views, unread messages and milestone completion. A dash means the figure could not be read; it is not zero.',
-    bodyEl: 'Προβολές προφίλ, μη αναγνωσμένα μηνύματα και ολοκλήρωση οροσήμων. Παύλα σημαίνει ότι ο αριθμός δεν διαβάστηκε, όχι ότι είναι μηδέν.',
-  },
-  {
-    target: 'founder-people',
-    titleEn: 'The people worth meeting',
-    titleEl: 'Οι άνθρωποι που αξίζει να γνωρίσετε',
-    bodyEn: 'The best matches for what you are looking for, each with the reason. The full list is under Matches.',
-    bodyEl: 'Οι καλύτερες αντιστοιχίσεις για όσα ψάχνετε, η καθεμία με τον λόγο της. Η πλήρης λίστα είναι στις Αντιστοιχίσεις.',
+    titleEn: 'What is due next, and how your profile is doing',
+    titleEl: 'Τι λήγει στη συνέχεια και πώς πάει το προφίλ σας',
+    bodyEn: 'Your next milestones with what is late, beside your profile views. A dash means the figure could not be read; it is not zero.',
+    bodyEl: 'Τα επόμενα ορόσημά σας με ό,τι έχει καθυστερήσει, δίπλα στις προβολές του προφίλ σας. Παύλα σημαίνει ότι ο αριθμός δεν διαβάστηκε, όχι ότι είναι μηδέν.',
   },
   {
     target: 'founder-readiness',
@@ -275,10 +267,13 @@ function RailListLink({ href, en, el }: { href: string; en: string; el: string }
  * the card).
  */
 function MatchPreviewRow({ match, viewer }: { match: SearchHit; viewer: ViewerFacts | null }) {
+  // Stamped once at mount, like /discover: an impure read inside the render
+  // body is flagged, and this card only exists after mount anyway.
+  const [nowMs] = useState(() => Date.now());
   const score = match.matchScore ?? 0;
   const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? 'text-primary-accessible' : STATUS.warning.icon;
   // The most telling reason, as the person's card on /matches puts it first.
-  const reason = explainMatch(match, viewer, { nowMs: Date.now() })[0] ?? null;
+  const reason = explainMatch(match, viewer, { nowMs })[0] ?? null;
   return (
     <Link href={`/matches/${match.userId}`} className="axis-row group block rounded-md transition-colors hover:bg-accent focus-ring">
       <RowHead
@@ -379,10 +374,11 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
 }
 
 export default function FounderDashboardContent() {
+  const router = useRouter();
+  const { openRailSection } = usePageRail();
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
   const { primary } = useLanguagePreference();
-  const sayOne = useBilingualString();
   const { messages: unreadMessages } = useUnreadCounts();
 
   const { data: profile } = useQuery({
@@ -392,24 +388,6 @@ export default function FounderDashboardContent() {
   });
   // The reader's side of each match's reasons (lib/match-explain).
   const viewer = useMemo(() => viewerFacts(profile?.profile ?? null), [profile]);
-  const apiAvailable = useApiAvailability();
-  const queryClient = useQueryClient();
-  const { success, error: showError } = useToast();
-  // Where each match's connection stands, on /matches' keys: the first match
-  // is offered Accept when their request waits, never a second Connect.
-  const { connectionWith, connectionOf } = useConnectionWith(hasSession && mounted, profile?.profile?.userId);
-  const acceptRequest = useCallback(async (userId: string, name: string) => {
-    const link = connectionWith.get(userId);
-    if (!link || link.state !== 'received') return;
-    try {
-      await respondToConnectionRequest(link.id, 'accepted');
-      success(sayOne('Connected', 'Η σύνδεση έγινε'), sayOne(`You are now connected with ${name}.`, `Είστε πλέον σε σύνδεση με ${name}.`));
-      await queryClient.invalidateQueries({ queryKey: qk('connections') });
-    } catch (err) {
-      showError(sayOne('Could not accept the request', 'Το αίτημα δεν έγινε αποδεκτό'), err instanceof Error ? err.message : undefined);
-    }
-  }, [connectionWith, queryClient, sayOne, showError, success]);
-
   /*
    * The Top Matches tile counts what /matches lists, on that page's own query
    * key, so the two cannot disagree. It read `matchesThisWeek` from the
@@ -424,7 +402,6 @@ export default function FounderDashboardContent() {
     enabled: hasSession && mounted,
   });
   const matchCount = matchList?.suggestions?.length;
-  const excellentMatches = (matchList?.suggestions ?? []).filter((s) => (s.matchScore ?? 0) >= 80).length;
 
   /*
    * The same metrics /analytics charts, on the same 7-day period.
@@ -474,7 +451,7 @@ export default function FounderDashboardContent() {
     };
   })();
 
-  const { data: recommendations, isFetched: recommendationsFetched } = useQuery({
+  const { data: recommendations } = useQuery({
     queryKey: queryKeys.recommendations,
     queryFn: () => getRecommendations({ limit: 5 }),
     enabled: hasSession && mounted,
@@ -603,7 +580,7 @@ export default function FounderDashboardContent() {
   const nextOpenMilestone = openMilestonesByDue[0];
   // The card answers "what is due next"; the full list, done ones included, is /milestones.
   const { due: dueFollowUps } = useInvestorFollowUps();
-  const upcomingMilestones = openMilestonesByDue.slice(0, 5);
+  const upcomingMilestones = openMilestonesByDue.slice(0, 3);
   const moreOpenMilestoneCount = openMilestones.length - upcomingMilestones.length;
   // The same calendar-day rule as /milestones (lib/milestone-order), so the
   // home and the page agree on "Overdue" on the due day itself.
@@ -611,11 +588,6 @@ export default function FounderDashboardContent() {
   const overdueMilestoneCount = openMilestones.filter(isPastDue).length;
   // Under way and on time: started (in progress, or some progress) and not past its date.
   const activeMilestoneCount = openMilestones.filter((m) => !isPastDue(m) && (m.status === 'in_progress' || m.progress > 0)).length;
-  const messageCaption = unreadMessages === 0
-    ? { en: dashboardEn('inbox_clear'), el: dashboardEl('inbox_clear') }
-    : unreadMessages === 1
-      ? { en: '1 waiting', el: '1 σε αναμονή' }
-      : { en: `${unreadMessages} waiting`, el: `${unreadMessages} σε αναμονή` };
   const milestoneCaption = milestones.length === 0
     ? { en: dashboardEn('add_first_milestone'), el: dashboardEl('add_first_milestone') }
     : completedMilestoneCount === milestones.length
@@ -685,6 +657,70 @@ export default function FounderDashboardContent() {
     full: false,
   });
 
+  usePageList([
+    {
+      id: 'open_milestones',
+      labelEn: 'Open milestones',
+      labelEl: 'Ανοιχτά ορόσημα',
+      rows: !mounted || milestonesLoading
+        ? undefined
+        : openMilestonesByDue.map((m) => `${m.titleEn} · ${m.progress}%${isPastDue(m) ? ' · overdue' : m.dueDate ? ` · due ${formatShortDate(m.dueDate, 'en')}` : ''}`),
+      rowsEl: !mounted || milestonesLoading
+        ? undefined
+        : openMilestonesByDue.map((m) => `${m.titleEl} · ${m.progress}%${isPastDue(m) ? ' · εκπρόθεσμο' : m.dueDate ? ` · λήξη ${formatShortDate(m.dueDate, 'el')}` : ''}`),
+      total: milestones.length,
+      sample: usingDemoMilestones,
+    },
+    {
+      id: 'founder_progress_dimensions',
+      labelEn: 'Founder progress dimensions',
+      labelEl: 'Διαστάσεις προόδου ιδρυτή',
+      rows: !mounted || !vrs?.dimensions ? undefined : vrs.dimensions.map((d) => `${d.label} · ${d.score}%`),
+      rowsEl: !mounted || !vrs?.dimensions ? undefined : vrs.dimensions.map((d) => `${ventureDimensionEl(d.key, d.label)} · ${d.score}%`),
+    },
+    {
+      id: 'top_matches',
+      labelEn: 'Top matches',
+      labelEl: 'Κορυφαίες αντιστοιχίσεις',
+      rows: !mounted || !recommendations?.suggestions ? undefined : recommendations.suggestions.slice(0, 3).map((m) => `${m.displayName}${m.matchScore != null ? ` · ${m.matchScore}%` : ''}${m.headline ? ` · ${m.headline}` : ''}`),
+      rowsEl: !mounted || !recommendations?.suggestions ? undefined : recommendations.suggestions.slice(0, 3).map((m) => `${m.displayName}${m.matchScore != null ? ` · ${m.matchScore}%` : ''}${m.headline ? ` · ${m.headline}` : ''}`),
+      total: matchCount ?? recommendations?.suggestions?.length,
+    },
+  ]);
+
+  usePageControls([
+    {
+      id: 'open_lowest_progress',
+      labelEn: 'Open lowest founder progress dimension',
+      labelEl: 'Άνοιγμα χαμηλότερης διάστασης προόδου',
+      writes: false,
+      unavailableEn: vrs?.lowestDimension?.href ? undefined : 'Founder progress has not loaded yet.',
+      unavailableEl: vrs?.lowestDimension?.href ? undefined : 'Ο βαθμός προόδου δεν έχει φορτώσει ακόμη.',
+      run: () => { if (vrs?.lowestDimension?.href) router.push(vrs.lowestDimension.href); },
+    },
+    {
+      id: 'open_milestones_page',
+      labelEn: 'Manage milestones',
+      labelEl: 'Διαχείριση ορόσημων',
+      writes: false,
+      run: () => router.push('/milestones'),
+    },
+    {
+      id: 'open_snapshot_panel',
+      labelEn: 'Open venture snapshot panel',
+      labelEl: 'Άνοιγμα στιγμιοτύπου εγχειρήματος',
+      writes: false,
+      run: () => openRailSection('snapshot'),
+    },
+    {
+      id: 'open_commitments_panel',
+      labelEn: 'Open commitments panel',
+      labelEl: 'Άνοιγμα δεσμεύσεων',
+      writes: false,
+      run: () => openRailSection('commitments'),
+    },
+  ]);
+
   if (!mounted) {
     return (
       <AppShell>
@@ -699,197 +735,18 @@ export default function FounderDashboardContent() {
   }
 
   /*
-   * Families that are not the dashboard's reason for existing.
-   *
-   * The column is the glance: greeting, next action, four figures,
-   * attention, readiness. Fundraising, matches, milestones and profile
-   * strength are readouts of other pages — they stay one gesture away
-   * in the rail, never deleted.
-   * Quick actions is nine destinations. XP and badges answer how the
-   * product is rewarding you. Activity and events are a readout of
-   * elsewhere, not the pulse.
+   * Milestones, in the column: what is due next, how many are done and how many
+   * are late. It was a card in the page's tools and a "5/12" tile in the column;
+   * the tile said the count and the card, one gesture away, said which.
    */
-  const rail: PageRailSection[] = [
-    {
-      id: 'snapshot',
-      glyph: 'wallet',
-      labelEn: 'Venture snapshot',
-      labelEl: 'Στιγμιότυπο εγχειρήματος',
-      content: (
-        <div className="space-y-4">
-          {/* Fundraising widget */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between gap-2">
-                <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
-                  <CfbGlyph name="wallet" className="icon-sm text-muted-foreground" />
-                  <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} compact />
-                </CardTitle>
-                <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
-                  <Link href="/fundraising">
-                    <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
-                    <ArrowRight className="icon-sm" />
-                  </Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {showDemoData ? (
-                  <>
-                    <div className="flex items-end justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-xs text-muted-foreground">
-                          {fundRound.nameEl
-                            ? <BilingualText en={fundRound.name} el={fundRound.nameEl} compact />
-                            : fundRound.name}
-                        </p>
-                        {/* The amount is a value inside the card, a step under its
-                            title (the card text ladder), not a display figure. */}
-                        <p className="card-body font-semibold tabular-nums text-foreground">
-                          {fundRound.currency}{(fundRound.raised / 1000).toFixed(0)}K
-                          <span className="ml-1 font-normal text-muted-foreground">
-                            / {fundRound.currency}{(fundRound.target / 1000).toFixed(0)}K
-                          </span>
-                        </p>
-                      </div>
-                      <span className={cn(
-                        'shrink-0 card-body font-semibold tabular-nums',
-                        fundingPct >= 75 ? STATUS.success.icon : fundingPct >= 40 ? STATUS.warning.icon : 'text-muted-foreground'
-                      )}>
-                        {fundingPct}%
-                      </span>
-                    </div>
-                    <Progress value={fundingPct} label={bilingualAria('Round progress', 'Πρόοδος γύρου')} className="h-2.5" />
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <CfbGlyph name="people" className="icon-sm" />
-                        {fundStats.total}{' '}
-                        <BilingualText
-                          en={dashboardEn(fundStats.total === 1 ? 'lead_tracked' : 'leads_tracked')}
-                          el={dashboardEl(fundStats.total === 1 ? 'lead_tracked' : 'leads_tracked')}
-                          compact
-                        />
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
-                        {fundStats.committed}{' '}
-                        <BilingualText
-                          en={dashboardEn(fundStats.committed === 1 ? 'committed_one' : 'committed_count')}
-                          el={dashboardEl(fundStats.committed === 1 ? 'committed_one' : 'committed_count')}
-                          compact
-                        />
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    <BilingualText
-                      en={dashboardEn('fundraising_empty')}
-                      el={dashboardEl('fundraising_empty')}
-                      wrap
-                    />
-                  </p>
-                )}
-                <div className="space-y-2.5">
-                  {/* One column in the rail (two side by side ran past its
-                      edge at 1440), two in the expanded view. */}
-                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                    <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
-                      <Link href="/fundraising" className="flex-1">
-                        <CfbGlyph name="wallet" className="icon-sm" />
-                        <BilingualText en={dashboardEn('manage_pipeline')} el={dashboardEl('manage_pipeline')} compact />
-                      </Link>
-                    </Button>
-                    <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
-                      <Link href="/investors" className="flex-1">
-                        <CfbGlyph name="discover" className="icon-sm" />
-                        <BilingualText en={dashboardEn('find_investors')} el={dashboardEl('find_investors')} compact />
-                      </Link>
-                    </Button>
-                  </div>
-                  {/* A card's question for the assistant sits under what it asks about,
-                      as on Founder progress: a header row has no room for both languages. */}
-                  <AskAiButton
-                    variant="ghost"
-                    className="w-full"
-                    prompt={ASK.dashFundraising}
-                    labelEn={dashboardEn('ask_ai_fundraising')}
-                    labelEl={dashboardEl('ask_ai_fundraising')}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-           {/* Top Matches */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between gap-2">
-                <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
-                  <CfbGlyph name="matches" className="icon-sm text-muted-foreground" />
-                  <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} compact />
-                </CardTitle>
-                <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
-                  <Link href="/matches">
-                    <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
-                    <ArrowRight className="icon-sm" />
-                  </Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {(recommendations?.suggestions?.length ?? 0) > 0 && (
-                <div className="card-rows">
-                  {recommendations?.suggestions?.slice(0, 4).map((match: SearchHit) => (
-                    <MatchPreviewRow key={match.userId} match={match} viewer={viewer} />
-                  ))}
-                </div>
-              )}
-              {(recommendations?.suggestions?.length ?? 0) > 0 && (
-                <AskAiButton
-                  variant="ghost"
-                  className="w-full"
-                  prompt={ASK.dashMatches}
-                  labelEn={dashboardEn('ask_ai_matches')}
-                  labelEl={dashboardEl('ask_ai_matches')}
-                />
-              )}
-              {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
-                // The empty list's line and its two ways on, on the card's
-                // axis: a dashed box inside the card was a card in a card.
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    <BilingualText
-                      en={dashboardEn('complete_profile_for_matches')}
-                      el={dashboardEl('complete_profile_for_matches')}
-                      wrap
-                    />
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <Button variant="outline" size="sm" className="gap-1.5" asChild>
-                      <Link href="/profile/edit">
-                        <CfbGlyph name="profile" className="icon-sm" />
-                        <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
-                      </Link>
-                    </Button>
-                    <AskAiButton
-                      variant="ghost"
-                      prompt={ASK.dashBetterMatches}
-                      labelEn={dashboardEn('ask_ai_matches')}
-                      labelEl={dashboardEl('ask_ai_matches')}
-                    />
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-           {/* Milestones */}
+  const milestonesCard = (
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between gap-2">
                 <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
                   <CfbGlyph name="flag" className="icon-sm text-muted-foreground" />
                   <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} compact />
+                  {milestones.length > 0 ? <span className="font-normal tabular-nums text-muted-foreground">{completedMilestoneCount}/{milestones.length}</span> : null}
                 </CardTitle>
                 <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
                   <Link href="/milestones">
@@ -900,6 +757,24 @@ export default function FounderDashboardContent() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {milestones.length > 0 ? (
+                <div className="space-y-1.5">
+                  <ProgressSegments
+                    total={milestones.length}
+                    segments={[
+                      { key: 'done', value: completedMilestoneCount, tone: 'done' },
+                      { key: 'active', value: activeMilestoneCount, tone: 'active' },
+                      { key: 'late', value: overdueMilestoneCount, tone: 'late' },
+                    ]}
+                  />
+                  <p className="text-xs text-muted-foreground"><BilingualText en={milestoneCaption.en} el={milestoneCaption.el} compact wrap /></p>
+                </div>
+              ) : null}
+              {milestonesFailed && milestones.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en="Not read: the server is unavailable." el="Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος." wrap />
+                </p>
+              ) : null}
               {usingDemoMilestones && (
                 <p className="text-xs text-muted-foreground">
                   <BilingualText
@@ -936,7 +811,7 @@ export default function FounderDashboardContent() {
                   />
                 </p>
               )}
-              {milestones.length === 0 && !usingDemoMilestones && (
+              {milestones.length === 0 && !usingDemoMilestones && !milestonesFailed && (
                 <p className="text-sm text-muted-foreground">
                   <BilingualText
                     en={dashboardEn('add_first_milestone')}
@@ -955,14 +830,179 @@ export default function FounderDashboardContent() {
               )}
             </CardContent>
           </Card>
-          {/* Profile strength — moved here from the sidebar.
-              The two columns were 1663px and 2169px, so the wider,
-              more important one ended 506px early and the page had a
-              void down its left side. This card is the one sidebar
-              item that is a task rather than a readout, so it is the
-              one that belongs in the main column; moving it leaves the
-              columns within ~25px of each other and keeps XP and
-              Badges together where they belong. */}
+  );
+
+  /*
+   * Families that are not the dashboard's reason for existing.
+   *
+   * The column is the glance: greeting, next action, four figures,
+   * attention, readiness. Fundraising, matches, milestones and profile
+   * strength are readouts of other pages — they stay one gesture away
+   * in the rail, never deleted.
+   * Quick actions is nine destinations. XP and badges answer how the
+   * product is rewarding you. Activity and events are a readout of
+   * elsewhere, not the pulse.
+   */
+  const fundraisingCard = (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
+            <CfbGlyph name="wallet" className="icon-sm text-muted-foreground" />
+            <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} compact />
+          </CardTitle>
+          <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
+            <Link href="/fundraising">
+              <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
+              <ArrowRight className="icon-sm" />
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {showDemoData ? (
+          <>
+            <div className="flex items-end justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">
+                  {fundRound.nameEl
+                    ? <BilingualText en={fundRound.name} el={fundRound.nameEl} compact />
+                    : fundRound.name}
+                </p>
+                <p className="card-body font-semibold tabular-nums text-foreground">
+                  {fundRound.currency}{(fundRound.raised / 1000).toFixed(0)}K
+                  <span className="ml-1 font-normal text-muted-foreground">
+                    / {fundRound.currency}{(fundRound.target / 1000).toFixed(0)}K
+                  </span>
+                </p>
+              </div>
+              <span className={cn(
+                'shrink-0 card-body font-semibold tabular-nums',
+                fundingPct >= 75 ? STATUS.success.icon : fundingPct >= 40 ? STATUS.warning.icon : 'text-muted-foreground'
+              )}>
+                {fundingPct}%
+              </span>
+            </div>
+            <Progress value={fundingPct} label={bilingualAria('Round progress', 'Πρόοδος γύρου')} className="h-2" />
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <CfbGlyph name="people" className="icon-sm" />
+                {fundStats.total}{' '}
+                <BilingualText
+                  en={dashboardEn(fundStats.total === 1 ? 'lead_tracked' : 'leads_tracked')}
+                  el={dashboardEl(fundStats.total === 1 ? 'lead_tracked' : 'leads_tracked')}
+                  compact
+                />
+              </span>
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
+                {fundStats.committed}{' '}
+                <BilingualText
+                  en={dashboardEn(fundStats.committed === 1 ? 'committed_one' : 'committed_count')}
+                  el={dashboardEl(fundStats.committed === 1 ? 'committed_one' : 'committed_count')}
+                  compact
+                />
+              </span>
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            <BilingualText
+              en={dashboardEn('fundraising_empty')}
+              el={dashboardEl('fundraising_empty')}
+              wrap
+            />
+          </p>
+        )}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+          <Button variant="outline" size="sm" className="gap-1.5" asChild>
+            <Link href="/investors">
+              <CfbGlyph name="discover" className="icon-sm" />
+              <BilingualText en={dashboardEn('find_investors')} el={dashboardEl('find_investors')} compact />
+            </Link>
+          </Button>
+          <AskAiButton
+            variant="ghost"
+            prompt={ASK.dashFundraising}
+            labelEn={dashboardEn('ask_ai_fundraising')}
+            labelEl={dashboardEl('ask_ai_fundraising')}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const topMatchesCard = (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
+            <CfbGlyph name="matches" className="icon-sm text-muted-foreground" />
+            <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} compact />
+          </CardTitle>
+          <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
+            <Link href="/matches">
+              <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
+              <ArrowRight className="icon-sm" />
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {(recommendations?.suggestions?.length ?? 0) > 0 && (
+          <div className="card-rows">
+            {recommendations?.suggestions?.slice(0, 3).map((match: SearchHit) => (
+              <MatchPreviewRow key={match.userId} match={match} viewer={viewer} />
+            ))}
+          </div>
+        )}
+        {(recommendations?.suggestions?.length ?? 0) > 0 && (
+          <AskAiButton
+            variant="ghost"
+            className="w-full"
+            prompt={ASK.dashMatches}
+            labelEn={dashboardEn('ask_ai_matches')}
+            labelEl={dashboardEl('ask_ai_matches')}
+          />
+        )}
+        {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              <BilingualText
+                en={dashboardEn('complete_profile_for_matches')}
+                el={dashboardEl('complete_profile_for_matches')}
+                wrap
+              />
+            </p>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                <Link href="/profile/edit">
+                  <CfbGlyph name="profile" className="icon-sm" />
+                  <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
+                </Link>
+              </Button>
+              <AskAiButton
+                variant="ghost"
+                prompt={ASK.dashBetterMatches}
+                labelEn={dashboardEn('ask_ai_matches')}
+                labelEl={dashboardEl('ask_ai_matches')}
+              />
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'snapshot',
+      glyph: 'shield',
+      labelEn: 'Profile strength',
+      labelEl: 'Ισχύς προφίλ',
+      content: (
+        <div className="space-y-4">
+          {/* Profile strength */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2">
@@ -1249,7 +1289,7 @@ export default function FounderDashboardContent() {
             shortcuts in the page's tools. */}
         <div data-tour="founder-today"><HomeToday /></div>
 
-        <div className="grid min-w-0 grid-cols-1 gap-3 min-[480px]:grid-cols-2 min-[480px]:gap-4 lg:grid-cols-3" data-tour="founder-stats">
+        <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" data-tour="founder-stats">
           <MetricTile
             align="center"
             glyph="profile"
@@ -1263,54 +1303,53 @@ export default function FounderDashboardContent() {
           />
           <MetricTile
             align="center"
+            glyph="matches"
+            label="Recommended matches" labelEl="Προτεινόμενες αντιστοιχίσεις"
+            value={matchCount ?? recommendations?.suggestions?.length ?? '—'}
+            caption="People who fit your criteria"
+            captionEl="Άτομα που ταιριάζουν στα κριτήριά σας"
+            href="/matches"
+          />
+          <MetricTile
+            align="center"
             glyph="messages"
             label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
-            value={apiAvailable ? unreadMessages : '—'}
+            value={unreadMessages}
             href="/messages"
-            caption={apiAvailable ? messageCaption.en : 'Not read: the server is unavailable. Opens messages'}
-            captionEl={apiAvailable ? messageCaption.el : 'Δεν διαβάστηκε: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα μηνύματα'}
+            caption={unreadMessages > 0 ? `${unreadMessages} waiting in Messages` : 'Inbox caught up'}
+            captionEl={unreadMessages > 0 ? `${unreadMessages} σε αναμονή στα Μηνύματα` : 'Όλα διαβασμένα'}
           />
-          <div className="min-w-0 min-[480px]:col-span-2 lg:col-span-1">
-            <MetricTile
-              align="center"
-              glyph="flag"
-              label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
-              value={milestonesFailed && milestones.length === 0 ? '—' : `${completedMilestoneCount}/${milestones.length}`}
-              href="/milestones"
-              // Finished, under way, late, and the open rest, along the tile's edge (docs §107).
-              edge={milestones.length > 0 ? (
-                <ProgressSegments
-                  total={milestones.length}
-                  segments={[
-                    { key: 'done', value: completedMilestoneCount, tone: 'done' },
-                    { key: 'active', value: activeMilestoneCount, tone: 'active' },
-                    { key: 'late', value: overdueMilestoneCount, tone: 'late' },
-                  ]}
-                />
-              ) : undefined}
-              caption={milestonesFailed && milestones.length === 0 ? 'Not read: the server is unavailable. Opens milestones' : milestoneCaption.en}
-              captionEl={milestonesFailed && milestones.length === 0 ? 'Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα ορόσημα' : milestoneCaption.el}
-            />
-          </div>
+          <MetricTile
+            align="center"
+            glyph="flag"
+            label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
+            value={milestonesFailed && milestones.length === 0 ? '—' : `${completedMilestoneCount}/${milestones.length}`}
+            href="/milestones"
+            edge={milestones.length > 0 ? (
+              <ProgressSegments
+                total={milestones.length}
+                segments={[
+                  { key: 'done', value: completedMilestoneCount, tone: 'done' },
+                  { key: 'active', value: activeMilestoneCount, tone: 'active' },
+                  { key: 'late', value: overdueMilestoneCount, tone: 'late' },
+                ]}
+              />
+            ) : undefined}
+            caption={milestonesFailed && milestones.length === 0 ? 'Not read: the server is unavailable. Opens milestones' : milestoneCaption.en}
+            captionEl={milestonesFailed && milestones.length === 0 ? 'Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα ορόσημα' : milestoneCaption.el}
+          />
         </div>
 
-        <FounderPhoneHome
-          leadOnly
-          showResume={false}
-          matches={recommendations?.suggestions ?? []}
-          matchesSettled={recommendationsFetched}
-          matchCount={matchCount}
-          excellentMatches={excellentMatches}
-          connectionOf={connectionOf}
-          onAccept={acceptRequest}
-          viewer={viewer}
-          activity={activityItems}
-          milestone={nextOpenMilestone ?? null}
-          demoEvents={DEMO_EVENTS}
-          showDemoEvents={showDemoData}
-        />
-
-        {showFirstMove ? null : <HomeContinue />}
+        <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-2">
+          <div className="min-w-0 space-y-5">
+            {milestonesCard}
+            {showFirstMove ? null : <HomeContinue />}
+          </div>
+          <div className="min-w-0 space-y-5">
+            {topMatchesCard}
+            {fundraisingCard}
+          </div>
+        </div>
 
         <div data-tour="founder-readiness"><FounderProgressCard /></div>
       </div>

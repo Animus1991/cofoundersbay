@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import {
   BarChart3,
@@ -51,6 +52,7 @@ import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { homeSnapshot } from '@/lib/home-snapshot';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { usePageControls, usePageList } from '@/lib/page-controls';
 
 /*
  * The organisation's home.
@@ -92,6 +94,7 @@ function daysFromNow(iso: string | null, now: number): number | null {
 
 
 export default function IncubatorDashboard() {
+  const router = useRouter();
   const fmtDate = useDateFormat();
   const shortDate = (iso: string | null) => (iso ? fmtDate(iso, { day: 'numeric', month: 'short' }) : '—');
   const { hasSession, mounted } = useSession();
@@ -221,6 +224,31 @@ export default function IncubatorDashboard() {
     },
     actions: ['get_org_programs', 'get_org_applications'],
   }));
+
+  usePageList([
+    {
+      id: 'applications_waiting',
+      labelEn: 'Applications waiting',
+      labelEl: 'Αιτήσεις σε αναμονή',
+      rows: !mounted || loading ? undefined : waiting.map(({ row, program }) => `${row.user.profile?.displayName ?? 'Applicant'} · ${program.title}`),
+      rowsEl: !mounted || loading ? undefined : waiting.map(({ row, program }) => `${row.user.profile?.displayName ?? 'Αιτών'} · ${program.title}`),
+      sample: isPreviewDemo(),
+    },
+    {
+      id: 'organisation_programs',
+      labelEn: 'Organisation programs',
+      labelEl: 'Προγράμματα οργανισμού',
+      rows: !mounted || loading ? undefined : programs.map((p) => `${p.title} · ${STATUS_BADGE[p.status]?.en ?? p.status} · ${p.participantCount}/${p.capacity ?? '—'} enrolled`),
+      rowsEl: !mounted || loading ? undefined : programs.map((p) => `${p.title} · ${STATUS_BADGE[p.status]?.el ?? p.status} · ${p.participantCount}/${p.capacity ?? '—'} εγγεγραμμένοι`),
+      sample: isPreviewDemo(),
+    },
+  ]);
+
+  usePageControls([
+    { id: 'open_applications', labelEn: 'Review program applications', labelEl: 'Έλεγχος αιτήσεων προγραμμάτων', writes: false, run: () => router.push('/org/applications') },
+    { id: 'open_programs', labelEn: 'Manage programs', labelEl: 'Διαχείριση προγραμμάτων', writes: false, run: () => router.push('/org/programs') },
+    { id: 'open_startups', labelEn: 'Open portfolio startups', labelEl: 'Άνοιγμα startups οργανισμού', writes: false, run: () => router.push('/org/startups') },
+  ]);
 
   if (!mounted) {
     return (

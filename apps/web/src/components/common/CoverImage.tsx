@@ -34,7 +34,7 @@ export function CoverImage({ src, eager = false, className }: { src: string | nu
  * stands in the row's mark place instead. Without a picture, or when it fails,
  * the row's own mark shows, as before.
  */
-export function CoverThumb({ src, fallback }: { src: string | null | undefined; fallback: ReactNode }) {
+export function CoverThumb({ src, fallback, className }: { src: string | null | undefined; fallback: ReactNode; /** Another box than the row's 64x40, e.g. the size of the marks it stands among. */ className?: string }) {
   const cover = useCoverFailed(src);
   if (!src || cover.failed) return <>{fallback}</>;
   return (
@@ -47,7 +47,7 @@ export function CoverThumb({ src, fallback }: { src: string | null | undefined; 
       referrerPolicy="no-referrer"
       data-cover-thumb=""
       data-card-mark=""
-      className="h-10 w-16 shrink-0 rounded-lg object-cover"
+      className={cn('shrink-0 rounded-lg object-cover', className ?? 'h-10 w-16')}
     />
   );
 }

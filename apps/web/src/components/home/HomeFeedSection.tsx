@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -11,21 +11,27 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { MatchConnection } from '@/components/common/MatchCard';
 import { getMeProfile, getPersonalizedFeed, listEvents, listPrograms, searchProfiles, type SearchHit } from '@/lib/api';
 import { listCommitmentCards } from '@/lib/commitments-api';
 import { curateFeed, type FeedItem } from '@/lib/home-feed';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { explainMatch, viewerFacts } from '@/lib/match-explain';
+import { usePageControls, usePageList } from '@/lib/page-controls';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { getUpdatesFeed } from '@/lib/updates-api';
 import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
 
 const DAY = 86_400_000;
-const FIRST = 12;
+const FIRST = 8;
 /** Joined within this many days: after that someone is simply a member. */
 const NEW_MEMBER_DAYS = 30;
 
-/** One entry to a row (docs §118): who, why it is here, one way in, what it says, its picture. */
+/**
+ * One entry to a card (docs §118): who, why it is here, one way in, what it
+ * says, and its cover picture closing the card at a comfortable ~220px height
+ * so visual cards breathe without filling a whole screen each.
+ */
 function FeedCard({ item }: { item: FeedItem }) {
   return (
     <article data-feed-item={item.kind}>
@@ -52,7 +58,7 @@ function FeedCard({ item }: { item: FeedItem }) {
           />
           {item.body ? <p className="card-body line-clamp-3 max-w-[80ch] text-muted-foreground first-letter:uppercase">{item.body}</p> : null}
         </CardContent>
-        <CoverImage src={item.image} className="sm:max-h-[420px]" />
+        <CoverImage src={item.image} className="sm:max-h-[220px]" />
       </Card>
     </article>
   );
@@ -64,12 +70,25 @@ function FeedCard({ item }: { item: FeedItem }) {
  * platform really holds appears, and nothing already shown higher on the page
  * appears twice.
  */
-export function HomeFeedSection({ people, shownAbove }: { people: readonly SearchHit[]; shownAbove: ReadonlySet<string> }) {
+export function HomeFeedSection({ people, shownAbove, connectionOf }: { people: readonly SearchHit[]; shownAbove: ReadonlySet<string>; /** Where the reader stands with a post's author: only a connection is "your network". */ connectionOf?: (userId: string) => MatchConnection }) {
   const fmtDate = useDateFormat();
   const [all, setAll] = useState(false);
-  const opts = { staleTime: 60_000, retry: 0 } as const;
+  // The feed's own reads wait until the section is near the screen: the people
+  // and the steps above it are what a first visit is for.
+  const section = useRef<HTMLElement>(null);
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const node = section.current;
+    if (!node || typeof IntersectionObserver === 'undefined') { setNear(true); return undefined; }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) { setNear(true); observer.disconnect(); }
+    }, { rootMargin: '600px 0px' });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  const opts = { staleTime: 60_000, retry: 0, enabled: near } as const;
 
-  const profile = useQuery({ queryKey: queryKeys.me.profile(), queryFn: getMeProfile, ...opts });
+  const profile = useQuery({ queryKey: queryKeys.me.profile(), queryFn: getMeProfile, staleTime: 60_000, retry: 0 });
   const members = useQuery({ queryKey: qk('search', 'profiles', 'newest'), queryFn: () => searchProfiles({ sortBy: 'recent', limit: 8 }), ...opts });
   const updates = useQuery({ queryKey: qk('founder-updates', 'feed'), queryFn: getUpdatesFeed, ...opts });
   const needs = useQuery({ queryKey: qk('commitments', 'cards', 'home-feed'), queryFn: () => listCommitmentCards({}), ...opts });
@@ -77,7 +96,7 @@ export function HomeFeedSection({ people, shownAbove }: { people: readonly Searc
   const programs = useQuery({ queryKey: qk('programs', 'home-feed'), queryFn: () => listPrograms({ limit: 6 }), ...opts });
   const posts = useQuery({ queryKey: qk('feed', 'home-feed'), queryFn: () => getPersonalizedFeed({ limit: 6 }), ...opts });
 
-  const loading = [members, updates, needs, events, programs, posts].some((q) => q.isLoading);
+  const loading = !near || [members, updates, needs, events, programs, posts].some((q) => q.isLoading);
 
   const items = useMemo(() => {
     const now = Date.now();
@@ -193,7 +212,9 @@ export function HomeFeedSection({ people, shownAbove }: { people: readonly Searc
         id: `post-${p.id}`,
         kind: 'post',
         at: Date.parse(p.createdAt) || 0,
-        why: { en: 'From your network', el: 'Από το δίκτυό σας' },
+        why: connectionOf?.(p.author.id) === 'connected'
+          ? { en: 'From your network', el: 'Από το δίκτυό σας' }
+          : { en: 'From the community', el: 'Από την κοινότητα' },
         title: p.author.displayName,
         subtitle: p.author.headline,
         body: p.content,
@@ -206,23 +227,56 @@ export function HomeFeedSection({ people, shownAbove }: { people: readonly Searc
     });
 
     return list;
-  }, [profile.data, people, shownAbove, members.data, updates.data, needs.data, events.data, programs.data, posts.data, fmtDate]);
+  }, [profile.data, people, shownAbove, members.data, updates.data, needs.data, events.data, programs.data, posts.data, fmtDate, connectionOf]);
 
   const curated = useMemo(() => curateFeed(items, all ? items.length : FIRST), [items, all]);
   const more = items.length - curated.length;
+
+  // What is around the reader, as the entries say it, and the one control.
+  const KIND = {
+    person: { en: 'person', el: 'άνθρωπος' },
+    member: { en: 'new member', el: 'νέο μέλος' },
+    update: { en: 'founder update', el: 'ενημέρωση ιδρυτή' },
+    need: { en: 'need card', el: 'κάρτα ανάγκης' },
+    event: { en: 'event', el: 'εκδήλωση' },
+    program: { en: 'programme', el: 'πρόγραμμα' },
+    post: { en: 'post', el: 'ανάρτηση' },
+  } as const;
+  const rowOf = (item: FeedItem, lang: 'en' | 'el') => [KIND[item.kind]?.[lang], item.title, item.subtitle, item.why[lang]].filter(Boolean).join(' · ');
+  usePageList([
+    {
+      id: 'around_you',
+      labelEn: 'Around you',
+      labelEl: 'Γύρω σας',
+      rows: loading ? undefined : curated.map((item) => rowOf(item, 'en')),
+      rowsEl: loading ? undefined : curated.map((item) => rowOf(item, 'el')),
+      total: items.length,
+    },
+  ]);
+  usePageControls([
+    {
+      id: 'show_all_around_you',
+      labelEn: 'Show every entry around you',
+      labelEl: 'Εμφάνιση όλων των καταχωρίσεων γύρω σας',
+      writes: false,
+      unavailableEn: more > 0 ? undefined : 'Every entry is already shown.',
+      unavailableEl: more > 0 ? undefined : 'Εμφανίζονται ήδη όλες οι καταχωρίσεις.',
+      run: () => setAll(true),
+    },
+  ]);
 
   // With nothing to show the section is absent: the page above already says what to do next.
   if (!loading && curated.length === 0) return null;
 
   return (
-    <section className="space-y-3" aria-labelledby="home-around-you" data-home-feed="">
+    <section ref={section} className="space-y-3" aria-labelledby="home-around-you" data-home-feed="">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 id="home-around-you" className="card-title"><BilingualText en="Around you" el="Γύρω σας" compact /></h2>
+        <h2 id="home-around-you" className="card-title font-semibold"><BilingualText en="Around you" el="Γύρω σας" compact /></h2>
         <Link href="/feed" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
           <BilingualText en="The whole feed" el="Όλη η ροή" compact />
         </Link>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-4" data-home-quiet="">
         {loading && curated.length === 0
           ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-28 rounded-2xl" />)
           : curated.map((item) => <FeedCard key={item.id} item={item} />)}

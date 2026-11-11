@@ -4,6 +4,7 @@
 import { StatusText } from '@/components/common/StatusText';
 import { BilingualText } from '@/components/common/BilingualText';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Building2,
   Users,
@@ -15,10 +16,10 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTenant } from '@/components/providers/TenantContext';
-import { RelativeTime } from '@/components/common/RelativeTime';
+import { RelativeTime, useHydrated } from '@/components/common/RelativeTime';
 import { formatRelativeTime, initialsOf } from '@/lib/utils';
 import { getTenantMembers, listEvents, listOrganizationPrograms } from '@/lib/api';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
@@ -36,6 +37,7 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { qk } from '@/lib/query-keys';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { usePageControls, usePageList } from '@/lib/page-controls';
 
 const ChartFallback = () => <Skeleton className="h-[160px] w-full rounded-lg" />;
 const MemberGrowthChart = dynamic(
@@ -48,6 +50,9 @@ const ProgramEngagementChart = dynamic(
 );
 
 export default function TenantDashboardPage() {
+  const router = useRouter();
+  const hydrated = useHydrated();
+  const [mountNow] = useState(() => Date.now());
   const fmtDate = useDateFormat();
   /*
    * The workspace's home, from its own reads.
@@ -97,15 +102,17 @@ export default function TenantDashboardPage() {
   };
 
   // Members at the end of each of the last six months, from join dates.
-  const now = Date.now();
-  const memberGrowth = Array.from({ length: 6 }, (_, i) => {
-    const end = new Date(now);
-    end.setDate(1);
-    end.setMonth(end.getMonth() - (5 - i) + 1);
-    end.setHours(0, 0, 0, 0);
-    const label = fmtDate(end.getTime() - 1, { month: 'short' });
-    return { month: label, members: members.filter((m) => Date.parse(m.joinedAt) < Math.min(end.getTime(), now + 1)).length };
-  });
+  const memberGrowth = useMemo(() => {
+    if (!hydrated) return [];
+    return Array.from({ length: 6 }, (_, i) => {
+      const end = new Date(mountNow);
+      end.setDate(1);
+      end.setMonth(end.getMonth() - (5 - i) + 1);
+      end.setHours(0, 0, 0, 0);
+      const label = fmtDate(end.getTime() - 1, { month: 'short' });
+      return { month: label, members: members.filter((m) => Date.parse(m.joinedAt) < Math.min(end.getTime(), mountNow + 1)).length };
+    });
+  }, [hydrated, mountNow, fmtDate, members]);
   const engagement = runningOrNext.map((p) => ({
     name: p.title.split(' · ')[0].replace(/ (Accelerator|Bootcamp|Track)$/, '').slice(0, 14),
     applications: p.applicationCount,
@@ -138,6 +145,37 @@ export default function TenantDashboardPage() {
     }),
     workshop: event.eventType === 'workshop',
   }));
+
+  usePageList([
+    {
+      id: 'running_programs',
+      labelEn: 'Running and upcoming programs',
+      labelEl: 'Ενεργά και προσεχή προγράμματα',
+      rows: programsLoading ? undefined : runningOrNext.map((p) => `${p.title} · ${p.participantCount}/${p.capacity ?? '—'} places · ${p.applicationCount} applications`),
+      rowsEl: programsLoading ? undefined : runningOrNext.map((p) => `${p.title} · ${p.participantCount}/${p.capacity ?? '—'} θέσεις · ${p.applicationCount} αιτήσεις`),
+    },
+    {
+      id: 'recent_members',
+      labelEn: 'Recent workspace members',
+      labelEl: 'Πρόσφατα μέλη χώρου',
+      rows: !membersData ? undefined : recentMembers.map((m) => `${m.name} · ${m.role}`),
+      rowsEl: !membersData ? undefined : recentMembers.map((m) => `${m.name} · ${m.role}`),
+      total: members.length,
+    },
+    {
+      id: 'upcoming_events',
+      labelEn: 'Upcoming events',
+      labelEl: 'Επόμενες εκδηλώσεις',
+      rows: !eventsData ? undefined : upcomingEvents.map((e) => `${e.name} · ${e.date}`),
+      rowsEl: !eventsData ? undefined : upcomingEvents.map((e) => `${e.name} · ${e.date}`),
+    },
+  ]);
+
+  usePageControls([
+    { id: 'open_members', labelEn: 'Manage workspace members', labelEl: 'Διαχείριση μελών χώρου', writes: false, run: () => router.push('/tenant/members') },
+    { id: 'open_programs', labelEn: 'Manage workspace programs', labelEl: 'Διαχείριση προγραμμάτων χώρου', writes: false, run: () => router.push('/tenant/programs') },
+    { id: 'open_settings', labelEn: 'Open workspace settings', labelEl: 'Άνοιγμα ρυθμίσεων χώρου', writes: false, run: () => router.push('/tenant/settings') },
+  ]);
 
   return (
     <AppShell

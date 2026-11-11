@@ -19,14 +19,12 @@ export const ANALYTICS_STRINGS: Record<string, BilingualPair> = {
     en: 'Recorded counts, not attributed conversion rates.',
     el: 'Καταγεγραμμένα πλήθη, όχι τεκμηριωμένα ποσοστά μετατροπής.',
   },
-  funnel_untracked_requests: {
-    en: 'Connection requests are not counted yet — open Discover to send some.',
-    el: 'Τα αιτήματα σύνδεσης δεν μετρώνται ακόμη — ανοίξτε την Εξερεύνηση για να στείλετε.',
+  funnel_untracked: {
+    en: 'Connection requests and conversations started are not counted yet.',
+    el: 'Τα αιτήματα σύνδεσης και οι συνομιλίες που ξεκίνησαν δεν μετρώνται ακόμη.',
   },
-  funnel_untracked_conversations: {
-    en: 'Conversations started are not counted yet — open Messages to reply.',
-    el: 'Οι συνομιλίες που ξεκίνησαν δεν μετρώνται ακόμη — ανοίξτε τα Μηνύματα για να απαντήσετε.',
-  },
+  funnel_next: { en: 'Send connection requests', el: 'Στείλτε αιτήματα σύνδεσης' },
+  also_measured: { en: 'Also measured', el: 'Μετριούνται επίσης' },
   stage_views: { en: 'Profile Views', el: 'Προβολές προφίλ' },
   stage_requests: { en: 'Connection Requests', el: 'Αιτήματα σύνδεσης' },
   stage_accepted: { en: 'Accepted Connections', el: 'Αποδεκτές συνδέσεις' },
@@ -78,7 +76,6 @@ export const ANALYTICS_STRINGS: Record<string, BilingualPair> = {
   build_profile: { en: 'Build your profile', el: 'Χτίστε το προφίλ σας' },
   grow_network: { en: 'Grow your network', el: 'Αναπτύξτε το δίκτυό σας' },
   follow_up: { en: 'Follow up with people you know', el: 'Συνεχίστε με όσους ήδη γνωρίζετε' },
-  plan_peak_hour: { en: 'Plan around your peak hour', el: 'Προγραμματίστε στην ώρα αιχμής' },
   reply_faster: { en: 'Reply in Messages', el: 'Απαντήστε στα Μηνύματα' },
   window_highlights: { en: 'This window', el: 'Αυτό το διάστημα' },
   export_csv: { en: 'CSV', el: 'CSV' },
