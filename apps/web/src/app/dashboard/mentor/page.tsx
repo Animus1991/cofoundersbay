@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Calendar,
   DollarSign,
@@ -47,6 +49,7 @@ import { formatFee } from '@/lib/mentor-fee';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { homeSnapshot, mentorHomePriority } from '@/lib/home-snapshot';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { usePageControls, usePageList } from '@/lib/page-controls';
 
 type MenteeRow = { id: string; name: string; startup: string | null; sessionsCompleted: number; avatarUrl: string | null };
 type SessionRow = { id: string; menteeName: string; scheduledAt: string; duration: number; meetingUrl?: string | null };
@@ -154,6 +157,8 @@ function RequestRowItem({ request }: { request: RequestRow }) {
 }
 
 export default function MentorDashboard() {
+  const router = useRouter();
+  const [nowMs] = useState(() => Date.now());
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
 
@@ -286,7 +291,7 @@ export default function MentorDashboard() {
   const requestedIds = new Set(requestedBookings.map((b) => b.id));
   const nextSession = upcomingAll.find((s) => !requestedIds.has(s.id));
   const nextSessionMinsAway = nextSession
-    ? Math.round((new Date(nextSession.scheduledAt).getTime() - Date.now()) / 60000)
+    ? Math.round((new Date(nextSession.scheduledAt).getTime() - nowMs) / 60000)
     : null;
   const sessionSoon = Boolean(
     nextSession && nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0,
@@ -308,6 +313,36 @@ export default function MentorDashboard() {
     },
     actions: ['get_mentorship_sessions', 'get_mentor_requests'],
   }));
+
+  usePageList([
+    {
+      id: 'mentorship_requests',
+      labelEn: 'Mentorship requests',
+      labelEl: 'Αιτήματα καθοδήγησης',
+      rows: !mounted || requestsLoading ? undefined : pendingRequests.map((r) => `${r.name}${r.message ? ` · ${r.message}` : ''}`),
+      rowsEl: !mounted || requestsLoading ? undefined : pendingRequests.map((r) => `${r.name}${r.message ? ` · ${r.message}` : ''}`),
+    },
+    {
+      id: 'upcoming_sessions',
+      labelEn: 'Upcoming sessions',
+      labelEl: 'Επόμενες συνεδρίες',
+      rows: !mounted || !sessionsKnown ? undefined : upcomingAll.map((s) => `${s.menteeName} · ${sessionWhen(s.scheduledAt, 'en-GB')} · ${s.duration} min`),
+      rowsEl: !mounted || !sessionsKnown ? undefined : upcomingAll.map((s) => `${s.menteeName} · ${sessionWhen(s.scheduledAt, 'el-GR')} · ${s.duration} λεπτά`),
+    },
+    {
+      id: 'active_mentees',
+      labelEn: 'Active mentees',
+      labelEl: 'Ενεργοί καθοδηγούμενοι',
+      rows: !mounted || !menteesKnown ? undefined : mentees.map((m) => `${m.name}${m.startup ? ` · ${m.startup}` : ''} · ${m.sessionsCompleted} sessions`),
+      rowsEl: !mounted || !menteesKnown ? undefined : mentees.map((m) => `${m.name}${m.startup ? ` · ${m.startup}` : ''} · ${m.sessionsCompleted} συνεδρίες`),
+    },
+  ]);
+
+  usePageControls([
+    { id: 'open_requests', labelEn: 'Review mentorship requests', labelEl: 'Εξέταση αιτημάτων καθοδήγησης', writes: false, run: () => router.push('/mentor/requests') },
+    { id: 'open_sessions', labelEn: 'Open mentor sessions', labelEl: 'Άνοιγμα συνεδριών μέντορα', writes: false, run: () => router.push('/mentor/sessions') },
+    { id: 'open_availability', labelEn: 'Manage mentor availability', labelEl: 'Διαχείριση διαθεσιμότητας μέντορα', writes: false, run: () => router.push('/mentor/availability') },
+  ]);
 
   if (!mounted) {
     return (

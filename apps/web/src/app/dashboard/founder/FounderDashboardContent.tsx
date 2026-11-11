@@ -2,10 +2,14 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { usePageRail } from '@/components/layout/PageRailContext';
+import { usePageControls, usePageList } from '@/lib/page-controls';
+import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -370,6 +374,8 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
 }
 
 export default function FounderDashboardContent() {
+  const router = useRouter();
+  const { openRailSection } = usePageRail();
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
   const { primary } = useLanguagePreference();
@@ -650,6 +656,62 @@ export default function FounderDashboardContent() {
     checklistDismissed,
     full: false,
   });
+
+  usePageList([
+    {
+      id: 'open_milestones',
+      labelEn: 'Open milestones',
+      labelEl: 'Ανοιχτά ορόσημα',
+      rows: !mounted || milestonesLoading
+        ? undefined
+        : openMilestonesByDue.map((m) => `${m.titleEn} · ${m.progress}%${isPastDue(m) ? ' · overdue' : m.dueDate ? ` · due ${formatShortDate(m.dueDate, 'en')}` : ''}`),
+      rowsEl: !mounted || milestonesLoading
+        ? undefined
+        : openMilestonesByDue.map((m) => `${m.titleEl} · ${m.progress}%${isPastDue(m) ? ' · εκπρόθεσμο' : m.dueDate ? ` · λήξη ${formatShortDate(m.dueDate, 'el')}` : ''}`),
+      total: milestones.length,
+      sample: usingDemoMilestones,
+    },
+    {
+      id: 'founder_progress_dimensions',
+      labelEn: 'Founder progress dimensions',
+      labelEl: 'Διαστάσεις προόδου ιδρυτή',
+      rows: !mounted || !vrs?.dimensions ? undefined : vrs.dimensions.map((d) => `${d.label} · ${d.score}%`),
+      rowsEl: !mounted || !vrs?.dimensions ? undefined : vrs.dimensions.map((d) => `${ventureDimensionEl(d.key, d.label)} · ${d.score}%`),
+    },
+  ]);
+
+  usePageControls([
+    {
+      id: 'open_lowest_progress',
+      labelEn: 'Open lowest founder progress dimension',
+      labelEl: 'Άνοιγμα χαμηλότερης διάστασης προόδου',
+      writes: false,
+      unavailableEn: vrs?.lowestDimension?.href ? undefined : 'Founder progress has not loaded yet.',
+      unavailableEl: vrs?.lowestDimension?.href ? undefined : 'Ο βαθμός προόδου δεν έχει φορτώσει ακόμη.',
+      run: () => { if (vrs?.lowestDimension?.href) router.push(vrs.lowestDimension.href); },
+    },
+    {
+      id: 'open_milestones_page',
+      labelEn: 'Manage milestones',
+      labelEl: 'Διαχείριση ορόσημων',
+      writes: false,
+      run: () => router.push('/milestones'),
+    },
+    {
+      id: 'open_snapshot_panel',
+      labelEn: 'Open venture snapshot panel',
+      labelEl: 'Άνοιγμα στιγμιοτύπου εγχειρήματος',
+      writes: false,
+      run: () => openRailSection('snapshot'),
+    },
+    {
+      id: 'open_commitments_panel',
+      labelEn: 'Open commitments panel',
+      labelEl: 'Άνοιγμα δεσμεύσεων',
+      writes: false,
+      run: () => openRailSection('commitments'),
+    },
+  ]);
 
   if (!mounted) {
     return (
