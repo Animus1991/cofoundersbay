@@ -64,6 +64,11 @@ afterEach(() => {
   clients.splice(0).forEach((client) => client.clear());
 });
 
+/** The dimensions are a list, the weakest open (Funding in the showcase); a test opens the one it reads. */
+async function openDimension(name: string) {
+  fireEvent.click(await screen.findByRole('button', { name: new RegExp(`Show the criteria: ${name},`) }));
+}
+
 describe('live readiness and explicit showcase isolation', () => {
   it('shows an actionable missing-workspace state without any fabricated criteria or request', async () => {
     mount();
@@ -140,6 +145,7 @@ describe('live readiness and explicit showcase isolation', () => {
     localStorage.setItem('cfb_demo_data', '1');
     mount();
 
+    await openDimension('Team');
     const criterion = await screen.findByRole('button', { name: /Co-founder identified/ });
     expect((criterion as HTMLButtonElement).disabled).toBe(false);
 
@@ -156,6 +162,7 @@ describe('live readiness and explicit showcase isolation', () => {
   it('reflects a demo criterion changed by the assistant without a reload', async () => {
     localStorage.setItem('cfb_demo_data', '1');
     mount();
+    await openDimension('Team');
     await screen.findByRole('button', { name: /Co-founder identified/ });
     expect(screen.getAllByText('3/5').length).toBeGreaterThan(0);
 
@@ -171,7 +178,8 @@ describe('live readiness and explicit showcase isolation', () => {
     mount();
 
     // Market ships two of five met, with the third criterion unmet and visible
-    // without expanding the card.
+    // once the dimension is open.
+    await openDimension('Market');
     expect(screen.getAllByText('2/5').length).toBeGreaterThan(0);
     fireEvent.click(await screen.findByRole('button', { name: /Competitive analysis completed/ }));
 
@@ -192,6 +200,11 @@ describe('live readiness and explicit showcase isolation', () => {
   it('says what each readiness control is and does', async () => {
     localStorage.setItem('cfb_demo_data', '1');
     mount();
+    // The weakest dimension opens by itself; the others are one row each.
+    const funding = await screen.findByRole('button', { name: /Hide the criteria: Funding Readiness,/ });
+    expect(funding.getAttribute('aria-expanded')).toBe('true');
+    expect(screen.queryByRole('button', { name: /Co-founder identified/ })).toBeNull();
+    await openDimension('Team');
     const met = await screen.findByRole('button', { name: /Co-founder identified/ });
     expect(met.closest('[data-keep-icon]')).toBe(met);
     expect(screen.getByText(/The % beside it is its share/)).toBeTruthy();
@@ -211,6 +224,7 @@ describe('live readiness and explicit showcase isolation', () => {
   it('lets a live account explicitly view sample readiness without a workspace mutation', async () => {
     mount();
     fireEvent.click(await screen.findByRole('button', { name: 'View demo showcase' }));
+    await openDimension('Team');
     const criterion = await screen.findByRole('button', { name: /Co-founder identified/ });
     fireEvent.click(criterion);
     expect(updateReadinessCriterion).not.toHaveBeenCalled();

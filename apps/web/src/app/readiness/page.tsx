@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   CheckCircle2,
   AlertCircle,
+  ChevronDown,
   ChevronRight,
   RefreshCw,
   Loader2,
@@ -28,7 +29,6 @@ import { bilingualInline, bilingualAria, formatShortDate } from '@/lib/i18n/form
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CardHead } from '@/components/common/CardAnatomy';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -470,7 +470,12 @@ function DimensionCard({
   canToggle,
   onToggle,
   isMutating,
+  open,
+  onOpenChange,
 }: {
+  /** Open shows the criteria and the recommendation; closed is one row: name, state, bar, figure. */
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   dim: DimData;
   // Whether a criterion can be changed, stated outright. This used to be the
   // workspace id doing double duty, which is why the demo — which has no
@@ -519,10 +524,12 @@ function DimensionCard({
                 pill under it. At the head's right the two-language pill took
                 half of a narrow card and squeezed "Funding Readiness" onto
                 three lines. */}
-            <CardHead
-              title={(
-                <span className="inline-flex min-w-0 max-w-full items-center gap-2">
-                  <span className="min-w-0"><BilingualText en={dim.labelEn} el={dim.labelEl} compact wrap /></span>
+            {/* One row says the dimension: its name, its state, the bar and the
+                figure. The whole of the bar's side is the control that opens
+                it, so six dimensions are six lines until one is asked for. */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <div className="flex min-w-0 items-center gap-2 sm:w-80 sm:shrink-0">
+                <h3 className="card-title min-w-0 break-words text-foreground"><BilingualText en={dim.labelEn} el={dim.labelEl} compact wrap /></h3>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -540,32 +547,39 @@ function DimensionCard({
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                </span>
-              )}
-              meta={(
-                <Badge variant="outline" className={cn('mt-1 border text-xs', colors.chip)}>
+                <Badge variant="outline" className={cn('shrink-0 border text-xs', colors.chip)}>
                   <BilingualText en={statusCopy.en} el={statusCopy.el} compact />
                 </Badge>
-              )}
-            />
-
-            <div className="mt-3.5 flex items-center gap-3">
-              <Progress
-                value={pct}
-                label={bilingualAria(readinessOf(dim.labelEn), readinessOfEl(dim.labelEl))}
-                className="h-2 min-w-0 flex-1"
-              />
-              <span className="w-9 shrink-0 text-right text-sm font-semibold tabular-nums">{pct}%</span>
+              </div>
+              <button
+                type="button"
+                aria-expanded={open}
+                aria-controls={`dim-${dim.key}-body`}
+                aria-label={bilingualAria(
+                  `${open ? 'Hide' : 'Show'} the criteria: ${dim.labelEn}, ${pct}%, ${done} of ${dim.criteria.length} met`,
+                  `${open ? 'Απόκρυψη' : 'Εμφάνιση'} κριτηρίων: ${dim.labelEl}, ${pct}%, ${done} από ${dim.criteria.length}`,
+                )}
+                data-keep-icon=""
+                data-dim-toggle={dim.key}
+                onClick={() => onOpenChange(!open)}
+                className="flex min-h-11 min-w-0 flex-[1_1_14rem] items-center gap-3 rounded-lg text-left transition-colors hover:bg-secondary/60 focus-ring"
+              >
+                <Progress
+                  value={pct}
+                  label={bilingualAria(readinessOf(dim.labelEn), readinessOfEl(dim.labelEl))}
+                  className="h-2 min-w-0 flex-1"
+                />
+                <span className="w-9 shrink-0 text-right text-sm font-semibold tabular-nums">{pct}%</span>
+                <span className="w-9 shrink-0 text-right text-xs tabular-nums text-muted-foreground">{done}/{dim.criteria.length}</span>
+                <ChevronDown className={cn('icon-sm shrink-0 text-muted-foreground transition-transform', open && 'rotate-180')} aria-hidden="true" />
+              </button>
             </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              <span className="tabular-nums">{done}/{dim.criteria.length}</span>{' '}
-              <BilingualText en={readinessEn('criteria_completed')} el={readinessEl('criteria_completed')} compact />
-            </p>
 
+            <div id={`dim-${dim.key}-body`} hidden={!open} className={cn(open && 'md:grid md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:gap-8')}>
             {/* `mb-4` here, not `mt-4` on the box below: that box carries
                 `mt-auto` so it settles at the foot of the card, and an
                 explicit top margin would cancel it. */}
-            <div id={`dim-${dim.key}-criteria`} className="mt-4 mb-4 space-y-1.5">
+            <div id={`dim-${dim.key}-criteria`} className="mt-3 mb-4 space-y-1.5 md:mb-0">
               {(expanded ? dim.criteria : dim.criteria.slice(0, 3)).map((c) => (
                 <button
                   key={c.id}
@@ -616,7 +630,7 @@ function DimensionCard({
                 thing still open, which is more useful than silence and fills
                 the space honestly. */}
             {status === 'excellent' && (
-              <div className="mt-auto space-y-2.5 border-t border-border pt-3">
+              <div className="space-y-2.5 border-t border-border pt-3 md:mt-3 md:self-start md:border-t-0 md:pt-2.5">
                 <p className="mb-1.5 flex items-center gap-2 text-xs font-semibold">
                   <CheckCircle2 className={cn('icon-sm shrink-0', STATUS.success.icon)} />
                   <BilingualText
@@ -649,7 +663,7 @@ function DimensionCard({
             )}
 
             {dim.recommendations.length > 0 && status !== 'excellent' && (
-              <div className="mt-auto space-y-2.5 border-t border-border pt-3">
+              <div className="space-y-2.5 border-t border-border pt-3 md:mt-3 md:self-start md:border-t-0 md:pt-2.5">
                 {/* Caption, the recommendation as the body, then the next
                     criterion as a secondary line: three levels where a
                     semibold label, a semibold lead-in and muted body were five. */}
@@ -670,6 +684,7 @@ function DimensionCard({
                 <AIInsightButton prompt={recPrompt} className="h-8" aboutEn={readinessOf(dim.labelEn)} aboutEl={readinessOfEl(dim.labelEl)} />
               </div>
             )}
+            </div>
         </div>
       </CardContent>
     </Card>
@@ -700,7 +715,9 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
             and the one that matters on a phone, where the cell does not stretch
             and `h-full` resolves to auto. (`basis-[280px]` would be dead here —
             `flex-1` is shorthand for `flex: 1 1 0%` and resets the basis.) */}
-        <div className="min-h-[280px] flex-1">
+        {/* A stated height: on Benchmarks no row stretches this card, and a
+            chart at 100% of an auto height draws nothing. */}
+        <div className="h-[320px]">
           <ReadinessRadarChartInner
             height="100%"
             data={data}
@@ -781,6 +798,23 @@ export default function ReadinessPage() {
   const [mode, setMode] = useState<'live' | 'demo' | null>(null);
   const [demoOverlay, setDemoOverlay] = useState<ReadinessOverlay>({});
   const isDemo = mode === 'demo';
+  // Which dimensions the reader opened or closed; the weakest is open until they say otherwise.
+  const [dimOpenChoice, setDimOpenChoice] = useState<Record<string, boolean>>({});
+  const setDimOpen = (key: string, open: boolean) => setDimOpenChoice((before) => ({ ...before, [key]: open }));
+  // The order is taken once per assessment shape: sorted live, a dimension
+  // would move away under the reader as their ticks raised its score.
+  const [dimOrder, setDimOrder] = useState<{ of: string; keys: string[] }>({ of: '', keys: [] });
+  // A link to a dimension (the head's "Next to tick", the side panel's plan,
+  // another page) opens it: a closed row at the end of a jump says nothing.
+  useEffect(() => {
+    const openFromHash = () => {
+      const key = /^#dim-(.+)$/.exec(window.location.hash)?.[1];
+      if (key) setDimOpenChoice((before) => ({ ...before, [decodeURIComponent(key)]: true }));
+    };
+    openFromHash();
+    window.addEventListener('hashchange', openFromHash);
+    return () => window.removeEventListener('hashchange', openFromHash);
+  }, []);
   // Read here, with the component's other context: the Priority-actions tab
   // sends the reader to the rail's AI panel rather than duplicating it.
   const { openRailSection } = usePageRail();
@@ -1015,6 +1049,12 @@ export default function ReadinessPage() {
   const doneCriteria = dimensions.reduce((n, d) => n + d.criteria.filter((c) => c.completed).length, 0);
   const totalCriteria = dimensions.reduce((n, d) => n + d.criteria.length, 0);
   const weakDims = dimensions.filter((dimension) => dimension.score / dimension.maxScore < 0.6);
+  const dimSet = dimensions.map((d) => d.key).join('|');
+  const weakestFirst = () => dimensions.slice().sort((a, b) => a.score / a.maxScore - b.score / b.maxScore).map((d) => d.key);
+  const order = dimOrder.of === dimSet ? dimOrder.keys : weakestFirst();
+  if (dimOrder.of !== dimSet) setDimOrder({ of: dimSet, keys: order });
+  const dimensionsByNeed = dimensions.slice().sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+  const openDims = new Set(dimensions.filter((d) => dimOpenChoice[d.key] ?? d.key === order[0]).map((d) => d.key));
   const nextOpen = dimensions
     .flatMap((d) => d.criteria
       .filter((c) => !c.completed)
@@ -1179,7 +1219,7 @@ export default function ReadinessPage() {
             second Ask AI here repeated it. */}
         <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs" asChild>
-        <Link href={`#dim-${item.dimKey}`}>
+        <Link href={`#dim-${item.dimKey}`} onClick={() => setDimOpen(item.dimKey, true)}>
         <BilingualText en={readinessEn('jump_to')} el={readinessEl('jump_to')} compact />
         </Link>
         </Button>
@@ -1362,6 +1402,7 @@ export default function ReadinessPage() {
               {nextOpen && (
                 <Link
                   href={`#dim-${nextOpen.dimKey}`}
+                  onClick={() => setDimOpen(nextOpen.dimKey, true)}
                   className="axis-row block self-stretch rounded-md py-2 text-left transition-colors hover:bg-accent focus-ring"
                 >
                   <p className="text-xs text-muted-foreground">
@@ -1390,7 +1431,7 @@ export default function ReadinessPage() {
                   </p>
                   <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-1 text-xs">
                     {weakDims.slice().sort((a, b) => a.score / a.maxScore - b.score / b.maxScore).map((d) => (
-                      <Link key={d.key} href={`#dim-${d.key}`} className="tap-extend-y rounded-sm font-medium underline-offset-2 hover:underline focus-ring">
+                      <Link key={d.key} href={`#dim-${d.key}`} onClick={() => setDimOpen(d.key, true)} className="tap-extend-y rounded-sm font-medium underline-offset-2 hover:underline focus-ring">
                         <BilingualText en={d.labelEn} el={d.labelEl} compact />
                         {' '}
                         <span className="font-normal tabular-nums text-muted-foreground">{Math.round((d.score / d.maxScore) * 100)}%</span>
@@ -1406,12 +1447,6 @@ export default function ReadinessPage() {
 
         </div>
 
-        {/* Radar + AI Insights row */}
-        <div className="grid min-w-0 flex-[1_1_24rem] grid-cols-1 gap-5">
-          <div className="min-w-0">
-            <ReadinessRadarChart dimensions={dimensions} />
-          </div>
-        </div>
         </div>
 
         {/* Tabs: dimensions and benchmarks stay in the column. Priority
@@ -1463,11 +1498,16 @@ export default function ReadinessPage() {
             <p className="mb-4 text-xs text-muted-foreground">
               <BilingualText en={readinessEn('criteria_hint')} el={readinessEl('criteria_hint')} wrap />
             </p>
-            <div className="grid grid-cols-1 min-w-0 gap-5 md:grid-cols-2">
-              {dimensions.map((dim) => (
+            {/* A list, the weakest first and open: six cards of equal weight
+                gave the strongest dimension as much of the page as the one
+                that needs the work. */}
+            <div className="grid min-w-0 grid-cols-1 gap-3" data-readiness-dimensions="">
+              {dimensionsByNeed.map((dim) => (
                 <DimensionCard
                   key={dim.key}
                   dim={dim}
+                  open={openDims.has(dim.key)}
+                  onOpenChange={(open) => setDimOpen(dim.key, open)}
                   canToggle={isDemo || (!!workspaceId && mode === 'live' && !isError)}
                   onToggle={handleToggle}
                   isMutating={toggleMutation.isPending}
@@ -1477,6 +1517,12 @@ export default function ReadinessPage() {
           </TabsContent>
 
           <TabsContent value="benchmarks" className="mt-5">
+            {/* The radar compares each dimension with the 65% line, so it
+                leads the comparisons; beside the score it was a second
+                picture of the six bars below it. */}
+            <div className="mb-5 min-w-0">
+              <ReadinessRadarChart dimensions={dimensions} />
+            </div>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Card>
                 <CardHeader>
