@@ -678,6 +678,14 @@ export default function FounderDashboardContent() {
       rows: !mounted || !vrs?.dimensions ? undefined : vrs.dimensions.map((d) => `${d.label} · ${d.score}%`),
       rowsEl: !mounted || !vrs?.dimensions ? undefined : vrs.dimensions.map((d) => `${ventureDimensionEl(d.key, d.label)} · ${d.score}%`),
     },
+    {
+      id: 'top_matches',
+      labelEn: 'Top matches',
+      labelEl: 'Κορυφαίες αντιστοιχίσεις',
+      rows: !mounted || !recommendations?.suggestions ? undefined : recommendations.suggestions.slice(0, 3).map((m) => `${m.displayName}${m.matchScore != null ? ` · ${m.matchScore}%` : ''}${m.headline ? ` · ${m.headline}` : ''}`),
+      rowsEl: !mounted || !recommendations?.suggestions ? undefined : recommendations.suggestions.slice(0, 3).map((m) => `${m.displayName}${m.matchScore != null ? ` · ${m.matchScore}%` : ''}${m.headline ? ` · ${m.headline}` : ''}`),
+      total: matchCount ?? recommendations?.suggestions?.length,
+    },
   ]);
 
   usePageControls([
@@ -924,84 +932,77 @@ export default function FounderDashboardContent() {
     </Card>
   );
 
+  const topMatchesCard = (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
+            <CfbGlyph name="matches" className="icon-sm text-muted-foreground" />
+            <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} compact />
+          </CardTitle>
+          <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
+            <Link href="/matches">
+              <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
+              <ArrowRight className="icon-sm" />
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {(recommendations?.suggestions?.length ?? 0) > 0 && (
+          <div className="card-rows">
+            {recommendations?.suggestions?.slice(0, 3).map((match: SearchHit) => (
+              <MatchPreviewRow key={match.userId} match={match} viewer={viewer} />
+            ))}
+          </div>
+        )}
+        {(recommendations?.suggestions?.length ?? 0) > 0 && (
+          <AskAiButton
+            variant="ghost"
+            className="w-full"
+            prompt={ASK.dashMatches}
+            labelEn={dashboardEn('ask_ai_matches')}
+            labelEl={dashboardEl('ask_ai_matches')}
+          />
+        )}
+        {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              <BilingualText
+                en={dashboardEn('complete_profile_for_matches')}
+                el={dashboardEl('complete_profile_for_matches')}
+                wrap
+              />
+            </p>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                <Link href="/profile/edit">
+                  <CfbGlyph name="profile" className="icon-sm" />
+                  <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
+                </Link>
+              </Button>
+              <AskAiButton
+                variant="ghost"
+                prompt={ASK.dashBetterMatches}
+                labelEn={dashboardEn('ask_ai_matches')}
+                labelEl={dashboardEl('ask_ai_matches')}
+              />
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   const rail: PageRailSection[] = [
     {
       id: 'snapshot',
-      glyph: 'wallet',
-      labelEn: 'Venture snapshot',
-      labelEl: 'Στιγμιότυπο εγχειρήματος',
+      glyph: 'shield',
+      labelEn: 'Profile strength',
+      labelEl: 'Ισχύς προφίλ',
       content: (
         <div className="space-y-4">
-          {/* Top Matches */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between gap-2">
-                <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
-                  <CfbGlyph name="matches" className="icon-sm text-muted-foreground" />
-                  <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} compact />
-                </CardTitle>
-                <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
-                  <Link href="/matches">
-                    <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
-                    <ArrowRight className="icon-sm" />
-                  </Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {(recommendations?.suggestions?.length ?? 0) > 0 && (
-                <div className="card-rows">
-                  {recommendations?.suggestions?.slice(0, 4).map((match: SearchHit) => (
-                    <MatchPreviewRow key={match.userId} match={match} viewer={viewer} />
-                  ))}
-                </div>
-              )}
-              {(recommendations?.suggestions?.length ?? 0) > 0 && (
-                <AskAiButton
-                  variant="ghost"
-                  className="w-full"
-                  prompt={ASK.dashMatches}
-                  labelEn={dashboardEn('ask_ai_matches')}
-                  labelEl={dashboardEl('ask_ai_matches')}
-                />
-              )}
-              {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
-                // The empty list's line and its two ways on, on the card's
-                // axis: a dashed box inside the card was a card in a card.
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    <BilingualText
-                      en={dashboardEn('complete_profile_for_matches')}
-                      el={dashboardEl('complete_profile_for_matches')}
-                      wrap
-                    />
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <Button variant="outline" size="sm" className="gap-1.5" asChild>
-                      <Link href="/profile/edit">
-                        <CfbGlyph name="profile" className="icon-sm" />
-                        <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
-                      </Link>
-                    </Button>
-                    <AskAiButton
-                      variant="ghost"
-                      prompt={ASK.dashBetterMatches}
-                      labelEn={dashboardEn('ask_ai_matches')}
-                      labelEl={dashboardEl('ask_ai_matches')}
-                    />
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-          {/* Profile strength — moved here from the sidebar.
-              The two columns were 1663px and 2169px, so the wider,
-              more important one ended 506px early and the page had a
-              void down its left side. This card is the one sidebar
-              item that is a task rather than a readout, so it is the
-              one that belongs in the main column; moving it leaves the
-              columns within ~25px of each other and keeps XP and
-              Badges together where they belong. */}
+          {/* Profile strength */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2">
@@ -1288,26 +1289,64 @@ export default function FounderDashboardContent() {
             shortcuts in the page's tools. */}
         <div data-tour="founder-today"><HomeToday /></div>
 
-        {/* The work, not the inbox: what is due next beside how the profile is
-            doing. Unread messages and the late milestone are rows of Today
-            above, so their two tiles said the same thing twice; the people
-            are first on Home and in this page's tools. */}
-        <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-3" data-tour="founder-stats">
-          <div className="min-w-0 lg:col-span-2">{milestonesCard}</div>
-          {/* Beside it, not stretched to its height: the one figure and the one thing in progress. */}
-          <div className="min-w-0 space-y-4 lg:self-start">
-            <MetricTile
-              align="center"
-              glyph="profile"
-              label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
-              value={userMetrics?.profileViews ?? '—'}
-              trend={profileViewsTrend}
-              trendVisual={profileViewPoints.length > 1 ? <Sparkline points={profileViewPoints} /> : undefined}
-              caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
-              captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
-              href="/analytics"
-            />
+        <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" data-tour="founder-stats">
+          <MetricTile
+            align="center"
+            glyph="profile"
+            label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
+            value={userMetrics?.profileViews ?? '—'}
+            trend={profileViewsTrend}
+            trendVisual={profileViewPoints.length > 1 ? <Sparkline points={profileViewPoints} /> : undefined}
+            caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
+            captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
+            href="/analytics"
+          />
+          <MetricTile
+            align="center"
+            glyph="matches"
+            label="Recommended matches" labelEl="Προτεινόμενες αντιστοιχίσεις"
+            value={matchCount ?? recommendations?.suggestions?.length ?? '—'}
+            caption="People who fit your criteria"
+            captionEl="Άτομα που ταιριάζουν στα κριτήριά σας"
+            href="/matches"
+          />
+          <MetricTile
+            align="center"
+            glyph="messages"
+            label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
+            value={unreadMessages}
+            href="/messages"
+            caption={unreadMessages > 0 ? `${unreadMessages} waiting in Messages` : 'Inbox caught up'}
+            captionEl={unreadMessages > 0 ? `${unreadMessages} σε αναμονή στα Μηνύματα` : 'Όλα διαβασμένα'}
+          />
+          <MetricTile
+            align="center"
+            glyph="flag"
+            label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
+            value={milestonesFailed && milestones.length === 0 ? '—' : `${completedMilestoneCount}/${milestones.length}`}
+            href="/milestones"
+            edge={milestones.length > 0 ? (
+              <ProgressSegments
+                total={milestones.length}
+                segments={[
+                  { key: 'done', value: completedMilestoneCount, tone: 'done' },
+                  { key: 'active', value: activeMilestoneCount, tone: 'active' },
+                  { key: 'late', value: overdueMilestoneCount, tone: 'late' },
+                ]}
+              />
+            ) : undefined}
+            caption={milestonesFailed && milestones.length === 0 ? 'Not read: the server is unavailable. Opens milestones' : milestoneCaption.en}
+            captionEl={milestonesFailed && milestones.length === 0 ? 'Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα ορόσημα' : milestoneCaption.el}
+          />
+        </div>
+
+        <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-2">
+          <div className="min-w-0 space-y-5">
+            {milestonesCard}
             {showFirstMove ? null : <HomeContinue />}
+          </div>
+          <div className="min-w-0 space-y-5">
+            {topMatchesCard}
             {fundraisingCard}
           </div>
         </div>
