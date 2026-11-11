@@ -181,6 +181,33 @@ function MetricCard({
   return body;
 }
 
+/** Counted for every account, and each has a page where it is acted on. */
+const LEAD_METRICS = ['Profile Views', 'New Connections', 'Messages Sent'];
+
+/** A figure on one line: its name, the value, the change. Opens what its tile opened. */
+function QuietMetric({ metric, onOpenTab }: { metric: AnalyticsMetric; onOpenTab?: (tab: AnalyticsTab) => void }) {
+  const href = metricHref(metric.label);
+  const tab: AnalyticsTab | null = metric.label === 'Engagement Rate' ? 'engagement' : metric.label === 'Activity Score' ? 'growth' : null;
+  const row = (
+    <span className="flex min-h-10 w-full items-center justify-between gap-3 text-left text-sm">
+      <span className="min-w-0 text-muted-foreground"><BilingualText en={metric.label} el={metric.labelEl} compact wrap /></span>
+      <span className="flex shrink-0 items-baseline gap-2 tabular-nums">
+        <span className="font-semibold text-foreground">{metricValue(metric)}</span>
+        <span className={cn('text-xs', metric.changeType === 'increase' ? TREND.up : metric.changeType === 'decrease' ? TREND.down : 'text-muted-foreground')}>{signedChange(metric)}</span>
+      </span>
+    </span>
+  );
+  if (href) {
+    const to = DESTINATION[href];
+    return <Link href={href} title={to ? bilingualAria(to.en, to.el) : undefined} className="block rounded-md focus-ring">{row}</Link>;
+  }
+  if (tab && onOpenTab) {
+    const key = tab === 'engagement' ? 'view_engagement' : 'view_growth';
+    return <button type="button" title={bilingualAria(analyticsEn(key), analyticsEl(key))} className="block w-full rounded-md focus-ring" onClick={() => onOpenTab(tab)}>{row}</button>;
+  }
+  return row;
+}
+
 function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
   const views = metrics.find((m) => m.label === 'Profile Views')?.value ?? null;
   const connections = metrics.find((m) => m.label === 'New Connections')?.value ?? null;
@@ -190,10 +217,6 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
   const stages = [
     { key: 'views', labelEn: analyticsEn('stage_views'), labelEl: analyticsEl('stage_views'), value: views, bar: 'bg-primary/70', href: '/profile' as const },
     { key: 'accepted', labelEn: analyticsEn('stage_accepted'), labelEl: analyticsEl('stage_accepted'), value: connections, bar: 'bg-status-success-mark', href: '/connections' as const },
-  ];
-  const untracked = [
-    { key: 'requests', href: '/discover' as const, en: analyticsEn('funnel_untracked_requests'), el: analyticsEl('funnel_untracked_requests') },
-    { key: 'conversations', href: '/messages' as const, en: analyticsEn('funnel_untracked_conversations'), el: analyticsEl('funnel_untracked_conversations') },
   ];
   const maximum = Math.max(1, ...stages.map((stage) => stage.value ?? 0));
   const conversion =
@@ -231,15 +254,18 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
             </span>
           </p>
         )}
-        {/* Each row is a link: py-1 gives it a 24px target and room from the next one. */}
-        <div className="space-y-1 border-t border-border pt-2">
-          {untracked.map((row) => (
-            <Link key={row.key} href={row.href} className="block min-h-8 rounded-lg py-1 focus-ring hover:text-foreground">
-              <p className="text-sm leading-snug text-muted-foreground">
-                <BilingualText en={row.en} el={row.el} wrap />
-              </p>
+        {/* The funnel ends on one thing to do. It ended on two sentences that
+            each said a stage is not counted yet; what widens the funnel is
+            sending requests, and Messages is the tile above. */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+          <p className="min-w-0 text-sm leading-snug text-muted-foreground">
+            <BilingualText en={analyticsEn('funnel_untracked')} el={analyticsEl('funnel_untracked')} wrap />
+          </p>
+          <Button asChild size="sm">
+            <Link href="/discover" data-funnel-next="">
+              <BilingualText en={analyticsEn('funnel_next')} el={analyticsEl('funnel_next')} compact />
             </Link>
-          ))}
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -740,10 +766,24 @@ export default function AnalyticsPage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {metrics.map((metric) => (
+              {/* Three figures lead: the ones counted for every account, each
+                  opening where it is acted on. The other three follow in one
+                  quiet row; six tiles of one weight gave a derived score as
+                  much room as the profile's views. */}
+              <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-3 sm:gap-4" data-analytics-lead="">
+                {metrics.filter((m) => LEAD_METRICS.includes(m.label)).map((metric) => (
                   <MetricCard key={metric.label} metric={metric} onOpenTab={setTab} />
                 ))}
+              </div>
+              <div className="space-y-2" data-analytics-also="">
+                <p className="page-stat-label text-muted-foreground">
+                  <BilingualText en={analyticsEn('also_measured')} el={analyticsEl('also_measured')} compact />
+                </p>
+                <div className="grid grid-cols-1 gap-x-6 gap-y-1 rounded-2xl border border-border bg-card px-4 py-2 min-[480px]:grid-cols-3">
+                  {metrics.filter((m) => !LEAD_METRICS.includes(m.label)).map((metric) => (
+                    <QuietMetric key={metric.label} metric={metric} onOpenTab={setTab} />
+                  ))}
+                </div>
               </div>
 
               {metrics.length > 0 && <ProfileFunnel metrics={metrics} />}

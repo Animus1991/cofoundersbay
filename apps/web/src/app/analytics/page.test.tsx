@@ -74,7 +74,9 @@ describe('analytics clarity and controls', () => {
     // Highlights used to restate every tile delta before the numbers; sparks
     // used to be invented for metrics with no series. Both said "This window".
     expect(screen.queryByText('This window')).toBeNull();
-    expect(screen.getByText(/Connection requests are not counted yet/)).toBeTruthy();
+    expect(screen.getByText(/Connection requests and conversations started are not counted yet/)).toBeTruthy();
+    // The funnel ends on one thing to do, not on two sentences.
+    expect(screen.getByRole('link', { name: 'Send connection requests' }).getAttribute('href')).toBe('/discover');
     // It repeated the first three tiles' changes; removed by the owner's
     // decision of 2026-10-28 (docs §80.2, §111).
     expect(screen.queryByText('Network Velocity')).toBeNull();
