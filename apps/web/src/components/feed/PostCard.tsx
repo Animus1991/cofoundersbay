@@ -237,7 +237,7 @@ export function PostCard({
                   <p className="text-sm font-medium text-foreground truncate">
                     {attachment.title || attachment.url}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">{attachment.url}</p>
+                  <p className="text-xs text-muted-foreground truncate" translate="no">{attachment.url}</p>
                 </a>
               )
             ))}

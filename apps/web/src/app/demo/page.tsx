@@ -8,7 +8,7 @@ import { applyPreviewDemoSession } from '@/lib/preview-demo';
  * Demo entry point — fallback UI.
  *
  * The handoff itself is done by middleware, which sets the demo cookies and
- * redirects to the dashboard in a single response (see `middleware.ts`). It has
+ * redirects to /home in a single response (see `middleware.ts`). It has
  * to happen there: the auth guard reads those cookies server-side, and doing the
  * redirect from a client effect meant racing the provider tree's hydration —
  * a race this page lost, leaving it re-rendering on "Loading demo…" forever.
@@ -24,7 +24,7 @@ export default function DemoPage() {
     if (handedOff.current) return;
     handedOff.current = true;
     applyPreviewDemoSession();
-    window.location.replace('/dashboard/founder');
+    window.location.replace('/home');
   }, []);
 
   return (

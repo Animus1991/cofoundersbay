@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { safeInternalPath } from '@/lib/return-to';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { login, discoverSSOByEmail, getSSOLoginUrl, type SSODiscoveryResult } from '@/lib/api';
+import { ApiNetworkError, login, discoverSSOByEmail, getSSOLoginUrl, type SSODiscoveryResult } from '@/lib/api';
 import { TOO_MANY_ATTEMPTS, isRateLimited } from '@/lib/rate-limit-message';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -105,12 +105,14 @@ function LoginPageContent() {
       const msg = err instanceof Error ? err.message : 'Login failed';
       if (isRateLimited(err)) {
         setError(TOO_MANY_ATTEMPTS);
-      } else if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('abort')) {
+      } else if (err instanceof ApiNetworkError || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('abort')) {
         setError({ en: 'Cannot reach server — check your connection or try again.', el: 'Δεν υπάρχει σύνδεση με τον διακομιστή — ελέγξτε τη σύνδεσή σας ή δοκιμάστε ξανά.' });
       } else if (msg.toLowerCase().includes('unauthorized') || msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('credentials')) {
         setError({ en: 'Incorrect email or password.', el: 'Λάθος email ή κωδικός πρόσβασης.' });
       } else {
-        setError({ en: msg });
+        // The reason stays in English beside a Greek line: a raw transport
+        // message stood alone on a Greek page.
+        setError({ en: msg, el: 'Η σύνδεση δεν ολοκληρώθηκε. Δοκιμάστε ξανά σε λίγο.' });
       }
     } finally {
       setLoading(false);
@@ -251,7 +253,7 @@ function LoginPageContent() {
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={showPassword ? 'Hide password. Απόκρυψη κωδικού' : 'Show password. Εμφάνιση κωδικού'}
-                      className="absolute right-0 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center px-2 text-xs sm:h-full sm:min-h-0 font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      className="absolute right-0 top-1/2 flex w-max min-h-[44px] -translate-y-1/2 items-center justify-center whitespace-nowrap px-2 text-xs sm:h-full sm:min-h-0 font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {/* One language only: the slot sits inside the input. */}
                       {showPassword ? (primary === 'el' ? 'Απόκρυψη' : 'Hide') : (primary === 'el' ? 'Εμφάνιση' : 'Show')}
@@ -296,7 +298,7 @@ function LoginPageContent() {
             )}
           </div>
           <h2 className="font-display text-3xl font-semibold text-white">
-            {branding?.heroTitle ?? <BilingualText en="Your next co-founder is waiting" el="Ο επόμενος συνιδρυτής σας σας περιμένει" wrap stacked secondaryClassName="text-white/70" />}
+            {branding?.heroTitle ?? <BilingualText en="Your next co-founder is waiting" el="Ο επόμενος συνιδρυτής σάς περιμένει" wrap stacked secondaryClassName="text-white/70" />}
           </h2>
           <p className="mt-4 text-white/65 text-base leading-relaxed">
             {branding?.heroSubtitle ?? (

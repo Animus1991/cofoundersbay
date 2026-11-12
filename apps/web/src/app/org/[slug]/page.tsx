@@ -1,4 +1,5 @@
-﻿import { notFound } from 'next/navigation';
+﻿import { cookies } from 'next/headers';
+import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { OrgContent } from './OrgContent';
 import { OrgProfileClient } from './OrgProfileClient';
@@ -23,12 +24,19 @@ async function fetchOrg(slug: string): Promise<OrgProfile | null | 'unreachable'
   }
 }
 
+/** A demo session: the cookies the /demo handoff sets. */
+async function isDemoSession(): Promise<boolean> {
+  const jar = await cookies();
+  return jar.get('cfb_preview_demo')?.value === '1' || jar.get('cfb_session')?.value === 'preview-demo';
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  if (await isDemoSession()) return { title: 'Organisation | CoFounderBay' };
   const org = await fetchOrg(slug);
   if (org === 'unreachable') return { title: 'Organisation | CoFounderBay' };
   if (!org) return { title: 'Organization Not Found' };
@@ -49,6 +57,10 @@ export default async function OrgProfilePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  // The demo's organisations live in the browser (the demo answers there),
+  // not in the API this server reads: asked here, the demo's own Aegean
+  // Venture Lab answered "not found" whenever the API was up.
+  if (await isDemoSession()) return <OrgProfileClient slug={slug} />;
   const org = await fetchOrg(slug);
   if (org === 'unreachable') return <OrgProfileClient slug={slug} />;
   if (!org) notFound();

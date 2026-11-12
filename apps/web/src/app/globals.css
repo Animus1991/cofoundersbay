@@ -4238,8 +4238,10 @@ input[data-search-field][class~="border-input"]:focus-visible {
 
   /* A sentence that opens in lowercase ("invests in…") reads as a label
      that lost its capital. The first letter takes a capital; a stat figure
-     is not a sentence. */
-  #main-content [data-card] p:not(:is(.page-stat, .page-stat-label, .page-stat-meta))::first-letter {
+     is not a sentence, and neither is an address: an email, a link or a
+     handle is shown as typed ("Anna@aegeanlab.example" was not her
+     address). Verbatim lines carry translate="no", or are mono/break-all. */
+  #main-content [data-card] p:not(:is(.page-stat, .page-stat-label, .page-stat-meta, [translate="no"], .font-mono, .break-all))::first-letter {
     text-transform: uppercase;
   }
 }
@@ -5244,4 +5246,21 @@ select:disabled {
 #main-content [data-home-quiet] .card-title,
 #main-content [data-home-quiet] .person-name {
   font-weight: 500;
+}
+
+/* ── A tool repeated on every row ─────────────────────────────────────────
+   The same icon on each row of a list (Today's "ask about this") stood in a
+   column of six at rest, beside rows that are links themselves. With a
+   mouse it shows on the row under the pointer or holding focus; it keeps
+   its place, so nothing moves when it appears, and keyboard focus reveals
+   it. Touch screens have no hover, so they keep it in view (docs §123). */
+@media (hover: hover) and (pointer: fine) {
+  [data-row]:not(:hover):not(:focus-within) .row-tool {
+    opacity: 0;
+  }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-row] .row-tool {
+    transition: opacity 120ms ease-out;
+  }
 }

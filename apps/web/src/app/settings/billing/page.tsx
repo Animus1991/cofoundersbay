@@ -405,7 +405,7 @@ export default function UserBillingPage() {
                 {(() => { const bc = (contactData as { billingContact?: BillingContact | null }).billingContact!; return (<>
                 <p className="font-medium text-foreground">{bc.name}</p>
                 {bc.company && <p>{bc.company}</p>}
-                <p>{bc.email}</p>
+                <p translate="no">{bc.email}</p>
                 {bc.addressLine1 && (
                   <p>{bc.addressLine1}, {bc.city} {bc.postalCode}, {bc.country}</p>
                 )}

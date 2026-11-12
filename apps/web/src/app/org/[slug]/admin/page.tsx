@@ -624,7 +624,10 @@ export default function OrgAdminPage() {
           <Button aria-label={bilingualAria('Go back', 'Επιστροφή')} variant="ghost" size="icon" onClick={() => router.push(`/org/${slug}`)}>
             <ArrowLeft className="icon-md" aria-hidden="true" />
           </Button>
-          <div className="flex min-w-0 flex-1 items-center gap-4">
+          {/* The name keeps at least 14rem, so on a phone the buttons wrap
+              under it: with no floor the row never wrapped and the name
+              stood one letter per line beside them. */}
+          <div className="flex min-w-[min(100%,14rem)] flex-1 items-center gap-4">
             <Avatar className="h-12 w-12 rounded-xl">
               <AvatarImage src={org.logo} />
               <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible text-lg">
@@ -709,7 +712,7 @@ export default function OrgAdminPage() {
                           </Avatar>
                           <div>
                             <p className="font-medium text-foreground">{member.name}</p>
-                            <p className="text-sm text-muted-foreground">{member.email}</p>
+                            <p className="text-sm text-muted-foreground" translate="no">{member.email}</p>
                           </div>
                         </div>
                       </TableCell>
@@ -823,7 +826,7 @@ export default function OrgAdminPage() {
                     return (
                       <div key={inv.id} className="flex flex-wrap items-center justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-foreground">{inv.email}</p>
+                          <p className="truncate text-sm font-medium text-foreground" translate="no">{inv.email}</p>
                           <p className="text-xs text-muted-foreground">
                             <BilingualText en={role.en} el={role.el} compact />
                             {' · '}

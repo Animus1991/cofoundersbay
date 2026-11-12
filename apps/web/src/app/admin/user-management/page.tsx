@@ -807,7 +807,7 @@ export default function AdminUserManagementPage() {
           </DialogHeader>
           {detailUser && (
             <div className="space-y-3 text-sm">
-              <p className="text-muted-foreground">{detailUser.email}</p>
+              <p className="text-muted-foreground" translate="no">{detailUser.email}</p>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className="capitalize"><StatusText value={detailUser.role} /></Badge>
                 <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[detailUser.status])}>

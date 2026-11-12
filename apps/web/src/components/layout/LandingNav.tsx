@@ -48,7 +48,7 @@ export function LandingNav() {
         </Link>
         <div className="hidden items-center gap-7 whitespace-nowrap text-sm text-muted-foreground lg:flex" lang={lang}>
           {NAV_LINKS.map((link) => (
-            <Link key={link.href} href={link.href} className="transition-colors hover:text-foreground">
+            <Link key={link.href} href={link.href} prefetch={link.href === '/demo' ? false : undefined} className="transition-colors hover:text-foreground">
               {say(link.label)}
             </Link>
           ))}
@@ -89,6 +89,7 @@ export function LandingNav() {
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={link.href === '/demo' ? false : undefined}
                 className="py-1 text-sm text-muted-foreground hover:text-foreground"
                 onClick={() => setOpen(false)}
               >

@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { rememberReturnTo } from '@/lib/return-to';
-import { register as registerApi } from '@/lib/api';
+import { ApiNetworkError, register as registerApi } from '@/lib/api';
 import { TOO_MANY_ATTEMPTS, isRateLimited } from '@/lib/rate-limit-message';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,12 +64,14 @@ const ROLES = [
   },
 ] as const satisfies ReadonlyArray<{ glyph: CfbGlyphName } & Record<string, string>>;
 
-// What joining gives you, not member counts: the platform publishes none, so
-// "10K+ members" and "80+ countries" were invented figures.
-const HERO_STATS = [
-  { value: '4', label: 'Ways to join', labelEl: 'Τρόποι συμμετοχής', accent: 'from-status-warning-bg to-white/0' },
-  { value: '2', label: 'Languages, EN and EL', labelEl: 'Γλώσσες, EN και EL', accent: 'from-status-success-bg to-white/0' },
-  { value: '1', label: 'Profile for every match', labelEl: 'Προφίλ για κάθε αντιστοίχιση', accent: 'from-status-info-bg to-white/0' },
+// What happens after this form, in order. The panel used to show three
+// figures ("4 ways to join", "2 languages", "1 profile for every match"),
+// which replaced invented member counts but still said nothing a visitor
+// could use. Each line is something the product does.
+const NEXT_STEPS = [
+  { en: 'A short profile: your role, skills and what you are looking for', el: 'Ένα σύντομο προφίλ: ρόλος, δεξιότητες και τι αναζητάτε' },
+  { en: 'Matches that explain their score', el: 'Αντιστοιχίσεις που εξηγούν τη βαθμολογία τους' },
+  { en: 'Co-founder talks stay protected until you both say yes', el: 'Οι συζητήσεις για συνιδρυτή μένουν προστατευμένες μέχρι να πείτε και οι δύο ναι' },
 ];
 
 type Message = { en: string; el?: string };
@@ -128,12 +130,14 @@ export default function RegisterPage() {
       const msg = err instanceof Error ? err.message : 'Registration failed';
       if (isRateLimited(err)) {
         setError(TOO_MANY_ATTEMPTS);
-      } else if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('abort')) {
+      } else if (err instanceof ApiNetworkError || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('abort')) {
         setError({ en: 'Cannot reach server — check your connection or try again.', el: 'Δεν υπάρχει σύνδεση με τον διακομιστή — ελέγξτε τη σύνδεσή σας ή δοκιμάστε ξανά.' });
       } else if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('exists') || msg.toLowerCase().includes('conflict')) {
         setError({ en: 'An account with this email already exists. Try signing in.', el: 'Υπάρχει ήδη λογαριασμός με αυτό το email. Δοκιμάστε να συνδεθείτε.' });
       } else {
-        setError({ en: msg });
+        // The reason stays in English beside a Greek line: a raw transport
+        // message stood alone on a Greek page.
+        setError({ en: msg, el: 'Η εγγραφή δεν ολοκληρώθηκε. Δοκιμάστε ξανά σε λίγο.' });
       }
     } finally {
       setLoading(false);
@@ -145,52 +149,7 @@ export default function RegisterPage() {
 
   return (
     <MainLandmark className="flex min-h-screen">
-      {/* Left — hero panel */}
-      <div className="hidden bg-hero-gradient lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center px-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-hero-radial pointer-events-none" />
-        <div className="relative z-10 max-w-md text-center">
-          <div className="mx-auto mb-8 flex items-center justify-center">
-            {activeTenant?.logoUrl
-              ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-16 w-auto object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
-              : <LogoIcon size={72} />}
-          </div>
-          <h2 className="font-display text-3xl font-semibold text-white">
-            {branding?.heroTitle || (activeTenant ? (
-              <BilingualText
-                en={`Join ${activeTenant.displayName ?? activeTenant.name}`}
-                el={`Γίνετε μέλος του ${activeTenant.displayName ?? activeTenant.name}`}
-                wrap
-                stacked
-                secondaryClassName="text-white/70"
-              />
-            ) : (
-              <BilingualText en="Start your journey" el="Ξεκινήστε το ταξίδι σας" wrap stacked secondaryClassName="text-white/70" />
-            ))}
-          </h2>
-          <p className="mt-4 text-white/65 text-base leading-relaxed">
-            {branding?.heroSubtitle || (activeTenant?.shortDescription ?? (
-              <BilingualText
-                en="Create a detailed profile and get matched with the right founders, mentors, and investors."
-                el="Φτιάξτε ένα αναλυτικό προφίλ και βρείτε τους κατάλληλους ιδρυτές, μέντορες και επενδυτές."
-                wrap
-                stacked
-                secondaryClassName="text-white/60"
-              />
-            ))}
-          </p>
-          <div className="mt-10 grid grid-cols-3 gap-3">
-            {HERO_STATS.map(({ value, label, labelEl, accent }) => (
-              <div key={label} className="rounded-xl border border-white/10 bg-white/8 px-3 py-4 text-center backdrop-blur-sm">
-                <div className={`mx-auto mb-2 h-2.5 w-10 rounded-full bg-gradient-to-r ${accent}`} />
-                <p className="font-display text-xl font-bold text-white">{value}</p>
-                <p className="text-xs text-white/65"><BilingualText en={label} el={labelEl} wrap stacked secondaryClassName="text-white/55" /></p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Right — form */}
+      {/* Left — form, where the sign-in page has it */}
       <div className="flex w-full flex-col justify-center overflow-y-auto px-8 py-12 lg:w-1/2 lg:px-24">
         <div className="mx-auto w-full max-w-md animate-fade-in">
           <Link href="/" className="mb-10 inline-block hover:opacity-80 transition-opacity">
@@ -260,7 +219,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-0 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center px-2 text-xs sm:h-full sm:min-h-0 font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-0 top-1/2 flex w-max min-h-[44px] -translate-y-1/2 items-center justify-center whitespace-nowrap px-2 text-xs sm:h-full sm:min-h-0 font-medium text-muted-foreground hover:text-foreground transition-colors"
                   aria-label={showPassword ? 'Hide password. Απόκρυψη κωδικού' : 'Show password. Εμφάνιση κωδικού'}
                 >
                   {/* One language only: the slot sits inside the input. */}
@@ -371,6 +330,52 @@ export default function RegisterPage() {
               <BilingualText en="Sign in" el="Σύνδεση" compact />
             </Link>
           </p>
+        </div>
+      </div>
+      {/* Right — the panel, as on the sign-in page */}
+      <div className="hidden bg-hero-gradient lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center px-12 relative overflow-hidden">
+        <div className="absolute inset-0 bg-hero-radial pointer-events-none" />
+        <div className="relative z-10 max-w-md text-center">
+          <div className="mx-auto mb-8 flex items-center justify-center">
+            {activeTenant?.logoUrl
+              ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-16 w-auto object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+              : <LogoIcon size={72} />}
+          </div>
+          <h2 className="font-display text-3xl font-semibold text-white">
+            {branding?.heroTitle || (activeTenant ? (
+              <BilingualText
+                en={`Join ${activeTenant.displayName ?? activeTenant.name}`}
+                el={`Γίνετε μέλος του ${activeTenant.displayName ?? activeTenant.name}`}
+                wrap
+                stacked
+                secondaryClassName="text-white/70"
+              />
+            ) : (
+              <BilingualText en="Start your journey" el="Ξεκινήστε το ταξίδι σας" wrap stacked secondaryClassName="text-white/70" />
+            ))}
+          </h2>
+          <p className="mt-4 text-white/65 text-base leading-relaxed">
+            {branding?.heroSubtitle || (activeTenant?.shortDescription ?? (
+              <BilingualText
+                en="Create a detailed profile and get matched with the right founders, mentors, and investors."
+                el="Φτιάξτε ένα αναλυτικό προφίλ και βρείτε τους κατάλληλους ιδρυτές, μέντορες και επενδυτές."
+                wrap
+                stacked
+                secondaryClassName="text-white/60"
+              />
+            ))}
+          </p>
+          <div className="mt-10 text-left">
+            <p className="mb-3 text-xs font-medium text-white/60"><BilingualText en="What happens next" el="Τι ακολουθεί" compact /></p>
+            <ol className="space-y-3">
+              {NEXT_STEPS.map((step, index) => (
+                <li key={step.en} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/8 px-4 py-3 backdrop-blur-sm">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/15 text-xs font-semibold tabular-nums text-white" aria-hidden="true">{index + 1}</span>
+                  <span className="text-sm font-medium text-white/85"><BilingualText en={step.en} el={step.el} wrap stacked secondaryClassName="text-white/65" /></span>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
       </div>
     </MainLandmark>

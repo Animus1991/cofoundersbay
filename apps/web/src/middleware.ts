@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { publicOrigin, safeInternalPath, sanitizeHost } from './lib/return-to';
+import { isPrefetchRequest } from './lib/router-prefetch';
 
 const PUBLIC_PATHS = new Set([
   '/',
@@ -166,6 +167,12 @@ export function middleware(request: NextRequest) {
   // for this. The client-only half of the demo session (localStorage) is filled
   // in on arrival by PreviewSessionGuard in the root layout.
   if (pathname === '/demo') {
+    // A prefetch is not a visit. Next prefetches every Link in view and the
+    // landing page shows "Try the demo" above the fold, so setting the cookies
+    // here signed every visitor into the demo before any click (a reload of /
+    // then went to /home). The click is a navigation request and still gets
+    // the cookies and the redirect.
+    if (isPrefetchRequest(request.headers)) return response;
     const demoRedirect = NextResponse.redirect(new URL('/home', publicOrigin));
     applyPreviewDemoCookies(demoRedirect, publicOrigin.startsWith('https:'));
     return demoRedirect;

@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getPublicStats } from '@/lib/api';
-import { LiveStatsGrid, LiveStatsStrip } from './LiveStats';
+import { LiveStatsGrid } from './LiveStats';
 
 const apiMocks = vi.hoisted(() => ({ realGet: null as null | (() => Promise<unknown>) }));
 vi.mock('@/lib/api', async (importOriginal) => {
@@ -30,11 +30,10 @@ describe('live landing stats', () => {
     vi.mocked(getPublicStats).mockResolvedValue(null);
     const { container } = renderWithQuery(
       <div>
-        <LiveStatsStrip />
         <LiveStatsGrid />
       </div>,
     );
-    // Both mounts render literally nothing — no skeleton with fake digits.
+    // The grid renders literally nothing — no skeleton with fake digits.
     await vi.waitFor(() => expect(getPublicStats).toHaveBeenCalled());
     expect(container.textContent ?? '').not.toMatch(/\d/);
     expect(container.firstElementChild?.children).toHaveLength(0);
@@ -58,8 +57,10 @@ describe('live landing stats', () => {
     expect(document.body.textContent ?? '').not.toContain('95%');
   });
 
-  it('the landing page carries no fabricated figures', () => {
+  it('the landing page carries no fabricated figures, and its counts appear once', () => {
     const source = readFileSync('src/app/LandingHome.tsx', 'utf8');
+    // The hero's strip repeated three of the section's five counts on one page.
+    expect(source).not.toContain('LiveStatsStrip');
     expect(source).not.toContain('95%');
     expect(source).not.toMatch(/'12,400|'3,200|'820\+|'240\+|'60\+/);
   });

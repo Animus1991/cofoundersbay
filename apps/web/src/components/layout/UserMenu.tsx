@@ -145,7 +145,7 @@ export function UserMenu({
               {user?.displayName ?? <BilingualText en="User" el="Χρήστης" />}
             </p>
             {user?.email && (
-              <p className={`text-muted-foreground ${IDENTITY_LINE}`}>{user.email}</p>
+              <p className={`text-muted-foreground ${IDENTITY_LINE}`} translate="no">{user.email}</p>
             )}
             {user?.role && (
               <p className={`capitalize text-primary-accessible ${IDENTITY_LINE}`}>{user.role}</p>

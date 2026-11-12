@@ -144,7 +144,7 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
           </Link>
           {user.verified && <CheckCircle2 className="icon-sm text-primary-accessible" />}
         </div>
-        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+        <p className="text-sm text-muted-foreground truncate" translate="no">{user.email}</p>
         <p className="mt-0.5 text-xs text-muted-foreground md:hidden">
           <StatusText value={user.role} /> · <StatusText value={user.status} />{user.tenant ? ` · ${user.tenant}` : ''}
         </p>
