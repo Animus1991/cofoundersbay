@@ -42,6 +42,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { FactLine } from '@/components/common/FactLine';
+import { PageFacts } from '@/components/common/PageFacts';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { ORG_MENTORS } from '@/lib/demo/org-world';
@@ -410,36 +411,18 @@ export default function OrgMentorsPage() {
           </Card>
         ) : null}
 
-        {mentors.length > 0 && (<>
-        <div className={cn('grid grid-cols-2 gap-4', sessionsCounted ? 'kpi-odd-span-md md:grid-cols-4' : 'md:grid-cols-3')}>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Total Mentors" el="Σύνολο μεντόρων" compact /></p>
-              <p className="page-stat text-xl font-bold">{mentors.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργοί" compact /></p>
-              <p className={cn('page-stat text-xl font-bold', STATUS.success.icon)}>{activeMentors.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Capacity" el="Χωρητικότητα" compact /></p>
-              <p className="page-stat text-xl font-bold">{currentMentees}/{totalCapacity}</p>
-            </CardContent>
-          </Card>
-          {sessionsCounted && (
-            <Card>
-              <CardContent>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Total Sessions" el="Σύνολο συνεδριών" compact /></p>
-                <p className="page-stat text-xl font-bold">{mentors.reduce((acc, m) => acc + (m.totalSessions ?? 0), 0)}</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-        </>)}
+        {mentors.length > 0 && (
+        <PageFacts
+          labelEn="Mentors in figures"
+          labelEl="Οι μέντορες σε αριθμούς"
+          facts={[
+            { id: 'total', value: mentors.length, en: mentors.length === 1 ? 'mentor' : 'mentors', el: mentors.length === 1 ? 'μέντορας' : 'μέντορες' },
+            { id: 'active', value: activeMentors.length, en: 'active', el: activeMentors.length === 1 ? 'ενεργός' : 'ενεργοί' },
+            ...(sessionsCounted ? [{ id: 'sessions', value: mentors.reduce((acc, m) => acc + (m.totalSessions ?? 0), 0), en: mentors.reduce((acc, m) => acc + (m.totalSessions ?? 0), 0) === 1 ? 'session' : 'sessions', el: mentors.reduce((acc, m) => acc + (m.totalSessions ?? 0), 0) === 1 ? 'συνεδρία' : 'συνεδρίες' }] : []),
+            { id: 'capacity', value: `${currentMentees}/${totalCapacity}`, en: 'capacity', el: 'χωρητικότητα' },
+          ]}
+        />
+        )}
 
         {(mentors.length > 0 || !!search) && (
         <div className="relative">

@@ -27,6 +27,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { EmptyTenantWebhooks } from '@/components/common/EmptyStates';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
+import { PageFacts } from '@/components/common/PageFacts';
 import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
@@ -201,15 +202,15 @@ export default function TenantWebhooksPage() {
             askAiPrompt={ASK.webhooksSample}
           />
         )}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-3 md:grid-cols-3">
-          {[
-            { label: 'Active Webhooks', labelEl: 'Ενεργά webhooks', value: webhooks.filter(w => w.isActive).length },
-            { label: 'Total Deliveries', labelEl: 'Σύνολο παραδόσεων', value: webhooks.reduce((s, w) => s + w.totalDeliveries, 0) },
-            { label: 'Avg Success Rate', labelEl: 'Μέση επιτυχία', value: `${avgSuccess}%` },
-          ].map(s => (
-            <Card key={s.label}><CardContent><p className="text-xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p><p className="page-stat text-xl font-bold">{s.value}</p></CardContent></Card>
-          ))}
-        </div>
+        <PageFacts
+          labelEn="Webhooks in figures"
+          labelEl="Τα webhooks σε αριθμούς"
+          facts={[
+            { id: 'active', value: webhooks.filter(w => w.isActive).length, en: webhooks.filter(w => w.isActive).length === 1 ? 'active webhook' : 'active webhooks', el: webhooks.filter(w => w.isActive).length === 1 ? 'ενεργό webhook' : 'ενεργά webhooks' },
+            { id: 'deliveries', value: webhooks.reduce((s, w) => s + w.totalDeliveries, 0), en: webhooks.reduce((s, w) => s + w.totalDeliveries, 0) === 1 ? 'delivery' : 'deliveries', el: webhooks.reduce((s, w) => s + w.totalDeliveries, 0) === 1 ? 'παράδοση' : 'παραδόσεις' },
+            { id: 'success', value: `${avgSuccess}%`, en: 'avg success rate', el: 'μέση επιτυχία' },
+          ]}
+        />
 
         {webhooks.length === 0 ? (
           <EmptyTenantWebhooks />
