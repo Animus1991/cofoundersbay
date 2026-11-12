@@ -470,6 +470,11 @@ export default function AnalyticsPage() {
 
   const waiting = !mounted || isLoading;
   const metrics = metricsToDisplay(overview?.metrics);
+  // Only what was measured is a tile. Engagement rate and search appearances
+  // come back null from the API, which has no source for them yet: two tiles
+  // reading "—" on every real account promised a measurement nobody makes.
+  // The tile appears the day the field carries a number (docs §122).
+  const measured = metrics.filter((m) => m.value !== null || m.change !== null);
 
   /**
    * What this screen is showing, for the assistant.
@@ -729,8 +734,8 @@ export default function AnalyticsPage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {metrics.map((metric) => (
+              <div className={cn('grid grid-cols-2 gap-3 sm:gap-4', measured.length % 3 === 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-4')}>
+                {measured.map((metric) => (
                   <MetricCard key={metric.label} metric={metric} onOpenTab={setTab} />
                 ))}
               </div>

@@ -4382,7 +4382,8 @@ input[data-search-field][class~="border-input"]:focus-visible {
    sentences, the facts:
 
      step            role                          phone     tablet/desktop
-     .card-title     name or title, semibold       13.582    15.36
+     .card-title     name or title, medium         13.582    14.65
+                     (an h2 on this step is a section heading: semibold)
      .card-subtitle  the line under it, muted      13.044    14.00
      .card-body      sentences, values, figures    12.663    13.49
      meta            facts, dates, kinds (text-xs) 12.663    12.87
@@ -4397,6 +4398,13 @@ input[data-search-field][class~="border-input"]:focus-visible {
   font-size: 0.915625rem;
   line-height: 1.35;
   font-weight: 500;
+}
+/* An h2 on the card-title step is a section heading (Today, People who fit,
+   Overall readiness): semibold, so it leads the names and titles under it,
+   which stay medium. A `font-semibold` utility on it lost to this unlayered
+   rule, so the first page's headings weighed the same as its names (docs §122). */
+h2.card-title {
+  font-weight: 600;
 }
 .card-subtitle {
   font-size: 0.87473575rem;
@@ -4429,7 +4437,7 @@ input[data-search-field][class~="border-input"]:focus-visible {
   #main-content [data-card] h3.page-section:not(.page-section--compact) {
     font-size: 0.915625rem;
     line-height: 1.35;
-    font-weight: 550;
+    font-weight: 600;
   }
   #main-content [data-rail-content] [data-card] h2.page-section,
   #main-content [data-rail-content] [data-card] h3.page-section {
@@ -4441,7 +4449,7 @@ input[data-search-field][class~="border-input"]:focus-visible {
   #main-content [data-card] h2.page-section,
   #main-content [data-card] h3.page-section:not(.page-section--compact) {
     font-size: 1.11661585rem;
-    font-weight: 550;
+    font-weight: 600;
   }
   #main-content [data-rail-content] [data-card] h2.page-section,
   #main-content [data-rail-content] [data-card] h3.page-section {

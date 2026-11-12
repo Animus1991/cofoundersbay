@@ -147,7 +147,7 @@ function Home() {
             <Card>
               <CardContent className="space-y-1">
                 <div className="flex items-baseline justify-between gap-3">
-                  <h2 id="home-waiting" className="card-title font-semibold">
+                  <h2 id="home-waiting" className="card-title">
                     <BilingualText
                       en={`${waiting} ${waiting === 1 ? 'thing is' : 'things are'} waiting on you`}
                       el={waiting === 1 ? 'Σας περιμένει 1 πράγμα' : `Σας περιμένουν ${waiting} πράγματα`}
@@ -180,7 +180,7 @@ function Home() {
         ) : null}
         <section className="space-y-3" aria-labelledby="home-people">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 id="home-people" className="card-title font-semibold"><BilingualText en="People who fit" el="Άνθρωποι που ταιριάζουν" compact /></h2>
+            <h2 id="home-people" className="card-title"><BilingualText en="People who fit" el="Άνθρωποι που ταιριάζουν" compact /></h2>
             <Link href="/matches" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
               <BilingualText en="See everyone" el="Δείτε όλους" compact />
             </Link>

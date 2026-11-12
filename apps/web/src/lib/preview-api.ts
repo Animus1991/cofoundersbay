@@ -2184,10 +2184,12 @@ const PREVIEW_USER_METRICS = {
   newConnectionsChange: 5,
   messagesSent: 63,
   messagesSentChange: -8,
-  engagementRate: 34,
-  engagementRateChange: 3,
-  searchAppearances: 91,
-  searchAppearancesChange: 0,
+  // The API has no source for these two yet and answers null; the showcase
+  // does the same rather than show figures no account can have (docs §122).
+  engagementRate: null,
+  engagementRateChange: null,
+  searchAppearances: null,
+  searchAppearancesChange: null,
   activityScore: 72,
   activityScoreChange: 6,
 };

@@ -271,7 +271,7 @@ export function HomeFeedSection({ people, shownAbove, connectionOf }: { people: 
   return (
     <section ref={section} className="space-y-3" aria-labelledby="home-around-you" data-home-feed="">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 id="home-around-you" className="card-title font-semibold"><BilingualText en="Around you" el="Γύρω σας" compact /></h2>
+        <h2 id="home-around-you" className="card-title"><BilingualText en="Around you" el="Γύρω σας" compact /></h2>
         <Link href="/feed" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
           <BilingualText en="The whole feed" el="Όλη η ροή" compact />
         </Link>

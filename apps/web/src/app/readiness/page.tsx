@@ -468,13 +468,25 @@ function DimensionCard({
   canToggle,
   onToggle,
   isMutating,
+  defaultOpen = true,
 }: {
   dim: DimData;
   canToggle: boolean;
   onToggle: (dimKey: string, cId: string, current: boolean) => void;
   isMutating: boolean;
+  /** On a phone the criteria and the advice start folded under the head; the weakest dimension starts open (docs §122). */
+  defaultOpen?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
+  // The fold is CSS only, from 640px everything shows: nothing a tick changed
+  // is unmounted. A link to this card (the score card, the assistant) opens it.
+  const [shown, setShown] = useState(defaultOpen);
+  useEffect(() => {
+    const check = () => { if (window.location.hash === `#dim-${dim.key}`) setShown(true); };
+    check();
+    window.addEventListener('hashchange', check);
+    return () => window.removeEventListener('hashchange', check);
+  }, [dim.key]);
   const pct = Math.round((dim.score / dim.maxScore) * 100);
   const status = scoreToStatus(pct);
   const colors = scoreColors(status);
@@ -540,6 +552,17 @@ function DimensionCard({
               <BilingualText en={readinessEn('criteria_completed')} el={readinessEl('criteria_completed')} compact />
             </p>
 
+            <button
+              type="button"
+              aria-expanded={shown}
+              aria-controls={`dim-${dim.key}-body`}
+              onClick={() => setShown((value) => !value)}
+              className="mt-3 hidden min-h-11 w-full items-center justify-between gap-3 rounded-lg border border-border px-3 text-left text-sm max-sm:flex"
+            >
+              <BilingualText en="Criteria and advice" el="Κριτήρια και συμβουλή" compact />
+              <span data-keep-icon=""><ChevronRight className={cn('icon-sm text-muted-foreground transition-transform', shown && 'rotate-90')} aria-hidden="true" /></span>
+            </button>
+            <div id={`dim-${dim.key}-body`} className={cn('flex min-w-0 flex-1 flex-col', !shown && 'max-sm:hidden')}>
             <div id={`dim-${dim.key}-criteria`} className="mt-4 mb-4 space-y-1.5">
               {(expanded ? dim.criteria : dim.criteria.slice(0, 3)).map((c) => (
                 <button
@@ -632,6 +655,7 @@ function DimensionCard({
                 <AIInsightButton prompt={recPrompt} className="h-8" aboutEn={readinessOf(dim.labelEn)} aboutEl={readinessOfEl(dim.labelEl)} />
               </div>
             )}
+            </div>
         </div>
       </CardContent>
     </Card>
@@ -958,7 +982,9 @@ export default function ReadinessPage() {
       run: (v) => {
         if (!v) return;
         focusDimension(v);
-        if (typeof document !== 'undefined') {
+        if (typeof window !== 'undefined') {
+          // The hash opens the card's phone fold too, and scrolls to it.
+          window.location.hash = `dim-${v}`;
           setTimeout(() => document.getElementById(`dim-${v}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 0);
         }
       },
@@ -1500,10 +1526,11 @@ export default function ReadinessPage() {
               <BilingualText en={readinessEn('criteria_hint')} el={readinessEl('criteria_hint')} wrap />
             </p>
             <div className="grid grid-cols-1 min-w-0 gap-5 md:grid-cols-2" data-readiness-dimensions="">
-              {dimensionsByNeed.map((dim) => (
+              {dimensionsByNeed.map((dim, index) => (
                 <DimensionCard
                   key={dim.key}
                   dim={dim}
+                  defaultOpen={index === 0}
                   canToggle={isDemo || (!!workspaceId && mode === 'live' && !isError)}
                   onToggle={handleToggle}
                   isMutating={toggleMutation.isPending}

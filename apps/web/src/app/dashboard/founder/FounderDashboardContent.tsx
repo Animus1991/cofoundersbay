@@ -756,20 +756,9 @@ export default function FounderDashboardContent() {
                 </Button>
               </div>
             </CardHeader>
+            {/* The done/late bar and its caption are on the Milestones tile a
+                row above; the card holds what the tile cannot, the rows. */}
             <CardContent className="space-y-4">
-              {milestones.length > 0 ? (
-                <div className="space-y-1.5">
-                  <ProgressSegments
-                    total={milestones.length}
-                    segments={[
-                      { key: 'done', value: completedMilestoneCount, tone: 'done' },
-                      { key: 'active', value: activeMilestoneCount, tone: 'active' },
-                      { key: 'late', value: overdueMilestoneCount, tone: 'late' },
-                    ]}
-                  />
-                  <p className="text-xs text-muted-foreground"><BilingualText en={milestoneCaption.en} el={milestoneCaption.el} compact wrap /></p>
-                </div>
-              ) : null}
               {milestonesFailed && milestones.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   <BilingualText en="Not read: the server is unavailable." el="Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος." wrap />
