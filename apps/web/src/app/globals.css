@@ -1923,6 +1923,25 @@ html {
     right: -4px;
   }
 
+  /* Every link in a card's title (a name in a PersonCard or ProfileCard, a
+     startup, a thread) is 16-20px of inline text: this gives all of them the
+     band at once, so a page does not have to remember the class. The link
+     stretched over a /notifications row (`after:inset-0`) keeps its own
+     ::after. */
+  #main-content .card-title a:not([class*='after:']),
+  #main-content a.person-name:not([class*='after:']) {
+    position: relative;
+  }
+  #main-content .card-title a:not([class*='after:'])::after,
+  #main-content a.person-name:not([class*='after:'])::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+  }
+
   /* ── Phones: one language on the inline variants ──
      Both languages on a single line makes every string roughly twice as long.
      Measured on a 360px viewport, that was the single biggest source of broken
