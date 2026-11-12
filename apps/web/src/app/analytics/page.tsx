@@ -197,14 +197,14 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
       ? Math.round((connections / views) * 1000) / 10
       : null;
   return (
-    <Card className="min-w-0">
+    <Card className="flex min-w-0 flex-col">
       <CardHeader className="p-3 sm:p-6">
         <CardTitle className="flex items-center gap-2 font-semibold">
           <CfbGlyph name="people" className="icon-sm shrink-0 text-muted-foreground" />
           <BilingualText en={analyticsEn('profile_funnel')} el={analyticsEl('profile_funnel')} wrap />
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3.5 pt-0 sm:pt-0">
+      <CardContent className="flex flex-1 flex-col gap-3.5 pt-0 sm:pt-0">
         <p className="page-stat-label text-muted-foreground">
           <BilingualText en={analyticsEn('funnel_note')} el={analyticsEl('funnel_note')} />
         </p>
@@ -230,7 +230,7 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
         {/* The funnel ends on one thing to do. It ended on two sentences that
             each said a stage is not counted yet; what widens the funnel is
             sending requests, and Messages is the tile above. */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
           <p className="min-w-0 text-sm leading-snug text-muted-foreground">
             <BilingualText en={analyticsEn('funnel_untracked')} el={analyticsEl('funnel_untracked')} wrap />
           </p>

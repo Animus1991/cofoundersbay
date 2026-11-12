@@ -5,8 +5,11 @@ import Link from 'next/link';
 import {
   Search,
   MoreVertical,
+  X,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { OrgReadFailed } from '@/components/org/OrgReadFailed';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
@@ -17,13 +20,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -336,6 +332,7 @@ export default function OrgStartupsPage() {
   const programs = [...new Set(startups.map((s) => s.program))];
 
   const filtersActive = !!search || program !== 'all' || status !== 'all';
+  const railFilters = (program !== 'all' ? 1 : 0) + (status !== 'all' ? 1 : 0);
   const clearFilters = () => { setSearch(''); setProgram('all'); setStatus('all'); };
 
   usePageList([
@@ -353,10 +350,10 @@ export default function OrgStartupsPage() {
     choiceControl('program_filter', 'Program filter', 'Φίλτρο προγράμματος', [{ value: 'all', en: 'All programs', el: 'Όλα τα προγράμματα' }, ...programs.map((p) => ({ value: p, en: p, el: p }))], program, setProgram),
     choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', [
       { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
-      { value: 'active', en: 'Active', el: 'Ενεργές' },
-      { value: 'graduated', en: 'Graduated', el: 'Αποφοιτήσασες' },
+      { value: 'active', en: 'Active', el: 'Ενεργά' },
+      { value: 'graduated', en: 'Graduated', el: 'Αποφοίτησαν' },
       { value: 'paused', en: 'Paused', el: 'Σε παύση' },
-      { value: 'dropped', en: 'Dropped', el: 'Αποχωρήσασες' },
+      { value: 'dropped', en: 'Dropped', el: 'Αποχώρησαν' },
     ], status, setStatus),
     { id: 'clear_filters', labelEn: 'Clear the startup filters', labelEl: 'Καθαρισμός φίλτρων startups', writes: false, unavailableEn: filtersActive ? undefined : 'No filter is set.', unavailableEl: filtersActive ? undefined : 'Δεν υπάρχει φίλτρο.', run: clearFilters },
   ]);
@@ -371,9 +368,78 @@ export default function OrgStartupsPage() {
     );
   }
 
+  const statCount = (n: number) => (reading ? '—' : n);
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'award',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'total', label: 'Total startups', labelEl: 'Σύνολο startups', value: statCount(startups.length) },
+            { key: 'active', label: 'Active', labelEl: 'Ενεργά', value: statCount(startups.filter((s) => s.status === 'active').length) },
+            { key: 'graduated', label: 'Graduated', labelEl: 'Αποφοίτησαν', value: statCount(startups.filter((s) => s.status === 'graduated').length) },
+            /* "Avg. readiness" shows once a startup carries a score: no
+               member row does, so it read "—" for every live organisation
+               (docs §96). */
+            ...(scored.length > 0
+              ? [{
+                  key: 'readiness',
+                  label: 'Avg. readiness',
+                  labelEl: 'Μέση ετοιμότητα',
+                  value: `${Math.round(scored.reduce((acc, s) => acc + (s.readinessScore ?? 0), 0) / scored.length)}%`,
+                }]
+              : []),
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: railFilters || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Program"
+            titleEl="Πρόγραμμα"
+            options={[
+              { value: 'all', en: 'All programs', el: 'Όλα τα προγράμματα', count: startups.length },
+              ...programs.map((p) => ({ value: p, en: p, el: p, count: startups.filter((s) => s.program === p).length })),
+            ]}
+            value={program}
+            onChange={setProgram}
+          />
+          <RailOptions
+            title="Status"
+            titleEl="Κατάσταση"
+            options={[
+              { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις', count: startups.length },
+              { value: 'active', en: 'Active', el: 'Ενεργά', count: startups.filter((s) => s.status === 'active').length },
+              { value: 'graduated', en: 'Graduated', el: 'Αποφοίτησαν', count: startups.filter((s) => s.status === 'graduated').length },
+              { value: 'paused', en: 'Paused', el: 'Σε παύση', count: startups.filter((s) => s.status === 'paused').length },
+              { value: 'dropped', en: 'Dropped', el: 'Αποχώρησαν', count: startups.filter((s) => s.status === 'dropped').length },
+            ]}
+            value={status}
+            onChange={setStatus}
+          />
+          {filtersActive && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={clearFilters} />
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell showHelp
+      rail={rail}
       title="Portfolio Startups"
+      titleEl="Startups χαρτοφυλακίου"
       description="Startups currently in your programs and graduates. Track readiness, milestones, and program assignment."
       descriptionEl="Νεοφυείς που συμμετέχουν στα προγράμματά σας και απόφοιτοι. Παρακολουθήστε ετοιμότητα, ορόσημα και ανάθεση προγράμματος."
       actions={(
@@ -393,48 +459,8 @@ export default function OrgStartupsPage() {
           />
         )}
 
-        {/* Figures and filters show over startups that were read. "Avg.
-            Readiness" shows once a startup carries a score: no member row
-            does, so it read "—" for every live organisation (docs §96). */}
-        {(startups.length > 0 || filtersActive) && (<>
-        <div className={cn('grid grid-cols-2 gap-4', scored.length ? 'kpi-odd-span-md md:grid-cols-4' : 'md:grid-cols-3')}>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Total Startups" el="Σύνολο startups" compact /></p>
-              <p className="page-stat text-xl font-bold">{startups.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργά" compact /></p>
-              <p className={cn('page-stat text-xl font-bold', STATUS.success.icon)}>
-                {startups.filter((s) => s.status === 'active').length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Graduated" el="Αποφοίτησαν" compact /></p>
-              <p className={cn('page-stat text-xl font-bold', STATUS.info.icon)}>
-                {startups.filter((s) => s.status === 'graduated').length}
-              </p>
-            </CardContent>
-          </Card>
-          {scored.length > 0 && (
-            <Card>
-              <CardContent>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Avg. Readiness" el="Μέση ετοιμότητα" compact /></p>
-                <p className="page-stat text-xl font-bold">
-                  {`${Math.round(scored.reduce((acc, s) => acc + (s.readinessScore ?? 0), 0) / scored.length)}%`}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
+        {(startups.length > 0 || filtersActive) && (
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               aria-label={bilingualInline("Search startups", "Αναζήτηση startups")}
@@ -444,31 +470,7 @@ export default function OrgStartupsPage() {
               className="pl-9"
             />
           </div>
-          <Select value={program} onValueChange={setProgram}>
-            <SelectTrigger aria-label={bilingualAria('Program', 'Πρόγραμμα')} className="w-full sm:w-[200px]">
-              <SelectValue placeholder={sayOne("Program", "Πρόγραμμα")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all"><BilingualText en="All programs" el="Όλα τα προγράμματα" compact /></SelectItem>
-              {programs.map((p) => (
-                <SelectItem key={p} value={p}>{p}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger aria-label={bilingualAria('Status', 'Κατάσταση')} className="w-full sm:w-[150px]">
-              <SelectValue placeholder={sayOne("Status", "Κατάσταση")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all"><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
-              <SelectItem value="active"><BilingualText en="Active" el="Ενεργά" compact /></SelectItem>
-              <SelectItem value="graduated"><BilingualText en="Graduated" el="Αποφοίτησαν" compact /></SelectItem>
-              <SelectItem value="paused"><BilingualText en="Paused" el="Σε παύση" compact /></SelectItem>
-              <SelectItem value="dropped"><BilingualText en="Dropped" el="Αποχώρησαν" compact /></SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        </>)}
+        )}
 
         {/* Results. "10 startups" repeated the Total tile above it; the line
             speaks only when a filter narrows the list. */}
