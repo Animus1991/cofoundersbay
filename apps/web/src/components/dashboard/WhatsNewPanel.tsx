@@ -21,6 +21,9 @@ const ALL: readonly WhatsNewAudience[] = ['founder', 'investor', 'mentor', 'org'
  * renders the same on the server and in the browser.
  */
 const ITEMS: Item[] = [
+  // 11 November 2026: what the stoixos comparison added (docs §122)
+  { href: '/matches?tour=1', en: 'The page tour, again', el: 'Η ξενάγηση της σελίδας, ξανά', hintEn: 'Open the page help and press "Show the page tour again", add ?tour=1 to the address, or ask the assistant to show you around.', hintEl: 'Ανοίξτε τη βοήθεια της σελίδας και πατήστε «Δείτε ξανά την ξενάγηση», προσθέστε ?tour=1 στη διεύθυνση, ή ζητήστε από τον βοηθό να σας ξεναγήσει.', for: ALL },
+  { href: '/ai', en: 'The assistant says what it is reading', el: 'Ο βοηθός λέει τι διαβάζει', hintEn: 'While an answer is on its way, the wait names each step - your milestones, your events, the writing - with a bar that moves.', hintEl: 'Όσο έρχεται η απάντηση, η αναμονή ονομάζει κάθε βήμα - τα ορόσημά σας, τις εκδηλώσεις, τη σύνταξη - με μια μπάρα που προχωρά.', for: ALL },
   // 17–18 October 2026: what the GitHub comparison added, each where it shows
   { href: '/dashboard', en: 'Your next move, first', el: 'Η επόμενη κίνησή σας, πρώτη', hintEn: 'One box at the top of every home: what comes up on the brand tint, what waits on you on the amber one, with one button.', hintEl: 'Ένα πλαίσιο στην κορυφή κάθε αρχικής: ό,τι έρχεται με το χρώμα της πλατφόρμας, ό,τι σας περιμένει με κεχριμπαρί, με ένα κουμπί.', for: ALL },
   { href: '/discover', en: 'Search with qualifiers', el: 'Αναζήτηση με φίλτρα-λέξεις', hintEn: 'Type "role:mentor location:Athens" and press Enter; skill:, industry: and stage: work too, and the examples under the empty field type themselves.', hintEl: 'Γράψτε «ρόλος:μέντορας τόπος:Αθήνα» και πατήστε Enter· δουλεύουν και τα δεξιότητα:, κλάδος:, στάδιο:, και τα παραδείγματα κάτω από το κενό πεδίο γράφονται μόνα τους.', for: ALL },

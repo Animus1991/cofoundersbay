@@ -1,4 +1,5 @@
 import { canUseAction, readNaturalSearch } from '@cofounderbay/shared';
+import type { AssistantReadEvent } from '@/lib/assistant-progress';
 import {
   getMeProfile,
   getNotificationUnreadCount,
@@ -17,7 +18,7 @@ import type { AIToolCallProposal } from '@/lib/ai-api';
 import { isAppLocale, translate, type TranslateVars } from '@/lib/i18n/translate';
 import type { AppLocale } from '@/lib/locale';
 import { isPreviewDemo } from '@/lib/preview-demo';
-import { planCopilotTools, detectPersonName, asksAboutThisPage, asksAboutSamples, railSectionFor, pageControlFor, pageListFor } from '@/lib/copilot-planner';
+import { planCopilotTools, detectPersonName, asksAboutThisPage, asksAboutSamples, railSectionFor, wantsPageTour, pageControlFor, pageListFor } from '@/lib/copilot-planner';
 import { AREA_READERS, isAreaRead } from '@/lib/copilot-reads';
 import { pageKey, pageLabel } from '@/lib/usage-profile';
 import { BUILDER_FIELDS } from '@/lib/builder-fields';
@@ -55,6 +56,11 @@ export type PageContextPacket = {
    * assistant opens a section with `open_rail_section` by its id.
    */
   rail?: { sections: { id: string; label: string; badge?: number | string }[] };
+  /**
+   * The spotlight tours mounted on the page (`FirstRunTour` ids), so "show me
+   * around" can play one with `show_page_tour` (docs §122).
+   */
+  tours?: readonly string[];
   /**
    * The page’s own controls (`usePageControls`), in the reader’s language:
    * what each is called, whether it writes, its choices and the one in
@@ -358,6 +364,14 @@ export type CopilotTurnOptions = {
    * the two asked for it, and there is no second implementation to drift.
    */
   tools?: readonly PlannedTool[];
+  /**
+   * Told before each read runs, so the wait can name it (docs §122). The
+   * event carries the tool and its place among the turn's reads; the hook
+   * turns it into a phase and `AssistantWorking` into a line and a bar. Reads
+   * that a path answers whole (the week plan) report nothing: there is no
+   * loop to narrate, and the line stays on "Reading your question".
+   */
+  onRead?: (event: AssistantReadEvent) => void;
 };
 
 /**
@@ -591,6 +605,28 @@ export async function runCopilotTurn(
     }
   }
 
+  // The page's tour (docs §122). Named when the reader asks about the page,
+  // and offered when they ask to be shown around; a page without one gets
+  // nothing, so the assistant never promises a tour the page cannot play.
+  const tours = pageContext?.tours ?? [];
+  if (tours.length > 0) {
+    if (asksAboutThisPage(userMessage)) {
+      sections.push(t('This page has a short tour; ask me to show it.'));
+    }
+    if (wantsPageTour(userMessage)) {
+      sections.push(t('The tour walks through this page step by step.'));
+      actions.push({
+        id: newId('tour'),
+        tool: 'show_page_tour',
+        title: t('Show the page tour'),
+        description: t('Plays the page’s short tour from its first step. Nothing is changed.'),
+        confirmLabel: t('Show'),
+        payload: { tour: tours[0] },
+        status: 'pending',
+      });
+    }
+  }
+
   // The page's own controls. Offered by name when the reader asks what the
   // page is, and proposed when a message names one - with the choice it
   // names. A view control runs as `use_page_control`, a command that writes
@@ -657,14 +693,15 @@ export async function runCopilotTurn(
   // is known, and a briefing on readiness and intros under "Status filter:
   // Suspended" only buried the answer. The model's own reads are untouched.
   const answeredByPage = Boolean(askedList)
-    || actions.some((a) => a.tool === 'use_page_control' || a.tool === 'run_page_command' || a.tool === 'open_rail_section')
+    || actions.some((a) => a.tool === 'use_page_control' || a.tool === 'run_page_command' || a.tool === 'open_rail_section' || a.tool === 'show_page_tour')
     || sections.some((line) => line.length > 0 && pageControls.some((c) => line.startsWith(c.label)));
   if (answeredByPage && !options?.tools) {
     planned = planned.filter((t) => t.name !== 'get_graph');
     usedTools = planned.map((t) => t.name);
   }
 
-  for (const tool of planned) {
+  for (const [readIndex, tool] of planned.entries()) {
+    options?.onRead?.({ tool: tool.name, index: readIndex + 1, total: planned.length });
     // The product areas — events, milestones, jobs and the rest. One arm for
     // all of them, because each reader returns the same three things a turn is
     // made of. A failing area is named as unavailable rather than failing the

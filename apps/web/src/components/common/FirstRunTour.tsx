@@ -10,6 +10,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { useAuthenticatedSession } from '@/hooks/useAuthenticatedSession';
 import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
+import { TOUR_REPLAY_EVENT, registerTour, wantsTourFromUrl } from '@/lib/tour-replay';
 
 export type TourStep = {
   /** Value of the `data-tour` attribute on the element to spotlight. */
@@ -70,30 +71,54 @@ export function FirstRunTour({ tourId, steps, ready = true }: FirstRunTourProps)
   const popoverRef = useRef<HTMLDivElement>(null);
   const started = useRef(false);
 
-  // Decide once whether to run: never seen, not still resolving who the user is,
-  // page content mounted, and at least one anchor actually on screen.
-  useEffect(() => {
-    if (started.current || !ready || isChecking) return;
-    let seen = false;
-    try {
-      seen = window.localStorage.getItem(key) === 'done';
-    } catch { seen = true; }
-    if (seen) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches && window.innerWidth < 640) {
-      // Reduced-motion mobile readers get the contextual help instead of an overlay.
-      return;
-    }
-    const timer = window.setTimeout(() => {
+  // Play from the first step, with the anchors that are on screen now.
+  const start = useCallback(
+    (how: 'first_visit' | 'replay') => {
       const present = steps.filter((s) => findTarget(s.target));
-      if (present.length === 0) return;
+      if (present.length === 0) return false;
       started.current = true;
       setAvailable(present);
       setIndex(0);
       setActive(true);
-      void analytics.track('tour_started', { tour: tourId, steps: present.length });
+      void analytics.track('tour_started', { tour: tourId, steps: present.length, how });
+      return true;
+    },
+    [steps, tourId],
+  );
+
+  // Decide once whether to run: never seen (or asked for again from the
+  // address bar, docs §122), not still resolving who the user is, page content
+  // mounted, and at least one anchor actually on screen.
+  useEffect(() => {
+    if (started.current || !ready || isChecking) return;
+    const asked = wantsTourFromUrl(window.location.search, tourId);
+    let seen = false;
+    try {
+      seen = window.localStorage.getItem(key) === 'done';
+    } catch { seen = true; }
+    if (seen && !asked) return;
+    if (!asked && window.matchMedia('(prefers-reduced-motion: reduce)').matches && window.innerWidth < 640) {
+      // Reduced-motion mobile readers get the contextual help instead of an overlay.
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      start(asked ? 'replay' : 'first_visit');
     }, 700);
     return () => window.clearTimeout(timer);
-  }, [ready, isChecking, key, steps, tourId]);
+  }, [ready, isChecking, key, tourId, start]);
+
+  // The page help offers "Show the tour again" while a tour is mounted here,
+  // and this is the tour it reaches (docs §122).
+  useEffect(() => registerTour(tourId), [tourId]);
+  useEffect(() => {
+    const onReplay = (event: Event) => {
+      const wanted = (event as CustomEvent<{ tourId?: string }>).detail?.tourId;
+      if (wanted && wanted !== tourId) return;
+      start('replay');
+    };
+    window.addEventListener(TOUR_REPLAY_EVENT, onReplay);
+    return () => window.removeEventListener(TOUR_REPLAY_EVENT, onReplay);
+  }, [tourId, start]);
 
   const finish = useCallback(
     (how: 'completed' | 'skipped') => {
@@ -244,16 +269,28 @@ export function FirstRunTour({ tourId, steps, ready = true }: FirstRunTourProps)
         <p id={bodyId} className="text-sm leading-relaxed text-muted-foreground">{body}</p>
 
         <div className="mt-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5" aria-label={`${index + 1} / ${available.length}`}>
+          <div className="flex items-center gap-0.5" role="group" aria-label={bilingualAria('Tour steps', 'Βήματα ξενάγησης')}>
             {available.map((s, i) => (
-              <span
+              // A dot is a way to a step, not only a count (the prototype's
+              // welcome guide lets a reader jump; docs §122). The tap box is
+              // 24px; the mark inside keeps the ladder's 6px.
+              <button
                 key={s.target}
-                aria-hidden="true"
-                className={cn(
-                  'h-1.5 rounded-full motion-safe:transition-all',
-                  i === index ? 'w-5 bg-primary' : i < index ? 'w-1.5 bg-primary/60' : 'w-1.5 bg-border',
-                )}
-              />
+                type="button"
+                onClick={() => setIndex(i)}
+                aria-label={bilingualAria(`Step ${i + 1} of ${available.length}`, `Βήμα ${i + 1} από ${available.length}`)}
+                aria-current={i === index ? 'step' : undefined}
+                className="flex h-6 items-center px-0.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                data-testid={`first-run-tour-dot-${i + 1}`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'block h-1.5 rounded-full motion-safe:transition-all',
+                    i === index ? 'w-5 bg-primary' : i < index ? 'w-1.5 bg-primary/60' : 'w-1.5 bg-border',
+                  )}
+                />
+              </button>
             ))}
             <span className="ml-1 text-2xs tabular-nums text-muted-foreground">{index + 1}/{available.length}</span>
           </div>

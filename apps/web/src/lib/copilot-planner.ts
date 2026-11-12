@@ -390,6 +390,23 @@ const RAIL_FAMILIES: { ask: RegExp; section: RegExp; selfVerb?: boolean }[] = [
 ];
 const LOOK_VERBS = /\b(open|show|see|view|where|find|display|bring up|take me|go to)\b|άνοιξ|ανοιξ|δείξ|δειξ|πού|που είναι|εμφάνισ|βρίσκ/i;
 
+/**
+ * Whether the reader asks to be shown around the page (docs §122): the tour
+ * by name, "walk me through", "show me around", or the Greek ξενάγηση /
+ * περιήγηση. A question that only mentions a tour of something else ("the
+ * investor tour") is not one, so the noun needs a look verb or "this page"
+ * beside it, or to stand alone.
+ */
+export function wantsPageTour(message: string): boolean {
+  const m = message.trim();
+  if (/\b(walk me through|show me around|guide me (through|around))\b/i.test(m)) return true;
+  if (/ξενάγησ|ξεναγησ|περιήγησ|περιηγησ|δείξε μου (τη|την|αυτή τη|αυτήν την) σελίδα|δειξε μου (τη|την) σελιδα/i.test(m)) return true;
+  if (/\btour\b/i.test(m)) {
+    return LOOK_VERBS.test(m) || /\b(this|the) page\b|\bagain\b|\breplay\b|\brestart\b/i.test(m) || /^\s*(the\s+)?(page\s+)?tour\s*[.!?]?\s*$/i.test(m);
+  }
+  return false;
+}
+
 export function railSectionFor<T extends { id: string; label: string }>(
   message: string,
   sections: readonly T[],

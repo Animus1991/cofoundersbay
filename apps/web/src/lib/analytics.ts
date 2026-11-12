@@ -123,7 +123,7 @@ export type AnalyticsEvent =
   // Feature flags (A/B)
   | { event: 'feature_flag_evaluated'; properties: { flag: string; variant: string } }
   // First-run tours
-  | { event: 'tour_started'; properties: { tour: string; steps: number } }
+  | { event: 'tour_started'; properties: { tour: string; steps: number; how?: 'first_visit' | 'replay' } }
   | { event: 'tour_completed'; properties: { tour: string; steps: number } }
   | { event: 'tour_skipped'; properties: { tour: string; step_index: number } };
 

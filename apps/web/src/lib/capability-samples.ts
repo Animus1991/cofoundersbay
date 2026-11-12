@@ -61,6 +61,7 @@ export const CAPABILITY_SAMPLES: Record<string, { en: string; el: string }> = {
   get_usage_insights: { en: 'How can I work faster here?', el: 'Πώς μπορώ να δουλεύω πιο γρήγορα εδώ;' },
   navigate: { en: 'Open matches', el: 'Άνοιξε τις αντιστοιχίσεις' },
   open_rail_section: { en: 'Show me the filters on this page', el: 'Δείξε μου τα φίλτρα αυτής της σελίδας' },
+  show_page_tour: { en: 'Show me around this page', el: 'Ξενάγησέ με σε αυτή τη σελίδα' },
   use_page_control: { en: 'Show only suspended users', el: 'Δείξε μόνο τους χρήστες σε αναστολή' },
   run_page_command: { en: 'Suspend Spyros Karras', el: 'Θέσε σε αναστολή τον Σπύρο Κάρρα' },
   shortlist_add: { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη λίστα' },

@@ -35,6 +35,8 @@ import { getActionSpec, undoAvailable, undoAction as runUndo } from '@/lib/actio
 import { recordAIAction, type AIActionOutcome } from '@/lib/ai-api';
 import type { CopilotAction, CopilotCitation, CopilotTurnResult } from '@/lib/copilot-types';
 import { CONNECTION_KEYS, MESSAGE_KEYS, PROFILE_KEYS, queryKeys, qk } from '@/lib/query-keys';
+import { haptic } from '@/lib/haptics';
+import type { AssistantPhase } from '@/lib/assistant-progress';
 
 export interface AIMessage {
   id: string;
@@ -74,6 +76,8 @@ export interface UseAIChatReturn {
   conversationId: string | null;
   conversations: AIConversation[];
   pendingActionId: string | null;
+  /** What the turn in flight is doing; `null` between turns (docs §122). */
+  phase: AssistantPhase | null;
   sendMessage: (content: string) => Promise<void>;
   setAgent: (agentId: string) => void;
   clearMessages: () => void;
@@ -151,6 +155,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   const [conversationId, setConversationId] = useState<string | null>(options.conversationId || null);
   const [conversations, setConversations] = useState<AIConversation[]>([]);
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
+  const [phase, setPhase] = useState<AssistantPhase | null>(null);
   /**
    * The same claim, readable synchronously. State updates land on the next
    * render, so two clicks in one tick both saw `pendingActionId === null` and
@@ -299,13 +304,21 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       };
       setMessages((prev) => [...prev, assistantMessage]);
       setIsStreaming(true);
+      setPhase({ kind: 'planning' });
+      // A phase only lands while this turn is the current one: a stale turn's
+      // last read must not relabel the wait of the turn that replaced it.
+      const showPhase = (next: AssistantPhase | null) => {
+        if (isCurrent()) setPhase(next);
+      };
 
       try {
         let turn: CopilotTurnResult | undefined;
 
         if (enableCopilot) {
           try {
-            turn = await runCopilotTurn(content.trim(), pageContext);
+            turn = await runCopilotTurn(content.trim(), pageContext, {
+              onRead: (read) => showPhase({ kind: 'reading', ...read }),
+            });
             if (!isCurrent()) return;
           } catch {
             /* proceed without copilot tools */
@@ -353,6 +366,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           // below; reads are run after the stream so the model can finish.
           let modelCalls: AIToolCallProposal[] = [];
 
+          showPhase({ kind: 'writing' });
           try {
             for await (const data of streamAIChat(request, controller.signal)) {
               if (!isCurrent()) return;
@@ -415,7 +429,10 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           let readActions: CopilotAction[] = [];
           if (modelReads.length) {
             try {
-              const readTurn = await runCopilotTurn(content.trim(), pageContext, { tools: modelReads });
+              const readTurn = await runCopilotTurn(content.trim(), pageContext, {
+                tools: modelReads,
+                onRead: (read) => showPhase({ kind: 'reading_more', ...read }),
+              });
               if (!isCurrent()) return;
               readCitations = readTurn.citations;
               readActions = readTurn.actions;
@@ -424,6 +441,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
                 const base = fullContent;
                 const separator = base.trim() ? '\n\n' : '';
                 let continuation = '';
+                showPhase({ kind: 'writing' });
                 try {
                   for await (const data of streamAIChat(
                     followUpRequest(request, base, modelReads, readTurn.message),
@@ -518,6 +536,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       } finally {
         if (abortControllerRef.current === controller) {
           setIsStreaming(false);
+          setPhase(null);
           abortControllerRef.current = null;
         }
       }
@@ -593,6 +612,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         }
         if (!result.ok) {
           audit(action, 'failed');
+          haptic('error');
           updateAction(action.id, { status: 'error', error: result.error ?? 'Action failed' });
           return;
         }
@@ -605,6 +625,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         // Carried on the card so the undo can act on what was created, not on
         // what was asked for. Without it a create can only ever be `none`.
         updateAction(action.id, { status: 'done', undoContext: result.undo, error: undefined });
+        haptic('done');
         return { href: result.href };
       } finally {
         pendingRef.current = null;
@@ -643,6 +664,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         invalidateFor(action.tool);
         audit(action, 'undone');
         updateAction(action.id, { status: 'undone', error: undefined });
+        haptic('undone');
         return true;
       } finally {
         pendingRef.current = null;
@@ -709,6 +731,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     conversationId,
     conversations,
     pendingActionId,
+    phase,
     sendMessage,
     setAgent,
     clearMessages,

@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { HelpCallout } from '@/components/common/HelpCallout';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { Button } from '@/components/ui/button';
+import { BilingualText } from '@/components/common/BilingualText';
+import { replayTour, useMountedTours } from '@/lib/tour-replay';
 
 type PageContextualHelpProps = {
   /** Override registry help id */
@@ -2043,6 +2046,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
 export function PageContextualHelp({ id, title, titleEl, children, defaultOpen, compact, titleClassName }: PageContextualHelpProps) {
   const meta = usePageMeta();
   const { primary } = useLanguagePreference();
+  const tours = useMountedTours();
   const helpId = id ?? meta?.helpId;
   const helpTitle = title ?? meta?.helpTitle ?? meta?.title;
   const helpTitleEl = titleEl ?? meta?.helpTitleEl ?? meta?.titleEl;
@@ -2058,6 +2062,16 @@ export function PageContextualHelp({ id, title, titleEl, children, defaultOpen, 
 
   if (!body) return null;
 
+  // A page with a spotlight tour offers it again from its help (docs §122);
+  // a page without one shows nothing here rather than a button that does nothing.
+  const replay = tours.length ? (
+    <p className="pt-1">
+      <Button type="button" variant="outline" size="sm" onClick={() => replayTour()} data-testid="help-replay-tour">
+        <BilingualText en="Show the page tour again" el="Δείτε ξανά την ξενάγηση της σελίδας" compact />
+      </Button>
+    </p>
+  ) : null;
+
   return (
     <HelpCallout
       id={helpId}
@@ -2068,6 +2082,7 @@ export function PageContextualHelp({ id, title, titleEl, children, defaultOpen, 
       titleClassName={titleClassName}
     >
       {body}
+      {replay}
     </HelpCallout>
   );
 }

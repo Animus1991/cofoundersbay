@@ -784,6 +784,42 @@ export const ACTION_DECLARATIONS = [
     confirmLabel: { en: 'Open', el: 'Άνοιγμα' },
   },
   {
+    // The page's spotlight tour, played again on request (docs §122). A tour
+    // runs once on a first visit and was then unreachable: "show me around
+    // this page" got a description and no way to see it. The page context
+    // lists the tours mounted on the page; only those exist.
+    id: 'show_page_tour',
+    kind: 'mutation',
+    label: { en: 'Show the page tour', el: 'Εμφάνιση της ξενάγησης σελίδας' },
+    description: {
+      en: 'Play the current page’s short spotlight tour from its first step, even if the reader has seen it. Only tours listed in the page context exist.',
+      el: 'Παίζει τη σύντομη ξενάγηση της τρέχουσας σελίδας από το πρώτο βήμα, ακόμη κι αν ο χρήστης την έχει δει. Υπάρχουν μόνο οι ξεναγήσεις που αναφέρει το πλαίσιο της σελίδας.',
+    },
+    params: [
+      {
+        name: 'tour',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'The tour id, exactly as the page context’s `tours` lists it, e.g. "matches".',
+          el: 'Το id της ξενάγησης, όπως ακριβώς το αναφέρει το `tours` του πλαισίου σελίδας, π.χ. «matches».',
+        },
+      },
+    ],
+    // It shows an overlay; it changes no data and moves the reader nowhere.
+    writes: false,
+    invalidates: [],
+    reversal: {
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is written, so there is nothing to undo. The tour closes with Skip, Escape or its last step.',
+        el: 'Δεν γράφεται τίποτα, άρα δεν υπάρχει κάτι να αναιρεθεί. Η ξενάγηση κλείνει με Παράλειψη, Escape ή το τελευταίο βήμα της.',
+      },
+    },
+    auditSubject: { param: 'tour', entityType: 'page_tour' },
+    confirmLabel: { en: 'Show', el: 'Εμφάνιση' },
+  },
+  {
     // A page's own controls, as the page context lists them under `controls`:
     // filters, periods, sorting, exports, opening a panel. The page registers
     // the same handler its button calls (`usePageControls`), so this reaches

@@ -44,11 +44,15 @@ await ctx.addCookies([
   { name: 'cfb_session', value: 'probe', domain: 'localhost', path: '/' },
   { name: 'cfb_primary_role', value: process.env.ROLE ?? 'platform_admin', domain: 'localhost', path: '/' },
 ]);
-await ctx.addInitScript(() => {
+await ctx.addInitScript((languageDisplay) => {
   localStorage.setItem('user', JSON.stringify({ id: 'u_1', email: 'a@b.test', role: 'admin' }));
   localStorage.setItem('cfb_demo_data', '1');
   localStorage.setItem('cfb_cookie_consent', 'true');
-});
+  // The product shows one language until the reader asks for both (docs
+  // §122.5): the Greek-share column measures coverage, so the sweep asks for
+  // both unless LANG_DISPLAY says otherwise.
+  localStorage.setItem('cfb:language-display', languageDisplay);
+}, process.env.LANG_DISPLAY === 'primary-only' ? 'primary-only' : 'bilingual');
 const page = await ctx.newPage();
 const rows = [];
 console.log('route | status | errors | xScroll | unnamed | greek% | askAI | sampleNotice | deadBands | blankIcons | words');
@@ -72,7 +76,9 @@ for (const route of routes) {
     const unnamed = [...main.querySelectorAll('button,a[href],[role=button]')].filter((el) => {
       const s = getComputedStyle(el); if (s.display === 'none' || s.visibility === 'hidden') return false;
       // An image link is named by its picture's alt (the tenant logo on /login).
-      const name = (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.getAttribute('title') || el.textContent || el.querySelector('img[alt]')?.getAttribute('alt') || '').trim();
+      // A switch or field is named by its <label for>, or by the label around it, like any form control.
+      const labelled = (el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`)?.textContent) || el.closest('label')?.textContent || '';
+      const name = (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.getAttribute('title') || el.textContent || el.querySelector('img[alt]')?.getAttribute('alt') || labelled || '').trim();
       return !name || /^\d+$/.test(name);
     }).length;
     const askAI = !!main.querySelector('[aria-label*="Ask AI" i],[aria-label*="Ρωτήστε" i],a[href^="/ai"],button[data-ask-ai]') || /Ask AI|Ρωτήστε το AI/.test(txt);

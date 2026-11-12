@@ -36,7 +36,7 @@ function setup(opts: { sender?: string; ageMinutes?: number; validated?: boolean
       })),
     },
   };
-  (prisma as { $transaction: unknown }).$transaction = vi.fn(async (fn: (tx: typeof prisma) => Promise<unknown>) => fn(prisma));
+  (prisma as unknown as { $transaction: unknown }).$transaction = vi.fn(async (fn: (tx: typeof prisma) => Promise<unknown>) => fn(prisma));
   const service = new MessagingService(prisma as never, {} as never, {} as never);
   return { service, prisma };
 }

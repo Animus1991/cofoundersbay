@@ -73,6 +73,7 @@ import { demoCriterionState, toggleDemoCriterion } from '@/lib/readiness-demo';
 import { PAGE_REGISTRY, getPageMeta } from '@/lib/page-registry';
 import { runCanvasCommand } from '@/lib/canvas/canvas-command-bus';
 import { currentRailSections, openCurrentRailSection } from '@/components/layout/PageRailContext';
+import { mountedTours, replayTour } from '@/lib/tour-replay';
 import { runPageControl } from '@/lib/page-controls';
 import { FORM_DRAFT_ROUTES, stashFormDraft, type FormDraftId } from '@/lib/form-draft';
 import { followPerson, unfollowPerson } from '@/lib/updates-api';
@@ -386,6 +387,15 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
         ? `This page has no "${section}" section. Its tools are: ${available.join(', ')}.`
         : 'This page has no tools panel.',
     };
+  },
+
+  show_page_tour: async (payload) => {
+    const tour = requireString(payload, 'tour');
+    if (!tour) return { ok: false, error: 'Missing tour' };
+    // The page changed, or the model named a tour this page does not mount.
+    if (!mountedTours().includes(tour)) return { ok: false, error: 'This page has no tour to show.' };
+    replayTour(tour);
+    return { ok: true };
   },
 
   shortlist_add: async (payload) => {

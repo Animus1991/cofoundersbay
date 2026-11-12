@@ -5,7 +5,6 @@ import { useGuardedRouter } from '@/hooks/useGuardedRouter';
 import {
   Check,
   Copy,
-  Loader2,
   List,
   Maximize2,
   Plus,
@@ -32,6 +31,8 @@ import { getAgentGlyph } from '@/lib/ai-api';
 import { useAIChat, type AIMessage } from '@/hooks/useAIChat';
 import { usePageContext } from '@/hooks/usePageContext';
 import { ActionCard } from '@/components/ai/ActionCard';
+import { AssistantWorking } from '@/components/ai/AssistantWorking';
+import type { AssistantPhase } from '@/lib/assistant-progress';
 import { CopilotEmptyState } from '@/components/ai/CopilotEmptyState';
 import { CitationList } from '@/components/ai/CitationChip';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
@@ -126,6 +127,7 @@ function ConfirmAll({ actions, busy, onConfirmAll }: {
 
 function AssistantBody({
   message,
+  phase,
   pendingActionId,
   onConfirm,
   onConfirmAll,
@@ -134,6 +136,8 @@ function AssistantBody({
   onRetry,
 }: {
   message: AIMessage;
+  /** The stage of the turn writing this message; `null` once it has landed. */
+  phase: AssistantPhase | null;
   pendingActionId: string | null;
   onConfirm: (action: CopilotAction) => void;
   onConfirmAll: (actions: CopilotAction[]) => void;
@@ -152,10 +156,7 @@ function AssistantBody({
   return (
     <div className="space-y-2">
       {message.isStreaming && !message.content ? (
-        <div className="type-ui flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          <BilingualText en="Working across your graph…" el="Εργασία στο γράφο σας…" compact />
-        </div>
+        <AssistantWorking phase={phase} />
       ) : message.failed ? (
         // Nothing arrived: say so in the reader's language, with the way on.
         <div className="type-identity space-y-1.5 text-foreground">
@@ -645,6 +646,7 @@ export function CopilotWorkspace({
                   ) : (
                     <AssistantBody
                       message={msg}
+                      phase={msg.isStreaming ? chat.phase : null}
                       pendingActionId={chat.pendingActionId}
                       onConfirm={(a) => void handleConfirm(a)}
                       onConfirmAll={(actions) => void handleConfirmAll(actions)}

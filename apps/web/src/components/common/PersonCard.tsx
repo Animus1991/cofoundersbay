@@ -83,7 +83,10 @@ export function PersonCard({
     <Card
       data-person-card=""
       className={cn(
-        'group relative overflow-hidden transition-all duration-200 hover:border-primary/30',
+        // A column, so a row of cards in a grid keeps its actions on one line
+        // at the bottom: the grid stretches every card to the tallest, and a
+        // shorter card left an 83px band under its buttons (docs §122.5).
+        'group relative flex flex-col overflow-hidden transition-all duration-200 hover:border-primary/30',
         selected && 'ring-2 ring-primary ring-offset-1',
         onOpen && 'cursor-pointer',
         className,
@@ -96,7 +99,7 @@ export function PersonCard({
       {...(onOpen ? pressableProps({ role: 'link', label: bilingualAria(`Preview ${name}`, `Προεπισκόπηση: ${name}`) }) : {})}
     >
       {edge ? <div className="absolute inset-y-0 left-0 w-0.5 transition-all duration-200 group-hover:w-1" style={{ background: edge } as CSSProperties} /> : null}
-      <CardContent className="space-y-3">
+      <CardContent className="flex flex-1 flex-col gap-3">
         <CardHead
           mark={(
             // The name beside it is the same link: one stop for the keyboard and for a screen reader.
@@ -124,7 +127,7 @@ export function PersonCard({
         {fact ? <div className="text-xs text-foreground" data-person-fact="">{fact}</div> : null}
         {children}
         {primary || more.length > 0 ? (
-          <CardFoot end>
+          <CardFoot end className="mt-auto">
             {primary}
             <CardMoreMenu name={name} items={more} />
           </CardFoot>
