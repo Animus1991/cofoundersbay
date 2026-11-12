@@ -27,6 +27,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailStats } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -397,21 +398,14 @@ export default function AdminUserManagementPage() {
       labelEl: 'Σύνολα χρηστών',
       badge: stats.pending || null,
       content: (
-        <div className="space-y-2">
-          {[
-            { label: 'Total users', labelEl: 'Σύνολο χρηστών', value: stats.total },
-            { label: 'Active', labelEl: 'Ενεργοί', value: stats.active },
-            { label: 'Pending', labelEl: 'Σε αναμονή', value: stats.pending },
-            { label: 'Suspended', labelEl: 'Σε αναστολή', value: stats.suspended },
-          ].map(({ label, labelEl, value }) => (
-            <Card key={label}>
-              <CardContent>
-                <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-                <p className="page-stat text-2xl font-bold">{value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <RailStats
+          items={[
+            { key: 'total', label: 'Total users', labelEl: 'Σύνολο χρηστών', value: stats.total },
+            { key: 'active', label: 'Active', labelEl: 'Ενεργοί', value: stats.active },
+            { key: 'pending', label: 'Pending', labelEl: 'Σε αναμονή', value: stats.pending },
+            { key: 'suspended', label: 'Suspended', labelEl: 'Σε αναστολή', value: stats.suspended },
+          ]}
+        />
       ),
     },
     {

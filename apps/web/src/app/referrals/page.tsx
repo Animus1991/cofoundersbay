@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailStats } from '@/components/layout/RailParts';
 import Link from 'next/link';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { useDemoData } from '@/contexts/DemoDataContext';
@@ -351,34 +352,6 @@ function ReferralCard({ referral }: { referral: Referral }) {
   );
 }
 
-function StatsCards({ referrals, unread = false }: { referrals: Referral[]; unread?: boolean }) {
-  const totalInvited = referrals.length;
-  const signedUp = referrals.filter((r) => r.status !== 'pending' && r.status !== 'expired').length;
-  const rewarded = referrals.filter((r) => r.status === 'rewarded').length;
-  const totalEarned = referrals.reduce((sum, r) => sum + (r.rewardAmount || 0), 0);
-
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      <Card className="p-4">
-        <p className="page-stat text-xl font-bold">{unread ? '—' : totalInvited}</p>
-        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_invited')} el={referralsEl('stat_invited')} compact wrap /></p>
-      </Card>
-      <Card className="p-4">
-        <p className="page-stat text-xl font-bold">{unread ? '—' : signedUp}</p>
-        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_signed_up')} el={referralsEl('stat_signed_up')} compact wrap /></p>
-      </Card>
-      <Card className="p-4">
-        <p className="page-stat text-xl font-bold">{unread ? '—' : rewarded}</p>
-        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_rewarded')} el={referralsEl('stat_rewarded')} compact wrap /></p>
-      </Card>
-      <Card className="p-4">
-        <p className="page-stat text-xl font-bold">€{totalEarned}</p>
-        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_earned')} el={referralsEl('stat_earned')} compact wrap /></p>
-      </Card>
-    </div>
-  );
-}
-
 /** An invitation as the list shows it; a cancelled one reads as expired. */
 function inviteToReferral(invite: InviteItem): Referral {
   const status: ReferralStatus =
@@ -454,7 +427,16 @@ export default function ReferralsPage() {
       glyph: 'chart',
       labelEn: 'Summary',
       labelEl: 'Σύνοψη',
-      content: <StatsCards referrals={referrals} unread={readFailed} />,
+      content: (
+        <RailStats
+          items={[
+            { key: 'invited', label: referralsEn('stat_invited'), labelEl: referralsEl('stat_invited'), value: readFailed ? '—' : referrals.length },
+            { key: 'signed_up', label: referralsEn('stat_signed_up'), labelEl: referralsEl('stat_signed_up'), value: readFailed ? '—' : referrals.filter((r) => r.status !== 'pending' && r.status !== 'expired').length },
+            { key: 'rewarded', label: referralsEn('stat_rewarded'), labelEl: referralsEl('stat_rewarded'), value: readFailed ? '—' : referrals.filter((r) => r.status === 'rewarded').length },
+            { key: 'earned', label: referralsEn('stat_earned'), labelEl: referralsEl('stat_earned'), value: readFailed ? '—' : `€${referrals.reduce((sum, r) => sum + (r.rewardAmount || 0), 0)}` },
+          ]}
+        />
+      ),
     },
     {
       id: 'tier',

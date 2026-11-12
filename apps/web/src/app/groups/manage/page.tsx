@@ -47,6 +47,7 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { CoverThumb } from '@/components/common/CoverImage';
 import { demoCover } from '@/lib/demo/photos';
 import { FactLine } from '@/components/common/FactLine';
+import { PageFacts } from '@/components/common/PageFacts';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { demoMark } from '@/lib/demo/photos';
 import { ASK } from '@/lib/page-questions';
@@ -347,20 +348,15 @@ export default function ManageGroupsPage() {
             over a read that failed, said nothing the state did not. */}
         {groups.length > 0 && (
         <>
-        <div className={cn('grid grid-cols-2 gap-4', pendingKnown ? 'kpi-odd-span-md md:grid-cols-3' : 'md:grid-cols-2')}>
-          {[
-            { label: 'Communities managed', labelEl: 'Κοινότητες που διαχειρίζεστε', value: groups.length },
-            { label: 'Total Members', labelEl: 'Σύνολο μελών', value: totalMembers.toLocaleString('en-GB') },
-            ...(pendingKnown ? [{ label: 'Pending Requests', labelEl: 'Εκκρεμή αιτήματα', value: pendingTotal }] : []),
-          ].map(stat => (
-            <Card key={stat.label}>
-              <CardContent>
-                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
-                <p className="page-stat text-xl font-bold">{stat.value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <PageFacts
+          labelEn="Your communities in figures"
+          labelEl="Οι κοινότητές σας σε αριθμούς"
+          facts={[
+            { id: 'communities', value: groups.length, en: groups.length === 1 ? 'community managed' : 'communities managed', el: groups.length === 1 ? 'κοινότητα που διαχειρίζεστε' : 'κοινότητες που διαχειρίζεστε' },
+            { id: 'members', value: totalMembers.toLocaleString('en-GB'), en: totalMembers === 1 ? 'member' : 'members', el: totalMembers === 1 ? 'μέλος' : 'μέλη' },
+            ...(pendingKnown ? [{ id: 'pending', value: pendingTotal, en: pendingTotal === 1 ? 'pending request' : 'pending requests', el: pendingTotal === 1 ? 'εκκρεμές αίτημα' : 'εκκρεμή αιτήματα' }] : []),
+          ]}
+        />
 
         {/* Search */}
         <div className="relative max-w-sm">

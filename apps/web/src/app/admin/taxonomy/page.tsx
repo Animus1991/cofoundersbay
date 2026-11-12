@@ -2,6 +2,7 @@
 
 import { StatusText } from '@/components/common/StatusText';
 import { FactLine } from '@/components/common/FactLine';
+import { PageFacts } from '@/components/common/PageFacts';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -328,36 +329,16 @@ export default function AdminTaxonomyPage() {
     >
       <div className="space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Total Skills" el="Σύνολο δεξιοτήτων" compact /></p>
-              {isLoading ? <Skeleton className="h-8 w-16 mt-1" /> : <p className="page-stat text-xl font-bold">{total}</p>}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Categories" el="Κατηγορίες" compact /></p>
-              {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : <p className="page-stat text-xl font-bold">{categories.length}</p>}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Technical Skills" el="Τεχνικές δεξιότητες" compact /></p>
-              {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : (
-                <p className="page-stat text-xl font-bold">{skills.filter((s) => s.category === 'Technical').length}</p>
-              )}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Business Skills" el="Επιχειρηματικές δεξιότητες" compact /></p>
-              {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : (
-                <p className="page-stat text-xl font-bold">{skills.filter((s) => s.category === 'Business').length}</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        <PageFacts
+          labelEn="Skills in figures"
+          labelEl="Οι δεξιότητες σε αριθμούς"
+          facts={[
+            { id: 'total', value: isLoading ? null : total, en: total === 1 ? 'skill' : 'skills', el: total === 1 ? 'δεξιότητα' : 'δεξιότητες' },
+            { id: 'categories', value: isLoading ? null : categories.length, en: categories.length === 1 ? 'category' : 'categories', el: categories.length === 1 ? 'κατηγορία' : 'κατηγορίες' },
+            { id: 'technical', value: isLoading ? null : skills.filter((s) => s.category === 'Technical').length, en: skills.filter((s) => s.category === 'Technical').length === 1 ? 'technical skill' : 'technical skills', el: skills.filter((s) => s.category === 'Technical').length === 1 ? 'τεχνική δεξιότητα' : 'τεχνικές δεξιότητες' },
+            { id: 'business', value: isLoading ? null : skills.filter((s) => s.category === 'Business').length, en: skills.filter((s) => s.category === 'Business').length === 1 ? 'business skill' : 'business skills', el: skills.filter((s) => s.category === 'Business').length === 1 ? 'επιχειρηματική δεξιότητα' : 'επιχειρηματικές δεξιότητες' },
+          ]}
+        />
 
         {/* Skills Management */}
         <Card>

@@ -41,6 +41,7 @@ import {
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText, statusEl } from '@/components/common/StatusText';
 import { FactLine } from '@/components/common/FactLine';
+import { PageFacts } from '@/components/common/PageFacts';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -81,25 +82,17 @@ export default function SSOAdminPage() {
       descriptionEl="Ρυθμίστε την ενιαία σύνδεση (SSO) για τους οργανισμούς"
     >
       {/* Stats row */}
-      <div className="grid grid-cols-2 kpi-odd-span-lg gap-4 lg:grid-cols-4 mb-6">
-        {[
-          { label: 'Total Tenants', labelEl: 'Σύνολο οργανισμών', value: tenants?.length ?? 0, icon: Building2, color: 'text-primary-accessible' },
-          { label: 'Active Providers', labelEl: 'Ενεργοί πάροχοι', value: statsLoading ? '…' : (stats?.activeProviders ?? 0), icon: Key, color: 'text-status-info' },
-          { label: 'Total Providers', labelEl: 'Σύνολο παρόχων', value: statsLoading ? '…' : (stats?.totalProviders ?? 0), icon: Shield, color: 'text-status-accent' },
-          { label: 'Events (24h)', labelEl: 'Συμβάντα (24 ώρες)', value: statsLoading ? '…' : (stats?.recentEvents ?? 0), icon: Activity, color: 'text-status-success' },
-        ].map(({ label, labelEl, value, icon: Icon, color }) => (
-          <Card key={label}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Icon className={`icon-md ${color}`} />
-                <span className="page-stat text-xl font-bold">{value}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="mb-6">
+        <PageFacts
+          labelEn="SSO in figures"
+          labelEl="Το SSO σε αριθμούς"
+          facts={[
+            { id: 'tenants', value: tenants?.length ?? 0, en: (tenants?.length ?? 0) === 1 ? 'tenant' : 'tenants', el: (tenants?.length ?? 0) === 1 ? 'οργανισμός' : 'οργανισμοί' },
+            { id: 'active', value: statsLoading ? null : (stats?.activeProviders ?? 0), en: (stats?.activeProviders ?? 0) === 1 ? 'active provider' : 'active providers', el: (stats?.activeProviders ?? 0) === 1 ? 'ενεργός πάροχος' : 'ενεργοί πάροχοι' },
+            { id: 'providers', value: statsLoading ? null : (stats?.totalProviders ?? 0), en: (stats?.totalProviders ?? 0) === 1 ? 'provider' : 'providers', el: (stats?.totalProviders ?? 0) === 1 ? 'πάροχος' : 'πάροχοι' },
+            { id: 'events', value: statsLoading ? null : (stats?.recentEvents ?? 0), en: (stats?.recentEvents ?? 0) === 1 ? 'event in 24h' : 'events in 24h', el: (stats?.recentEvents ?? 0) === 1 ? 'συμβάν σε 24 ώρες' : 'συμβάντα σε 24 ώρες' },
+          ]}
+        />
       </div>
 
       {/* Tenant list */}
