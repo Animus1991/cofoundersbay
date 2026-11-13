@@ -286,7 +286,7 @@ export function SearchFilters({
                 a button that types itself, so the syntax is learned by use. */}
             {onSearchAsTyped && !filters.q && (
               // One press away: as a row these pushed the first result down on every visit.
-              <InfoHint className="mt-1.5" title={{ en: 'Or narrow with', el: 'Ή περιορίστε με' }}>
+              <InfoHint className="mt-1.5" title={{ en: 'Search shortcuts', el: 'Συντομεύσεις αναζήτησης' }}>
                 <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 {SEARCH_QUALIFIER_EXAMPLES.map((q) => (
                     <button

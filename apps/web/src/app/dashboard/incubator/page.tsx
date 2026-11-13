@@ -46,6 +46,7 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { bilingualAria } from '@/lib/i18n/format';
 import { demoMark } from '@/lib/demo/photos';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { roleShortcutsSection } from '@/components/dashboard/RoleShortcuts';
 import { HomeFold } from '@/components/dashboard/HomeFold';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
@@ -266,7 +267,7 @@ export default function IncubatorDashboard() {
   }
 
   return (
-    <AppShell askAi={false} showHelp
+    <AppShell askAi={false} showHelp rail={[roleShortcutsSection('incubator')]}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1.5">
@@ -283,7 +284,7 @@ export default function IncubatorDashboard() {
       }
     >
       <div className="space-y-6">
-        <HomeAskHero role="incubator" showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
+        <HomeAskHero role="incubator" plain showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
         <HomeToday />
 
         {!loading && nextApplication ? (

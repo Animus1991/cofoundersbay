@@ -833,7 +833,12 @@ export default function ProfilePage() {
           <VerificationCard />
           <OpenToCard />
         </div>
-        <CompatibilityCard />
+        {/* Closed on a phone (docs §123): the ten questions and their
+            answers measured 2,075px there, the longest block of the page.
+            A link to #how-you-work (onboarding's "ten questions") opens it. */}
+        <PhoneFold title={{ en: 'How you like to work', el: 'Πώς σας αρέσει να δουλεύετε' }} anchor="how-you-work">
+          <CompatibilityCard />
+        </PhoneFold>
       </div>
     </AppShell>
   );

@@ -109,7 +109,9 @@ export function HomeNextStep({
         ) : null}
       </div>
       <div className="flex shrink-0 items-center gap-1.5 max-sm:w-full">
-          <Button type="button" size="sm" variant="ghost" className="max-sm:flex-1" data-next-ask="" data-testid={`home-next-ask-${id}`} onClick={askNext}>
+          {/* The ask's one form (docs §124): the spark beside the verb, as on every card. */}
+          <Button type="button" size="sm" variant="ghost" className="gap-1.5 max-sm:flex-1" data-next-ask="" data-testid={`home-next-ask-${id}`} onClick={askNext}>
+            <span data-keep-icon="" className="inline-flex shrink-0" aria-hidden="true"><CfbGlyph name="spark" className="icon-sm" /></span>
             <BilingualText en={askEn ?? 'Ask'} el={askEl ?? 'Ρωτήστε'} compact />
           </Button>
         <Button asChild size="sm" variant={actionVariant} className="shrink-0 max-sm:flex-1" data-next-open="">

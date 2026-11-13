@@ -43,6 +43,7 @@ import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { roleShortcutsSection } from '@/components/dashboard/RoleShortcuts';
 import { HomeFold } from '@/components/dashboard/HomeFold';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { formatFee } from '@/lib/mentor-fee';
@@ -377,12 +378,12 @@ export default function MentorDashboard() {
   ) : null;
 
   return (
-    <AppShell askAi={false} showHelp
+    <AppShell askAi={false} showHelp rail={[roleShortcutsSection('mentor')]}
       description="Sessions, mentee requests, reviews, and earnings at a glance."
       descriptionEl="Συνεδρίες, αιτήματα καθοδηγούμενων, αξιολογήσεις και έσοδα με μια ματιά."
     >
       <div className="space-y-6">
-        <HomeAskHero role="mentor" showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
+        <HomeAskHero role="mentor" plain showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
         <HomeToday />
 
         {/* One next step, before everything else. Within the hour it stays the

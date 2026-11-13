@@ -18,7 +18,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { ASK, type AskPrompt } from '@/lib/page-questions';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { isPreviewDemo } from '@/lib/preview-demo';
@@ -77,6 +76,7 @@ import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { explainMatch, saysLookingFor, viewerFacts, type ViewerFacts } from '@/lib/match-explain';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { isMilestoneOverdue } from '@/lib/milestone-order';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { useInvestorFollowUps } from '@/lib/follow-ups';
@@ -106,47 +106,6 @@ const FOUNDER_TOUR: TourStep[] = [
     bodyEl: 'Πόσο έχετε προχωρήσει στην πλατφόρμα και τι θα το ανεβάσει. Είναι διαφορετικός αριθμός από την ετοιμότητα για επενδυτές στη σελίδα Ετοιμότητα.',
   },
 ];
-
-function AskAiButton({
-  labelEn,
-  labelEl,
-  prompt,
-  className,
-  variant = 'outline',
-  size = 'sm',
-}: {
-  labelEn?: string;
-  labelEl?: string;
-  /** Sent to the in-page assistant, which keeps this page's context; `/ai?q=` without the popup. A pair from `lib/page-questions`. */
-  prompt?: AskPrompt;
-  className?: string;
-  variant?: 'outline' | 'ghost' | 'secondary';
-  size?: 'sm' | 'md';
-}) {
-  const { ask, hrefFor, inPlace } = useAskAssistant();
-  const buttonClass = cn('h-auto min-h-9 gap-1.5 py-1.5 leading-snug', className);
-  const label = (
-    <>
-      <CfbGlyph name="spark" className="icon-sm shrink-0" aria-hidden="true" />
-      <BilingualText en={labelEn ?? dashboardEn('ask_ai')} el={labelEl ?? dashboardEl('ask_ai')} compact wrap />
-    </>
-  );
-  if (inPlace && prompt) {
-    return (
-      <Button type="button" variant={variant} size={size} className={buttonClass} onClick={() => ask(prompt)}>
-        {label}
-      </Button>
-    );
-  }
-  const href = hrefFor(prompt);
-  return (
-    <Button asChild variant={variant} size={size} className={buttonClass}>
-      <Link href={href}>
-        {label}
-      </Link>
-    </Button>
-  );
-}
 
 const PREVIEW_HEADLINE_EL: Record<string, string> = {
   'Founder & CEO at Harbor': 'Ιδρύτρια και CEO στο Harbor',
@@ -748,12 +707,15 @@ export default function FounderDashboardContent() {
                   <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} compact />
                   {milestones.length > 0 ? <span className="font-normal tabular-nums text-muted-foreground">{completedMilestoneCount}/{milestones.length}</span> : null}
                 </CardTitle>
-                <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
+                <div className="-mr-2 flex shrink-0 items-center gap-1">
+                {openMilestones.length > 0 ? <AIInsightButton prompt={ASK.dashMilestones} compactOnPhone className="h-8 min-h-0 px-2" question={{ en: dashboardEn('ask_ai_milestones'), el: dashboardEl('ask_ai_milestones') }} /> : null}
+                <Button variant="ghost" size="sm" className="min-w-0 gap-1" asChild>
                   <Link href="/milestones">
                     <BilingualText en={dashboardEn('manage')} el={dashboardEl('manage')} compact />
                     <ArrowRight className="icon-sm" />
                   </Link>
                 </Button>
+                </div>
               </div>
             </CardHeader>
             {/* The done/late bar and its caption are on the Milestones tile a
@@ -808,15 +770,6 @@ export default function FounderDashboardContent() {
                   />
                 </p>
               )}
-              {openMilestones.length > 0 && (
-                <AskAiButton
-                  variant="ghost"
-                  className="w-full"
-                  prompt={ASK.dashMilestones}
-                  labelEn={dashboardEn('ask_ai_milestones')}
-                  labelEl={dashboardEl('ask_ai_milestones')}
-                />
-              )}
             </CardContent>
           </Card>
   );
@@ -840,12 +793,15 @@ export default function FounderDashboardContent() {
             <CfbGlyph name="wallet" className="icon-sm text-muted-foreground" />
             <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} compact />
           </CardTitle>
-          <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
-            <Link href="/fundraising">
-              <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
-              <ArrowRight className="icon-sm" />
-            </Link>
-          </Button>
+          <div className="-mr-2 flex shrink-0 items-center gap-1">
+            <AIInsightButton prompt={ASK.dashFundraising} compactOnPhone className="h-8 min-h-0 px-2" question={{ en: dashboardEn('ask_ai_fundraising'), el: dashboardEl('ask_ai_fundraising') }} />
+            <Button variant="ghost" size="sm" className="min-w-0 gap-1" asChild>
+              <Link href="/fundraising">
+                <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
+                <ArrowRight className="icon-sm" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -910,12 +866,6 @@ export default function FounderDashboardContent() {
               <BilingualText en={dashboardEn('find_investors')} el={dashboardEl('find_investors')} compact />
             </Link>
           </Button>
-          <AskAiButton
-            variant="ghost"
-            prompt={ASK.dashFundraising}
-            labelEn={dashboardEn('ask_ai_fundraising')}
-            labelEl={dashboardEl('ask_ai_fundraising')}
-          />
         </div>
       </CardContent>
     </Card>
@@ -929,12 +879,15 @@ export default function FounderDashboardContent() {
             <CfbGlyph name="matches" className="icon-sm text-muted-foreground" />
             <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} compact />
           </CardTitle>
-          <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
-            <Link href="/matches">
-              <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
-              <ArrowRight className="icon-sm" />
-            </Link>
-          </Button>
+          <div className="-mr-2 flex shrink-0 items-center gap-1">
+            {(recommendations?.suggestions?.length ?? 0) > 0 ? <AIInsightButton prompt={ASK.dashMatches} compactOnPhone className="h-8 min-h-0 px-2" question={{ en: dashboardEn('ask_ai_matches'), el: dashboardEl('ask_ai_matches') }} /> : null}
+            <Button variant="ghost" size="sm" className="min-w-0 gap-1" asChild>
+              <Link href="/matches">
+                <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
+                <ArrowRight className="icon-sm" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -944,15 +897,6 @@ export default function FounderDashboardContent() {
               <MatchPreviewRow key={match.userId} match={match} viewer={viewer} />
             ))}
           </div>
-        )}
-        {(recommendations?.suggestions?.length ?? 0) > 0 && (
-          <AskAiButton
-            variant="ghost"
-            className="w-full"
-            prompt={ASK.dashMatches}
-            labelEn={dashboardEn('ask_ai_matches')}
-            labelEl={dashboardEl('ask_ai_matches')}
-          />
         )}
         {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
           <div className="space-y-3">
@@ -970,11 +914,11 @@ export default function FounderDashboardContent() {
                   <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
                 </Link>
               </Button>
-              <AskAiButton
-                variant="ghost"
+              <AIInsightButton
                 prompt={ASK.dashBetterMatches}
-                labelEn={dashboardEn('ask_ai_matches')}
+                label={dashboardEn('ask_ai_matches')}
                 labelEl={dashboardEl('ask_ai_matches')}
+                className="whitespace-normal text-left"
               />
             </div>
           </div>
@@ -994,10 +938,13 @@ export default function FounderDashboardContent() {
           {/* Profile strength */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2">
-                <CfbGlyph name="shield" className="icon-sm text-muted-foreground" />
-                <BilingualText en={dashboardEn('profile_strength')} el={dashboardEl('profile_strength')} />
-              </CardTitle>
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
+                  <CfbGlyph name="shield" className="icon-sm text-muted-foreground" />
+                  <BilingualText en={dashboardEn('profile_strength')} el={dashboardEl('profile_strength')} />
+                </CardTitle>
+                <div className="-mr-2 shrink-0"><AIInsightButton prompt={ASK.dashProfile} compactOnPhone className="h-8 min-h-0 px-2" question={{ en: dashboardEn('ask_ai_profile'), el: dashboardEl('ask_ai_profile') }} /></div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between text-sm">
@@ -1042,13 +989,6 @@ export default function FounderDashboardContent() {
                     </Link>
                   </Button>
                 )}
-                <AskAiButton
-                  variant="ghost"
-                  className="w-full"
-                  prompt={ASK.dashProfile}
-                  labelEn={dashboardEn('ask_ai_profile')}
-                  labelEl={dashboardEl('ask_ai_profile')}
-                />
               </div>
             </CardContent>
           </Card>
@@ -1263,9 +1203,9 @@ export default function FounderDashboardContent() {
           <FounderFirstMove
             onLater={() => setFirstMoveLater(true)}
             assist={
-              <AskAiButton
+              <AIInsightButton
                 prompt={ASK.dashNeedCard}
-                labelEn="Draft it with the assistant"
+                label="Draft it with the assistant"
                 labelEl="Σύνταξη με τον βοηθό"
               />
             }

@@ -16,7 +16,6 @@ import {
   Info,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { ASK, type AskPrompt } from '@/lib/page-questions';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -284,43 +283,6 @@ function exportHistoryCsv(history: typeof DEMO_HISTORY) {
   a.download = 'readiness-history.csv';
   a.click();
   URL.revokeObjectURL(url);
-}
-
-function AskAiButton({
-  labelEn,
-  labelEl,
-  prompt,
-  variant = 'outline',
-  className,
-}: {
-  labelEn?: string;
-  labelEl?: string;
-  prompt?: AskPrompt;
-  variant?: 'outline' | 'ghost' | 'secondary';
-  className?: string;
-}) {
-  const { ask, hrefFor, inPlace } = useAskAssistant();
-  const buttonClass = cn('h-auto min-h-9 gap-1.5 py-1.5 leading-snug', className);
-  const label = (
-    <>
-      <CfbGlyph name="spark" className="icon-sm shrink-0" aria-hidden="true" />
-      <BilingualText en={labelEn ?? readinessEn('ask_ai')} el={labelEl ?? readinessEl('ask_ai')} compact wrap />
-    </>
-  );
-  // Asks in place, like the header's Ask AI: /ai?q= would leave the page and its context behind.
-  if (inPlace && prompt) {
-    return (
-      <Button type="button" variant={variant} size="sm" className={buttonClass} onClick={() => ask(prompt)}>
-        {label}
-      </Button>
-    );
-  }
-  const href = hrefFor(prompt);
-  return (
-    <Button asChild variant={variant} size="sm" className={buttonClass}>
-      <Link href={href}>{label}</Link>
-    </Button>
-  );
 }
 
 const NEXT_TIER: Record<ScoreLevel, { score: number; en: string; el: string } | null> = {
@@ -1041,10 +1003,9 @@ export default function ReadinessPage() {
           <p id="readiness-no-workspace" className="text-sm"><BilingualText en="Readiness is scored for one startup workspace, and none is open yet. Create yours or choose it in the Startup Builder." el="Η ετοιμότητα βαθμολογείται για έναν χώρο εργασίας startup και δεν έχει ανοίξει κανένας ακόμη. Δημιουργήστε ή επιλέξτε τον δικό σας στο Startup Builder." /></p>
           <div className="flex flex-wrap gap-2">
             <Button asChild><Link href="/builder"><BilingualText en="Open Startup Builder" el="Άνοιγμα Startup Builder" /></Link></Button>
-            <AskAiButton
-              variant="ghost"
+            <AIInsightButton
               prompt={ASK.readinessNoWorkspace}
-              labelEn={readinessEn('ask_ai_plan')}
+              label={readinessEn('ask_ai_plan')}
               labelEl={readinessEl('ask_ai_plan')}
             />
           </div>

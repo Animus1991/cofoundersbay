@@ -1163,14 +1163,16 @@ export function PitchDeckBuilder({
                   </CardHeader>
                   {/* On a phone the first missing slide stays a chip and the
                       rest are one menu (docs §115): ten chips were a third of
-                      the first screen. Wider screens keep every chip. */}
+                      the first screen. Wider screens keep three chips and the
+                      same menu (docs §123): ten were the densest row of the
+                      page's first screen. */}
                   <CardContent className="flex flex-wrap gap-2">
                     {missingTemplates.map((template, i) => (
                       <button
                         key={template.type}
                         type="button"
                         onClick={() => addSlide(template.type)}
-                        className={cn('chip tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring', i > 0 && 'max-sm:hidden')}
+                        className={cn('chip tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring', i > 2 ? 'hidden' : i > 0 && 'max-sm:hidden')}
                         aria-label={bilingualAria(`Add ${builderEn(template.titleKey)}`, `Προσθήκη: ${builderEl(template.titleKey)}`)}
                       >
                         <Plus className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -1180,15 +1182,17 @@ export function PitchDeckBuilder({
                     {missingTemplates.length > 1 && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button type="button" data-pitch-more-missing="" className="chip tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring sm:hidden">
-                            <span className="tabular-nums">+{missingTemplates.length - 1}</span>
+                          <button type="button" data-pitch-more-missing="" className={cn('chip tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring', missingTemplates.length <= 3 && 'sm:hidden')}>
+                            <span className="tabular-nums sm:hidden">+{missingTemplates.length - 1}</span>
+                            <span className="tabular-nums max-sm:hidden">+{missingTemplates.length - 3}</span>
                             <BilingualText en={builderEn('pitch_more_slides')} el={builderEl('pitch_more_slides')} compact />
                             <ChevronDown className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
-                          {missingTemplates.slice(1).map((template) => (
-                            <DropdownMenuItem key={template.type} onSelect={() => addSlide(template.type)}>
+                          {missingTemplates.slice(1).map((template, k) => (
+                            // The second and third are chips from `sm`.
+                            <DropdownMenuItem key={template.type} className={cn(k < 2 && 'sm:hidden')} onSelect={() => addSlide(template.type)}>
                               <Plus className="mr-2 icon-sm text-muted-foreground" aria-hidden="true" />
                               <BilingualText en={builderEn(template.titleKey)} el={builderEl(template.titleKey)} compact />
                             </DropdownMenuItem>

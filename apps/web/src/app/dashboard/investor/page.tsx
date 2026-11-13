@@ -42,6 +42,7 @@ import { formatCompactMoney } from '@/lib/i18n/format';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { dealEventTitleEl } from '@/lib/i18n/deal-events';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { roleShortcutsSection } from '@/components/dashboard/RoleShortcuts';
 import { HomeFold } from '@/components/dashboard/HomeFold';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
@@ -268,12 +269,12 @@ export default function InvestorDashboard() {
   }
 
   return (
-    <AppShell askAi={false} showHelp
+    <AppShell askAi={false} showHelp rail={[roleShortcutsSection('investor')]}
       description="Pipeline health, deal flow, and portfolio performance — in one view."
       descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
     >
       <div className="space-y-6">
-        <HomeAskHero role="investor" showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
+        <HomeAskHero role="investor" plain showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
         <HomeToday />
 
         {!dealsLoading && active[0] ? (

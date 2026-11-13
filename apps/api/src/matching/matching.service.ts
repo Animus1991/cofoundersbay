@@ -74,6 +74,18 @@ export interface MatchingResult {
 }
 
 /**
+ * Whether a member can be offered to others as a match: a profile, with a
+ * name a person could address (two letters at least). Test sign-ups named
+ * "r" reached a new member's first matches on /home (docs §123). A member
+ * without a profile has not finished onboarding and was never meant to be
+ * suggested.
+ */
+export function isListableCandidate(user: { profile?: { displayName?: string | null } | null }): boolean {
+  const name = user.profile?.displayName?.trim() ?? '';
+  return (name.match(/\p{L}/gu)?.length ?? 0) >= 2;
+}
+
+/**
  * The list a member sees: the engine's 0–100 number, at least 25, best first.
  * The learning score only breaks a tie, so an "Open to" lift still orders two
  * people with the same list score and never replaces that number.
@@ -836,8 +848,9 @@ export class MatchingService {
       include: { profile: { include: { skills: { include: { skill: true } } } } },
       take: 100,
     });
-    // "Appear in search: off" keeps a member out of recommendations too.
-    return users.filter((u) => !isHiddenFromSearch(u.profile?.visibilityRules));
+    // "Appear in search: off" keeps a member out of recommendations too, and
+    // so does a profile no one could address (isListableCandidate).
+    return users.filter((u) => !isHiddenFromSearch(u.profile?.visibilityRules) && isListableCandidate(u));
   }
 
   // ── Structured scoring helpers ─────────────────────────────────────────────

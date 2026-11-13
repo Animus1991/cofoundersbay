@@ -36,6 +36,7 @@ import { qk } from '@/lib/query-keys';
 import { cn, formatRelativeTime } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { roleShortcutsSection } from '@/components/dashboard/RoleShortcuts';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { useStoredUser } from '@/hooks/useStoredUser';
 
@@ -219,6 +220,7 @@ export default function AdminDashboardPage() {
   return (
     <AppShell
       askAi={false}
+      rail={[roleShortcutsSection('admin')]}
       title="Platform overview"
       titleEl="Επισκόπηση πλατφόρμας"
       description="Who uses the platform, what waits on an admin, and how the API is running."
@@ -251,7 +253,7 @@ export default function AdminDashboardPage() {
       <div className="space-y-6">
         {/* What waits on the reader comes in Today below, as on every role's home
             (docs §115): the hero's own waiting chips would say it twice. */}
-        <HomeAskHero role="admin" showWaiting={false} name={me?.displayName} lead={{ en: 'What is waiting on you, and how the platform is doing.', el: 'Τι εκκρεμεί για εσάς και πώς πάει η πλατφόρμα.' }} />
+        <HomeAskHero role="admin" plain showWaiting={false} name={me?.displayName} lead={{ en: 'What is waiting on you, and how the platform is doing.', el: 'Τι εκκρεμεί για εσάς και πώς πάει η πλατφόρμα.' }} />
         <HomeToday />
         {attention[0] ? (
           <HomeNextStep

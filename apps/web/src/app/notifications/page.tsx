@@ -759,11 +759,7 @@ export default function NotificationsPage() {
                     <BilingualText en={notificationsEn('show_all_notifications')} el={notificationsEl('show_all_notifications')} compact />
                   </Button>
                 )}
-                <AIInsightButton
-                  prompt={ASK.notificationsDone}
-                  variant="outline"
-                  size="sm"
-                />
+                <AIInsightButton prompt={ASK.notificationsDone} />
               </div>
             </div>
           ) : (

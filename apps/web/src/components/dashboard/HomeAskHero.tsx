@@ -33,6 +33,32 @@ export function partOfDay(hour: number): Part {
 }
 
 /**
+ * Sends a question to the in-page assistant, or to /ai where there is none,
+ * and runs a starting point: its prompt is asked, its link is opened. The
+ * question box and the quick actions in a page's tools share it.
+ */
+export function useHomeAskRun() {
+  const { primary } = useLanguagePreference();
+  const popup = usePopupChatOptional();
+  const router = useRouter();
+  const pathname = usePathname();
+  function send(question: string) {
+    const q = question.trim();
+    if (!q) return;
+    if (popup && !pathname?.startsWith('/ai')) {
+      popup.ask(q);
+      return;
+    }
+    router.push(`/ai?q=${encodeURIComponent(q)}`);
+  }
+  function run(action: HomeAskAction) {
+    if (action.prompt) send(primary === 'el' ? action.prompt.el : action.prompt.en);
+    else if (action.href) router.push(action.href);
+  }
+  return { send, run };
+}
+
+/**
  * The top of every home: a greeting, one question box and the jobs the role
  * comes back for.
  *
@@ -63,9 +89,7 @@ export function partOfDay(hour: number): Part {
 export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true, plain = false, greeting = true }: { /** Off where the page's own title already greets the reader (/home). */ greeting?: boolean; role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean; /** Only the question box: the shortcuts live in the page's tools (docs §116). */ plain?: boolean }) {
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
-  const popup = usePopupChatOptional();
-  const router = useRouter();
-  const pathname = usePathname();
+  const { send, run } = useHomeAskRun();
   const boxId = useId();
   const config = HOME_ASK[role];
   const now = nowStartingPoints({ ...useUnreadCounts(), followUps: followUpsDue });
@@ -80,16 +104,6 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
   const commands = slashCommands(config.actions, value);
   const listOpen = commands !== null && commands.length > 0;
   const active = listOpen ? Math.min(activeCommand, commands.length - 1) : -1;
-
-  function send(question: string) {
-    const q = question.trim();
-    if (!q) return;
-    if (popup && !pathname?.startsWith('/ai')) {
-      popup.ask(q);
-      return;
-    }
-    router.push(`/ai?q=${encodeURIComponent(q)}`);
-  }
 
   function submit(event?: FormEvent) {
     event?.preventDefault();
@@ -127,11 +141,6 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
     setValue('');
     setActiveCommand(0);
     run(action);
-  }
-
-  function run(action: HomeAskAction) {
-    if (action.prompt) send(primary === 'el' ? action.prompt.el : action.prompt.en);
-    else if (action.href) router.push(action.href);
   }
 
   return (

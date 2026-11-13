@@ -14,10 +14,12 @@ import type { HomeAskAction, HomeAskNow } from '@/lib/home-ask';
 const CHIP = 'h-auto min-h-9 max-w-full gap-1.5 whitespace-normal rounded-full px-3 py-1.5 text-left text-xs';
 
 /** Same actions as the composer and slash menu, grouped by urgency rather than colour alone. */
-export function HomeActionShelf({ actions, now, run }: {
+export function HomeActionShelf({ actions, now, run, label = true }: {
   actions: HomeAskAction[];
   now: HomeAskNow[];
   run: (action: HomeAskAction) => void;
+  /** Off where a heading above already names them (a page tools section). */
+  label?: boolean;
 }) {
   const say = useBilingualString();
   const intent = (action: HomeAskAction) => action.prompt
@@ -43,7 +45,7 @@ export function HomeActionShelf({ actions, now, run }: {
         </div>
       )}
       <div className="space-y-1.5">
-        <p className="text-xs font-medium text-muted-foreground"><BilingualText en="Quick actions" el="Γρήγορες ενέργειες" compact /></p>
+        {label ? <p className="text-xs font-medium text-muted-foreground"><BilingualText en="Quick actions" el="Γρήγορες ενέργειες" compact /></p> : null}
         <ul className="flex flex-wrap gap-2" aria-label={bilingualAria('Starting points', 'Σημεία εκκίνησης')} data-testid="home-starting-points">
           {actions.map((action) => <li key={action.id} className="max-w-full">
             {action.items?.length ? (

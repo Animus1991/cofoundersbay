@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo, useState, type ReactNode } from 'react';
+import { useId, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -36,7 +36,8 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { qk } from '@/lib/query-keys';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
-import { AskIntroButton } from '@/components/intros/AskIntroDialog';
+import { AskIntroButton, AskIntroDialog } from '@/components/intros/AskIntroDialog';
+import { useStoredUser } from '@/hooks/useStoredUser';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { DEMO_INVESTORS } from '@/lib/demo/investors-world';
@@ -199,6 +200,17 @@ function countLine(n: number, oneEn: string, manyEn: string, oneEl: string, many
   return { figureEn: figure, figureEl: figure, en: n === 1 ? oneEn : manyEn, el: n === 1 ? oneEl : manyEl };
 }
 
+const PHONE = '(max-width: 639.98px)';
+function subscribePhone(onChange: () => void) {
+  const query = window.matchMedia(PHONE);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+/** Below `sm`, read after hydration: the server and the first paint agree on the wide card. */
+function usePhoneWidth() {
+  return useSyncExternalStore(subscribePhone, () => window.matchMedia(PHONE).matches, () => false);
+}
+
 function InvestorCard({
   investor,
   saved,
@@ -213,6 +225,10 @@ function InvestorCard({
   const inDemo = useHydrated() && isPreviewDemo();
   const sampleReasonId = useId();
   const [showFacts, setShowFacts] = useState(false);
+  const [introOpen, setIntroOpen] = useState(false);
+  const phone = usePhoneWidth();
+  const me = useStoredUser();
+  const canIntro = Boolean(me?.id && me.id !== investor.userId);
   const initials = initialsOf(investor.displayName);
   const checkSize = formatCheckSize(investor.checkSizeMin, investor.checkSizeMax);
   const type = investor.investorType ? TYPE_LABEL[investor.investorType] : null;
@@ -239,42 +255,14 @@ function InvestorCard({
   return (
     <Card className="group overflow-hidden transition-all hover:border-primary/30">
       <CardContent className="space-y-3">
-        {/* On a phone two small cards share a row (docs §115): the face, the
-            name and the kind, with Save on the corner. The thesis is under
-            More there; from sm the card's full head, as before. */}
-        <div className="relative sm:hidden" data-investor-compact="">
-          <Avatar className="h-14 w-14">
-            <AvatarImage src={investor.avatarUrl} alt="" />
-            <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary-accessible">{initials}</AvatarFallback>
-          </Avatar>
-          <button
-            aria-label={saved
-              ? bilingualInline(`Remove ${investor.displayName} from your shortlist`, `Αφαίρεση ${investor.displayName} από τη λίστα σας`)
-              : bilingualInline(`Save ${investor.displayName} to your shortlist`, `Αποθήκευση ${investor.displayName} στη λίστα σας`)}
-            aria-pressed={saved}
-            type="button"
-            onClick={onToggleSave}
-            className="tap-target absolute right-0 top-0 flex items-center rounded-md p-1 transition-colors hover:bg-muted"
-          >
-            <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
-          </button>
-          <p className="card-title mt-2 line-clamp-2 break-words">
-            {investor.displayName}
-            {investor.isVerified ? (
-              <BadgeCheck className={cn('ml-1 inline icon-sm align-[-2px]', STATUS.info.icon)} aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />
-            ) : null}
-          </p>
-          {/* The kind, else what the full head would say under the name. */}
-          {type ? (
-            <p className="truncate text-xs text-muted-foreground"><BilingualText en={type.en} el={type.el} compact /></p>
-          ) : investor.firmName || investor.firmRole || investor.headline ? (
-            <p className="truncate text-xs text-muted-foreground">{investor.firmName || investor.firmRole || investor.headline}</p>
-          ) : null}
-        </div>
-        <div className="max-sm:hidden">
+        {/* One card a row at every width (docs §123): on a phone two small
+            cards shared a row (§115), and with five controls each the names
+            broke and the buttons stacked. The full head, the thesis and the
+            facts, as from `sm`. */}
+        <div>
           <CardHead
             mark={(
-              <Avatar className="h-16 w-16">
+              <Avatar className="h-14 w-14 sm:h-16 sm:w-16">
                 <AvatarImage src={investor.avatarUrl} alt="" />
                 <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary-accessible">
                   {initials}
@@ -331,7 +319,7 @@ function InvestorCard({
         </div>
 
         {investor.thesisSummary && (
-          <p className="card-body line-clamp-2 text-muted-foreground max-sm:hidden">{investor.thesisSummary}</p>
+          <p className="card-body line-clamp-2 text-muted-foreground">{investor.thesisSummary}</p>
         )}
 
         {/* The facts side by side where the card is wide: one column of
@@ -353,9 +341,6 @@ function InvestorCard({
         </button>
         {/* A class, not `hidden`: the grid's own display would win over the attribute. */}
         <div className={cn(showFacts ? 'grid' : 'hidden', 'grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3')}>
-        {investor.thesisSummary ? (
-          <p className="card-body text-muted-foreground sm:hidden">{investor.thesisSummary}</p>
-        ) : null}
         {investor.industries.length ? (
           <CardFact en="Sectors" el="Τομείς">
             <TagList label={bilingualInline('Sectors', 'Τομείς')}>
@@ -429,8 +414,16 @@ function InvestorCard({
                   <span className="max-sm:hidden"><BilingualText en="Message directly" el="Απευθείας μήνυμα" compact /></span>
                 </Link>
               </Button>
-              <AskIntroButton targetId={investor.userId} targetName={investor.displayName} />
-              <CardMoreMenu name={investor.displayName} items={[{ key: 'profile', en: 'Profile', el: 'Προφίλ', href: `/profiles/${investor.userId}` }]} />
+              {/* One button on a phone (§115): the introduction is in the menu there. */}
+              <AskIntroButton targetId={investor.userId} targetName={investor.displayName} className="max-sm:hidden" />
+              <CardMoreMenu
+                name={investor.displayName}
+                items={[
+                  ...(phone && canIntro ? [{ key: 'intro', en: 'Ask for an introduction', el: 'Ζητήστε γνωριμία', onSelect: () => setIntroOpen(true) }] : []),
+                  { key: 'profile', en: 'Profile', el: 'Προφίλ', href: `/profiles/${investor.userId}` },
+                ]}
+              />
+              {introOpen ? <AskIntroDialog open={introOpen} onOpenChange={setIntroOpen} targetId={investor.userId} targetName={investor.displayName} /> : null}
             </>
           )}
         </div>
@@ -707,8 +700,8 @@ export default function InvestorsPage() {
                 </Card>
               ))
             : (
-              // Two small cards a row on a phone, one wide card a row from sm (docs §115).
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-1">
+              // One card a row at every width (docs §123).
+              <div className="grid grid-cols-1 gap-3">
                 {filtered.map((inv) => (
                   <InvestorCard key={inv.id} investor={inv} saved={isSaved(inv)} onToggleSave={() => void toggleSave(inv)} />
                 ))}
