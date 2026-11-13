@@ -5264,3 +5264,47 @@ select:disabled {
     transition: opacity 120ms ease-out;
   }
 }
+
+/* ── Accent variants (docs §125) ─────────────────────────────────────────
+   Another accent on a named theme: the base's data-theme stays, so its
+   surfaces, status tones and component layer all apply, and data-variant
+   swaps the accent tokens only (lib/themes THEME_ROOT). The originals keep
+   their own values. (0,2,1) beats the base's html[data-theme] (0,1,1). */
+
+/* Bordeaux: Terracotta with the owner's wine #61193E, 10 points lighter. */
+html[data-theme="terra"][data-variant="wine"] {
+  --primary: 329.17 59.02% 33.92%;            /* #8a2358, white label 8.53:1 */
+  --primary-foreground: 0 0% 100%;
+  --primary-mid: 329.17 47.2% 45%;            /* #a93d74, tints only (/5../40) */
+  --primary-accessible: 329.17 59.02% 33.92%; /* links, 7.69:1 on the page */
+  --accent: 329.17 22% 93%;                   /* hover surface */
+  --accent-foreground: 329.17 10% 18%;
+  --ring: 329.17 59.02% 38%;                  /* #9a2862 */
+}
+
+/* Sky: Cyan with the owner's bright sky #67C9E6 as the fill. It is too
+   light for white letters (1.90:1): a fill takes a deep cyan label
+   (8.04:1), links and focus rings a darker step of the same hue. */
+html[data-theme="alliance"][data-variant="sky"] {
+  --primary: 193.7 71.75% 65.29%;             /* #67c9e6, the fill */
+  --primary-foreground: 193.7 60% 12%;        /* #0c2931 on the fill, 8.04:1 */
+  --primary-mid: 193.7 71.75% 65.29%;         /* tints are washes of the same sky */
+  --primary-accessible: 193.7 71.75% 32%;     /* #17718c, links: 5.56:1 on a card */
+  --ring: 193.7 71.75% 41%;                   /* #1e91b4, 3.35:1 on the page */
+}
+/* The theme colour as text or an icon on the page takes the link step, and
+   a fill in the link step takes white letters. */
+html[data-theme="alliance"][data-variant="sky"] [class~='text-primary'] {
+  color: hsl(var(--primary-accessible));
+}
+html[data-theme="alliance"][data-variant="sky"] [class~='bg-primary-accessible'] {
+  color: hsl(0 0% 100%);
+}
+
+/* Graphite: Light with the owner's soft ink #575755 instead of #292524.
+   The selected destination, the next-step card and progress follow, as
+   they read --primary. */
+html[data-theme="studio"][data-variant="graphite"] {
+  --primary: 60 1.16% 33.73%;                 /* #575755, white label 7.24:1 */
+  --primary-accessible: 60 1.16% 33.73%;      /* links and kickers, 6.93:1 on the page */
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Moon, Sun, Monitor, Minus, Palette, Sunrise, Flower2, Flame } from 'lucide-react';
+import { Moon, Sun, Monitor, Minus, Palette, Sunrise, Flower2, Flame, Wine, Cloud, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -22,6 +22,9 @@ export function ThemeToggle() {
     minimal: Minus,
     apricot: Sunrise,
     terra: Flame,
+    wine: Wine,
+    sky: Cloud,
+    graphite: PenLine,
   };
 
   const CurrentIcon = icons[theme] || Moon;
@@ -38,6 +41,10 @@ export function ThemeToggle() {
           <Sun className="icon-sm" />
           Light
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('graphite')} className="gap-2">
+          <PenLine className="icon-sm" />
+          Graphite
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('lilac')} className="gap-2">
           <Flower2 className="icon-sm" />
           Lilac
@@ -50,10 +57,14 @@ export function ThemeToggle() {
           <Monitor className="icon-sm" />
           System
         </DropdownMenuItem>
-        {/* The five light accents: one tone, five hues. */}
+        {/* The light accents, and beside an original its variant (docs §125). */}
         <DropdownMenuItem onClick={() => setTheme('alliance')} className="gap-2">
           <Palette className="icon-sm" />
           Cyan
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('sky')} className="gap-2">
+          <Cloud className="icon-sm" />
+          Sky
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('minimal')} className="gap-2">
           <Minus className="icon-sm" />
@@ -66,6 +77,10 @@ export function ThemeToggle() {
         <DropdownMenuItem onClick={() => setTheme('terra')} className="gap-2">
           <Flame className="icon-sm" />
           Terracotta
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('wine')} className="gap-2">
+          <Wine className="icon-sm" />
+          Bordeaux
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

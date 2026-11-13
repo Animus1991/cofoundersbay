@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise, Flower2, Flame } from 'lucide-react';
+import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise, Flower2, Flame, Wine, Cloud, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -33,6 +33,14 @@ export const THEME_OPTIONS = [
     swatch: ['#fafaf9', '#292524', '#765fe7'],
   },
   {
+    // Light with a soft graphite ink instead of near-black (docs §125).
+    name: 'graphite' as ThemeName,
+    label: 'Graphite',
+    description: 'Warm stone with soft graphite',
+    icon: PenLine,
+    swatch: ['#fafaf9', '#575755', '#765fe7'],
+  },
+  {
     // The Light theme before 2026-10-20, kept as a choice.
     name: 'lilac' as ThemeName,
     label: 'Lilac',
@@ -53,6 +61,14 @@ export const THEME_OPTIONS = [
     description: 'Soft sky blue, cool and clear',
     icon: Palette,
     swatch: ['#f2f6f7', '#207da5', '#3c6e83'],
+  },
+  {
+    // Cyan with the bright sky fill and deep letters (docs §125).
+    name: 'sky' as ThemeName,
+    label: 'Sky',
+    description: 'Bright sky blue with deep letters',
+    icon: Cloud,
+    swatch: ['#f2f6f7', '#67c9e6', '#17718c'],
   },
   {
     name: 'cofounder' as ThemeName,
@@ -81,6 +97,14 @@ export const THEME_OPTIONS = [
     description: 'Soft mauve with a dusty rose',
     icon: Flame,
     swatch: ['#f5eff2', '#985d75', '#7b475b'],
+  },
+  {
+    // Terracotta with a deep wine (docs §125).
+    name: 'wine' as ThemeName,
+    label: 'Bordeaux',
+    description: 'Deep wine on a soft blush',
+    icon: Wine,
+    swatch: ['#f5eff2', '#8a2358', '#a93d74'],
   },
 ];
 
@@ -129,7 +153,7 @@ export function ThemeSwitcher({ className }: { className?: string }) {
           const isActive = currentTheme === theme.name;
           return (
             <div key={theme.name}>
-              {idx === 3 && (
+              {theme.name === 'system' && idx > 0 && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground">

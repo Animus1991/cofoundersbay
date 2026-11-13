@@ -763,6 +763,10 @@ const THEME_WORDS: Array<[string[], string]> = [
   [['terracotta', 'τερακοτα'], 'terra'],
   [['apricot', 'βερικοκ'], 'apricot'],
   [['mint', 'μεντα'], 'minimal'],
+  // The three variants (docs §125), before "light": "φωτεινό ουρανί" is Sky.
+  [['bordeaux', 'burgundy', 'μπορντο'], 'wine'],
+  [['sky', 'ουρανι'], 'sky'],
+  [['graphite', 'γραφιτ'], 'graphite'],
   [['light', 'φωτειν'], 'light'],
 ];
 

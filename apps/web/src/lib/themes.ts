@@ -1,4 +1,4 @@
-export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot' | 'terra';
+export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot' | 'terra' | 'wine' | 'sky' | 'graphite';
 
 /**
  * Which class and `data-theme` each theme puts on <html>. One table for the
@@ -6,8 +6,14 @@ export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'co
  * first paint and every later switch agree. `light` is the AI Studio
  * prototype's look (`data-theme="studio"`, docs §63); `lilac` is the Light
  * theme before it, kept as a choice.
+ *
+ * A theme with a `variant` is another accent on a named theme (docs §125):
+ * it carries the base's `data-theme`, so every rule of that theme (surfaces,
+ * status tones, its component layer) applies, and `data-variant` swaps only
+ * the accent tokens. Bordeaux is Terracotta's, Sky is Cyan's, Graphite is
+ * Light's; the three originals stay as they were.
  */
-export const THEME_ROOT: Record<Exclude<ThemeName, 'system'>, { mode: 'light' | 'dark'; dataTheme: string | null }> = {
+export const THEME_ROOT: Record<Exclude<ThemeName, 'system'>, { mode: 'light' | 'dark'; dataTheme: string | null; variant?: string }> = {
   light: { mode: 'light', dataTheme: 'studio' },
   lilac: { mode: 'light', dataTheme: null },
   dark: { mode: 'dark', dataTheme: null },
@@ -16,6 +22,9 @@ export const THEME_ROOT: Record<Exclude<ThemeName, 'system'>, { mode: 'light' | 
   minimal: { mode: 'light', dataTheme: 'minimal' },
   apricot: { mode: 'light', dataTheme: 'apricot' },
   terra: { mode: 'light', dataTheme: 'terra' },
+  wine: { mode: 'light', dataTheme: 'terra', variant: 'wine' },
+  sky: { mode: 'light', dataTheme: 'alliance', variant: 'sky' },
+  graphite: { mode: 'light', dataTheme: 'studio', variant: 'graphite' },
 };
 
 export interface ThemeColors {
@@ -238,14 +247,81 @@ export const themes: Record<ThemeName, ThemeColors> = {
     input: '336 16% 87%',
     ring: '336 27% 42%',
   },
+  wine: {
+    // "Bordeaux", Terracotta with the owner's wine (docs §125) — legacy inline fallback only.
+    background: '336 18% 95.8%',
+    foreground: '336 12% 12%',
+    card: '336 26% 98.6%',
+    cardForeground: '336 12% 13%',
+    popover: '0 0% 100%',
+    popoverForeground: '336 12% 13%',
+    primary: '329.17 59.02% 33.92%',
+    primaryForeground: '0 0% 100%',
+    secondary: '336 14% 93%',
+    secondaryForeground: '336 10% 17%',
+    muted: '336 14% 92.5%',
+    mutedForeground: '336 7% 38%',
+    accent: '336 18% 92.5%',
+    accentForeground: '336 10% 12%',
+    destructive: '2 30.5% 42.6%',
+    destructiveForeground: '0 0% 100%',
+    border: '336 16% 91%',
+    input: '336 16% 87%',
+    ring: '329.17 59.02% 38%',
+  },
+  sky: {
+    // "Sky", Cyan with the owner's sky (docs §125) — legacy inline fallback only.
+    background: '195 26% 96%', // #eef6f7
+    foreground: '220 100% 3%', // #000724
+    card: '0 0% 100%', // #ffffff
+    cardForeground: '220 100% 3%',
+    popover: '180 25% 98%', // #f8fbfc
+    popoverForeground: '220 100% 3%',
+    primary: '193.7 71.75% 65.29%', // #67c9e6, with the dark label below
+    primaryForeground: '193.7 60% 12%',
+    secondary: '200 15% 88%', // #d9e0e3
+    secondaryForeground: '220 100% 3%',
+    muted: '180 25% 98%',
+    mutedForeground: '210 5% 44%', // WCAG AA on cream background
+    accent: '34 100% 52%',
+    accentForeground: '220 100% 3%',
+    destructive: '0 84% 50%',
+    destructiveForeground: '0 0% 100%',
+    border: '200 15% 88%',
+    input: '200 15% 88%',
+    ring: '193.7 71.75% 41%',
+  },
+  graphite: {
+    // "Graphite", Light with the owner's soft ink (docs §125) — legacy inline fallback only.
+    background: '0 0% 100%',
+    foreground: '222.2 84% 4.9%',
+    card: '0 0% 100%',
+    cardForeground: '222.2 84% 4.9%',
+    popover: '0 0% 100%',
+    popoverForeground: '222.2 84% 4.9%',
+    primary: '60 1.16% 33.73%',
+    primaryForeground: '210 40% 98%',
+    secondary: '210 40% 96.1%',
+    secondaryForeground: '222.2 47.4% 11.2%',
+    muted: '210 40% 96.1%',
+    mutedForeground: '215.4 16.3% 46.9%',
+    accent: '210 40% 96.1%',
+    accentForeground: '222.2 47.4% 11.2%',
+    destructive: '0 84.2% 50.2%', /* WCAG AA with white foreground */
+    destructiveForeground: '210 40% 98%',
+    border: '214.3 31.8% 91.4%',
+    input: '214.3 31.8% 91.4%',
+    ring: '221.2 83.2% 53.3%',
+  },
 };
 
 export function applyTheme(themeName: ThemeName) {
   const root = document.documentElement;
 
-  // Remove all theme classes and data-theme attribute
+  // Remove all theme classes and the data-theme / data-variant attributes
   root.classList.remove('dark', 'light');
   root.removeAttribute('data-theme');
+  root.removeAttribute('data-variant');
   // Clear any previously inline-set CSS vars from old applyTheme calls
   const varsToClear = Object.keys(themes.dark).map(
     (k) => `--${k.replace(/([A-Z])/g, '-$1').toLowerCase()}`
@@ -294,6 +370,16 @@ export function applyTheme(themeName: ThemeName) {
       root.classList.add('light');
       root.setAttribute('data-theme', 'minimal');
       break;
+    case 'wine':
+    case 'sky':
+    case 'graphite': {
+      // Another accent on a named theme (THEME_ROOT, docs §125).
+      const entry = THEME_ROOT[themeName];
+      root.classList.add(entry.mode);
+      if (entry.dataTheme) root.setAttribute('data-theme', entry.dataTheme);
+      if (entry.variant) root.setAttribute('data-variant', entry.variant);
+      break;
+    }
   }
 
   // Store theme preference

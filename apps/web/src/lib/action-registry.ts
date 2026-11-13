@@ -130,7 +130,7 @@ type Undo = (
   context: Record<string, unknown>,
 ) => Promise<ActionOutcome>;
 
-const THEME_NAMES: readonly ThemeName[] = ['dark', 'light', 'lilac', 'system', 'alliance', 'cofounder', 'minimal', 'apricot', 'terra'];
+const THEME_NAMES: readonly ThemeName[] = ['dark', 'light', 'lilac', 'system', 'alliance', 'cofounder', 'minimal', 'apricot', 'terra', 'wine', 'sky', 'graphite'];
 
 function requireString(payload: Record<string, unknown>, key: string): string {
   const value = payload?.[key];
