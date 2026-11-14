@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   BarChart3,
   Building,
@@ -28,6 +28,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
+import { CreateOrganizationDialog } from '@/components/org/CreateOrganizationDialog';
 import { EmptyLine, FailedLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { useSession } from '@/hooks/useSession';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
@@ -98,6 +99,7 @@ export default function IncubatorDashboard() {
   const fmtDate = useDateFormat();
   const shortDate = (iso: string | null) => (iso ? fmtDate(iso, { day: 'numeric', month: 'short' }) : '—');
   const { hasSession, mounted } = useSession();
+  const [creatingOrg, setCreatingOrg] = useState(false);
   const {
     membership, name: orgName, isLoading: orgLoading, isNone,
     failed: orgFailed, refetch: refetchOrg, isFetching: orgFetching,
@@ -301,9 +303,15 @@ export default function IncubatorDashboard() {
         {isNone && (
           <SectionCard title="No organisation yet" titleEl="Δεν υπάρχει οργανισμός ακόμα">
             <EmptyLine
-              en="Programs, applications and cohorts appear here once your account belongs to an organisation."
-              el="Προγράμματα, αιτήσεις και κύκλοι εμφανίζονται εδώ όταν ο λογαριασμός σας ανήκει σε οργανισμό."
+              en="Programs, applications and cohorts appear here once your account belongs to an organisation. Create one, or ask its admin to invite you."
+              el="Προγράμματα, αιτήσεις και κύκλοι εμφανίζονται εδώ όταν ο λογαριασμός σας ανήκει σε οργανισμό. Δημιουργήστε έναν ή ζητήστε από τον διαχειριστή του πρόσκληση."
             />
+            <div className="mt-3">
+              <Button type="button" size="sm" onClick={() => setCreatingOrg(true)}>
+                <BilingualText en="Create an organisation" el="Δημιουργία οργανισμού" compact />
+              </Button>
+            </div>
+            <CreateOrganizationDialog open={creatingOrg} onClose={() => setCreatingOrg(false)} />
           </SectionCard>
         )}
 

@@ -8,6 +8,14 @@
  * key that is missing at runtime shows English only, never a wrong string.
  */
 export const TOAST_EL: Record<string, string> = {
+  "Branch restored": "Ο κλάδος επανήλθε",
+  "Failed to restore branch": "Ο κλάδος δεν επανήλθε",
+  "Organisation created": "Ο οργανισμός δημιουργήθηκε",
+  "Could not close the flag": "Η επισήμανση δεν έκλεισε",
+  "Endorsement scan finished": "Ο έλεγχος συστάσεων ολοκληρώθηκε",
+  "No new endorsement rings were found.": "Δεν βρέθηκαν νέοι κύκλοι συστάσεων.",
+  "New flags are waiting for review below.": "Νέες επισημάνσεις περιμένουν έλεγχο παρακάτω.",
+  "Could not run the scan": "Ο έλεγχος δεν εκτελέστηκε",
   "Code copied": "Ο κωδικός αντιγράφηκε",
   "Next step saved": "Το επόμενο βήμα αποθηκεύτηκε",
   "Next step cleared": "Το επόμενο βήμα καθαρίστηκε",

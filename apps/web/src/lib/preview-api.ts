@@ -30,6 +30,7 @@ import { previewScoutApi } from './demo/scout-world';
 import { attachDemoPhotos } from './demo/photos';
 import { messageSnippet, readProjectDelivery, textMatches } from '@cofounderbay/shared';
 import { stepsProgress, type MilestoneStep } from '@cofounderbay/shared';
+import { canRemoveGroupMember, GROUP_MEMBER_PROBLEM_COPY, groupRoleChoices, type GroupMemberProblem, type GroupRole } from '@cofounderbay/shared';
 import { PREVIEW_MESSAGE_EL } from './i18n/strings-messages';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis, placeVariants } from '@cofounderbay/shared';
@@ -1919,7 +1920,37 @@ function previewGroupPosts(group: PreviewGroup) {
 }
 
 /** The members a group shows by name: its founder, the reader when joined, and the cast. */
+/**
+ * Role changes and removals the demo reader made this session, per group,
+ * read over the starting members (the API's rules: shared group-roles).
+ */
+const DEMO_GROUP_MEMBERS_KEY = 'cfb:demo-group-members:v1';
+type DemoGroupMembersOverlay = Record<string, { roles: Record<string, string>; removed: string[] }>;
+function readDemoGroupMembers(): DemoGroupMembersOverlay {
+  try {
+    const raw = typeof window !== 'undefined' ? window.sessionStorage.getItem(DEMO_GROUP_MEMBERS_KEY) : null;
+    return raw ? (JSON.parse(raw) as DemoGroupMembersOverlay) : {};
+  } catch {
+    return {};
+  }
+}
+function writeDemoGroupMembers(groupId: string, change: (o: { roles: Record<string, string>; removed: string[] }) => void) {
+  const all = readDemoGroupMembers();
+  const one = all[groupId] ?? { roles: {}, removed: [] };
+  change(one);
+  try {
+    if (typeof window !== 'undefined') window.sessionStorage.setItem(DEMO_GROUP_MEMBERS_KEY, JSON.stringify({ ...all, [groupId]: one }));
+  } catch {
+    // Storage blocked: the members stay as they were.
+  }
+}
 function previewGroupMembers(group: PreviewGroup) {
+  const overlay = readDemoGroupMembers()[group.id];
+  return previewGroupMembersAtStart(group)
+    .filter((m) => !overlay?.removed.includes(m.userId))
+    .map((m) => (overlay?.roles[m.userId] ? { ...m, role: overlay.roles[m.userId] } : m));
+}
+function previewGroupMembersAtStart(group: PreviewGroup) {
   const F = PREVIEW_GROUP_FOUNDERS;
   const people = [group.createdBy as (typeof F)[keyof typeof F], F.elena, F.sofia, F.marcus, F.nikos]
     .filter((p, i, all) => all.findIndex((q) => q.id === p.id) === i);
@@ -2744,7 +2775,29 @@ function previewAdminUsers() {
  * the burst of messages that got him reported. The dismissed flag is the
  * founder whose off-topic post /admin's resolved report already mentions.
  */
+const ABUSE_RESOLUTIONS_KEY = 'cfb:demo-abuse-resolutions:v1';
+type DemoAbuseResolution = { status: string; actionTaken: string; resolvedAt: string };
+/** Flags the demo admin closed this session, read over the starting flags. */
+function demoAbuseResolutions(): Record<string, DemoAbuseResolution> {
+  try {
+    const raw = typeof window !== 'undefined' ? window.sessionStorage.getItem(ABUSE_RESOLUTIONS_KEY) : null;
+    return raw ? (JSON.parse(raw) as Record<string, DemoAbuseResolution>) : {};
+  } catch {
+    return {};
+  }
+}
+function saveDemoAbuseResolution(flagId: string, resolution: DemoAbuseResolution) {
+  try {
+    if (typeof window !== 'undefined') window.sessionStorage.setItem(ABUSE_RESOLUTIONS_KEY, JSON.stringify({ ...demoAbuseResolutions(), [flagId]: resolution }));
+  } catch {
+    // Storage blocked: the flag stays as it was.
+  }
+}
 function previewAbuseFlags() {
+  const resolved = demoAbuseResolutions();
+  return previewAbuseFlagsAtStart().map((f) => (resolved[f.id] ? { ...f, ...resolved[f.id], resolvedById: ME_ID } : f));
+}
+function previewAbuseFlagsAtStart() {
   const who = (id: string) => {
     const u = PREVIEW_ADMIN_USERS.find((x) => x.id === id)!;
     return { userId: u.id, email: u.email, displayName: u.name };
@@ -5472,6 +5525,30 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     const groups = matched.slice(offset, offset + limit);
     return { groups, total: matched.length, hasMore: offset + groups.length < matched.length };
   }
+  // A member's role and removal, with the API's rules (shared group-roles).
+  const groupMember = pathname.match(/^\/api\/groups\/([^/]+)\/members\/([^/]+)(\/role)?$/);
+  if (groupMember && (method === 'PATCH' || method === 'DELETE')) {
+    const [, gid, uid, rolePath] = groupMember;
+    const group = PREVIEW_GROUPS.find((g) => g.id === gid || g.slug === gid);
+    if (!group) throw new DemoRefusal(404, 'Group not found', { messageEl: 'Η κοινότητα δεν βρέθηκε.' });
+    const target = previewGroupMembers(group).find((m) => m.userId === uid);
+    if (!target) throw new DemoRefusal(404, 'Member not found', { messageEl: 'Το μέλος δεν βρέθηκε.' });
+    const refuse = (problem: GroupMemberProblem) => new DemoRefusal(403, GROUP_MEMBER_PROBLEM_COPY[problem].en, { reason: `group_member_${problem}`, messageEl: GROUP_MEMBER_PROBLEM_COPY[problem].el });
+    if (target.role === 'owner') throw refuse('owner_protected');
+    const actor = group.isMember ? group.memberRole : null;
+    if (method === 'PATCH' && rolePath) {
+      const role = (body as { role?: unknown } | undefined)?.role;
+      if (role !== 'admin' && role !== 'moderator' && role !== 'member') throw new DemoRefusal(400, 'Choose admin, moderator or member.', { messageEl: 'Επιλέξτε διαχειριστή, συντονιστή ή μέλος.' });
+      if (!groupRoleChoices(actor, target.role as GroupRole).includes(role)) throw refuse('not_allowed');
+      writeDemoGroupMembers(group.id, (o) => { o.roles[uid] = role; });
+      return { member: { userId: uid, role } };
+    }
+    if (method === 'DELETE' && !rolePath) {
+      if (!canRemoveGroupMember(actor, target.role as GroupRole)) throw refuse('not_allowed');
+      writeDemoGroupMembers(group.id, (o) => { if (!o.removed.includes(uid)) o.removed.push(uid); });
+      return { ok: true };
+    }
+  }
   if (pathname.startsWith('/api/groups/') && (pathname.endsWith('/join') || pathname.endsWith('/leave'))) {
     return { ok: true, groupId: pathname.split('/')[3], isMember: pathname.endsWith('/join') };
   }
@@ -5493,8 +5570,9 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     if (parts[4] === 'members') return { members: previewGroupMembers(group), total: group.memberCount };
     // The client reads membership beside the group, not inside it: nested,
     // it read false, so /groups said "joined" and the group said "Join".
+    const removed = readDemoGroupMembers()[group.id]?.removed.length ?? 0;
     return {
-      group: { ...group, members: previewGroupMembers(group) },
+      group: { ...group, memberCount: Math.max(0, group.memberCount - removed), members: previewGroupMembers(group) },
       isMember: group.isMember,
       memberRole: group.memberRole,
     };
@@ -5704,6 +5782,22 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     const limit = Number(params.get('limit') ?? 50);
     const offset = Number(params.get('offset') ?? 0);
     return { logs: rows.slice(offset, offset + limit), total: rows.length };
+  }
+  // Closing a flag, with the API's rules (admin.controller resolveAbuseFlag):
+  // both fields required; the flag keeps the action as a record and nothing
+  // else about the member changes. Before this the demo echoed the request
+  // and the flag came back pending on the next read.
+  if (/^\/api\/admin\/abuse\/[^/]+\/resolve$/.test(pathname) && method === 'POST') {
+    const flagId = pathname.split('/')[4];
+    const sent = (body ?? {}) as { action?: string; status?: string };
+    if (!sent.action || !sent.status) throw new DemoRefusal(400, 'action and status are required');
+    if (!previewAbuseFlagsAtStart().some((f) => f.id === flagId)) throw new DemoRefusal(404, 'Flag not found');
+    saveDemoAbuseResolution(flagId, { status: sent.status, actionTaken: sent.action, resolvedAt: new Date(previewNowMs()).toISOString() });
+    return { success: true };
+  }
+  // The demo's endorsements form no ring: the scan runs and finds nothing new.
+  if (pathname === '/api/admin/abuse/run-ring-detection' && method === 'POST') {
+    return { flagsCreated: 0, detections: [] };
   }
   if (pathname === '/api/admin/abuse/stats') {
     const flags = previewAbuseFlags();

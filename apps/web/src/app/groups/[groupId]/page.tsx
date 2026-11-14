@@ -17,7 +17,9 @@ import {
   RefreshCw,
   UserPlus,
   LogOut,
+  MoreHorizontal,
 } from 'lucide-react';
+import { canRemoveGroupMember, GROUP_ROLE_COPY, groupRoleChoices, type AssignableGroupRole, type GroupRole } from '@cofounderbay/shared';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction } from '@/components/layout/RailParts';
@@ -43,7 +45,10 @@ import {
   reactToGroupPost,
   listGroupComments,
   createGroupComment,
+  updateGroupMemberRole,
+  removeGroupMember,
   ApiError,
+  type GroupMember,
   type GroupPost,
 } from '@/lib/api';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -52,6 +57,8 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Counter } from '@/components/ui/counter';
 import { PhoneStickyAction } from '@/components/common/PhoneStickyAction';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
@@ -346,6 +353,53 @@ export default function GroupDetailPage() {
     }
   };
 
+  /*
+   * Members: who may change what is shared group-roles (`groupRoleChoices`,
+   * `canRemoveGroupMember`), the rule the API applies. A role change sets one
+   * field, so its undo is the role before; a removal deletes the row (role and
+   * join date go with it, and only the person can join again), so it has none.
+   */
+  const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null);
+  const [memberBusy, setMemberBusy] = useState<string | null>(null);
+  const refusalText = (e: unknown, en: string, el: string) => {
+    const x = e as { message?: string; details?: { messageEl?: string } } | null;
+    return sayOne(x?.message || en, x?.details?.messageEl || el);
+  };
+  const memberName = (m: GroupMember) => m.user?.displayName ?? sayOne('Member', 'Μέλος');
+  const handleMemberRole = async (userId: string, role: AssignableGroupRole): Promise<PageControlRunResult> => {
+    if (!group) return { error: 'The group has not loaded.' };
+    const m = (group.members ?? []).find((x) => x.userId === userId);
+    setMemberBusy(userId);
+    try {
+      await updateGroupMemberRole(group.id, userId, role);
+      success('Role changed', m ? `${memberName(m)}: ${sayOne(GROUP_ROLE_COPY[role].en, GROUP_ROLE_COPY[role].el)}` : undefined);
+      await queryClient.invalidateQueries({ queryKey: qk('groups', 'one', groupId) });
+    } catch (e: unknown) {
+      const text = refusalText(e, 'The role did not change.', 'Ο ρόλος δεν άλλαξε.');
+      toastError('Could not change the role', text);
+      return { error: text };
+    } finally {
+      setMemberBusy(null);
+    }
+  };
+  const handleRemoveMember = async (userId: string): Promise<PageControlRunResult> => {
+    if (!group) return { error: 'The group has not loaded.' };
+    const m = (group.members ?? []).find((x) => x.userId === userId);
+    setMemberBusy(userId);
+    try {
+      await removeGroupMember(group.id, userId);
+      success('Member removed', m ? memberName(m) : undefined);
+      await queryClient.invalidateQueries({ queryKey: qk('groups', 'one', groupId) });
+    } catch (e: unknown) {
+      const text = refusalText(e, 'The member was not removed.', 'Το μέλος δεν αφαιρέθηκε.');
+      toastError('Could not remove the member', text);
+      return { error: text };
+    } finally {
+      setMemberBusy(null);
+      setMemberToRemove(null);
+    }
+  };
+
   const handleReact = async (postId: string, emoji: string) => {
     if (!group) return;
     try {
@@ -364,6 +418,10 @@ export default function GroupDetailPage() {
   const feed = postsQuery.data?.posts ?? [];
   const ownPosts = currentUserId ? feed.filter((p) => p.author?.id === currentUserId) : [];
   const groupMembers = group?.members ?? [];
+  const actorRole = (isMember ? memberRole : null) as GroupRole | null;
+  const othersInGroup = groupMembers.filter((m) => m.userId !== currentUserId);
+  const roleOffers = othersInGroup.flatMap((m) => groupRoleChoices(actorRole, m.role as GroupRole).map((role) => ({ m, role })));
+  const removable = othersInGroup.filter((m) => canRemoveGroupMember(actorRole, m.role as GroupRole));
   usePageControls([
     choiceControl('group_section', 'Group section', 'Ενότητα κοινότητας', [
       { value: 'feed', en: 'Feed', el: 'Ροή' },
@@ -397,6 +455,40 @@ export default function GroupDetailPage() {
       unavailableEn: groupMembers.length === 0 ? 'No members are listed.' : undefined,
       unavailableEl: groupMembers.length === 0 ? 'Δεν εμφανίζονται μέλη.' : undefined,
       run: (value) => { if (value) router.push(`/profiles/${value}`); },
+    },
+    {
+      id: 'set_group_member_role',
+      labelEn: 'Give a member another role',
+      labelEl: 'Αλλαγή ρόλου μέλους',
+      writes: true,
+      options: rowOptions(
+        roleOffers,
+        ({ m, role }) => `${m.userId}|${role}`,
+        ({ m, role }) => `${m.user?.displayName ?? m.userId} → ${GROUP_ROLE_COPY[role].en}`,
+        ({ m, role }) => `${m.user?.displayName ?? m.userId} → ${GROUP_ROLE_COPY[role].el}`,
+      ),
+      unavailableEn: roleOffers.length ? undefined : 'Only the owner and admins change roles, and nobody else is listed.',
+      unavailableEl: roleOffers.length ? undefined : 'Μόνο ο ιδιοκτήτης και οι διαχειριστές αλλάζουν ρόλους, και δεν εμφανίζεται άλλο μέλος.',
+      // Asked before it runs, so the row still holds the role before.
+      undo: (value) => {
+        const [uid] = (value ?? '').split('|');
+        const before = groupMembers.find((m) => m.userId === uid)?.role;
+        return before && before !== 'owner' ? { control: 'set_group_member_role', value: `${uid}|${before}` } : undefined;
+      },
+      run: (value) => {
+        const [uid, role] = (value ?? '').split('|');
+        return uid && role ? handleMemberRole(uid, role as AssignableGroupRole) : undefined;
+      },
+    },
+    {
+      id: 'remove_group_member',
+      labelEn: 'Remove a member from this group',
+      labelEl: 'Αφαίρεση μέλους από την κοινότητα',
+      writes: true,
+      options: rowOptions(removable, (m) => m.userId, (m) => m.user?.displayName ?? m.userId),
+      unavailableEn: removable.length ? undefined : 'Your role here removes nobody listed.',
+      unavailableEl: removable.length ? undefined : 'Ο ρόλος σας εδώ δεν αφαιρεί κανένα από τα μέλη που εμφανίζονται.',
+      run: (value) => (value ? handleRemoveMember(value) : undefined),
     },
   ]);
   usePageList([
@@ -728,6 +820,17 @@ export default function GroupDetailPage() {
 
         )}
 
+        <ConfirmDialog
+          open={memberToRemove !== null}
+          onOpenChange={(o) => { if (!o) setMemberToRemove(null); }}
+          title={<BilingualText en={`Remove ${memberToRemove ? memberName(memberToRemove) : ''}?`} el={`Αφαίρεση: ${memberToRemove ? memberName(memberToRemove) : ''};`} compact wrap />}
+          description={<BilingualText en="Their role and join date go. They can join again on their own if the community is public." el="Ο ρόλος και η ημερομηνία συμμετοχής χάνονται. Μπορούν να ξαναμπούν μόνοι τους αν η κοινότητα είναι δημόσια." wrap />}
+          confirmLabel={<BilingualText en="Remove" el="Αφαίρεση" compact />}
+          variant="destructive"
+          loading={memberToRemove !== null && memberBusy === memberToRemove.userId}
+          onConfirm={() => (memberToRemove ? handleRemoveMember(memberToRemove.userId).then(() => undefined) : undefined)}
+        />
+
         {/* Members section: a section card whose people are rows on its
             axis, not a box each. */}
         {activeSection === 'members' && (
@@ -737,28 +840,63 @@ export default function GroupDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {groupMembers.map((m) => (
-                  <button
-                    type="button"
-                    key={m.userId}
-                    className="axis-row flex items-center gap-3 rounded-md py-2 text-left transition-colors hover:bg-accent focus-ring"
-                    onClick={() => router.push(`/profiles/${m.userId}`)}
-                  >
-                    <Avatar className="h-10 w-10 shrink-0">
-                      <AvatarImage src={m.user?.avatarUrl ?? undefined} alt="" />
-                      <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(m.user?.displayName)}</AvatarFallback>
-                    </Avatar>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{m.user?.displayName ?? <BilingualText en="Member" el="Μέλος" compact />}</span>
-                      {m.user?.headline && (
-                        <span className="block truncate text-xs text-muted-foreground">{m.user.headline}</span>
-                      )}
-                      {m.role !== 'member' && (
-                        <span className="block text-2xs font-medium text-primary-accessible"><StatusText value={m.role} /></span>
-                      )}
-                    </span>
-                  </button>
-                ))}
+                {groupMembers.map((m) => {
+                  const choices = m.userId === currentUserId ? [] : groupRoleChoices(actorRole, m.role as GroupRole);
+                  const canRemove = m.userId !== currentUserId && canRemoveGroupMember(actorRole, m.role as GroupRole);
+                  const name = memberName(m);
+                  return (
+                    <div key={m.userId} className="flex min-w-0 items-center gap-1">
+                      <button
+                        type="button"
+                        className="axis-row flex min-w-0 flex-1 items-center gap-3 rounded-md py-2 text-left transition-colors hover:bg-accent focus-ring"
+                        onClick={() => router.push(`/profiles/${m.userId}`)}
+                      >
+                        <Avatar className="h-10 w-10 shrink-0">
+                          <AvatarImage src={m.user?.avatarUrl ?? undefined} alt="" />
+                          <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(m.user?.displayName)}</AvatarFallback>
+                        </Avatar>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium">{m.user?.displayName ?? <BilingualText en="Member" el="Μέλος" compact />}</span>
+                          {m.user?.headline && (
+                            <span className="block truncate text-xs text-muted-foreground">{m.user.headline}</span>
+                          )}
+                          {m.role !== 'member' && (
+                            <span className="block text-2xs font-medium text-primary-accessible"><StatusText value={m.role} /></span>
+                          )}
+                        </span>
+                      </button>
+                      {choices.length || canRemove ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 shrink-0"
+                              disabled={memberBusy === m.userId}
+                              aria-label={bilingualAria(`Manage ${name}`, `Διαχείριση: ${name}`)}
+                            >
+                              <MoreHorizontal className="icon-sm" aria-hidden="true" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {choices.map((role) => (
+                              <DropdownMenuItem key={role} onSelect={() => void handleMemberRole(m.userId, role)}>
+                                <BilingualText en={`Make ${GROUP_ROLE_COPY[role].en.toLowerCase()}`} el={`Ορισμός ως ${GROUP_ROLE_COPY[role].el.toLowerCase()}`} compact />
+                              </DropdownMenuItem>
+                            ))}
+                            {choices.length && canRemove ? <DropdownMenuSeparator /> : null}
+                            {canRemove ? (
+                              <DropdownMenuItem className="text-destructive-accessible" onSelect={() => setMemberToRemove(m)}>
+                                <BilingualText en="Remove from this community" el="Αφαίρεση από την κοινότητα" compact />
+                              </DropdownMenuItem>
+                            ) : null}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
