@@ -289,7 +289,10 @@ export function DemoSessionBanner() {
   if (!previewDemo) return null;
   if (pathname && NO_EXIT_ROUTES.some((route) => pathname.startsWith(route))) return null;
   return (
-    <DemoExitButton className="fixed z-40 left-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] max-sm:[body:has([data-topbar-exit])_&]:hidden sm:bottom-4 sm:left-4 sm:[body:has([data-sidenav-footer])_&]:hidden" />
+    // Its phone height is set in globals.css ("Demo Exit, floating"): above the
+    // tab bar where there is one, in the corner where there is none (public
+    // pages such as /pitch/[id], where 5.25rem left it over the last card).
+    <DemoExitButton marker="data-demo-exit-floating" className="fixed z-40 left-3 max-sm:[body:has([data-topbar-exit])_&]:hidden sm:bottom-4 sm:left-4 sm:[body:has([data-sidenav-footer])_&]:hidden" />
   );
 }
 

@@ -195,19 +195,10 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
           </div>
         </div>
         <div className="mb-4 mt-3 space-y-1.5">
-          {vrs.lowestDimension?.href && (
-            <p className={cn('text-xs text-pretty', STATUS.warning.text)}>
-              <BilingualText en="Lowest" el="Χαμηλότερη" compact />{': '}
-              <Link href={vrs.lowestDimension.href} className="tap-extend-y font-medium underline underline-offset-2">
-                <BilingualText
-                  en={vrs.lowestDimension.label}
-                  el={ventureDimensionEl(vrs.lowestDimension.key, vrs.lowestDimension.label)}
-                  compact
-                />
-              </Link>{' '}
-              ({vrs.lowestDimension.score}%)
-            </p>
-          )}
+          {/* The weakest dimension is named once: marked in the list
+              below, and the card's footer button opens it ("Raise your
+              lowest"). A line saying "Lowest: …" above both said it a third
+              time (docs §124). */}
           {/* Two different questions used to share the word "readiness": how
               much of the platform this founder has put to work, and how close
               the venture is to raising. Name the other one and link it. */}
@@ -233,14 +224,20 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
           </Button>
         ) : null}
         <ul className={cn('space-y-2.5', compact && 'hidden', !dimensionsOpen && 'max-sm:hidden')}>
-          {vrs.dimensions.filter((dim) => dim?.href).map((dim, index) => {
+          {vrs.dimensions.filter((dim) => dim?.href).map((dim) => {
             const { color, bar } = scoreTier(dim.score);
+            const isLowest = vrs.lowestDimension?.key === dim.key;
             return (
               <li key={dim.key}>
                 <Link href={dim.href} className="group block rounded-sm">
                   <div className="mb-1 flex items-center justify-between gap-2 text-xs">
                     <span className="min-w-0 truncate text-muted-foreground transition-colors group-hover:text-foreground">
                       <BilingualText en={dim.label} el={ventureDimensionEl(dim.key, dim.label)} compact />
+                      {isLowest ? (
+                        <span className={cn('ml-1 font-medium', STATUS.warning.text)}>
+                          · <BilingualText en="lowest" el="χαμηλότερη" compact />
+                        </span>
+                      ) : null}
                       {weightShare(dim.weight) !== null && (
                         <span className="ml-1 hidden text-muted-foreground sm:inline">
                           ·{' '}
@@ -254,7 +251,11 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
                     </span>
                     <span className={cn('shrink-0 font-semibold tabular-nums', color)}>{dim.score}%</span>
                   </div>
-                  <Progress value={dim.score} label={dim.label} data-meter="lilac" data-meter-slot={index % 3} className={cn('h-2 transition-all', bar)} />
+                  {/* One measure, one colour: every bar takes slot 0. Cycling the
+                      three meter colours by position made six readings of
+                      one score look like three categories (docs §124); with
+                      no slot, studio drew them as faint ink. */}
+                  <Progress value={dim.score} label={dim.label} data-meter="lilac" data-meter-slot={0} className={cn('h-2 transition-all', bar)} />
                 </Link>
               </li>
             );

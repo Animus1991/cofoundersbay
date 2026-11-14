@@ -182,7 +182,9 @@ export function HomeFeedSection({ people, shownAbove, connectionOf }: { people: 
         why: { en: 'Coming up', el: 'Έρχεται' },
         title: e.title,
         subtitle: [fmtDate(e.startAt, { weekday: 'short', day: 'numeric', month: 'short' }), e.location].filter(Boolean).join(' · '),
-        mark: { name: e.title, src: e.host?.avatarUrl },
+        // The host's photo is a person (round); without it the mark is the
+        // event's own initials, which is not a person (square, docs §124).
+        mark: { name: e.title, src: e.host?.avatarUrl, square: !e.host?.avatarUrl },
         image: e.coverImageUrl,
         href: `/events/${e.id}`,
         action: { en: 'See the event', el: 'Δείτε την εκδήλωση' },

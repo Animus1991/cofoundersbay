@@ -746,7 +746,8 @@ export default function FounderDashboardContent() {
                 <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
                   <CfbGlyph name="flag" className="icon-sm text-muted-foreground" />
                   <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} compact />
-                  {milestones.length > 0 ? <span className="font-normal tabular-nums text-muted-foreground">{completedMilestoneCount}/{milestones.length}</span> : null}
+                  {/* No "5/12" here: the Milestones tile above says it and the
+                      line under the rows says what is beyond them (docs §124). */}
                 </CardTitle>
                 <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
                   <Link href="/milestones">

@@ -130,32 +130,31 @@ function MetricCard({
     : metric.label === 'Activity Score' || metric.label === 'Profile Views' ? 'growth'
     : null;
 
-  // Every tile is the same three lines: the change, the figure, the name.
+  // Every tile is the same three lines, in the order the other homes' tiles
+  // use (MetricTile): the name, the figure, then what changed. The change sat
+  // above the figure, so "+12%" was read before what it qualified (docs §124).
   // A sparkline on Profile Views alone made the top row taller than the
   // bottom row. The views series is drawn once, on the Growth tab.
   const body = (
     <Card className="h-full min-w-0 border-border transition-colors hover:border-border">
       <CardContent className="flex h-full flex-col items-center justify-center text-center">
-        <div className="mb-3 flex items-center justify-center gap-2">
-          <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
-          <span
-            className={cn(
-              'page-stat-label flex items-center gap-1 tabular-nums',
-              metric.changeType === 'increase'
-                ? TREND.up
-                : metric.changeType === 'decrease'
-                ? TREND.down
-                : 'text-muted-foreground',
-            )}
-          >
-            <ChangeIcon className="size-[1.08em] shrink-0" />
-            {signedChange(metric)}
-          </span>
-        </div>
-        <h3 className="page-stat mb-1 text-center font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
         <p className="page-stat-label line-clamp-2 min-h-[2.75em] text-center leading-snug text-muted-foreground">
           <BilingualText en={metric.label} el={metric.labelEl} compact wrap />
         </p>
+        <h3 className="page-stat mb-1 text-center font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
+        <span
+          className={cn(
+            'page-stat-label flex items-center justify-center gap-1 tabular-nums',
+            metric.changeType === 'increase'
+              ? TREND.up
+              : metric.changeType === 'decrease'
+              ? TREND.down
+              : 'text-muted-foreground',
+          )}
+        >
+          <ChangeIcon className="size-[1.08em] shrink-0" />
+          {signedChange(metric)}
+        </span>
       </CardContent>
     </Card>
   );

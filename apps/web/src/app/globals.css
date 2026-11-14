@@ -5157,6 +5157,20 @@ html[data-theme="studio"] #main-content [data-meter-slot='2'][role='progressbar'
   background-color: hsl(var(--meter-apricot));
 }
 
+/* Dark had no meter rules, so every slotted meter drew foreground at 22%
+   (about 1.6:1 against its track), below the 3:1 a graphic that carries a
+   reading needs (docs §124). The same three accents as the light themes;
+   lilac #765fe7 is about 3.9:1 on the dark card. */
+html.dark:not([data-theme]) #main-content [data-meter-slot='0'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-lilac));
+}
+html.dark:not([data-theme]) #main-content [data-meter-slot='1'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html.dark:not([data-theme]) #main-content [data-meter-slot='2'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-apricot));
+}
+
 html[data-theme="studio"] ::selection {
   background-color: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
@@ -5271,5 +5285,22 @@ select:disabled {
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   [data-row] .row-tool {
     transition: opacity 120ms ease-out;
+  }
+}
+
+/* Demo Exit, floating (OfflineIndicator `DemoSessionBanner`), on phones.
+   Above the tab bar where there is one; in the corner where there is none,
+   with room at the foot of the page so its last line can scroll clear of
+   the chip (it covered "Views" on /pitch/demo, docs §124). Separate rules:
+   one invalid selector would drop the whole list. */
+@media (max-width: 639.98px) {
+  [data-demo-exit-floating] {
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+  body:has([data-mobile-tabs]) [data-demo-exit-floating] {
+    bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+  }
+  body:has([data-demo-exit-floating]):not(:has([data-mobile-tabs])):not(:has([data-topbar-exit])) {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
   }
 }
