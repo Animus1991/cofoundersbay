@@ -827,7 +827,7 @@ export default function DataRoomPage() {
                           </Avatar>
                           <div>
                             <p className="font-medium">{investor.name}</p>
-                            <p className="text-xs text-muted-foreground">{investor.email}</p>
+                            <p className="text-xs text-muted-foreground" translate="no">{investor.email}</p>
                           </div>
                         </div>
                       </TableCell>

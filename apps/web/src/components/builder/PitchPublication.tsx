@@ -89,7 +89,7 @@ export function PitchPublication({ documentId }: { documentId?: string }) {
       </div>
       {live ? (
         <>
-          <p className="truncate rounded-md border border-border bg-muted/40 px-2 py-1.5 text-xs text-muted-foreground" title={url}>{url}</p>
+          <p className="truncate rounded-md border border-border bg-muted/40 px-2 py-1.5 text-xs text-muted-foreground" title={url} translate="no">{url}</p>
           <p className="text-xs text-muted-foreground tabular-nums">
             <BilingualText en={`${pitch?.views ?? 0} views · ${pitch?.contactRequests ?? 0} messages`} el={`${pitch?.views ?? 0} προβολές · ${pitch?.contactRequests ?? 0} μηνύματα`} compact />
           </p>

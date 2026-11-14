@@ -10,8 +10,11 @@ import {
   Search,
   Award,
   MoreVertical,
+  X,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { OrgReadFailed } from '@/components/org/OrgReadFailed';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/toast';
@@ -34,7 +37,7 @@ import { EmptyOrgPrograms, namedChoice, namedFilters, namedQuery } from '@/compo
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
-import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
@@ -286,10 +289,20 @@ export default function OrgProgramsPage() {
     return matchesSearch && matchesStatus;
   }).sort(openFirst);
 
-  const filtersActive = !!search || statusFilter !== 'all';
+  const railFilters = statusFilter !== 'all' ? 1 : 0;
+  const filtersActive = !!search || railFilters > 0;
   const clearFilters = () => { setSearch(''); setStatusFilter('all'); };
+  const statusOptions = [
+    { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις', count: programs.length },
+    ...(['active', 'upcoming', 'draft', 'completed', 'archived'] as const).map((st) => ({
+      value: st,
+      en: STATUS_LABEL[st].en,
+      el: STATUS_LABEL[st].el,
+      count: programs.filter((p) => p.status === st).length,
+    })),
+  ];
 
-  // Offered to the assistant: clearing the search and each card's Archive -
+  // Offered to the assistant: status filter, clearing filters, and each card's Archive -
   // the same endpoint the card's menu calls, refused on the sample
   // programmes, which have nothing behind them.
   const qc = useQueryClient();
@@ -314,7 +327,15 @@ export default function OrgProgramsPage() {
     },
   ]);
   usePageControls([
-    { id: 'clear_filters', labelEn: 'Clear the program search', labelEl: 'Καθαρισμός αναζήτησης προγραμμάτων', writes: false, unavailableEn: filtersActive ? undefined : 'No search is set.', unavailableEl: filtersActive ? undefined : 'Δεν υπάρχει αναζήτηση.', run: clearFilters },
+    choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', [
+      { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
+      ...(['active', 'upcoming', 'draft', 'completed', 'archived'] as const).map((st) => ({
+        value: st,
+        en: STATUS_LABEL[st].en,
+        el: STATUS_LABEL[st].el,
+      })),
+    ], statusFilter, setStatusFilter),
+    { id: 'clear_filters', labelEn: 'Clear program filters', labelEl: 'Καθαρισμός φίλτρων προγραμμάτων', writes: false, unavailableEn: filtersActive ? undefined : 'No filter is set.', unavailableEl: filtersActive ? undefined : 'Δεν υπάρχει φίλτρο.', run: clearFilters },
     {
       id: 'archive_program',
       labelEn: 'Archive program',
@@ -337,11 +358,48 @@ export default function OrgProgramsPage() {
     );
   }
 
+  const statCount = (n: number) => (reading ? '—' : n);
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'award',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'total', label: 'Total programmes', labelEl: 'Σύνολο προγραμμάτων', value: statCount(programs.length) },
+            { key: 'active', label: 'Running now', labelEl: 'Σε εξέλιξη τώρα', value: statCount(programs.filter((p) => p.status === 'active').length) },
+            { key: 'enrolled', label: 'Total enrolled', labelEl: 'Σύνολο εγγεγραμμένων', value: statCount(programs.reduce((acc, p) => acc + p.enrolled, 0)) },
+            { key: 'completed', label: 'Completed cohorts', labelEl: 'Ολοκληρωμένα', value: statCount(programs.filter((p) => p.status === 'completed').length) },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: railFilters || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions title="Status" titleEl="Κατάσταση" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
+          {filtersActive && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={clearFilters} />
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell showHelp
+      rail={rail}
       title="Programs"
       titleEl="Προγράμματα"
       description="Create, run, and review accelerator, bootcamp, and incubator programs."
+      descriptionEl="Δημιουργήστε, τρέξτε και αξιολογήστε προγράμματα επιτάχυνσης, bootcamp και θερμοκοιτίδας."
       // The empty state carries its own "Create program" (docs §87, §96).
       actions={programs.length > 0 || reading ? (
         <Button asChild>
@@ -361,45 +419,8 @@ export default function OrgProgramsPage() {
           />
         )}
 
-        {/* Figures and search show over programmes that were read; with none
-            they read 0 / 0 / 0 / 0 above the empty state. */}
-        {(programs.length > 0 || filtersActive) && (<>
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Total Programs" el="Σύνολο προγραμμάτων" compact /></p>
-              <p className="page-stat text-xl font-bold">{programs.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργά" compact /></p>
-              <p className={cn('page-stat text-xl font-bold', STATUS.success.icon)}>
-                {programs.filter((p) => p.status === 'active').length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Total Enrolled" el="Σύνολο εγγεγραμμένων" compact /></p>
-              <p className="page-stat text-xl font-bold">
-                {programs.reduce((acc, p) => acc + p.enrolled, 0)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρωμένα" compact /></p>
-              <p className={cn('page-stat text-xl font-bold', STATUS.info.icon)}>
-                {programs.filter((p) => p.status === 'completed').length}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters */}
-        <div className="flex gap-3">
-          <div className="relative flex-1">
+        {(programs.length > 0 || filtersActive) && (
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               aria-label={bilingualInline("Search programs", "Αναζήτηση προγραμμάτων")}
@@ -409,11 +430,18 @@ export default function OrgProgramsPage() {
               className="pl-9"
             />
           </div>
-        </div>
-        </>)}
+        )}
 
-        {/* Programs List */}
         <div className="space-y-3">
+          {filtersActive && filteredPrograms.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              <BilingualText
+                en={`${filteredPrograms.length} of ${programs.length} programs`}
+                el={`${filteredPrograms.length} από ${programs.length} προγράμματα`}
+                compact
+              />
+            </p>
+          )}
           {reading && programs.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="h-28" />)}
           {filteredPrograms.map((program) => (
             <ProgramCard key={program.id} program={program} sample={isSample} />
@@ -422,12 +450,7 @@ export default function OrgProgramsPage() {
             <EmptyOrgPrograms
               filtersActive={filtersActive}
               onClearFilters={clearFilters}
-              active={namedFilters(namedQuery(search), namedChoice(statusFilter, 'all', {
-                active: { en: 'Active', el: 'Ενεργά' },
-                completed: { en: 'Completed', el: 'Ολοκληρωμένα' },
-                draft: { en: 'Draft', el: 'Πρόχειρα' },
-                archived: { en: 'Archived', el: 'Αρχειοθετημένα' },
-              }))}
+              active={namedFilters(namedQuery(search), namedChoice(statusFilter, 'all', STATUS_LABEL))}
             />
           )}
         </div>

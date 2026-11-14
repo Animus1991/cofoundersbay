@@ -191,24 +191,20 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
     { key: 'views', labelEn: analyticsEn('stage_views'), labelEl: analyticsEl('stage_views'), value: views, bar: 'bg-primary/70', href: '/profile' as const },
     { key: 'accepted', labelEn: analyticsEn('stage_accepted'), labelEl: analyticsEl('stage_accepted'), value: connections, bar: 'bg-status-success-mark', href: '/connections' as const },
   ];
-  const untracked = [
-    { key: 'requests', href: '/discover' as const, en: analyticsEn('funnel_untracked_requests'), el: analyticsEl('funnel_untracked_requests') },
-    { key: 'conversations', href: '/messages' as const, en: analyticsEn('funnel_untracked_conversations'), el: analyticsEl('funnel_untracked_conversations') },
-  ];
   const maximum = Math.max(1, ...stages.map((stage) => stage.value ?? 0));
   const conversion =
     typeof views === 'number' && views > 0 && typeof connections === 'number'
       ? Math.round((connections / views) * 1000) / 10
       : null;
   return (
-    <Card className="min-w-0">
+    <Card className="flex min-w-0 flex-col">
       <CardHeader className="p-3 sm:p-6">
         <CardTitle className="flex items-center gap-2 font-semibold">
           <CfbGlyph name="people" className="icon-sm shrink-0 text-muted-foreground" />
           <BilingualText en={analyticsEn('profile_funnel')} el={analyticsEl('profile_funnel')} wrap />
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3.5 pt-0 sm:pt-0">
+      <CardContent className="flex flex-1 flex-col gap-3.5 pt-0 sm:pt-0">
         <p className="page-stat-label text-muted-foreground">
           <BilingualText en={analyticsEn('funnel_note')} el={analyticsEl('funnel_note')} />
         </p>
@@ -231,15 +227,18 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
             </span>
           </p>
         )}
-        {/* Each row is a link: py-1 gives it a 24px target and room from the next one. */}
-        <div className="space-y-1 border-t border-border pt-2">
-          {untracked.map((row) => (
-            <Link key={row.key} href={row.href} className="block min-h-8 rounded-lg py-1 focus-ring hover:text-foreground">
-              <p className="text-sm leading-snug text-muted-foreground">
-                <BilingualText en={row.en} el={row.el} wrap />
-              </p>
+        {/* The funnel ends on one thing to do. It ended on two sentences that
+            each said a stage is not counted yet; what widens the funnel is
+            sending requests, and Messages is the tile above. */}
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+          <p className="min-w-0 text-sm leading-snug text-muted-foreground">
+            <BilingualText en={analyticsEn('funnel_untracked')} el={analyticsEl('funnel_untracked')} wrap />
+          </p>
+          <Button asChild size="sm">
+            <Link href="/discover" data-funnel-next="">
+              <BilingualText en={analyticsEn('funnel_next')} el={analyticsEl('funnel_next')} compact />
             </Link>
-          ))}
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -471,6 +470,11 @@ export default function AnalyticsPage() {
 
   const waiting = !mounted || isLoading;
   const metrics = metricsToDisplay(overview?.metrics);
+  // Only what was measured is a tile. Engagement rate and search appearances
+  // come back null from the API, which has no source for them yet: two tiles
+  // reading "—" on every real account promised a measurement nobody makes.
+  // The tile appears the day the field carries a number (docs §122).
+  const measured = metrics.filter((m) => m.value !== null || m.change !== null);
 
   /**
    * What this screen is showing, for the assistant.
@@ -632,16 +636,6 @@ export default function AnalyticsPage() {
                 </Link>
               </Button>
             ))}
-              <Button asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
-                <Link href="/calendar">
-                  <CfbGlyph name="calendar" className="icon-sm shrink-0 text-muted-foreground" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold leading-snug"><BilingualText en={analyticsEn('plan_peak_hour')} el={analyticsEl('plan_peak_hour')} wrap /></span>
-                    <span className="mt-0.5 block text-xs leading-snug text-muted-foreground"><BilingualText en="Block time around your peak hour." el="Κλείστε χρόνο γύρω από την ώρα αιχμής." wrap /></span>
-                  </span>
-                  <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-                </Link>
-              </Button>
           </div>
         </div>
       ),
@@ -740,13 +734,20 @@ export default function AnalyticsPage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {metrics.map((metric) => (
+              <div className={cn('grid grid-cols-2 gap-3 sm:gap-4', measured.length % 3 === 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-4')}>
+                {measured.map((metric) => (
                   <MetricCard key={metric.label} metric={metric} onOpenTab={setTab} />
                 ))}
               </div>
 
-              {metrics.length > 0 && <ProfileFunnel metrics={metrics} />}
+              {profileViews && profileViews.length > 0 ? (
+                <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-2">
+                  <ProfileViewsChart data={profileViews} />
+                  {metrics.length > 0 && <ProfileFunnel metrics={metrics} />}
+                </div>
+              ) : (
+                metrics.length > 0 && <ProfileFunnel metrics={metrics} />
+              )}
 
               {weeklySummary && [weeklySummary.mostActiveDay, weeklySummary.peakHour, weeklySummary.avgResponseTime, weeklySummary.totalInteractions].some((value) => value !== null && value !== undefined && value !== '') && (
                 <Card className="min-w-0">

@@ -22,7 +22,7 @@ function CuratedRow({ title, titleEl, href, rows }: { title: string; titleEl: st
     <section className="min-w-0 space-y-3" data-curated-row="">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="card-title"><BilingualText en={title} el={titleEl} compact /></h2>
-        <Link href={href} className="shrink-0 text-sm text-muted-foreground hover:text-foreground">
+        <Link href={href} className="tap-extend-y shrink-0 text-sm text-muted-foreground hover:text-foreground">
           <BilingualText en={discoverEn('curated_all')} el={discoverEl('curated_all')} compact />
         </Link>
       </div>

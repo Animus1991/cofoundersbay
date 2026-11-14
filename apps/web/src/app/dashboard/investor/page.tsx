@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   BarChart3,
   Briefcase,
@@ -47,6 +48,7 @@ import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { homeSnapshot } from '@/lib/home-snapshot';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { usePageControls, usePageList } from '@/lib/page-controls';
 
 /*
  * The investor's home, read from the investor's own board.
@@ -147,6 +149,7 @@ function DealRow({ deal, trailing }: { deal: InvestorDeal; trailing: React.React
 }
 
 export default function InvestorDashboard() {
+  const router = useRouter();
   const { hasSession, mounted } = useSession();
 
   const { data: profile } = useQuery({
@@ -222,6 +225,32 @@ export default function InvestorDashboard() {
     },
     actions: ['get_investor_pipeline'],
   }));
+
+  usePageList([
+    {
+      id: 'active_deals',
+      labelEn: 'Active deals',
+      labelEl: 'Ενεργές συμφωνίες',
+      rows: !mounted || dealsLoading ? undefined : active.map((d) => `${d.name} · ${STAGE_LABEL[d.pipelineStage]?.en ?? d.pipelineStage}${d.askAmountCents != null ? ` · asking ${money(d.askAmountCents, d.currency)}` : ''}`),
+      rowsEl: !mounted || dealsLoading ? undefined : active.map((d) => `${d.name} · ${STAGE_LABEL[d.pipelineStage]?.el ?? d.pipelineStage}${d.askAmountCents != null ? ` · ζητά ${money(d.askAmountCents, d.currency)}` : ''}`),
+      total: deals.length,
+      sample: isPreviewDemo(),
+    },
+    {
+      id: 'portfolio_companies',
+      labelEn: 'Portfolio companies',
+      labelEl: 'Εταιρείες χαρτοφυλακίου',
+      rows: !mounted || dealsLoading ? undefined : invested.map((d) => `${d.name} · ${money(d.currentValueCents ?? d.investedCents, d.currency)}`),
+      rowsEl: !mounted || dealsLoading ? undefined : invested.map((d) => `${d.name} · ${money(d.currentValueCents ?? d.investedCents, d.currency)}`),
+      sample: isPreviewDemo(),
+    },
+  ]);
+
+  usePageControls([
+    { id: 'open_pipeline', labelEn: 'Open deal pipeline', labelEl: 'Άνοιγμα pipeline συμφωνιών', writes: false, run: () => router.push('/investor/pipeline') },
+    { id: 'open_scouting', labelEn: 'Scout startups', labelEl: 'Ανίχνευση startups', writes: false, run: () => router.push('/investor/scouting') },
+    { id: 'open_portfolio', labelEn: 'Open portfolio', labelEl: 'Άνοιγμα χαρτοφυλακίου', writes: false, run: () => router.push('/investor/portfolio') },
+  ]);
 
   if (!mounted) {
     return (

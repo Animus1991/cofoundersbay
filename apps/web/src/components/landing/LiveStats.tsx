@@ -27,34 +27,6 @@ export function usePublicStats() {
 
 const number = (n: number) => n.toLocaleString();
 
-/** The hero's three-tile strip. Absent until the counts arrive. */
-export function LiveStatsStrip() {
-  const stats = usePublicStats();
-  if (!stats) return null;
-  const items: Array<{ value: string; label: { en: string; el: string } }> = [
-    { value: number(stats.members), label: { en: 'Members', el: 'Μέλη' } },
-    { value: number(stats.connections), label: { en: 'Accepted connections', el: 'Αποδεκτές συνδέσεις' } },
-    { value: number(stats.events), label: { en: 'Events listed', el: 'Εκδηλώσεις' } },
-  ];
-  return (
-    <div className="mt-8 w-full animate-fade-in sm:mt-16" style={{ animationDelay: '400ms' }}>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-6">
-        {items.map(({ value, label }) => (
-          <div key={label.en} className="rounded-xl border border-border bg-card/50 px-3 py-3 text-center backdrop-blur-sm sm:p-4">
-            <p className="landing-stat font-display font-bold text-foreground">{value}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              <BilingualText en={label.en} el={label.el} compact />
-            </p>
-          </div>
-        ))}
-      </div>
-      <p className="mt-3 text-center text-2xs text-muted-foreground">
-        <BilingualText en="Live counts · measured today" el="Μετρημένα σήμερα" compact />
-      </p>
-    </div>
-  );
-}
-
 const TILES: Array<{ key: keyof Omit<PublicStats, 'measuredAt'>; label: { en: string; el: string }; sub: { en: string; el: string } }> = [
   { key: 'members', label: { en: 'Registered Members', el: 'Εγγεγραμμένα μέλη' }, sub: { en: 'Founders, mentors & investors', el: 'Ιδρυτές, μέντορες & επενδυτές' } },
   { key: 'connections', label: { en: 'Accepted Connections', el: 'Αποδεκτές συνδέσεις' }, sub: { en: 'Requests both people accepted', el: 'Αιτήματα που αποδέχτηκαν και οι δύο' } },
@@ -93,11 +65,13 @@ export function LiveStatsGrid() {
   if (!stats) return null;
   return (
     <>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      {/* Two a row on a phone, the last across both: five cards one under
+          another took about 750px of the phone's page for five numbers. */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 xl:grid-cols-5 [&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1">
         {TILES.map(({ key, label, sub }, index) => (
           <div
             key={key}
-            className="animate-fade-in rounded-2xl border border-border bg-card/80 p-6 text-center backdrop-blur-sm"
+            className="animate-fade-in rounded-2xl border border-border bg-card/80 p-4 text-center backdrop-blur-sm sm:p-6"
             style={{ animationDelay: `${index * 60}ms` }}
           >
             <p className="font-display text-xl font-semibold text-foreground">{number(stats[key])}</p>

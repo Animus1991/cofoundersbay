@@ -364,7 +364,7 @@ export default function TenantBillingPage() {
                     <p className="font-medium text-foreground">{contactForm.name}</p>
                     {contactForm.company && <p>{contactForm.company}</p>}
                     {contactForm.legalName && <p className="text-xs"><BilingualText en="Legal:" el="Νομική επωνυμία:" compact /> {contactForm.legalName}</p>}
-                    <p>{contactForm.email}</p>
+                    <p translate="no">{contactForm.email}</p>
                     {contactForm.addressLine1 && (
                       <p>{contactForm.addressLine1}, {contactForm.city} {contactForm.postalCode}, {contactForm.country}</p>
                     )}

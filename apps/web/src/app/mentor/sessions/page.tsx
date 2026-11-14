@@ -27,6 +27,7 @@ import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePag
 import { BookingCard, MEETING_TYPE_LABEL } from '@/components/mentoring/BookingCard';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
+import { PageFacts } from '@/components/common/PageFacts';
 import { SessionDateTile } from '@/components/mentoring/SessionDateTile';
 import { fromBooking, fromMentorshipSession, isUpcoming, mergeSessions, type UnifiedSession } from '@/lib/mentoring/sessions';
 import {
@@ -400,26 +401,26 @@ export default function MentorSessionsPage() {
       <div className="space-y-6">
         {/* Stats */}
         {/* "Upcoming" was the tab's own counter a second time (docs §94). */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <Card>
-            <CardContent>
-              <p className="page-stat text-xl font-bold">
-                {sessions.filter((s) => s.status === 'completed').length + bookings.filter((b) => b.status === 'completed').length}
-              </p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /></p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="page-stat text-xl font-bold">
-                {hoursGiven
-                  ? <BilingualText en={`${hoursGiven} h`} el={`${hoursGiven.replace('.', ',')} ώρ.`} compact />
-                  : <BilingualText en={`${totalDuration} min`} el={`${totalDuration} λεπτά`} compact />}
-              </p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Time mentored" el="Χρόνος καθοδήγησης" compact /></p>
-            </CardContent>
-          </Card>
-        </div>
+        <PageFacts
+          labelEn="Sessions in figures"
+          labelEl="Οι συνεδρίες σε αριθμούς"
+          facts={[
+            {
+              id: 'completed',
+              value: sessions.filter((s) => s.status === 'completed').length + bookings.filter((b) => b.status === 'completed').length,
+              en: 'completed',
+              el: (sessions.filter((s) => s.status === 'completed').length + bookings.filter((b) => b.status === 'completed').length) === 1 ? 'ολοκληρωμένη' : 'ολοκληρωμένες',
+            },
+            {
+              id: 'time',
+              value: hoursGiven
+                ? <BilingualText en={`${hoursGiven} h`} el={`${hoursGiven.replace('.', ',')} ώρ.`} compact />
+                : <BilingualText en={`${totalDuration} min`} el={`${totalDuration} λεπτά`} compact />,
+              en: 'time mentored',
+              el: 'χρόνος καθοδήγησης',
+            },
+          ]}
+        />
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>

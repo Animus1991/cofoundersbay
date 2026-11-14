@@ -35,4 +35,14 @@ describe('phone touch floor', () => {
     expect(choice).toMatch(/^html:root select:not\(\[multiple\]\):not\(\[size\]\),\s*html:root button\[role='combobox'\] \{\s*height: calc\(30\.458px \* var\(--button-y\)\);\s*min-height: calc\(30\.458px \* var\(--button-y\)\);/);
     expect(phone).not.toMatch(/\bselect \{\s*min-height:\s*44px/);
   });
+
+  it('gives every card-title link and person name the hit-area band', () => {
+    const start = css.indexOf("#main-content .card-title a:not([class*='after:'])");
+    expect(start).toBeGreaterThan(0);
+    const block = css.slice(start, css.indexOf('/* ── Phones: one language', start));
+    expect(block).toMatch(/#main-content a\.person-name:not\(\[class\*='after:'\]\) \{\s*position: relative;\s*\}/);
+    expect(block).toMatch(/::after \{\s*content: '';\s*position: absolute;\s*top: -4px;\s*bottom: -4px;\s*left: 0;\s*right: 0;\s*\}/);
+    // The stretched row link keeps its own ::after.
+    expect(block).not.toMatch(/\.card-title a[^:]*\{/);
+  });
 });

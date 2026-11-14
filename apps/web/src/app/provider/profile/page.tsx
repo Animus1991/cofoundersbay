@@ -310,7 +310,7 @@ export default function ProviderProfilePage() {
                   <PersonVerifiedBadge userId={me?.id ?? ''} />
                 </span>
               )}
-              subtitle={headline || <BilingualText en="Add your service headline below..." el="Προσθέστε τον τίτλο της υπηρεσίας σας παρακάτω..." compact />}
+              subtitle={headline || <BilingualText en="Add your service headline below..." el="Προσθέστε τον τίτλο της υπηρεσίας σας παρακάτω..." compact wrap />}
               aside={<Badge variant="secondary" className="text-xs">{serviceTypeCopy ? <BilingualText en={serviceTypeCopy.label} el={serviceTypeCopy.labelEl} compact /> : serviceType}</Badge>}
             />
             <FactLine

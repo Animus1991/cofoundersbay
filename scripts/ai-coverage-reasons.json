@@ -30,12 +30,6 @@
   "/org/[slug]": "an organisation's public page, read without an account",
   "/ai": "the assistant itself: the workspace the conversation runs in",
   "/ai/capabilities": "generated from the action declarations the assistant uses; reading it changes nothing",
-  "/dashboard/founder": "an overview that links to the pages that act; its figures come from the entity reads (milestones, messages, connections, events)",
-  "/dashboard/incubator": "an overview that links to /org/* and /tenant/*, where the controls live",
-  "/dashboard/investor": "an overview that links to the pipeline, watchlist and portfolio, where the deal commands live",
-  "/dashboard/mentor": "an overview that links to /mentor/*, where the mentee and session controls live",
-  "/dashboard/provider": "an overview that links to /provider/*, where the service and inquiry controls live",
-  "/tenant/dashboard": "an overview that links to the /tenant/* pages that act",
   "/profile/edit": "a form: update_profile proposes the fields and the person saves",
   "/milestones/new": "a form: create_milestone proposes it and the person confirms",
   "/events/create": "a form: create_event proposes it and the person confirms",
@@ -54,6 +48,5 @@
   "/c/[token]": "public need card for people without an account, read before sign-in; the assistant is a signed-in feature",
   "/join/[token]": "an organisation invitation opened from its email, read before sign-in; the person answers it themselves with Accept or Decline",
   "/dd/[token]": "a founder's shared files, opened from a link without an account; the assistant is a signed-in feature",
-  "/u/[token]": "a founder update its author made public, read without an account; the assistant is a signed-in feature",
-  "/home": "the first page (docs §117): its people, rows and entries open pages the assistant already operates"
+  "/u/[token]": "a founder update its author made public, read without an account; the assistant is a signed-in feature"
 }

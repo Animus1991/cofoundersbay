@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, Lock, Activity, Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -16,13 +18,6 @@ import { HelpCallout } from '@/components/common/HelpCallout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
@@ -150,8 +145,55 @@ export default function SecurityMonitoringPage() {
     },
   ]);
 
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'chart',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            // Samples carry no review state, so pending/actioned are only
+            // counted for real flags; they used to show critical and Auth rows.
+            { key: 'flags', label: 'Flags', labelEl: 'Σημάνσεις', value: isLive ? (abuseStats?.totalFlags ?? events.length) : events.length },
+            { key: 'pending', label: 'Pending', labelEl: 'Σε αναμονή', value: isLive ? (abuseStats?.pendingFlags ?? 0) : '—' },
+            { key: 'actioned', label: 'Actioned', labelEl: 'Με ενέργεια', value: isLive ? (abuseStats?.actionedFlags ?? 0) : '—' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: level !== 'all' ? 1 : null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Level"
+            titleEl="Επίπεδο"
+            options={LEVELS.map((l) => ({
+              value: l.value,
+              en: l.en,
+              el: l.el,
+              count: l.value === 'all' ? events.length : events.filter((e) => e.level === l.value).length,
+            }))}
+            value={level}
+            onChange={setLevel}
+          />
+          {level !== 'all' && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => setLevel('all')} />
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
+      rail={rail}
       title="Security monitoring"
       description="Authentication anomalies, API abuse signals, and SSO events in real time."
       descriptionEl="Ανωμαλίες ταυτοποίησης, ενδείξεις κατάχρησης API και συμβάντα SSO σε πραγματικό χρόνο."
@@ -168,47 +210,15 @@ export default function SecurityMonitoringPage() {
         </p>
       </HelpCallout>
 
-      <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
-        {[
-          // Samples carry no review state, so pending/actioned are only
-          // counted for real flags; they used to show critical and Auth rows.
-          { label: 'Flags', labelEl: 'Σημάνσεις', value: isLive ? (abuseStats?.totalFlags ?? events.length) : events.length, icon: Activity },
-          { label: 'Pending', labelEl: 'Σε αναμονή', value: isLive ? (abuseStats?.pendingFlags ?? 0) : '—', icon: AlertTriangle },
-          { label: 'Actioned', labelEl: 'Με ενέργεια', value: isLive ? (abuseStats?.actionedFlags ?? 0) : '—', icon: Lock },
-        ].map(({ label, labelEl, value, icon: Icon }) => (
-          <Card key={label}>
-            <CardContent className="flex items-center gap-3">
-              <Icon className="icon-md text-muted-foreground" aria-hidden="true" />
-              <div>
-                <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-                <p className="page-stat text-2xl font-bold">{value}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            aria-label="Search security events. Αναζήτηση συμβάντων ασφαλείας"
-            placeholder={sayOne('Search security events…', 'Αναζήτηση συμβάντων ασφαλείας…')}
-            className="pl-9"
-          />
-        </div>
-        <Select value={level} onValueChange={setLevel}>
-          <SelectTrigger aria-label="Level. Επίπεδο" className="w-full sm:w-[160px]">
-            <SelectValue placeholder={sayOne("Level", "Επίπεδο")} />
-          </SelectTrigger>
-          <SelectContent>
-            {LEVELS.map((l) => (
-              <SelectItem key={l.value} value={l.value}><BilingualText en={l.en} el={l.el} compact /></SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="mt-4 relative">
+        <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          aria-label="Search security events. Αναζήτηση συμβάντων ασφαλείας"
+          placeholder={sayOne('Search security events…', 'Αναζήτηση συμβάντων ασφαλείας…')}
+          className="pl-9"
+        />
       </div>
 
       <Card className="mt-4">

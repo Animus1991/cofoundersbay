@@ -34,7 +34,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { CookieChoicesButton } from '@/components/common/CookieChoicesButton';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { NeedCard, type NeedCardView } from '@/components/commitments/NeedCard';
-import { LiveStatsSection, LiveStatsStrip } from '@/components/landing/LiveStats';
+import { LiveStatsSection } from '@/components/landing/LiveStats';
 import { PLAN_HIGHLIGHTS } from '@/lib/billing';
 import { ORG_FOUNDERS } from '@/lib/demo/org-world';
 
@@ -298,7 +298,7 @@ export function LandingHome() {
                   </Link>
                 </Button>
                 <Button variant="outline" className="w-full sm:w-auto" asChild>
-                  <Link href="/demo">
+                  <Link href="/demo" prefetch={false}>
                     <Play className="icon-sm" />
                     <BilingualText en="Try the demo" el="Δοκιμάστε το demo" compact />
                   </Link>
@@ -332,8 +332,6 @@ export function LandingHome() {
               </Card>
             </div>
           </div>
-
-          <LiveStatsStrip />
         </div>
       </section>
 
@@ -399,7 +397,7 @@ export function LandingHome() {
               ))}
             </ul>
             <Button variant="outline" asChild>
-              <Link href="/demo">
+              <Link href="/demo" prefetch={false}>
                 <BilingualText en="Walk through it in the demo" el="Δείτε το βήμα βήμα στο demo" compact />
                 <ArrowRight className="icon-sm" />
               </Link>
@@ -558,8 +556,8 @@ export function LandingHome() {
       {/* ── Footer ─────────────────────────────────────────────────────── */}
       <footer className="border-t border-border bg-secondary/10 px-6 py-12 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
-          <div className="mb-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
-            <div className="space-y-4 lg:col-span-2">
+          <div className="mb-10 grid grid-cols-2 gap-8 lg:grid-cols-5">
+            <div className="col-span-2 space-y-4">
               <Logo size="sm" />
               <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
                 <BilingualText

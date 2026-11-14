@@ -493,8 +493,8 @@ export default function InvestorPipelinePage() {
         />
 
         {/* Search */}
-        <div className="flex gap-3">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex flex-wrap gap-3">
+          <div className="relative basis-full sm:basis-auto sm:flex-1 sm:max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               aria-label="Search deals. Αναζήτηση ευκαιριών"
@@ -564,9 +564,10 @@ export default function InvestorPipelinePage() {
             <CardTitle className="flex items-center gap-2"><Zap className="icon-sm text-muted-foreground" aria-hidden="true" /> <BilingualText en="Deals by stage" el="Συμφωνίες ανά στάδιο" compact /></CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Seven stages do not fit one row on a phone: a 4-column grid
-                there, the arrowed funnel from sm up. */}
-            <div className="grid grid-cols-4 gap-x-2 gap-y-3 sm:flex sm:items-center sm:gap-2">
+            {/* Six stages do not fit one row on a phone: two rows of three
+                there (four cells broke "Εντοπίστηκε" and "Διαπραγμάτευση"
+                mid-word at 390px), the arrowed funnel from sm up. */}
+            <div className="grid grid-cols-3 gap-x-3 gap-y-3 sm:flex sm:items-center sm:gap-2">
               {PIPELINE_STAGES.map((stage, i) => {
                 const count = getDealsByStage(stage.key).length;
                 const pct = deals.length > 0 ? Math.round((count / deals.length) * 100) : 0;

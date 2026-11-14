@@ -877,7 +877,7 @@ export default function CohortDetailPage() {
                           </Avatar>
                           <div>
                             <p className="font-medium">{participant.name}</p>
-                            <p className="text-xs text-muted-foreground">{participant.email}</p>
+                            <p className="text-xs text-muted-foreground" translate="no">{participant.email}</p>
                           </div>
                         </div>
                       </TableCell>

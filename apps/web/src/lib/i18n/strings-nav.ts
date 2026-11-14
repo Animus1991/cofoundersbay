@@ -104,7 +104,8 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/groups': 'Κοινότητες',
   '/help': 'Κέντρο βοήθειας',
   '/investor/analytics': 'Αναλυτικά συμφωνιών',
-  '/investor/pipeline': 'Pipeline συμφωνιών',
+  '/investor/pipeline': 'Pipeline συμφωνιών',
+
   '/builder/calculators': 'Υπολογιστές',
   '/data-room': 'Κοινόχρηστα data rooms',
   '/investor/portfolio': 'Χαρτοφυλάκιο',

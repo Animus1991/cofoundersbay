@@ -20,7 +20,7 @@ import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { ASK, type AskPrompt } from '@/lib/page-questions';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { readinessEn, readinessEl } from '@/lib/i18n/strings-readiness';
@@ -257,8 +257,6 @@ function buildDemoAssessment(overlay: ReadinessOverlay = {}): AssessmentData {
   };
 }
 
-const DEMO_ASSESSMENT = buildDemoAssessment();
-
 /**
  * The last point on the history chart is today, so it has to follow whatever
  * the visitor has just ticked rather than the seed it was pinned to.
@@ -470,24 +468,31 @@ function DimensionCard({
   canToggle,
   onToggle,
   isMutating,
+  defaultOpen = true,
 }: {
   dim: DimData;
-  // Whether a criterion can be changed, stated outright. This used to be the
-  // workspace id doing double duty, which is why the demo — which has no
-  // workspace and needs none — could only be read.
   canToggle: boolean;
   onToggle: (dimKey: string, cId: string, current: boolean) => void;
   isMutating: boolean;
+  /** On a phone the criteria and the advice start folded under the head; the weakest dimension starts open (docs §122). */
+  defaultOpen?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
+  // The fold is CSS only, from 640px everything shows: nothing a tick changed
+  // is unmounted. A link to this card (the score card, the assistant) opens it.
+  const [shown, setShown] = useState(defaultOpen);
+  useEffect(() => {
+    const check = () => { if (window.location.hash === `#dim-${dim.key}`) setShown(true); };
+    check();
+    window.addEventListener('hashchange', check);
+    return () => window.removeEventListener('hashchange', check);
+  }, [dim.key]);
   const pct = Math.round((dim.score / dim.maxScore) * 100);
   const status = scoreToStatus(pct);
   const colors = scoreColors(status);
   const done = dim.criteria.filter((c) => c.completed).length;
   const hiddenCount = dim.criteria.length - 3;
   const statusCopy = STATUS_LABEL[status];
-  // Heaviest first: if only one thing is worth naming, name the one that
-  // moves the score most.
   const remaining = dim.criteria
     .filter((criterion) => !criterion.completed)
     .sort((a, b) => b.weight - a.weight);
@@ -503,43 +508,28 @@ function DimensionCard({
 
   return (
     <Card id={`dim-${dim.key}`} className="min-w-0 scroll-mt-24 transition-colors hover:border-border">
-      {/* `h-full` down the chain, so the box at the foot of this card can sit
-          at the foot of it. The grid matches these cards' heights; without it
-          the shorter of a pair ended on empty space instead of its own
-          content. */}
       <CardContent className="h-full">
-        {/* One column: the dimension glyph sits on the title row only.
-            A side well beside the body left an empty tab under the icon,
-            so criteria, “+N more”, and the recommendation started to the
-            right of the title. Everything below now starts on the same
-            left edge as that icon. */}
         <div className="flex h-full min-w-0 flex-col">
-            {/* The head every card has: the dimension as the title (its
-                description behind the info button) and its state as the one
-                pill under it. At the head's right the two-language pill took
-                half of a narrow card and squeezed "Funding Readiness" onto
-                three lines. */}
             <CardHead
               title={(
-                <span className="inline-flex min-w-0 max-w-full items-center gap-2">
-                  <span className="min-w-0"><BilingualText en={dim.labelEn} el={dim.labelEl} compact wrap /></span>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      {/* WCAG 2.5.8 wants 24x24 CSS px. The icon stays 16px; the negative margin cancels the extra 8px so nothing moves, only the hit area grows. */}
-                      <button
-                        type="button"
-                        className="-m-1 inline-flex shrink-0 tap-target items-center justify-center font-normal text-muted-foreground/50 hover:text-muted-foreground"
-                        aria-label={bilingualAria(dim.descriptionEn, dim.descriptionEl)}
-                      >
-                        <Info className="icon-sm cursor-help" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[220px] text-xs">
-                      <BilingualText en={dim.descriptionEn} el={dim.descriptionEl} />
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-2">
+                  <span className="min-w-0"><BilingualText en={dim.labelEn} el={dim.labelEl} compact /></span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className="-m-1 inline-flex shrink-0 tap-target items-center justify-center font-normal text-muted-foreground/50 hover:text-muted-foreground"
+                          aria-label={bilingualAria(dim.descriptionEn, dim.descriptionEl)}
+                        >
+                          <Info className="icon-sm cursor-help" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[220px] text-xs">
+                        <BilingualText en={dim.descriptionEn} el={dim.descriptionEl} />
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </span>
               )}
               meta={(
@@ -562,18 +552,23 @@ function DimensionCard({
               <BilingualText en={readinessEn('criteria_completed')} el={readinessEl('criteria_completed')} compact />
             </p>
 
-            {/* `mb-4` here, not `mt-4` on the box below: that box carries
-                `mt-auto` so it settles at the foot of the card, and an
-                explicit top margin would cancel it. */}
+            <button
+              type="button"
+              aria-expanded={shown}
+              aria-controls={`dim-${dim.key}-body`}
+              onClick={() => setShown((value) => !value)}
+              className="mt-3 hidden min-h-11 w-full items-center justify-between gap-3 rounded-lg border border-border px-3 text-left text-sm max-sm:flex"
+            >
+              <BilingualText en="Criteria and advice" el="Κριτήρια και συμβουλή" compact />
+              <span data-keep-icon=""><ChevronRight className={cn('icon-sm text-muted-foreground transition-transform', shown && 'rotate-90')} aria-hidden="true" /></span>
+            </button>
+            <div id={`dim-${dim.key}-body`} className={cn('flex min-w-0 flex-1 flex-col', !shown && 'max-sm:hidden')}>
             <div id={`dim-${dim.key}-criteria`} className="mt-4 mb-4 space-y-1.5">
               {(expanded ? dim.criteria : dim.criteria.slice(0, 3)).map((c) => (
                 <button
                   key={c.id}
                   type="button"
                   aria-pressed={c.completed}
-                  // The check and the open circle are the row's state, not
-                  // decoration: the decorative-icon CSS hid both, and a met
-                  // criterion read only as greyer text (docs §79).
                   data-keep-icon=""
                   disabled={!canToggle || isMutating}
                   onClick={() => canToggle && onToggle(dim.key, c.id, c.completed)}
@@ -585,7 +580,6 @@ function DimensionCard({
                   {c.completed
                     ? <CheckCircle2 className={cn('mt-0.5 icon-sm shrink-0', STATUS.success.icon)} />
                     : <AlertCircle className="mt-0.5 icon-sm shrink-0 text-muted-foreground/50" />}
-                  {/* Muted, not struck through: the line cuts Greek accents, and the check already says done. */}
                   <span className={cn('min-w-0 flex-1 leading-snug', c.completed && 'text-muted-foreground')}>
                     <BilingualText en={c.name} el={c.nameEl} compact wrap />
                   </span>
@@ -609,12 +603,6 @@ function DimensionCard({
               )}
             </div>
 
-            {/* A strong dimension used to say nothing at all here, while the
-                weak one beside it carried a recommendation — and because the
-                grid matches their heights, "Προϊόν" ended with 182px of empty
-                card. What a nearly-finished dimension has to say is the one
-                thing still open, which is more useful than silence and fills
-                the space honestly. */}
             {status === 'excellent' && (
               <div className="mt-auto space-y-2.5 border-t border-border pt-3">
                 <p className="mb-1.5 flex items-center gap-2 text-xs font-semibold">
@@ -650,9 +638,6 @@ function DimensionCard({
 
             {dim.recommendations.length > 0 && status !== 'excellent' && (
               <div className="mt-auto space-y-2.5 border-t border-border pt-3">
-                {/* Caption, the recommendation as the body, then the next
-                    criterion as a secondary line: three levels where a
-                    semibold label, a semibold lead-in and muted body were five. */}
                 <p className="text-xs text-muted-foreground">
                   <BilingualText en={readinessEn('recommendation')} el={readinessEl('recommendation')} compact />
                 </p>
@@ -670,6 +655,7 @@ function DimensionCard({
                 <AIInsightButton prompt={recPrompt} className="h-8" aboutEn={readinessOf(dim.labelEn)} aboutEl={readinessOfEl(dim.labelEl)} />
               </div>
             )}
+            </div>
         </div>
       </CardContent>
     </Card>
@@ -779,8 +765,23 @@ export default function ReadinessPage() {
   const qc = useQueryClient();
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [mode, setMode] = useState<'live' | 'demo' | null>(null);
+  const [activeTab, setActiveTab] = useState<'dimensions' | 'benchmarks'>('dimensions');
   const [demoOverlay, setDemoOverlay] = useState<ReadinessOverlay>({});
   const isDemo = mode === 'demo';
+  const focusDimension = (_key: string) => {
+    setActiveTab('dimensions');
+  };
+  // The order is taken once per assessment shape: sorted live, a dimension
+  // would move away under the reader as their ticks raised its score.
+  const [dimOrder, setDimOrder] = useState<{ of: string; keys: string[] }>({ of: '', keys: [] });
+  useEffect(() => {
+    const openFromHash = () => {
+      if (/^#dim-(.+)$/.test(window.location.hash)) setActiveTab('dimensions');
+    };
+    openFromHash();
+    window.addEventListener('hashchange', openFromHash);
+    return () => window.removeEventListener('hashchange', openFromHash);
+  }, []);
   // Read here, with the component's other context: the Priority-actions tab
   // sends the reader to the rail's AI panel rather than duplicating it.
   const { openRailSection } = usePageRail();
@@ -918,6 +919,40 @@ export default function ReadinessPage() {
   // endpoint stores nothing) and the live/showcase switch, through the same
   // handlers and the same conditions as the header buttons. Ticking a
   // criterion is `readiness_tick_criterion`, a capability of its own.
+  const allDimensions = useMemo(() => (apiData ? buildDimensions(apiData) : []), [apiData]);
+  const readyForLists = Boolean(mode) && (isDemo || (Boolean(workspaceId) && !isLoading && !isError && Boolean(apiData)));
+  usePageList([
+    {
+      id: 'readiness_dimensions',
+      labelEn: 'Readiness dimensions',
+      labelEl: 'Διαστάσεις ετοιμότητας',
+      rows: readyForLists
+        ? allDimensions
+            .slice()
+            .sort((a, b) => a.score / a.maxScore - b.score / b.maxScore)
+            .map((d) => {
+              const pct = Math.round((d.score / d.maxScore) * 100);
+              const met = d.criteria.filter((c) => c.completed).length;
+              const next = d.criteria.filter((c) => !c.completed).sort((a, b) => b.weight - a.weight)[0];
+              return `${d.labelEn} · ${pct}% (${met}/${d.criteria.length})${next ? ` · next: ${next.name} (+${next.weight}%)` : ''}`;
+            })
+        : undefined,
+      rowsEl: readyForLists
+        ? allDimensions
+            .slice()
+            .sort((a, b) => a.score / a.maxScore - b.score / b.maxScore)
+            .map((d) => {
+              const pct = Math.round((d.score / d.maxScore) * 100);
+              const met = d.criteria.filter((c) => c.completed).length;
+              const next = d.criteria.filter((c) => !c.completed).sort((a, b) => b.weight - a.weight)[0];
+              return `${d.labelEl} · ${pct}% (${met}/${d.criteria.length})${next ? ` · επόμενο: ${next.nameEl ?? next.name} (+${next.weight}%)` : ''}`;
+            })
+        : undefined,
+      total: allDimensions.length || undefined,
+      sample: isDemo,
+    },
+  ]);
+
   usePageControls([
     {
       id: 'reassess',
@@ -932,6 +967,28 @@ export default function ReadinessPage() {
       { value: 'live', en: 'Live readiness', el: 'Ζωντανή ετοιμότητα' },
       { value: 'demo', en: 'Demo showcase', el: 'Επίδειξη' },
     ], mode ?? 'live', (v) => setMode(v as 'live' | 'demo')),
+    choiceControl('tab', 'Readiness tab', 'Καρτέλα ετοιμότητας', [
+      { value: 'dimensions', en: readinessEn('tab_all_dimensions'), el: readinessEl('tab_all_dimensions') },
+      { value: 'benchmarks', en: readinessEn('tab_benchmarks'), el: readinessEl('tab_benchmarks') },
+    ], activeTab, (v) => setActiveTab(v === 'benchmarks' ? 'benchmarks' : 'dimensions')),
+    {
+      id: 'focus_dimension',
+      labelEn: 'Open readiness dimension',
+      labelEl: 'Άνοιγμα διάστασης ετοιμότητας',
+      writes: false,
+      options: allDimensions.map((d) => ({ value: d.key, labelEn: d.labelEn, labelEl: d.labelEl })),
+      unavailableEn: readyForLists ? undefined : 'Readiness dimensions are not loaded yet.',
+      unavailableEl: readyForLists ? undefined : 'Οι διαστάσεις ετοιμότητας δεν έχουν φορτώσει ακόμη.',
+      run: (v) => {
+        if (!v) return;
+        focusDimension(v);
+        if (typeof window !== 'undefined') {
+          // The hash opens the card's phone fold too, and scrolls to it.
+          window.location.hash = `dim-${v}`;
+          setTimeout(() => document.getElementById(`dim-${v}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 0);
+        }
+      },
+    },
   ]);
 
   // A greyed Reassess said nothing about why (docs §79). The reason is already
@@ -1015,6 +1072,11 @@ export default function ReadinessPage() {
   const doneCriteria = dimensions.reduce((n, d) => n + d.criteria.filter((c) => c.completed).length, 0);
   const totalCriteria = dimensions.reduce((n, d) => n + d.criteria.length, 0);
   const weakDims = dimensions.filter((dimension) => dimension.score / dimension.maxScore < 0.6);
+  const dimSet = dimensions.map((d) => d.key).join('|');
+  const weakestFirst = () => dimensions.slice().sort((a, b) => a.score / a.maxScore - b.score / b.maxScore).map((d) => d.key);
+  const order = dimOrder.of === dimSet ? dimOrder.keys : weakestFirst();
+  if (dimOrder.of !== dimSet) setDimOrder({ of: dimSet, keys: order });
+  const dimensionsByNeed = dimensions.slice().sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
   const nextOpen = dimensions
     .flatMap((d) => d.criteria
       .filter((c) => !c.completed)
@@ -1179,7 +1241,7 @@ export default function ReadinessPage() {
             second Ask AI here repeated it. */}
         <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs" asChild>
-        <Link href={`#dim-${item.dimKey}`}>
+        <Link href={`#dim-${item.dimKey}`} onClick={() => focusDimension(item.dimKey)}>
         <BilingualText en={readinessEn('jump_to')} el={readinessEl('jump_to')} compact />
         </Link>
         </Button>
@@ -1362,6 +1424,7 @@ export default function ReadinessPage() {
               {nextOpen && (
                 <Link
                   href={`#dim-${nextOpen.dimKey}`}
+                  onClick={() => focusDimension(nextOpen.dimKey)}
                   className="axis-row block self-stretch rounded-md py-2 text-left transition-colors hover:bg-accent focus-ring"
                 >
                   <p className="text-xs text-muted-foreground">
@@ -1390,7 +1453,7 @@ export default function ReadinessPage() {
                   </p>
                   <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-1 text-xs">
                     {weakDims.slice().sort((a, b) => a.score / a.maxScore - b.score / b.maxScore).map((d) => (
-                      <Link key={d.key} href={`#dim-${d.key}`} className="tap-extend-y rounded-sm font-medium underline-offset-2 hover:underline focus-ring">
+                      <Link key={d.key} href={`#dim-${d.key}`} onClick={() => focusDimension(d.key)} className="tap-extend-y rounded-sm font-medium underline-offset-2 hover:underline focus-ring">
                         <BilingualText en={d.labelEn} el={d.labelEl} compact />
                         {' '}
                         <span className="font-normal tabular-nums text-muted-foreground">{Math.round((d.score / d.maxScore) * 100)}%</span>
@@ -1406,7 +1469,6 @@ export default function ReadinessPage() {
 
         </div>
 
-        {/* Radar + AI Insights row */}
         <div className="grid min-w-0 flex-[1_1_24rem] grid-cols-1 gap-5">
           <div className="min-w-0">
             <ReadinessRadarChart dimensions={dimensions} />
@@ -1417,7 +1479,7 @@ export default function ReadinessPage() {
         {/* Tabs: dimensions and benchmarks stay in the column. Priority
             actions and history live in the rail — opening them here is the
             same gesture as the strip on the right. */}
-        <Tabs defaultValue="dimensions" className="min-w-0">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v === 'benchmarks' ? 'benchmarks' : 'dimensions')} className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
           <TabsList className="flex w-full justify-start sm:w-auto">
             <TabsTrigger value="dimensions" className="px-3 sm:px-4"><BilingualText en={readinessEn('tab_all_dimensions')} el={readinessEl('tab_all_dimensions')} compact /></TabsTrigger>
@@ -1463,11 +1525,12 @@ export default function ReadinessPage() {
             <p className="mb-4 text-xs text-muted-foreground">
               <BilingualText en={readinessEn('criteria_hint')} el={readinessEl('criteria_hint')} wrap />
             </p>
-            <div className="grid grid-cols-1 min-w-0 gap-5 md:grid-cols-2">
-              {dimensions.map((dim) => (
+            <div className="grid grid-cols-1 min-w-0 gap-5 md:grid-cols-2" data-readiness-dimensions="">
+              {dimensionsByNeed.map((dim, index) => (
                 <DimensionCard
                   key={dim.key}
                   dim={dim}
+                  defaultOpen={index === 0}
                   canToggle={isDemo || (!!workspaceId && mode === 'live' && !isError)}
                   onToggle={handleToggle}
                   isMutating={toggleMutation.isPending}

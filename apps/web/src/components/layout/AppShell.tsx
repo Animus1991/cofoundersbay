@@ -117,7 +117,10 @@ export function AppShellFrame({
   contentClassName,
 }: AppShellFrameProps) {
   const { expanded, mounted } = useSidebar();
-  const { pinned: railPinned, hasRail } = usePageRail();
+  const { pinned: railPinned, hasRail, registerGutter } = usePageRail();
+  // A scrolling page keeps the strip's column free on the right, rail or not,
+  // so the chat launcher has a place that is never over a card's action.
+  useEffect(() => (fullHeight ? undefined : registerGutter({})), [fullHeight, registerGutter]);
   const mainRef = useRef<HTMLElement>(null);
   useLandmarkMain(mainRef);
   // Counts the pages seen in this tab, so a page's Back knows whether there
@@ -171,7 +174,7 @@ export function AppShellFrame({
             // reserved on a page that has one, so pinning and unpinning slides
             // the panel rather than reflowing the whole column twice.
             'transition-[margin-right] duration-200 ease-out',
-            hasRail && (railPinned ? 'lg:mr-[calc(var(--page-rail-width)+3.25rem)]' : 'lg:mr-[3.25rem]'),
+            hasRail && railPinned ? 'lg:mr-[calc(var(--page-rail-width)+3.25rem)]' : (hasRail || !fullHeight) && 'lg:mr-[3.25rem]',
           )}
         >
           <MemoTopBar />

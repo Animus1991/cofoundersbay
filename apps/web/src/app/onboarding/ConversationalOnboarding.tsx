@@ -51,6 +51,17 @@ const INPUT_STEPS: InputStep[] = ['name', 'role', 'headline', 'location', 'bio',
  */
 const FOUNDER_STEPS: InputStep[] = ['name', 'role', 'headline', 'location', 'bio', 'goals', 'skills'];
 const stepsFor = (role: Role | null): InputStep[] => (role === 'founder' ? FOUNDER_STEPS : INPUT_STEPS);
+const ROLES: readonly Role[] = ['founder', 'mentor', 'investor', 'org'];
+/**
+ * The role picked on the sign-up form ("I am…"), which the account keeps.
+ * Onboarding asked it a second time, one screen after it was answered; with
+ * it known the step is left out. An account without one (an older account,
+ * a provider sign-in) is asked, as before.
+ */
+function signUpRole(): Role | null {
+  const role = readStoredUser()?.role;
+  return ROLES.includes(role as Role) ? (role as Role) : null;
+}
 
 const STEP_META: Record<InputStep, { labelEn: string; labelEl: string; whyEn: string; whyEl: string }> = {
   name: {
@@ -168,6 +179,9 @@ export function ConversationalOnboarding() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  // Read after mount: the server render and the first paint agree on the steps.
+  const [roleFromSignUp, setRoleFromSignUp] = useState<Role | null>(null);
+  const roleKnown = useRef<Role | null>(null);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [goals, setGoals] = useState<{ stage: string; commitment: string; lookingFor: string[] }>({ stage: '', commitment: '', lookingFor: [] });
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -227,15 +241,30 @@ export function ConversationalOnboarding() {
   }, []);
 
   // Init: show welcome message, or pick up the answers a reload interrupted.
+  // Once per mount: run twice (React's development double run), the welcome
+  // and the first question stood twice in the conversation.
+  const started = useRef(false);
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    const known = signUpRole();
+    roleKnown.current = known;
+    if (known) {
+      form.current.role = known;
+      setSelectedRole(known);
+      setRoleFromSignUp(known);
+    }
     const saved = loadOnboardingProgress(readStoredUser()?.id);
     if (saved && saved.step !== 'name') {
+      // Answers saved before the role was known from sign-up may stop on it.
+      const resume: InputStep = known && saved.step === 'role' ? 'headline' : saved.step;
+      if (known) saved.form.role = known;
       form.current = { ...saved.form };
       setSelectedSkills(saved.form.skillIds);
       const { stage = '', commitment = '', lookingFor = [] } = saved.form;
       setGoals({ stage, commitment, lookingFor });
       const roleOption = ROLE_OPTIONS.find((r) => r.value === saved.form.role);
-      if (stepsBefore(saved.step).includes('role')) setSelectedRole(saved.form.role);
+      if (stepsBefore(resume).includes('role')) setSelectedRole(saved.form.role);
       const answer = (id: InputStep): string => {
         const f = saved.form;
         if (id === 'name') return f.displayName;
@@ -249,14 +278,14 @@ export function ConversationalOnboarding() {
       const now = new Date();
       setMessages([
         { id: crypto.randomUUID(), from: 'bot', content: say(BOT_QUESTIONS.welcome), timestamp: now },
-        ...stepsBefore(saved.step).filter((id) => id !== 'goals' || saved.form.role === 'founder').flatMap((id) => [
+        ...stepsBefore(resume).filter((id) => (id !== 'goals' || saved.form.role === 'founder') && !(known && id === 'role')).flatMap((id) => [
           { id: crypto.randomUUID(), from: 'bot' as const, content: say(BOT_QUESTIONS[id]), timestamp: now },
           { id: crypto.randomUUID(), from: 'user' as const, content: answer(id), timestamp: now },
         ]),
         { id: crypto.randomUUID(), from: 'bot', content: say({ en: 'Picked up where you left off.', el: 'Συνεχίζετε από εκεί που σταματήσατε.' }), timestamp: now },
-        { id: crypto.randomUUID(), from: 'bot', content: say(BOT_QUESTIONS[saved.step]), timestamp: now },
+        { id: crypto.randomUUID(), from: 'bot', content: say(BOT_QUESTIONS[resume]), timestamp: now },
       ]);
-      setStep(saved.step);
+      setStep(resume);
     } else {
       void addBotMessage(say(BOT_QUESTIONS.welcome), 800).then(() => {
         setTimeout(() => void addBotMessage(say(BOT_QUESTIONS.name), 400), 200);
@@ -300,7 +329,7 @@ export function ConversationalOnboarding() {
     const name = inputValue.trim();
     if (!name) return;
     form.current.displayName = name;
-    await advanceTo('role', name);
+    await advanceTo(roleKnown.current ? 'headline' : 'role', name);
   }, [inputValue, advanceTo]);
 
   const handleSelectRole = useCallback(async (role: Role, label: string) => {
@@ -392,7 +421,7 @@ export function ConversationalOnboarding() {
     }
   };
 
-  const steps = stepsFor(selectedRole);
+  const steps = stepsFor(selectedRole).filter((s) => !(roleFromSignUp && s === 'role'));
   const stepIndex = steps.indexOf(step as InputStep);
   const isInputStep = stepIndex >= 0;
   const completedCount = step === 'submitting' || step === 'done' ? steps.length : Math.max(stepIndex, 0);
@@ -429,7 +458,7 @@ export function ConversationalOnboarding() {
             className="h-1.5"
             aria-label={bilingualInline('Profile setup progress', 'Πρόοδος ρύθμισης προφίλ')}
           />
-          <ol className={steps.length === 7 ? 'grid grid-cols-7 gap-1' : 'grid grid-cols-6 gap-1'} aria-label={bilingualInline('Setup steps', 'Βήματα ρύθμισης')}>
+          <ol className={cn('grid grid-cols-7 gap-1', steps.length === 6 && 'grid-cols-6', steps.length === 5 && 'grid-cols-5')} aria-label={bilingualInline('Setup steps', 'Βήματα ρύθμισης')}>
             {steps.map((s, i) => {
               const state = i < completedCount ? 'done' : i === completedCount && step !== 'done' ? 'current' : 'todo';
               return (

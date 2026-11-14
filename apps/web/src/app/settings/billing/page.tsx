@@ -405,7 +405,7 @@ export default function UserBillingPage() {
                 {(() => { const bc = (contactData as { billingContact?: BillingContact | null }).billingContact!; return (<>
                 <p className="font-medium text-foreground">{bc.name}</p>
                 {bc.company && <p>{bc.company}</p>}
-                <p>{bc.email}</p>
+                <p translate="no">{bc.email}</p>
                 {bc.addressLine1 && (
                   <p>{bc.addressLine1}, {bc.city} {bc.postalCode}, {bc.country}</p>
                 )}
@@ -524,7 +524,7 @@ export default function UserBillingPage() {
               <div className="card-comfortable">
                 <FileText className="icon-xl mx-auto text-muted-foreground/40 mb-2" />
                 <p className="text-sm text-muted-foreground"><BilingualText en="No invoices yet" el="Δεν υπάρχουν τιμολόγια ακόμα" compact /></p>
-                <p className="mt-1 text-xs text-muted-foreground"><BilingualText en="Invoices appear here after each billing cycle." el="Τα τιμολόγια εμφανίζονται εδώ μετά από κάθε κύκλο χρέωσης." compact /></p>
+                <p className="mt-1 text-xs text-muted-foreground"><BilingualText en="Invoices appear here after each billing cycle." el="Τα τιμολόγια εμφανίζονται εδώ μετά από κάθε κύκλο χρέωσης." compact wrap /></p>
                 {/* "Compare plans" opens /pricing, as the Upgrade card beside
                     it does; it stays only where that card is not shown. */}
                 {sub && sub.plan?.name !== 'free' ? (

@@ -151,7 +151,7 @@ export function ShareModal({
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium line-clamp-1">{title}</p>
                 {description && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{description}</p>}
-                <p className="text-xs text-primary-accessible truncate mt-1">{url}</p>
+                <p className="text-xs text-primary-accessible truncate mt-1" translate="no">{url}</p>
               </div>
             </div>
           )}

@@ -63,27 +63,31 @@ beforeEach(() => { vi.clearAllMocks(); url.search = ''; url.replaced = []; vi.mo
 afterEach(() => { cleanup(); clients.splice(0).forEach(client => client.clear()); });
 
 describe('analytics clarity and controls', () => {
-  it('preserves measured zeros while explaining unavailable values without invented sparklines', async () => {
+  it('preserves measured zeros, leaves out what is not measured, and invents no sparklines', async () => {
     const { container } = mount();
     await screen.findByText(/Recorded account activity/);
     expect(screen.getAllByText('0').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+    // A figure the API does not measure is no tile at all (docs §122); the measured zeros stay.
+    expect(screen.queryByText('Engagement Rate')).toBeNull();
+    expect(screen.queryByText('Search Appearances')).toBeNull();
     expect(container.textContent).not.toMatch(/null%|undefined|NaN/);
     expect(container.querySelector('polyline')).toBeNull();
     expect(container.querySelector('.hover-lift')).toBeNull();
     // Highlights used to restate every tile delta before the numbers; sparks
     // used to be invented for metrics with no series. Both said "This window".
     expect(screen.queryByText('This window')).toBeNull();
-    expect(screen.getByText(/Connection requests are not counted yet/)).toBeTruthy();
+    expect(screen.getByText(/Connection requests and conversations started are not counted yet/)).toBeTruthy();
+    // The funnel ends on one thing to do, not on two sentences.
+    expect(screen.getByRole('link', { name: 'Send connection requests' }).getAttribute('href')).toBe('/discover');
     // It repeated the first three tiles' changes; removed by the owner's
     // decision of 2026-10-28 (docs §80.2, §111).
     expect(screen.queryByText('Network Velocity')).toBeNull();
   });
 
-  it('keeps the six overview tiles the same shape when views have a series', async () => {
+  it('shows only measured figures as tiles, and keeps them the same shape when views have a series', async () => {
     vi.mocked(getAnalyticsOverview).mockResolvedValue({
       ...overview,
-      metrics: { ...overview.metrics, profileViews: 248, profileViewsChange: 12 },
+      metrics: { ...overview.metrics, profileViews: 248, profileViewsChange: 12, activityScore: 40, activityScoreChange: 5 },
       profileViews: [
         { date: '2026-10-01', views: 10, uniqueVisitors: 4 },
         { date: '2026-10-02', views: 20, uniqueVisitors: 8 },
@@ -97,6 +101,9 @@ describe('analytics clarity and controls', () => {
     expect(screen.queryByText('This window')).toBeNull();
     expect(screen.getAllByText('Profile Views').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Activity Score').length).toBeGreaterThan(0);
+    // Engagement rate and search appearances came back null: not measured, so not a tile.
+    expect(screen.queryByText('Engagement Rate')).toBeNull();
+    expect(screen.queryByText('Search Appearances')).toBeNull();
   });
 
   it('announces the selected period and preserves filter and refresh requests', async () => {

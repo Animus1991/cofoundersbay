@@ -35,6 +35,7 @@ import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis, placeVariants } from '@cofounderbay/shared';
 import { computeMatchScore, industryFit, locationFit, matchFrictions, matchStrengths, roleFit, seekerWants, skillsFit, type ProfileSnapshot } from '@cofounderbay/shared';
 import { roleFamily } from './role-family';
+import { homeAudience, type HomeAudience } from './role-home';
 import type { FeedPost } from './api';
 import { ORG, ORG_FOUNDERS, ORG_INVESTORS, ORG_MENTORS, ORG_SLUG, ORG_STAFF, orgPerson } from './demo/org-world';
 import { demoInvestorPerson } from './demo/investors-world';
@@ -1275,7 +1276,7 @@ function demoSnapshot(person: {
 }
 
 function visitorSnapshot(): ProfileSnapshot {
-  const me = ME_PROFILE.profile;
+  const me = meProfile();
   return {
     userId: ME_ID,
     profileId: me.id,
@@ -1587,6 +1588,63 @@ const ME_PROFILE = {
   },
   hasCompletedOnboarding: true,
 };
+
+/*
+ * The demo reader's profile in the role the demo was opened as (docs §119.5).
+ * There was one sample profile, a founder's, so a mentor, an investor, a
+ * provider and an organisation all met the same people for a founder's
+ * reasons ("Fits what you are looking for: a co-founder"). The person stays
+ * Alex Demo; what changes is what the role's own profile edit would save:
+ * the role, the headline, the skills and the role's fields.
+ */
+type MeProfile = typeof ME_PROFILE.profile;
+const skill = (name: string) => ({ skillId: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), skillName: name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), level: 'advanced' });
+const DEMO_PERSONA: Record<Exclude<HomeAudience, 'founder'>, { role: string; headline: string; bio: string; skills: string[]; rolePayload: Record<string, unknown> }> = {
+  mentor: {
+    role: 'mentor',
+    headline: 'Mentor for first-time founders · Product',
+    bio: 'This is a preview profile with sample data: a mentor who helps first-time founders with product and go-to-market.',
+    skills: ['Product', 'Go-to-market'],
+    rolePayload: { expertiseAreas: ['Product', 'Go-to-market'], commitment: 'part-time' },
+  },
+  investor: {
+    role: 'investor',
+    headline: 'Angel investor · Pre-seed and seed',
+    bio: 'This is a preview profile with sample data: an angel who invests in B2B software at pre-seed and seed.',
+    skills: ['Investing', 'Fundraising'],
+    rolePayload: { stages: ['pre-seed', 'seed'], investmentFocus: ['SaaS', 'Fintech'] },
+  },
+  provider: {
+    role: 'provider',
+    headline: 'Startup lawyer · Incorporation and term sheets',
+    bio: 'This is a preview profile with sample data: a lawyer who works with early-stage companies.',
+    skills: ['Legal', 'Fundraising'],
+    rolePayload: {},
+  },
+  org: {
+    role: 'org',
+    headline: 'Programme lead at Aegean Venture Lab',
+    bio: 'This is a preview profile with sample data: the lead of an accelerator programme.',
+    skills: ['Programme design', 'Mentoring'],
+    rolePayload: { organizationType: 'accelerator', programTypes: ['accelerator'] },
+  },
+};
+
+function meProfile(): MeProfile {
+  const cookie = typeof document !== 'undefined' ? document.cookie : '';
+  const audience = homeAudience(/(?:^|;\s*)cfb_primary_role=([a-z_]+)/.exec(cookie)?.[1]);
+  if (audience === 'founder') return ME_PROFILE.profile;
+  const persona = DEMO_PERSONA[audience];
+  const { experience, education } = ME_PROFILE.profile.rolePayload;
+  return {
+    ...ME_PROFILE.profile,
+    role: persona.role,
+    headline: persona.headline,
+    bio: persona.bio,
+    skills: persona.skills.map(skill),
+    rolePayload: { experience, education, ...persona.rolePayload },
+  } as unknown as MeProfile;
+}
 
 const PREVIEW_MILESTONE_ELENA = {
   id: 'user-elena',
@@ -2126,10 +2184,12 @@ const PREVIEW_USER_METRICS = {
   newConnectionsChange: 5,
   messagesSent: 63,
   messagesSentChange: -8,
-  engagementRate: 34,
-  engagementRateChange: 3,
-  searchAppearances: 91,
-  searchAppearancesChange: 0,
+  // The API has no source for these two yet and answers null; the showcase
+  // does the same rather than show figures no account can have (docs §122).
+  engagementRate: null,
+  engagementRateChange: null,
+  searchAppearances: null,
+  searchAppearancesChange: null,
   activityScore: 72,
   activityScoreChange: 6,
 };
@@ -2155,11 +2215,14 @@ const PREVIEW_ANALYTICS_OVERVIEW = {
     { id: 'post-hiring', type: 'post' as const, title: 'What I look for in a technical co-founder', views: 287, engagement: 48, date: NOW },
     { id: 'profile-me', type: 'profile' as const, title: 'Profile view spike after demo day', views: 154, engagement: 22, date: NOW },
   ],
+  // The API returns null for all four; the demo showed figures no account
+  // can have. The card stays in the page for when the endpoint measures
+  // them, and hides itself while every field is null.
   weeklySummary: {
-    mostActiveDay: 'Tuesday',
-    peakHour: '14:00–15:00',
-    avgResponseTime: '3h 20m',
-    totalInteractions: 261,
+    mostActiveDay: null,
+    peakHour: null,
+    avgResponseTime: null,
+    totalInteractions: null,
   },
 };
 
@@ -3091,7 +3154,7 @@ function kitchenSink() {
     programs: [],
     milestones: [],
     subscription: null,
-    profile: ME_PROFILE.profile,
+    profile: meProfile(),
     // Zero, like the lists: the fallback answers every unhandled list endpoint
     // with an empty `programs` / `items` / `rules`, and a total of four beside
     // them put "Total Programs 4", "Total Skills 4" and "Total Rules 4" over
@@ -3379,9 +3442,9 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     // profile stays the demo's own.
     // The switches live on the profile, as the API keeps them (`profile.visibilityRules`).
     if (method === 'PATCH' && body && typeof body === 'object' && 'visibilityRules' in (body as Record<string, unknown>)) {
-      return { ...ME_PROFILE.profile, visibilityRules: writeDemoVisibility((body as Record<string, unknown>).visibilityRules) };
+      return { ...meProfile(), visibilityRules: writeDemoVisibility((body as Record<string, unknown>).visibilityRules) };
     }
-    return { ...ME_PROFILE, profile: { ...ME_PROFILE.profile, visibilityRules: readDemoVisibility() ?? ME_PROFILE.profile.visibilityRules } };
+    return { ...ME_PROFILE, profile: { ...meProfile(), visibilityRules: readDemoVisibility() ?? ME_PROFILE.profile.visibilityRules } };
   }
   if (pathname === '/api/auth/refresh' || pathname === '/api/auth/logout') {
     return { ok: true };
@@ -3570,7 +3633,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     const found = PEOPLE.find((p) => p.userId === targetId || p.id === targetId);
     const target = found ? scoredPerson(found) : null;
     if (!target) throw new DemoRefusal(404, 'Profile not found', { messageEl: 'Το προφίλ δεν βρέθηκε.' });
-    const me = ME_PROFILE.profile;
+    const me = meProfile();
     const mySkills = me.skills.map((sk) => sk.skillName);
     const theirSkills = target.skillNames;
     const slug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -3740,7 +3803,7 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     const all = ['profile', 'messages', 'connections', 'activity', 'milestones', 'settings'];
     const asked = (new URLSearchParams(path.split('?')[1] ?? '').get('sections') ?? '').split(',').filter((x) => all.includes(x));
     const sections = asked.length ? all.filter((x) => asked.includes(x)) : all;
-    const p = ME_PROFILE.profile;
+    const p = meProfile();
     const data: Record<string, unknown> = {};
     if (sections.includes('profile')) {
       data.profile = {

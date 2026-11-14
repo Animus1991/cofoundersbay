@@ -88,6 +88,37 @@ describe('conversational onboarding', () => {
     expect(screen.getByTestId('onboarding-step-counter').textContent).toContain('of 6');
   });
 
+  it('does not ask again for the role chosen on the sign-up form', async () => {
+    localStorage.setItem('user', JSON.stringify({ id: 'u1', role: 'investor' }));
+    render(<ConversationalOnboarding />);
+    const input = await screen.findByTestId('onboarding-text-input', {}, { timeout: 4000 });
+    // Five steps for an investor whose role is known: no Role step.
+    expect(screen.queryByTestId('onboarding-step-role')).toBeNull();
+    expect(screen.getByTestId('onboarding-step-counter').textContent).toMatch(/of 5/);
+    fireEvent.change(input, { target: { value: 'Nikos' } });
+    fireEvent.click(screen.getByTestId('onboarding-next-button'));
+    expect(await screen.findByText(/professional headline/, {}, { timeout: 4000 })).toBeTruthy();
+    expect(screen.queryByTestId('onboarding-role-investor')).toBeNull();
+  });
+
+  it('still asks for the role when the account holds none', async () => {
+    render(<ConversationalOnboarding />);
+    const input = await screen.findByTestId('onboarding-text-input', {}, { timeout: 4000 });
+    expect(screen.getByTestId('onboarding-step-role')).toBeTruthy();
+    fireEvent.change(input, { target: { value: 'Maria' } });
+    fireEvent.click(screen.getByTestId('onboarding-next-button'));
+    expect(await screen.findByTestId('onboarding-role-founder', {}, { timeout: 4000 })).toBeTruthy();
+  });
+
+  it('resumes past a saved role question once the role is known', async () => {
+    localStorage.setItem('user', JSON.stringify({ id: 'u1', role: 'mentor' }));
+    saveOnboardingProgress('u1', { step: 'role', form: { ...form, role: 'mentor' } });
+    render(<ConversationalOnboarding />);
+    expect(await screen.findByText('Picked up where you left off.')).toBeTruthy();
+    expect(screen.getByText(/professional headline/)).toBeTruthy();
+    expect(screen.queryByTestId('onboarding-role-mentor')).toBeNull();
+  });
+
   it('still returns a member to the need card they came from', async () => {
     sessionStorage.setItem('cfb_return_to', '/commitments/card-1');
     saveOnboardingProgress('u1', { step: 'skills', form });

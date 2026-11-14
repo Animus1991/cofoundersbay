@@ -97,6 +97,8 @@ describe('preview analytics routes', () => {
     const engagement = resolvePreviewApi('/api/analytics/engagement') as Record<string, number>;
     expect(typeof engagement.connections).toBe('number');
     const weekly = resolvePreviewApi('/api/analytics/weekly-summary') as Record<string, unknown>;
-    expect(typeof weekly.mostActiveDay).toBe('string');
+    // The live endpoint returns null until activity is tracked; the demo
+    // matches it rather than showing figures no account can have.
+    expect(weekly.mostActiveDay).toBeNull();
   });
 });

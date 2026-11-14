@@ -27,6 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
+import { PageFacts } from '@/components/common/PageFacts';
 import {
   Globe, Plus, Trash2, CheckCircle2, XCircle, Clock, RefreshCw,
   Star, Power, Copy, ChevronDown, ChevronRight, Link2, AlertTriangle,
@@ -535,28 +536,15 @@ export default function TenantDomainsPage() {
       <div className="space-y-6">
 
         {/* Status overview */}
-        <div className="grid grid-cols-3 gap-3">
-          <Card className="border-border">
-            <CardContent className="py-3">
-              <p className="text-xs text-muted-foreground"><BilingualText en="Total Domains" el="Σύνολο τομέων" compact wrap /></p>
-              <p className="page-stat text-2xl font-bold mt-0.5">{domains.length}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border">
-            <CardContent className="py-3">
-              <p className="text-xs text-muted-foreground"><BilingualText en="Active" el="Ενεργός" compact /></p>
-              <p className="page-stat text-2xl font-bold mt-0.5 text-status-success">{activeDomains.length}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border">
-            <CardContent className="py-3">
-              <p className="text-xs text-muted-foreground"><BilingualText en="Primary Domain" el="Κύριος τομέας" compact wrap /></p>
-              <p className="text-sm font-medium mt-0.5 truncate">
-                {primaryDomain?.domainName ?? <span className="text-muted-foreground">—</span>}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        <PageFacts
+          labelEn="Domains in figures"
+          labelEl="Οι τομείς σε αριθμούς"
+          facts={[
+            { id: 'total', value: domains.length, en: domains.length === 1 ? 'domain' : 'domains', el: domains.length === 1 ? 'τομέας' : 'τομείς' },
+            { id: 'active', value: activeDomains.length, en: 'active', el: activeDomains.length === 1 ? 'ενεργός' : 'ενεργοί' },
+            { id: 'primary', value: primaryDomain?.domainName ?? null, en: 'is the primary domain', el: 'είναι ο κύριος τομέας' },
+          ]}
+        />
 
         {/* Domain list. With nothing to list, the empty state stands on its
             own: inside the card it was a dashed card within a card whose

@@ -1092,7 +1092,7 @@ export function ResearchNodeCard({
 
           {/* Link preview */}
           {(effectiveType === 'link' || node.type === 'link') && node.url && (
-            <p className="text-2xs text-primary-accessible truncate underline">{node.url}</p>
+            <p className="text-2xs text-primary-accessible truncate underline" translate="no">{node.url}</p>
           )}
 
           {/* Reference preview */}

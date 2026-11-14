@@ -198,7 +198,7 @@ export function InviteSystem() {
                           <Mail className="icon-sm" />
                         </div>
                         <div>
-                          <p className="font-medium">{invite.email}</p>
+                          <p className="font-medium" translate="no">{invite.email}</p>
                           <p className="text-xs text-muted-foreground">
                             Sent {new Date(invite.sentAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                           </p>

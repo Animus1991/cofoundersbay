@@ -11,6 +11,7 @@ import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { getVentureReadiness } from '@/lib/api';
 import { starterAudience } from '@/lib/copilot-starters';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
+import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
 import { ASK } from '@/lib/page-questions';
 import { qk } from '@/lib/query-keys';
 
@@ -30,6 +31,20 @@ export function FounderProgressCard() {
         data={data}
         footer={(
           <div className="space-y-2.5">
+            {/* One next action: what would move the score most is the lowest
+                dimension, so its own page is the card's one filled button. */}
+            {data.lowestDimension?.href ? (
+              <Button size="md" className="w-full gap-1.5" asChild>
+                <Link href={data.lowestDimension.href} data-progress-next="">
+                  <BilingualText
+                    en={`Raise your lowest: ${data.lowestDimension.label} (${data.lowestDimension.score}%)`}
+                    el={`Ανεβάστε τη χαμηλότερη: ${ventureDimensionEl(data.lowestDimension.key, data.lowestDimension.label)} (${data.lowestDimension.score}%)`}
+                    compact
+                    wrap
+                  />
+                </Link>
+              </Button>
+            ) : null}
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
               <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                 <Link href="/builder" className="w-full">
