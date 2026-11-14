@@ -341,9 +341,9 @@ export default function ProviderDashboard() {
             icon={Store}
             label="Live services"
             labelEl="Ενεργές υπηρεσίες"
-            value={summary?.offers.active ?? (!servicesKnown || servicesFailed ? EM_DASH : services.filter((s) => s.isActive !== false).length)}
-            caption={!servicesKnown || (!summary && servicesFailed) ? undefined : `${summary?.offers.total ?? services.length} listed`}
-            captionEl={!servicesKnown || (!summary && servicesFailed) ? undefined : `${summary?.offers.total ?? services.length} καταχωρημένες`}
+            value={summary?.offers?.active ?? (!servicesKnown || servicesFailed ? EM_DASH : services.filter((s) => s.isActive !== false).length)}
+            caption={!servicesKnown || (!summary && servicesFailed) ? undefined : `${summary?.offers?.total ?? services.length} listed`}
+            captionEl={!servicesKnown || (!summary && servicesFailed) ? undefined : `${summary?.offers?.total ?? services.length} καταχωρημένες`}
             href="/provider/services"
           />
           <MetricTile

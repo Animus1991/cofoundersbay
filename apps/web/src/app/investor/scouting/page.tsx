@@ -120,12 +120,12 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
     retry: 0,
   });
 
-  const onBoard = board?.deals.find((deal) => deal.name === startup.name);
+  const onBoard = board?.deals?.find((deal) => deal.name === startup.name);
   // Discovered is the watchlist. A deal that has moved on (Reviewing and
   // later) is the same row: watching it again must not create a second one.
   const watchedDeal =
     (onBoard?.pipelineStage === 'discovered' ? onBoard : undefined) ??
-    watched?.deals.find((deal) => deal.name === startup.name);
+    watched?.deals?.find((deal) => deal.name === startup.name);
   const inWatchlist = Boolean(watchedDeal);
   const pastWatchlist = Boolean(onBoard && onBoard.pipelineStage !== 'discovered');
   const [pending, setPending] = useState(false);

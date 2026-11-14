@@ -869,7 +869,7 @@ export default function ResearchBoardPage() {
 
   const pasteClipboard = useCallback((inPlace = false) => {
     const clip = clipRef.current;
-    if (!clip?.nodes.length) return;
+    if (!clip?.nodes?.length) return;
     const cx = (window.innerWidth / 2 - pan.x) / zoom;
     const cy = (window.innerHeight / 2 - pan.y) / zoom;
     clip.nodes.forEach((n, i) => {
@@ -911,7 +911,7 @@ export default function ResearchBoardPage() {
   const selectedIdKey = useMemo(() => Array.from(selectedNodeIds).sort().join(','), [selectedNodeIds]);
   useEffect(() => {
     if (selectedNodeIds.size !== 1) return;
-    const node = board?.nodes.find((n) => n.id === selectedIdKey);
+    const node = board?.nodes?.find((n) => n.id === selectedIdKey);
     if (!node) return;
     const id = nodeLayerId(node.metadata);
     if (layers.some((layer) => layer.id === id)) setActiveLayerId(id);

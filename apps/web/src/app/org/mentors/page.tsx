@@ -252,7 +252,7 @@ export default function OrgMentorsPage() {
   const requests = requestsQuery.data?.requests ?? [];
   const requestsForbidden = requestsQuery.isError && statusOf(requestsQuery.error) === 403;
   const requestsFailed = requestsQuery.isError && !requestsForbidden && !requestsQuery.data;
-  const selfRegistration = policiesQuery.data?.policies.mentorSelfRegistration ?? false;
+  const selfRegistration = policiesQuery.data?.policies?.mentorSelfRegistration ?? false;
   const showRequests = !requestsForbidden && (requests.length > 0 || requestsFailed || selfRegistration);
   const answer = useMutation({
     mutationFn: ({ id, accept }: { id: string; accept: boolean }) => (accept ? acceptMentorPoolRequest(organizationId!, id) : declineMentorPoolRequest(organizationId!, id)),

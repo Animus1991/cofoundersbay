@@ -60,7 +60,14 @@ export function useReturnFocus(onOpenAutoFocus?: AutoFocusHandler, onCloseAutoFo
       // the outside-focus tracker still knows it.
       const target = opener.current ?? overlayOpener(event.currentTarget instanceof Element ? event.currentTarget : null);
       opener.current = null;
-      if (target?.isConnected) target.focus();
+      if (target?.isConnected) {
+        target.focus();
+        return;
+      }
+      // The opener left with the overlay's action (an accepted request leaves
+      // its list): continue from the page's content, not the top of <body>.
+      const main = document.getElementById('main-content');
+      if (main) main.focus({ preventScroll: true });
     },
   };
 }

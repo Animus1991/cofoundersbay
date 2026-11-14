@@ -142,7 +142,7 @@ function CompatibilityModal({
   if (!hit) return null;
 
   const score = scoreOf(hit);
-  const completeness = completenessCopy(detail?.overall.confidence);
+  const completeness = completenessCopy(detail?.overall?.confidence);
   // Recharts draws a tick from a plain string: the reader's language only.
   const dims = detail?.breakdown?.length
     ? detail.breakdown.map((axis) => {

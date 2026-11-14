@@ -2644,6 +2644,12 @@ function previewProviderInquiries() {
   const edits = readPreviewInquiryEdits();
   return previewProviderInquiryRows().map((r) => ({ ...r, ...(edits[r.id] ?? {}) }) as typeof r);
 }
+const PROVIDER_FIRST_REPLY: Record<string, string> = {
+  'svc-seed-model': 'Thanks for the numbers. I would start from your pilots and build the model around the round you plan to raise.',
+  'svc-incorporation': 'Happy to help. Tell me where each founder lives and I will suggest the company form and the vesting terms to start from.',
+  'svc-fractional-cfo': 'Glad to talk. Two half-days a month usually covers reporting and the board pack at your stage.',
+  'svc-deck-review': 'Send the current deck and the investors you are meeting first; I will mark up the story and the ask.',
+};
 function previewProviderInquiryRows() {
   const svc = (id: string) => {
     const s = PREVIEW_PROVIDER_SERVICES.find((x) => x.id === id)!;
@@ -2661,7 +2667,9 @@ function previewProviderInquiryRows() {
     id,
     status,
     message,
-    responseMessage: status === 'open' ? null : 'Thanks - happy to help. Here is how I would approach it.',
+    // The provider's first reply, about the service asked for: one sentence
+    // repeated on every inquiry read as a template, not a person.
+    responseMessage: status === 'open' ? null : (PROVIDER_FIRST_REPLY[offerId] ?? 'Thanks for the details. A short call this week would let me scope it properly.'),
     agreedScope: extra.agreedPrice ? 'As discussed on the call' : null,
     budgetEstimate: extra.budgetEstimate ?? null,
     agreedPrice: extra.agreedPrice ?? null,

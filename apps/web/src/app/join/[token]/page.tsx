@@ -56,7 +56,7 @@ export default function JoinOrganisationPage() {
     try {
       if (kind === 'accept') {
         const out = await acceptOrganizationInvitation(token);
-        success('You joined the organisation', out.organization?.name ?? invite?.organization.name);
+        success('You joined the organisation', out.organization?.name ?? invite?.organization?.name);
         void qc.invalidateQueries({ queryKey: qk('org') });
         router.push(out.organization?.slug ? `/org/${out.organization.slug}` : '/dashboard');
       } else {

@@ -134,7 +134,11 @@ function toReview(row: ServiceInquiryItem): Review {
     comment: row.reviewComment ?? '',
     date: row.resolvedAt ?? row.createdAt,
     helpful: 0,
-    response: row.responseMessage ?? undefined,
+    // `responseMessage` is the provider's first reply to the inquiry, before
+    // the work, not a reply to this review: it showed as "Your Response" under
+    // every rated project and made the rate read "3 of 3 have your reply". A
+    // review has no reply field (the Respond button says so).
+    response: undefined,
   };
 }
 
@@ -281,7 +285,9 @@ export default function ProviderReviewsPage() {
         ) : null}
 
         {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {/* The reply rate only where replies exist: the sample. A real review
+            has no reply field, so the rate counted something else. */}
+        <div className={cn('grid grid-cols-1 gap-4', isSample && 'md:grid-cols-2')}>
           <Card>
             <CardContent>
               <div className="flex items-center gap-4">
@@ -321,6 +327,7 @@ export default function ProviderReviewsPage() {
           {/* "Total Reviews 3" and "5-star reviews 2" said the count and the
               five-star bar beside them again; "Helpful Votes 0" has no field
               behind it outside the sample (docs §95). */}
+          {isSample ? (
           <Card>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
@@ -359,6 +366,7 @@ export default function ProviderReviewsPage() {
               })() : null}
             </CardContent>
           </Card>
+          ) : null}
         </div>
 
         {/* Search */}

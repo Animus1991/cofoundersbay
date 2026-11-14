@@ -48,7 +48,7 @@ export function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onO
     setUnderstood(false);
   }, [open]);
 
-  const blocked = (data?.blockers.length ?? 0) > 0;
+  const blocked = (data?.blockers?.length ?? 0) > 0;
   const confirmed = data?.confirmWith === 'email' ? email.trim().length > 3 : password.length > 0;
   const ready = Boolean(data) && !blocked && confirmed && understood && (!data?.needsCode || code.trim().length >= 6);
 

@@ -196,7 +196,7 @@ export default function IncubatorDashboard() {
   const participantsLoading = participantQueries.some((q) => q.isLoading);
   const loading = orgLoading || programsLoading || participantsLoading;
   const nextApplication = waiting[0];
-  const nextApplicantName = nextApplication?.row.user.profile?.displayName ?? 'Applicant';
+  const nextApplicantName = nextApplication?.row?.user?.profile?.displayName ?? 'Applicant';
   const nextApplicantStartup = nextApplication
     ? startupOf(nextApplication.row.user.profile?.headline)
     : null;

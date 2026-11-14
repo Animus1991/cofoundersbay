@@ -4164,6 +4164,15 @@ input[data-search-field][class~="border-input"]:focus-visible {
     max-width: 100%;
     overflow-x: auto;
   }
+  /* A table already inside a scroller (the shared Table, the comparison
+     tables) keeps its table layout: as a block its rows shrank to their
+     content and the hairlines stopped short of the card. */
+  #main-content .overflow-auto > table,
+  #main-content .overflow-x-auto > table {
+    display: table;
+    max-width: none;
+    overflow: visible;
+  }
 
   [role='dialog'],
   [role='alertdialog'] {

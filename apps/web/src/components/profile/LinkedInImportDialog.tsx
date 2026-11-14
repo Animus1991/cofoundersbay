@@ -95,7 +95,7 @@ export function LinkedInImportDialog({
     }
     return out;
   }, [imp, catalog, current.skills]);
-  const skippedSkills = (imp?.skills.length ?? 0) - matchedSkills.length;
+  const skippedSkills = (imp?.skills?.length ?? 0) - matchedSkills.length;
 
   const values: Partial<Record<FieldKey, string>> = imp
     ? {

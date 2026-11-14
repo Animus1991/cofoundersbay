@@ -15,7 +15,7 @@ export function MemberPortfolio({ userId }: { userId: string }) {
     staleTime: 5 * 60_000,
     retry: 0,
   });
-  if (!data?.items.length) return null;
+  if (!data?.items?.length) return null;
   return (
     <Card>
       <CardHeader>

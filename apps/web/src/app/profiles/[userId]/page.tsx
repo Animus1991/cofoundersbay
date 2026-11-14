@@ -5,13 +5,24 @@ export const revalidate = 60;
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
+/**
+ * The link preview's name and headline, from the endpoint the page itself
+ * reads (`GET /profiles/:userId`, which already hides a members-only profile
+ * from a visitor). It asked `/profiles/:userId/public`, which never existed,
+ * so every shared profile link previewed as the generic card. The API wraps
+ * its answer in `{ data }`; a slow or missing API keeps the generic preview.
+ */
 async function fetchPublicProfile(userId: string) {
+  if (!/^[\w.-]{1,80}$/.test(userId)) return null;
   try {
-    const res = await fetch(`${API_URL}/api/profiles/${userId}/public`, {
+    const res = await fetch(`${API_URL}/api/profiles/${encodeURIComponent(userId)}`, {
+      signal: AbortSignal.timeout(1500),
       next: { revalidate: 60 },
     });
     if (!res.ok) return null;
-    return res.json();
+    const body = (await res.json()) as { data?: Record<string, unknown> } & Record<string, unknown>;
+    const profile = (body?.data ?? body) as { displayName?: string; headline?: string | null; role?: string | null; avatarUrl?: string | null } | null;
+    return profile?.displayName ? profile : null;
   } catch {
     return null;
   }
