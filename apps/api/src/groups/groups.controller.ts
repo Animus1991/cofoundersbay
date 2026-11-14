@@ -10,6 +10,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/jwt-optional.guard';
@@ -208,7 +209,8 @@ export class GroupsController {
     @Param('postId') postId: string,
     @Body() body: { emoji: string },
   ) {
-    if (!body.emoji) throw new Error('emoji is required');
+    // A missing emoji is the caller's mistake (400), not a server fault (500).
+    if (typeof body?.emoji !== 'string' || !body.emoji.trim()) throw new BadRequestException('emoji is required');
     return this.groups.reactToPost(groupId, postId, user.id, body.emoji);
   }
 }

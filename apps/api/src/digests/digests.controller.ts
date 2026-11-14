@@ -3,9 +3,11 @@ import { EmailDigestService, DigestType } from './email-digest.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
+import { DIGEST_TOPICS, readDigestTopics } from '@cofounderbay/shared';
 import { DIGEST_TYPES, SendTestDigestDto, UpdateDigestPreferencesDto } from './dto/digest.dto';
 
-const CONTENT_CATEGORIES = ['connections', 'messages', 'opportunities', 'events', 'updates'] as const;
+// One list with the digest job and the Settings switches (packages/shared digest).
+const CONTENT_CATEGORIES = DIGEST_TOPICS;
 
 function digestType(value: string): DigestType {
   if (!(DIGEST_TYPES as readonly string[]).includes(value)) throw new BadRequestException('Invalid digest type');
@@ -56,15 +58,11 @@ export class DigestsController {
         where: { userId: currentUser.id, channel: 'email', category: { in: [...CONTENT_CATEGORIES] } },
       }),
     ]);
-    const enabled = new Map(channels.map((channel) => [channel.category, channel.isEnabled]));
     const frequency = digest?.frequency ?? 'never';
     return { preferences: {
       daily: frequency === 'daily', weekly: frequency === 'weekly', monthly: frequency === 'monthly',
-      connections: enabled.get('connections') ?? true,
-      messages: enabled.get('messages') ?? true,
-      opportunities: enabled.get('opportunities') ?? true,
-      events: enabled.get('events') ?? true,
-      updates: enabled.get('updates') ?? false,
+      // What the job sends: a topic with no stored row is on (it said "updates" off while sending them).
+      ...readDigestTopics(channels),
     } };
   }
 

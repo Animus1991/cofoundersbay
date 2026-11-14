@@ -18,4 +18,5 @@ export class UpdateDigestPreferencesDto {
   @IsOptional() @IsStrictBoolean() opportunities?: boolean;
   @IsOptional() @IsStrictBoolean() events?: boolean;
   @IsOptional() @IsStrictBoolean() updates?: boolean;
+  @IsOptional() @IsStrictBoolean() matches?: boolean;
 }

@@ -1,7 +1,7 @@
 import { resolvePreviewApiNow } from '@/lib/preview-api';
 import { leavePreviewDemoForRealAccount } from '@/lib/preview-demo';
 import type { AssistantFeedbackCounts, AssistantFeedbackReason, CompatAnswers, CompatComparison, MentorListingInput, ProviderListingInput, PublicStats, TransparencyReport } from '@cofounderbay/shared';
-import { isAssistantFeedbackReason } from '@cofounderbay/shared';
+import { DIGEST_TOPIC_DEFAULTS, DIGEST_TOPICS, isAssistantFeedbackReason, type AssignableGroupRole, type DigestTopic, type NewOrganization } from '@cofounderbay/shared';
 import type { MilestoneStep } from '@cofounderbay/shared';
 
 // Returns the API base URL evaluated at call time — not module load time.
@@ -1038,6 +1038,24 @@ export async function getNotificationPreferences(): Promise<NotificationPreferen
 
 export async function updateNotificationPreferences(data: Partial<NotificationPreferences>): Promise<{ ok: true }> {
   return apiRequest('/api/notifications/preferences', { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+/**
+ * Which topics the email digest carries (`GET /digests/preferences`). A topic
+ * the answer leaves out keeps the digest job's default (on), so a partial or
+ * older answer never reads as "off".
+ */
+export async function getDigestTopics(): Promise<Record<DigestTopic, boolean>> {
+  const res = await apiRequest<{ preferences?: Partial<Record<string, unknown>> } | null>('/api/digests/preferences');
+  const prefs = res?.preferences ?? {};
+  const out = { ...DIGEST_TOPIC_DEFAULTS };
+  for (const topic of DIGEST_TOPICS) if (typeof prefs[topic] === 'boolean') out[topic] = prefs[topic] as boolean;
+  return out;
+}
+
+/** One topic on or off; the others and the cadence stay as they are. */
+export async function updateDigestTopic(topic: DigestTopic, on: boolean): Promise<{ message?: string }> {
+  return apiRequest('/api/digests/preferences', { method: 'POST', body: JSON.stringify({ [topic]: on }) });
 }
 
 // ── Billing ────────────────────────────────────────────────────────────────
@@ -3782,6 +3800,15 @@ export interface OrgMembershipItem {
     slug: string;
     avatarUrl: string | null;
   };
+}
+
+/**
+ * Creates an organisation with the reader as its owner (`POST /organizations`,
+ * checked by the shared `readNewOrganization`). Nothing called it: a new
+ * incubator or accelerator account had no way to set up its organisation.
+ */
+export async function createOrganization(input: NewOrganization): Promise<{ id: string; slug: string; name: string }> {
+  return apiRequest('/api/organizations', { method: 'POST', body: JSON.stringify(input) });
 }
 
 export async function getUserOrganizations(): Promise<{ memberships: OrgMembershipItem[] }> {

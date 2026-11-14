@@ -1,3 +1,4 @@
+import { DIGEST_TOPICS, readDigestTopics } from '@cofounderbay/shared';
 import {
   Inject,
   Injectable,
@@ -298,16 +299,7 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
         notificationChannels: {
           where: {
             channel: 'email',
-            category: {
-              in: [
-                'connections',
-                'messages',
-                'opportunities',
-                'events',
-                'updates',
-                'matches',
-              ],
-            },
+            category: { in: [...DIGEST_TOPICS] },
           },
           select: { category: true, isEnabled: true },
         },
@@ -319,23 +311,9 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
     if (!options.ignoreFrequency && user.digestPreference?.frequency !== type)
       return null;
 
-    const digestPrefs = {
-      connections: true,
-      messages: true,
-      opportunities: true,
-      events: true,
-      // Founder updates from people the reader chose to follow: a source they
-      // asked for, so on unless they turned the category off.
-      updates: true,
-      // People who complement the reader, from the same recommendations
-      // /matches shows: the reason to come back, on unless turned off.
-      matches: true,
-    };
-    for (const channel of user.notificationChannels) {
-      if (channel.category in digestPrefs) {
-        digestPrefs[channel.category as keyof typeof digestPrefs] = channel.isEnabled;
-      }
-    }
+    // Every topic is in unless the member turned it off (shared
+    // DIGEST_TOPIC_DEFAULTS), the same rule GET /digests/preferences answers with.
+    const digestPrefs = readDigestTopics(user.notificationChannels);
 
     // Generate content for each type
     const content: Record<DigestContentType, DigestContent | undefined> = {

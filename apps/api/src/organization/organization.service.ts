@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException, ConflictException } from '@nestjs/common';
 import { readOrgPolicies } from '@cofounderbay/shared';
+import type { NewOrganization } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { assertOrgSeat } from '../billing/org-billing.service';
 import { Prisma } from '@prisma/client';
@@ -42,60 +43,36 @@ const ORGANIZATION_MEMBER_ROLES = [
 export class OrganizationService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(userId: string, data: {
-    type: string;
-    name: string;
-    slug: string;
-    displayName?: string;
-    description?: string;
-    tagline?: string;
-    website?: string;
-    email?: string;
-    phone?: string;
-    logoUrl?: string;
-    coverImageUrl?: string;
-    primaryColor?: string;
-    country?: string;
-    city?: string;
-    address?: string;
-    timezone?: string;
-    industries?: string[];
-    stages?: string[];
-    focusAreas?: string[];
-    tenantId?: string;
-  }) {
-    // Check slug uniqueness
+  /**
+   * `data` has passed the shared reader (`readNewOrganization`): a known type,
+   * a reachable slug, and none of the platform's fields.
+   */
+  async create(userId: string, data: NewOrganization) {
     const existing = await this.prisma.organization.findUnique({
       where: { slug: data.slug },
     });
 
     if (existing) {
-      throw new BadRequestException('Organization slug already exists');
+      throw new BadRequestException({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Another organisation already uses that address. Choose another.',
+          details: { reason: 'org_invalid', field: 'slug', messageEl: 'Άλλος οργανισμός χρησιμοποιεί ήδη αυτή τη διεύθυνση. Επιλέξτε άλλη.' },
+        },
+      });
     }
 
     const organization = await this.prisma.organization.create({
       data: {
         createdById: userId,
-        type: data.type as any,
+        type: data.type,
         name: data.name,
         slug: data.slug,
-        displayName: data.displayName,
         description: data.description,
-        tagline: data.tagline,
         website: data.website,
-        email: data.email,
-        phone: data.phone,
-        logoUrl: data.logoUrl,
-        coverImageUrl: data.coverImageUrl,
-        primaryColor: data.primaryColor,
         country: data.country,
         city: data.city,
-        address: data.address,
-        timezone: data.timezone,
-        industries: data.industries || [],
-        stages: data.stages || [],
-        focusAreas: data.focusAreas || [],
-        tenantId: data.tenantId,
       },
     });
 
