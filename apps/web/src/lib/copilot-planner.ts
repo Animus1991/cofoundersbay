@@ -439,7 +439,26 @@ function wordsOf(text: string): string[] {
     .split(/[^\p{L}\p{N}]+/u)
     .filter((w) => w.length >= 3 && !/^\d+$/.test(w) && !CONTROL_STOPWORDS.has(w));
 }
+/**
+ * Greek inflects: «ανεσταλμένους» (the reader's word) and «Σε αναστολή» (the
+ * option's) share no five-letter stem, so the status filter never matched a
+ * Greek request (docs §126). Families name one root for the forms a reader
+ * types; a word that belongs to none keeps the five-letter stem.
+ */
+const GREEK_ROOTS: Array<[RegExp, string]> = [
+  [/^(ανεσταλ|αναστολ|αναστελ)/, 'αναστ'],
+  [/^(αποκλεισ|αποκλεισμ|αποκλεισμεν)/, 'αποκλ'],
+  [/^(ενεργ)/, 'ενεργ'],
+  [/^(εκκρεμ|αναμον)/, 'αναμον'],
+  [/^(ολοκληρωμ|ολοκληρω)/, 'ολοκλ'],
+  [/^(εκπροθεσμ|καθυστερ)/, 'εκπρο'],
+  [/^(επαληθευμ|επαληθευσ)/, 'επαλη'],
+  [/^(αρχειοθετ)/, 'αρχει'],
+  [/^(προχειρ)/, 'προχε'],
+  [/^(δημοσιευμ|δημοσιευσ)/, 'δημοσ'],
+];
 function stem(word: string): string {
+  for (const [root, canonical] of GREEK_ROOTS) if (root.test(word)) return canonical;
   return word.length > 5 ? word.slice(0, 5) : word;
 }
 

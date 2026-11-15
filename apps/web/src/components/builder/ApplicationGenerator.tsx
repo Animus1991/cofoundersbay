@@ -458,7 +458,10 @@ export function ApplicationGenerator({
               const overLimit = question.maxLength != null && question.answer.length > question.maxLength;
               const describedBy = [tip && `${fieldId}-tip`, question.maxLength && `${fieldId}-count`].filter(Boolean).join(' ') || undefined;
               return (
-                <div key={question.id} className="space-y-2">
+                // A row (docs §123, §126): with a mouse the question's ask shows
+                // on the question under the pointer or holding focus; twelve
+                // sparks in a column said nothing. Touch keeps them in view.
+                <div key={question.id} data-row="" className="space-y-2">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <Label htmlFor={fieldId} className="flex min-w-0 flex-[1_1_20rem] items-start gap-2">
                       <span className="mt-0.5 font-mono text-xs text-muted-foreground">
@@ -474,7 +477,7 @@ export function ApplicationGenerator({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className={BUILDER_BTN}
+                        className={cn('row-tool', BUILDER_BTN)}
                         // Twelve icons named alike told a screen reader nothing of
                         // which answer each drafts, and a mouse got no tooltip (docs §79).
                         aria-label={bilingualAria(`${builderEn('app_ask_fill')} (${index + 1})`, `${builderEl('app_ask_fill')} (${index + 1})`)}

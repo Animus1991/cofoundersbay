@@ -143,7 +143,7 @@ function CommunityCard({
         {/* A small cover in the row's mark place (docs §115): the plan's "small cover in the row"; a 3:1 band made each row a screen tall. */}
         <CardHead
           mark={(
-            <Link href={`/groups/${community.id}`} aria-label={bilingualInline(`Open ${community.name}`, `Άνοιγμα: ${community.name}`)}>
+            <Link href={`/groups/${community.id}`} className="block" aria-label={bilingualInline(`Open ${community.name}`, `Άνοιγμα: ${community.name}`)}>
               <CoverThumb
                 src={community.coverImageUrl ?? (sample ? demoCover(community.id, 320, 200, [community.name, community.category]) : null)}
                 fallback={(

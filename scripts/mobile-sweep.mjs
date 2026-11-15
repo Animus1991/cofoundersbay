@@ -68,6 +68,12 @@ function measure() {
     const cs = getComputedStyle(el);
     if (cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) === 0) return false;
     if (el.closest('[aria-hidden="true"], [inert], .sr-only')) return false;
+    // `max-sm:sr-only` and the like: the class name varies, the box does not
+    // (absolute, 1x1, clipped), and its words spill past it unseen.
+    for (let a = el; a && a !== document.body; a = a.parentElement) {
+      const s = getComputedStyle(a);
+      if (s.position === 'absolute' && s.overflow === 'hidden' && a.offsetWidth <= 1 && a.offsetHeight <= 1) return false;
+    }
     return true;
   };
   const clipsX = (el) => ['hidden', 'auto', 'scroll', 'clip'].includes(getComputedStyle(el).overflowX);

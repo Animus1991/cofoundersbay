@@ -221,19 +221,37 @@ function findPerson(hits: SearchHit[], name?: string): SearchHit | undefined {
   return undefined;
 }
 
-function describeGraph(graph: CopilotGraph, t: Translator): string {
+/** Whether the message asks who the reader is or for their standing: then the briefing opens with the name. */
+const ASKS_IDENTITY = /(who am i|status|summary|overview|hello|hi|my week)|ποιος είμαι|ποιος ειμαι|ποια είμαι|ποια ειμαι|κατάστασ|καταστασ|σύνοψη|συνοψη|γεια|εβδομάδα μου|εβδομαδα μου/i;
+/** Whether the message asks about readiness: then the briefing leads with it. */
+const ASKS_READINESS = /(readiness|weakest|weak|lagging|behind)|ετοιμότ|ετοιμοτ|υστερ|αδύναμ|αδυναμ|χαμηλότερ|χαμηλοτερ/i;
+
+function describeGraph(graph: CopilotGraph, t: Translator, message = ''): string {
   // Counts get a singular and a plural key rather than an appended "s": Greek
   // inflects the noun, not just its ending, so one interpolated template
   // cannot serve both. The old singular also read "1 pending intro wait on
   // Connections", which this fixes on the way past.
+  //
+  // The name opens the briefing only when the reader asked who they are or
+  // how they stand (docs §126): on a page question it led every answer with
+  // "You are Alex Demo (founder, Athens)", which the reader knows.
+  const readinessLine = graph.readiness
+    ? graph.readiness.lowestLabel
+      ? t('Venture readiness is **{score}%** (weakest: {weakest}).', {
+          score: graph.readiness.overall,
+          weakest: t(graph.readiness.lowestLabel),
+        })
+      : t('Venture readiness is **{score}%**.', { score: graph.readiness.overall })
+    : null;
   const parts = [
-    graph.me.location
+    ASKS_READINESS.test(message) ? readinessLine : null,
+    !message || ASKS_IDENTITY.test(message) ? (graph.me.location
       ? t('You are **{name}** ({role}, {location}).', {
           name: graph.me.displayName,
           role: t(graph.me.role),
           location: graph.me.location,
         })
-      : t('You are **{name}** ({role}).', { name: graph.me.displayName, role: t(graph.me.role) }),
+      : t('You are **{name}** ({role}).', { name: graph.me.displayName, role: t(graph.me.role) })) : null,
     graph.unreadMessages
       ? t(
           graph.unreadMessages === 1
@@ -258,14 +276,7 @@ function describeGraph(graph: CopilotGraph, t: Translator): string {
           { count: graph.unreadNotifications },
         )
       : null,
-    graph.readiness
-      ? graph.readiness.lowestLabel
-        ? t('Venture readiness is **{score}%** (weakest: {weakest}).', {
-            score: graph.readiness.overall,
-            weakest: t(graph.readiness.lowestLabel),
-          })
-        : t('Venture readiness is **{score}%**.', { score: graph.readiness.overall })
-      : null,
+    ASKS_READINESS.test(message) ? null : readinessLine,
     graph.nextAction
       ? t('Suggested next step: **{step}**.', { step: t(graph.nextAction.label) })
       : null,
@@ -683,7 +694,7 @@ export async function runCopilotTurn(
 
     if (tool.name === 'get_graph') {
       graph = await fetchGraph();
-      sections.push(describeGraph(graph, t));
+      sections.push(describeGraph(graph, t, userMessage));
       citations.push({
         type: 'graph',
         id: 'graph-me',

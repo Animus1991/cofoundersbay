@@ -456,7 +456,7 @@ let previewBuilderDocs: PreviewBuilderDoc[] = [
     workspaceId: PREVIEW_BUILDER_WS_ID,
     type: 'idea_core',
     title: 'Idea Core',
-    description: 'Problem, audience, and unique value — sample for preview.',
+    description: 'Problem, audience, and unique value.',
     content: {
       problemStatement: 'Founders waste weeks stitching matching, messaging, and fundraising tools.',
       targetAudience: 'Early-stage founders looking for a complementary cofounder',
@@ -476,7 +476,7 @@ let previewBuilderDocs: PreviewBuilderDoc[] = [
     workspaceId: PREVIEW_BUILDER_WS_ID,
     type: 'business_model_canvas',
     title: 'Business Model Canvas',
-    description: 'Draft canvas — sample for preview.',
+    description: 'Draft canvas.',
     content: {
       valueProposition: 'Faster path from idea to a shareable plan',
     },
@@ -493,7 +493,7 @@ let previewBuilderDocs: PreviewBuilderDoc[] = [
     workspaceId: PREVIEW_BUILDER_WS_ID,
     type: 'market_analysis',
     title: 'Market Analysis',
-    description: 'Sizing and positioning — sample for preview.',
+    description: 'Sizing and positioning.',
     content: {
       tam: {
         value: '',
@@ -513,7 +513,7 @@ let previewBuilderDocs: PreviewBuilderDoc[] = [
     workspaceId: PREVIEW_BUILDER_WS_ID,
     type: 'pitch_deck',
     title: 'Pitch Deck',
-    description: 'Investor deck — sample for preview.',
+    description: 'Investor deck.',
     content: {
       deckType: 'investor',
       companyName: 'Harbor',
@@ -551,7 +551,7 @@ let previewBuilderDocs: PreviewBuilderDoc[] = [
     workspaceId: PREVIEW_BUILDER_WS_ID,
     type: 'application',
     title: 'Program applications',
-    description: 'YC, Techstars, university, and grant drafts — sample for preview.',
+    description: 'YC, Techstars, university, and grant drafts.',
     content: { ...PREVIEW_APPLICATION_SEED },
     status: 'in_progress',
     completionPercent: previewApplicationCompletionPercent(),
@@ -825,7 +825,7 @@ function ensurePreviewApplicationDoc() {
     workspaceId: PREVIEW_BUILDER_WS_ID,
     type: 'application',
     title: 'Program applications',
-    description: 'YC, Techstars, university, and grant drafts — sample for preview.',
+    description: 'YC, Techstars, university, and grant drafts.',
     content: { ...PREVIEW_APPLICATION_SEED },
     status: 'in_progress',
     completionPercent: previewApplicationCompletionPercent(),

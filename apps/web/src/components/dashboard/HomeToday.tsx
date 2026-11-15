@@ -100,7 +100,7 @@ export function HomeToday() {
           {rows.map((row) => (
             <li key={row.key} data-row="" className="flex items-center gap-3 py-2">
               <span data-keep-icon="" className="shrink-0 text-muted-foreground" aria-hidden="true"><CfbGlyph name={row.glyph} className="icon-sm" /></span>
-              <Link href={row.href} className="min-w-0 flex-1 text-sm text-foreground hover:text-primary-accessible">
+              <Link href={row.href} className="tap-extend-y min-w-0 flex-1 text-sm text-foreground hover:text-primary-accessible">
                 <BilingualText en={row.en} el={row.el} compact wrap />
                 {row.count ? <span className="ml-1.5 tabular-nums text-muted-foreground">{row.count}</span> : null}
               </Link>

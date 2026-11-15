@@ -1399,7 +1399,7 @@ export default function ReadinessPage() {
                     {/* A real space: a margin is no word break to a screen reader. */}
                     {' '}
                     <span className="font-normal text-muted-foreground">
-                      · <BilingualText en={`${nextOpen.dimLabelEn} +${nextOpen.weight}%`} el={`${nextOpen.dimLabelEl} +${nextOpen.weight}%`} compact />
+                      · <BilingualText en={`${nextOpen.dimLabelEn} +${nextOpen.weight}%`} el={`${nextOpen.dimLabelEl} +${nextOpen.weight}%`} compact wrap />
                     </span>
                   </p>
                 </Link>
@@ -1415,7 +1415,7 @@ export default function ReadinessPage() {
                   <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-1 text-xs">
                     {weakDims.slice().sort((a, b) => a.score / a.maxScore - b.score / b.maxScore).map((d) => (
                       <Link key={d.key} href={`#dim-${d.key}`} onClick={() => focusDimension(d.key)} className="tap-extend-y rounded-sm font-medium underline-offset-2 hover:underline focus-ring">
-                        <BilingualText en={d.labelEn} el={d.labelEl} compact />
+                        <BilingualText en={d.labelEn} el={d.labelEl} compact wrap />
                         {' '}
                         <span className="font-normal tabular-nums text-muted-foreground">{Math.round((d.score / d.maxScore) * 100)}%</span>
                       </Link>

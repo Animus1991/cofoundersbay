@@ -165,6 +165,15 @@ describe('matching a request to a page control', () => {
     expect(pageControlFor('δείξε μόνο όσους είναι σε αναστολη', greek)).toMatchObject({ option: { value: 'suspended' } });
   });
 
+  it('meets an inflected Greek word with the option it names (docs §126)', () => {
+    const greek = [{ id: 'status_filter', label: 'Φίλτρο κατάστασης', writes: false, options: [
+      { value: 'active', label: 'Ενεργός' }, { value: 'suspended', label: 'Σε αναστολή' }, { value: 'banned', label: 'Αποκλεισμένος' },
+    ] }];
+    expect(pageControlFor('Δείξε μόνο τους ανεσταλμένους χρήστες', greek)).toMatchObject({ option: { value: 'suspended' } });
+    expect(pageControlFor('δείξε τους αποκλεισμένους', greek)).toMatchObject({ option: { value: 'banned' } });
+    expect(pageControlFor('φίλτρο: ενεργοί', greek)).toMatchObject({ option: { value: 'active' } });
+  });
+
   it('never picks a command that writes from a row name alone', () => {
     // "show" is a verb of looking, and Mike Johnson is a row of the Suspend
     // command - but nothing in the message says suspend.

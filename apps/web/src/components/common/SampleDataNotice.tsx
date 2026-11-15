@@ -38,7 +38,7 @@ export function SampleDataNotice({ surface, detail, askAiPrompt, className }: Sa
         onClick={() => setOpen(true)}
         aria-label={bilingualAria(title, title)}
         className={cn(
-          'inline-flex items-center text-xs font-medium text-muted-foreground underline-offset-2 hover:underline',
+          'tap-extend-y inline-flex items-center text-xs font-medium text-muted-foreground underline-offset-2 hover:underline',
           className,
         )}
       >

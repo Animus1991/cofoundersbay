@@ -4157,6 +4157,12 @@ input[data-search-field][class~="border-input"]:focus-visible {
   #main-content img,
   #main-content video {
     max-width: 100%;
+  }
+  /* A row's cover thumbnail keeps the box it was given and crops into it
+     (object-cover, docs §126): with `height: auto` a 3:1 group band became
+     a 64x21 sliver on a phone. `:where` keeps this rule's weight. */
+  #main-content img:where(:not([data-cover-thumb])),
+  #main-content video {
     height: auto;
   }
   #main-content table {

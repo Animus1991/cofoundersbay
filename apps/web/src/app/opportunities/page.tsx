@@ -73,6 +73,7 @@ import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } fro
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { SaveItemButton, useSavedItems, useSaveToggle } from '@/components/common/SaveItemButton';
+import { CardMoreMenu } from '@/components/common/CardMoreMenu';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
@@ -280,9 +281,20 @@ function OpportunityCard({ opportunity, onPropose, proposalSent, compact = false
     );
   })() : null;
 
+  // One button per card (docs §115, applied here in §126): a proposal where
+  // one can be sent, otherwise the listing's own link, otherwise the
+  // assistant's draft. What is not the button is in the card's menu, so
+  // eight cards no longer show "Draft an approach" and "Send a proposal"
+  // side by side. Save stays a mark.
+  const canPropose = Boolean(onPropose) && !proposalSent;
+  const draft = () => ask(approachPrompt(opportunity));
   const actions = (
     <>
-      {opportunity.url ? (
+      {canPropose ? (
+        <Button size="sm" className="text-xs" onClick={onPropose}>
+          <BilingualText en={opportunitiesEn('proposal_send')} el={opportunitiesEl('proposal_send')} compact />
+        </Button>
+      ) : opportunity.url ? (
         <Button size="sm" className="gap-1.5 text-xs" asChild>
           <a href={opportunity.url} target="_blank" rel="noopener noreferrer">
             <BilingualText en={opportunitiesEn('apply_now')} el={opportunitiesEl('apply_now')} compact /> <ArrowRight className="icon-sm" />
@@ -293,26 +305,26 @@ function OpportunityCard({ opportunity, onPropose, proposalSent, compact = false
            the button said "Apply Now" and did nothing. The assistant can
            actually draft the approach from what this listing says, and the
            label now names that rather than promising a form. */
-        <Button
-          size="sm"
-          variant="outline"
-          className="gap-1.5 text-xs"
-          onClick={() => ask(approachPrompt(opportunity))}
-        >
+        <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={draft}>
           <BilingualText en="Draft an approach" el="Σύνταξη προσέγγισης" compact />
           <ArrowRight className="icon-sm" />
         </Button>
       )}
       {proposalSent ? (
         <span className="self-center text-xs text-muted-foreground"><BilingualText en={opportunitiesEn('proposal_sent_badge')} el={opportunitiesEl('proposal_sent_badge')} compact /></span>
-      ) : onPropose ? (
-        <Button size="sm" variant="outline" className="text-xs" onClick={onPropose}>
-          <BilingualText en={opportunitiesEn('proposal_send')} el={opportunitiesEl('proposal_send')} compact />
-        </Button>
       ) : null}
       {/* Stored for the reader (/api/saved-items). It used to toast
           "saved on this device" and store nothing. */}
       <SaveItemButton kind="opportunity" itemId={opportunity.id} title={opportunity.title} />
+      {canPropose ? (
+        <CardMoreMenu
+          name={opportunity.title}
+          items={[
+            ...(opportunity.url ? [{ key: 'apply', en: opportunitiesEn('apply_now'), el: opportunitiesEl('apply_now'), onSelect: () => window.open(opportunity.url ?? undefined, '_blank', 'noopener,noreferrer') }] : []),
+            { key: 'draft', en: 'Draft an approach', el: 'Σύνταξη προσέγγισης', onSelect: draft },
+          ]}
+        />
+      ) : null}
     </>
   );
 

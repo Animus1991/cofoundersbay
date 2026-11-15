@@ -790,11 +790,11 @@ export const BUILDER_PREVIEW_HINT_EL: Record<string, string> = {
   'Finish Idea Core problem and unique value': 'Ολοκληρώστε το πρόβλημα και τη μοναδική αξία στο Idea Core',
   'Draft BMC value proposition and channels': 'Γράψτε value proposition και κανάλια στο BMC',
   'Book 5 discovery interviews': 'Κλείστε 5 συνεντεύξεις ανακάλυψης',
-  'Problem, audience, and unique value — sample for preview.': 'Πρόβλημα, κοινό και μοναδική αξία — δείγμα προεπισκόπησης.',
-  'Draft canvas — sample for preview.': 'Πρόχειρος καμβάς — δείγμα προεπισκόπησης.',
-  'Sizing and positioning — sample for preview.': 'Μέγεθος αγοράς και τοποθέτηση — δείγμα προεπισκόπησης.',
-  'Investor deck — sample for preview.': 'Παρουσίαση για επενδυτές — δείγμα προεπισκόπησης.',
-  'YC, Techstars, university, and grant drafts — sample for preview.': 'Προσχέδια για YC, Techstars, πανεπιστήμιο και επιχορηγήσεις — δείγμα προεπισκόπησης.',
+  'Problem, audience, and unique value.': 'Πρόβλημα, κοινό και μοναδική αξία.',
+  'Draft canvas.': 'Πρόχειρος καμβάς.',
+  'Sizing and positioning.': 'Μέγεθος αγοράς και τοποθέτηση.',
+  'Investor deck.': 'Παρουσίαση για επενδυτές.',
+  'YC, Techstars, university, and grant drafts.': 'Προσχέδια για YC, Techstars, πανεπιστήμιο και επιχορηγήσεις.',
 };
 
 export function builderDocLabel(type: string, lang: 'en' | 'el'): string {
