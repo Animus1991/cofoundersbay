@@ -174,6 +174,28 @@ describe('matching a request to a page control', () => {
     expect(pageControlFor('φίλτρο: ενεργοί', greek)).toMatchObject({ option: { value: 'active' } });
   });
 
+  it('turns a switch by its verbs, and the first one said wins (docs §127)', () => {
+    const policies = [
+      { id: 'policy_open_applications', label: 'Ανοιχτές αιτήσεις', writes: true, options: [{ value: 'on', label: 'Ανοιχτό' }, { value: 'off', label: 'Κλειστό' }] },
+      { id: 'policy_public_profile', label: 'Δημόσιο προφίλ', writes: true, options: [{ value: 'on', label: 'Ανοιχτό' }, { value: 'off', label: 'Κλειστό' }] },
+    ];
+    // «ανοιχτές» names the switch; «κλείσε», said first, is the command.
+    expect(pageControlFor('Κλείσε τις ανοιχτές αιτήσεις', policies)).toMatchObject({ control: { id: 'policy_open_applications' }, option: { value: 'off' } });
+    expect(pageControlFor('άνοιξε τις αιτήσεις', policies)).toMatchObject({ control: { id: 'policy_open_applications' }, option: { value: 'on' } });
+    // «απενεργοποίησε» holds «ενεργοποίησε»: still off.
+    expect(pageControlFor('Απενεργοποίησε το δημόσιο προφίλ', policies)).toMatchObject({ control: { id: 'policy_public_profile' }, option: { value: 'off' } });
+    expect(pageControlFor('ενεργοποίησε το δημόσιο προφίλ', policies)).toMatchObject({ option: { value: 'on' } });
+    // English "On"/"Off" are too short to be words; the verbs carry them.
+    const quiet = [{ id: 'quiet_hours', label: 'Quiet hours', writes: true, options: [{ value: 'on', label: 'On' }, { value: 'off', label: 'Off' }] }];
+    expect(pageControlFor('turn off quiet hours', quiet)).toMatchObject({ option: { value: 'off' } });
+    expect(pageControlFor('enable quiet hours', quiet)).toMatchObject({ option: { value: 'on' } });
+    // A filter with more than two sides is not a switch: «κλείσε» does not
+    // flip it to "off", the options' own words still decide.
+    const filter = [{ id: 'starred', label: 'Αστέρι', writes: false, options: [{ value: 'all', label: 'Όλα' }, { value: 'on', label: 'Μόνο με αστέρι' }, { value: 'off', label: 'Χωρίς αστέρι' }] }];
+    expect(pageControlFor('κλείσε το αστέρι', filter)).toMatchObject({ option: { value: 'on' } });
+    expect(pageControlFor('δείξε χωρίς αστέρι', filter)).toMatchObject({ option: { value: 'off' } });
+  });
+
   it('never picks a command that writes from a row name alone', () => {
     // "show" is a verb of looking, and Mike Johnson is a row of the Suspend
     // command - but nothing in the message says suspend.
@@ -215,6 +237,37 @@ describe('an assistant turn on a page with controls', () => {
     const turn = await runCopilotTurn('show only suspended users', context);
     expect(turn.actions.some((a) => a.tool === 'use_page_control')).toBe(true);
     expect(turn.usedTools).not.toContain('get_graph');
+  });
+
+  it('introduces a proposal in one line, not with the tour of everything (docs §127)', async () => {
+    const turn = await runCopilotTurn('show only suspended users', context);
+    expect(turn.message).toContain('Here it is: Status filter: Suspended.');
+    expect(turn.message).not.toContain('I can search');
+  });
+
+  it('says a switch is already set with no briefing under it (docs §127)', async () => {
+    // The Greek sentence starts «Το «…»», not with the control's label.
+    const greek = {
+      route: '/org/settings',
+      locale: 'el',
+      controls: [{ id: 'policy_open_applications', label: 'Ανοιχτές αιτήσεις', writes: true, current: 'off', options: [{ value: 'on', label: 'Ανοιχτό' }, { value: 'off', label: 'Κλειστό' }] }],
+    };
+    const turn = await runCopilotTurn('Κλείσε τις ανοιχτές αιτήσεις', greek);
+    expect(turn.actions).toEqual([]);
+    expect(turn.usedTools).not.toContain('get_graph');
+    expect(turn.message).toMatch(/ήδη/);
+  });
+
+  it('reads «αποθήκευσε» as the page\'s Save, not a shortlist save, when nobody is named (docs §127)', async () => {
+    const greek = {
+      route: '/tenant/settings',
+      locale: 'el',
+      controls: [{ id: 'save_settings', label: 'Αποθήκευση ρυθμίσεων χώρου', writes: true }],
+    };
+    const turn = await runCopilotTurn('Αποθήκευσε τις ρυθμίσεις του χώρου', greek);
+    expect(turn.actions.map((a) => a.tool)).toEqual(['run_page_command']);
+    expect(turn.usedTools).not.toContain('shortlist_add');
+    expect(turn.message).not.toMatch(/αποθηκευμένα προφίλ/);
   });
 
   it('names what it can use when asked about the page', async () => {
@@ -497,6 +550,8 @@ describe('pages that offer controls', () => {
       'src/app/settings/page.tsx': 'switches and forms; nothing is listed',
       'src/app/settings/notifications/page.tsx': 'switches per notification type; nothing is listed',
       'src/app/settings/ai/page.tsx': 'a preferences form; nothing is listed',
+      'src/app/tenant/settings/page.tsx': 'a settings form and its switches; nothing is listed',
+      'src/app/tenant/branding/page.tsx': 'a branding form and its publish switch; nothing is listed',
       'src/app/projects/[projectId]/page.tsx': 'one project, not a list',
       'src/app/admin/analytics/page.tsx': 'platform totals and role charts, published as the page snapshot',
       'src/app/events/[id]/page.tsx': 'one event, not a list',

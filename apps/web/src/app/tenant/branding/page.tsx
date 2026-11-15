@@ -32,6 +32,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { usePageControls } from '@/lib/page-controls';
 
 // ── Color swatch + input ───────────────────────────────────────────────────────
 
@@ -224,6 +225,45 @@ export default function TenantBrandingPage() {
   const setRoleLabel = (role: string, label: string) => {
     setField('roleLabels', { ...roleLabels, [role]: label });
   };
+
+  // What the assistant can do here (docs §127): save the draft and publish or
+  // withdraw it, as the Save button and the status switch do. The colours and
+  // the copy stay the person's to set.
+  const published = branding?.isBrandingActive ?? false;
+  const noBranding = !tenantId || isLoading
+    ? { en: 'The branding has not loaded yet.', el: 'Η εμφάνιση δεν έχει φορτώσει ακόμη.' }
+    : undefined;
+  usePageControls([
+    {
+      id: 'save_branding',
+      labelEn: 'Save the branding draft',
+      labelEl: 'Αποθήκευση προχείρου εμφάνισης',
+      writes: true,
+      unavailableEn: noBranding?.en,
+      unavailableEl: noBranding?.el,
+      run: async () => { await saveMutation.mutateAsync(form); },
+    },
+    {
+      id: 'branding_published',
+      labelEn: 'Branding status',
+      labelEl: 'Κατάσταση εμφάνισης',
+      writes: true,
+      options: [
+        { value: 'on', labelEn: 'Published', labelEl: 'Δημοσιευμένη' },
+        { value: 'off', labelEn: 'Draft', labelEl: 'Πρόχειρη' },
+      ],
+      current: published ? 'on' : 'off',
+      unavailableEn: noBranding?.en,
+      unavailableEl: noBranding?.el,
+      // Publish and withdraw flip one flag (`isBrandingActive`): each is the
+      // other's undo.
+      undo: () => ({ control: 'branding_published', value: published ? 'on' : 'off' }),
+      run: async (value) => {
+        if (value === 'on') await publishMutation.mutateAsync();
+        else await unpublishMutation.mutateAsync();
+      },
+    },
+  ]);
 
   if (!tenantId) {
     return (

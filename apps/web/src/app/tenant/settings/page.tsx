@@ -37,6 +37,25 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { choiceControl, usePageControls, type PageControl } from '@/lib/page-controls';
+
+/** One of the form's switches, for the assistant: it sets the form, the Save command stores it. */
+function formSwitch(id: string, labelEn: string, labelEl: string, value: boolean, set: (on: boolean) => void): PageControl {
+  return {
+    id,
+    labelEn,
+    labelEl,
+    writes: false,
+    options: [
+      { value: 'on', labelEn: 'On', labelEl: 'Ενεργό' },
+      { value: 'off', labelEn: 'Off', labelEl: 'Ανενεργό' },
+    ],
+    current: value ? 'on' : 'off',
+    run: (v) => {
+      if (v === 'on' || v === 'off') set(v === 'on');
+    },
+  };
+}
 
 export default function TenantSettingsPage() {
   const sayOne = useBilingualString();
@@ -98,6 +117,59 @@ export default function TenantSettingsPage() {
       showError('Could not save the settings', err instanceof Error ? err.message : undefined),
   });
 
+  // What the assistant can do here (docs §127): open a tab and set the form,
+  // which stays unsaved until "Save changes" - the one command that writes,
+  // as with the button. The defaults are the ones the form starts from.
+  const [tab, setTab] = useState('general');
+  const dirty = seeded && (
+    timezone !== (stored.timezone ?? 'utc')
+    || language !== (stored.language ?? 'en')
+    || currency !== (stored.currency ?? 'eur')
+    || autoApprove !== (stored.autoApprove ?? false)
+    || requireApproval !== (stored.requireApproval ?? true)
+    || emailNotifications !== (stored.emailNotifications ?? true)
+    || weeklyDigest !== (stored.weeklyDigest ?? true)
+  );
+  usePageControls([
+    choiceControl('settings_tab', 'Settings tab', 'Καρτέλα ρυθμίσεων', [
+      { value: 'general', en: 'General', el: 'Γενικά' },
+      { value: 'access', en: 'Access Control', el: 'Έλεγχος πρόσβασης' },
+      { value: 'notifications', en: 'Notifications', el: 'Ειδοποιήσεις' },
+      { value: 'integrations', en: 'Integrations', el: 'Ενσωματώσεις' },
+      { value: 'billing', en: 'Billing', el: 'Χρεώσεις' },
+    ], tab, setTab),
+    choiceControl('timezone', 'Timezone', 'Ζώνη ώρας', [
+      { value: 'utc', en: 'UTC', el: 'UTC' },
+      { value: 'est', en: 'Eastern Time (EST)', el: 'Ώρα ανατολικών ΗΠΑ (EST)' },
+      { value: 'pst', en: 'Pacific Time (PST)', el: 'Ώρα Ειρηνικού (PST)' },
+      { value: 'cet', en: 'Central European Time (CET)', el: 'Ώρα Κεντρικής Ευρώπης (CET)' },
+    ], timezone, setTimezone),
+    choiceControl('default_language', 'Default language', 'Προεπιλεγμένη γλώσσα', [
+      { value: 'en', en: 'English', el: 'Αγγλικά' },
+      { value: 'es', en: 'Spanish', el: 'Ισπανικά' },
+      { value: 'fr', en: 'French', el: 'Γαλλικά' },
+      { value: 'de', en: 'German', el: 'Γερμανικά' },
+    ], language, setLanguage),
+    choiceControl('currency', 'Currency', 'Νόμισμα', [
+      { value: 'usd', en: 'USD ($)', el: 'USD ($)' },
+      { value: 'eur', en: 'EUR (€)', el: 'EUR (€)' },
+      { value: 'gbp', en: 'GBP (£)', el: 'GBP (£)' },
+    ], currency, setCurrency),
+    formSwitch('require_approval', 'Require approval for new members', 'Έγκριση για νέα μέλη', requireApproval, setRequireApproval),
+    formSwitch('auto_approve_domains', 'Auto-approve from allowed domains', 'Αυτόματη έγκριση από επιτρεπόμενους τομείς', autoApprove, setAutoApprove),
+    formSwitch('email_notifications', 'Email notifications', 'Ειδοποιήσεις email', emailNotifications, setEmailNotifications),
+    formSwitch('weekly_digest', 'Weekly digest', 'Εβδομαδιαία σύνοψη', weeklyDigest, setWeeklyDigest),
+    {
+      id: 'save_settings',
+      labelEn: 'Save the workspace settings',
+      labelEl: 'Αποθήκευση ρυθμίσεων χώρου',
+      writes: true,
+      unavailableEn: !tenantId ? 'No workspace is selected.' : !dirty ? 'Nothing has changed since the last save.' : undefined,
+      unavailableEl: !tenantId ? 'Δεν έχει επιλεγεί χώρος.' : !dirty ? 'Τίποτα δεν άλλαξε από την τελευταία αποθήκευση.' : undefined,
+      run: async () => { await save.mutateAsync(); },
+    },
+  ]);
+
   return (
     <AppShell
       title="Tenant Settings"
@@ -111,7 +183,7 @@ export default function TenantSettingsPage() {
     >
       <div className="space-y-6">
 
-        <Tabs defaultValue="general" className="space-y-6">
+        <Tabs value={tab} onValueChange={setTab} className="space-y-6">
           <TabsList>
             <TabsTrigger value="general"><BilingualText en="General" el="Γενικά" compact /></TabsTrigger>
             <TabsTrigger value="access"><BilingualText en="Access Control" el="Έλεγχος πρόσβασης" compact /></TabsTrigger>

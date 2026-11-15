@@ -462,6 +462,28 @@ function stem(word: string): string {
   return word.length > 5 ? word.slice(0, 5) : word;
 }
 
+/**
+ * A switch is turned by verbs, not by its option's word: «κλείσε τις
+ * αιτήσεις», «απενεργοποίησε το δημόσιο προφίλ», "turn off quiet hours"
+ * (docs §127). Folded, so the accents do not matter. "open" and "close" stay
+ * out in English, where they mean a page or a panel. When both kinds appear
+ * («κλείσε τις ανοιχτές αιτήσεις», «απενεργοποίησε» holds «ενεργοποίησε»)
+ * the first one said is the command.
+ */
+const SWITCH_ON = /\b(turn on|switch on|enable|activate)\b|ανοιξ|ανοιχτ|ενεργοποι/;
+const SWITCH_OFF = /\b(turn off|switch off|disable|deactivate)\b|κλεισ|απενεργοποι/;
+function switchIntent(message: string): 'on' | 'off' | undefined {
+  const folded = fold(message);
+  const on = folded.search(SWITCH_ON);
+  const off = folded.search(SWITCH_OFF);
+  if (on < 0 && off < 0) return undefined;
+  if (on < 0) return 'off';
+  if (off < 0) return 'on';
+  return off <= on ? 'off' : 'on';
+}
+const isSwitch = (options: readonly { value: string }[]) =>
+  options.length === 2 && options.some((o) => o.value === 'on') && options.some((o) => o.value === 'off');
+
 export function pageControlFor<T extends ControlLike>(
   message: string,
   controls: readonly T[],
@@ -469,15 +491,23 @@ export function pageControlFor<T extends ControlLike>(
   const said = new Set(wordsOf(message).map(stem));
   const hits = (text: string) => wordsOf(text).filter((w) => said.has(stem(w))).length;
   const verb = CONTROL_VERBS.test(message);
+  const turn = switchIntent(message);
 
   let best: { control: T; option?: NonNullable<T['options']>[number]; score: number } | undefined;
   for (const control of controls) {
     const labelWords = wordsOf(control.label);
     const labelScore = hits(control.label);
     if (control.options?.length) {
+      const flip = turn && isSwitch(control.options) ? turn : undefined;
       for (const option of control.options) {
         const optionWords = wordsOf(option.label);
-        const optionScore = hits(option.label);
+        let optionScore = hits(option.label);
+        if (flip) {
+          // The verb names the side; the other side's word in the message
+          // («ανοιχτές» in «κλείσε τις ανοιχτές…») is not a second choice.
+          if (option.value !== flip) continue;
+          optionScore = Math.max(optionScore, optionWords.length, 1);
+        }
         // Every word of the option must be there: "Mike" alone should not
         // pick "Mike Johnson" over "Mike Chen".
         if (optionScore === 0 || optionScore < optionWords.length) continue;

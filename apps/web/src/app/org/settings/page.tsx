@@ -49,6 +49,26 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { initialsOf } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
+
+/** The roles an admin can give here: the owner is shown, never chosen. */
+const ORG_ROLES = [
+  { value: 'admin', en: 'Admin', el: 'Διαχειριστής' },
+  { value: 'program_manager', en: 'Program Manager', el: 'Υπεύθυνος προγράμματος' },
+  { value: 'mentor', en: 'Mentor', el: 'Μέντορας' },
+  { value: 'reviewer', en: 'Reviewer', el: 'Αξιολογητής' },
+  { value: 'member', en: 'Member', el: 'Μέλος' },
+] as const;
+const roleCopy = (role: string) =>
+  role === 'owner' ? { en: 'Owner', el: 'Κάτοχος' } : ORG_ROLES.find((r) => r.value === role) ?? { en: role, el: role };
+
+/** The assistant's names for the four switches (docs §127). */
+const POLICY_CONTROL_ID: Record<OrgPolicyKey, string> = {
+  publicProfile: 'policy_public_profile',
+  openApplications: 'policy_open_applications',
+  mentorSelfRegistration: 'policy_mentor_self_registration',
+  workspaceAccess: 'policy_workspace_access',
+};
 
 /*
  * The selects offered `gr` and `europe_athens` while the organisation stores
@@ -230,6 +250,81 @@ export default function OrgSettingsPage() {
     [m.user?.profile?.firstName, m.user?.profile?.lastName].filter(Boolean).join(' ') ||
     m.user?.email ||
     'Member';
+
+  // What the assistant can do here (docs §127): open a tab, turn each access
+  // switch (each one saves on its own, as the switch does, and its undo is the
+  // switch as it was), and give a member another role. The details and
+  // branding forms stay the person's to fill and save.
+  const members = membersQuery.data;
+  const assignable = (members ?? []).filter((m) => m.role !== 'owner');
+  const memberRows = rowOptions(assignable, (m) => m.id, memberName, memberName);
+  const policiesUnavailable = !organizationId || !policies
+    ? policiesFailed
+      ? { en: 'The access policies could not be read just now.', el: 'Οι πολιτικές πρόσβασης δεν διαβάστηκαν αυτή τη στιγμή.' }
+      : { en: 'The access policies have not loaded yet.', el: 'Οι πολιτικές πρόσβασης δεν έχουν φορτώσει ακόμη.' }
+    : undefined;
+  usePageControls([
+    choiceControl('settings_tab', 'Settings tab', 'Καρτέλα ρυθμίσεων', [
+      { value: 'general', en: 'General', el: 'Γενικά' },
+      { value: 'branding', en: 'Branding', el: 'Εμφάνιση' },
+      { value: 'team', en: 'Team', el: 'Ομάδα' },
+      { value: 'permissions', en: 'Permissions', el: 'Δικαιώματα' },
+      { value: 'billing', en: 'Billing', el: 'Χρεώσεις' },
+    ], tab, setTab),
+    ...ORG_POLICY_KEYS.map((key): PageControl => ({
+      id: POLICY_CONTROL_ID[key],
+      labelEn: ORG_POLICY_COPY[key].label.en,
+      labelEl: ORG_POLICY_COPY[key].label.el,
+      writes: true,
+      // The hints' own words for the two sides.
+      options: [
+        { value: 'on', labelEn: 'On', labelEl: 'Ανοιχτό' },
+        { value: 'off', labelEn: 'Off', labelEl: 'Κλειστό' },
+      ],
+      current: policies ? (policies[key] ? 'on' : 'off') : undefined,
+      unavailableEn: policiesUnavailable?.en,
+      unavailableEl: policiesUnavailable?.el,
+      // One switch, one field (`PATCH …/policies` keeps the rest): setting it
+      // back restores exactly what it was.
+      undo: () => (policies ? { control: POLICY_CONTROL_ID[key], value: policies[key] ? 'on' : 'off' } : undefined),
+      run: async (value) => {
+        if (!policies || !organizationId) return { error: policiesUnavailable?.en ?? 'The access policies have not loaded yet.' };
+        const on = value === 'on';
+        setPolicies({ ...policies, [key]: on });
+        await savePolicies.mutateAsync({ [key]: on });
+      },
+    })),
+    ...ORG_ROLES.map((r): PageControl => ({
+      id: `org_role_${r.value}`,
+      labelEn: `Change role to ${r.en}`,
+      labelEl: `Αλλαγή ρόλου σε ${r.el}`,
+      writes: true,
+      options: memberRows,
+      unavailableEn: !members
+        ? membersQuery.isError ? 'The team could not be read just now.' : 'The team has not loaded yet.'
+        : assignable.length === 0 ? 'Only the owner is on the team.' : undefined,
+      unavailableEl: !members
+        ? membersQuery.isError ? 'Η ομάδα δεν διαβάστηκε αυτή τη στιγμή.' : 'Η ομάδα δεν έχει φορτώσει ακόμη.'
+        : assignable.length === 0 ? 'Στην ομάδα είναι μόνο ο κάτοχος.' : undefined,
+      // One field, `role`: the previous role back restores it.
+      undo: (value) => {
+        const prior = assignable.find((m) => m.id === value)?.role;
+        return prior && prior !== r.value && ORG_ROLES.some((x) => x.value === prior) ? { control: `org_role_${prior}`, value } : undefined;
+      },
+      run: async (value) => {
+        const member = assignable.find((m) => m.id === value);
+        if (!member) return ROW_GONE;
+        await changeMemberRole.mutateAsync({ memberId: member.id, role: r.value });
+      },
+    })),
+  ]);
+  usePageList([{
+    id: 'team',
+    labelEn: 'Team members',
+    labelEl: 'Μέλη ομάδας',
+    rows: members?.map((m) => `${memberName(m)} · ${roleCopy(m.role).en}`),
+    rowsEl: members?.map((m) => `${memberName(m)} · ${roleCopy(m.role).el}`),
+  }]);
 
   // Unread, the page drew its tiles as 0 and its empty state, as if the
   // organisation had nothing in it (docs §96).
