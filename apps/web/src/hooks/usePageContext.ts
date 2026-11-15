@@ -8,6 +8,7 @@ import type { PageContextPacket } from '@/lib/copilot-engine';
 import { usePageSnapshot, type PageSnapshot } from '@/contexts/PageSnapshotContext';
 import { getPageMeta } from '@/lib/page-registry';
 import { usePageRail } from '@/components/layout/PageRailContext';
+import { useMountedTours } from '@/lib/tour-replay';
 import { usePageControlList, usePageListSummaries } from '@/lib/page-controls';
 
 /**
@@ -96,6 +97,9 @@ export function usePageContext(): PageContextPacket {
   // assistant could describe the column and nothing to its right - a user
   // asking "where are the filters?" on /admin/users was told nothing.
   const { sections: railSections } = usePageRail();
+  // The spotlight tours mounted on the page, so "show me around" can play one.
+  const tours = useMountedTours();
+  const toursKey = JSON.stringify(tours);
   const railKey = JSON.stringify(
     railSections.map((s) => ({
       id: s.id,
@@ -121,11 +125,12 @@ export function usePageContext(): PageContextPacket {
         locale,
         ...(screen ? { screen } : {}),
         ...(railKey !== '[]' ? { rail: { sections: JSON.parse(railKey) as NonNullable<PageContextPacket['rail']>['sections'] } } : {}),
+        ...(toursKey !== '[]' ? { tours: JSON.parse(toursKey) as string[] } : {}),
         ...(controlsKey !== '[]' ? { controls: JSON.parse(controlsKey) as NonNullable<PageContextPacket['controls']> } : {}),
         ...(listsKey !== '[]' ? { lists: JSON.parse(listsKey) as NonNullable<PageContextPacket['lists']> } : {}),
       };
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- snapshotKey stands in for snapshot by value
-    [pathname, role?.primaryRole, locale, snapshotKey, railKey, controlsKey, listsKey],
+    [pathname, role?.primaryRole, locale, snapshotKey, railKey, toursKey, controlsKey, listsKey],
   );
 }
