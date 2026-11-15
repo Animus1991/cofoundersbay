@@ -705,7 +705,8 @@ export default function FounderDashboardContent() {
                 <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
                   <CfbGlyph name="flag" className="icon-sm text-muted-foreground" />
                   <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} compact />
-                  {milestones.length > 0 ? <span className="font-normal tabular-nums text-muted-foreground">{completedMilestoneCount}/{milestones.length}</span> : null}
+                  {/* No "5/12" here: the Milestones tile above says it and the
+                      line under the rows says what is beyond them (docs §124Α). */}
                 </CardTitle>
                 <div className="-mr-2 flex shrink-0 items-center gap-1">
                 {openMilestones.length > 0 ? <AIInsightButton prompt={ASK.dashMilestones} compactOnPhone className="h-8 min-h-0 px-2" question={{ en: dashboardEn('ask_ai_milestones'), el: dashboardEl('ask_ai_milestones') }} /> : null}

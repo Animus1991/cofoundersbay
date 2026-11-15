@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AppShell } from '@/components/layout/AppShell';
+import { DigestTopics } from '@/components/settings/DigestTopics';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PhoneFold } from '@/components/common/PhoneFold';
@@ -247,6 +248,9 @@ export default function NotificationPreferencesPage() {
                 </div>
               )}
             </div>
+
+            {/* What the digest carries, under its frequency: the job always read these switches, no screen set them. */}
+            {digestUnknown ? null : <DigestTopics digestOff={(serverPrefs?.digestFrequency ?? 'never') === 'never'} />}
 
             <div className="space-y-3 px-4 py-4 sm:px-6">
               <div className="flex items-center justify-between gap-4">

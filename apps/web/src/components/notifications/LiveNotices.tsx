@@ -29,9 +29,11 @@ export function liveNotices({ followUps, milestones, threads }: {
   const first = waiting[0];
   const step = first ? nextAction(first) : null;
   if (first && step) {
+    // Not "… are waiting on you": on Home this row sits under "N things are
+    // waiting on you", which said it once already (docs §124Α).
     notices.push(waiting.length === 1
       ? { key: 'commitment', href: `/commitments/${encodeURIComponent(first.cardId)}?thread=${encodeURIComponent(first.id)}`, en: step.en, el: step.el }
-      : { key: 'commitment', href: '/commitments', en: `${waiting.length} commitments are waiting on you`, el: `Δεσμεύσεις που σας περιμένουν: ${waiting.length}` });
+      : { key: 'commitment', href: '/commitments', en: `${waiting.length} commitments need your answer`, el: `Δεσμεύσεις που θέλουν απάντησή σας: ${waiting.length}` });
   }
   if (followUps.length > 0) {
     notices.push({

@@ -1,3 +1,4 @@
+import { DIGEST_TOPIC_DEFAULTS, isDigestTopic, type DigestTopic } from '@cofounderbay/shared';
 import { DemoRefusal } from './demo-refusal';
 
 /**
@@ -49,15 +50,68 @@ function write(value: DemoDigestFrequency) {
 /** Back to "never", as a first visit. */
 export function resetDemoDigest() {
   memory = null;
+  topicsMemory = null;
   try {
-    if (typeof window !== 'undefined') window.sessionStorage.removeItem(STORAGE_KEY);
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem(STORAGE_KEY);
+      window.sessionStorage.removeItem(TOPICS_KEY);
+    }
   } catch {
     // ignore
   }
 }
 
-/** Answers `/api/notifications/preferences` for the demo, or `undefined` for any other path or method. */
+const TOPICS_KEY = 'cfb:demo-digest-topics:v1';
+let topicsMemory: Record<DigestTopic, boolean> | null = null;
+
+/** The demo member's digest topics: the job's defaults (all on) until a switch moves. */
+function readTopics(): Record<DigestTopic, boolean> {
+  if (topicsMemory) return topicsMemory;
+  topicsMemory = { ...DIGEST_TOPIC_DEFAULTS };
+  try {
+    const raw = typeof window !== 'undefined' ? window.sessionStorage.getItem(TOPICS_KEY) : null;
+    const stored = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+    for (const [k, v] of Object.entries(stored)) if (isDigestTopic(k) && typeof v === 'boolean') topicsMemory[k] = v;
+  } catch {
+    // Unreadable storage: the defaults stand.
+  }
+  return topicsMemory;
+}
+
+function writeTopics(next: Record<DigestTopic, boolean>) {
+  topicsMemory = next;
+  try {
+    if (typeof window !== 'undefined') window.sessionStorage.setItem(TOPICS_KEY, JSON.stringify(next));
+  } catch {
+    // Storage blocked: the choice holds for this page view only.
+  }
+}
+
+/**
+ * `/api/digests/preferences` with the API's rules (`digests.controller.ts`):
+ * the cadence as three booleans (at most one true) and one boolean per topic;
+ * a body changes only the keys it names.
+ */
+function previewDigestTopicsApi(method: string, body: Record<string, unknown>): unknown {
+  if (method === 'GET') {
+    const frequency = read();
+    return { preferences: { daily: frequency === 'daily', weekly: frequency === 'weekly', monthly: frequency === 'monthly', ...readTopics() } };
+  }
+  if (method === 'POST') {
+    const cadences = (['daily', 'weekly', 'monthly'] as const).filter((c) => body[c] === true);
+    if (cadences.length > 1) throw new DemoRefusal(400, 'Choose only one digest frequency');
+    if ((['daily', 'weekly', 'monthly'] as const).some((c) => body[c] !== undefined)) write(cadences[0] ?? 'never');
+    const next = { ...readTopics() };
+    for (const [k, v] of Object.entries(body)) if (isDigestTopic(k) && typeof v === 'boolean') next[k] = v;
+    writeTopics(next);
+    return { message: 'Digest preferences updated successfully' };
+  }
+  return undefined;
+}
+
+/** Answers `/api/notifications/preferences` and `/api/digests/preferences` for the demo, or `undefined` for any other path or method. */
 export function previewNotificationPrefsApi(pathname: string, method: string, body: Record<string, unknown>): unknown {
+  if (pathname === '/api/digests/preferences') return previewDigestTopicsApi(method, body);
   if (pathname !== '/api/notifications/preferences') return undefined;
   if (method === 'GET') return { digestFrequency: read() };
   if (method === 'PATCH') {

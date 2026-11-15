@@ -284,7 +284,7 @@ export default function ComparePage() {
               stage: typeof rolePayload.stage === 'string' ? rolePayload.stage : undefined,
               availability: typeof rolePayload.availability === 'string' ? rolePayload.availability : undefined,
               languages: profile.languages ?? undefined,
-              matchScore: breakdown?.overall.score,
+              matchScore: breakdown?.overall?.score,
               connectionStatus: 'none' as const,
             } as CompareProfile;
           } catch {

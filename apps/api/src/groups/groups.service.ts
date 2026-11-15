@@ -5,6 +5,7 @@ import {
   ConflictException,
   Optional,
 } from '@nestjs/common';
+import { GROUP_MEMBER_PROBLEM_COPY, canRemoveGroupMember, groupRoleChoices, type GroupMemberProblem, type GroupRole } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import type {
   CreateGroupDto,
@@ -27,6 +28,15 @@ const profileSelect = {
   },
   role: true,
 } as const;
+
+/** A member-management refusal in the API's standard error shape, with its Greek, so the filter keeps `details`. */
+function memberRefusal(problem: GroupMemberProblem) {
+  const copy = GROUP_MEMBER_PROBLEM_COPY[problem];
+  return new ForbiddenException({
+    success: false,
+    error: { code: 'FORBIDDEN', message: copy.en, details: { reason: `group_member_${problem}`, messageEl: copy.el } },
+  });
+}
 
 @Injectable()
 export class GroupsService {
@@ -269,14 +279,16 @@ export class GroupsService {
     targetUserId: string,
     dto: UpdateMemberRoleDto,
   ) {
-    await this.requireRole(groupId, actorId, ['owner', 'admin']);
+    const actor = await this.requireRole(groupId, actorId, ['owner', 'admin']);
 
     const target = await this.prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId, userId: targetUserId } },
     });
     if (!target) throw new NotFoundException('Member not found');
-    if (target.role === 'owner') {
-      throw new ForbiddenException('Cannot change owner role');
+    if (target.role === 'owner') throw memberRefusal('owner_protected');
+    // The shared rule (packages/shared group-roles), the one the members list offers from.
+    if (!groupRoleChoices(actor.role as GroupRole, target.role as GroupRole).some((r) => r === dto.role) && target.role !== dto.role) {
+      throw memberRefusal('not_allowed');
     }
 
     const updated = await this.prisma.groupMember.update({
@@ -290,15 +302,15 @@ export class GroupsService {
   // ── Remove member ─────────────────────────────────────────────────────────
 
   async removeMember(groupId: string, actorId: string, targetUserId: string) {
-    await this.requireRole(groupId, actorId, ['owner', 'admin', 'moderator']);
+    const actor = await this.requireRole(groupId, actorId, ['owner', 'admin', 'moderator']);
 
     const target = await this.prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId, userId: targetUserId } },
     });
     if (!target) throw new NotFoundException('Member not found');
-    if (target.role === 'owner') {
-      throw new ForbiddenException('Cannot remove group owner');
-    }
+    if (target.role === 'owner') throw memberRefusal('owner_protected');
+    // A moderator removed admins and other moderators: only the owner was protected.
+    if (!canRemoveGroupMember(actor.role as GroupRole, target.role as GroupRole)) throw memberRefusal('not_allowed');
 
     await this.prisma.groupMember.delete({
       where: { groupId_userId: { groupId, userId: targetUserId } },

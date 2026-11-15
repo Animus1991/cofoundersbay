@@ -28,7 +28,7 @@ import {
   type OrgProgram,
 } from './org-world';
 import type { CohortDetail, CohortItem } from '@/lib/api';
-import { COHORT_MATCH_PROBLEM_COPY, ORG_POLICY_KEYS, ORG_POLICY_PROBLEM_COPY, ORG_TEAM_PLAN_DEFAULTS, orgSeats, readOrgPolicies, type CohortMatchMember, type OrgPolicies } from '@cofounderbay/shared';
+import { COHORT_MATCH_PROBLEM_COPY, readNewOrganization, ORG_POLICY_KEYS, ORG_POLICY_PROBLEM_COPY, ORG_TEAM_PLAN_DEFAULTS, orgSeats, readOrgPolicies, type CohortMatchMember, type OrgPolicies } from '@cofounderbay/shared';
 import { DEMO_INVESTORS } from './investors-world';
 import { DemoRefusal } from './demo-refusal';
 import { demoCohortRun, runDemoCohortMatching, type DemoCohortMatch } from './cohort-matching-world';
@@ -495,6 +495,21 @@ export function previewOrgApi(pathname: string, path: string, method: string, is
       throw new DemoRefusal(400, copy.en, { reason: 'cohort_match_invalid', problem: 'no_founders', messageEl: copy.el });
     }
     return runDemoCohortMatching(prog.cohortId, members, cohortDetail(prog, iso).matches as DemoCohortMatch[], nowMs);
+  }
+  // Creating an organisation (`POST /organizations`), with the API's reader
+  // and its refusals. The demo account already runs Aegean Venture Lab and the
+  // demo keeps one organisation, so a valid form is answered with that,
+  // never with a pretend success the next read would contradict.
+  if (pathname === '/api/organizations' && method === 'POST') {
+    const read = readNewOrganization(body);
+    if (!read.ok) throw new DemoRefusal(400, read.reason.en, { reason: 'org_invalid', field: read.field, messageEl: read.reason.el });
+    if (read.value.slug === ORG_SLUG) {
+      throw new DemoRefusal(409, 'Another organisation already uses this address. Choose another.', { reason: 'org_invalid', field: 'slug', messageEl: 'Άλλος οργανισμός χρησιμοποιεί ήδη αυτή τη διεύθυνση. Επιλέξτε άλλη.' });
+    }
+    throw new DemoRefusal(409, `The demo keeps one organisation, ${ORG.name}. A new one is created on a real account.`, {
+      reason: 'org_exists',
+      messageEl: `Το demo κρατά έναν οργανισμό, το ${ORG.name}. Νέος οργανισμός δημιουργείται σε πραγματικό λογαριασμό.`,
+    });
   }
   if (method !== 'GET') return undefined;
   const params = new URLSearchParams(path.split('?')[1] ?? '');

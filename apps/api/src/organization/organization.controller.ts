@@ -9,11 +9,21 @@ import {
   Query,
   UseGuards,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
+import { readNewOrganization } from '@cofounderbay/shared';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OrganizationService } from './organization.service';
 import { OrganizationInvitationsService } from './organization-invitations.service';
 import { OrganizationPoliciesService } from './organization-policies.service';
+
+/** The reader's refusal in the API's standard error shape, so the exception filter keeps `details`. */
+export function orgCreateRefusal(field: string, reason: { en: string; el: string }) {
+  return new BadRequestException({
+    success: false,
+    error: { code: 'VALIDATION_ERROR', message: reason.en, details: { reason: 'org_invalid', field, messageEl: reason.el } },
+  });
+}
 
 @Controller('organizations')
 @UseGuards(JwtAuthGuard)
@@ -24,33 +34,20 @@ export class OrganizationController {
     private readonly policies: OrganizationPoliciesService,
   ) {}
 
+  /**
+   * A member creates an organisation and becomes its owner. The body goes
+   * through the shared reader (packages/shared org-create): the type must be
+   * one of the enum's values, the slug must be reachable at /org/<slug>, and
+   * the tenant, verification and settings are never taken from the client.
+   */
   @Post()
   async create(
     @Request() req: { user: { id: string } },
-    @Body() data: {
-      type: string;
-      name: string;
-      slug: string;
-      displayName?: string;
-      description?: string;
-      tagline?: string;
-      website?: string;
-      email?: string;
-      phone?: string;
-      logoUrl?: string;
-      coverImageUrl?: string;
-      primaryColor?: string;
-      country?: string;
-      city?: string;
-      address?: string;
-      timezone?: string;
-      industries?: string[];
-      stages?: string[];
-      focusAreas?: string[];
-      tenantId?: string;
-    },
+    @Body() body: unknown,
   ) {
-    return this.organizationService.create(req.user.id, data);
+    const read = readNewOrganization(body);
+    if (!read.ok) throw orgCreateRefusal(read.field, read.reason);
+    return this.organizationService.create(req.user.id, read.value);
   }
 
   @Get()

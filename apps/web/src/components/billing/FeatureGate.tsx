@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFeaturePlan } from '@/hooks/useFeaturePlan';
-import type { PlanFeatureKey } from '@/lib/billing';
+import { PLAN_FEATURE_LABELS, type PlanFeatureKey } from '@/lib/billing';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type FeatureGateProps = {
   feature: PlanFeatureKey;
@@ -39,40 +40,24 @@ export function FeatureGate({ feature, children, fallback, silent }: FeatureGate
 }
 
 function UpgradePrompt({ feature }: { feature: PlanFeatureKey }) {
-  const label = FEATURE_LABELS[feature] ?? feature;
+  // The pricing page's own labels, in both languages: this prompt was English only.
+  const label = PLAN_FEATURE_LABELS[feature] ?? { en: feature, el: feature };
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-muted/30 p-6 text-center">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-        <Lock className="icon-md text-muted-foreground" />
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted" data-keep-icon="">
+        <Lock className="icon-md text-muted-foreground" aria-hidden="true" />
       </div>
       <div className="space-y-1">
-        <p className="text-sm font-semibold text-foreground">{label} requires an upgrade</p>
-        <p className="text-xs text-muted-foreground">This feature is not included in your current plan.</p>
+        <p className="text-sm font-semibold text-foreground">
+          <BilingualText en={`${label.en} needs another plan`} el={`${label.el}: χρειάζεται άλλο πρόγραμμα`} wrap />
+        </p>
+        <p className="text-xs text-muted-foreground">
+          <BilingualText en="Your current plan does not include it." el="Το τρέχον πρόγραμμά σας δεν το περιλαμβάνει." wrap />
+        </p>
       </div>
       <Button size="sm" className="gap-2" asChild>
-        <Link href="/pricing">Upgrade plan</Link>
+        <Link href="/pricing"><BilingualText en="See plans" el="Δείτε τα προγράμματα" compact /></Link>
       </Button>
     </div>
   );
 }
-
-const FEATURE_LABELS: Partial<Record<PlanFeatureKey, string>> = {
-  advancedMatching: 'Advanced Matching',
-  unlimitedMessages: 'Unlimited Messages',
-  mentorBooking: 'Mentor Booking',
-  analyticsBasic: 'Analytics',
-  analyticsAdvanced: 'Advanced Analytics',
-  teamSeats: 'Team Seats',
-  orgBranding: 'Organization Branding',
-  customDomain: 'Custom Domain',
-  sso: 'SSO Integration',
-  whiteLabel: 'White Labeling',
-  apiAccess: 'API Access',
-  prioritySupport: 'Priority Support',
-  dedicatedSupport: 'Dedicated Support',
-  customOnboarding: 'Custom Onboarding',
-  programManagement: 'Program Management',
-  communityModules: 'Community Modules',
-  advancedExports: 'Advanced Exports',
-  featureFlags: 'Feature Flags',
-};

@@ -752,7 +752,7 @@ export default function AchievementsPage() {
                 </section>
               ) : null}
               <div data-tour="achievements-stats">
-                <UserStatsCard stats={stats} rank={board?.me.rank ?? null} />
+                <UserStatsCard stats={stats} rank={board?.me?.rank ?? null} />
               </div>
               {activeTab === 'all' && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2" data-tour="achievements-list">

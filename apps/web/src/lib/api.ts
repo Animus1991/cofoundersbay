@@ -1,7 +1,7 @@
 import { resolvePreviewApiNow } from '@/lib/preview-api';
 import { leavePreviewDemoForRealAccount } from '@/lib/preview-demo';
 import type { AssistantFeedbackCounts, AssistantFeedbackReason, CompatAnswers, CompatComparison, MentorListingInput, ProviderListingInput, PublicStats, TransparencyReport } from '@cofounderbay/shared';
-import { isAssistantFeedbackReason } from '@cofounderbay/shared';
+import { DIGEST_TOPIC_DEFAULTS, DIGEST_TOPICS, isAssistantFeedbackReason, type AssignableGroupRole, type DigestTopic, type NewOrganization } from '@cofounderbay/shared';
 import type { MilestoneStep } from '@cofounderbay/shared';
 
 // Returns the API base URL evaluated at call time — not module load time.
@@ -1038,6 +1038,24 @@ export async function getNotificationPreferences(): Promise<NotificationPreferen
 
 export async function updateNotificationPreferences(data: Partial<NotificationPreferences>): Promise<{ ok: true }> {
   return apiRequest('/api/notifications/preferences', { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+/**
+ * Which topics the email digest carries (`GET /digests/preferences`). A topic
+ * the answer leaves out keeps the digest job's default (on), so a partial or
+ * older answer never reads as "off".
+ */
+export async function getDigestTopics(): Promise<Record<DigestTopic, boolean>> {
+  const res = await apiRequest<{ preferences?: Partial<Record<string, unknown>> } | null>('/api/digests/preferences');
+  const prefs = res?.preferences ?? {};
+  const out = { ...DIGEST_TOPIC_DEFAULTS };
+  for (const topic of DIGEST_TOPICS) if (typeof prefs[topic] === 'boolean') out[topic] = prefs[topic] as boolean;
+  return out;
+}
+
+/** One topic on or off; the others and the cadence stay as they are. */
+export async function updateDigestTopic(topic: DigestTopic, on: boolean): Promise<{ message?: string }> {
+  return apiRequest('/api/digests/preferences', { method: 'POST', body: JSON.stringify({ [topic]: on }) });
 }
 
 // ── Billing ────────────────────────────────────────────────────────────────
@@ -3069,6 +3087,20 @@ export async function leaveGroup(groupId: string): Promise<{ ok: boolean }> {
   return apiRequest(`/api/groups/${groupId}/leave`, { method: 'POST', body: '{}' });
 }
 
+/**
+ * Gives a member another role (`PATCH /groups/:id/members/:userId/role`).
+ * Who may give what is `groupRoleChoices` in shared group-roles; the API
+ * applies it and refuses with `group_member_*` and a Greek message.
+ */
+export async function updateGroupMemberRole(groupId: string, userId: string, role: AssignableGroupRole): Promise<{ member: { userId: string; role: GroupMemberRole } }> {
+  return apiRequest(`/api/groups/${encodeURIComponent(groupId)}/members/${encodeURIComponent(userId)}/role`, { method: 'PATCH', body: JSON.stringify({ role }) });
+}
+
+/** Removes a member (`DELETE /groups/:id/members/:userId`); `canRemoveGroupMember` says who may. */
+export async function removeGroupMember(groupId: string, userId: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/groups/${encodeURIComponent(groupId)}/members/${encodeURIComponent(userId)}`, { method: 'DELETE' });
+}
+
 export async function listGroupMembers(groupId: string, params?: { limit?: number; offset?: number }): Promise<{
   members: GroupMember[];
   total: number;
@@ -3782,6 +3814,15 @@ export interface OrgMembershipItem {
     slug: string;
     avatarUrl: string | null;
   };
+}
+
+/**
+ * Creates an organisation with the reader as its owner (`POST /organizations`,
+ * checked by the shared `readNewOrganization`). Nothing called it: a new
+ * incubator or accelerator account had no way to set up its organisation.
+ */
+export async function createOrganization(input: NewOrganization): Promise<{ id: string; slug: string; name: string }> {
+  return apiRequest('/api/organizations', { method: 'POST', body: JSON.stringify(input) });
 }
 
 export async function getUserOrganizations(): Promise<{ memberships: OrgMembershipItem[] }> {
@@ -6717,6 +6758,20 @@ export async function archiveCanvasBranch(boardId: string, branchId: string): Pr
   return res.branch;
 }
 
+/**
+ * Brings an archived branch back (`PATCH …/branches/:id/restore`). The
+ * endpoint existed with no button, so an archived branch could only be
+ * deleted. Archive and restore set the one status field, so each is the
+ * other's exact undo.
+ */
+export async function restoreCanvasBranch(boardId: string, branchId: string): Promise<CanvasBranch> {
+  const res = await apiRequest<{ branch: CanvasBranch }>(
+    `/api/research/boards/${boardId}/branches/${branchId}/restore`,
+    { method: 'PATCH' },
+  );
+  return res.branch;
+}
+
 export async function deleteCanvasBranch(boardId: string, branchId: string): Promise<void> {
   await apiRequest(`/api/research/boards/${boardId}/branches/${branchId}`, { method: 'DELETE' });
 }
@@ -7427,6 +7482,16 @@ export async function adminResolveAbuseFlag(
     method: 'POST',
     body: JSON.stringify({ action, status }),
   });
+}
+
+/**
+ * Scans endorsements for mutual rings and flags the accounts in them
+ * (`POST /admin/abuse/run-ring-detection`). Nothing ran it before: no
+ * schedule and no button, so the "Endorsement ring" flag could not appear.
+ */
+export async function adminRunRingDetection(): Promise<{ flagsCreated: number; detections: unknown[] }> {
+  const res = await apiRequest<{ flagsCreated?: number; detections?: unknown[] } | null>('/api/admin/abuse/run-ring-detection', { method: 'POST' });
+  return { flagsCreated: res?.flagsCreated ?? 0, detections: Array.isArray(res?.detections) ? res.detections : [] };
 }
 
 export async function adminRunAbuseDetection(userId: string): Promise<unknown> {

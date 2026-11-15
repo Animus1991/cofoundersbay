@@ -163,13 +163,13 @@ export async function handleCanvasOp(
       return { ok: true, href };
     case 'bring_front':
       selected.forEach((id) => {
-        const node = ctx.board?.nodes.find((n) => n.id === id);
+        const node = ctx.board?.nodes?.find((n) => n.id === id);
         if (node) ctx.updateNode(id, { zIndex: (node.zIndex || 1) + 20 });
       });
       return { ok: true, href };
     case 'send_back':
       selected.forEach((id) => {
-        const node = ctx.board?.nodes.find((n) => n.id === id);
+        const node = ctx.board?.nodes?.find((n) => n.id === id);
         if (node) ctx.updateNode(id, { zIndex: Math.max(1, (node.zIndex || 1) - 20) });
       });
       return { ok: true, href };
@@ -181,7 +181,7 @@ export async function handleCanvasOp(
       return { ok: true, href };
     case 'set_layer':
       selected.forEach((id) => {
-        const node = ctx.board?.nodes.find((n) => n.id === id);
+        const node = ctx.board?.nodes?.find((n) => n.id === id);
         const base = node?.metadata && typeof node.metadata === 'object' ? { ...(node.metadata as Record<string, unknown>) } : {};
         ctx.updateNode(id, { metadata: { ...base, layerId: str(payload, 'query') || ctx.layers[0]?.id } });
       });
@@ -248,7 +248,7 @@ export async function handleCanvasOp(
       return { ok: true, href };
     case 'convert_type':
       selected.forEach((id) => {
-        const node = ctx.board?.nodes.find((n) => n.id === id);
+        const node = ctx.board?.nodes?.find((n) => n.id === id);
         const base = node?.metadata && typeof node.metadata === 'object' ? { ...(node.metadata as Record<string, unknown>) } : {};
         ctx.updateNode(id, { metadata: { ...base, displayType: str(payload, 'nodeType') } });
       });
@@ -302,13 +302,13 @@ export async function handleCanvasOp(
       return { ok: true, href };
     case 'bring_forward':
       selected.forEach((id) => {
-        const node = ctx.board?.nodes.find((n) => n.id === id);
+        const node = ctx.board?.nodes?.find((n) => n.id === id);
         if (node) ctx.updateNode(id, { zIndex: (node.zIndex || 1) + 1 });
       });
       return { ok: true, href };
     case 'send_backward':
       selected.forEach((id) => {
-        const node = ctx.board?.nodes.find((n) => n.id === id);
+        const node = ctx.board?.nodes?.find((n) => n.id === id);
         if (node) ctx.updateNode(id, { zIndex: Math.max(1, (node.zIndex || 1) - 1) });
       });
       return { ok: true, href };

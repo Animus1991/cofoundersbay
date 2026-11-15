@@ -310,7 +310,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
 
   const toggleCriterion = (dimensionId: string, criterionId: string) => {
     const dimension = data.dimensions.find((d) => d.id === dimensionId);
-    const criterion = dimension?.criteria.find((c) => c.id === criterionId);
+    const criterion = dimension?.criteria?.find((c) => c.id === criterionId);
     if (!dimension || !criterion) return;
     const completed = !criterion.completed;
 

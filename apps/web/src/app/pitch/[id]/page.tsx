@@ -55,22 +55,28 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 
 // ─── Demo data (used when API returns no result or in dev) ────────────────────
+// Harbor's seed deck, as the demo world tells it (docs §124Α): Elena founded
+// Harbor with the demo reader, raises €750K on a SAFE with the builder deck's
+// use of funds, and is looking for a commercial co-founder. It was "TechStart",
+// a $5M Series A whose team made a match (Marcus) the CTO and a mentor (Sarah)
+// the head of AI, and named real employers; its "90% fail" and "$2.3T lost"
+// were figures with no source.
 const DEMO_DECK: PublicPitchDeck = attachDemoPhotos({
   id: 'demo',
-  title: 'TechStart - Series A Pitch',
-  companyName: 'TechStart',
-  tagline: 'AI-powered co-founder matching for the next generation of founders',
+  title: 'Harbor - Seed Pitch',
+  companyName: 'Harbor',
+  tagline: 'The operating system for early-stage founders',
   slides: [
     {
       id: 's1',
       type: 'cover',
-      title: 'TechStart',
+      title: 'Harbor',
       order: 0,
       content: {
-        tagline: 'AI-powered co-founder matching for the next generation of founders',
-        founded: '2024',
-        stage: 'Series A',
-        raising: '$5M',
+        tagline: 'The operating system for early-stage founders',
+        founded: '2025',
+        stage: 'Seed',
+        raising: '€750K',
       },
     },
     {
@@ -79,14 +85,12 @@ const DEMO_DECK: PublicPitchDeck = attachDemoPhotos({
       title: 'The Problem',
       order: 1,
       content: {
-        headline: '90% of startups fail due to team problems',
+        headline: 'Founders stitch matching, messaging and fundraising together by hand',
         points: [
-          'Finding the right co-founder takes 6–18 months on average',
-          'Existing networks are limited by geography and social circles',
-          'No data-driven way to evaluate co-founder compatibility',
+          'Matching directories stop at the introduction',
+          'Spreadsheets and chat threads carry everything after it',
+          'Nothing shows how ready the company is, or what to do next',
         ],
-        stat: '$2.3T',
-        statLabel: 'lost to failed startups annually',
       },
     },
     {
@@ -95,11 +99,11 @@ const DEMO_DECK: PublicPitchDeck = attachDemoPhotos({
       title: 'Our Solution',
       order: 2,
       content: {
-        headline: 'Intelligent matching meets proven methodology',
+        headline: 'One product from the first match to the round',
         points: [
-          'AI-powered compatibility scoring across 40+ dimensions',
-          'Verified profiles with skill assessments and references',
-          'Structured intro process with conversation guides',
+          'Matches that show their reasons',
+          'Builder documents and readiness in the same place',
+          'Commitments that move from interest to agreed terms',
         ],
       },
     },
@@ -110,10 +114,10 @@ const DEMO_DECK: PublicPitchDeck = attachDemoPhotos({
       order: 3,
       content: {
         metrics: [
-          { label: 'Registered Users', value: '12,400', growth: '+240%' },
-          { label: 'Successful Matches', value: '1,850', growth: '+180%' },
-          { label: 'Active Startups', value: '640', growth: '+160%' },
-          { label: 'Monthly Revenue', value: '$48K', growth: '+95%' },
+          { label: 'Founder clinics live', value: '4', growth: '+2 this month' },
+          { label: 'Cohorts onboarded', value: '2', growth: '+1' },
+          { label: 'Days to onboard a cohort', value: '9', growth: 'from 20' },
+          { label: 'Seed committed', value: '€375K', growth: '50% of the round' },
         ],
       },
     },
@@ -123,9 +127,9 @@ const DEMO_DECK: PublicPitchDeck = attachDemoPhotos({
       title: 'Market Opportunity',
       order: 4,
       content: {
-        tam: '$12B',
-        sam: '$3.2B',
-        som: '$480M',
+        tam: '€4.1B',
+        sam: '€620M',
+        som: '€38M',
         tamLabel: 'Total Addressable Market',
         samLabel: 'Serviceable Market',
         somLabel: 'Obtainable Market (5yr)',
@@ -138,9 +142,9 @@ const DEMO_DECK: PublicPitchDeck = attachDemoPhotos({
       order: 5,
       content: {
         streams: [
-          { name: 'Premium Subscriptions', percent: 60, amount: '$29–$99/mo' },
-          { name: 'Accelerator Partnerships', percent: 25, amount: 'Revenue share' },
-          { name: 'Enterprise Licenses', percent: 15, amount: '$5K–$50K/yr' },
+          { name: 'Founder subscriptions', percent: 60, amount: '€19–€59/mo' },
+          { name: 'Programme partnerships', percent: 30, amount: 'Per cohort' },
+          { name: 'Organisation plans', percent: 10, amount: '€3K–€20K/yr' },
         ],
       },
     },
@@ -151,9 +155,9 @@ const DEMO_DECK: PublicPitchDeck = attachDemoPhotos({
       order: 6,
       content: {
         members: [
-          { name: 'Elena Papadopoulos', role: 'CEO & Co-founder', background: 'Former product lead, 2x founder' },
-          { name: 'Marcus Chen', role: 'CTO & Co-founder', background: 'Ex-Meta, MIT CS' },
-          { name: 'Dr. Sarah Kim', role: 'Head of AI', background: 'PhD Stanford, Ex-DeepMind' },
+          { name: 'Elena Papadopoulos', role: 'Founder & CEO', background: 'Former product lead, 2x founder' },
+          { name: 'Alex Demo', role: 'Founder', background: 'Product and partnerships' },
+          { name: 'Commercial co-founder', role: 'Open role', background: 'Someone who has sold software to founders, studios or programmes' },
         ],
       },
     },
@@ -163,13 +167,13 @@ const DEMO_DECK: PublicPitchDeck = attachDemoPhotos({
       title: 'The Ask',
       order: 7,
       content: {
-        amount: '$5M',
-        valuation: '$20M pre-money',
+        amount: '€750K',
+        valuation: '€6M',
         use: [
-          { label: 'Product & Engineering', percent: 45 },
-          { label: 'Sales & Marketing', percent: 30 },
-          { label: 'Operations', percent: 15 },
-          { label: 'Legal & Admin', percent: 10 },
+          { label: 'Product', percent: 40 },
+          { label: 'Go-to-market', percent: 30 },
+          { label: 'Team', percent: 20 },
+          { label: 'Operations', percent: 10 },
         ],
       },
     },
@@ -177,7 +181,7 @@ const DEMO_DECK: PublicPitchDeck = attachDemoPhotos({
   author: {
     id: 'author1',
     name: 'Elena Papadopoulos',
-    headline: 'CEO & Co-founder at TechStart',
+    headline: 'Founder & CEO at Harbor',
     avatarUrl: undefined,
   },
   stats: { views: 284, shares: 47, contactRequests: 12 },
@@ -711,7 +715,10 @@ export default function PitchDeckPage() {
 
         {/* Main slide area */}
         <MainLandmark className="flex-1 flex flex-col">
-          <div className="rounded-2xl border bg-card shadow-lg flex-1 min-h-[360px] sm:min-h-[520px] relative overflow-hidden">
+          {/* A grid, so the slide fills the frame: `h-full` inside a box with
+              only a min-height resolved to its content, and a short slide left
+              an empty band under it (/pitch/demo at 390px, docs §124Α). */}
+          <div className="rounded-2xl border bg-card shadow-lg flex-1 min-h-[360px] sm:min-h-[520px] relative overflow-hidden grid grid-cols-1">
             <SlideRenderer slide={slides[currentSlide]} />
           </div>
 

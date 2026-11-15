@@ -89,7 +89,7 @@ for (const route of routes) {
       const name = d.getAttribute('aria-label') || byId(d.getAttribute('aria-labelledby'));
       const closeEl = [...d.querySelectorAll('button')].find((btn) => /close|κλείσιμο/i.test(btn.getAttribute('aria-label') || btn.textContent || ''));
       const cr = closeEl?.getBoundingClientRect();
-      const minClose = width < 640 ? 30.40 : 24; // 30.458px button height, snapped to 1/64px
+      const minClose = width < 640 ? 28.9 : 24; // the phone button height, 30.458px x --button-y (0.95, owner docs §101), snapped to 1/64px
       const unnamed = [...d.querySelectorAll('button, a[href], input:not([type=hidden]), select, textarea, [role="combobox"], [role="switch"], [role="checkbox"]')]
         .filter((el) => {
           const er = el.getBoundingClientRect();

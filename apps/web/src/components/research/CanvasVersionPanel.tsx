@@ -33,7 +33,7 @@ import {
 import {
   History, Camera, Clock, Layers, ChevronRight, GitBranch,
   Loader2, RefreshCw, Eye, RotateCcw, CheckCircle2, Zap,
-  Plus, Archive, Trash2, GitCommit, ArrowRight, AlertTriangle,
+  Plus, Archive, ArchiveRestore, Trash2, GitCommit, ArrowRight, AlertTriangle,
   Minus, Edit2, Move,
 } from 'lucide-react';
 import { cn, initialsOf } from '@/lib/utils';
@@ -47,6 +47,7 @@ import {
   listCanvasBranches,
   createCanvasBranch,
   archiveCanvasBranch,
+  restoreCanvasBranch,
   deleteCanvasBranch,
   restoreBoardSnapshot,
   type CanvasVersion,
@@ -728,6 +729,15 @@ function BranchesTab({ boardId }: { boardId: string }) {
     onError: () => toastError('Failed to archive branch'),
   });
 
+  const restoreMutation = useMutation({
+    mutationFn: ({ branchId }: { branchId: string }) => restoreCanvasBranch(boardId, branchId),
+    onSuccess: () => {
+      success('Branch restored');
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'branches', boardId) });
+    },
+    onError: () => toastError('Failed to restore branch'),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: ({ branchId }: { branchId: string }) => deleteCanvasBranch(boardId, branchId),
     onSuccess: () => {
@@ -817,11 +827,24 @@ function BranchesTab({ boardId }: { boardId: string }) {
                   <Button
                     variant="ghost" size="sm"
                     className="h-7 w-7 p-0 opacity-60 hover:opacity-100"
-                    title="Archive"
+                    title={sayOne('Archive', 'Αρχειοθέτηση')}
+                    aria-label={bilingualAria(`Archive the branch ${b.name}`, `Αρχειοθέτηση του κλάδου ${b.name}`)}
                     disabled={archiveMutation.isPending}
                     onClick={() => archiveMutation.mutate({ branchId: b.id })}
                   >
                     <Archive className="icon-sm" />
+                  </Button>
+                )}
+                {b.status === 'archived' && (
+                  <Button
+                    variant="ghost" size="sm"
+                    className="h-7 w-7 p-0 opacity-60 hover:opacity-100"
+                    title={sayOne('Restore', 'Επαναφορά')}
+                    aria-label={bilingualAria(`Restore the branch ${b.name}`, `Επαναφορά του κλάδου ${b.name}`)}
+                    disabled={restoreMutation.isPending}
+                    onClick={() => restoreMutation.mutate({ branchId: b.id })}
+                  >
+                    <ArchiveRestore className="icon-sm" />
                   </Button>
                 )}
                 <Button
