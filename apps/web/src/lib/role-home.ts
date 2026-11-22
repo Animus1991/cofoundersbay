@@ -96,3 +96,10 @@ export function saysWhatTheyWant(
       return saysLookingFor(profile);
   }
 }
+
+/** The first page's order for an account that has nothing yet: the steps lead, and the
+ * empty people card does not repeat their first row as a button (docs §124). */
+export function homeOrder(input: { loading: boolean; peopleCount: number; showSteps: boolean }): { stepsFirst: boolean; peopleEmptyButton: boolean } {
+  const stepsFirst = !input.loading && input.peopleCount === 0 && input.showSteps;
+  return { stepsFirst, peopleEmptyButton: !input.showSteps };
+}

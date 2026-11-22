@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HOME_COPY, homeAudience, memberRole, overviewPathFor, saysWhatTheyWant } from './role-home';
+import { HOME_COPY, homeAudience, homeOrder, memberRole, overviewPathFor, saysWhatTheyWant } from './role-home';
 
 describe('the first page for each kind of member', () => {
   it('sorts roles the way their dashboards do', () => {
@@ -53,5 +53,27 @@ describe('the first page for each kind of member', () => {
     expect(saysWhatTheyWant('investor', { rolePayload: { investmentFocus: [''] } })).toBe(false);
     expect(saysWhatTheyWant('provider', { skills: [] })).toBe(false);
     expect(saysWhatTheyWant('org', null)).toBe(false);
+  });
+});
+
+describe('homeOrder', () => {
+  it('keeps the steps after the people while the page reads', () => {
+    expect(homeOrder({ loading: true, peopleCount: 0, showSteps: true }).stepsFirst).toBe(false);
+  });
+
+  it('leads with the steps for an account that has nothing yet', () => {
+    const out = homeOrder({ loading: false, peopleCount: 0, showSteps: true });
+    expect(out.stepsFirst).toBe(true);
+    expect(out.peopleEmptyButton).toBe(false);
+  });
+
+  it('keeps the people first when they exist', () => {
+    expect(homeOrder({ loading: false, peopleCount: 3, showSteps: true }).stepsFirst).toBe(false);
+  });
+
+  it('keeps its one-way-in when the steps are done or not wanted', () => {
+    const out = homeOrder({ loading: false, peopleCount: 0, showSteps: false });
+    expect(out.stepsFirst).toBe(false);
+    expect(out.peopleEmptyButton).toBe(true);
   });
 });
