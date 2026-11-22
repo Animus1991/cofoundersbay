@@ -34,4 +34,11 @@ describe('non-guarantee sentence', () => {
     // On by default; a list that carries the sentence once passes guaranteeNote={false}.
     expect(card).toContain('{showsMoney && guaranteeNote ? <NonGuaranteeNote /> : null}');
   });
+
+  it('says the sentence once on /opportunities: the page carries it, the section defers', () => {
+    const section = readFileSync('src/components/commitments/NeedCardsSection.tsx', 'utf8');
+    expect(section).toContain('{anyMoney && guaranteeNote ? <NonGuaranteeNote /> : null}');
+    const page = readFileSync('src/app/opportunities/page.tsx', 'utf8');
+    expect(page).toContain('guaranteeNote={false}');
+  });
 });

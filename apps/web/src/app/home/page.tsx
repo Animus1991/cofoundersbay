@@ -22,7 +22,7 @@ import { getMeProfile, getRecommendations } from '@/lib/api';
 import { viewerFacts } from '@/lib/match-explain';
 import { usePageControls, usePageList } from '@/lib/page-controls';
 import { qk, queryKeys } from '@/lib/query-keys';
-import { HOME_COPY, homeAudience, memberRole, overviewPathFor, saysWhatTheyWant } from '@/lib/role-home';
+import { HOME_COPY, homeAudience, homeOrder, memberRole, overviewPathFor, saysWhatTheyWant } from '@/lib/role-home';
 import { cn } from '@/lib/utils';
 
 const PEOPLE_ON_TOP = 3;
@@ -98,6 +98,7 @@ function Home() {
   );
   const viewer = viewerFacts(profile?.profile ?? null);
   const loading = profileLoading || peopleLoading;
+  const { stepsFirst, peopleEmptyButton } = homeOrder({ loading, peopleCount: people.length, showSteps });
   const peopleBlock = loading ? (
     <div className="space-y-4">
       {[0, 1, 2].map((i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
@@ -110,12 +111,56 @@ function Home() {
         <p className="card-body text-muted-foreground">
           <BilingualText en={`${copy.want.en}, and the people who fit will appear here.`} el={`${copy.want.el} και εδώ θα εμφανιστούν οι άνθρωποι που ταιριάζουν.`} wrap />
         </p>
-        <Button size="sm" asChild>
-          <Link href="/profile/edit"><BilingualText en={copy.want.en} el={copy.want.el} compact /></Link>
-        </Button>
+        {peopleEmptyButton ? (
+          <Button size="sm" asChild>
+            <Link href="/profile/edit"><BilingualText en={copy.want.en} el={copy.want.el} compact /></Link>
+          </Button>
+        ) : null}
       </CardContent>
     </Card>
   );
+
+  const peopleSection = (
+    <section className="space-y-3" aria-labelledby="home-people">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="home-people" className="card-title"><BilingualText en="People who fit" el="Άνθρωποι που ταιριάζουν" compact /></h2>
+        <Link href="/matches" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
+          <BilingualText en="See everyone" el="Δείτε όλους" compact />
+        </Link>
+      </div>
+      {/* Many names on one page: medium weight, so the section titles lead. */}
+      <div data-home-quiet="">{peopleBlock}</div>
+    </section>
+  );
+
+  const stepsSection = showSteps ? (
+    <section aria-labelledby="home-steps">
+      <Card>
+        <CardContent className="space-y-3">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="home-steps" className="card-title"><BilingualText en="To begin" el="Για να ξεκινήσετε" compact /></h2>
+            <span className="text-xs tabular-nums text-muted-foreground">
+              <BilingualText en={`${doneCount} of ${steps.length}`} el={`${doneCount} από ${steps.length}`} compact />
+            </span>
+          </div>
+          <ol className="divide-y divide-border">
+            {steps.map((step) => (
+              <li key={step.key}>
+                <Link href={step.href} className="flex items-center gap-3 py-2.5 text-sm transition-colors hover:text-primary-accessible" data-home-step={step.done ? 'done' : 'open'}>
+                  <span data-keep-icon="" className={cn('shrink-0', step.done ? 'text-status-success' : 'text-muted-foreground')}>
+                    {step.done ? <Check className="h-4 w-4" aria-hidden="true" /> : <Circle className="h-4 w-4" aria-hidden="true" />}
+                  </span>
+                  <span className={cn('min-w-0', step.done && 'text-muted-foreground')}>
+                    <BilingualText en={step.en} el={step.el} compact wrap />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </CardContent>
+      </Card>
+    </section>
+  ) : null;
 
   // The sentence is the role's: wait for it rather than show a founder's to a mentor.
   if (roleContext?.isLoading) {
@@ -178,44 +223,7 @@ function Home() {
             </Card>
           </section>
         ) : null}
-        <section className="space-y-3" aria-labelledby="home-people">
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 id="home-people" className="card-title"><BilingualText en="People who fit" el="Άνθρωποι που ταιριάζουν" compact /></h2>
-            <Link href="/matches" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
-              <BilingualText en="See everyone" el="Δείτε όλους" compact />
-            </Link>
-          </div>
-          {/* Many names on one page: medium weight, so the section titles lead. */}
-          <div data-home-quiet="">{peopleBlock}</div>
-        </section>
-        {showSteps ? (
-          <section aria-labelledby="home-steps">
-            <Card>
-              <CardContent className="space-y-3">
-                <div className="flex items-baseline justify-between gap-3">
-                  <h2 id="home-steps" className="card-title"><BilingualText en="To begin" el="Για να ξεκινήσετε" compact /></h2>
-                  <span className="text-xs tabular-nums text-muted-foreground">
-                    <BilingualText en={`${doneCount} of ${steps.length}`} el={`${doneCount} από ${steps.length}`} compact />
-                  </span>
-                </div>
-                <ol className="divide-y divide-border">
-                  {steps.map((step) => (
-                    <li key={step.key}>
-                      <Link href={step.href} className="flex items-center gap-3 py-2.5 text-sm transition-colors hover:text-primary-accessible" data-home-step={step.done ? 'done' : 'open'}>
-                        <span data-keep-icon="" className={cn('shrink-0', step.done ? 'text-status-success' : 'text-muted-foreground')}>
-                          {step.done ? <Check className="h-4 w-4" aria-hidden="true" /> : <Circle className="h-4 w-4" aria-hidden="true" />}
-                        </span>
-                        <span className={cn('min-w-0', step.done && 'text-muted-foreground')}>
-                          <BilingualText en={step.en} el={step.el} compact wrap />
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ol>
-              </CardContent>
-            </Card>
-          </section>
-        ) : null}
+        {stepsFirst ? <>{stepsSection}{peopleSection}</> : <>{peopleSection}{stepsSection}</>}
         <HomeFeedSection people={people} shownAbove={shownAbove} connectionOf={connectionOf} />
       </div>
     </AppShell>

@@ -9,12 +9,9 @@ import {
   Handshake,
   FileText,
   MapPin,
-  Users,
   Plus,
   Search,
-  ArrowRight,
   Coins,
-  Building2,
   Check,
   X,
   Loader2,
@@ -47,6 +44,8 @@ import {
   type CardChips,
 } from '@/lib/need-card-wall';
 import { NonGuaranteeNote } from '@/components/commitments/NonGuaranteeNote';
+import { OpportunityCard } from '@/components/opportunities/OpportunityCard';
+import { OPP_TYPE_DISPLAY, approachPrompt } from '@/components/opportunities/opportunity-prompts';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
@@ -72,14 +71,11 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { useScrollToHash } from '@/hooks/useScrollToHash';
-import { SaveItemButton, useSavedItems, useSaveToggle } from '@/components/common/SaveItemButton';
+import { useSavedItems, useSaveToggle } from '@/components/common/SaveItemButton';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
-import { FactLine } from '@/components/common/FactLine';
-import { CardHead } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
-import { ASK, type AskText } from '@/lib/page-questions';
-import { calendarDaysUntil } from '@/lib/calendar-days';
+import { ASK } from '@/lib/page-questions';
 import { elWord } from '@/lib/rows-el';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -162,24 +158,6 @@ const DEMO_PROPOSALS: Proposal[] = attachDemoPhotos([
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-const OPP_TYPE_DISPLAY: Record<OpportunityType, { labelKey: `type_${OpportunityType}`; className: string; icon: typeof Briefcase }> = {
-  cofounder: { labelKey: 'type_cofounder', className: 'bg-status-accent-bg text-status-accent border-status-accent-border ', icon: Handshake },
-  job: { labelKey: 'type_job', className: 'bg-primary/10 text-primary-accessible border-primary/20', icon: Building2 },
-  investment: { labelKey: 'type_investment', className: 'bg-status-success-bg text-status-success border-status-success-border ', icon: Coins },
-  partnership: { labelKey: 'type_partnership', className: 'bg-status-accent-bg text-status-accent border-status-accent-border ', icon: Users },
-  mentorship: { labelKey: 'type_mentorship', className: 'bg-status-warning-bg text-status-warning border-status-warning-border ', icon: Rocket },
-  other: { labelKey: 'type_other', className: 'bg-muted text-muted-foreground border-border', icon: FileText },
-};
-
-/** What "Draft an approach" asks, in both languages (the card and the assistant's command). */
-function approachPrompt(opportunity: OpportunityItem): AskText {
-  const cfg = OPP_TYPE_DISPLAY[opportunity.type] ?? OPP_TYPE_DISPLAY.other;
-  return {
-    en: `Draft my approach for this opportunity: "${opportunity.title}"${opportunity.company ? ` at ${opportunity.company}` : ''}. Type: ${opportunitiesEn(cfg.labelKey)}. ${opportunity.description ?? ''}`,
-    el: `Ετοίμασε την προσέγγισή μου για αυτή την ευκαιρία: «${opportunity.title}»${opportunity.company ? ` στην ${opportunity.company}` : ''}. Είδος: ${opportunitiesEl(cfg.labelKey)}. ${opportunity.description ?? ''}`,
-  };
-}
-
 type ListView = 'detailed' | 'compact';
 const LIST_VIEW_KEY = 'cfb:opportunities-view';
 
@@ -238,158 +216,6 @@ function SendProposalModal({ opportunity, onClose, onSend }: {
         </div>
       </form>
     </div>
-  );
-}
-
-function OpportunityCard({ opportunity, onPropose, proposalSent, compact = false }: {
-  opportunity: OpportunityItem;
-  /** Absent on the reader's own listing. */
-  onPropose?: () => void;
-  proposalSent?: boolean;
-  compact?: boolean;
-}) {
-  const fmtDate = useDateFormat();
-  const { ask } = useAskAssistant();
-  const cfg = OPP_TYPE_DISPLAY[opportunity.type] ?? OPP_TYPE_DISPLAY.other;
-  const initials = (opportunity.company ?? opportunity.title).slice(0, 2).toUpperCase();
-  const postedAgo = fmtDate(opportunity.createdAt, { day: 'numeric', month: 'short' });
-  const deadline = opportunity.deadline
-    ? fmtDate(opportunity.deadline, { day: 'numeric', month: 'short', year: 'numeric' })
-    : null;
-
-  /* A company's listing shows the company's mark; a person's listing shows
-     the person, round like every person on the platform. */
-  const mark = (size: string) => (
-    <Avatar className={cn(size, 'ring-2 ring-border/60', opportunity.company ? 'rounded-xl' : 'rounded-full')}>
-      <AvatarImage src={(opportunity.company ? opportunity.companyLogo : opportunity.createdBy?.avatarUrl) ?? undefined} alt="" />
-      <AvatarFallback className={cn('bg-primary/15 text-foreground font-semibold', size === 'h-9 w-9' ? 'text-xs' : 'text-sm', opportunity.company ? 'rounded-xl' : 'rounded-full')}>
-        {opportunity.company ? initials : initialsOf(opportunity.createdBy?.displayName)}
-      </AvatarFallback>
-    </Avatar>
-  );
-
-  const deadlineItem = deadline && opportunity.deadline ? (() => {
-    // Calendar days: closing today is not "Expired".
-    const daysLeft = calendarDaysUntil(opportunity.deadline) ?? 0;
-    const key = daysLeft < 0 ? 'expired' : daysLeft === 0 ? 'closes_today' : daysLeft <= 3 ? 'days_left' : 'deadline';
-    const fill = (t: string) => t.replace('{n}', String(daysLeft)).replace('{date}', deadline);
-    return (
-      <span key="deadline" className={daysLeft <= 3 ? 'font-medium text-status-danger' : 'text-status-warning'}>
-        <BilingualText en={fill(opportunitiesEn(key))} el={fill(opportunitiesEl(key))} compact />
-      </span>
-    );
-  })() : null;
-
-  const actions = (
-    <>
-      {opportunity.url ? (
-        <Button size="sm" className="gap-1.5 text-xs" asChild>
-          <a href={opportunity.url} target="_blank" rel="noopener noreferrer">
-            <BilingualText en={opportunitiesEn('apply_now')} el={opportunitiesEl('apply_now')} compact /> <ArrowRight className="icon-sm" />
-          </a>
-        </Button>
-      ) : (
-        /* No link was posted, and there is no apply endpoint to call — so
-           the button said "Apply Now" and did nothing. The assistant can
-           actually draft the approach from what this listing says, and the
-           label now names that rather than promising a form. */
-        <Button
-          size="sm"
-          variant="outline"
-          className="gap-1.5 text-xs"
-          onClick={() => ask(approachPrompt(opportunity))}
-        >
-          <BilingualText en="Draft an approach" el="Σύνταξη προσέγγισης" compact />
-          <ArrowRight className="icon-sm" />
-        </Button>
-      )}
-      {proposalSent ? (
-        <span className="self-center text-xs text-muted-foreground"><BilingualText en={opportunitiesEn('proposal_sent_badge')} el={opportunitiesEl('proposal_sent_badge')} compact /></span>
-      ) : onPropose ? (
-        <Button size="sm" variant="outline" className="text-xs" onClick={onPropose}>
-          <BilingualText en={opportunitiesEn('proposal_send')} el={opportunitiesEl('proposal_send')} compact />
-        </Button>
-      ) : null}
-      {/* Stored for the reader (/api/saved-items). It used to toast
-          "saved on this device" and store nothing. */}
-      <SaveItemButton kind="opportunity" itemId={opportunity.id} title={opportunity.title} />
-    </>
-  );
-
-  // The id is the assistant's citation target (`/opportunities#opportunity-…`).
-  const cardClass = 'card-interactive hover-lift group scroll-mt-24 transition-all duration-300 hover:border-primary/30';
-
-  /* Compact: mark, title and one facts line on the row, actions on the edge.
-     Description and tags stay in the detailed view, where the card breathes. */
-  if (compact) {
-    return (
-      <Card id={`opportunity-${opportunity.id}`} className={cardClass}>
-        <CardContent className="flex flex-wrap items-center gap-x-3 gap-y-2 py-3">
-          {mark('h-9 w-9')}
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-foreground" title={opportunity.title}>{opportunity.title}</p>
-            <FactLine
-              className="text-xs"
-              items={[
-                opportunity.company,
-                <BilingualText key="type" en={opportunitiesEn(cfg.labelKey)} el={opportunitiesEl(cfg.labelKey)} compact />,
-                opportunity.isRemote ? <BilingualText key="remote" en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact /> : null,
-                opportunity.location,
-                deadlineItem,
-                opportunity.createdBy.displayName ? (
-                  <BilingualText key="by" en={`Posted by ${opportunity.createdBy.displayName}`} el={`Από ${opportunity.createdBy.displayName}`} compact />
-                ) : null,
-                postedAgo,
-              ]}
-            />
-          </div>
-          <div className="flex max-w-full flex-wrap gap-2">{actions}</div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card id={`opportunity-${opportunity.id}`} className={cardClass}>
-      <CardContent className="space-y-3">
-        <CardHead
-          mark={mark('h-10 w-10')}
-          title={opportunity.title}
-          /* Company, type and remote are facts about the listing: one line,
-             where the type and remote were two tinted pills. */
-          subtitle={(
-            <FactLine
-              className="text-sm"
-              items={[
-                opportunity.company,
-                <BilingualText key="type" en={opportunitiesEn(cfg.labelKey)} el={opportunitiesEl(cfg.labelKey)} compact />,
-                opportunity.isRemote ? <BilingualText key="remote" en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact /> : null,
-              ]}
-            />
-          )}
-        />
-
-        {opportunity.description && (
-          <p className="card-body line-clamp-2 text-muted-foreground">{opportunity.description}</p>
-        )}
-
-        <FactLine items={opportunity.tags ?? []} />
-
-        <FactLine
-          items={[
-            opportunity.location,
-            deadlineItem,
-            // A bare name at the end of the line did not say who it was.
-            opportunity.createdBy.displayName ? (
-              <BilingualText key="by" en={`Posted by ${opportunity.createdBy.displayName}`} el={`Από ${opportunity.createdBy.displayName}`} compact />
-            ) : null,
-            postedAgo,
-          ]}
-        />
-
-        <div className="flex flex-wrap gap-2 pt-1">{actions}</div>
-      </CardContent>
-    </Card>
   );
 }
 
@@ -1041,6 +867,7 @@ export default function OpportunitiesPage() {
               onChipsChange={setCardChips}
               alertOpen={cardAlertOpen}
               onAlertOpenChange={setCardAlertOpen}
+              guaranteeNote={false}
             />
 
             {oppError ? (
