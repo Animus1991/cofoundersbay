@@ -17,10 +17,8 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { CAPABILITY_SAMPLES as SAMPLE_ASK } from '@/lib/capability-samples';
-import { cn } from '@/lib/utils';
+import { foldedCardClass, showAllClass } from './firstScreen';
 
-/** A phone starts each list here: every card at once measured 29,000px. The search reaches all of them. */
-const PHONE_FIRST = 6;
 
 /**
  * Generated from the shared capability contract — the same list the model is
@@ -117,8 +115,8 @@ export default function AICapabilitiesPage() {
         <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <p className="max-w-2xl text-sm text-muted-foreground">
             <BilingualText
-              en="Every capability below is declared once, offered to the model, and confirmed by you before anything is written. This page is generated from that contract, so it cannot fall behind."
-              el="Κάθε δυνατότητα δηλώνεται μία φορά, προσφέρεται στο μοντέλο και επιβεβαιώνεται από εσάς πριν γραφτεί οτιδήποτε. Η σελίδα παράγεται από αυτό το συμβόλαιο, οπότε δεν μπορεί να μείνει πίσω."
+              en="Every capability below is declared once, offered to the model, and confirmed by you before anything is written."
+              el="Κάθε δυνατότητα δηλώνεται μία φορά, προσφέρεται στο μοντέλο και επιβεβαιώνεται από εσάς πριν γραφτεί οτιδήποτε."
               wrap
             />
           </p>
@@ -181,13 +179,13 @@ export default function AICapabilitiesPage() {
           </p>
           <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {reads.map((spec, index) => (
-              <div key={spec.id} className={cn(!readsOpen && !searching && index >= PHONE_FIRST && 'max-sm:hidden')}>
+              <div key={spec.id} className={foldedCardClass(index, readsOpen, searching)}>
                 <CapabilityCard spec={spec} />
               </div>
             ))}
           </div>
-          {!readsOpen && !searching && reads.length > PHONE_FIRST ? (
-            <Button type="button" variant="outline" size="sm" className="mt-3 w-full sm:hidden" onClick={() => setReadsOpen(true)}>
+          {showAllClass(reads.length, readsOpen, searching) ? (
+            <Button type="button" variant="outline" size="sm" className={showAllClass(reads.length, readsOpen, searching) ?? undefined} onClick={() => setReadsOpen(true)}>
               <BilingualText en={`Show all ${reads.length}`} el={`Όλες οι ${reads.length}`} compact />
             </Button>
           ) : null}
@@ -208,13 +206,13 @@ export default function AICapabilitiesPage() {
           </p>
           <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {mutations.map((spec, index) => (
-              <div key={spec.id} className={cn(!mutationsOpen && !searching && index >= PHONE_FIRST && 'max-sm:hidden')}>
+              <div key={spec.id} className={foldedCardClass(index, mutationsOpen, searching)}>
                 <CapabilityCard spec={spec} />
               </div>
             ))}
           </div>
-          {!mutationsOpen && !searching && mutations.length > PHONE_FIRST ? (
-            <Button type="button" variant="outline" size="sm" className="mt-3 w-full sm:hidden" onClick={() => setMutationsOpen(true)}>
+          {showAllClass(mutations.length, mutationsOpen, searching) ? (
+            <Button type="button" variant="outline" size="sm" className={showAllClass(mutations.length, mutationsOpen, searching) ?? undefined} onClick={() => setMutationsOpen(true)}>
               <BilingualText en={`Show all ${mutations.length}`} el={`Όλες οι ${mutations.length}`} compact />
             </Button>
           ) : null}
