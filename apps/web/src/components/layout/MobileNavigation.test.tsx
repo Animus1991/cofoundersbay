@@ -102,9 +102,9 @@ describe('Mobile navigation destinations', () => {
 });
 
 describe('Mobile drawer keyboard and language', () => {
-  it('opens from More and returns focus there after Escape', async () => {
+  it('opens from the top bar handle and returns focus there after Escape', async () => {
     render(<Navigation />);
-    const more = screen.getByRole('button', { name: /More destinations/ });
+    const more = screen.getByRole('button', { name: /Open navigation/ });
     more.focus();
     fireEvent.click(more);
     const drawer = screen.getByRole('dialog');
@@ -126,7 +126,7 @@ describe('Mobile drawer keyboard and language', () => {
   it('shows one language on all five bottom destinations until the reader asks for both', () => {
     render(<Navigation />);
     const bar = screen.getByRole('navigation', { name: /Primary mobile navigation/ });
-    const actions = [...within(bar).getAllByRole('link'), within(bar).getByRole('button')];
+    const actions = within(bar).getAllByRole('link');
     expect(actions).toHaveLength(5);
     actions.forEach((action) => {
       expect(action.querySelector('[lang="en"]')).not.toBeNull();
@@ -138,7 +138,7 @@ describe('Mobile drawer keyboard and language', () => {
     localStorage.setItem('cfb:language-display', 'bilingual');
     render(<Navigation />);
     const bar = screen.getByRole('navigation', { name: /Primary mobile navigation/ });
-    const actions = [...within(bar).getAllByRole('link'), within(bar).getByRole('button')];
+    const actions = within(bar).getAllByRole('link');
     expect(actions).toHaveLength(5);
     actions.forEach((action) => {
       expect(action.querySelector('[lang="en"]')).not.toBeNull();
@@ -167,5 +167,19 @@ describe('Mobile drawer keyboard and language', () => {
     state.pathname = pathname;
     render(<Navigation />);
     expect(screen.queryByRole('navigation', { name: /Primary mobile navigation/ })).toBeNull();
+  });
+});
+
+describe('Mobile bottom nav (docs §131.1)', () => {
+  it('has the five named slots — home, discover, the raised assistant, messages, profile', () => {
+    render(<Navigation />);
+    const tabs = screen.getByRole('navigation', { name: /Primary mobile navigation/ });
+    const links = within(tabs).getAllByRole('link');
+    expect(links).toHaveLength(5);
+    const names = links.map((link) => link.getAttribute('href'));
+    expect(names).toEqual(['/dashboard', '/discover', '/ai', '/messages', '/profile']);
+    for (const label of [/Home/, /Discover/, /Assistant/, /Messages/, /Profile/]) {
+      expect(links.some((link) => label.test(link.textContent ?? ''))).toBe(true);
+    }
   });
 });

@@ -66,7 +66,7 @@ export function TopBar() {
 }
 
 /* The three "new" pages the registry already knows (docs §131.1). */
-const CREATE_LINKS = [
+export const CREATE_LINKS = [
   { href: '/commitments/new', en: 'Need card', el: 'Κάρτα ανάγκης' },
   { href: '/events/create', en: 'Event', el: 'Εκδήλωση' },
   { href: '/projects/create', en: 'Project', el: 'Έργο' },
