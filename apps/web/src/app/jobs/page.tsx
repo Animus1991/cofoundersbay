@@ -103,7 +103,7 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
           mark={(
             <Avatar className={cn('h-14 w-14', job.logoUrl && 'rounded-xl')}>
               <AvatarImage src={job.logoUrl ?? job.creator?.avatarUrl ?? undefined} alt="" />
-              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
+              <AvatarFallback className="bg-status-accent-bg font-semibold text-primary-accessible">
                 {initialsOf(job.creator?.displayName ?? '')}
               </AvatarFallback>
             </Avatar>

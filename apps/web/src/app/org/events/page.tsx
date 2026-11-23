@@ -262,7 +262,7 @@ function EventCard({ event, onDuplicate, sample = false }: { event: OrgEvent; on
       <CardContent className="space-y-3">
         <CardHead
           mark={(
-            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-warning-bg text-muted-foreground">
               {event.format === 'online' ? <Video className="icon-md" aria-hidden="true" /> : <Calendar className="icon-md" aria-hidden="true" />}
             </div>
           )}

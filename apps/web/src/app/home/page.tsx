@@ -7,6 +7,8 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Check, Circle } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { CfbFigure, type CfbFigureId } from '@/components/illustrations/CfbCast';
+import { EmptyIllustration } from '@/components/common/EmptyIllustration';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { useTodayRows } from '@/components/dashboard/HomeToday';
 import { HomeFeedSection } from '@/components/home/HomeFeedSection';
@@ -24,6 +26,16 @@ import { usePageControls, usePageList } from '@/lib/page-controls';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { HOME_COPY, homeAudience, homeOrder, memberRole, overviewPathFor, saysWhatTheyWant } from '@/lib/role-home';
 import { cn } from '@/lib/utils';
+
+/* The cast's own member for each audience — provider and org read as the
+   builder. */
+const AUDIENCE_FIGURE: Record<string, CfbFigureId> = {
+  founder: 'founder',
+  mentor: 'mentor',
+  provider: 'mentor',
+  investor: 'investor',
+  org: 'builder',
+};
 
 const PEOPLE_ON_TOP = 3;
 const WAITING_ON_TOP = 3;
@@ -107,15 +119,23 @@ function Home() {
     <HomePeople matches={people} viewer={viewer} myId={myId} limit={PEOPLE_ON_TOP} />
   ) : (
     <Card>
-      <CardContent className="space-y-3">
-        <p className="card-body text-muted-foreground">
-          <BilingualText en={`${copy.want.en}, and the people who fit will appear here.`} el={`${copy.want.el} και εδώ θα εμφανιστούν οι άνθρωποι που ταιριάζουν.`} wrap />
-        </p>
-        {peopleEmptyButton ? (
-          <Button size="sm" asChild>
-            <Link href="/profile/edit"><BilingualText en={copy.want.en} el={copy.want.el} compact /></Link>
-          </Button>
-        ) : null}
+      <CardContent>
+        <div className="flex items-start gap-4">
+          {/* The same mark the empty states carry — this card is one. */}
+          <div data-keep-icon="" className="h-14 w-14 shrink-0 text-muted-foreground">
+            <EmptyIllustration type="connection" />
+          </div>
+          <div className="min-w-0 flex-1 space-y-3">
+            <p className="card-body text-muted-foreground">
+              <BilingualText en={`${copy.want.en}, and the people who fit will appear here.`} el={`${copy.want.el} και εδώ θα εμφανιστούν οι άνθρωποι που ταιριάζουν.`} wrap />
+            </p>
+            {peopleEmptyButton ? (
+              <Button size="sm" asChild>
+                <Link href="/profile/edit"><BilingualText en={copy.want.en} el={copy.want.el} compact /></Link>
+              </Button>
+            ) : null}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
@@ -139,9 +159,15 @@ function Home() {
         <CardContent className="space-y-3">
           <div className="flex items-baseline justify-between gap-3">
             <h2 id="home-steps" className="card-title"><BilingualText en="To begin" el="Για να ξεκινήσετε" compact /></h2>
-            <span className="text-xs tabular-nums text-muted-foreground">
-              <BilingualText en={`${doneCount} of ${steps.length}`} el={`${doneCount} από ${steps.length}`} compact />
-            </span>
+            <div className="flex shrink-0 items-center gap-3">
+              <span className="text-xs tabular-nums text-muted-foreground">
+                <BilingualText en={`${doneCount} of ${steps.length}`} el={`${doneCount} από ${steps.length}`} compact />
+              </span>
+              {/* The member's own figure — an org reads as the builder. */}
+              <span data-keep-icon="" className="self-center text-muted-foreground">
+                <CfbFigure id={AUDIENCE_FIGURE[audience] ?? 'builder'} className="h-16 w-14" />
+              </span>
+            </div>
           </div>
           <ol className="divide-y divide-border">
             {steps.map((step) => (

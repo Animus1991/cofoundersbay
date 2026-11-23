@@ -243,7 +243,7 @@ function ProposalCard({
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={proposal.fromAvatar} alt="" />
-              <AvatarFallback className="bg-primary/15 text-foreground text-xs font-bold">
+              <AvatarFallback className="bg-status-accent-bg text-foreground text-xs font-bold">
                 {proposal.fromInitials}
               </AvatarFallback>
             </Avatar>

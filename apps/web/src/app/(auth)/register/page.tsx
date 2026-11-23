@@ -15,6 +15,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbFigure, type CfbFigureId } from '@/components/illustrations/CfbCast';
 import { registerEmailError, registerPasswordError } from '@/lib/auth-fields';
 
 /**
@@ -63,6 +64,14 @@ const ROLES = [
     glyph: 'building',
   },
 ] as const satisfies ReadonlyArray<{ glyph: CfbGlyphName } & Record<string, string>>;
+
+/* The cast's own member for each role — an organization is a builder. */
+const ROLE_FIGURE: Record<string, CfbFigureId> = {
+  founder: 'founder',
+  mentor: 'mentor',
+  investor: 'investor',
+  org: 'builder',
+};
 
 // What happens after this form, in order. The panel used to show three
 // figures ("4 ways to join", "2 languages", "1 profile for every match"),
@@ -158,9 +167,14 @@ export default function RegisterPage() {
               : <Logo size="sm" />}
           </Link>
 
-          <h1 className="font-display text-3xl font-semibold text-foreground">
-            <BilingualText en="Create your account" el="Δημιουργήστε λογαριασμό" wrap />
-          </h1>
+          <div className="flex items-start justify-between gap-4">
+            <h1 className="font-display text-3xl font-semibold text-foreground">
+              <BilingualText en="Create your account" el="Δημιουργήστε λογαριασμό" wrap />
+            </h1>
+            <span data-keep-icon="" className="shrink-0 text-muted-foreground">
+              <CfbFigure id={ROLE_FIGURE[role] ?? 'founder'} className="h-20 w-16" />
+            </span>
+          </div>
           <p className="mt-2 text-sm text-muted-foreground">
             {activeTenant ? (
               <BilingualText

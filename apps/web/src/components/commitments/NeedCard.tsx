@@ -143,7 +143,7 @@ export function NeedCard({
           <div className="flex min-w-0 items-center gap-2.5 pt-1.5">
             <Avatar className="h-10 w-10" data-keep-icon="">
               <AvatarImage src={owner.avatarUrl ?? undefined} alt="" />
-              <AvatarFallback className="bg-primary/15 text-2xs text-foreground">{initialsOf(owner.displayName)}</AvatarFallback>
+              <AvatarFallback className="bg-status-accent-bg text-2xs text-foreground">{initialsOf(owner.displayName)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
               <p className="card-subtitle card-byline flex min-w-0 items-center gap-1">

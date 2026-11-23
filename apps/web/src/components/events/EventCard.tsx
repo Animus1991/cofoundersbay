@@ -122,7 +122,7 @@ export function EventCard({
         <CardContent className="space-y-2">
           <CardHead
             mark={(
-              <div data-card-mark="" className="flex h-10 w-10 flex-col items-center justify-center rounded-xl bg-muted leading-none">
+              <div data-card-mark="" className="flex h-10 w-10 flex-col items-center justify-center rounded-xl bg-status-warning-bg leading-none">
                 <span className="text-2xs text-primary-accessible">
                   {fmtDate(event.startDate, { month: 'short' })}
                 </span>
@@ -179,7 +179,7 @@ export function EventCard({
             page, so "Going" is in view and the next card shows under it
             (docs §115). */}
         {event.coverImage && (
-          <div className={cn('relative overflow-hidden', cover.failed ? 'h-24 bg-muted/60' : 'h-48 max-sm:h-28')}>
+          <div className={cn('relative overflow-hidden', cover.failed ? 'h-24 bg-status-warning-bg' : 'h-48 max-sm:h-28')}>
             {cover.failed ? null : (
               <>
                 <img
@@ -314,7 +314,7 @@ export function EventCard({
       <CardContent className="space-y-3">
         <CardHead
           mark={(
-            <div data-card-mark="" className="flex h-10 w-10 flex-col items-center justify-center rounded-xl bg-muted leading-none">
+            <div data-card-mark="" className="flex h-10 w-10 flex-col items-center justify-center rounded-xl bg-status-warning-bg leading-none">
               <span className="text-2xs text-primary-accessible">
                 {fmtDate(event.startDate, { month: 'short' })}
               </span>

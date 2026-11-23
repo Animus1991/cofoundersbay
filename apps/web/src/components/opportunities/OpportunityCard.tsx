@@ -38,7 +38,7 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
   const mark = (size: string) => (
     <Avatar className={cn(size, 'ring-2 ring-border/60', opportunity.company ? 'rounded-xl' : 'rounded-full')}>
       <AvatarImage src={(opportunity.company ? opportunity.companyLogo : opportunity.createdBy?.avatarUrl) ?? undefined} alt="" />
-      <AvatarFallback className={cn('bg-primary/15 text-foreground font-semibold', size === 'h-9 w-9' ? 'text-xs' : 'text-sm', opportunity.company ? 'rounded-xl' : 'rounded-full')}>
+      <AvatarFallback className={cn('bg-status-accent-bg text-foreground font-semibold', size === 'h-9 w-9' ? 'text-xs' : 'text-sm', opportunity.company ? 'rounded-xl' : 'rounded-full')}>
         {opportunity.company ? initials : initialsOf(opportunity.createdBy?.displayName)}
       </AvatarFallback>
     </Avatar>
