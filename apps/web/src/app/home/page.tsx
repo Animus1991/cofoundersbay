@@ -232,7 +232,7 @@ function Home() {
           strip, the people rail and the feed on the left; what waits, the
           continue row and the steps on the right. The order utilities keep
           the phone's priority order in one DOM. */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* The greeting leads the brand card: one «Καλημέρα, …», the one-line
             purpose, the question field and three starting points (docs §131.2). */}
         <div className="min-w-0 lg:order-1 lg:col-span-2">
