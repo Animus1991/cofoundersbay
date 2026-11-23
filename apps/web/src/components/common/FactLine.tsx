@@ -27,7 +27,7 @@ export function FactLine({
     .map((item) => (typeof item === 'string' ? termDisplay(item) : item));
   if (!shown.length) return null;
   return (
-    <ul aria-label={label} className={cn('facts-dotted flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-muted-foreground', className)}>
+    <ul aria-label={label} className={cn('facts-dotted flex flex-wrap gap-x-2 gap-y-0.5 text-xs card-meta text-muted-foreground', className)}>
       {shown.map((item, i) => (
         <li key={i}>{item}</li>
       ))}

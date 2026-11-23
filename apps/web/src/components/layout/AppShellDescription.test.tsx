@@ -36,7 +36,8 @@ describe('the page lead folds into the help sheet', () => {
   it('prints under the title on the first visit, then writes the flag', async () => {
     render(<AppShell showHelp><p>body</p></AppShell>);
     const text = await screen.findByText('Equity, full-time, and contract roles posted by startups on the platform.');
-    expect(text.closest('[hidden]')).toBeNull();
+    // The reveal is a macrotask after mount (StrictMode-safe), not paint-time.
+    await waitFor(() => expect(text.closest('[hidden]')).toBeNull());
     await waitFor(() => expect(flag()).toBe('1'));
     // The lead stays for the rest of this visit — the flag only hides the next.
     expect(text.closest('[hidden]')).toBeNull();

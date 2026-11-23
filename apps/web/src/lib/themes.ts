@@ -1,4 +1,4 @@
-export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot' | 'terra';
+export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot' | 'terra' | 'playful';
 
 /**
  * Which class and `data-theme` each theme puts on <html>. One table for the
@@ -16,6 +16,7 @@ export const THEME_ROOT: Record<Exclude<ThemeName, 'system'>, { mode: 'light' | 
   minimal: { mode: 'light', dataTheme: 'minimal' },
   apricot: { mode: 'light', dataTheme: 'apricot' },
   terra: { mode: 'light', dataTheme: 'terra' },
+  playful: { mode: 'light', dataTheme: 'playful' },
 };
 
 export interface ThemeColors {
@@ -216,6 +217,28 @@ export const themes: Record<ThemeName, ThemeColors> = {
     input: '30 10% 92%',
     ring: '24 24.7% 42.5%',
   },
+  playful: {
+    // "Playful" — legacy inline fallback only; globals.css owns the live tokens.
+    background: '285 14% 96.4%',
+    foreground: '280 12% 18%',
+    card: '285 20% 98.8%',
+    cardForeground: '280 12% 18%',
+    popover: '0 0% 100%',
+    popoverForeground: '280 12% 18%',
+    primary: '260 60% 46%',
+    primaryForeground: '0 0% 100%',
+    secondary: '285 14% 93%',
+    secondaryForeground: '280 10% 20%',
+    muted: '285 14% 93%',
+    mutedForeground: '282 8% 37%',
+    accent: '285 16% 92.5%',
+    accentForeground: '280 10% 16%',
+    destructive: '350 40% 41.5%',
+    destructiveForeground: '0 0% 100%',
+    border: '285 14% 89%',
+    input: '285 14% 84%',
+    ring: '260 50% 48%',
+  },
   terra: {
     // "Terracotta" — legacy inline fallback only; globals.css owns the live tokens.
     background: '336 18% 95.8%',
@@ -288,6 +311,10 @@ export function applyTheme(themeName: ThemeName) {
       root.classList.add('light');
       root.setAttribute('data-theme', 'terra');
       break;
+    case 'playful':
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'playful');
+      break;
     case 'minimal':
       // Light-first: the `light` class supplies the base, and data-theme
       // carries both the palette and the component layer.
@@ -306,8 +333,10 @@ export function getStoredTheme(): ThemeName {
   const stored = localStorage.getItem('theme') as ThemeName;
   if (stored && themes[stored]) return stored;
 
-  // No saved choice: resolve to what the OS asks for, matching RoleTheme.
-  return getSystemTheme();
+  // No saved choice: the playful theme is the first impression (owner
+  // decision, 2026-11-23), matching THEME_BOOT in app/layout.tsx and
+  // RoleTheme's mount read.
+  return 'playful';
 }
 
 export function getSystemTheme(): 'dark' | 'light' {

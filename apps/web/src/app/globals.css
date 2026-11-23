@@ -407,6 +407,37 @@ html {
     color-scheme: light;
   }
 
+  /* ── "Playful" (id: playful) — the default for a visitor with no stored
+     theme (owner, 2026-11-23): the same light recipe as the other accent
+     themes, neutrals warmed a couple of chroma points toward the violet,
+     corners one step rounder than the base 14px (--radius 18px). The accent
+     and status overrides sit in the html[data-theme] locks below; every
+     text pair is measured by scripts/check-theme-contrast.py. ── */
+  [data-theme="playful"] {
+    --shadow-color: 285 25% 18%;
+    --shadow-strength: 1;
+    --background: 285 14% 96.4%;
+    --foreground: 280 12% 18%;
+    --card: 285 20% 98.8%;
+    --card-foreground: 280 12% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 280 12% 18%;
+    --secondary: 285 14% 93%;
+    --secondary-foreground: 280 10% 20%;
+    --muted: 285 14% 93%;
+    --muted-foreground: 282 8% 37%;
+    --accent: 285 16% 92.5%;            /* hover surface */
+    --accent-foreground: 280 10% 16%;
+    --destructive: 350 40% 41.5%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 350 44% 38%;
+    --border: 285 14% 89%;
+    --input: 285 14% 85%;
+    --radius: 18px;
+    --gradient-hero: linear-gradient(hsl(280 12% 14%), hsl(280 12% 14%));
+    color-scheme: light;
+  }
+
   .role-founder {
     --primary: 250 74% 63.9%;             /* white label, 4.62:1 */
     --primary-foreground: 0 0% 100%;
@@ -529,6 +560,15 @@ html {
     --accent: 336 18% 92.5%;
     --accent-foreground: 336 10% 18%;
     --ring: 336 27% 42%;
+  }
+  html[data-theme="playful"] {
+    --primary: 260 60% 46%;               /* violet, white label ~4.7:1 */
+    --primary-foreground: 0 0% 100%;
+    --primary-mid: 260 62% 56%;           /* tints only (/5../40) */
+    --primary-accessible: 260 55% 40%;    /* links, >=5:1 on a card */
+    --accent: 285 16% 92.5%;
+    --accent-foreground: 280 10% 16%;
+    --ring: 260 50% 48%;
   }
   /* ── "Light" (data-theme="studio") — the AI Studio prototype's look,
      adopted 2026-10-20 (docs §63). Warm stone neutrals (Tailwind's stone),
@@ -762,6 +802,42 @@ html {
     --chart-4: 55 42% 55%;    /* gold — a rose near 335 would read as this accent */
     --chart-5: 205 39% 65%;   /* blue */
     --chart-6: 120 28% 52%;   /* green */
+  }
+  /* Playful (violet 260): the tints run about 20% more saturated than the
+     calm band (bg S ~55 against ~45.5), the fg words keep the same >=5:1
+     band. Info moves from 232 to 218 so it stays a blue step apart from
+     the violet accent; the other hues keep their standard meaning. */
+  html[data-theme="playful"] {
+    --status-success-fg: 158 30.4% 34.5%;   /* >=5:1 on tint and card */
+    --status-success-bg: 158 55% 94.8%;
+    --status-success-border: 158 32% 86.5%;
+    --status-success-mark: 158 46% 56.75%;
+    --status-warning-fg: 40 29.8% 35.5%;
+    --status-warning-bg: 40 60% 94.8%;
+    --status-warning-border: 40 34% 86%;
+    --status-warning-mark: 40 48% 60%;
+    --status-danger-fg:  2 23.9% 44%;
+    --status-danger-bg:  2 55% 95.2%;
+    --status-danger-border: 2 32% 87%;
+    --status-danger-mark: 2 46% 74.75%;
+    --status-info-fg:    218 25.1% 41.75%;
+    --status-info-bg:    218 55% 95.2%;
+    --status-info-border: 218 32% 87%;
+    --status-info-mark:  218 46% 72%;
+    --status-accent-fg:  260 24.7% 40%;
+    --status-accent-bg:  262 52% 94.6%;
+    --status-accent-border: 262 30% 86%;
+    --status-accent-mark: 262 48% 72%;
+    --status-neutral-fg:     280 6% 40%;
+    --status-neutral-bg:     280 8% 94%;
+    --status-neutral-border: 280 6% 90%;
+    --status-neutral-mark:   280 10% 66%;
+
+    --chart-2: 165 42% 52%;   /* mint */
+    --chart-3: 30 55% 56%;    /* clay — violet 255 would read as this accent */
+    --chart-4: 335 40% 68%;   /* rose */
+    --chart-5: 205 45% 62%;   /* blue */
+    --chart-6: 95 32% 50%;    /* olive */
   }
 
   .dark,
@@ -1297,6 +1373,18 @@ html {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* The cast's quiet idle: a slow 5px lift and settle, staggered per figure by
+   the inline delay. Killed under prefers-reduced-motion and the minimal
+   theme (the named lists below and the [data-theme="minimal"] block). */
+@keyframes cfb-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+
+.cfb-bob {
+  animation: cfb-bob 6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -1341,6 +1429,7 @@ html {
   .animate-scale-in,
   .animate-bounce-subtle,
   .animate-pulse-glow,
+  .cfb-bob,
   .shimmer,
   .focus-ring-animated:focus-visible {
     animation: none !important;
@@ -2310,6 +2399,7 @@ html {
     .pt-5 { padding-top: calc(20px * var(--chrome-y)); }
     .pt-6 { padding-top: calc(24px * var(--chrome-y)); }
     .pt-8 { padding-top: calc(32px * var(--chrome-y)); }
+    .pt-10 { padding-top: calc(40px * var(--chrome-y)); }
 
     .pr-0 { padding-right: 0; }
     .pr-0\.5 { padding-right: 2px; }
@@ -2548,7 +2638,8 @@ html {
 
   .animate-bounce-subtle,
   .animate-pulse-slow,
-  .animate-spin-slow {
+  .animate-spin-slow,
+  .cfb-bob {
     animation: none;
   }
 
@@ -4413,6 +4504,7 @@ input[data-search-field][class~="border-input"]:focus-visible {
      .card-subtitle  the line under it, muted      13.044    14.00
      .card-body      sentences, values, figures    12.663    13.49
      meta            facts, dates, kinds (text-xs) 12.663    12.87
+     .card-meta      secondary facts               12.663     13.00 (from sm)
 
    The body sits a notch under the subtitle and the title, so a thesis never
    reads as loud as the byline and a figure inside a round card ("€375K
@@ -4469,6 +4561,18 @@ h2.card-title {
   #main-content [data-rail-content] [data-card] h3.page-section {
     font-size: 0.86598840rem;
     line-height: 1.299375rem;
+  }
+}
+/* .card-meta — secondary facts (dates, kinds, places) one step under the
+   body: a flat 13px from sm up, so the title leads (owner, 2026-11-23).
+   Nothing below 640px — a line keeps the phone size of the class it
+   already carried (text-xs → the 12.663px phone step). Plain px, not rem,
+   so the step holds on the 82% desktop root the same as on tablet. */
+@media (min-width: 640px) {
+  .card-meta,
+  #main-content .card-meta {
+    font-size: 13px;
+    line-height: 1.45;
   }
 }
 @media (min-width: 1024px) {

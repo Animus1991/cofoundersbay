@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise, Flower2, Flame } from 'lucide-react';
+import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise, Flower2, Flame, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -81,6 +81,14 @@ export const THEME_OPTIONS = [
     description: 'Soft mauve with a dusty rose',
     icon: Flame,
     swatch: ['#f5eff2', '#985d75', '#7b475b'],
+  },
+  {
+    // The default for a visitor with no stored choice (lib/themes).
+    name: 'playful' as ThemeName,
+    label: 'Playful',
+    description: 'Warm lilac, rounder corners',
+    icon: PartyPopper,
+    swatch: ['#f4f1f6', '#6a3fd4', '#efeafa'],
   },
 ];
 

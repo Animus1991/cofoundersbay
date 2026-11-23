@@ -386,7 +386,7 @@ export default function ProviderDashboard() {
           <div className="space-y-6 lg:col-span-2">
             {/* Only what waits on the provider: settled inquiries are projects
                 below, or closed, and a Reply beside them offered nothing. */}
-            <SectionCard title="Waiting on you" titleEl="Σας περιμένουν" icon={MessageSquare} action={{ href: '/provider/inquiries', label: 'All inquiries', labelEl: 'Όλα τα αιτήματα' }} contentClassName="card-rows">
+            <SectionCard title="Waiting on you" titleEl="Σας περιμένουν" icon={MessageSquare} iconTint="warning" action={{ href: '/provider/inquiries', label: 'All inquiries', labelEl: 'Όλα τα αιτήματα' }} contentClassName="card-rows">
               {inquiriesLoading && [0, 1].map((i) => <Skeleton key={i} className="h-16" />)}
               {/* The client's circle, name over the service, the state and
                   when at the right; the message and Reply start on the
@@ -425,7 +425,7 @@ export default function ProviderDashboard() {
               )}
             </SectionCard>
 
-            <SectionCard title="Projects" titleEl="Έργα" icon={FolderKanban} action={{ href: '/provider/projects', label: 'All projects', labelEl: 'Όλα τα έργα' }} contentClassName="card-rows">
+            <SectionCard title="Projects" titleEl="Έργα" icon={FolderKanban} iconTint="success" action={{ href: '/provider/projects', label: 'All projects', labelEl: 'Όλα τα έργα' }} contentClassName="card-rows">
               {projects.slice(0, 5).map((project) => (
                 <RowHead
                   key={project.id}
@@ -507,7 +507,7 @@ export default function ProviderDashboard() {
               ]}
             />
 
-            <SectionCard title="Recent reviews" titleEl="Πρόσφατες αξιολογήσεις" icon={Star} action={{ href: '/provider/reviews', label: 'All', labelEl: 'Όλες' }} contentClassName="card-rows">
+            <SectionCard title="Recent reviews" titleEl="Πρόσφατες αξιολογήσεις" icon={Star} iconTint="accent" action={{ href: '/provider/reviews', label: 'All', labelEl: 'Όλες' }} contentClassName="card-rows">
               {reviews.map((review) => (
                 <figure key={review.id} className="space-y-1.5">
                   <figcaption>

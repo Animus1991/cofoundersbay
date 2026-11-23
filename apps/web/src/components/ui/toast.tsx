@@ -9,6 +9,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { toastEl } from '@/lib/i18n/strings-toasts';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CfbFigure, type CfbFigureId } from '@/components/illustrations/CfbCast';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -18,6 +19,9 @@ type Toast = {
   title: string;
   description?: string;
   duration?: number;
+  /** A cast figure at the left instead of the status mark — the celebration
+     toasts (connected, saved, sent, going), not the everyday notes. */
+  figure?: CfbFigureId;
   action?: {
     label: string;
     onClick: () => void;
@@ -25,6 +29,7 @@ type Toast = {
 };
 
 type ToastOptions = {
+  figure?: CfbFigureId;
   action?: {
     label: string;
     onClick: () => void;
@@ -123,7 +128,13 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
         toastStyles[toast.type]
       )}
     >
-      <Icon className="icon-md flex-shrink-0 mt-0.5" aria-hidden="true" />
+      {toast.figure ? (
+        <span data-keep-icon="" className="flex h-12 w-11 shrink-0 items-end justify-center" aria-hidden="true">
+          <CfbFigure id={toast.figure} className="h-12 w-11" />
+        </span>
+      ) : (
+        <Icon className="icon-md flex-shrink-0 mt-0.5" aria-hidden="true" />
+      )}
       <div className="min-w-0 flex-1 space-y-1">
         <div role={urgent ? 'alert' : 'status'} aria-live={urgent ? 'assertive' : 'polite'} aria-atomic="true" className="space-y-1 break-words">
           {/* Call sites pass English; the catalog supplies the Greek, so a

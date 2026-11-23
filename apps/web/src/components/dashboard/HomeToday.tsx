@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { SectionSticker, glyphStickerTint } from '@/components/dashboard/SectionSticker';
 import { useLiveNotices, type LiveNotice } from '@/components/notifications/LiveNotices';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -94,12 +95,15 @@ export function HomeToday() {
   return (
     <Card data-home-today="">
       <CardContent className="space-y-2">
-        <h2 className="card-title"><BilingualText en="Today" el="Σήμερα" compact /></h2>
+        <div className="flex items-center gap-2">
+          <SectionSticker glyph="update" tint="info" />
+          <h2 className="card-title"><BilingualText en="Today" el="Σήμερα" compact /></h2>
+        </div>
         {since ? <p className="text-xs text-muted-foreground" data-home-since=""><BilingualText en={since.en} el={since.el} compact wrap /></p> : null}
         <ul className="divide-y divide-border">
           {rows.map((row) => (
             <li key={row.key} data-row="" className="flex items-center gap-3 py-2">
-              <span data-keep-icon="" className="shrink-0 text-muted-foreground" aria-hidden="true"><CfbGlyph name={row.glyph} className="icon-sm" /></span>
+              <SectionSticker glyph={row.glyph} tint={glyphStickerTint(row.glyph)} />
               <Link href={row.href} className="min-w-0 flex-1 text-sm text-foreground hover:text-primary-accessible">
                 <BilingualText en={row.en} el={row.el} compact wrap />
                 {row.count ? <span className="ml-1.5 tabular-nums text-muted-foreground">{row.count}</span> : null}

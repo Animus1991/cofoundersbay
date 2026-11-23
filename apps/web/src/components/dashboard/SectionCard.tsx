@@ -7,6 +7,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { Counter } from '@/components/ui/counter';
+import { SectionSticker, type StickerTint } from '@/components/dashboard/SectionSticker';
 
 /**
  * A home-screen section: a bilingual title, at most one way out to the page
@@ -23,6 +24,7 @@ export function SectionCard({
   titleEl,
   count,
   icon: Icon,
+  iconTint,
   action,
   children,
   className,
@@ -33,6 +35,8 @@ export function SectionCard({
   /** A count beside the title, drawn as a Counter (not "(2)" in the words). */
   count?: number;
   icon?: ElementType;
+  /** A tinted round well for the icon (the section sticker); bare glyph when unset. */
+  iconTint?: StickerTint;
   action?: { href: string; label: string; labelEl?: string };
   children: ReactNode;
   className?: string;
@@ -47,7 +51,13 @@ export function SectionCard({
             (/dashboard/provider at 1440, "Recent reviews"). */}
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
-            {Icon ? <Icon className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" /> : null}
+            {Icon ? (
+              iconTint ? (
+                <SectionSticker icon={Icon} tint={iconTint} />
+              ) : (
+                <Icon className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+              )
+            ) : null}
             <BilingualText en={title} el={titleEl} />
             {count !== undefined ? <Counter value={count} className="ml-0" /> : null}
           </CardTitle>

@@ -246,7 +246,7 @@ export function EventCard({
             </Avatar>
             <div>
               <p className="text-sm font-medium text-foreground">{event.hostName}</p>
-              <p className="text-xs text-muted-foreground">{event.hostRole}</p>
+              <p className="text-xs card-meta text-muted-foreground">{event.hostRole}</p>
             </div>
           </div>
           
