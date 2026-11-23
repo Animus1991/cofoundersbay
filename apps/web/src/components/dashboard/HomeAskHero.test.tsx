@@ -185,3 +185,17 @@ describe('HomeAskHero', () => {
     }
   });
 });
+
+describe('HomeAskHero hero card (docs §131.2)', () => {
+  it('keeps the same box and submit inside the brand card, with the figure and three intents', () => {
+    render(<HomeAskHero role="founder" name="Alex" hero purposeEn="One line." figure={<span data-testid="hero-figure" />} />);
+    expect(screen.getByTestId('hero-figure')).toBeTruthy();
+    expect(screen.getByText(/, Alex\.$/)).toBeTruthy();
+    expect(screen.getByText('One line.')).toBeTruthy();
+    const intents = screen.getByRole('group', { name: /Starting points/ });
+    expect(within(intents).getAllByRole('button')).toHaveLength(3);
+    fireEvent.change(box(), { target: { value: 'Who should I talk to first?' } });
+    fireEvent.keyDown(box(), { key: 'Enter' });
+    expect(state.ask).toHaveBeenCalledWith('Who should I talk to first?');
+  });
+});

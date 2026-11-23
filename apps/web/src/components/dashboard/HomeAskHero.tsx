@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, KeyboardEvent, useEffect, useId, useState } from 'react';
+import { FormEvent, KeyboardEvent, useEffect, useId, useState, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { ArrowUp, Check, ChevronDown } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -88,7 +88,7 @@ export function partOfDay(hour: number): Part {
  * - Under them, "Your pages": what the reader pinned and opens most, each
  *   with its `G` number (`YourPagesRow`, docs §107).
  */
-export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true, plain = false, greeting = true }: { /** Off where the page's own title already greets the reader (/home). */ greeting?: boolean; role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean; /** Only the question box: the shortcuts live in the page's tools (docs §116). */ plain?: boolean }) {
+export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true, plain = false, greeting = true, hero = false, figure, purposeEn, purposeEl }: { /** Off where the page's own title already greets the reader (/home). */ greeting?: boolean; role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean; /** Only the question box: the shortcuts live in the page's tools (docs §116). */ plain?: boolean; /** The Parea method: a solid brand card — greeting, one line, the box, three intents, the figure (docs §131.2). */ hero?: boolean; /** The role's figure at the card's right (above the text on a phone). */ figure?: ReactNode; /** One short purpose line under the greeting in the hero card. */ purposeEn?: string; purposeEl?: string }) {
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
   const run = useHomeAskRun();
@@ -147,23 +147,66 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
     run(action);
   }
 
-  return (
-    <section aria-labelledby={greeting ? `${boxId}-title` : undefined} aria-label={greeting ? undefined : bilingualAria('Ask the assistant', 'Ρωτήστε τον βοηθό')} className="space-y-3" data-home-ask={greeting ? 'greeting' : 'box'} data-testid={`home-${role}-assistant`}>
-      {/* The greeting as it was before the box arrived: one quiet line at
-          body size, not a heading (the page title is the heading). */}
-      <p id={`${boxId}-title`} hidden={!greeting} className="break-words text-sm text-muted-foreground" data-testid="home-greeting">
-        {/* Without a name the greeting is just the greeting: the homes used
-            to fill in their role word, so a Greek reader met "Καλημέρα,
-            Founder." (docs §70). */}
+  const intentChips = hero ? (
+    <div className="flex flex-wrap gap-2" role="group" aria-label={bilingualAria('Starting points', 'Αφετηρίες')}>
+      {config.actions.slice(0, 3).map((action) => (
+        <button
+          key={action.id}
+          type="button"
+          onClick={() => runCommand(action)}
+          className="focus-ring inline-flex min-h-9 items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-white/25"
+        >
+          <BilingualText en={action.en} el={action.el} compact />
+        </button>
+      ))}
+    </div>
+  ) : null;
+
+  const heroBody = (
+    <>
+      {/* The greeting leads the card as a real heading now. */}
+      <p id={`${boxId}-title`} hidden={!greeting} className="break-words text-2xl font-semibold text-primary-foreground sm:text-[1.75rem]" data-testid="home-greeting">
         <BilingualText
-          en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.${lead ? ` ${lead.en}` : ''}`}
-          el={`${hello.el}${name?.trim() ? `, ${name.trim()}` : ''}.${lead ? ` ${lead.el}` : ''}`}
+          en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.`}
+          el={`${hello.el}${name?.trim() ? `, ${name.trim()}` : ''}.`}
           stacked
           wrap
           secondaryFrom="lg"
         />
       </p>
+      {purposeEn ? (
+        <p className="break-words text-sm text-primary-foreground/85" data-testid="home-hero-purpose">
+          <BilingualText en={purposeEn} el={purposeEl ?? purposeEn} compact wrap />
+        </p>
+      ) : null}
+    </>
+  );
 
+  return (
+    <section
+      aria-labelledby={greeting ? `${boxId}-title` : undefined}
+      aria-label={greeting ? undefined : bilingualAria('Ask the assistant', 'Ρωτήστε τον βοηθό')}
+      className={hero ? 'rounded-3xl bg-primary p-4 text-primary-foreground sm:p-7' : 'space-y-3'}
+      data-home-ask={greeting ? 'greeting' : 'box'}
+      data-hero={hero || undefined}
+      data-testid={`home-${role}-assistant`}
+    >
+      <div className={hero ? 'grid items-center gap-5 sm:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
+        <div className={hero ? 'min-w-0 space-y-3 max-sm:order-2' : 'space-y-3'}>
+          {hero ? heroBody : (
+            <p id={`${boxId}-title`} hidden={!greeting} className="break-words text-sm text-muted-foreground" data-testid="home-greeting">
+              {/* Without a name the greeting is just the greeting: the homes used
+                  to fill in their role word, so a Greek reader met "Καλημέρα,
+                  Founder." (docs §70). */}
+              <BilingualText
+                en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.${lead ? ` ${lead.en}` : ''}`}
+                el={`${hello.el}${name?.trim() ? `, ${name.trim()}` : ''}.${lead ? ` ${lead.el}` : ''}`}
+                stacked
+                wrap
+                secondaryFrom="lg"
+              />
+            </p>
+          )}
       <form
         data-testid="home-ask-form"
         onSubmit={submit}
@@ -258,10 +301,19 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
         </div>
       </form>
 
-      {plain ? null : <HomeActionShelf actions={config.actions} now={showWaiting ? now : []} run={run} />}
+      {hero ? intentChips : (
+        <>
+          {plain ? null : <HomeActionShelf actions={config.actions} now={showWaiting ? now : []} run={run} />}
 
-      {/* The reader's own pages: pinned, then the most opened (docs §107). */}
-      {plain ? null : <YourPagesRow />}
+          {/* The reader's own pages: pinned, then the most opened (docs §107). */}
+          {plain ? null : <YourPagesRow />}
+        </>
+      )}
+        </div>
+        {hero && figure ? (
+          <div data-keep-icon="" className="max-sm:order-1 max-sm:flex max-sm:justify-center" aria-hidden="true">{figure}</div>
+        ) : null}
+      </div>
     </section>
   );
 }

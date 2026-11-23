@@ -31,7 +31,7 @@ export function PhoneStickyAction({ watchId, label, children }: {
       role="region"
       aria-label={bilingualAria(label.en, label.el)}
       data-phone-sticky=""
-      className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-30 border-t border-border bg-card/95 p-3 backdrop-blur-md sm:hidden"
+      className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-30 border-t border-border bg-card/95 p-3 backdrop-blur-md sm:hidden"
     >
       {children}
     </div>

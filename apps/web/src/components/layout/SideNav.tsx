@@ -21,15 +21,37 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { commonEn, commonEl } from '@/lib/i18n/strings-common';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
-import { CfbGlyph, NavIcon, sectionNavGlyphs } from '@/components/icons/CfbGlyph';
+import { NavIcon, sectionNavGlyphs } from '@/components/icons/CfbGlyph';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { memberRole } from '@/lib/role-home';
 import { useRoleOptional } from '@/contexts/RoleContext';
-import { NotificationsBell } from './NotificationsBell';
-import { UserMenu } from './UserMenu';
 import { DemoExitInSidebar } from '@/components/common/OfflineIndicator';
-import { Button } from '@/components/ui/button';
+
+/* The group's tint on every nav icon well: work is the accent, overview and
+   people read in the info wash, money in the success one, talking in the
+   warning one, and admin stays quiet grey (docs §131.1). */
+const NAV_SECTION_TINT: Record<string, string> = {
+  Build: 'bg-status-accent-bg text-status-accent',
+  Work: 'bg-status-accent-bg text-status-accent',
+  Sessions: 'bg-status-accent-bg text-status-accent',
+  Services: 'bg-status-accent-bg text-status-accent',
+  Programs: 'bg-status-accent-bg text-status-accent',
+  Dashboard: 'bg-status-info-bg text-status-info',
+  Discover: 'bg-status-info-bg text-status-info',
+  Explore: 'bg-status-info-bg text-status-info',
+  Profile: 'bg-status-info-bg text-status-info',
+  Reputation: 'bg-status-info-bg text-status-info',
+  Fundraise: 'bg-status-success-bg text-status-success',
+  'Deal Flow': 'bg-status-success-bg text-status-success',
+  Portfolio: 'bg-status-success-bg text-status-success',
+  Communicate: 'bg-status-warning-bg text-status-warning',
+  Community: 'bg-status-warning-bg text-status-warning',
+  Admin: 'bg-muted text-muted-foreground',
+  Account: 'bg-muted text-muted-foreground',
+};
+const navSectionTint = (section: string): string =>
+  NAV_SECTION_TINT[section] ?? 'bg-status-accent-bg text-status-accent';
 
 export function SideNav() {
   const pathname = usePathname();
@@ -183,7 +205,7 @@ export function SideNav() {
     <TooltipProvider delayDuration={400}>
       <aside
         className={cn(
-          'fixed left-0 top-0 z-40 flex h-full flex-col overflow-x-visible border-r border-border bg-card/98 backdrop-blur-sm',
+          'fixed left-0 top-0 z-40 flex h-full flex-col overflow-x-visible border-r border-border/60 bg-muted/40 backdrop-blur-sm',
           'transition-[width] duration-200 ease-out will-change-[width]',
           // Rail from `sm`, drawer from `lg`. Width is pure CSS so the shell is
           // correct on first paint; only the contents wait for `isRail`.
@@ -279,32 +301,20 @@ export function SideNav() {
                           : undefined
                       }
                       className={cn(
-                        'group relative flex items-center rounded-lg text-sm transition-all duration-150 min-w-0 overflow-hidden',
+                        'group relative flex items-center rounded-xl text-sm transition-all duration-150 min-w-0 overflow-hidden',
                         showLabels ? 'gap-2 px-2 py-1.5' : cn(railSlot, 'justify-center p-0'),
                         active
-                          ? 'bg-primary/8 text-foreground font-medium'
+                          ? 'bg-primary/10 text-foreground font-semibold'
                           : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
                       )}
                     >
-                      {/* Active left bar */}
-                      {active && showLabels && (
-                        <span
-                          data-active-bar=""
-                          className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary"
-                          aria-hidden="true"
-                        />
-                      )}
-
-                      {/* Icon + badge (collapsed) */}
-                      <span className="relative flex-shrink-0">
+                      {/* The group's tinted well carries the icon (docs §131.1). */}
+                      <span className={cn('relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg', navSectionTint(section))}>
                         <NavIcon
                           href={href}
                           name={glyphs[sectionIndex]?.[linkIndex] ?? null}
                           fallback={FallbackIcon}
-                          className={cn(
-                            chromeIcon,
-                            active ? 'text-foreground' : 'text-muted-foreground/70 group-hover:text-foreground',
-                          )}
+                          className={chromeIcon}
                         />
                         {badge > 0 && !showLabels && (
                           <span
@@ -368,35 +378,13 @@ export function SideNav() {
           ))}
         </nav>
 
-        {/* Search + bell stay in the rail; command/locale/theme live in UserMenu.
-            The demo's Exit sits in this row too (it floated over page content
-            at the sidebar's edge); data-sidenav-footer tells the floating one
-            to stand aside. */}
-        <div data-sidenav-footer="" className={cn('flex-shrink-0 border-t border-border', showLabels ? 'space-y-1 p-2' : 'flex flex-col items-center gap-0.5 px-0 py-1.5')}>
-          <div className={cn(showLabels ? 'flex items-center gap-0.5' : 'flex flex-col items-center gap-0.5')}>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className={cn('shrink-0 text-muted-foreground', rail ? railSlot : 'h-8 w-8')}
-              onClick={() => router.push('/search')}
-              aria-label={bilingualAria('Search', 'Αναζήτηση')}
-              title={bilingualAria(
-                NAV_LINK_DESCRIPTIONS['/search'],
-                getNavDescriptionEl('/search'),
-              )}
-            >
-              <CfbGlyph name="search" className={chromeIcon} />
-            </Button>
-            <NotificationsBell className={rail ? railSlot : 'h-8 w-8'} />
-            {mounted ? <DemoExitInSidebar rail={rail} /> : null}
+        {/* Search, bell and the account menu moved to the top bar (docs
+            §131.1); the demo's Exit is the footer's only remaining guest. */}
+        {mounted ? (
+          <div data-sidenav-footer="" className={cn('flex-shrink-0 border-t border-border', showLabels ? 'p-2' : 'flex flex-col items-center px-0 py-1.5')}>
+            <DemoExitInSidebar rail={rail} />
           </div>
-          {mounted ? (
-            <UserMenu variant="sidebar" rail={rail} />
-          ) : (
-            <div className={cn('rounded-lg bg-secondary/40', showLabels ? 'h-10' : 'mx-auto h-9 w-9')} />
-          )}
-        </div>
+        ) : null}
 
         {mounted && !isRail && (
           <button
