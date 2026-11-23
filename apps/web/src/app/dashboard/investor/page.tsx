@@ -42,6 +42,10 @@ import { formatCompactMoney } from '@/lib/i18n/format';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { dealEventTitleEl } from '@/lib/i18n/deal-events';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { YourPagesRow } from '@/components/dashboard/YourPages';
+import { HomeShortcuts } from '@/components/dashboard/HomeShortcuts';
+
 import { HomeFold } from '@/components/dashboard/HomeFold';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
@@ -267,13 +271,33 @@ export default function InvestorDashboard() {
     );
   }
 
+
+  /* The shortcuts and the reader's pages live in the page's tools, one
+     gesture away — the question box is alone on the page, as on the
+     founder's home (docs §116/§125). */
+  const rail: PageRailSection[] = [
+    {
+      id: 'pages',
+      glyph: 'bookmark',
+      labelEn: 'Your pages',
+      labelEl: 'Οι σελίδες σας',
+      content: <YourPagesRow />,
+    },
+    {
+      id: 'shortcuts',
+      glyph: 'spark',
+      labelEn: 'Quick actions',
+      labelEl: 'Γρήγορες ενέργειες',
+      content: <HomeShortcuts role="investor" pages={false} />,
+    },
+  ];
   return (
-    <AppShell askAi={false} showHelp
+    <AppShell askAi={false} showHelp rail={rail}
       description="Pipeline health, deal flow, and portfolio performance — in one view."
       descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
     >
       <div className="space-y-6">
-        <HomeAskHero role="investor" showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
+        <HomeAskHero role="investor" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
         <HomeToday />
 
         {!dealsLoading && active[0] ? (
