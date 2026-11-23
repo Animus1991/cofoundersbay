@@ -637,14 +637,14 @@ export default function ProfilePage() {
             Link") and ran 315px longer than the profile it sat next to. They
             are the page rail's sections now: one place for what supports the
             profile, and the profile itself gets the width. */}
-        {/* The person in three labelled lines — who, what they build, what
-            they look for — one flat tinted block before the detail cards;
-            each line hides when its field is empty (docs §130.6). */}
+        {/* What they build and what they look for, in two labelled lines —
+            one flat tinted block before the detail cards; the headline is
+            already the hero's and the bio keeps its card, so neither repeats
+            here; each line hides when its field is empty (docs §130.6). */}
         {(() => {
           const words = (v: unknown): string[] =>
             (Array.isArray(v) ? v : [v]).filter((x): x is string => typeof x === 'string' && x.trim() !== '');
           const lines: { en: string; el: string; text: string }[] = [
-            { en: 'Who I am', el: 'Ποιος είμαι', text: profile.bio || profile.headline || '' },
             { en: 'What I am building', el: 'Τι χτίζω', text: words(rolePayload.startupName ?? rolePayload.companyName ?? rolePayload.projectName).join(', ') || (typeof rolePayload.stage === 'string' ? (statusEl(rolePayload.stage) ?? rolePayload.stage) : '') },
             { en: 'What I am looking for', el: 'Τι αναζητώ', text: words(rolePayload.lookingFor ?? rolePayload.rolesSought).map((v) => statusEl(v) ?? v).join(' · ') },
           ].filter((line) => line.text.trim() !== '');
