@@ -1156,6 +1156,7 @@ export default function MatchesPage() {
   return (
     <AppShell
       rail={rail}
+      titleSticker={{ glyph: 'matches', tint: 'accent' }}
       title={matchesEn('page_title')}
       titleEl={matchesEl('page_title')}
       description={matchesEn('page_description')}

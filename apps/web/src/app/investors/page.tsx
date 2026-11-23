@@ -278,7 +278,7 @@ export default function InvestorsPage() {
   ];
 
   return (
-    <AppShell showHelp rail={rail}>
+    <AppShell showHelp rail={rail} titleSticker={{ glyph: 'scout', tint: 'success' }}>
       <div className="space-y-6 pb-10">
         {showDemoData && (
           <SampleDataNotice

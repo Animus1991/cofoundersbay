@@ -552,6 +552,7 @@ export default function ProfilePage() {
   return (
     <AppShell
       rail={rail}
+      titleSticker={{ glyph: 'profile', tint: 'primary' }}
     >
       <div className="space-y-6 pb-10">
         {/* The top card: who, how verified, what they do, where, what they
