@@ -31,6 +31,7 @@ import {
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { cn, initialsOf, relativeTimeLabel } from '@/lib/utils';
+import { roleTone } from '@/lib/role-tone';
 import { useToast } from '@/components/ui/toast';
 import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { FactLine } from '@/components/common/FactLine';
@@ -222,7 +223,7 @@ function ProfileCardInner({
       <Card className={cn('group hover:border-primary/30 transition-colors', className)}>
         <CardContent>
           <CardHead
-            mark={profileLink('', 'bg-primary/20 text-primary-accessible text-sm font-semibold')}
+            mark={profileLink('', cn('text-sm font-semibold', roleTone(profile.role)))}
             title={nameWithRole}
             subtitle={profile.headline ? <span className="line-clamp-1">{profile.headline}</span> : undefined}
             asideStays
@@ -259,7 +260,7 @@ function ProfileCardInner({
 
         <CardContent className="relative space-y-3">
           <CardHead
-            mark={profileLink('ring-2 ring-border/40 group-hover:ring-primary/40 transition-all', 'bg-primary/20 text-primary-accessible font-semibold')}
+            mark={profileLink('ring-2 ring-border/40 group-hover:ring-primary/40 transition-all', cn('font-semibold', roleTone(profile.role)))}
             title={(
               <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
                 <PersonHovercard userId={profile.userId}><Link href={`/profiles/${profile.userId}`} className="person-name transition-colors hover:text-primary-accessible">{profile.displayName}</Link></PersonHovercard>

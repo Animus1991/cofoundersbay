@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { bilingualAria } from '@/lib/i18n/format';
 import { pressableProps } from '@/lib/pressable';
 import { cn, initialsOf } from '@/lib/utils';
+import { roleTone } from '@/lib/role-tone';
 
 const PHOTO = { md: 'h-14 w-14', lg: 'h-16 w-16', xl: 'h-20 w-20' } as const;
 
@@ -103,7 +104,7 @@ export function PersonCard({
             <Link href={profile} onClick={onProfileOpen} tabIndex={-1} aria-hidden="true" className="relative block rounded-full">
               <Avatar className={cn(PHOTO[photo], 'border border-border')}>
                 <AvatarImage src={avatarUrl || undefined} alt="" />
-                <AvatarFallback className="bg-muted text-sm font-semibold text-foreground">{initialsOf(name)}</AvatarFallback>
+                <AvatarFallback className={cn('text-sm font-semibold', roleTone(role))}>{initialsOf(name)}</AvatarFallback>
               </Avatar>
               {photoMark}
             </Link>

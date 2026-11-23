@@ -40,6 +40,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { matchesEn, matchesEl } from '@/lib/i18n/strings-matches';
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
+import { roleTone } from '@/lib/role-tone';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import type { ProfileCardData } from '@/components/discover/ProfileCard';
 import { qk, queryKeys } from '@/lib/query-keys';
@@ -479,7 +480,7 @@ function MatchPreviewPanel({
             mark={(
               <Avatar className="h-10 w-10 border border-border">
                 <AvatarImage src={hit.avatarUrl ?? undefined} alt="" />
-                <AvatarFallback className="bg-muted text-sm font-semibold">
+                <AvatarFallback className={cn('text-sm font-semibold', roleTone(hit.role))}>
                   {hit.displayName.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
