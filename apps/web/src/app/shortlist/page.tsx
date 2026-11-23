@@ -8,7 +8,6 @@ import {
   ArrowUpDown,
   Ban,
   Bookmark,
-  BookmarkX,
   Building2,
   Check,
   CheckCircle2,
@@ -49,6 +48,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn, initialsOf } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { NetworkTabs } from '@/components/network/NetworkTabs';
 import { shortlistEn, shortlistEl } from '@/lib/i18n/strings-shortlist';
 import { formatDate } from '@/lib/i18n/format';
@@ -630,30 +630,22 @@ export default function ShortlistPage() {
             {Array.from({ length: 4 }).map((_, i) => <ShortlistCardSkeleton key={i} grid={viewMode === 'grid'} />)}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border bg-card/50 py-16 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-              <BookmarkX className="h-7 w-7 text-primary-accessible" />
-            </div>
-            <div>
-              <p className="font-medium text-foreground">
-                {rawItems.length === 0
-                  ? <BilingualText en="No saved profiles yet" el="Δεν υπάρχουν αποθηκευμένα προφίλ ακόμα" />
-                  : <BilingualText en="No profiles match" el="Κανένα προφίλ δεν ταιριάζει" />}
-              </p>
-              {(rawItems.length === 0 || roleFilter !== 'all' || searchQuery.trim()) && (
-                <p className="card-body mt-1 max-w-prose text-muted-foreground">
-                  {rawItems.length === 0
-                    ? <BilingualText en="Save profiles from Matches or Members to revisit them here." el="Αποθηκεύστε προφίλ από τις Αντιστοιχίσεις ή τα Μέλη για να τα βρίσκετε εδώ." wrap />
-                    : <BilingualText
-                        en={`Nothing matched ${[searchQuery.trim() ? `“${searchQuery.trim()}”` : null, roleFilter !== 'all' ? 'the role filter in the side panel' : null].filter(Boolean).join(' and ')}.`}
-                        el={`Τίποτα δεν ταιριάζει με ${[searchQuery.trim() ? `«${searchQuery.trim()}»` : null, roleFilter !== 'all' ? 'το φίλτρο ρόλου στο πλευρικό πάνελ' : null].filter(Boolean).join(' και ')}.`}
-                        wrap
-                      />}
-                </p>
-              )}
-            </div>
-            {rawItems.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-2">
+          <EmptyState
+            illustration={rawItems.length === 0 ? 'default' : 'search'}
+            title={rawItems.length === 0
+              ? <BilingualText en="No saved profiles yet" el="Δεν υπάρχουν αποθηκευμένα προφίλ ακόμα" />
+              : <BilingualText en="No profiles match" el="Κανένα προφίλ δεν ταιριάζει" />}
+            description={(rawItems.length === 0 || roleFilter !== 'all' || searchQuery.trim()) ? (
+              rawItems.length === 0
+                ? <BilingualText en="Save profiles from Matches or Members to revisit them here." el="Αποθηκεύστε προφίλ από τις Αντιστοιχίσεις ή τα Μέλη για να τα βρίσκετε εδώ." wrap />
+                : <BilingualText
+                    en={`Nothing matched ${[searchQuery.trim() ? `“${searchQuery.trim()}”` : null, roleFilter !== 'all' ? 'the role filter in the side panel' : null].filter(Boolean).join(' and ')}.`}
+                    el={`Τίποτα δεν ταιριάζει με ${[searchQuery.trim() ? `«${searchQuery.trim()}»` : null, roleFilter !== 'all' ? 'το φίλτρο ρόλου στο πλευρικό πάνελ' : null].filter(Boolean).join(' και ')}.`}
+                    wrap
+                  />
+            ) : undefined}
+            action={rawItems.length > 0 ? (
+              <>
                 {roleFilter !== 'all' && (
                   <Button size="sm" variant="secondary" onClick={() => openRailSection('filters')}>
                     <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
@@ -664,10 +656,9 @@ export default function ShortlistPage() {
                     <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
                   </Button>
                 )}
-              </div>
-            )}
-            {rawItems.length === 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-2">
+              </>
+            ) : (
+              <>
                 <Button size="sm" className="gap-1.5" asChild>
                   <Link href="/matches"><BilingualText en={shortlistEn('browse_matches')} el={shortlistEl('browse_matches')} compact /></Link>
                 </Button>
@@ -675,9 +666,9 @@ export default function ShortlistPage() {
                   <Sparkles className="h-3.5 w-3.5 text-status-accent" aria-hidden="true" />
                   <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />
                 </Button>
-              </div>
+              </>
             )}
-          </div>
+          />
         ) : (
           <>
             <p className="text-xs text-muted-foreground">

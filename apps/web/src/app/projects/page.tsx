@@ -35,6 +35,8 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
+import type { IllustrationType } from '@/components/common/EmptyIllustration';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useToast } from '@/components/ui/toast';
@@ -298,37 +300,6 @@ function ProjectCard({
   );
 }
 
-function EmptyState({
-  glyph,
-  titleEn,
-  titleEl,
-  hintEn,
-  hintEl,
-  action,
-}: {
-  glyph: CfbGlyphName;
-  titleEn: string;
-  titleEl: string;
-  hintEn: string;
-  hintEl: string;
-  action: React.ReactNode;
-}) {
-  return (
-    <Card className="border-dashed">
-      <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-        <CfbGlyph name={glyph} className="mb-4 icon-lg text-muted-foreground/50" />
-        <h3 className="page-section mb-1 font-semibold text-foreground">
-          <BilingualText en={titleEn} el={titleEl} />
-        </h3>
-        <p className="mb-4 max-w-sm text-sm text-muted-foreground">
-          <BilingualText en={hintEn} el={hintEl} />
-        </p>
-        {action}
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function ProjectsPage() {
   const t = useProjectPrimaryText();
   const { open: openAskAi } = usePopupChat();
@@ -427,16 +398,14 @@ export default function ProjectsPage() {
     setIndustryFilter('all');
   }
 
-  function renderList(items: DemoProject[], empty: { glyph: CfbGlyphName; title: 'empty_discover_title' | 'empty_mine_title' | 'empty_joined_title' | 'empty_starred_title'; hint: 'empty_discover_hint' | 'empty_mine_hint' | 'empty_joined_hint' | 'empty_starred_hint'; action: React.ReactNode }) {
+  function renderList(items: DemoProject[], empty: { illustration: IllustrationType; title: 'empty_discover_title' | 'empty_mine_title' | 'empty_joined_title' | 'empty_starred_title'; hint: 'empty_discover_hint' | 'empty_mine_hint' | 'empty_joined_hint' | 'empty_starred_hint'; action: React.ReactNode }) {
     if (items.length === 0) {
       const filteredEmpty = hasActiveFilters;
       return (
         <EmptyState
-          glyph={empty.glyph}
-          titleEn={projectEn(filteredEmpty ? 'empty_filter_title' : empty.title)}
-          titleEl={projectEl(filteredEmpty ? 'empty_filter_title' : empty.title)}
-          hintEn={projectEn(filteredEmpty ? 'empty_filter_hint' : empty.hint)}
-          hintEl={projectEl(filteredEmpty ? 'empty_filter_hint' : empty.hint)}
+          illustration={filteredEmpty ? 'search' : empty.illustration}
+          title={<BilingualText en={projectEn(filteredEmpty ? 'empty_filter_title' : empty.title)} el={projectEl(filteredEmpty ? 'empty_filter_title' : empty.title)} wrap />}
+          description={<BilingualText en={projectEn(filteredEmpty ? 'empty_filter_hint' : empty.hint)} el={projectEl(filteredEmpty ? 'empty_filter_hint' : empty.hint)} wrap />}
           action={
             filteredEmpty ? (
               <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={clearFilters}>
@@ -730,7 +699,7 @@ export default function ProjectsPage() {
 
           <TabsContent value="discover" className="space-y-4">
             {renderList(byTab.discover, {
-              glyph: 'briefcase',
+              illustration: 'search',
               title: 'empty_discover_title',
               hint: 'empty_discover_hint',
               action: createCta,
@@ -738,7 +707,7 @@ export default function ProjectsPage() {
           </TabsContent>
           <TabsContent value="mine" className="space-y-4">
             {renderList(byTab.mine, {
-              glyph: 'briefcase',
+              illustration: 'rocket',
               title: 'empty_mine_title',
               hint: 'empty_mine_hint',
               action: createCta,
@@ -746,7 +715,7 @@ export default function ProjectsPage() {
           </TabsContent>
           <TabsContent value="joined" className="space-y-4">
             {renderList(byTab.joined, {
-              glyph: 'people',
+              illustration: 'connection',
               title: 'empty_joined_title',
               hint: 'empty_joined_hint',
               action: (
@@ -758,7 +727,7 @@ export default function ProjectsPage() {
           </TabsContent>
           <TabsContent value="starred" className="space-y-4">
             {renderList(byTab.starred, {
-              glyph: 'bookmark',
+              illustration: 'default',
               title: 'empty_starred_title',
               hint: 'empty_starred_hint',
               action: (

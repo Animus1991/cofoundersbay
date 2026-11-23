@@ -5,11 +5,11 @@ import { EmptyState } from './EmptyState';
 afterEach(cleanup);
 
 describe('calm, actionable empty states', () => {
-  it('states the next step on the left, without a decorative drawing', () => {
+  it('states the next step on the left, with its quiet mark beside it', () => {
     const action = vi.fn();
     const { container } = render(<EmptyState illustration="search" title="No results / Δεν υπάρχουν αποτελέσματα" description="Change the filters to broaden your search." action={<button onClick={action}>Reset filters</button>} />);
     expect(screen.getByText('No results / Δεν υπάρχουν αποτελέσματα')).toBeTruthy();
-    expect(container.querySelector('svg')).toBeNull();
+    expect(container.querySelector('svg[data-empty-illustration="search"]')).not.toBeNull();
     expect(container.firstElementChild?.className).toContain('text-left');
     expect(container.innerHTML).not.toMatch(/animate-(float|pulse|spin|bounce)/);
     expect(screen.getByText('Change the filters to broaden your search.').className).toContain('max-w-prose');
@@ -22,5 +22,21 @@ describe('calm, actionable empty states', () => {
     expect(container.firstElementChild?.className).toContain('custom-empty');
     expect(container.firstElementChild?.className).toContain('p-4');
     expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('draws the mark the caller names', () => {
+    const { container } = render(<EmptyState title="Launched" illustration="rocket" />);
+    expect(container.querySelector('svg[data-empty-illustration="rocket"]')).not.toBeNull();
+    expect(container.querySelectorAll('svg [data-accent]').length).toBe(1);
+  });
+
+  it('falls back to the default mark when the prop is absent', () => {
+    const { container } = render(<EmptyState title="Nothing here" />);
+    expect(container.querySelector('svg[data-empty-illustration="default"]')).not.toBeNull();
+  });
+
+  it('renders no svg at all when illustration is null', () => {
+    const { container } = render(<EmptyState title="Nothing here" illustration={null} />);
+    expect(container.querySelector('svg')).toBeNull();
   });
 });

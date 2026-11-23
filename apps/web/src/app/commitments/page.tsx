@@ -17,6 +17,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailOptions } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { Button } from '@/components/ui/button';
@@ -415,12 +416,15 @@ export default function CommitmentsPage() {
   );
 
   const emptyFiltered = (
-    <div className="space-y-2 rounded-xl border border-dashed border-border p-6 text-center">
-      <p className="text-sm text-muted-foreground"><BilingualText en={CMT.empty_filtered.en} el={CMT.empty_filtered.el} wrap /></p>
-      <Button size="sm" variant="outline" onClick={() => openRailSection('filters')}>
-        <BilingualText en={CMT.open_filters.en} el={CMT.open_filters.el} compact />
-      </Button>
-    </div>
+    <EmptyState
+      illustration="search"
+      title={<BilingualText en={CMT.empty_filtered.en} el={CMT.empty_filtered.el} wrap />}
+      action={(
+        <Button size="sm" variant="outline" onClick={() => openRailSection('filters')}>
+          <BilingualText en={CMT.open_filters.en} el={CMT.open_filters.el} compact />
+        </Button>
+      )}
+    />
   );
 
   return (
@@ -460,14 +464,17 @@ export default function CommitmentsPage() {
           ) : cardsQ.isError && liveCards.length === 0 ? (
             readFailed(CMT.cards_failed.en, CMT.cards_failed.el, () => void cardsQ.refetch())
           ) : liveCards.length === 0 ? (
-            <div className="space-y-3 rounded-xl border border-dashed border-border p-6 text-center">
-              <p className="text-sm text-muted-foreground"><BilingualText en={CMT.empty_mine.en} el={CMT.empty_mine.el} wrap /></p>
-              {/* Outline: the header's "Write a need card" is the page's filled
-                  button; this one says what it does and how long it takes. */}
-              <Button size="sm" variant="outline" asChild>
-                <Link href="/commitments/new"><BilingualText en={CMT.write_card_time.en} el={CMT.write_card_time.el} compact /></Link>
-              </Button>
-            </div>
+            <EmptyState
+              illustration="default"
+              title={<BilingualText en={CMT.empty_mine.en} el={CMT.empty_mine.el} wrap />}
+              action={(
+                /* Outline: the header's "Write a need card" is the page's filled
+                   button; this one says what it does and how long it takes. */
+                <Button size="sm" variant="outline" asChild>
+                  <Link href="/commitments/new"><BilingualText en={CMT.write_card_time.en} el={CMT.write_card_time.el} compact /></Link>
+                </Button>
+              )}
+            />
           ) : shownCards.length === 0 ? (
             emptyFiltered
           ) : (
@@ -543,12 +550,15 @@ export default function CommitmentsPage() {
           ) : threadsQ.isError && liveResponses.length === 0 ? (
             readFailed(CMT.threads_failed.en, CMT.threads_failed.el, () => void threadsQ.refetch())
           ) : liveResponses.length === 0 ? (
-            <div className="space-y-3 rounded-xl border border-dashed border-border p-6 text-center">
-              <p className="text-sm text-muted-foreground"><BilingualText en={CMT.empty_responses.en} el={CMT.empty_responses.el} wrap /></p>
-              <Button size="sm" variant="outline" asChild>
-                <Link href="/opportunities"><BilingualText en="Opportunities" el="Ευκαιρίες" compact /></Link>
-              </Button>
-            </div>
+            <EmptyState
+              illustration="message"
+              title={<BilingualText en={CMT.empty_responses.en} el={CMT.empty_responses.el} wrap />}
+              action={(
+                <Button size="sm" variant="outline" asChild>
+                  <Link href="/opportunities"><BilingualText en="Opportunities" el="Ευκαιρίες" compact /></Link>
+                </Button>
+              )}
+            />
           ) : shownResponses.length === 0 ? (
             emptyFiltered
           ) : (
@@ -566,9 +576,10 @@ export default function CommitmentsPage() {
               () => { void cardsQ.refetch(); void threadsQ.refetch(); },
             )
           ) : historyCards.length + historyResponses.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-              <BilingualText en={CMT.empty_history.en} el={CMT.empty_history.el} wrap />
-            </p>
+            <EmptyState
+              illustration="default"
+              title={<BilingualText en={CMT.empty_history.en} el={CMT.empty_history.el} wrap />}
+            />
           ) : (
             <>
               {historyCards.map((card) => (

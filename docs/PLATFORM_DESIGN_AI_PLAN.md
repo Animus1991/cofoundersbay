@@ -9431,3 +9431,26 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
 - ESLint στα αλλαγμένα αρχεία: κανένα νέο warning (πέντε προϋπάρχοντα σε γραμμές που δεν άλλαξαν).
 - `node scripts/rail-candidates.mjs`: candidates 0· οι πέντε Επισκοπήσεις μετράνε πλέον στις σελίδες με ράγα.
 - Ολόκληρη η σουίτα web: 285 αρχεία, 1.929 tests, όλα πέρασαν. Μόνη εκτύπωση η γνωστή προειδοποίηση jsdom `Not implemented: navigation` — όχι αποτυχία.
+
+## 126. Γύρος 2026-11-22 (γ) — η εικόνα στην κενή κατάσταση
+
+### 126.1 Τι αποφασίστηκε
+
+Η οδηγία του ιδιοκτήτη: η εικόνα μπροστά από το κείμενο που εξηγεί το προφανές. Η σύγκριση με το αδελφό `parea_app` (δύο commits του ίδιου έργου, `197d8cf` και `2916927` — τα στοιχεία και τι πήραμε/τι όχι στο `docs/PARITY_PAREA.md`) έδειξε ότι το `EmptyState` δήλωνε ήδη πεδίο `illustration`, δεκαεπτά σελίδες το περνούσαν, και δεν ζωγραφιζόταν ποτέ τίποτα: κάθε κενή κατάσταση της πλατφόρμας ήταν μόνο κείμενο.
+
+### 126.2 Αλλαγές
+
+| # | Πού | Αλλαγή | Γιατί |
+|---|---|---|---|
+| α | `components/common/EmptyIllustration.tsx` (νέο) | Επτά πρωτότυπα σήματα (search, connection, message, rocket, profile, calendar, default) σε inline SVG 96×96, στο ίδιο γλωσσικό με τους CfbGlyph: απαλός δίσκος φόντου, 3–6 γραμμές, ακριβώς ένα `data-accent` στο χρώμα του ρόλου, `aria-hidden`/`focusable="false"` — η πρόταση δίπλα κουβαλά το νόημα | Η εικόνα λέει «τι λείπει» πριν διαβαστεί η πρόταση |
+| β | `components/common/EmptyState.tsx` | Το `illustration` αποκτά σώμα: προεπιλογή `default`, `null` για opt-out· το σήμα πρώτο σε `flex items-start gap-4` (h-14/sm:h-20· h-12 στο size="sm"), το κείμενο και οι πράξεις σε `min-w-0 flex-1` απαράλλαχτα. Το wrapper φέρει `data-keep-icon` — ο κανόνας Cursor κρύβει μοναχικά glyph στο #main-content | Το πεδίο υπήρχε, η εικόνα όχι |
+| γ | Δέκα σελίδες μελών | Τα αληθινά κενά dashed κουτιά έγιναν `EmptyState` με copy και πράξεις αυτούσια και το σήμα ανά νόημα: shortlist (default/search ανάλογα αν έλειψαν δεδομένα ή αποτελέσματα), milestones (calendar/search), fundraising (rocket για τον γύρο, default για pipeline και cap-table), commitments (search για φίλτρα, message για απαντήσεις, default για δικά μου και ιστορικό), data-room, coaching (calendar για συνεδρίες, default για insights), projects (ο τοπικός βοηθός EmptyState αντικαταστάθηκε — search/rocket/connection/default ανά καρτέλα), expert-reviews | Ένα κενό κουτί με εικονίδιο-πηγάδι και ένα κενό κουτί με εικόνα κάνουν την ίδια δουλειά δύο φορές |
+
+Ό,τι δεν ήταν κενή κατάσταση έμεινε ως είχε: τα «Γίνετε coach/ειδικός» της mentoring είναι προωθητικές κάρτες· το `role="alert"` retry και το σύνθετο upload του data-room στο fundraising δεν είναι «τίποτα εδώ ακόμη»· η γραμμή «Nothing here» στη στήλη kanban των οροσήμων και η σημείωση «breakdown μη διαθέσιμο» στις αντιστοιχίσεις είναι slots και σημειώσεις, όχι κενές καταστάσεις. Τα presets στο `EmptyStates.tsx` είναι `ListEmptyState` με δικό τους σύστημα εικονιδίων — δεν τροποιήθηκαν.
+
+### 126.3 Έλεγχοι
+
+- Typecheck web: καθαρό.
+- Στοχευμένα tests: 5 αρχεία, 21 tests, όλα πέρασαν (EmptyState, milestones/fundraising/projects guards και η σελίδα fundraising). Το `EmptyState.test.tsx` πήρε τρεις νέες υποθέσεις: το σήμα που ζητήθηκε, το `default` όταν λείπει το prop, και κανένα svg με `illustration={null}`· η υπάρχουσα περίπτωση ενημερώθηκε γιατί η παρουσία του σήματος είναι πλέον η αναμενόμενη συμπεριφορά.
+- ESLint στα αλλαγμένα αρχεία: 0 errors, 13 warnings — όλα προϋπάρχοντα react-hooks σε γραμμές που δεν άλλαξαν.
+- Ολόκληρη η σουίτα web: 285 αρχεία, 1.932 tests, όλα πέρασαν. Μόνη εκτύπωση η γνωστή προειδοποίηση jsdom `Not implemented: navigation` — όχι αποτυχία.
