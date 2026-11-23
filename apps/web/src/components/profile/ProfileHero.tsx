@@ -64,7 +64,7 @@ export function ProfileHero({
   const facts = (meta ?? []).filter(Boolean);
   return (
     <section data-card="" data-surface="card" aria-label={ariaLabel ?? `${name} · Profile · Προφίλ`} className={cn('relative overflow-hidden rounded-2xl border border-border bg-card', className)}>
-      <div className="h-20 w-full bg-primary/[0.05] sm:h-24 md:h-28" aria-hidden="true" />
+      <div className="h-28 w-full bg-primary/[0.05] md:h-40" aria-hidden="true" />
       {/* The section's padding is a card's (16px on a phone, 24px from 640),
           so the hero's text sits on the same left axis as the section cards
           under it. */}
