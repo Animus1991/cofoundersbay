@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCoverFailed } from '@/hooks/useCoverFailed';
 import {
   MapPin,
+  Users,
   Video,
   Share2,
   Bookmark,
@@ -12,7 +13,6 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -309,13 +309,15 @@ export function EventCard({
   const fullDate = fmtDate(event.startDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   return (
     <Card className={cn('group overflow-hidden hover:border-primary/30 transition-colors', className)}>
-      <div className={cn('relative aspect-video w-full overflow-hidden', (!event.coverImage || cover.failed) && 'bg-status-warning-bg')}>
+      <div className="relative aspect-video w-full overflow-hidden">
         {event.coverImage && !cover.failed ? (
           <img ref={cover.ref} onError={cover.onError} src={event.coverImage} alt="" referrerPolicy="no-referrer" loading="lazy" className="h-full w-full object-cover" />
-        ) : null}
+        ) : (
+          <div className="h-full w-full bg-status-warning-bg" aria-hidden="true" />
+        )}
         {/* Date badge on the cover: a solid card square so it reads on any
-            photo; the full date is the accessible name (docs §130.3). */}
-        <div data-card-mark="" className="absolute left-3 top-3" aria-label={fullDate}>
+            photo; the sr-only line carries the full date (docs §130.3). */}
+        <div data-card-mark="" className="absolute left-3 top-3">
           <div className="flex h-11 w-11 flex-col items-center justify-center rounded-xl bg-card text-center shadow-sm">
             <span className="text-sm font-bold tabular-nums text-primary-accessible" aria-hidden="true">
               {event.startDate.getDate()}
@@ -356,8 +358,12 @@ export function EventCard({
           <span className="card-meta min-w-0 truncate text-muted-foreground">
             <BilingualText en={`By ${event.hostName}`} el={`Από ${event.hostName}`} compact />
           </span>
-          <span className="card-meta shrink-0 tabular-nums text-muted-foreground">
-            <BilingualText en={`· ${event.attendeesCount}`} el={`· ${event.attendeesCount}`} compact />
+          <span className="card-meta inline-flex shrink-0 items-center gap-1 tabular-nums text-muted-foreground">
+            <Users className="h-3.5 w-3.5" aria-hidden="true" />
+            <span aria-hidden="true">{event.attendeesCount}</span>
+            <span className="sr-only">
+              <BilingualText en={`${event.attendeesCount} attending`} el={`${event.attendeesCount} συμμετέχουν`} compact />
+            </span>
           </span>
         </div>
 

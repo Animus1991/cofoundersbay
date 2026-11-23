@@ -26,6 +26,7 @@ import {
   searchProfiles, getRecommendations, getDashboardStats, getMeProfile, recordMatchFeedback, restoreMatchFeedback, sendConnectionRequest, saveToShortlist, createSavedSearch, type SearchHit
 } from '@/lib/api';
 import { createPassLedger } from '@/lib/match-pass';
+import { promotedLayout } from '@/lib/discover-promoted';
 import { explainMatch, viewerFacts } from '@/lib/match-explain';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { AppShell } from '@/components/layout/AppShell';
@@ -721,7 +722,7 @@ export default function DiscoverPage() {
           {/* One or two paid cards lead the results grid (below, marked);
               more than two stay their own section so the stripe stays
               honest (docs §130.5). */}
-          {!loading && promotedHits.length > 2 && (
+          {!loading && promotedLayout(promotedHits.length) === 'section' && (
             <section aria-label="Promoted · Προώθηση" className="space-y-3 border-b border-border pb-4">
               <div className="flex flex-wrap items-baseline gap-2">
                 <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground">
@@ -759,16 +760,18 @@ export default function DiscoverPage() {
               staggerDelay={50}
               className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && PEOPLE_GRID)}
             >
-              {promotedHits.length <= 2 ? promotedHits.map((hit) => {
+              {promotedLayout(promotedHits.length) === 'inline' ? promotedHits.map((hit) => {
                 const profile = hitToProfile(hit);
                 return (
-                  <div key={hit.id} data-promoted="" aria-label={`Promoted · ${PROMOTED_COPY.label.el}`} className="relative">
-                    <span className="absolute right-3 top-3 z-10 rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground">
-                      <BilingualText en={PROMOTED_COPY.label.en} el={PROMOTED_COPY.label.el} compact />
-                    </span>
+                  <div key={hit.id} data-promoted="" aria-label={`Promoted · ${PROMOTED_COPY.label.el}`}>
                     <ProfileCard
                       profile={profile}
                       variant={viewMode === 'list' ? 'compact' : 'default'}
+                      badge={(
+                        <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground">
+                          <BilingualText en={PROMOTED_COPY.label.en} el={PROMOTED_COPY.label.el} compact />
+                        </span>
+                      )}
                       onConnect={() => handleConnect(profile)}
                       onMessage={() => handleMessage(profile)}
                       onBookmark={() => handleBookmark(profile)}

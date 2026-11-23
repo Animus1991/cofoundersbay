@@ -13,6 +13,7 @@ import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { HomeContinue } from '@/components/home/HomeContinue';
 import { useTodayRows } from '@/components/dashboard/HomeToday';
 import { listMilestones } from '@/lib/api';
+import { dedupeWaitingRows } from '@/lib/home-waiting';
 import { orderMilestones } from '@/lib/milestone-order';
 import { HomeFeedSection } from '@/components/home/HomeFeedSection';
 import { HomePeople } from '@/components/home/HomePeople';
@@ -256,7 +257,7 @@ function Home() {
                   ) : null}
                 </div>
                 <ul className="divide-y divide-border">
-                  {waitingRows.filter((row) => !(row.key === 'milestone' && nextMilestone)).slice(0, WAITING_ON_TOP).map((row) => (
+                  {dedupeWaitingRows(waitingRows, nextMilestone).slice(0, WAITING_ON_TOP).map((row) => (
                     <li key={row.key}>
                       <Link href={row.href} className="group flex items-center gap-3 py-2.5 text-sm text-foreground transition-colors hover:text-primary-accessible" data-home-waiting-row={row.key}>
                         <SectionSticker glyph={row.glyph} tint={glyphStickerTint(row.glyph)} />

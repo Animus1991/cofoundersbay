@@ -106,6 +106,8 @@ type ProfileCardProps = {
    */
   connection?: MatchConnection;
   onAccept?: () => void;
+  /** A mark the head's aside carries before its own (a paid "Promoted" label). */
+  badge?: ReactNode;
   className?: string;
 };
 
@@ -137,6 +139,7 @@ function ProfileCardInner({
   onMessage,
   connection = 'none',
   onAccept,
+  badge,
   className,
 }: ProfileCardProps) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
@@ -227,22 +230,27 @@ function ProfileCardInner({
             title={nameWithRole}
             subtitle={profile.headline ? <span className="line-clamp-1">{profile.headline}</span> : undefined}
             asideStays
-            aside={connected ? (
-              <Button aria-label={bilingualAria(`Message ${profile.displayName}`, `Μήνυμα προς ${profile.displayName}`)} size="sm" variant="ghost" onClick={onMessage}>
-                <MessageCircle className="icon-sm" />
-              </Button>
-            ) : connection === 'received' && onAccept ? (
-              <Button aria-label={bilingualAria(`Accept ${profile.displayName}'s request`, `Αποδοχή αιτήματος από ${profile.displayName}`)} size="sm" variant="ghost" onClick={onAccept}>
-                <Check className="icon-sm" />
-              </Button>
-            ) : connection === 'sent' ? (
-              <Button aria-label={bilingualAria('Request sent', 'Το αίτημα στάλθηκε')} size="sm" variant="ghost" disabled title={bilingualAria('Your request is waiting for their answer', 'Το αίτημά σας περιμένει απάντηση')}>
-                <UserPlus className="icon-sm" />
-              </Button>
-            ) : (
-              <Button aria-label="Connect · Σύνδεση" size="sm" variant="ghost" onClick={onConnect}>
-                <UserPlus className="icon-sm" />
-              </Button>
+            aside={(
+              <span className="inline-flex items-center gap-2">
+                {badge}
+                {connected ? (
+                  <Button aria-label={bilingualAria(`Message ${profile.displayName}`, `Μήνυμα προς ${profile.displayName}`)} size="sm" variant="ghost" onClick={onMessage}>
+                    <MessageCircle className="icon-sm" />
+                  </Button>
+                ) : connection === 'received' && onAccept ? (
+                  <Button aria-label={bilingualAria(`Accept ${profile.displayName}'s request`, `Αποδοχή αιτήματος από ${profile.displayName}`)} size="sm" variant="ghost" onClick={onAccept}>
+                    <Check className="icon-sm" />
+                  </Button>
+                ) : connection === 'sent' ? (
+                  <Button aria-label={bilingualAria('Request sent', 'Το αίτημα στάλθηκε')} size="sm" variant="ghost" disabled title={bilingualAria('Your request is waiting for their answer', 'Το αίτημά σας περιμένει απάντηση')}>
+                    <UserPlus className="icon-sm" />
+                  </Button>
+                ) : (
+                  <Button aria-label="Connect · Σύνδεση" size="sm" variant="ghost" onClick={onConnect}>
+                    <UserPlus className="icon-sm" />
+                  </Button>
+                )}
+              </span>
             )}
           />
         </CardContent>
@@ -424,10 +432,15 @@ function ProfileCardInner({
             <Check className="h-2.5 w-2.5 text-white" aria-hidden="true" />
           </span>
         ) : undefined}
-        aside={profile.matchScore && profile.matchScore > 0 ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary-accessible">
-            <Star className="icon-sm fill-current" aria-hidden="true" />
-            {profile.matchScore}%
+        aside={badge || (profile.matchScore && profile.matchScore > 0) ? (
+          <span className="inline-flex items-center gap-2">
+            {badge}
+            {profile.matchScore && profile.matchScore > 0 ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary-accessible">
+                <Star className="icon-sm fill-current" aria-hidden="true" />
+                {profile.matchScore}%
+              </span>
+            ) : null}
           </span>
         ) : undefined}
         fact={profile.skills.length > 0 ? (

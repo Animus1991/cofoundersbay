@@ -26,6 +26,7 @@ export function ProfileHero({
   avatarUrl,
   avatarMark,
   nameBadge,
+  nameAside,
   headline,
   meta,
   openTo,
@@ -42,6 +43,9 @@ export function ProfileHero({
   avatarMark?: ReactNode;
   /** Beside the name: the Verified badge. */
   nameBadge?: ReactNode;
+  /** After the badge on the name's row: the own-profile Edit, so all widths
+      keep name + badge + verb on one line (docs §130.6). */
+  nameAside?: ReactNode;
   /** The headline, or a prompt to write one. */
   headline?: ReactNode;
   /** Short facts on one wrapping line: place, time zone, languages, joined. */
@@ -92,6 +96,7 @@ export function ProfileHero({
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <Heading className="min-w-0 break-words text-xl font-semibold tracking-tight text-foreground md:text-2xl">{name}</Heading>
               {nameBadge}
+              {nameAside}
             </div>
             {headline ? <div className="break-words text-base text-muted-foreground first-letter:uppercase">{headline}</div> : null}
             {facts.length ? (

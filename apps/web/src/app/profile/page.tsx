@@ -564,6 +564,16 @@ export default function ProfilePage() {
           // One mark for being verified, as on everyone else's profile: the
           // badge beside the name. A check on the photo said it again.
           nameBadge={<VerifiedBadge methods={trust.methods} />}
+          // The one verb next to the name on every width (docs §130.6); the
+          // row wraps as a unit, so a long name never splits it onto two.
+          nameAside={(
+            <Button size="sm" variant="outline" className="h-7 gap-1.5 px-2.5" asChild>
+              <Link href="/profile/edit">
+                <Edit className="icon-sm" />
+                <BilingualText en={profileEn('edit_profile')} el={profileEl('edit_profile')} />
+              </Link>
+            </Button>
+          )}
           headline={
             profile.headline ? (
               profile.headline
@@ -594,12 +604,6 @@ export default function ProfilePage() {
           aside={<RoleBadge role={profile.role} />}
           actions={
             <>
-              <Button size="sm" className="gap-2" asChild>
-                <Link href="/profile/edit">
-                  <Edit className="icon-sm" />
-                  <BilingualText en={profileEn('edit_profile')} el={profileEl('edit_profile')} />
-                </Link>
-              </Button>
               <Button variant="outline" size="sm" onClick={handleShare} className="gap-2 hidden sm:flex">
                 <Share2 className="icon-sm" />
                 <BilingualText en={profileEn('share_profile')} el={profileEl('share_profile')} />
@@ -633,6 +637,32 @@ export default function ProfilePage() {
             Link") and ran 315px longer than the profile it sat next to. They
             are the page rail's sections now: one place for what supports the
             profile, and the profile itself gets the width. */}
+        {/* The person in three labelled lines — who, what they build, what
+            they look for — one flat tinted block before the detail cards;
+            each line hides when its field is empty (docs §130.6). */}
+        {(() => {
+          const words = (v: unknown): string[] =>
+            (Array.isArray(v) ? v : [v]).filter((x): x is string => typeof x === 'string' && x.trim() !== '');
+          const lines: { en: string; el: string; text: string }[] = [
+            { en: 'Who I am', el: 'Ποιος είμαι', text: profile.bio || profile.headline || '' },
+            { en: 'What I am building', el: 'Τι χτίζω', text: words(rolePayload.startupName ?? rolePayload.companyName ?? rolePayload.projectName).join(', ') || (typeof rolePayload.stage === 'string' ? (statusEl(rolePayload.stage) ?? rolePayload.stage) : '') },
+            { en: 'What I am looking for', el: 'Τι αναζητώ', text: words(rolePayload.lookingFor ?? rolePayload.rolesSought).map((v) => statusEl(v) ?? v).join(' · ') },
+          ].filter((line) => line.text.trim() !== '');
+          if (!lines.length) return null;
+          return (
+            <div className="space-y-2 rounded-2xl bg-primary/[0.05] px-4 py-3 sm:px-6">
+              {lines.map((line) => (
+                <p key={line.en} className="text-sm text-foreground">
+                  <span className="card-meta mr-2 font-medium text-muted-foreground"><BilingualText en={line.en} el={line.el} compact /></span>
+                  <span className="break-words first-letter:uppercase">{line.text}</span>
+                </p>
+              ))}
+              <a href="#profile-details" className="card-meta inline-block font-medium text-primary-accessible hover:underline">
+                <BilingualText en="Full profile" el="Πλήρες προφίλ" compact />
+              </a>
+            </div>
+          );
+        })()}
         {/* Two columns once the content itself is 72rem wide (about 945px at the 82% root), as the AI Studio
             prototype lays a profile out: the story (about, activity,
             experience, evidence, portfolio) on the left, the facts a visitor
@@ -643,7 +673,7 @@ export default function ProfilePage() {
             it is one column in the same order as before. Nothing here repeats the header's actions, which is
             what the old hand-built side column did. */}
         <div className="[container-type:inline-size]">
-        <div className="grid grid-cols-1 gap-6 [@container(min-width:72rem)]:grid-cols-3 [@container(min-width:72rem)]:items-start">
+        <div id="profile-details" className="grid grid-cols-1 gap-6 scroll-mt-4 [@container(min-width:72rem)]:grid-cols-3 [@container(min-width:72rem)]:items-start">
           <div className="min-w-0 space-y-6 [@container(min-width:72rem)]:col-span-2">
             {/* Bio */}
             <Card className="animate-fade-in stagger-1">
