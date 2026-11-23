@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { listJobs, createJobPosting, type JobPostingView } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
@@ -512,6 +513,7 @@ export default function JobsPage() {
     <AppShell
       showHelp
       rail={rail}
+      titleSticker={{ glyph: 'briefcase', tint: 'primary' }}
       // An empty board carries its own "Post a role"; the header's waits
       // for a list, so the page has one filled button (docs §90).
       actions={!isLoading && !isError && jobs.length === 0 ? undefined : (
@@ -614,7 +616,7 @@ export default function JobsPage() {
           {featuredJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="icon-sm text-muted-foreground" />
+                <SectionSticker icon={Sparkles} tint="accent" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   <BilingualText en={jobsEn('featured')} el={jobsEl('featured')} compact />
                 </h2>
@@ -627,7 +629,7 @@ export default function JobsPage() {
           {remoteRest.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <Wifi className="icon-sm text-status-success" />
+                <SectionSticker icon={Wifi} tint="success" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   <BilingualText en={jobsEn('remote_section')} el={jobsEl('remote_section')} compact />
                 </h2>
@@ -639,7 +641,7 @@ export default function JobsPage() {
           {onsiteRest.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <MapPin className="icon-sm text-status-info" />
+                <SectionSticker icon={MapPin} tint="info" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   <BilingualText en={jobsEn('onsite_section')} el={jobsEl('onsite_section')} compact />
                 </h2>
