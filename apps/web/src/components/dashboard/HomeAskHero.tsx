@@ -26,6 +26,34 @@ import { DictationButton } from '@/components/ai/DictationButton';
 type Part = { en: string; el: string };
 
 /** Morning from five; before that it is still last night's evening. */
+/**
+ * What a home action does when run: a prompt goes to the in-page assistant
+ * (or `/ai?q=` when this home has none), an href opens its page. Shared with
+ * the rail's shortcuts (docs §116/§125), so a chip and a rail row are the
+ * same gesture.
+ */
+export function useHomeAskRun() {
+  const { primary } = useLanguagePreference();
+  const popup = usePopupChatOptional();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  function send(question: string) {
+    const q = question.trim();
+    if (!q) return;
+    if (popup && !pathname?.startsWith('/ai')) {
+      popup.ask(q);
+      return;
+    }
+    router.push(`/ai?q=${encodeURIComponent(q)}`);
+  }
+
+  return function run(action: HomeAskAction) {
+    if (action.prompt) send(primary === 'el' ? action.prompt.el : action.prompt.en);
+    else if (action.href) router.push(action.href);
+  };
+}
+
 export function partOfDay(hour: number): Part {
   if (hour >= 5 && hour < 12) return { en: dashboardEn('good_morning'), el: dashboardEl('good_morning') };
   if (hour >= 12 && hour < 17) return { en: dashboardEn('good_afternoon'), el: dashboardEl('good_afternoon') };
@@ -63,9 +91,7 @@ export function partOfDay(hour: number): Part {
 export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true, plain = false, greeting = true }: { /** Off where the page's own title already greets the reader (/home). */ greeting?: boolean; role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean; /** Only the question box: the shortcuts live in the page's tools (docs §116). */ plain?: boolean }) {
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
-  const popup = usePopupChatOptional();
-  const router = useRouter();
-  const pathname = usePathname();
+  const run = useHomeAskRun();
   const boxId = useId();
   const config = HOME_ASK[role];
   const now = nowStartingPoints({ ...useUnreadCounts(), followUps: followUpsDue });
@@ -81,20 +107,12 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
   const listOpen = commands !== null && commands.length > 0;
   const active = listOpen ? Math.min(activeCommand, commands.length - 1) : -1;
 
-  function send(question: string) {
-    const q = question.trim();
-    if (!q) return;
-    if (popup && !pathname?.startsWith('/ai')) {
-      popup.ask(q);
-      return;
-    }
-    router.push(`/ai?q=${encodeURIComponent(q)}`);
-  }
-
   function submit(event?: FormEvent) {
     event?.preventDefault();
     if (!value.trim()) return;
-    send(scopedPrompt(value, scope, primary));
+    // The typed question is an ad-hoc action: same popup-or-/ai path.
+    const q = scopedPrompt(value, scope, primary);
+    run({ id: 'typed', en: q, el: q, glyph: 'spark', prompt: { en: q, el: q } });
     setValue('');
   }
 
@@ -127,11 +145,6 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
     setValue('');
     setActiveCommand(0);
     run(action);
-  }
-
-  function run(action: HomeAskAction) {
-    if (action.prompt) send(primary === 'el' ? action.prompt.el : action.prompt.en);
-    else if (action.href) router.push(action.href);
   }
 
   return (

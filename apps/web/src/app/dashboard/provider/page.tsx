@@ -43,6 +43,10 @@ import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { priceEl } from '@/lib/i18n/units';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { YourPagesRow } from '@/components/dashboard/YourPages';
+import { HomeShortcuts } from '@/components/dashboard/HomeShortcuts';
+
 import { HomeFold } from '@/components/dashboard/HomeFold';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { FactLine } from '@/components/common/FactLine';
@@ -293,15 +297,35 @@ export default function ProviderDashboard() {
     );
   }
 
+
+  /* The shortcuts and the reader's pages live in the page's tools, one
+     gesture away — the question box is alone on the page, as on the
+     founder's home (docs §116/§125). */
+  const rail: PageRailSection[] = [
+    {
+      id: 'pages',
+      glyph: 'bookmark',
+      labelEn: 'Your pages',
+      labelEl: 'Οι σελίδες σας',
+      content: <YourPagesRow />,
+    },
+    {
+      id: 'shortcuts',
+      glyph: 'spark',
+      labelEn: 'Quick actions',
+      labelEl: 'Γρήγορες ενέργειες',
+      content: <HomeShortcuts role="provider" pages={false} />,
+    },
+  ];
   return (
     // "Manage services" in the header was the "Manage" of "Your services"
     // below, to the same page (docs §95).
-    <AppShell askAi={false}
+    <AppShell askAi={false} rail={rail}
       description="Inquiries, active projects, services and reviews - in one view."
       descriptionEl="Αιτήματα, ενεργά έργα, υπηρεσίες και αξιολογήσεις — σε μία προβολή."
     >
       <div className="space-y-6">
-        <HomeAskHero role="provider" showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
+        <HomeAskHero role="provider" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
         <HomeToday />
 
         {!inquiriesLoading && waiting[0] ? (

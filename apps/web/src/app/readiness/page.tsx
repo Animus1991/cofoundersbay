@@ -537,6 +537,16 @@ function DimensionCard({
                   <BilingualText en={statusCopy.en} el={statusCopy.el} compact />
                 </Badge>
               )}
+              aside={(
+                <AIInsightButton
+                  variant="card"
+                  prompt={recPrompt}
+                  label={readinessEn('ask_ai')}
+                  labelEl={readinessEl('ask_ai')}
+                  aboutEn={readinessOf(dim.labelEn)}
+                  aboutEl={readinessOfEl(dim.labelEl)}
+                />
+              )}
             />
 
             <div className="mt-3.5 flex items-center gap-3">
@@ -632,7 +642,6 @@ function DimensionCard({
                     />
                   </p>
                 )}
-                <AIInsightButton prompt={recPrompt} className="h-8" aboutEn={readinessOf(dim.labelEn)} aboutEl={readinessOfEl(dim.labelEl)} />
               </div>
             )}
 
@@ -652,7 +661,6 @@ function DimensionCard({
                     {` · ${remaining[0].weight}%`}
                   </p>
                 )}
-                <AIInsightButton prompt={recPrompt} className="h-8" aboutEn={readinessOf(dim.labelEn)} aboutEl={readinessOfEl(dim.labelEl)} />
               </div>
             )}
             </div>

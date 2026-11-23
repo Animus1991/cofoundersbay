@@ -46,6 +46,10 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { bilingualAria } from '@/lib/i18n/format';
 import { demoMark } from '@/lib/demo/photos';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { YourPagesRow } from '@/components/dashboard/YourPages';
+import { HomeShortcuts } from '@/components/dashboard/HomeShortcuts';
+
 import { HomeFold } from '@/components/dashboard/HomeFold';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
@@ -265,8 +269,28 @@ export default function IncubatorDashboard() {
     );
   }
 
+
+  /* The shortcuts and the reader's pages live in the page's tools, one
+     gesture away — the question box is alone on the page, as on the
+     founder's home (docs §116/§125). */
+  const rail: PageRailSection[] = [
+    {
+      id: 'pages',
+      glyph: 'bookmark',
+      labelEn: 'Your pages',
+      labelEl: 'Οι σελίδες σας',
+      content: <YourPagesRow />,
+    },
+    {
+      id: 'shortcuts',
+      glyph: 'spark',
+      labelEn: 'Quick actions',
+      labelEl: 'Γρήγορες ενέργειες',
+      content: <HomeShortcuts role="incubator" pages={false} />,
+    },
+  ];
   return (
-    <AppShell askAi={false} showHelp
+    <AppShell askAi={false} showHelp rail={rail}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1.5">
@@ -283,7 +307,7 @@ export default function IncubatorDashboard() {
       }
     >
       <div className="space-y-6">
-        <HomeAskHero role="incubator" showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
+        <HomeAskHero role="incubator" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
         <HomeToday />
 
         {!loading && nextApplication ? (

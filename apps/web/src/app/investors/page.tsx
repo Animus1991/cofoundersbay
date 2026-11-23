@@ -1,13 +1,13 @@
 'use client';
 
-import { useId, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Search, TrendingUp, Briefcase,
-  Bookmark, Zap, ArrowUpDown, Users, BadgeCheck, Telescope,
-  CheckCircle2, Layers, X,
+  Zap, ArrowUpDown, Users, Telescope,
+  Layers, X,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -18,10 +18,6 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { CardHead } from '@/components/common/CardAnatomy';
-import { CardMoreMenu } from '@/components/common/CardMoreMenu';
-import { FactLine } from '@/components/common/FactLine';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import {
@@ -34,90 +30,19 @@ import {
 import { bilingualInline } from '@/lib/i18n/format';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
-import { cn, initialsOf } from '@/lib/utils';
-import { STATUS } from '@/lib/semantic-colors';
-import { AskIntroButton } from '@/components/intros/AskIntroDialog';
+import { InvestorCard, type Investor } from '@/components/investors/InvestorCard';
+import { STAGE_OPTIONS, TYPE_LABEL, TYPE_OPTIONS, formatCheckSize, type InvestorType } from '@/components/investors/investor-helpers';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { DEMO_INVESTORS } from '@/lib/demo/investors-world';
-import { useHydrated } from '@/components/common/RelativeTime';
-import { isPreviewDemo } from '@/lib/preview-demo';
-import { termDisplay } from '@/lib/i18n/terms';
-import { placeEl } from '@/lib/i18n/places';
 import { ASK } from '@/lib/page-questions';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-/**
- * One row of the directory. People come from the profile search (role
- * investor), which knows who they are, where, and which industries they
- * follow; the investor-profile fields (type, check size, stages, track record)
- * are known only for the sample rows, so on a real row they are absent and
- * the card leaves them out rather than showing a zero.
- */
-type Investor = {
-  id: string;
-  userId: string;
-  displayName: string;
-  avatarUrl?: string;
-  headline?: string;
-  location?: string;
-  investorType?: InvestorType;
-  firmName?: string;
-  firmRole?: string;
-  industries: string[];
-  stages: string[];
-  checkSizeMin?: number;
-  checkSizeMax?: number;
-  geographies: string[];
-  isVerified?: boolean;
-  isActivelyScouting?: boolean;
-  portfolioCount?: number;
-  viewCount?: number;
-  dealsThisYear?: number;
-  thesisSummary?: string;
-  /** A fixture: no account stands behind it, so it has no profile or inbox. */
-  sample: boolean;
-};
-
-type InvestorType = 'angel_investor' | 'vc' | 'vc_scout' | 'syndicate' | 'cvc' | 'family_office';
 type TypeFilter = InvestorType | 'all';
 type StageFilter = 'all' | 'pre-seed' | 'seed' | 'series-a' | 'series-b' | 'growth';
 type ScoutFilter = 'any' | 'scouting';
 type SortBy = 'portfolio' | 'views' | 'deals';
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
-function fmt(n: number) {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
-  return `$${n}`;
-}
-function formatCheckSize(min?: number, max?: number) {
-  if (!min && !max) return null;
-  if (min && max) return `${fmt(min)} – ${fmt(max)}`;
-  if (min) return `${fmt(min)}+`;
-  return `≤ ${fmt(max!)}`;
-}
-
-const TYPE_OPTIONS = [
-  { value: 'all', en: 'All types', el: 'Όλοι οι τύποι' },
-  { value: 'angel_investor', en: 'Angel', el: 'Angel' },
-  { value: 'vc', en: 'VC fund', el: 'Ταμείο VC' },
-  { value: 'vc_scout', en: 'VC scout', el: 'Scout VC' },
-  { value: 'syndicate', en: 'Syndicate', el: 'Syndicate' },
-  { value: 'family_office', en: 'Family office', el: 'Family office' },
-  { value: 'cvc', en: 'Corporate VC', el: 'Εταιρικό VC' },
-] as const satisfies ReadonlyArray<{ value: TypeFilter; en: string; el: string }>;
-
-const STAGE_OPTIONS = [
-  { value: 'all', en: 'All stages', el: 'Όλα τα στάδια' },
-  { value: 'pre-seed', en: 'Pre-seed', el: 'Pre-seed' },
-  { value: 'seed', en: 'Seed', el: 'Seed' },
-  { value: 'series-a', en: 'Series A', el: 'Series A' },
-  { value: 'series-b', en: 'Series B', el: 'Series B' },
-  { value: 'growth', en: 'Growth', el: 'Ανάπτυξη' },
-] as const satisfies ReadonlyArray<{ value: StageFilter; en: string; el: string }>;
 
 const SCOUT_OPTIONS = [
   { value: 'any', en: 'Anyone', el: 'Όλοι', icon: Users },
@@ -130,13 +55,8 @@ const SORT_OPTIONS = [
   { value: 'views', en: 'Most viewed', el: 'Περισσότερες προβολές' },
 ] as const satisfies ReadonlyArray<{ value: SortBy; en: string; el: string }>;
 
-const TYPE_LABEL: Record<InvestorType, { en: string; el: string }> = Object.fromEntries(
-  TYPE_OPTIONS.filter((o) => o.value !== 'all').map((o) => [o.value, { en: o.en, el: o.el }]),
-) as Record<InvestorType, { en: string; el: string }>;
 
-const STAGE_COPY: Record<string, { en: string; el: string }> = Object.fromEntries(
-  STAGE_OPTIONS.filter((o) => o.value !== 'all').map((o) => [o.value, { en: o.en, el: o.el }]),
-);
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
 function hitToInvestor(hit: SearchHit): Investor {
   return {
@@ -164,280 +84,6 @@ function hitToInvestor(hit: SearchHit): Investor {
 // The demo's investors (demo/investors-world): the demo has their profiles and
 // opens conversations with them, so in the demo their buttons work.
 const SAMPLE_INVESTORS: Investor[] = attachDemoPhotos(DEMO_INVESTORS.map((inv) => ({ ...inv, sample: true })));
-
-// ── Investor card ──────────────────────────────────────────────────────────────
-
-/** One caption over its value. An empty value omits the row; it never changes the row's shape. */
-function CardFact({ en, el, children }: { en: string; el: string; children: ReactNode }) {
-  return (
-    <div className="space-y-1">
-      <span className="block text-xs font-medium text-foreground">
-        <BilingualText en={en} el={el} compact />
-      </span>
-      {children}
-    </div>
-  );
-}
-
-/** A sector, a stage or a place: the same almost-transparent frame on every card. */
-function QuietTag({ children }: { children: ReactNode }) {
-  return <span role="listitem" className="quiet-tag text-xs">{children}</span>;
-}
-
-function TagList({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div role="list" aria-label={label} className="flex flex-wrap gap-1">
-      {children}
-    </div>
-  );
-}
-
-type RecordBit = { figureEn: string; figureEl: string; en: string; el: string };
-
-function countLine(n: number, oneEn: string, manyEn: string, oneEl: string, manyEl: string): RecordBit {
-  const figure = String(n);
-  return { figureEn: figure, figureEl: figure, en: n === 1 ? oneEn : manyEn, el: n === 1 ? oneEl : manyEl };
-}
-
-function InvestorCard({
-  investor,
-  saved,
-  onToggleSave,
-}: {
-  investor: Investor;
-  saved: boolean;
-  onToggleSave: () => void;
-}) {
-  // The demo has these investors' profiles and opens conversations with
-  // them; a real account's sample rows have neither.
-  const inDemo = useHydrated() && isPreviewDemo();
-  const sampleReasonId = useId();
-  const [showFacts, setShowFacts] = useState(false);
-  const initials = initialsOf(investor.displayName);
-  const checkSize = formatCheckSize(investor.checkSizeMin, investor.checkSizeMax);
-  const type = investor.investorType ? TYPE_LABEL[investor.investorType] : null;
-  const stages = investor.stages.map((stage) => STAGE_COPY[stage] ?? { en: stage, el: stage });
-  const places = investor.geographies.length ? investor.geographies : investor.location ? [investor.location] : [];
-  const record: RecordBit[] = [];
-  if (investor.portfolioCount != null) record.push(countLine(investor.portfolioCount, 'investment', 'investments', 'επένδυση', 'επενδύσεις'));
-  if (investor.dealsThisYear != null) record.push(countLine(investor.dealsThisYear, 'deal this year', 'deals this year', 'συμφωνία φέτος', 'συμφωνίες φέτος'));
-  if (investor.viewCount != null) {
-    record.push({
-      figureEn: investor.viewCount.toLocaleString('en-GB'),
-      figureEl: investor.viewCount.toLocaleString('el-GR'),
-      en: investor.viewCount === 1 ? 'view' : 'views',
-      el: investor.viewCount === 1 ? 'προβολή' : 'προβολές',
-    });
-  }
-  const sampleReasonEn = 'Sample investor: there is no profile or inbox behind it';
-  const sampleReasonEl = 'Δείγμα επενδυτή: δεν υπάρχει προφίλ ή εισερχόμενα';
-
-  // Every investor, sparse or dense, uses this order. A missing value drops
-  // its row and leaves the rest where they are, so two cards never look
-  // like two different components. Tokens share one frame; the cheque and
-  // the record's numbers are the only heavier ink.
-  return (
-    <Card className="group overflow-hidden transition-all hover:border-primary/30">
-      <CardContent className="space-y-3">
-        {/* On a phone two small cards share a row (docs §115): the face, the
-            name and the kind, with Save on the corner. The thesis is under
-            More there; from sm the card's full head, as before. */}
-        <div className="relative sm:hidden" data-investor-compact="">
-          <Avatar className="h-14 w-14">
-            <AvatarImage src={investor.avatarUrl} alt="" />
-            <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary-accessible">{initials}</AvatarFallback>
-          </Avatar>
-          <button
-            aria-label={saved
-              ? bilingualInline(`Remove ${investor.displayName} from your shortlist`, `Αφαίρεση ${investor.displayName} από τη λίστα σας`)
-              : bilingualInline(`Save ${investor.displayName} to your shortlist`, `Αποθήκευση ${investor.displayName} στη λίστα σας`)}
-            aria-pressed={saved}
-            type="button"
-            onClick={onToggleSave}
-            className="tap-target absolute right-0 top-0 flex items-center rounded-md p-1 transition-colors hover:bg-muted"
-          >
-            <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
-          </button>
-          <p className="card-title mt-2 line-clamp-2 break-words">
-            {investor.displayName}
-            {investor.isVerified ? (
-              <BadgeCheck className={cn('ml-1 inline icon-sm align-[-2px]', STATUS.info.icon)} aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />
-            ) : null}
-          </p>
-          {/* The kind, else what the full head would say under the name. */}
-          {type ? (
-            <p className="truncate text-xs text-muted-foreground"><BilingualText en={type.en} el={type.el} compact /></p>
-          ) : investor.firmName || investor.firmRole || investor.headline ? (
-            <p className="truncate text-xs text-muted-foreground">{investor.firmName || investor.firmRole || investor.headline}</p>
-          ) : null}
-        </div>
-        <div className="max-sm:hidden">
-          <CardHead
-            mark={(
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={investor.avatarUrl} alt="" />
-                <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary-accessible">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            )}
-            title={(
-              <span className="inline-flex max-w-full items-center gap-1.5">
-                <span className="min-w-0 break-words">{investor.displayName}</span>
-                {investor.isVerified && (
-                  <BadgeCheck
-                    className={cn('icon-sm shrink-0', STATUS.info.icon)}
-                    aria-label={bilingualInline('Verified', 'Επαληθευμένος')}
-                  />
-                )}
-              </span>
-            )}
-            subtitle={type || investor.firmName || investor.firmRole || investor.headline ? (
-              <>
-                {type ? <BilingualText en={type.en} el={type.el} compact /> : null}
-                {type && (investor.firmName || investor.firmRole || investor.headline) ? ' · ' : null}
-                {investor.firmName || investor.firmRole ? (
-                  <>
-                    {investor.firmName}
-                    {investor.firmName && investor.firmRole ? ' · ' : null}
-                    {/* Its own node, so the catalogue can translate the role. */}
-                    {investor.firmRole ? <span>{investor.firmRole}</span> : null}
-                  </>
-                ) : investor.headline}
-              </>
-            ) : undefined}
-            meta={investor.isActivelyScouting ? (
-              <span className="inline-flex items-center gap-1 text-xs text-primary-accessible">
-                <CheckCircle2 className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Actively scouting" el="Αναζητά ενεργά" compact />
-              </span>
-            ) : undefined}
-            asideStays
-            aside={(
-              <button
-                aria-label={saved
-                  ? bilingualInline(`Remove ${investor.displayName} from your shortlist`, `Αφαίρεση ${investor.displayName} από τη λίστα σας`)
-                  : bilingualInline(`Save ${investor.displayName} to your shortlist`, `Αποθήκευση ${investor.displayName} στη λίστα σας`)}
-                aria-pressed={saved}
-                type="button"
-                onClick={onToggleSave}
-                className="tap-target flex items-center gap-1 rounded-md p-1 transition-colors hover:bg-muted sm:px-1.5"
-              >
-                <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
-                <span className="hidden sm:inline text-xs"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
-              </button>
-            )}
-          />
-        </div>
-
-        {investor.thesisSummary && (
-          <p className="card-body line-clamp-2 text-muted-foreground max-sm:hidden">{investor.thesisSummary}</p>
-        )}
-
-        {/* The facts side by side where the card is wide: one column of
-            five captions made each card about 480px tall at 1440 and the
-            directory of seven 3,500px (docs §86). The order stays. */}
-        <FactLine
-          items={[
-            checkSize ? <span key="cheque" className="font-semibold tabular-nums text-foreground">{checkSize}</span> : null,
-            ...stages.slice(0, 2).map((stage) => <BilingualText key={stage.en} en={stage.en} el={stage.el} compact />),
-          ]}
-        />
-        <button
-          type="button"
-          aria-expanded={showFacts}
-          onClick={() => setShowFacts((value) => !value)}
-          className="tap-extend-y text-xs font-medium text-muted-foreground hover:text-foreground"
-        >
-          {showFacts ? <BilingualText en="Less" el="Λιγότερα" compact /> : <BilingualText en="More" el="Περισσότερα" compact />}
-        </button>
-        {/* A class, not `hidden`: the grid's own display would win over the attribute. */}
-        <div className={cn(showFacts ? 'grid' : 'hidden', 'grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3')}>
-        {investor.thesisSummary ? (
-          <p className="card-body text-muted-foreground sm:hidden">{investor.thesisSummary}</p>
-        ) : null}
-        {investor.industries.length ? (
-          <CardFact en="Sectors" el="Τομείς">
-            <TagList label={bilingualInline('Sectors', 'Τομείς')}>
-              {investor.industries.map((name) => <QuietTag key={name}>{termDisplay(name)}</QuietTag>)}
-            </TagList>
-          </CardFact>
-        ) : null}
-
-        {stages.length ? (
-          <CardFact en="Stages" el="Στάδια">
-            <TagList label={bilingualInline('Stages', 'Στάδια')}>
-              {stages.map((stage) => (
-                <QuietTag key={stage.en}><BilingualText en={stage.en} el={stage.el} compact wrap /></QuietTag>
-              ))}
-            </TagList>
-          </CardFact>
-        ) : null}
-
-        {checkSize ? (
-          <CardFact en="Cheque" el="Επιταγή">
-            <span className="text-xs font-semibold tabular-nums text-foreground">{checkSize}</span>
-          </CardFact>
-        ) : null}
-
-        {places.length ? (
-          <CardFact en="Place" el="Τόπος">
-            <TagList label={bilingualInline('Place', 'Τόπος')}>
-              {places.map((place) => <QuietTag key={place}><BilingualText en={place} el={placeEl(place)} compact /></QuietTag>)}
-            </TagList>
-          </CardFact>
-        ) : null}
-
-        {record.length ? (
-          <CardFact en="So far" el="Μέχρι σήμερα">
-            <p className="text-xs text-muted-foreground">
-              {record.map((item, index) => (
-                <span key={item.en}>
-                  {index > 0 ? ' · ' : null}
-                  <span className="font-medium tabular-nums text-foreground">
-                    <BilingualText en={item.figureEn} el={item.figureEl} compact />
-                  </span>
-                  {' '}
-                  <BilingualText en={item.en} el={item.el} compact />
-                </span>
-              ))}
-            </p>
-          </CardFact>
-        ) : null}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 pt-1">
-          {investor.sample && !inDemo ? (
-            <div className="flex max-w-full flex-col items-start gap-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Button variant="outline" size="sm" disabled title={bilingualInline(sampleReasonEn, sampleReasonEl)} aria-describedby={sampleReasonId}>
-                  <BilingualText en="Profile" el="Προφίλ" compact />
-                </Button>
-                <Button variant="outline" size="sm" disabled title={bilingualInline(sampleReasonEn, sampleReasonEl)} aria-describedby={sampleReasonId}>
-                  <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
-                </Button>
-              </div>
-              <span id={sampleReasonId} className="max-w-[16rem] text-2xs leading-snug text-muted-foreground sm:sr-only">
-                <BilingualText en={sampleReasonEn} el={sampleReasonEl} compact wrap />
-              </span>
-            </div>
-          ) : (
-            <>
-              <Button size="sm" asChild>
-                <Link href={`/messages?to=${investor.userId}`} aria-label={bilingualInline(`Message ${investor.displayName} directly`, `Απευθείας μήνυμα: ${investor.displayName}`)}>
-                  <span className="sm:hidden"><BilingualText en="Message" el="Μήνυμα" compact /></span>
-                  <span className="max-sm:hidden"><BilingualText en="Message directly" el="Απευθείας μήνυμα" compact /></span>
-                </Link>
-              </Button>
-              <AskIntroButton targetId={investor.userId} targetName={investor.displayName} />
-              <CardMoreMenu name={investor.displayName} items={[{ key: 'profile', en: 'Profile', el: 'Προφίλ', href: `/profiles/${investor.userId}` }]} />
-            </>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
@@ -707,8 +353,8 @@ export default function InvestorsPage() {
                 </Card>
               ))
             : (
-              // Two small cards a row on a phone, one wide card a row from sm (docs §115).
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-1">
+              // One card a row at every width, like Matches (docs §115/§125).
+              <div className="grid grid-cols-1 gap-3">
                 {filtered.map((inv) => (
                   <InvestorCard key={inv.id} investor={inv} saved={isSaved(inv)} onToggleSave={() => void toggleSave(inv)} />
                 ))}

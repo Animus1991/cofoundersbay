@@ -199,7 +199,7 @@ describe('live readiness and explicit showcase isolation', () => {
     fireEvent.click(more);
     expect(more.getAttribute('aria-expanded')).toBe('true');
     expect(screen.getByText('Dimensions under 60%')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Ask AI: Team readiness/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Ask AI\. Ρωτήστε το AI: Team readiness/ })).toBeTruthy();
     expect(screen.getByText('In the side panel:')).toBeTruthy();
     const reassess = screen.getByRole('button', { name: /Reassess/i });
     expect(reassess.getAttribute('title')).toMatch(/The demo recalculates as you tick/);

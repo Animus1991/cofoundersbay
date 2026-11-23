@@ -38,7 +38,7 @@ describe('calm reading', () => {
   });
 
   it('gives every investor card the same caption order', () => {
-    const src = readFileSync('src/app/investors/page.tsx', 'utf8');
+    const src = readFileSync('src/components/investors/InvestorCard.tsx', 'utf8');
     const body = src.slice(src.indexOf('function InvestorCard'));
     const captions = ['Sectors', 'Stages', 'Cheque', 'Place', 'So far'];
     const order = captions.map((word) => body.indexOf(`en="${word}"`));

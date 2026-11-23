@@ -112,10 +112,12 @@ interface VentureReadinessCardProps {
    * the same score.
    */
   footer?: ReactNode;
+  /** Beside the title, on the head row's right (the founder overview's ask, docs §125). */
+  aside?: ReactNode;
   titleClassName?: string;
 }
 
-export function VentureReadinessCard({ data: prefetched, compact = false, className, footer, titleClassName }: VentureReadinessCardProps) {
+export function VentureReadinessCard({ data: prefetched, compact = false, className, footer, aside, titleClassName }: VentureReadinessCardProps) {
   const { data, isLoading } = useQuery({
     queryKey: qk('readiness', 'venture'),
     queryFn: getVentureReadiness,
@@ -167,12 +169,15 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
             <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
             <BilingualText en="Founder progress score" el="Βαθμός προόδου ιδρυτή" />
           </CardTitle>
-          <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs gap-1" asChild>
-            <Link href="/achievements" className="shrink-0">
-              <BilingualText en="History" el="Ιστορικό" compact />
-              <ArrowRight className="icon-sm" aria-hidden="true" />
-            </Link>
-          </Button>
+          <span className="flex items-center gap-1">
+            {aside}
+            <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs gap-1" asChild>
+              <Link href="/achievements" className="shrink-0">
+                <BilingualText en="History" el="Ιστορικό" compact />
+                <ArrowRight className="icon-sm" aria-hidden="true" />
+              </Link>
+            </Button>
+          </span>
         </div>
       </CardHeader>
       <CardContent className="pt-0">

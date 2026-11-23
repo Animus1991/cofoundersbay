@@ -43,6 +43,10 @@ import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { YourPagesRow } from '@/components/dashboard/YourPages';
+import { HomeShortcuts } from '@/components/dashboard/HomeShortcuts';
+
 import { HomeFold } from '@/components/dashboard/HomeFold';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { formatFee } from '@/lib/mentor-fee';
@@ -376,13 +380,33 @@ export default function MentorDashboard() {
     />
   ) : null;
 
+
+  /* The shortcuts and the reader's pages live in the page's tools, one
+     gesture away — the question box is alone on the page, as on the
+     founder's home (docs §116/§125). */
+  const rail: PageRailSection[] = [
+    {
+      id: 'pages',
+      glyph: 'bookmark',
+      labelEn: 'Your pages',
+      labelEl: 'Οι σελίδες σας',
+      content: <YourPagesRow />,
+    },
+    {
+      id: 'shortcuts',
+      glyph: 'spark',
+      labelEn: 'Quick actions',
+      labelEl: 'Γρήγορες ενέργειες',
+      content: <HomeShortcuts role="mentor" pages={false} />,
+    },
+  ];
   return (
-    <AppShell askAi={false} showHelp
+    <AppShell askAi={false} showHelp rail={rail}
       description="Sessions, mentee requests, reviews, and earnings at a glance."
       descriptionEl="Συνεδρίες, αιτήματα καθοδηγούμενων, αξιολογήσεις και έσοδα με μια ματιά."
     >
       <div className="space-y-6">
-        <HomeAskHero role="mentor" showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
+        <HomeAskHero role="mentor" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
         <HomeToday />
 
         {/* One next step, before everything else. Within the hour it stays the
