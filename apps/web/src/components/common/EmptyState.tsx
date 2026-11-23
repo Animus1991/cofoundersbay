@@ -7,15 +7,15 @@ import { cn } from '@/lib/utils';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import type { AskPrompt } from '@/lib/page-questions';
 import { BilingualText } from '@/components/common/BilingualText';
-
-type IllustrationType = 'search' | 'connection' | 'message' | 'rocket' | 'profile' | 'calendar' | 'default';
+import { EmptyIllustration, type IllustrationType } from '@/components/common/EmptyIllustration';
 
 type EmptyStateProps = {
   title: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
   className?: string;
-  illustration?: IllustrationType;
+  /** Decorative mark beside the sentence; `null` keeps the state text-only. */
+  illustration?: IllustrationType | null;
   size?: 'sm' | 'md' | 'lg';
   /** Secondary Ask AI action — never replaces the primary `action`. A pair from `lib/page-questions`. */
   askAiPrompt?: AskPrompt;
@@ -26,6 +26,7 @@ export function EmptyState({
   description,
   action,
   className,
+  illustration = 'default',
   size = 'md',
   askAiPrompt,
 }: EmptyStateProps) {
@@ -40,7 +41,21 @@ export function EmptyState({
         className,
       )}
     >
-      <div className="relative space-y-4">
+      <div className="relative flex items-start gap-4">
+        {/* data-keep-icon: the Cursor rule hides a lone cfb-glyph in
+            #main-content; this mark is the state's sentence made visible. */}
+        {illustration && (
+          <div
+            data-keep-icon=""
+            className={cn(
+              'shrink-0 text-muted-foreground',
+              size === 'sm' ? 'h-12 w-12' : 'h-14 w-14 sm:h-20 sm:w-20',
+            )}
+          >
+            <EmptyIllustration type={illustration} />
+          </div>
+        )}
+        <div className="min-w-0 flex-1 space-y-4">
         <div className="space-y-2">
           <p className="max-w-prose break-words text-base font-semibold leading-snug">{title}</p>
           {/* card-body: a step under the title on a phone too, where text-sm
@@ -63,6 +78,7 @@ export function EmptyState({
             ))}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

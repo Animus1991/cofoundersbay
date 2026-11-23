@@ -12,6 +12,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { NonGuaranteeNote } from '@/components/commitments/NonGuaranteeNote';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
@@ -1583,16 +1584,16 @@ export default function FundraisingPage() {
         {round ? (
           <RoundCard round={round} onAdd={() => openAdd('committed')} onEdit={savedRound ? () => setRoundFormOpen(true) : undefined} />
         ) : (
-          <Card className="rounded-xl border-dashed">
-            <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <CfbGlyph name="wallet" className="icon-lg text-muted-foreground/50" />
-              <p className="page-section font-semibold"><BilingualText en={fundraisingEn('empty_round_title')} el={fundraisingEl('empty_round_title')} /></p>
-              <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_round_hint')} el={fundraisingEl('empty_round_hint')} /></p>
-              {/* It asked "How is my fundraising going?" under a line that
-                  promised a target, an instrument and a first investor list.
-                  Outline: the one filled button on this page is the
-                  pipeline's Add contact (docs §74). */}
-              <div className="flex flex-wrap justify-center gap-2">
+          <EmptyState
+            illustration="rocket"
+            title={<BilingualText en={fundraisingEn('empty_round_title')} el={fundraisingEl('empty_round_title')} />}
+            description={<BilingualText en={fundraisingEn('empty_round_hint')} el={fundraisingEl('empty_round_hint')} />}
+            action={(
+              /* It asked "How is my fundraising going?" under a line that
+                 promised a target, an instrument and a first investor list.
+                 Outline: the one filled button on this page is the
+                 pipeline's Add contact (docs §74). */
+              <>
                 {live ? (
                   <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={() => setRoundFormOpen(true)}>
                     <BilingualText en={fundraisingEn('round_create')} el={fundraisingEl('round_create')} compact />
@@ -1601,9 +1602,9 @@ export default function FundraisingPage() {
                 <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={() => ask(ROUND_PLAN_ASK)}>
                   <BilingualText en={fundraisingEn('round_plan')} el={fundraisingEl('round_plan')} compact />
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </>
+            )}
+          />
         )}
 
         {/* The round totals moved to the page rail ('round' section). */}
@@ -1632,14 +1633,12 @@ export default function FundraisingPage() {
 
           <TabsContent value="pipeline" className="mt-4">
             {leads.length === 0 ? (
-              <Card className="rounded-xl border-dashed">
-                <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                  <CfbGlyph name="people" className="icon-lg text-muted-foreground/50" />
-                  <p className="page-section font-semibold"><BilingualText en={fundraisingEn('empty_pipeline_title')} el={fundraisingEl('empty_pipeline_title')} /></p>
-                  <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_pipeline_hint')} el={fundraisingEl('empty_pipeline_hint')} /></p>
-                  {emptyCta}
-                </CardContent>
-              </Card>
+              <EmptyState
+                illustration="default"
+                title={<BilingualText en={fundraisingEn('empty_pipeline_title')} el={fundraisingEl('empty_pipeline_title')} />}
+                description={<BilingualText en={fundraisingEn('empty_pipeline_hint')} el={fundraisingEl('empty_pipeline_hint')} />}
+                action={emptyCta}
+              />
             ) : (
               <InvestorListView leads={leads} onMove={handleMove} onFollowUp={setFollowUpFor} onEmail={setEmailTo} harborLive={harborLive} />
             )}
@@ -1652,11 +1651,10 @@ export default function FundraisingPage() {
           </TabsContent>
           <TabsContent value="captable" className="mt-4">
             {live && !savedRound ? (
-              <Card className="rounded-xl border-dashed">
-                <CardContent className="py-8 text-center text-sm text-muted-foreground">
-                  <BilingualText en={fundraisingEn('captable_needs_round')} el={fundraisingEl('captable_needs_round')} compact wrap />
-                </CardContent>
-              </Card>
+              <EmptyState
+                illustration="default"
+                title={<BilingualText en={fundraisingEn('captable_needs_round')} el={fundraisingEl('captable_needs_round')} compact wrap />}
+              />
             ) : (
               <CapTableView holders={capTable} onSave={saveCapTable} />
             )}

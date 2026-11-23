@@ -36,6 +36,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
@@ -854,18 +855,16 @@ export default function CoachingPage() {
                 onRetry={retrySessions}
               />
             ) : sessionsEmpty ? (
-              <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                  <BrainCircuit className="h-7 w-7 text-primary-accessible" />
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground"><BilingualText en="No coaching sessions yet" el="Δεν υπάρχουν συνεδρίες coaching ακόμα" /></p>
-                  <p className="mt-1 text-sm text-muted-foreground"><BilingualText en="Book your first session with a coach to get started." el="Κλείστε την πρώτη σας συνεδρία με coach για να ξεκινήσετε." /></p>
-                </div>
-                <Button size="sm" asChild>
-                  <Link href={directoryHref('coaching')}><BilingualText en="Find a coach" el="Εύρεση coach" compact /></Link>
-                </Button>
-              </div>
+              <EmptyState
+                illustration="calendar"
+                title={<BilingualText en="No coaching sessions yet" el="Δεν υπάρχουν συνεδρίες coaching ακόμα" />}
+                description={<BilingualText en="Book your first session with a coach to get started." el="Κλείστε την πρώτη σας συνεδρία με coach για να ξεκινήσετε." />}
+                action={(
+                  <Button size="sm" asChild>
+                    <Link href={directoryHref('coaching')}><BilingualText en="Find a coach" el="Εύρεση coach" compact /></Link>
+                  </Button>
+                )}
+              />
             ) : (
               <>
                 {sessionsReadFailed ? (
@@ -950,13 +949,16 @@ export default function CoachingPage() {
                   onRetry={retrySessions}
                 />
               ) : (
-                <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-                  <BilingualText
-                    en="Insights appear after your first coaching session: its themes, how many action items you closed, and the key takeaways."
-                    el="Οι αναλύσεις εμφανίζονται μετά την πρώτη σας συνεδρία coaching: τα θέματά της, πόσες ενέργειες κλείσατε και τα βασικά συμπεράσματα."
-                    wrap
-                  />
-                </div>
+                <EmptyState
+                  illustration="default"
+                  title={(
+                    <BilingualText
+                      en="Insights appear after your first coaching session: its themes, how many action items you closed, and the key takeaways."
+                      el="Οι αναλύσεις εμφανίζονται μετά την πρώτη σας συνεδρία coaching: τα θέματά της, πόσες ενέργειες κλείσατε και τα βασικά συμπεράσματα."
+                      wrap
+                    />
+                  )}
+                />
               )
             ) : (
             <>
