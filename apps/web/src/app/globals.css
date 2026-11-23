@@ -438,6 +438,36 @@ html {
     color-scheme: light;
   }
 
+  /* ── "Playful Night" (id: playful-dark) — mockup, 2026-11-23: Playful's
+     violet family on deep warm-tinted neutrals (hue 285, like its light
+     twin, instead of the base dark's 222 slate), the same 18px radius.
+     The accent lock and status tints sit in the html[data-theme] blocks
+     below; check-theme-contrast.py measures every pair. ── */
+  [data-theme="playful-dark"] {
+    --shadow-color: 285 30% 3%;
+    --shadow-strength: 3;
+    --background: 285 22% 8.2%;
+    --foreground: 280 10% 93%;
+    --card: 285 18% 11%;
+    --card-foreground: 280 10% 93%;
+    --popover: 285 16% 12.5%;
+    --popover-foreground: 280 10% 93%;
+    --secondary: 285 14% 15%;
+    --secondary-foreground: 280 10% 92%;
+    --muted: 285 14% 14%;
+    --muted-foreground: 282 9% 70%;
+    --accent: 285 16% 16%;               /* hover surface */
+    --accent-foreground: 280 10% 93%;
+    --destructive: 4 40% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 4 45% 72%;
+    --border: 285 12% 18.5%;
+    --input: 285 12% 22%;
+    --radius: 18px;
+    --gradient-hero: linear-gradient(hsl(280 15% 7%), hsl(280 15% 7%));
+    color-scheme: dark;
+  }
+
   .role-founder {
     --primary: 250 74% 63.9%;             /* white label, 4.62:1 */
     --primary-foreground: 0 0% 100%;
@@ -570,6 +600,15 @@ html {
     --accent-foreground: 280 10% 16%;
     --ring: 260 50% 48%;
   }
+  html[data-theme="playful-dark"] {
+    --primary: 260 55% 59%;               /* same violet family, lightened for dark — white label 4.73:1 */
+    --primary-foreground: 0 0% 100%;
+    --primary-mid: var(--primary);
+    --primary-accessible: 262 50% 80%;    /* links, >=5:1 on a dark card */
+    --accent: 285 16% 16%;
+    --accent-foreground: 280 10% 93%;
+    --ring: 260 50% 72%;
+  }
   /* ── "Light" (data-theme="studio") — the AI Studio prototype's look,
      adopted 2026-10-20 (docs §63). Warm stone neutrals (Tailwind's stone),
      a white card and a white sidebar on a stone-50 page, and ink (#292524)
@@ -617,6 +656,7 @@ html {
      come from that same tone. */
   html.dark,
   html[data-theme="cofounder"],
+  html[data-theme="playful-dark"],
   html[data-theme="system"] {
     --primary-mid: var(--primary);
   }
@@ -842,6 +882,7 @@ html {
 
   .dark,
   [data-theme="cofounder"],
+  [data-theme="playful-dark"],
   [data-theme="system"] {
     /* Dark text tones are already light pastels; they are the marks too. */
     --status-success-mark: var(--status-success-fg);
@@ -868,6 +909,15 @@ html {
     --status-neutral-fg:     232 6% 64%;
     --status-neutral-bg:     232 11% 13.2%;
     --status-neutral-border: 232 6.5% 15.4%;
+  }
+  /* Playful Night hue-shifts the accent status to its violet (262) and runs
+     the tints a touch more chroma than the shared dark band, like its light
+     twin does against the light band. */
+  html[data-theme="playful-dark"] {
+    --status-accent-fg:      262 38% 78%;
+    --status-accent-bg:      262 20% 15%;
+    --status-accent-border:  262 12% 25%;
+    --status-accent-mark:    var(--status-accent-fg);
   }
 
   * {

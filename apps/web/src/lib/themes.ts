@@ -1,4 +1,4 @@
-export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot' | 'terra' | 'playful';
+export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot' | 'terra' | 'playful' | 'playful-dark';
 
 /**
  * Which class and `data-theme` each theme puts on <html>. One table for the
@@ -17,6 +17,7 @@ export const THEME_ROOT: Record<Exclude<ThemeName, 'system'>, { mode: 'light' | 
   apricot: { mode: 'light', dataTheme: 'apricot' },
   terra: { mode: 'light', dataTheme: 'terra' },
   playful: { mode: 'light', dataTheme: 'playful' },
+  'playful-dark': { mode: 'dark', dataTheme: 'playful-dark' },
 };
 
 export interface ThemeColors {
@@ -239,6 +240,28 @@ export const themes: Record<ThemeName, ThemeColors> = {
     input: '285 14% 84%',
     ring: '260 50% 48%',
   },
+  'playful-dark': {
+    // "Playful Dark" — legacy inline fallback only; globals.css owns the live tokens.
+    background: '285 22% 8.2%',
+    foreground: '280 10% 93%',
+    card: '285 18% 11%',
+    cardForeground: '280 10% 93%',
+    popover: '285 16% 12.5%',
+    popoverForeground: '280 10% 93%',
+    primary: '260 55% 59%',
+    primaryForeground: '0 0% 100%',
+    secondary: '285 14% 15%',
+    secondaryForeground: '280 10% 92%',
+    muted: '285 14% 14%',
+    mutedForeground: '282 9% 70%',
+    accent: '285 16% 16%',
+    accentForeground: '280 10% 93%',
+    destructive: '4 40% 50%',
+    destructiveForeground: '0 0% 100%',
+    border: '285 12% 18.5%',
+    input: '285 12% 22%',
+    ring: '260 50% 72%',
+  },
   terra: {
     // "Terracotta" — legacy inline fallback only; globals.css owns the live tokens.
     background: '336 18% 95.8%',
@@ -314,6 +337,10 @@ export function applyTheme(themeName: ThemeName) {
     case 'playful':
       root.classList.add('light');
       root.setAttribute('data-theme', 'playful');
+      break;
+    case 'playful-dark':
+      root.classList.add('dark');
+      root.setAttribute('data-theme', 'playful-dark');
       break;
     case 'minimal':
       // Light-first: the `light` class supplies the base, and data-theme

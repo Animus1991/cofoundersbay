@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, createContext, useContext, useCallback } from 'react';
+import { THEME_ROOT } from '@/lib/themes';
 
-type Theme = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot' | 'terra' | 'playful';
+type Theme = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot' | 'terra' | 'playful' | 'playful-dark';
 type Role = 'founder' | 'mentor' | 'investor' | 'org' | null;
 
 const roleClasses = ['role-founder', 'role-mentor', 'role-investor', 'role-org'];
@@ -38,8 +39,8 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
     // Named palettes live on data-theme. Do not clear it for alliance /
     // cofounder / system — those are first-class themes on this line.
     root.classList.remove('dark', 'light');
-    if (newTheme === 'minimal' || newTheme === 'apricot' || newTheme === 'terra' || newTheme === 'playful') {
-      root.classList.add('light');
+    if (newTheme === 'minimal' || newTheme === 'apricot' || newTheme === 'terra' || newTheme === 'playful' || newTheme === 'playful-dark') {
+      root.classList.add(THEME_ROOT[newTheme].mode);
       root.setAttribute('data-theme', newTheme);
     } else if (newTheme === 'alliance') {
       root.classList.add('light');

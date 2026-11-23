@@ -54,7 +54,7 @@ blocks = {}
 for m in re.finditer(
     # `html.dark.role-*` is how globals.css writes the dark role overrides
     # (the extra type selector outranks `.role-*`); read it as `.dark.role-*`.
-    r'(?m)^\s*(?:html)?(:root|\.dark|\.dark\.role-[a-z]+|\.role-[a-z]+|\[data-theme="[a-z]+"\])\s*\{',
+    r'(?m)^\s*(?:html)?(:root|\.dark|\.dark\.role-[a-z]+|\.role-[a-z]+|\[data-theme="[a-z-]+"\])\s*\{',
     css,
 ):
     name = m.group(1)
