@@ -179,7 +179,7 @@ function SendProposalModal({ opportunity, onClose, onSend }: {
     setSending(true);
     try {
       await onSend({ scope: scope.trim(), timeframe: timeframe.trim() || null, compensation: compensation.trim() || null });
-      success('Proposal sent');
+      success('Proposal sent', undefined, { figure: 'investor' });
       onClose();
     } catch (err) {
       showError('Could not send the proposal', err instanceof Error ? err.message : undefined);

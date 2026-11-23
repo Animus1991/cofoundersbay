@@ -65,7 +65,7 @@ export function useConnectionActions(enabled: boolean, myId: string | null | und
       if (!link || link.state !== 'received') return false;
       try {
         await respondToConnectionRequest(link.id, 'accepted');
-        success('Request accepted', 'You are now connected.');
+        success('Request accepted', 'You are now connected.', { figure: 'founder' });
         await queryClient.invalidateQueries({ queryKey: qk('connections') });
         return true;
       } catch (err) {

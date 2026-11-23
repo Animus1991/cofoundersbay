@@ -496,7 +496,7 @@ export default function MentorDashboard() {
                 title="Mentorship requests"
                 titleEl="Αιτήματα καθοδήγησης"
                 count={requestData ? pendingRequests.length : undefined}
-                icon={Zap}
+                icon={Zap} iconTint="warning"
                 action={{ href: '/mentor/requests', label: 'View all', labelEl: 'Όλα' }}
                 contentClassName="card-rows"
               >
@@ -508,7 +508,7 @@ export default function MentorDashboard() {
               </SectionCard>
             )}
 
-            <SectionCard title="Upcoming sessions" titleEl="Επόμενες συνεδρίες" icon={Calendar} action={{ href: '/mentor/sessions', label: 'View all', labelEl: 'Όλες' }} contentClassName="card-rows">
+            <SectionCard title="Upcoming sessions" titleEl="Επόμενες συνεδρίες" icon={Calendar} iconTint="warning" action={{ href: '/mentor/sessions', label: 'View all', labelEl: 'Όλες' }} contentClassName="card-rows">
               {upcomingAll.map((session, i) => (
                 <SessionRowItem key={session.id} session={session} next={i === 0} />
               ))}
@@ -517,7 +517,7 @@ export default function MentorDashboard() {
               ) : sessionsKnown && upcomingAll.length === 0 && <EmptyLine en="No upcoming sessions scheduled." el="Δεν υπάρχουν προγραμματισμένες συνεδρίες." />}
             </SectionCard>
 
-            <SectionCard title="Your mentees" titleEl="Οι καθοδηγούμενοί σας" icon={UserCheck} action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }} contentClassName="card-rows">
+            <SectionCard title="Your mentees" titleEl="Οι καθοδηγούμενοί σας" icon={UserCheck} iconTint="accent" action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }} contentClassName="card-rows">
               {mentees.map((mentee) => (
                 <MenteeRowItem key={mentee.id} mentee={mentee} />
               ))}

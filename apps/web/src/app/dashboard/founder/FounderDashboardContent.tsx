@@ -75,6 +75,7 @@ import { PREVIEW_MILESTONE_EL } from '@/lib/i18n/strings-milestones';
 import { activityTimeAgoPair, activityTitleEl } from '@/lib/i18n/activity-titles';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import { explainMatch, saysLookingFor, viewerFacts, type ViewerFacts } from '@/lib/match-explain';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { isMilestoneOverdue } from '@/lib/milestone-order';
@@ -745,7 +746,7 @@ export default function FounderDashboardContent() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between gap-2">
                 <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
-                  <CfbGlyph name="flag" className="icon-sm text-muted-foreground" />
+                  <SectionSticker glyph="flag" tint="success" />
                   <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} compact />
                   {milestones.length > 0 ? <span className="font-normal tabular-nums text-muted-foreground">{completedMilestoneCount}/{milestones.length}</span> : null}
                 </CardTitle>
@@ -837,7 +838,7 @@ export default function FounderDashboardContent() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
-            <CfbGlyph name="wallet" className="icon-sm text-muted-foreground" />
+            <SectionSticker glyph="wallet" tint="success" />
             <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} compact />
           </CardTitle>
           <AIInsightButton
@@ -926,7 +927,7 @@ export default function FounderDashboardContent() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
-            <CfbGlyph name="matches" className="icon-sm text-muted-foreground" />
+            <SectionSticker glyph="matches" tint="accent" />
             <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} compact />
           </CardTitle>
           <AIInsightButton
@@ -987,7 +988,7 @@ export default function FounderDashboardContent() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between gap-2">
                 <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
-                  <CfbGlyph name="shield" className="icon-sm text-muted-foreground" />
+                  <SectionSticker glyph="shield" tint="neutral" />
                   <BilingualText en={dashboardEn('profile_strength')} el={dashboardEl('profile_strength')} />
                 </CardTitle>
                 <AIInsightButton
@@ -1117,7 +1118,7 @@ export default function FounderDashboardContent() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-start gap-2">
-                <CfbGlyph name="spark" className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
+                <SectionSticker glyph="spark" tint="info" />
                 <BilingualText en={dashboardEn('recent_activity')} el={dashboardEl('recent_activity')} compact wrap />
               </CardTitle>
             </CardHeader>
@@ -1148,7 +1149,7 @@ export default function FounderDashboardContent() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-start gap-2">
-                <CfbGlyph name="calendar" className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
+                <SectionSticker glyph="calendar" tint="warning" />
                 <BilingualText en={dashboardEn('upcoming')} el={dashboardEl('upcoming')} compact wrap />
               </CardTitle>
             </CardHeader>

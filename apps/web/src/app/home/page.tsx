@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Check, Circle } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { CfbFigure, type CfbFigureId } from '@/components/illustrations/CfbCast';
+import { SectionSticker, glyphStickerTint } from '@/components/dashboard/SectionSticker';
 import { EmptyIllustration } from '@/components/common/EmptyIllustration';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { useTodayRows } from '@/components/dashboard/HomeToday';
@@ -143,7 +143,10 @@ function Home() {
   const peopleSection = (
     <section className="space-y-3" aria-labelledby="home-people">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 id="home-people" className="card-title"><BilingualText en="People who fit" el="Άνθρωποι που ταιριάζουν" compact /></h2>
+        <div className="flex min-w-0 items-center gap-2">
+          <SectionSticker glyph="people" tint="accent" />
+          <h2 id="home-people" className="card-title"><BilingualText en="People who fit" el="Άνθρωποι που ταιριάζουν" compact /></h2>
+        </div>
         <Link href="/matches" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
           <BilingualText en="See everyone" el="Δείτε όλους" compact />
         </Link>
@@ -158,7 +161,10 @@ function Home() {
       <Card>
         <CardContent className="space-y-3">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 id="home-steps" className="card-title"><BilingualText en="To begin" el="Για να ξεκινήσετε" compact /></h2>
+            <div className="flex min-w-0 items-center gap-2">
+              <SectionSticker glyph="flag" tint="success" />
+              <h2 id="home-steps" className="card-title"><BilingualText en="To begin" el="Για να ξεκινήσετε" compact /></h2>
+            </div>
             <div className="flex shrink-0 items-center gap-3">
               <span className="text-xs tabular-nums text-muted-foreground">
                 <BilingualText en={`${doneCount} of ${steps.length}`} el={`${doneCount} από ${steps.length}`} compact />
@@ -218,13 +224,16 @@ function Home() {
             <Card>
               <CardContent className="space-y-1">
                 <div className="flex items-baseline justify-between gap-3">
-                  <h2 id="home-waiting" className="card-title">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <SectionSticker glyph="bell" tint="warning" />
+                    <h2 id="home-waiting" className="card-title">
                     <BilingualText
                       en={`${waiting} ${waiting === 1 ? 'thing is' : 'things are'} waiting on you`}
                       el={waiting === 1 ? 'Σας περιμένει 1 πράγμα' : `Σας περιμένουν ${waiting} πράγματα`}
                       compact
                     />
-                  </h2>
+                    </h2>
+                  </div>
                   {waiting > WAITING_ON_TOP ? (
                     <Link href={overviewPathFor(role)} className="tap-extend-y shrink-0 text-sm font-medium text-primary-accessible hover:underline" data-home-waiting-all="">
                       <BilingualText en={`All ${waiting}`} el={`Όλα (${waiting})`} compact />
@@ -235,7 +244,7 @@ function Home() {
                   {waitingRows.slice(0, WAITING_ON_TOP).map((row) => (
                     <li key={row.key}>
                       <Link href={row.href} className="group flex items-center gap-3 py-2.5 text-sm text-foreground transition-colors hover:text-primary-accessible" data-home-waiting-row={row.key}>
-                        <span data-keep-icon="" className="shrink-0 text-muted-foreground" aria-hidden="true"><CfbGlyph name={row.glyph} className="icon-sm" /></span>
+                        <SectionSticker glyph={row.glyph} tint={glyphStickerTint(row.glyph)} />
                         <span className="min-w-0 flex-1">
                           <BilingualText en={row.en} el={row.el} compact wrap />
                           {row.count ? <span className="ml-1.5 tabular-nums text-muted-foreground">{row.count}</span> : null}

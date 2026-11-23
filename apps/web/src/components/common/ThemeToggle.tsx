@@ -1,6 +1,6 @@
 'use client';
 
-import { Moon, Sun, Monitor, Minus, Palette, Sunrise, Flower2, Flame } from 'lucide-react';
+import { Moon, Sun, Monitor, Minus, Palette, Sunrise, Flower2, Flame, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -22,6 +22,7 @@ export function ThemeToggle() {
     minimal: Minus,
     apricot: Sunrise,
     terra: Flame,
+    playful: PartyPopper,
   };
 
   const CurrentIcon = icons[theme] || Moon;
@@ -66,6 +67,10 @@ export function ThemeToggle() {
         <DropdownMenuItem onClick={() => setTheme('terra')} className="gap-2">
           <Flame className="icon-sm" />
           Terracotta
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('playful')} className="gap-2">
+          <PartyPopper className="icon-sm" />
+          Playful
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

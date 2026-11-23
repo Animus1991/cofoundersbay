@@ -158,6 +158,8 @@ const el: Record<string, string> = {
   'Warm cream with a soft mint': 'Ζεστή κρέμα με απαλή μέντα',
   'Warm neutral with a soft apricot': 'Ζεστό ουδέτερο με απαλό βερικοκί',
   'Soft mauve with a dusty rose': 'Απαλό μοβ με σκονισμένο ροζ',
+  Playful: 'Παιχνιδιάρικο',
+  'Warm lilac, rounder corners': 'Ζεστό λιλά, πιο στρογγυλές γωνίες',
   'Command palette': 'Παλέτα εντολών',
   'Command palette (Ctrl+K)': 'Παλέτα εντολών (Ctrl+K)',
   'Hide sample data': 'Απόκρυψη δειγμάτων',

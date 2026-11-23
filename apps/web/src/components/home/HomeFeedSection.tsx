@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import type { MatchConnection } from '@/components/common/MatchCard';
 import { getMeProfile, getPersonalizedFeed, listEvents, listPrograms, searchProfiles, type SearchHit } from '@/lib/api';
 import { listCommitmentCards } from '@/lib/commitments-api';
@@ -49,7 +50,7 @@ function FeedCard({ item }: { item: FeedItem }) {
             meta={<BilingualText en={item.why.en} el={item.why.el} compact wrap />}
             aside={(
               <span className="flex items-center gap-3">
-                {item.when ? <span className="whitespace-nowrap text-xs text-muted-foreground"><RelativeTime date={item.when} format={formatRelativeTime} /></span> : null}
+                {item.when ? <span className="whitespace-nowrap text-xs card-meta text-muted-foreground"><RelativeTime date={item.when} format={formatRelativeTime} /></span> : null}
                 <Button variant="outline" size="sm" asChild>
                   <Link href={item.href}><BilingualText en={item.action.en} el={item.action.el} compact /></Link>
                 </Button>
@@ -271,7 +272,10 @@ export function HomeFeedSection({ people, shownAbove, connectionOf }: { people: 
   return (
     <section ref={section} className="space-y-3" aria-labelledby="home-around-you" data-home-feed="">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 id="home-around-you" className="card-title"><BilingualText en="Around you" el="Γύρω σας" compact /></h2>
+        <div className="flex min-w-0 items-center gap-2">
+          <SectionSticker glyph="feed" tint="primary" />
+          <h2 id="home-around-you" className="card-title"><BilingualText en="Around you" el="Γύρω σας" compact /></h2>
+        </div>
         <Link href="/feed" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
           <BilingualText en="The whole feed" el="Όλη η ροή" compact />
         </Link>

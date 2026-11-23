@@ -761,6 +761,7 @@ const THEME_WORDS: Array<[string[], string]> = [
   [['dark', 'σκοτειν'], 'dark'],
   [['lilac', 'λιλα'], 'lilac'],
   [['terracotta', 'τερακοτα'], 'terra'],
+  [['playful', 'παιχνιδι'], 'playful'],
   [['apricot', 'βερικοκ'], 'apricot'],
   [['mint', 'μεντα'], 'minimal'],
   [['light', 'φωτειν'], 'light'],

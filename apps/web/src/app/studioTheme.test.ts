@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
-import { THEME_ROOT, applyTheme } from '@/lib/themes';
+import { THEME_ROOT, applyTheme, getStoredTheme } from '@/lib/themes';
 import { THEME_OPTIONS } from '@/components/theme/ThemeSwitcher';
 import { translate } from '@/lib/i18n/translate';
 
@@ -87,6 +87,64 @@ describe('the Light theme (studio)', () => {
   });
 });
 
+const PLAYFUL = block('[data-theme="playful"]');
+const PLAYFUL_LOCK = block('html[data-theme="playful"]');
+const PLAYFUL_RULES = [...CSS.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => m[1].includes('data-theme="playful"'));
+const PLAYFUL_STATUS = PLAYFUL_RULES.find((m) => m[2].includes('--status-accent-fg'))![2];
+
+describe('the Playful theme', () => {
+  it('is the default for a visitor with no stored choice', () => {
+    expect(THEME_ROOT.playful).toEqual({ mode: 'light', dataTheme: 'playful' });
+    localStorage.removeItem('theme');
+    expect(getStoredTheme()).toBe('playful');
+    // The first-paint script in the root layout falls back the same way.
+    expect(readFileSync('src/app/layout.tsx', 'utf8')).toContain('m.playful');
+  });
+
+  it('is warm lilac with a violet accent and an 18px corner', () => {
+    expect(token(PLAYFUL, 'background')).toEqual([285, 14, 96.4]);
+    expect(token(PLAYFUL, 'card')).toEqual([285, 20, 98.8]);
+    expect(token(PLAYFUL_LOCK, 'primary')).toEqual([260, 60, 46]);
+    expect(PLAYFUL).toMatch(/--radius:\s*18px/);
+  });
+
+  it('clears every contrast floor', () => {
+    const bg = token(PLAYFUL, 'background');
+    const card = token(PLAYFUL, 'card');
+    const muted = token(PLAYFUL, 'muted');
+    const fg = token(PLAYFUL, 'foreground');
+    const mutedFg = token(PLAYFUL, 'muted-foreground');
+    expect(contrast(fg, bg)).toBeGreaterThan(7);
+    for (const surface of [bg, card, muted]) expect(contrast(mutedFg, surface)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(token(PLAYFUL_LOCK, 'primary-foreground'), token(PLAYFUL_LOCK, 'primary'))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(token(PLAYFUL, 'destructive-foreground'), token(PLAYFUL, 'destructive'))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(token(PLAYFUL_LOCK, 'ring'), bg)).toBeGreaterThanOrEqual(3);
+    expect(contrast(token(PLAYFUL, 'border'), card)).toBeLessThan(1.3);
+    expect(contrast(token(PLAYFUL, 'input'), card)).toBeLessThan(1.45);
+  });
+
+  it('keeps every status word at five to one on its tint', () => {
+    for (const status of ['success', 'warning', 'danger', 'info', 'accent', 'neutral']) {
+      const fg = token(PLAYFUL_STATUS, `status-${status}-fg`);
+      const tint = token(PLAYFUL_STATUS, `status-${status}-bg`);
+      expect(contrast(fg, tint), status).toBeGreaterThanOrEqual(5);
+    }
+  });
+});
+
+describe('the cast motion', () => {
+  it('bobs gently and stops under reduced motion and the Mint theme', () => {
+    expect(block('.cfb-bob')).toMatch(/cfb-bob\s+6s\s+ease-in-out\s+infinite/);
+    const reduced = CSS.slice(CSS.indexOf('@media (prefers-reduced-motion: reduce)'), CSS.indexOf('@media (hover: hover)'));
+    expect(reduced).toMatch(/\.cfb-bob,/);
+    expect(reduced).toMatch(/animation:\s*none/);
+    // The component layer's idle-motion switch (the selector at column 0,
+    // not an `html[data-theme]` token lock).
+    const minimalLayer = CSS.slice(CSS.indexOf('\n[data-theme="minimal"] {'));
+    expect(minimalLayer.slice(0, 2000)).toContain('.cfb-bob');
+  });
+});
+
 describe('theme names', () => {
   afterEach(() => {
     document.documentElement.removeAttribute('data-theme');
@@ -114,5 +172,15 @@ describe('theme names', () => {
       expect(translate('el', option.label)).not.toBe(option.label);
       expect(translate('el', option.description)).not.toBe(option.description);
     }
+  });
+
+  it('offers Playful beside the rest, in Greek too', () => {
+    const option = THEME_OPTIONS.find((o) => o.name === 'playful');
+    expect(option).toBeDefined();
+    expect(translate('el', option!.label)).not.toBe(option!.label);
+    expect(translate('el', option!.description)).not.toBe(option!.description);
+    applyTheme('playful');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('playful');
+    expect(document.documentElement.classList.contains('light')).toBe(true);
   });
 });

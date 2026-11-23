@@ -175,6 +175,7 @@ export default function EventsPage() {
         nextStatus === 'going'
           ? bilingualInline('You are going to this event', 'Θα παρευρεθείτε σε αυτή την εκδήλωση')
           : bilingualInline('RSVP removed', 'Η δήλωση αφαιρέθηκε'),
+        nextStatus === 'going' ? { figure: 'mentor' } : undefined,
       );
     } catch (e) {
       showError(bilingualInline('RSVP failed', 'Η δήλωση απέτυχε'), e instanceof Error ? e.message : bilingualInline('Please try again', 'Δοκιμάστε ξανά'));

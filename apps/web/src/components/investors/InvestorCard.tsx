@@ -59,7 +59,7 @@ export type Investor = {
 function CardFact({ en, el, children }: { en: string; el: string; children: ReactNode }) {
   return (
     <div className="space-y-1">
-      <span className="block text-xs font-medium text-foreground">
+      <span className="block text-xs card-meta font-medium text-foreground">
         <BilingualText en={en} el={el} compact />
       </span>
       {children}
@@ -69,7 +69,7 @@ function CardFact({ en, el, children }: { en: string; el: string; children: Reac
 
 /** A sector, a stage or a place: the same almost-transparent frame on every card. */
 function QuietTag({ children }: { children: ReactNode }) {
-  return <span role="listitem" className="quiet-tag text-xs">{children}</span>;
+  return <span role="listitem" className="quiet-tag text-xs card-meta">{children}</span>;
 }
 
 function TagList({ label, children }: { label: string; children: ReactNode }) {
@@ -249,7 +249,7 @@ export function InvestorCard({
 
         {record.length ? (
           <CardFact en="So far" el="Μέχρι σήμερα">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs card-meta text-muted-foreground">
               {record.map((item, index) => (
                 <span key={item.en}>
                   {index > 0 ? ' · ' : null}
