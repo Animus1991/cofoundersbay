@@ -163,7 +163,7 @@ function ApplyModal({
               mark={(
                 <Avatar className="h-10 w-10 rounded-xl">
                   <AvatarImage src={program.organization?.logoUrl ?? undefined} />
-                  <AvatarFallback data-keep-icon className="rounded-xl bg-primary/10 text-primary-accessible">
+                  <AvatarFallback data-keep-icon className="rounded-xl bg-status-success-bg text-primary-accessible">
                     <TypeIcon className="icon-md" aria-hidden="true" />
                   </AvatarFallback>
                 </Avatar>
@@ -268,7 +268,7 @@ function ProgramCard({
             <Avatar className="h-10 w-10 rounded-xl">
               <AvatarImage src={program.organization?.logoUrl ?? undefined} />
               {/* Stands in for the organisation's logo: an avatar, not decoration. */}
-              <AvatarFallback data-keep-icon className="rounded-xl bg-primary/10 text-primary-accessible">
+              <AvatarFallback data-keep-icon className="rounded-xl bg-status-success-bg text-primary-accessible">
                 <TypeIcon className="icon-md" aria-hidden="true" />
               </AvatarFallback>
             </Avatar>

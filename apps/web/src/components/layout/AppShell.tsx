@@ -297,6 +297,23 @@ export function AppShell({
   const pageDescription = resolved.description;
   const pageDescriptionEl = resolved.descriptionEl;
   const showAskAi = Boolean(pageTitle) && askAi !== false;
+  // When the page's "?" affordance exists, the lead lives in the help sheet
+  // (its first paragraph) and under the title only the first time this route
+  // is read — the sentence is one tap away, not on every visit. It stays
+  // collapsed through hydration; a macrotask after mount opens it once on the
+  // first visit and stamps the route seen — deferred so the stamp belongs to
+  // the visit that settled, not the StrictMode mount that unmounts again.
+  const descIntoHelp = Boolean(showHelp && resolved.meta?.helpId);
+  const descSeenKey = `cfb:seen-desc:${pathname}`;
+  const [descSeen, setDescSeen] = useState(true);
+  useEffect(() => {
+    if (!descIntoHelp) return;
+    const timer = window.setTimeout(() => {
+      setDescSeen(localStorage.getItem(descSeenKey) === '1');
+      localStorage.setItem(descSeenKey, '1');
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [descIntoHelp, descSeenKey]);
   const [metaSlot, setMetaSlot] = useState<HTMLDivElement | null>(null);
   const askAiPrompt: AskPrompt = askAi
     ? askAi
@@ -357,6 +374,13 @@ export function AppShell({
                   <InfoHint title={{ en: 'About this page', el: 'Σχετικά με τη σελίδα' }} className="mt-1">
                     <BilingualText en={pageDescription} el={pageDescriptionEl} wrap />
                   </InfoHint>
+                ) : descIntoHelp ? (
+                  /* Collapsed on the server and on repeat visits; it opens
+                     after mount on the first read only, so there is no
+                     hydration mismatch. */
+                  <div hidden={descSeen}>
+                    <PageLead en={pageDescription} el={pageDescriptionEl} />
+                  </div>
                 ) : <PageLead en={pageDescription} el={pageDescriptionEl} />)}
               </div>
               {(actions || showHelp || pinnable) && (

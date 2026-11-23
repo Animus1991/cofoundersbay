@@ -34,6 +34,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { CookieChoicesButton } from '@/components/common/CookieChoicesButton';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { NeedCard, type NeedCardView } from '@/components/commitments/NeedCard';
+import { CfbCast } from '@/components/illustrations/CfbCast';
 import { LiveStatsSection } from '@/components/landing/LiveStats';
 import { PLAN_HIGHLIGHTS } from '@/lib/billing';
 import { ORG_FOUNDERS } from '@/lib/demo/org-world';
@@ -268,27 +269,29 @@ export function LandingHome() {
         <div className="landing-intro relative mx-auto w-full px-4 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-14 xl:px-16">
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-12">
             <div className="min-w-0 animate-fade-in text-center lg:text-left">
-              <span className="mb-3 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                <Sparkles className="icon-sm" />
-                <BilingualText en="Co-founders, mentors and investors" el="Συνιδρυτές, μέντορες και επενδυτές" compact />
-              </span>
-              <h1 className="landing-display font-display font-semibold tracking-tight text-foreground">
-                <BilingualText
-                  en="Say what is missing. Meet who will build it with you."
-                  el="Πείτε τι λείπει. Γνωρίστε ποιος θα το χτίσει μαζί σας."
-                  stacked
-                  wrap
-                  secondaryClassName="landing-display-secondary"
-                />
-              </h1>
-              <p className="landing-lead mx-auto mt-3 max-w-xl text-muted-foreground lg:mx-0">
-                <BilingualText
-                  en="One need card: what exists, the outcome, who is missing. The right people answer in a protected conversation, and terms are agreed in versions."
-                  el="Μία κάρτα ανάγκης: τι υπάρχει, το αποτέλεσμα, ποιος λείπει. Οι κατάλληλοι άνθρωποι απαντούν σε προστατευμένη συζήτηση και οι όροι συμφωνούνται σε εκδόσεις."
-                  stacked
-                  wrap
-                />
-              </p>
+              <div className="flex flex-col items-center gap-5 md:flex-row md:items-center md:gap-6">
+                <div className="order-2 min-w-0 md:order-1">
+                  <span className="mb-3 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    <Sparkles className="icon-sm" />
+                    <BilingualText en="Co-founders, mentors and investors" el="Συνιδρυτές, μέντορες και επενδυτές" compact />
+                  </span>
+                  <h1 className="landing-display font-display font-semibold tracking-tight text-foreground">
+                    <BilingualText
+                      en="Say what is missing. Meet who will build it with you."
+                      el="Πείτε τι λείπει. Γνωρίστε ποιος θα το χτίσει μαζί σας."
+                      stacked
+                      wrap
+                      secondaryClassName="landing-display-secondary"
+                    />
+                  </h1>
+                </div>
+                <div data-keep-icon="" className="order-1 shrink-0 md:order-2">
+                  <CfbCast />
+                </div>
+              </div>
+              {/* The lead once restated the three moves in one paragraph;
+                  they already stand under the headline and again in "How it
+                  works" — the sentence lives there, not twice more. */}
 
               <div className="mx-auto mt-6 flex w-full max-w-sm flex-col items-stretch gap-2 sm:max-w-none sm:flex-row sm:items-center sm:justify-center lg:justify-start">
                 <Button className="w-full gap-2 sm:w-auto" asChild>

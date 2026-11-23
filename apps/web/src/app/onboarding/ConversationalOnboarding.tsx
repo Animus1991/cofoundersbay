@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/Logo';
+import { CfbFigure, type CfbFigureId } from '@/components/illustrations/CfbCast';
 import { bilingualInline } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
@@ -107,6 +108,14 @@ const ROLE_OPTIONS: { value: Role; label: string; labelEl: string; desc: string;
   { value: 'investor', label: 'Investor', labelEl: 'Επενδυτής', desc: 'Backing early-stage teams', descEl: 'Στηρίζει ομάδες πρώιμου σταδίου', icon: Zap },
   { value: 'org', label: 'Organization', labelEl: 'Οργανισμός', desc: 'Representing a company or institution', descEl: 'Εκπροσωπεί εταιρεία ή φορέα', icon: Briefcase },
 ];
+
+/* The cast's own member for each role — an organization is a builder. */
+const ROLE_FIGURE: Record<Role, CfbFigureId> = {
+  founder: 'founder',
+  mentor: 'mentor',
+  investor: 'investor',
+  org: 'builder',
+};
 
 const BOT_QUESTIONS: Record<Step, { en: string; el: string }> = {
   welcome: {
@@ -441,7 +450,10 @@ export function ConversationalOnboarding() {
             <p className="border-l border-border pl-3 text-xs text-muted-foreground">
               <BilingualText en="Profile setup" el="Ρύθμιση προφίλ" compact />
             </p>
-            <p className="ml-auto text-xs font-medium tabular-nums text-foreground" data-testid="onboarding-step-counter">
+            <span data-keep-icon="" className="ml-auto shrink-0 text-muted-foreground">
+              <CfbFigure id={ROLE_FIGURE[form.current?.role ?? 'founder'] ?? 'founder'} className="h-16 w-14" />
+            </span>
+            <p className="text-xs font-medium tabular-nums text-foreground" data-testid="onboarding-step-counter">
               {step === 'done' ? (
                 <BilingualText en="Done" el="Ολοκληρώθηκε" compact />
               ) : (
