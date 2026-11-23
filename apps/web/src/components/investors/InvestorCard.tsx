@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AskIntroDialog } from '@/components/intros/AskIntroDialog';
 import { bilingualInline } from '@/lib/i18n/format';
 import { cn, initialsOf } from '@/lib/utils';
+import { roleTone } from '@/lib/role-tone';
 import { STATUS } from '@/lib/semantic-colors';
 import { useHydrated } from '@/components/common/RelativeTime';
 import { isPreviewDemo } from '@/lib/preview-demo';
@@ -135,7 +136,7 @@ export function InvestorCard({
             mark={(
               <Avatar className="h-16 w-16">
                 <AvatarImage src={investor.avatarUrl} alt="" />
-                <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary-accessible">
+                <AvatarFallback className={cn('text-sm font-semibold', roleTone('investor'))}>
                   {initials}
                 </AvatarFallback>
               </Avatar>

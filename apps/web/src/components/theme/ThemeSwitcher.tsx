@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise, Flower2, Flame, PartyPopper } from 'lucide-react';
+import { Moon, MoonStar, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise, Flower2, Flame, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -89,6 +89,13 @@ export const THEME_OPTIONS = [
     description: 'Warm lilac, rounder corners',
     icon: PartyPopper,
     swatch: ['#f4f1f6', '#6a3fd4', '#efeafa'],
+  },
+  {
+    name: 'playful-dark' as ThemeName,
+    label: 'Playful Night',
+    description: 'The same violet on deep warm dark',
+    icon: MoonStar,
+    swatch: ['#1a1622', '#9b7bf5', '#2a2433'],
   },
 ];
 

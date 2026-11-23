@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCoverFailed } from '@/hooks/useCoverFailed';
 import {
   MapPin,
+  Users,
   Video,
   Share2,
   Bookmark,
@@ -12,7 +13,6 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -303,26 +303,41 @@ export function EventCard({
     );
   }
 
-  // Default variant: the Opportunities card - the date tile as the mark, the
-  // title and when beside it, the kind at the right; where, who and how many
-  // on the mark's edge; the actions on the axis.
+  // Default variant: the image leads — a 16:9 cover (the category's warning
+  // wash when there is none) with the date badge on it; then the title, the
+  // where·when, who runs it, and the one RSVP verb (docs §130.3).
+  const fullDate = fmtDate(event.startDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   return (
     <Card className={cn('group overflow-hidden hover:border-primary/30 transition-colors', className)}>
-      {event.coverImage && !cover.failed ? (
-        <img ref={cover.ref} onError={cover.onError} src={event.coverImage} alt="" referrerPolicy="no-referrer" className="h-28 w-full object-cover" />
-      ) : null}
+      <div className="relative aspect-video w-full overflow-hidden">
+        {event.coverImage && !cover.failed ? (
+          <img ref={cover.ref} onError={cover.onError} src={event.coverImage} alt="" referrerPolicy="no-referrer" loading="lazy" className="h-full w-full object-cover" />
+        ) : (
+          <div className="h-full w-full bg-status-warning-bg" aria-hidden="true" />
+        )}
+        {/* Date badge on the cover: a solid card square so it reads on any
+            photo; the sr-only line carries the full date (docs §130.3). */}
+        <div data-card-mark="" className="absolute left-3 top-3">
+          <div className="flex h-11 w-11 flex-col items-center justify-center rounded-xl bg-card text-center shadow-sm">
+            <span className="text-sm font-bold tabular-nums text-primary-accessible" aria-hidden="true">
+              {event.startDate.getDate()}
+            </span>
+            <span className="card-meta leading-none text-muted-foreground" aria-hidden="true">
+              {fmtDate(event.startDate, { month: 'short' })}
+            </span>
+          </div>
+          <span className="sr-only">{fullDate}</span>
+        </div>
+        {/* The format chip is opaque: the same read on photo and wash. */}
+        <div className="absolute right-3 top-3">
+          <PhotoChip>
+            <EventTypeIcon type={event.type} />
+            <EventTypeLabel type={event.type} />
+          </PhotoChip>
+        </div>
+      </div>
       <CardContent className="space-y-3">
         <CardHead
-          mark={(
-            <div data-card-mark="" className="flex h-10 w-10 flex-col items-center justify-center rounded-xl bg-status-warning-bg leading-none">
-              <span className="text-2xs text-primary-accessible">
-                {fmtDate(event.startDate, { month: 'short' })}
-              </span>
-              <span className="mt-0.5 text-sm font-bold tabular-nums text-primary-accessible">
-                {event.startDate.getDate()}
-              </span>
-            </div>
-          )}
           title={(
             <Link
               href={`/events/${event.id}`}
@@ -331,26 +346,26 @@ export function EventCard({
               {event.title}
             </Link>
           )}
-          subtitle={formatEventTime(event.startDate, event.endDate)}
-          meta={event.location ? <span className="block truncate">{event.location}</span> : undefined}
-          asideStays
-          aside={(
-            <Badge variant="outline" className="gap-1">
-              <EventTypeIcon type={event.type} />
-              <EventTypeLabel type={event.type} />
-            </Badge>
-          )}
+          subtitle={`${event.location ? `${event.location} · ` : ''}${formatEventTime(event.startDate, event.endDate)}`}
         />
 
-        {/* Host and attendees as facts on the mark's edge: a 24px host
-            avatar in front of them put the line 26px off the card's axis. */}
-        <FactLine
-          className="min-w-0"
-          items={[
-            <BilingualText key="host" en={`By ${event.hostName}`} el={`Από ${event.hostName}`} compact />,
-            <BilingualText key="count" en={`${event.attendeesCount} attending`} el={`${event.attendeesCount} συμμετέχουν`} compact />,
-          ]}
-        />
+        {/* Who runs it: a small avatar and the name on the card's axis. */}
+        <div className="flex min-w-0 items-center gap-2">
+          <Avatar className="h-5 w-5">
+            <AvatarImage src={event.hostAvatar || undefined} alt="" />
+            <AvatarFallback className="bg-status-warning-bg text-[0.625rem] text-primary-accessible">{initialsOf(event.hostName)}</AvatarFallback>
+          </Avatar>
+          <span className="card-meta min-w-0 truncate text-muted-foreground">
+            <BilingualText en={`By ${event.hostName}`} el={`Από ${event.hostName}`} compact />
+          </span>
+          <span className="card-meta inline-flex shrink-0 items-center gap-1 tabular-nums text-muted-foreground">
+            <Users className="h-3.5 w-3.5" aria-hidden="true" />
+            <span aria-hidden="true">{event.attendeesCount}</span>
+            <span className="sr-only">
+              <BilingualText en={`${event.attendeesCount} attending`} el={`${event.attendeesCount} συμμετέχουν`} compact />
+            </span>
+          </span>
+        </div>
 
         {/* Actions, on the card's axis. */}
         <div className="flex items-center gap-2 pt-3 border-t border-border">
@@ -406,17 +421,14 @@ export function EventCardSkeleton({ variant = 'default' }: { variant?: 'default'
     );
   }
 
+  // Same box the card draws: the 16:9 cover, then the title and two lines.
   return (
     <Card>
-      <CardContent className="pt-5">
-        <div className="flex gap-4">
-          <div className="h-16 w-16 bg-secondary rounded-xl animate-pulse" />
-          <div className="flex-1 space-y-2">
-            <div className="h-5 w-3/4 bg-secondary rounded animate-pulse" />
-            <div className="h-4 w-1/2 bg-secondary rounded animate-pulse" />
-            <div className="h-4 w-1/3 bg-secondary rounded animate-pulse" />
-          </div>
-        </div>
+      <div className="aspect-video w-full bg-secondary animate-pulse" />
+      <CardContent className="space-y-2 pt-4">
+        <div className="h-5 w-3/4 bg-secondary rounded animate-pulse" />
+        <div className="h-4 w-1/2 bg-secondary rounded animate-pulse" />
+        <div className="h-4 w-1/3 bg-secondary rounded animate-pulse" />
       </CardContent>
     </Card>
   );

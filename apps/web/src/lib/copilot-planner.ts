@@ -758,6 +758,9 @@ export function messageSearchQuery(rawMessage: string): string | null {
  * Returns 1–3 tools; never proposes destructive admin actions.
  */
 const THEME_WORDS: Array<[string[], string]> = [
+  // The compound before "dark": "playful dark"/"σκοτεινό παιχνιδιάρικο" must
+  // not land on plain Dark.
+  [['playful dark', 'playful night', 'παιχνιδιαρικο σκοτ'], 'playful-dark'],
   [['dark', 'σκοτειν'], 'dark'],
   [['lilac', 'λιλα'], 'lilac'],
   [['terracotta', 'τερακοτα'], 'terra'],

@@ -24,6 +24,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
@@ -599,6 +600,7 @@ export default function ProgramsPage() {
     <AppShell
       showHelp
       rail={rail}
+      titleSticker={{ icon: Rocket, tint: 'success' }}
       actions={
         <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
           {isRefetching ? <Loader2 className="icon-sm animate-spin mr-1.5" /> : <RefreshCw className="icon-sm mr-1.5" />}

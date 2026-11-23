@@ -1451,7 +1451,7 @@ export const ACTION_DECLARATIONS = [
         name: 'theme',
         type: 'string',
         required: true,
-        enumValues: ['dark', 'light', 'lilac', 'system', 'alliance', 'cofounder', 'minimal', 'apricot', 'terra', 'playful'],
+        enumValues: ['dark', 'light', 'lilac', 'system', 'alliance', 'cofounder', 'minimal', 'apricot', 'terra', 'playful', 'playful-dark'],
         description: { en: 'The theme to switch to.', el: 'Το θέμα που θα ενεργοποιηθεί.' },
       },
     ],

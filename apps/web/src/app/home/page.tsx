@@ -10,7 +10,11 @@ import { CfbFigure, type CfbFigureId } from '@/components/illustrations/CfbCast'
 import { SectionSticker, glyphStickerTint } from '@/components/dashboard/SectionSticker';
 import { EmptyIllustration } from '@/components/common/EmptyIllustration';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { HomeContinue } from '@/components/home/HomeContinue';
 import { useTodayRows } from '@/components/dashboard/HomeToday';
+import { listMilestones } from '@/lib/api';
+import { dedupeWaitingRows } from '@/lib/home-waiting';
+import { orderMilestones } from '@/lib/milestone-order';
 import { HomeFeedSection } from '@/components/home/HomeFeedSection';
 import { HomePeople } from '@/components/home/HomePeople';
 import { AppShell } from '@/components/layout/AppShell';
@@ -65,6 +69,16 @@ function Home() {
     retry: 0,
   });
   const { connectionWith, connectionOf, settled } = useConnectionWith(Boolean(myId), myId);
+
+  // The same read HomeContinue makes: when the next open milestone is its row,
+  // the waiting list must not repeat it (dedupe by what the row is about).
+  const { data: milestonesData } = useQuery({
+    queryKey: qk('milestones', 'all', 'all'),
+    queryFn: () => listMilestones({ limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const nextMilestone = orderMilestones(milestonesData?.milestones ?? []).find((m) => m.status !== 'completed' && m.status !== 'cancelled');
 
   const me = profile?.profile;
   const steps = [
@@ -214,9 +228,11 @@ function Home() {
       askAi={false}
     >
       <div className="space-y-6">
-        {/* The assistant is the first thing on the first page: the box alone,
-            its shortcuts stay on Overview. */}
-        <HomeAskHero role={audience === 'org' ? 'incubator' : audience} plain greeting={false} />
+        {/* The greeting line belongs to the box: one «Καλημέρα, …», then the
+            question field. */}
+        <HomeAskHero role={audience === 'org' ? 'incubator' : audience} plain name={me?.displayName?.split(' ')[0] ?? null} />
+        {/* The one thing in progress, straight under the hero — one row, one verb. */}
+        <HomeContinue />
         {/* What waits, here and not one page away: the first three in Today's
             order (a person first), each row its own way in; the rest on Overview. */}
         {showWaiting ? (
@@ -241,7 +257,7 @@ function Home() {
                   ) : null}
                 </div>
                 <ul className="divide-y divide-border">
-                  {waitingRows.slice(0, WAITING_ON_TOP).map((row) => (
+                  {dedupeWaitingRows(waitingRows, nextMilestone).slice(0, WAITING_ON_TOP).map((row) => (
                     <li key={row.key}>
                       <Link href={row.href} className="group flex items-center gap-3 py-2.5 text-sm text-foreground transition-colors hover:text-primary-accessible" data-home-waiting-row={row.key}>
                         <SectionSticker glyph={row.glyph} tint={glyphStickerTint(row.glyph)} />

@@ -160,6 +160,8 @@ const el: Record<string, string> = {
   'Soft mauve with a dusty rose': 'Απαλό μοβ με σκονισμένο ροζ',
   Playful: 'Παιχνιδιάρικο',
   'Warm lilac, rounder corners': 'Ζεστό λιλά, πιο στρογγυλές γωνίες',
+  'Playful Night': 'Παιχνιδιάρικο βράδυ',
+  'The same violet on deep warm dark': 'Το ίδιο βιολετί σε βαθύ ζεστό σκοτάδι',
   'Command palette': 'Παλέτα εντολών',
   'Command palette (Ctrl+K)': 'Παλέτα εντολών (Ctrl+K)',
   'Hide sample data': 'Απόκρυψη δειγμάτων',

@@ -32,6 +32,7 @@ import {
   type OpportunityItem, type OpportunityProposalItem, type OpportunityType,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import { NeedCardsSection, kindsForOpportunityType } from '@/components/commitments/NeedCardsSection';
 import { NeedCardChips } from '@/components/commitments/NeedCardChips';
 import { useNeedCardWall } from '@/components/commitments/useNeedCardWall';
@@ -812,6 +813,7 @@ export default function OpportunitiesPage() {
       <AppShell
         showHelp
         rail={rail}
+        titleSticker={{ glyph: 'briefcase', tint: 'accent' }}
         actions={
           <Button className="gap-2" onClick={() => setShowPostForm(true)}>
             <Plus className="icon-sm" />
@@ -940,7 +942,7 @@ export default function OpportunitiesPage() {
             {sentProposals.length > 0 ? (
               <Card>
                 <CardContent className="space-y-3">
-                  <h2 className="card-title"><BilingualText en={opportunitiesEn('proposals_sent_title')} el={opportunitiesEl('proposals_sent_title')} compact /></h2>
+                  <h2 className="card-title flex items-center gap-2"><SectionSticker glyph="update" tint="warning" /><BilingualText en={opportunitiesEn('proposals_sent_title')} el={opportunitiesEl('proposals_sent_title')} compact /></h2>
                   <ul className="divide-y divide-border">
                     {sentProposals.map((p) => (
                       <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">

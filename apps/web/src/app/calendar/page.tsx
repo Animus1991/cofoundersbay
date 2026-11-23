@@ -708,6 +708,7 @@ export default function CalendarPage() {
     <AppShell
       showHelp
       rail={rail}
+      titleSticker={{ glyph: 'calendar', tint: 'info' }}
       askAi={ASK.calendar}
       actions={
         <div className="flex flex-wrap items-center gap-2">

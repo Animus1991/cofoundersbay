@@ -1,6 +1,6 @@
 'use client';
 
-import { type CSSProperties, ReactNode, createContext, useContext, memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type CSSProperties, type ElementType, ReactNode, createContext, useContext, memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
@@ -22,6 +22,8 @@ import { PageHeaderSlot } from './PageHeaderSlot';
 import { recordInAppView } from '@/lib/in-app-history';
 import { PageLead } from './PageLead';
 import { InfoHint } from '@/components/common/InfoHint';
+import { SectionSticker, type StickerTint } from '@/components/dashboard/SectionSticker';
+import type { CfbGlyphName } from '@/components/icons/CfbGlyph';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -263,6 +265,11 @@ type AppShellProps = {
    * list is what people come back for, read once and then in the way.
    */
   leadAsHint?: boolean;
+  /**
+   * A tinted round sticker before the h1 — the SectionSticker idiom lifted
+   * from the section heads to the page itself.
+   */
+  titleSticker?: { glyph?: CfbGlyphName; icon?: ElementType; tint: StickerTint };
 };
 
 /**
@@ -288,6 +295,7 @@ export function AppShell({
   askAi,
   rail,
   leadAsHint = false,
+  titleSticker,
 }: AppShellProps) {
   const insideFrame = useContext(InAppShellFrame);
   const pathname = usePathname() ?? '/';
@@ -366,9 +374,12 @@ export function AppShell({
             >
               <div className="min-w-0 [grid-area:title]" data-page-header="">
                 {pageTitle && (
-                  <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
-                    <BilingualText en={pageTitle} el={pageTitleEl} />
-                  </h1>
+                  <div className="flex items-center gap-2.5">
+                    {titleSticker ? <SectionSticker {...titleSticker} className="h-8 w-8" /> : null}
+                    <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
+                      <BilingualText en={pageTitle} el={pageTitleEl} />
+                    </h1>
+                  </div>
                 )}
                 {pageDescription && (leadAsHint ? (
                   <InfoHint title={{ en: 'About this page', el: 'Σχετικά με τη σελίδα' }} className="mt-1">

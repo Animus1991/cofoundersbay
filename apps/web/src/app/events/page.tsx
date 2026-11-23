@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Calendar, Grid, List, MapPin, Plus, Search, Video, CheckCircle2, Layers, X, GraduationCap, MessageCircle } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
@@ -279,6 +280,7 @@ export default function EventsPage() {
     <AppShell
       rail={rail}
       showHelp
+      titleSticker={{ glyph: 'calendar', tint: 'warning' }}
       askAi={ASK.events}
       actions={
         <Button className="gap-2" asChild>
@@ -407,7 +409,8 @@ export default function EventsPage() {
               <>
                 {featured && (
                   <div className="mb-6">
-                    <h2 className="mb-4 text-base font-semibold text-foreground">
+                    <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground">
+                      <SectionSticker glyph="calendar" tint="warning" />
                       <BilingualText en={firstLabel.en} el={firstLabel.el} compact />
                     </h2>
                     <EventCard

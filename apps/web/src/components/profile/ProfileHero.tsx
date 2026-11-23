@@ -26,6 +26,7 @@ export function ProfileHero({
   avatarUrl,
   avatarMark,
   nameBadge,
+  nameAside,
   headline,
   meta,
   openTo,
@@ -42,6 +43,9 @@ export function ProfileHero({
   avatarMark?: ReactNode;
   /** Beside the name: the Verified badge. */
   nameBadge?: ReactNode;
+  /** After the badge on the name's row: the own-profile Edit, so all widths
+      keep name + badge + verb on one line (docs §130.6). */
+  nameAside?: ReactNode;
   /** The headline, or a prompt to write one. */
   headline?: ReactNode;
   /** Short facts on one wrapping line: place, time zone, languages, joined. */
@@ -64,7 +68,7 @@ export function ProfileHero({
   const facts = (meta ?? []).filter(Boolean);
   return (
     <section data-card="" data-surface="card" aria-label={ariaLabel ?? `${name} · Profile · Προφίλ`} className={cn('relative overflow-hidden rounded-2xl border border-border bg-card', className)}>
-      <div className="h-20 w-full bg-primary/[0.05] sm:h-24 md:h-28" aria-hidden="true" />
+      <div className="h-28 w-full bg-primary/[0.05] md:h-40" aria-hidden="true" />
       {/* The section's padding is a card's (16px on a phone, 24px from 640),
           so the hero's text sits on the same left axis as the section cards
           under it. */}
@@ -92,6 +96,7 @@ export function ProfileHero({
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <Heading className="min-w-0 break-words text-xl font-semibold tracking-tight text-foreground md:text-2xl">{name}</Heading>
               {nameBadge}
+              {nameAside}
             </div>
             {headline ? <div className="break-words text-base text-muted-foreground first-letter:uppercase">{headline}</div> : null}
             {facts.length ? (

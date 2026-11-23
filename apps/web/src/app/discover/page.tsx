@@ -26,6 +26,7 @@ import {
   searchProfiles, getRecommendations, getDashboardStats, getMeProfile, recordMatchFeedback, restoreMatchFeedback, sendConnectionRequest, saveToShortlist, createSavedSearch, type SearchHit
 } from '@/lib/api';
 import { createPassLedger } from '@/lib/match-pass';
+import { promotedLayout } from '@/lib/discover-promoted';
 import { explainMatch, viewerFacts } from '@/lib/match-explain';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { AppShell } from '@/components/layout/AppShell';
@@ -592,6 +593,7 @@ export default function DiscoverPage() {
     <AppShell
       title={discoverEn('page_title')}
       titleEl={discoverEl('page_title')}
+      titleSticker={{ glyph: 'people', tint: 'accent' }}
       description={discoverEn('page_description')}
       descriptionEl={discoverEl('page_description')}
       showHelp
@@ -717,7 +719,10 @@ export default function DiscoverPage() {
             />
           )}
 
-          {!loading && promotedHits.length > 0 && (
+          {/* One or two paid cards lead the results grid (below, marked);
+              more than two stay their own section so the stripe stays
+              honest (docs §130.5). */}
+          {!loading && promotedLayout(promotedHits.length) === 'section' && (
             <section aria-label="Promoted · Προώθηση" className="space-y-3 border-b border-border pb-4">
               <div className="flex flex-wrap items-baseline gap-2">
                 <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground">
@@ -749,12 +754,32 @@ export default function DiscoverPage() {
             </section>
           )}
 
-          {!loading && filteredHits.length > 0 && (
+          {!loading && (filteredHits.length > 0 || (promotedHits.length > 0 && promotedHits.length <= 2)) && (
             <AnimatedList
               animation="fade-in-up"
               staggerDelay={50}
               className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && PEOPLE_GRID)}
             >
+              {promotedLayout(promotedHits.length) === 'inline' ? promotedHits.map((hit) => {
+                const profile = hitToProfile(hit);
+                return (
+                  <div key={hit.id} data-promoted="" aria-label={`Promoted · ${PROMOTED_COPY.label.el}`}>
+                    <ProfileCard
+                      profile={profile}
+                      variant={viewMode === 'list' ? 'compact' : 'default'}
+                      badge={(
+                        <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground">
+                          <BilingualText en={PROMOTED_COPY.label.en} el={PROMOTED_COPY.label.el} compact />
+                        </span>
+                      )}
+                      onConnect={() => handleConnect(profile)}
+                      onMessage={() => handleMessage(profile)}
+                      onBookmark={() => handleBookmark(profile)}
+                      {...personActions(profile.userId)}
+                    />
+                  </div>
+                );
+              }) : null}
               {filteredHits.map((hit) => {
                 const profile = hitToProfile(hit);
                 return (
