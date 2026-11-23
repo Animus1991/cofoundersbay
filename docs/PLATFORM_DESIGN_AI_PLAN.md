@@ -9579,3 +9579,32 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
 - Προωθημένα ≤2 από ξεχωριστή ενότητα → πρώτες κάρτες του πλέγματος, με τη σφραγίδα στο aside της κεφαλής.
 - Milestone στα «Σας περιμένουν» όταν είναι και το Continue → μόνο στο Continue.
 - Facts εκδήλωσης σε κάρτα → ένχρωμη λωρίδα «Σύντομα»· ίδιο περιεχόμενο.
+
+## 131. Γύρος 2026-11-23 — μεταφορά μεθόδου από το Parea, κύμα 2A (η τολμηρή)
+
+Η κριτική στο κύμα 1 ήταν «απειροελάχιστο»: η μέθοδος του Parea (εικόνα/χρώμα/σχήμα πρώτα, κείμενο δεύτερο) ήθελε εμφανή παρέμβαση στο κέλυφος και την αρχική — όχι αντίγραφο· CoFounderBay με τη δική του επαγγελματική φωνή, χωρίς να χαθεί καμία λειτουργία.
+
+### 131.1 Κέλυφος
+- **SideNav:** κάθε σύνδεσμος πήρε πηγάδι εικονιδίου 28px αποχρωματισμένο ανά ομάδα (δουλειά=accent, ανακάλυψη/άνθρωποι=info, χρηματοδότηση=success, επικοινωνία=warning, admin=muted· `NAV_SECTION_TINT`)· το ενεργό είναι γεμάτο χάπι `bg-primary/10` με έντονη ετικέτα· η επιφάνεια `bg-muted/40`. Ίδιοι σύνδεσμοι, ίδια σειρά, ίδια ρόλοι.
+- **TopBar:** σε `sm+` κεντρικό χάπι «Ρωτήστε ή αναζητήστε…» που ανοίγει τον υπάρχοντα βοηθό (`usePopupChatOptional().open(_, 'ai')`, αλλιώς `/ai`)· πρωτεύον «+ Δημιουργία» με μενού μόνο από υπάρχοντα routes (`/commitments/new`, `/events/create`, `/projects/create` — ελεγμένα στο `PAGE_REGISTRY` μέσω test)· μετά γλώσσα, κουδούνι με τον υπάρχοντα μετρητή, `UserMenu`. Το τηλέφωνο κρατά τη δική του μπάρα.
+- **Πριν → μετά (shell):** αναζήτηση + κουδούνι + `UserMenu` από το υποσέλιδο του SideNav → στην κορυφαία μπάρα· το «More» της κάτω μπάρας → καρτέλα «Εγώ» (`/profile`)· το άνοιγμα του drawer έμεινε στο κουμπί της πάνω μπάρας· το demo Exit έμεινε μόνο στο υποσέλιδο.
+- **MobileBottomNav:** πέντε θέσεις — Αρχική, Ανακάλυψη, κεντρικό ανυψωμένο `Βοηθός` (`/ai`, στρογγυλή `bg-primary` με δακτύλιο), Μηνύματα με το υπάρχον σήμα αδιάβαστων, Εγώ. Η clearance του σώματος υπήρχε· το `PhoneStickyAction` ανέβηκε σε `bottom-[calc(5rem+env)]` ώστε να μην αγγίζει την ψηλότερη μπάρα (μετρήθηκε 77px).
+- **Επιφάνειες:** `Card` → `border-border/60` + `shadow-sm`· `Badge` → `rounded-full` χάπι. Μόνο επίπεδες αποχρώσεις· η θερμή χτή του playful υπήρχε ήδη.
+
+### 131.2 Αρχική `/home`
+- **Hero card:** `HomeAskHero` με `hero` — στιβαρή `rounded-3xl bg-primary` κάρτα: χαιρετισμός ως επικεφαλίδα, μία γραμμή σκοπού (`purposeEn/El` = το υπάρχον `copy.description`), το ίδιο πεδίο ερώτησης μέσα σε λευκό πλαίσιο, τρία chips προθέσεων (τα πρώτα `config.actions`, ίδιος `runCommand`) και η φιγούρα του ρόλου δεξιά (~140px, πάνω από το κείμενο σε τηλέφωνο). `plain`/`greeting`/`showWaiting` δεν άλλαξαν — οι πίνακες τη χρησιμοποιούν ως πριν.
+- **«Εκδηλώσεις για εσάς»** (`HomeEventStrip`): έως 6 επερχόμενες από `listEvents({scope:'upcoming'})` σε οριζόντια ταινία — εξώφυλλο 160×100 με την ίδια ένχρωμη λύση και μικρό ταριχικό τετράγωνο, τίτλος, σύνδεσμος «Όλες» → `/events`· κρύβεται όταν δεν υπάρχουν και όσο φορτώνει.
+- **«Άνθρωποι που ταιριάζουν»** (`HomePeople`): από στήλη καρτών σε οριζόντια σειρά πορτραιτικών πλακιδίων πάνω σε `bg-status-accent-bg/50` — avatar 72px με `roleTone`, όνομα, `RoleBadge`, μία γραμμή λόγου, ΜΙΑ πρωτεύουσα ενέργεια (ίδια connect/accept/message/sent λογική) + `CardMoreMenu` (προφίλ, μήνυμα όταν συνδεδεμένοι).
+- **Διάταξη:** από `lg` δύο άνισες στήλες μέσω `grid lg:grid-cols-3` + `lg:order` — αριστερά 2/3: hero, ταινία, άνθρωποι, feed· δεξιά 1/3: «Συνέχισε», «Σας περιμένουν», βήματα. Σε <lg η σειρά DOM είναι η προτεραιότητα (hero, Continue, waiting, strip, people, steps, feed). Οι κανόνες `homeOrder`/`stepsFirst` και `dedupeWaitingRows` ανέγγιχτοι.
+
+### 131.3 Discover `/discover`
+- Τέσσερα ένχρωμα πλακίδια πρόθεσης πάνω από τα αποτελέσματα — μόνο όταν δεν υπάρχει αναζήτηση/φίλτρο (`roleFilter==='all'` και `discoverFilterNames(filters)` κενό): «Συνιδρυτής» (accent·founder), «Μέντορας» (warning·mentor), «Επενδυτής» (success·investor), «Ομάδα/Οργανισμός» (info·builder) — το πάτημα καλεί το ίδιο `setRoleFilter` με τα chips.
+
+### 131.4 Επαλήθευση
+- `tsc --noEmit --incremental false`: καθαρό.
+- eslint στα 14 αρχεία που άλλαξαν: 0 errors· οι warnings είναι όλες προϋπάρχουσες (setState-in-effect, refs-in-render του `useCoverFailed` όπως στο EventCard, unused `act`/`prefetch` στο nav test, `Date.now` στο HomePeople — ίδιες γραμμές/μοτίβα με το main).
+- Στοχευμένα tests: 4 αρχεία / 40 tests (hero card submit + chips, πέντε ονομασμένες θέσεις bottom nav, `CREATE_LINKS ⊆ PAGE_REGISTRY`, strip κρύβεται στο κενό). Πλήρες suite: **292+1 αρχεία, 1960 tests, όλα πράσινα** (το `layoutGuards` έπιασε το `lg:grid-cols-3` χωρίς βάση — διορθώθηκε σε `grid-cols-1`).
+- `check-theme-contrast.py`: **0 αποτυχίες κάτω από 4.5:1** σε όλα τα θέματα (playful + playful-dark μέσα).
+- Sweep 1440 και 390 σε `/home /discover /events /opportunities /dashboard/founder /messages /profile /settings`: **8×200, 0 σφάλματα, 0 xScroll, 0 unnamed, 0 deadBands, 0 blankIcons** και στις δύο διαστάσεις (`no askAI` στο /home από σχεδιασμό — το hero είναι το κουτί).
+- Bottom nav έναντι sticky RSVP σε 390: το `[data-phone-sticky]` δεν εμφανίζεται στη σύντομη δοκιμαστική σελίδα (η κάρτα RSVP μένει πάντα ορατή)· το offset αυξήθηκε σε 5rem+env ώστε να μένει κενό όταν εμφανίζεται.
+- Composites: `Temp\cfb-sweep\mockups\wave2\compare3-*` + `stack3-*-390` + `index.html` — κελιά ως base64· όλα >150KB εκτός `compare3-opportunities-390` (122KB — placeholder κελί + δύο στενές λήψεις, επαληθεύτηκε οπτικά).
