@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useId, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -36,7 +36,7 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { qk } from '@/lib/query-keys';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
-import { AskIntroButton, AskIntroDialog } from '@/components/intros/AskIntroDialog';
+import { AskIntroDialog } from '@/components/intros/AskIntroDialog';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
@@ -200,17 +200,6 @@ function countLine(n: number, oneEn: string, manyEn: string, oneEl: string, many
   return { figureEn: figure, figureEl: figure, en: n === 1 ? oneEn : manyEn, el: n === 1 ? oneEl : manyEl };
 }
 
-const PHONE = '(max-width: 639.98px)';
-function subscribePhone(onChange: () => void) {
-  const query = window.matchMedia(PHONE);
-  query.addEventListener('change', onChange);
-  return () => query.removeEventListener('change', onChange);
-}
-/** Below `sm`, read after hydration: the server and the first paint agree on the wide card. */
-function usePhoneWidth() {
-  return useSyncExternalStore(subscribePhone, () => window.matchMedia(PHONE).matches, () => false);
-}
-
 function InvestorCard({
   investor,
   saved,
@@ -226,7 +215,6 @@ function InvestorCard({
   const sampleReasonId = useId();
   const [showFacts, setShowFacts] = useState(false);
   const [introOpen, setIntroOpen] = useState(false);
-  const phone = usePhoneWidth();
   const me = useStoredUser();
   const canIntro = Boolean(me?.id && me.id !== investor.userId);
   const initials = initialsOf(investor.displayName);
@@ -414,12 +402,12 @@ function InvestorCard({
                   <span className="max-sm:hidden"><BilingualText en="Message directly" el="Απευθείας μήνυμα" compact /></span>
                 </Link>
               </Button>
-              {/* One button on a phone (§115): the introduction is in the menu there. */}
-              <AskIntroButton targetId={investor.userId} targetName={investor.displayName} className="max-sm:hidden" />
+              {/* One button per card at every width (§115; on a phone since
+                  §124, on the desktop since §128): the introduction is in the menu. */}
               <CardMoreMenu
                 name={investor.displayName}
                 items={[
-                  ...(phone && canIntro ? [{ key: 'intro', en: 'Ask for an introduction', el: 'Ζητήστε γνωριμία', onSelect: () => setIntroOpen(true) }] : []),
+                  ...(canIntro ? [{ key: 'intro', en: 'Ask for an introduction', el: 'Ζητήστε γνωριμία', onSelect: () => setIntroOpen(true) }] : []),
                   { key: 'profile', en: 'Profile', el: 'Προφίλ', href: `/profiles/${investor.userId}` },
                 ]}
               />

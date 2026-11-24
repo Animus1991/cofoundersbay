@@ -6723,7 +6723,7 @@ export async function diffCanvasVersions(
   return res.diff;
 }
 
-// Snapshot restore (backward compat with BoardHistoryDrawer)
+// Snapshot restore (the canvas version panel's snapshots)
 export async function restoreBoardSnapshot(boardId: string, snapshotId: string): Promise<{ ok: boolean }> {
   return apiRequest(`/api/research/boards/${boardId}/snapshots/${snapshotId}/restore`, {
     method: 'POST',

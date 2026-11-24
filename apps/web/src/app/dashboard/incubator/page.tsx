@@ -251,6 +251,17 @@ export default function IncubatorDashboard() {
     { id: 'open_applications', labelEn: 'Review program applications', labelEl: 'Έλεγχος αιτήσεων προγραμμάτων', writes: false, run: () => router.push('/org/applications') },
     { id: 'open_programs', labelEn: 'Manage programs', labelEl: 'Διαχείριση προγραμμάτων', writes: false, run: () => router.push('/org/programs') },
     { id: 'open_startups', labelEn: 'Open portfolio startups', labelEl: 'Άνοιγμα startups οργανισμού', writes: false, run: () => router.push('/org/startups') },
+    // Opens the form the "No organisation yet" card opens (docs §128): the
+    // person fills it and presses Create, so nothing is written from here.
+    {
+      id: 'create_organisation',
+      labelEn: 'Create an organisation',
+      labelEl: 'Δημιουργία οργανισμού',
+      writes: false,
+      unavailableEn: isNone ? undefined : 'Your account already belongs to an organisation.',
+      unavailableEl: isNone ? undefined : 'Ο λογαριασμός σας ανήκει ήδη σε οργανισμό.',
+      run: () => setCreatingOrg(true),
+    },
   ]);
 
   if (!mounted) {

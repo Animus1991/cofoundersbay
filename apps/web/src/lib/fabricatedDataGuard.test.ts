@@ -24,7 +24,6 @@ const SRC = join(__dirname, '..');
 
 const ALLOWED: Record<string, string> = {
   'app/messages/page.tsx': 'optimistic message id before the server assigns one',
-  'components/canvas/ResearchCanvas.tsx': 'client-side node id',
   'components/chat/UnifiedChatPopup.tsx': 'optimistic message id',
   'components/research/CanvasCopilotPanel.tsx': 'scatters imported nodes so they do not stack',
   'components/research/FlowDiagramNode.tsx': 'scatters new diagram nodes',

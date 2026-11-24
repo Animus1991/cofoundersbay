@@ -84,7 +84,6 @@ const HEX_ALLOWLIST_FILES = [
   'src/app/org/settings/page.tsx',       // org branding pickers
   'src/app/tenant/branding/page.tsx',    // org branding pickers
   'src/components/theme/ThemeSwitcher.tsx', // swatches preview each theme's own colours
-  'src/components/ui/share-modal.tsx',   // X/LinkedIn/Facebook brand colours
   'src/pages/_error.tsx',                // legacy fallback, no theme context
   'src/hooks/useResearchCollaboration.ts', // presence cursors: one hue per user
   'src/lib/themes.ts',                   // theme identifiers and their own palettes
