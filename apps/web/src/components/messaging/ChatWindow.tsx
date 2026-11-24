@@ -235,7 +235,7 @@ function MessageBubble({
             className={cn(
               'px-4 py-2.5 text-xs leading-relaxed shadow-sm',
               isOwn
-                ? 'rounded-2xl rounded-br-sm bg-primary text-primary-foreground'
+                ? 'rounded-2xl rounded-br-sm bg-primary/10 text-foreground'
                 : 'rounded-2xl rounded-bl-sm border border-border bg-background/90 text-foreground backdrop-blur-sm',
               // The hit the search is on carries a ring; the others a faint one,
               // so the eye finds them while scrolling the whole thread.
@@ -274,7 +274,7 @@ function MessageBubble({
                     rel="noreferrer"
                     className={cn(
                       'flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs',
-                      isOwn ? 'bg-white/10 hover:bg-white/15' : 'bg-background/40 hover:bg-background/50',
+                      isOwn ? 'bg-background/60 hover:bg-background/80' : 'bg-background/40 hover:bg-background/50',
                       a.url ? 'underline' : 'opacity-70 cursor-default'
                     )}
                     onClick={(e) => { if (!a.url) e.preventDefault(); }}
@@ -649,15 +649,8 @@ export function ChatWindow({
   });
 
   return (
-    <div className={cn('relative flex h-full min-h-0 flex-col bg-background', className)}>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_52%)] sm:block"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(hsl(var(--foreground)/0.07)_1px,transparent_1px)] bg-[size:18px_18px] opacity-40 sm:block"
-      />
+    {/* A calm flat wash for the thread pane — no gradients (docs §132.2). */}
+    <div className={cn('relative flex h-full min-h-0 flex-col bg-muted/30', className)}>
       {/* Header */}
       <div className="relative z-10 flex flex-col border-b border-border bg-background/75 backdrop-blur-xl">
         <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3">

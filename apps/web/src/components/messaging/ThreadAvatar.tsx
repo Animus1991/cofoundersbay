@@ -1,6 +1,7 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { roleTone } from '@/lib/role-tone';
 import { cn, initialsOf } from '@/lib/utils';
 
 function hashHue(value: string): number {
@@ -26,17 +27,24 @@ export function ThreadAvatar({
   seed,
   size = 'md',
   online,
+  role,
   className,
 }: {
   name: string;
   src?: string | null;
   seed?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   online?: boolean;
+  /** When set, the initials fallback takes the role's flat tint (docs §132.2). */
+  role?: string | null;
   className?: string;
 }) {
   const hue = hashHue(seed || name);
-  const dim = size === 'sm' ? 'h-8 w-8 text-2xs' : size === 'lg' ? 'h-12 w-12 text-sm' : 'h-10 w-10 text-xs';
+  const dim =
+    size === 'sm' ? 'h-8 w-8 text-2xs'
+    : size === 'xl' ? 'h-11 w-11 text-sm'
+    : size === 'lg' ? 'h-12 w-12 text-sm'
+    : 'h-10 w-10 text-xs';
   const ring = size === 'sm' ? 'h-2 w-2' : 'h-3 w-3';
 
   return (
@@ -44,8 +52,8 @@ export function ThreadAvatar({
       <Avatar className={cn(dim, 'shadow-sm ring-2 ring-background')}>
         <AvatarImage src={src || undefined} alt="" />
         <AvatarFallback
-          className="font-semibold tracking-wide text-white"
-          style={{
+          className={cn('font-semibold tracking-wide', role ? roleTone(role) : 'text-white')}
+          style={role ? undefined : {
             background: `linear-gradient(145deg, hsl(${hue} 52% 46%), hsl(${(hue + 28) % 360} 58% 34%))`,
           }}
         >

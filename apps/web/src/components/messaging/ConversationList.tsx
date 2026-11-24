@@ -116,7 +116,8 @@ function ConversationItem({
         name={conversation.recipientName}
         src={conversation.recipientAvatar}
         seed={conversation.recipientId}
-        size="lg"
+        size="xl"
+        role={conversation.recipientRole}
         online={conversation.isOnline}
       />
 
@@ -124,11 +125,14 @@ function ConversationItem({
         <div className="flex items-baseline justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1.5">
             {conversation.isPinned && (
-              <Pin className="h-3 w-3 shrink-0 text-primary-accessible" />
+              // The pin sits in its own tinted well, like every other mark (docs §132.2).
+              <span data-keep-icon="" className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-status-accent-bg">
+                <Pin className="h-3 w-3 text-status-accent" aria-hidden="true" />
+              </span>
             )}
             <span
               className={cn(
-                'truncate text-sm font-semibold leading-tight',
+                'truncate text-sm leading-tight',
                 unread ? 'font-semibold text-foreground' : 'font-medium text-foreground',
               )}
             >
@@ -137,7 +141,7 @@ function ConversationItem({
           </div>
           <span
             className={cn(
-              'shrink-0 text-xs tabular-nums',
+              'card-meta shrink-0 tabular-nums',
               unread ? 'font-medium text-primary-accessible' : 'text-muted-foreground',
             )}
           >
@@ -170,8 +174,21 @@ function ConversationItem({
             )}
           </p>
           {unread && (
-            <span className="flex h-5 min-w-[1.25rem] shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-2xs font-bold text-primary-foreground">
-              {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
+            /* Unread is never colour alone: a dot, the word, then the count
+               (docs §132.2). */
+            <span className="flex shrink-0 items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
+              <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-2xs font-semibold leading-none text-primary-accessible">
+                <BilingualText en="New" el="Νέο" compact />
+              </span>
+              <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-primary px-1.5 text-2xs font-bold text-primary-foreground">
+                {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
+              </span>
+              <span className="sr-only">
+                {conversation.unreadCount === 1
+                  ? bilingualAria('1 unread message', '1 αδιάβαστο μήνυμα')
+                  : bilingualAria(`${conversation.unreadCount} unread messages`, `${conversation.unreadCount} αδιάβαστα μηνύματα`)}
+              </span>
             </span>
           )}
         </div>
