@@ -425,9 +425,9 @@ export function LandingHome() {
             eyebrow={{ en: 'Roles', el: 'Ρόλοι' }}
             title={{ en: 'Built for every role in a founding team’s first year', el: 'Φτιαγμένο για κάθε ρόλο στον πρώτο χρόνο μιας ιδρυτικής ομάδας' }}
           />
-          <div className="sm:grid sm:grid-cols-2 gap-4 lg:grid-cols-4 max-sm:-mx-6 max-sm:flex max-sm:snap-x max-sm:overflow-x-auto max-sm:px-6 max-sm:pb-2 max-sm:*:w-72 max-sm:*:shrink-0 max-sm:*:snap-start">
+          <div className="sm:grid sm:grid-cols-2 items-start gap-4 lg:grid-cols-4 max-sm:-mx-6 max-sm:flex max-sm:snap-x max-sm:overflow-x-auto max-sm:px-6 max-sm:pb-2 max-sm:*:w-72 max-sm:*:shrink-0 max-sm:*:snap-start">
             {PERSONAS.map(({ icon: Icon, role, headline, bullets, join, start }) => (
-              <Card key={role.en} className="h-full">
+              <Card key={role.en} className="flex h-full flex-col">
                 <CardHeader className="pb-3">
                   <Badge variant="outline" className="w-fit gap-1.5 text-xs text-primary-accessible">
                     <Icon className="icon-sm" />
@@ -435,14 +435,14 @@ export function LandingHome() {
                   </Badge>
                   <CardTitle><T p={headline} wrap /></CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="flex flex-1 flex-col gap-2">
                   {bullets.map((bullet) => (
                     <div key={bullet.en} className="flex items-start gap-2 text-sm text-muted-foreground">
                       <CheckCircle className="mt-0.5 icon-sm shrink-0 text-status-success" />
                       <BilingualText en={bullet.en} el={bullet.el} wrap />
                     </div>
                   ))}
-                  <Link href={`/register?role=${join}`} className="inline-flex pt-2 text-sm font-medium text-primary-accessible hover:underline">
+                  <Link href={`/register?role=${join}`} className="mt-auto inline-flex pt-2 text-sm font-medium text-primary-accessible hover:underline">
                     <T p={start} wrap />
                   </Link>
                 </CardContent>

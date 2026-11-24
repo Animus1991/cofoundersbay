@@ -225,7 +225,7 @@ export default function TenantDashboardPage() {
         ) : null}
 
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
           {/* Running and upcoming programs, with how full each is. */}
           <SectionCard className="lg:col-span-2" title="Programs" titleEl="Προγράμματα" action={{ href: '/tenant/programs', label: 'Manage', labelEl: 'Διαχείριση' }} contentClassName="card-rows">
             {programsLoading && [0, 1].map((i) => <Skeleton key={i} className="h-16" />)}

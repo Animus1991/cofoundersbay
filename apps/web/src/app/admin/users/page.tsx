@@ -622,7 +622,7 @@ export default function AdminUsersPage() {
             <div className="flex-1"><BilingualText en="User" el="Χρήστης" compact /></div>
             <div className="w-24"><BilingualText en="Role" el="Ρόλος" compact /></div>
             <div className="hidden lg:block w-32"><BilingualText en="Tenant" el="Οργανισμός" compact /></div>
-            <div className="w-28"><BilingualText en="Last Active" el="Τελευταία δραστηριότητα" compact /></div>
+            <div className="w-28"><BilingualText en="Last Active" el="Τελευταία δραστηριότητα" wrap /></div>
             <div className="min-w-24"><BilingualText en="Status" el="Κατάσταση" compact /></div>
             <div className="w-8" />
           </div>
