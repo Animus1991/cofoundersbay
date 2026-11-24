@@ -53,6 +53,7 @@ import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControl, type PageControlRunResult } from '@/lib/page-controls';
 import { StatusText } from '@/components/common/StatusText';
+import type { StatusTone } from '@/lib/semantic-colors';
 import { FactLine } from '@/components/common/FactLine';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
@@ -169,11 +170,13 @@ const MOCK_USERS: ManagedUser[] = attachDemoPhotos([
   },
 ], { portraitKey: 'avatar' });
 
-const STATUS_STYLES: Record<UserStatus, string> = {
-  active: 'bg-status-success-bg text-status-success border-status-success-border',
-  suspended: 'bg-status-warning-bg text-status-warning border-status-warning-border',
-  pending: 'bg-status-warning-bg text-status-warning border-status-warning-border',
-  banned: 'bg-status-danger-bg text-status-danger border-status-danger-border',
+// The account-state words' tones — suspended was already warning — through
+// the shared tinted status pill (B2.3).
+const STATUS_TONES: Record<UserStatus, StatusTone> = {
+  active: 'success',
+  suspended: 'warning',
+  pending: 'warning',
+  banned: 'danger',
 };
 
 const ROLE_ICONS: Record<UserRole, React.ReactNode> = {
@@ -698,9 +701,7 @@ export default function AdminUserManagementPage() {
                     )}
                     aside={(
                       <>
-                      <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[user.status])}>
-                        <StatusText value={user.status} />
-                      </Badge>
+                      <StatusText value={user.status} tone={STATUS_TONES[user.status]} />
                       {/* The row's actions in one menu (docs §115): Quick view was
                           a button of its own on every row. */}
                       <div className="flex items-center gap-1">
@@ -789,9 +790,7 @@ export default function AdminUserManagementPage() {
               <p className="text-muted-foreground" translate="no">{detailUser.email}</p>
               <div className="flex flex-wrap gap-2">
                 <StatusText value={detailUser.role} />
-                <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[detailUser.status])}>
-                  <StatusText value={detailUser.status} />
-                </Badge>
+                <StatusText value={detailUser.status} tone={STATUS_TONES[detailUser.status]} />
                 {detailUser.verified && <Badge><BilingualText en="Verified" el="Επαληθευμένος" compact /></Badge>}
               </div>
               <dl className="grid grid-cols-2 gap-2">

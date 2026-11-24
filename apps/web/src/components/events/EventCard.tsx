@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { KindPill } from '@/components/common/KindPill';
 import { CoverWash } from '@/components/common/CoverWash';
 import { DateBadge } from '@/components/common/DateBadge';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
@@ -206,6 +207,7 @@ export function EventCard({
         </div>
 
         <CardContent className="space-y-3 pt-4 lg:flex lg:w-2/5 lg:flex-col lg:justify-center">
+          <KindPill glyph="calendar" tone="warning" en="Event" el="Εκδήλωση" />
           <Link
             href={`/events/${event.id}`}
             className="block text-[1.375rem] font-semibold leading-tight text-foreground transition-colors hover:text-primary-accessible sm:text-2xl"
@@ -317,6 +319,7 @@ export function EventCard({
         </div>
       </div>
       <CardContent className="space-y-3">
+        <KindPill glyph="calendar" tone="warning" en="Event" el="Εκδήλωση" />
         <CardHead
           title={(
             <Link

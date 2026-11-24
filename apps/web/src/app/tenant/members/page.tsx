@@ -12,7 +12,7 @@ import { getTenantMembers, updateTenantMember, removeTenantMember, type TenantMe
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import type { StatusTone } from '@/lib/semantic-colors';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -98,10 +98,11 @@ type Member = {
   sessionsAttended?: number;
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  active:    'bg-status-success-bg text-status-success border-status-success-border',
-  pending:   'bg-status-warning-bg text-status-warning border-status-warning-border',
-  suspended: 'bg-status-danger-bg text-status-danger border-status-danger-border',
+// The member-state words' tones, through the shared tinted pill (B2.3).
+const MEMBER_STATUS_TONE: Record<string, StatusTone> = {
+  active:    'success',
+  pending:   'warning',
+  suspended: 'danger',
 };
 
 function EngagementBar({ score }: { score: number }) {
@@ -190,9 +191,7 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
           asideStays
           aside={(
             <>
-              <Badge variant="outline" className={cn('text-xs', STATUS_COLORS[member.status])}>
-                <StatusText value={member.status} />
-              </Badge>
+              <StatusText value={member.status} tone={MEMBER_STATUS_TONE[member.status]} />
               {menu}
             </>
           )}

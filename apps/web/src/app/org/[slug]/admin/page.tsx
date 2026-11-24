@@ -166,9 +166,7 @@ function roleChip(role: string) {
   return STATUS[ROLE_TONE[role] ?? 'neutral'].chip;
 }
 
-function memberStatusChip(status: string) {
-  return STATUS[MEMBER_STATUS_TONE[status] ?? 'neutral'].chip;
-}
+
 
 function StatCard({ title, titleEl, value, change, trend }: {
   title: string;
@@ -717,15 +715,15 @@ export default function OrgAdminPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn('capitalize border', roleChip(member.role))}>
-                          {member.role === 'owner' && <Crown className="icon-sm mr-1" />}
-                          <StatusText value={member.role} />
-                        </Badge>
+                        {/* The state pill itself, not a badge around it
+                            (B2.3); the owner's crown stays beside it. */}
+                        <span className="inline-flex items-center gap-1">
+                          {member.role === 'owner' && <Crown className="icon-sm text-status-warning" aria-hidden="true" />}
+                          <StatusText value={member.role} tone={ROLE_TONE[member.role] ?? 'neutral'} />
+                        </span>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn('capitalize border', memberStatusChip(member.status))}>
-                          <StatusText value={member.status} />
-                        </Badge>
+                        <StatusText value={member.status} tone={MEMBER_STATUS_TONE[member.status] ?? 'neutral'} />
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {fmtDate(member.joinedAt, { day: 'numeric', month: 'short', year: 'numeric' })}

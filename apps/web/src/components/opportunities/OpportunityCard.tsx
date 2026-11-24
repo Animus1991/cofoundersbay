@@ -7,6 +7,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { KindPill } from '@/components/common/KindPill';
 import { CardMoreMenu } from '@/components/common/CardMoreMenu';
 import { FactLine } from '@/components/common/FactLine';
 import { SaveItemButton } from '@/components/common/SaveItemButton';
@@ -137,6 +138,7 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
   return (
     <Card id={`opportunity-${opportunity.id}`} className={cardClass}>
       <CardContent className="space-y-3">
+        <KindPill glyph="target" tone="accent" en="Opportunity" el="Ευκαιρία" />
         <CardHead
           mark={mark('h-12 w-12')}
           title={opportunity.title}

@@ -42,7 +42,7 @@ export function UpdateCard({
       id={update.id ? `update-${update.id}` : undefined}
       aria-labelledby={update.id ? `update-title-${update.id}` : undefined}
     >
-      <Card className={cn('transition-all hover:border-primary/20', highlight && 'border-primary/40')}>
+      <Card className={cn('card-interactive transition-all hover:border-primary/20', highlight && 'border-primary/40')}>
         <CardContent className="space-y-3">
           <CardHead
             mark={update.author?.logoUrl ? (

@@ -21,15 +21,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { StatusText } from '@/components/common/StatusText';
+import type { StatusTone } from '@/lib/semantic-colors';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { initialsOf } from '@/lib/utils';
 
-const STATUS_COLORS: Record<string, string> = {
-  pending:  'bg-status-warning-bg text-status-warning',
-  reviewed: 'bg-status-info-bg text-status-info',
-  actioned: 'bg-status-danger-bg text-status-danger',
-  dismissed:'bg-muted text-muted-foreground',
+// The report-state words' tones, through the shared tinted pill (B2.3).
+const STATUS_TONES: Record<string, StatusTone> = {
+  pending:  'warning',
+  reviewed: 'info',
+  actioned: 'danger',
+  dismissed:'neutral',
 };
 
 function Section({
@@ -68,7 +70,7 @@ function Section({
 
 function XPEventRow({ e }: { e: AdminXPBreakdownItem }) {
   return (
-    <tr className="border-b border-border hover:bg-muted text-sm">
+    <tr className="border-b border-border motion-safe:hover:bg-muted/40 text-sm">
       <td className="py-2 pr-3">
         <span className="font-mono text-xs bg-status-accent-bg text-status-accent px-1.5 py-0.5 rounded">
           {e.eventType}
@@ -238,16 +240,16 @@ export function ScoreInspector() {
             <div className="mt-3 overflow-auto max-h-40">
               <table className="w-full text-xs text-muted-foreground">
                 <thead>
-                  <tr className="text-left border-b border-border">
-                    <th className="pb-1.5 font-medium"><BilingualText en="Event" el="Συμβάν" compact /></th>
-                    <th className="pb-1.5 font-medium text-right"><BilingualText en="Events" el="Συμβάντα" compact /></th>
-                    <th className="pb-1.5 font-medium text-right"><BilingualText en="Total XP" el="Σύνολο XP" compact /></th>
-                    <th className="pb-1.5 font-medium text-right"><BilingualText en="Avg XP" el="Μέσο XP" compact /></th>
+                  <tr className="text-left border-b border-border bg-muted/50">
+                    <th className="px-2 py-1.5 text-2xs font-medium uppercase tracking-wide"><BilingualText en="Event" el="Συμβάν" compact /></th>
+                    <th className="px-2 py-1.5 text-2xs font-medium uppercase tracking-wide text-right"><BilingualText en="Events" el="Συμβάντα" compact /></th>
+                    <th className="px-2 py-1.5 text-2xs font-medium uppercase tracking-wide text-right"><BilingualText en="Total XP" el="Σύνολο XP" compact /></th>
+                    <th className="px-2 py-1.5 text-2xs font-medium uppercase tracking-wide text-right"><BilingualText en="Avg XP" el="Μέσο XP" compact /></th>
                   </tr>
                 </thead>
                 <tbody>
                   {Object.entries(report.xpByEventType ?? {}).map(([type, v]) => (
-                    <tr key={type} className="border-b border-border">
+                    <tr key={type} className="border-b border-border motion-safe:hover:bg-muted/40">
                       <td className="py-1 font-mono text-xs">{type}</td>
                       <td className="py-1 text-right tabular-nums">{v.count}</td>
                       <td className="py-1 text-right tabular-nums font-medium">{v.totalXp}</td>
@@ -264,13 +266,13 @@ export function ScoreInspector() {
             <div className="overflow-auto max-h-64">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-muted-foreground border-b border-border">
-                    <th className="pb-2 font-medium"><BilingualText en="Type" el="Τύπος" compact /></th>
-                    <th className="pb-2 font-medium"><BilingualText en="Base" el="Βάση" compact /></th>
-                    <th className="pb-2 font-medium"><BilingualText en="Final" el="Τελικό" compact /></th>
-                    <th className="pb-2 font-medium"><BilingualText en="Mult" el="Πολλ." compact /></th>
-                    <th className="pb-2 font-medium"><BilingualText en="Flag" el="Σήμανση" compact /></th>
-                    <th className="pb-2 font-medium"><BilingualText en="Explain" el="Εξήγηση" compact /></th>
+                  <tr className="text-left border-b border-border bg-muted/50 text-muted-foreground">
+                    <th className="px-2 pb-2 text-2xs font-medium uppercase tracking-wide"><BilingualText en="Type" el="Τύπος" compact /></th>
+                    <th className="px-2 pb-2 text-2xs font-medium uppercase tracking-wide"><BilingualText en="Base" el="Βάση" compact /></th>
+                    <th className="px-2 pb-2 text-2xs font-medium uppercase tracking-wide"><BilingualText en="Final" el="Τελικό" compact /></th>
+                    <th className="px-2 pb-2 text-2xs font-medium uppercase tracking-wide"><BilingualText en="Mult" el="Πολλ." compact /></th>
+                    <th className="px-2 pb-2 text-2xs font-medium uppercase tracking-wide"><BilingualText en="Flag" el="Σήμανση" compact /></th>
+                    <th className="px-2 pb-2 text-2xs font-medium uppercase tracking-wide"><BilingualText en="Explain" el="Εξήγηση" compact /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -365,9 +367,7 @@ export function ScoreInspector() {
                         />
                       )}
                       aside={(
-                        <span className={`rounded-md px-1.5 py-0.5 text-xs ${STATUS_COLORS[a.status] ?? ''}`}>
-                          <StatusText value={a.status} />
-                        </span>
+                        <StatusText value={a.status} tone={STATUS_TONES[a.status]} />
                       )}
                     />
                     {a.description && (

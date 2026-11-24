@@ -28,6 +28,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { cn, initialsOf } from '@/lib/utils';
+import { roleRing, roleTone } from '@/lib/role-tone';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 
@@ -112,15 +115,17 @@ export function PostCard({
   };
 
   return (
-    <Card className="group hover:border-primary/30 transition-colors">
+    <Card className="card-interactive group transition-colors hover:border-primary/30">
       <CardContent className="pt-5">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
             <Link href={`/profiles/${author.id}`}>
-              <Avatar className="h-11 w-11 ring-2 ring-border/40">
+              {/* The author's ring and tint name their role's family, as on
+                  the person cards (B2.2). */}
+              <Avatar className={cn('h-11 w-11', roleRing(author.role))}>
                 <AvatarImage src={author.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
+                <AvatarFallback className={cn('font-semibold', roleTone(author.role))}>
                   {initialsOf(author.displayName)}
                 </AvatarFallback>
               </Avatar>
@@ -244,51 +249,59 @@ export function PostCard({
           </div>
         )}
 
-        {/* Actions */}
+        {/* Actions: icon+word pills that tint on hover, each action its
+            own quiet tone (docs §137, B2.2). */}
         <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleLike}
-              aria-label={liked ? 'Unlike' : 'Like'}
+              aria-label={liked ? bilingualAria('Unlike', 'Αφαίρεση «μου αρέσει»') : bilingualAria('Like', 'Μου αρέσει')}
               aria-pressed={liked}
               className={cn(
-                'gap-1.5 h-8',
+                'gap-1.5 h-8 rounded-full px-3 hover:bg-status-accent-bg',
                 liked ? 'text-status-accent' : 'text-muted-foreground hover:text-status-accent'
               )}
             >
               <Heart className={cn('icon-sm', liked && 'fill-current')} aria-hidden="true" />
-              <span className="text-xs">{localLikesCount > 0 ? localLikesCount : ''}</span>
+              <span className="text-xs">
+                <BilingualText en="Like" el="Μου αρέσει" compact />
+                {localLikesCount > 0 ? <span className="tabular-nums"> · {localLikesCount}</span> : null}
+              </span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={onComment}
-              aria-label="Comment"
-              className="gap-1.5 h-8 text-muted-foreground hover:text-primary-accessible"
+              aria-label={bilingualAria('Comment', 'Σχόλιο')}
+              className="gap-1.5 h-8 rounded-full px-3 text-muted-foreground hover:bg-status-info-bg hover:text-status-info"
             >
               <MessageCircle className="icon-sm" aria-hidden="true" />
-              <span className="text-xs">{commentsCount > 0 ? commentsCount : ''}</span>
+              <span className="text-xs">
+                <BilingualText en="Comment" el="Σχόλιο" compact />
+                {commentsCount > 0 ? <span className="tabular-nums"> · {commentsCount}</span> : null}
+              </span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={onShare}
-              aria-label="Share"
-              className="gap-1.5 h-8 text-muted-foreground hover:text-primary-accessible"
+              aria-label={bilingualAria('Share', 'Κοινοποίηση')}
+              className="gap-1.5 h-8 rounded-full px-3 text-muted-foreground hover:bg-status-neutral-bg hover:text-status-neutral"
             >
               <Share2 className="icon-sm" aria-hidden="true" />
+              <span className="hidden text-xs sm:inline"><BilingualText en="Share" el="Κοινοποίηση" compact /></span>
             </Button>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={handleBookmark}
-            aria-label={bookmarked ? 'Remove bookmark' : 'Save post'}
+            aria-label={bookmarked ? bilingualAria('Remove bookmark', 'Αφαίρεση από τα αποθηκευμένα') : bilingualAria('Save post', 'Αποθήκευση ανάρτησης')}
             aria-pressed={bookmarked}
             className={cn(
-              'h-8 w-8',
+              'h-8 w-8 rounded-full hover:bg-status-warning-bg',
               bookmarked ? 'text-status-warning ' : 'text-muted-foreground hover:text-status-warning '
             )}
           >

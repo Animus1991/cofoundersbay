@@ -45,6 +45,7 @@ import { pressableProps } from '@/lib/pressable';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { KindPill } from '@/components/common/KindPill';
 import { CardMoreMenu } from '@/components/common/CardMoreMenu';
 import { DateBadge } from '@/components/common/DateBadge';
 import { Counter } from '@/components/ui/counter';
@@ -249,6 +250,7 @@ function ProgramCard({
         </div>
       ) : null}
       <CardContent className="min-w-0 space-y-3 lg:flex-1">
+        <KindPill glyph="award" tone="info" en="Program" el="Πρόγραμμα" />
         <CardHead
           mark={(
             <Avatar className="h-10 w-10 rounded-xl">

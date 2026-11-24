@@ -36,7 +36,8 @@ import {
   listCoupons, createCoupon, deleteCoupon,
   type BillingSubscription, type BillingInvoice, type BillingPlanItem, type PromotionCodeItem,
 } from '@/lib/api';
-import { formatCents, STATUS_COLORS } from '@/lib/billing';
+import { formatCents } from '@/lib/billing';
+import type { StatusTone } from '@/lib/semantic-colors';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
@@ -54,6 +55,19 @@ function subscriptionOwner(sub: BillingSubscription): string {
     ?? (owner as { name?: string })?.name
     ?? sub.userId ?? sub.tenantId ?? '—';
 }
+
+// The subscription-state words' tones — billing's own nuance (a trial is
+// informational, a cancelled plan is quiet), kept through the shared pill.
+const SUB_STATUS_TONE: Record<string, StatusTone> = {
+  active: 'success',
+  trialing: 'info',
+  past_due: 'warning',
+  canceled: 'neutral',
+  unpaid: 'danger',
+  incomplete: 'warning',
+  incomplete_expired: 'danger',
+  paused: 'neutral',
+};
 
 function SubRow({
   sub, plans, onExtendTrial, onCancel, onOverride,
@@ -96,9 +110,9 @@ function SubRow({
         )}
         aside={(
           <>
-            <Badge variant="outline" className={cn('text-xs shrink-0', STATUS_COLORS[sub.status] ?? '')}>
-              <StatusText value={sub.status} />
-            </Badge>
+            {/* The tinted status pill itself, not a badge around it (B2.3);
+                the subscription's own tone map, same hues as before. */}
+            <StatusText value={sub.status} tone={SUB_STATUS_TONE[sub.status]} />
             <span className="font-medium tabular-nums text-foreground">
               {formatCents(annual ? (sub.plan?.priceAnnual ?? 0) : (sub.plan?.priceMonthly ?? 0), sub.plan?.currency)}
               <span className="text-muted-foreground"><BilingualText en={annual ? '/yr' : '/mo'} el={annual ? '/έτος' : '/μήνα'} compact /></span>

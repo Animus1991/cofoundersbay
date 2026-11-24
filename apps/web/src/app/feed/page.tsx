@@ -69,6 +69,7 @@ import {
   type FeedPreferences,
 } from '@/lib/api';
 import { FactLine } from '@/components/common/FactLine';
+import { roleRing, roleTone } from '@/lib/role-tone';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { useStoredUser } from '@/hooks/useStoredUser';
@@ -242,14 +243,16 @@ function PostCard({
     <Card
       id={`post-${post.id}`}
       tabIndex={-1}
-      className="scroll-mt-24 transition-colors hover:border-primary/20 focus:outline-none data-[linked=true]:ring-2 data-[linked=true]:ring-primary"
+      className="card-interactive scroll-mt-24 transition-colors hover:border-primary/20 focus:outline-none data-[linked=true]:ring-2 data-[linked=true]:ring-primary"
     >
       <CardContent className="space-y-3">
         <CardHead
           mark={(
-            <Avatar className="h-10 w-10">
+            /* The author's ring and tint name their role's family, the same
+               avatar as the shared PostCard draws (B2.2). */
+            <Avatar className={cn('h-10 w-10', roleRing(post.author?.role))}>
               <AvatarImage src={post.author?.avatarUrl} alt="" />
-              <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
+              <AvatarFallback className={cn('font-semibold', roleTone(post.author?.role))}>
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -317,12 +320,14 @@ function PostCard({
             />
           )}
         >
+          {/* The same action pills as the shared PostCard: each verb's own
+              quiet tint on hover (docs §137, B2.2). */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onLike}
             aria-pressed={post.isLiked}
-            className={cn(post.isLiked && 'text-primary-accessible')}
+            className={cn('rounded-full hover:bg-status-accent-bg hover:text-status-accent', post.isLiked && 'text-status-accent')}
           >
             <Heart className={cn('icon-sm mr-1', post.isLiked && 'fill-current')} aria-hidden="true" />
             <BilingualText en="Like" el="Μου αρέσει" compact />
@@ -332,11 +337,12 @@ function PostCard({
             size="sm"
             aria-expanded={showComments}
             onClick={() => setShowComments(!showComments)}
+            className="rounded-full hover:bg-status-info-bg hover:text-status-info"
           >
             <MessageCircle className="icon-sm mr-1" aria-hidden="true" />
             <BilingualText en="Comment" el="Σχόλιο" compact />
           </Button>
-          <Button variant="ghost" size="sm" onClick={onShare}>
+          <Button variant="ghost" size="sm" onClick={onShare} className="rounded-full hover:bg-status-neutral-bg hover:text-status-neutral">
             <Share2 className="icon-sm mr-1" aria-hidden="true" />
             <BilingualText en="Share" el="Κοινοποίηση" compact />
           </Button>
@@ -344,7 +350,7 @@ function PostCard({
             variant="ghost"
             size="sm"
             onClick={onBookmark}
-            className={cn(post.isBookmarked && 'text-primary-accessible')}
+            className={cn('rounded-full hover:bg-status-warning-bg hover:text-status-warning', post.isBookmarked && 'text-status-warning')}
             // The name carries the word on the button ("Save"); it was
             // "Bookmark post", which a voice user saying "Save" never reached.
             aria-label={

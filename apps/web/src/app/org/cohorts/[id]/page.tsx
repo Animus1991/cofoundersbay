@@ -40,7 +40,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import type { StatusTone } from '@/lib/semantic-colors';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
@@ -355,36 +355,29 @@ export default function CohortDetailPage() {
     return fmtDate(dateString, { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  // The cell's word is the tinted status pill itself, not a badge around
+  // it (B2.3); the per-status tone stays the same.
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: 'default' | 'secondary' | 'outline' | 'success' | 'warning' | 'destructive' | 'info'; className: string }> = {
-      active: { variant: 'default', className: 'bg-status-success-bg text-status-success border-status-success-border' },
-      inactive: { variant: 'secondary', className: 'bg-muted text-foreground' },
-      pending: { variant: 'outline', className: 'bg-status-warning-bg text-status-warning border-status-warning-border' },
-      scheduled: { variant: 'outline', className: 'bg-status-info-bg text-status-info border-status-info-border' },
-      completed: { variant: 'default', className: 'bg-status-success-bg text-status-success border-status-success-border' },
-      cancelled: { variant: 'destructive', className: '' },
+    const tones: Record<string, StatusTone> = {
+      active: 'success',
+      inactive: 'neutral',
+      pending: 'warning',
+      scheduled: 'info',
+      completed: 'success',
+      cancelled: 'danger',
     };
 
-    const config = variants[status] || variants.pending;
-    return (
-      <Badge variant={config.variant} className={config.className}>
-        <StatusText value={status} />
-      </Badge>
-    );
+    return <StatusText value={status} tone={tones[status] ?? 'warning'} />;
   };
 
   const getRoleBadge = (role: string) => {
-    const colors: Record<string, string> = {
-      founder: 'bg-status-info-bg text-status-info border-status-info-border',
-      mentor: 'bg-status-accent-bg text-status-accent border-status-accent-border',
-      investor: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+    const tones: Record<string, StatusTone> = {
+      founder: 'info',
+      mentor: 'accent',
+      investor: 'warning',
     };
 
-    return (
-      <Badge variant="outline" className={colors[role] || colors.founder}>
-        <StatusText value={role} />
-      </Badge>
-    );
+    return <StatusText value={role} tone={tones[role] ?? 'info'} />;
   };
 
   // Tabs, export, share and opening a participant, offered to the assistant;

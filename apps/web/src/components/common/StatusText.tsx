@@ -50,6 +50,7 @@ const STATUS_EL: Record<string, string> = {
   banned: 'αποκλεισμένο',
   verified: 'επαληθευμένο',
   unverified: 'μη επαληθευμένο',
+  failed: 'απέτυχε',
   new: 'νέο',
   replied: 'απαντήθηκε',
   converted: 'έγινε πελάτης',

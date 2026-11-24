@@ -23,13 +23,27 @@ import {
   upsertTenantBillingContact, createBillingPortal,
   type SeatAllocation,
 } from '@/lib/api';
-import { formatCents, STATUS_COLORS } from '@/lib/billing';
+import { formatCents } from '@/lib/billing';
+import type { StatusTone } from '@/lib/semantic-colors';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { RowHead } from '@/components/dashboard/SectionCard';
+
+// Billing's own status tones: a trial is informational, a cancelled plan
+// is quiet — the same hues the badge carried, now the shared pill (B2.3).
+const SUB_STATUS_TONE: Record<string, StatusTone> = {
+  active: 'success',
+  trialing: 'info',
+  past_due: 'warning',
+  canceled: 'neutral',
+  unpaid: 'danger',
+  incomplete: 'warning',
+  incomplete_expired: 'danger',
+  paused: 'neutral',
+};
 
 function SeatRow({
   seat, onRevoke, revoking,
@@ -181,9 +195,9 @@ export default function TenantBillingPage() {
                     />
                   )}
                   aside={(
-                    <Badge variant="outline" className={cn('text-xs', STATUS_COLORS[sub.status] ?? '')}>
-                      <StatusText value={sub.status} />
-                    </Badge>
+                    // The tinted status pill itself, not a badge around it
+                    // (B2.3); the subscription's own tone map.
+                    <StatusText value={sub.status} tone={SUB_STATUS_TONE[sub.status]} />
                   )}
                 />
                 <p className="card-body">

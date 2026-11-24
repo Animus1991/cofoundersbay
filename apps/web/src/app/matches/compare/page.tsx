@@ -361,8 +361,8 @@ export default function MatchComparePage() {
             <table className="w-full min-w-[640px] border-collapse text-sm">
               <caption className="sr-only"><BilingualText en="Your matches compared, dimension by dimension" el="Οι αντιστοιχίσεις σας συγκριτικά, διάσταση προς διάσταση" wrap /></caption>
               <thead>
-                <tr>
-                  <th scope="col" className="w-40 p-4 text-left align-bottom text-xs font-medium text-muted-foreground">
+                <tr className="bg-muted/50">
+                  <th scope="col" className="w-40 p-4 text-left align-bottom text-2xs font-medium uppercase tracking-wide text-muted-foreground">
                     <BilingualText en="Match" el="Αντιστοίχιση" stacked />
                   </th>
                   {people.map((person, i) => (
@@ -378,10 +378,10 @@ export default function MatchComparePage() {
                   const values = people.map((_, i) => axisScore(i, key));
                   const lead = leaderOf(values);
                   return (
-                    <tr key={key} className="border-t border-border">
-                      <th scope="row" className="p-4 text-left text-xs font-medium text-muted-foreground"><BilingualText en={axisCopy(key, label).en} el={axisCopy(key, label).el} compact wrap /></th>
+                    <tr key={key} className="border-t border-border motion-safe:hover:bg-muted/40">
+                      <th scope="row" className="px-4 py-3 text-left text-2xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en={axisCopy(key, label).en} el={axisCopy(key, label).el} compact wrap /></th>
                       {values.map((value, i) => (
-                        <td key={people[i].userId} className="p-4 align-middle">
+                        <td key={people[i].userId} className="px-4 py-3 align-middle">
                           <div className="flex items-center gap-3">
                             <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted" aria-hidden="true">
                               <span className={cn('block h-full rounded-full', lead === i ? 'bg-status-success-mark' : 'bg-primary/60')} style={{ width: `${value ?? 0}%` }} />
@@ -395,39 +395,39 @@ export default function MatchComparePage() {
                     </tr>
                   );
                 })}
-                <tr className="border-t border-border">
-                  <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground"><BilingualText en="Skills" el="Δεξιότητες" compact /></th>
+                <tr className="border-t border-border motion-safe:hover:bg-muted/40">
+                  <th scope="row" className="px-4 py-3 text-left align-top text-2xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Skills" el="Δεξιότητες" compact /></th>
                   {people.map((person) => (
-                    <td key={person.userId} className="p-4 align-top">
+                    <td key={person.userId} className="px-4 py-3 align-top">
                       {skillsOf(person)}
                     </td>
                   ))}
                 </tr>
-                <tr className="border-t border-border">
-                  <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground">
+                <tr className="border-t border-border motion-safe:hover:bg-muted/40">
+                  <th scope="row" className="px-4 py-3 text-left align-top text-2xs font-medium uppercase tracking-wide text-muted-foreground">
                     <span className="flex items-center gap-1.5"><Check className="icon-sm text-status-success" aria-hidden="true" /><BilingualText en="Strengths" el="Δυνατά σημεία" compact /></span>
                   </th>
                   {people.map((person, i) => (
-                    <td key={person.userId} className="p-4 align-top">
+                    <td key={person.userId} className="px-4 py-3 align-top">
                       {strengthsOf(i)}
                     </td>
                   ))}
                 </tr>
-                <tr className="border-t border-border">
-                  <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground">
+                <tr className="border-t border-border motion-safe:hover:bg-muted/40">
+                  <th scope="row" className="px-4 py-3 text-left align-top text-2xs font-medium uppercase tracking-wide text-muted-foreground">
                     <span className="flex items-center gap-1.5"><Minus className="icon-sm text-status-warning" aria-hidden="true" /><BilingualText en="Considerations" el="Επιφυλάξεις" compact /></span>
                   </th>
                   {people.map((person, i) => (
-                    <td key={person.userId} className="p-4 align-top">
+                    <td key={person.userId} className="px-4 py-3 align-top">
                       {frictionsOf(i)}
                     </td>
                   ))}
                 </tr>
                 {people.some((p) => p.availability || p.lookingFor) && (
-                  <tr className="border-t border-border">
-                    <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /></th>
+                  <tr className="border-t border-border motion-safe:hover:bg-muted/40">
+                    <th scope="row" className="px-4 py-3 text-left align-top text-2xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /></th>
                     {people.map((person) => (
-                      <td key={person.userId} className="p-4 align-top text-muted-foreground">
+                      <td key={person.userId} className="px-4 py-3 align-top text-muted-foreground">
                         {[person.availability, person.lookingFor].filter(Boolean).join(' · ') || '—'}
                       </td>
                     ))}

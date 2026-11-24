@@ -53,6 +53,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { KindPill } from '@/components/common/KindPill';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK, type AskText } from '@/lib/page-questions';
@@ -101,6 +102,9 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
       featured && 'border-primary-muted bg-primary-subtle'
     )}>
       <CardContent className="space-y-3">
+        {/* The family's chip opens the card's content — on the featured
+            card it sits over the primary wash. */}
+        <KindPill glyph="briefcase" tone="accent" en="Role" el="Θέση" />
         <CardHead
           mark={(
             <Avatar className={cn('h-14 w-14', roleRing('founder'), job.logoUrl && 'rounded-xl')}>

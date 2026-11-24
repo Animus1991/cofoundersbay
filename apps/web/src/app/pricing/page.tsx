@@ -394,17 +394,17 @@ export default function PricingPage() {
           >
             <table className="w-full min-w-[600px] border-collapse">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="py-4 text-left text-sm font-semibold text-foreground"><BilingualText en="Feature" el="Δυνατότητα" compact /></th>
-                  <th className="px-2 py-4 text-center text-sm font-semibold text-foreground"><BilingualText en="Free" el="Δωρεάν" compact /></th>
-                  <th className="px-2 py-4 text-center text-sm font-semibold text-primary-accessible">Pro</th>
-                  <th className="px-2 py-4 text-center text-sm font-semibold text-foreground"><BilingualText en="Team" el="Ομάδα" compact /></th>
-                  <th className="px-2 py-4 text-center text-sm font-semibold text-foreground">Enterprise</th>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-2 py-4 text-left text-2xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Feature" el="Δυνατότητα" compact /></th>
+                  <th className="px-2 py-4 text-center text-2xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Free" el="Δωρεάν" compact /></th>
+                  <th className="px-2 py-4 text-center text-2xs font-medium uppercase tracking-wide text-primary-accessible">Pro</th>
+                  <th className="px-2 py-4 text-center text-2xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Team" el="Ομάδα" compact /></th>
+                  <th className="px-2 py-4 text-center text-2xs font-medium uppercase tracking-wide text-muted-foreground">Enterprise</th>
                 </tr>
               </thead>
               <tbody>
                 {FEATURES.map((feature, i) => (
-                  <tr key={feature.name} className={cn('border-b border-border', i % 2 === 0 && 'bg-card/50')}>
+                  <tr key={feature.name} className={cn('border-b border-border motion-safe:hover:bg-muted/40', i % 2 === 0 && 'bg-card/50')}>
                     <td className="py-3 text-sm text-muted-foreground"><BilingualText en={feature.name} el={feature.nameEl} wrap /></td>
                     <td className="px-2 py-3 text-center">
                       <div className="flex justify-center">

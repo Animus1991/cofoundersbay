@@ -17,7 +17,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { StatusText } from '@/components/common/StatusText';
-import { Badge } from '@/components/ui/badge';
+import type { StatusTone } from '@/lib/semantic-colors';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -35,12 +35,13 @@ export const MEETING_TYPE_LABEL: Record<string, { en: string; el: string }> = {
   in_person: { en: 'In person', el: 'Δια ζώσης' },
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  requested: 'bg-status-warning-bg text-status-warning border-status-warning-border',
-  confirmed: 'bg-status-success-bg text-status-success border-status-success-border',
-  completed: 'bg-primary/15 text-primary-accessible border-primary/30',
-  cancelled: 'bg-destructive/15 text-destructive-accessible border-destructive/30',
-  declined: 'bg-muted text-muted-foreground border-border',
+// The booking-state words' tones, through the shared tinted pill (B2.3).
+const STATUS_TONES: Record<string, StatusTone> = {
+  requested: 'warning',
+  confirmed: 'success',
+  completed: 'info',
+  cancelled: 'danger',
+  declined: 'neutral',
 };
 
 /**
@@ -119,12 +120,7 @@ export function BookingCard({
           )}
           aside={(
             <>
-              <Badge
-                variant="outline"
-                className={cn('text-xs', STATUS_COLORS[booking.status] ?? '')}
-              >
-                <StatusText value={booking.status} />
-              </Badge>
+              <StatusText value={booking.status} tone={STATUS_TONES[booking.status]} />
               {/* Where the session lives, after a dot: two pills side by side
                   read as one phrase ("Confirmed Booking"; docs §70). */}
               {showSource && (

@@ -7,6 +7,7 @@ import type { VerificationMethod } from '@cofounderbay/shared';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { roleRing } from '@/lib/role-tone';
 import { BilingualText } from '@/components/common/BilingualText';
+import { KindPill } from '@/components/common/KindPill';
 import { StatusText } from '@/components/common/StatusText';
 import { CMT, evidenceCopy, kindCopy } from '@/lib/i18n/strings-commitments';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -141,6 +142,8 @@ export function NeedCard({
   return (
     <article data-need-card="" className={cn('space-y-4', className)}>
       <header className="space-y-1.5">
+        {/* The family's chip first, the need's own kind under it. */}
+        <KindPill glyph="pact" tone="accent" en="Need" el="Ανάγκη" />
         <div className="flex items-start justify-between gap-3">
           <p className="min-w-0 pt-0.5 text-xs card-meta text-muted-foreground">
             <BilingualText
