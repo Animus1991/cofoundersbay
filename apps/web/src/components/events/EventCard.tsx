@@ -172,71 +172,68 @@ export function EventCard({
   }
 
   if (variant === 'featured') {
+    const fullDate = fmtDate(event.startDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     return (
       <Card className={cn('group overflow-hidden', className)}>
-        {/* Cover image. On a phone the card is the first screen's: a lower
-            cover, and the sentence, the host and the tags left to the event's
-            page, so "Going" is in view and the next card shows under it
-            (docs §115). */}
-        {event.coverImage && (
-          <div className={cn('relative overflow-hidden', cover.failed ? 'h-24 bg-status-warning-bg' : 'h-48 max-sm:h-28')}>
-            {cover.failed ? null : (
-              <>
-                <img
-                  ref={cover.ref}
-                  onError={cover.onError}
-                  src={event.coverImage}
-                  alt={event.title}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-              </>
-            )}
-            {/* Date badge */}
-            <div className="absolute top-4 left-4">
-              <div className="rounded-lg bg-background/90 backdrop-blur-sm px-3 py-2 text-center">
-                <span className="text-xs font-medium text-primary-accessible block">
-                  {fmtDate(event.startDate, { month: 'short' })}
-                </span>
-                <span className="text-xl font-bold text-foreground">
-                  {event.startDate.getDate()}
-                </span>
-              </div>
+        {/* The big photo hero (docs §132.1): a 16:9 cover — the tinted wash
+            when there is none — with only the date badge and the kind on it;
+            every word lives in the solid panel under the photo. */}
+        <div className="relative aspect-video w-full overflow-hidden">
+          {event.coverImage && !cover.failed ? (
+            <img
+              ref={cover.ref}
+              onError={cover.onError}
+              src={event.coverImage}
+              alt={event.title}
+              referrerPolicy="no-referrer"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="h-full w-full bg-status-warning-bg" aria-hidden="true" />
+          )}
+          {/* Date badge on the cover, the same square as the grid cards. */}
+          <div data-card-mark="" className="absolute left-4 top-4">
+            <div className="flex h-12 w-12 flex-col items-center justify-center rounded-xl bg-card text-center shadow-sm">
+              <span className="text-base font-bold tabular-nums text-primary-accessible" aria-hidden="true">
+                {event.startDate.getDate()}
+              </span>
+              <span className="card-meta leading-none text-muted-foreground" aria-hidden="true">
+                {fmtDate(event.startDate, { month: 'short' })}
+              </span>
             </div>
-            {/* Type: an opaque chip, so it reads on any photo. */}
-            <div className="absolute top-4 right-4">
-              <PhotoChip>
-                <EventTypeIcon type={event.type} />
-                <EventTypeLabel type={event.type} />
-              </PhotoChip>
-            </div>
+            <span className="sr-only">{fullDate}</span>
           </div>
-        )}
-        
-        <CardContent className="pt-4">
+          {/* Type: an opaque chip, so it reads on any photo. */}
+          <div className="absolute right-4 top-4">
+            <PhotoChip>
+              <EventTypeIcon type={event.type} />
+              <EventTypeLabel type={event.type} />
+            </PhotoChip>
+          </div>
+        </div>
+
+        <CardContent className="space-y-3 pt-4">
           <Link
             href={`/events/${event.id}`}
-            className="card-title text-foreground hover:text-primary-accessible transition-colors"
+            className="block text-[1.375rem] font-semibold leading-tight text-foreground transition-colors hover:text-primary-accessible sm:text-2xl"
           >
             {event.title}
           </Link>
-          
-          <p className="card-body mt-2 text-muted-foreground line-clamp-2 max-sm:hidden">
+
+          <p className="card-body text-muted-foreground line-clamp-2">
             {event.description}
           </p>
-          
+
           {/* Meta */}
           <FactLine
-            className="mt-3"
             items={[
               `${fmtDate(event.startDate, { weekday: 'short', month: 'short', day: 'numeric' })}, ${formatEventTime(event.startDate, event.endDate)}`,
               event.location,
             ]}
           />
-          
+
           {/* Host */}
-          <div className="mt-4 flex items-center gap-3 max-sm:hidden">
+          <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8">
               {/* The name sits beside it, so the photo is decorative (WCAG 1.1.1). */}
               <AvatarImage src={event.hostAvatar || undefined} alt="" />
@@ -252,11 +249,11 @@ export function EventCard({
           
           {/* Tags */}
           {event.tags && event.tags.length > 0 && (
-            <FactLine className="mt-4 max-sm:hidden" items={event.tags} />
+            <FactLine items={event.tags} />
           )}
-          
+
           {/* Actions */}
-          <div className="mt-5 flex items-center justify-between pt-4 border-t border-border max-sm:mt-3 max-sm:pt-3">
+          <div className="mt-2 flex items-center justify-between border-t border-border pt-3">
             <FactLine
               items={[
                 <BilingualText key="count" en={`${event.attendeesCount} attending`} el={`${event.attendeesCount} συμμετέχουν`} compact />,
