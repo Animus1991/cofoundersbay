@@ -703,7 +703,7 @@ export default function CalendarPage() {
   if (!hydrated) {
     return (
       <AppShell showHelp rail={rail} askAi={ASK.calendar}>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]" aria-busy="true">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_minmax(0,1fr)]" aria-busy="true">
           <div className="h-80 animate-pulse rounded-xl bg-muted/40" />
           <div className="h-[32rem] animate-pulse rounded-xl bg-muted/40" />
         </div>
@@ -760,7 +760,7 @@ export default function CalendarPage() {
         )}
 
         {view === 'calendar' ? (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
             {/* Left: the «Σήμερα» tile first (the day's number, its weekday and
                 how much sits on it), then the month — on a phone it follows the
                 day and what is coming, folded behind a remembered toggle, and

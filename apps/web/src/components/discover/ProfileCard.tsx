@@ -231,7 +231,7 @@ function ProfileCardInner({
             subtitle={profile.headline ? <span className="line-clamp-1">{profile.headline}</span> : undefined}
             asideStays
             aside={(
-              <span className="inline-flex items-center gap-2">
+              <span className="inline-flex max-w-full flex-wrap items-center justify-end gap-x-2 gap-y-1">
                 {badge}
                 {connected ? (
                   <Button aria-label={bilingualAria(`Message ${profile.displayName}`, `Μήνυμα προς ${profile.displayName}`)} size="sm" variant="ghost" onClick={onMessage}>
@@ -433,7 +433,7 @@ function ProfileCardInner({
           </span>
         ) : undefined}
         aside={badge || (profile.matchScore && profile.matchScore > 0) ? (
-          <span className="inline-flex items-center gap-2">
+          <span className="inline-flex max-w-full flex-wrap items-center justify-end gap-x-2 gap-y-1">
             {badge}
             {profile.matchScore && profile.matchScore > 0 ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary-accessible">

@@ -129,10 +129,10 @@ export function CanvasInspectorPanel({
   return (
     <div
       data-canvas-chrome
-      className={cn('pointer-events-auto flex max-h-full min-h-0 w-full cursor-default flex-col overflow-hidden rounded-2xl border border-border bg-card/95 shadow-sm sm:w-[220px]', className)}
+      className={cn('pointer-events-auto flex max-h-full min-h-0 w-full cursor-default flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm sm:w-[220px]', className)}
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <div className="relative z-10 shrink-0 border-b border-border bg-card/95 px-3 pt-3 pb-2">
+      <div className="relative z-10 shrink-0 border-b border-border bg-card px-3 pt-3 pb-2">
         <div className="mb-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 text-2xs font-medium text-muted-foreground">
             <Layers className="icon-sm" />
