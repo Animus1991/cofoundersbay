@@ -281,7 +281,7 @@ function PostingGuide() {
   };
 
   return (
-    <AppShell showHelp title={editId ? CMT.guide_edit_title.en : undefined} titleEl={editId ? CMT.guide_edit_title.el : undefined} askAi={ASK.needCardNew}>
+    <AppShell measure="form" showHelp title={editId ? CMT.guide_edit_title.en : undefined} titleEl={editId ? CMT.guide_edit_title.el : undefined} askAi={ASK.needCardNew}>
       <div className="space-y-6">
         {/* "About two minutes" sat beside this as a pill; the description
             above already says "in about two minutes" (docs §91). */}

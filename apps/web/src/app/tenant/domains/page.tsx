@@ -517,7 +517,7 @@ export default function TenantDomainsPage() {
 
   if (!tenantId) {
     return (
-      <AppShell>
+      <AppShell measure="form">
         <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
           <AlertTriangle className="h-10 w-10 text-muted-foreground" />
           <p className="text-muted-foreground"><BilingualText en="No organization context. Please select or join an organization first." el="Δεν έχει επιλεγεί οργανισμός. Επιλέξτε ή ενταχθείτε σε έναν πρώτα." wrap /></p>
@@ -527,7 +527,7 @@ export default function TenantDomainsPage() {
   }
 
   return (
-    <AppShell
+    <AppShell measure="form"
       title="Domain Management"
       titleEl="Διαχείριση τομέων"
       description="Add a subdomain or connect a custom domain. SSL is provisioned automatically once DNS verifies."

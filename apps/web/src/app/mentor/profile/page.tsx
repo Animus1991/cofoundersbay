@@ -268,7 +268,7 @@ export default function MentorProfilePage() {
 
   if (!mounted) {
     return (
-      <AppShell showHelp>
+      <AppShell measure="form" showHelp>
         <div className="space-y-6">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-48 w-full" />
@@ -278,7 +278,7 @@ export default function MentorProfilePage() {
   }
 
   return (
-    <AppShell showHelp
+    <AppShell measure="form" showHelp
       actions={
         <>
           <UnsavedMark dirty={unsaved.dirty} className="self-center" />

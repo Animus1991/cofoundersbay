@@ -260,14 +260,14 @@ export default function OrgMembersPage() {
   // organisation had nothing in it (docs §96).
   if (orgFailed || (mainError && !data)) {
     return (
-      <AppShell showHelp>
+      <AppShell measure="form" showHelp>
         <OrgReadFailed en={orgFailed ? undefined : 'Your team could not be read just now.'} el={orgFailed ? undefined : 'Η ομάδα σας δεν διαβάστηκε αυτή τη στιγμή.'} busy={orgFetching || mainFetching} onRetry={() => { refetchOrg(); void refetchMain(); }} />
       </AppShell>
     );
   }
 
   return (
-    <AppShell showHelp
+    <AppShell measure="form" showHelp
       title="Team Members"
       description="Add and manage who can run programs, review applications, and access workspace settings."
       descriptionEl="Προσθέστε και ορίστε ποιοι τρέχουν προγράμματα, αξιολογούν αιτήσεις και έχουν πρόσβαση στις ρυθμίσεις."

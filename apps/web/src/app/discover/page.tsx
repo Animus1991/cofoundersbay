@@ -70,7 +70,7 @@ type ViewMode = 'grid' | 'list' | 'match';
  * beside a pinned page rail, where three cut "Elena Papadopoulos" over two
  * lines (docs §86). A base of one column stays for twMerge to replace.
  */
-const PEOPLE_GRID = 'grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))]';
+const PEOPLE_GRID = 'card-grid [--card-min:24rem]';
 type RoleFilter = 'all' | 'founder' | 'cofounder' | 'mentor' | 'investor' | 'service_provider';
 
 /* The four doors onto the role filter (docs §131.3): the same value the
@@ -692,7 +692,7 @@ export default function DiscoverPage() {
 
           {/* Results */}
           {loading && (
-            <div className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && PEOPLE_GRID)}>
+            <div className={cn(viewMode === 'grid' ? PEOPLE_GRID : 'grid grid-cols-1 gap-4')}>
               {[...Array(6)].map((_, i) => (
                 <ProfileCardSkeleton key={i} variant={viewMode === 'list' ? 'compact' : 'default'} />
               ))}
@@ -767,7 +767,7 @@ export default function DiscoverPage() {
               </div>
               {/* The same columns as the results under it: the promoted card
                   was half the row wide beside cards a third wide. */}
-              <div className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && PEOPLE_GRID)}>
+              <div className={cn(viewMode === 'grid' ? PEOPLE_GRID : 'grid grid-cols-1 gap-4')}>
                 {promotedHits.map((hit) => {
                   const profile = hitToProfile(hit);
                   return (
@@ -790,7 +790,7 @@ export default function DiscoverPage() {
             <AnimatedList
               animation="fade-in-up"
               staggerDelay={50}
-              className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && PEOPLE_GRID)}
+              className={cn(viewMode === 'grid' ? PEOPLE_GRID : 'grid grid-cols-1 gap-4')}
             >
               {promotedLayout(promotedHits.length) === 'inline' ? promotedHits.map((hit) => {
                 const profile = hitToProfile(hit);

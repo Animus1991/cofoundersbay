@@ -133,7 +133,7 @@ export default function DataExportPage() {
   ]);
 
   return (
-    <AppShell title="Data export" titleEl="Εξαγωγή δεδομένων" description="Download a copy of your data" descriptionEl="Κατεβάστε ένα αντίγραφο των δεδομένων σας">
+    <AppShell measure="form" title="Data export" titleEl="Εξαγωγή δεδομένων" description="Download a copy of your data" descriptionEl="Κατεβάστε ένα αντίγραφο των δεδομένων σας">
       <div className="w-full space-y-6">
         <Link href="/settings" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="icon-sm" aria-hidden="true" />

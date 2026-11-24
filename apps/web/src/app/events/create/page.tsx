@@ -233,7 +233,7 @@ export default function CreateEventPage() {
   ];
 
   return (
-    <AppShell
+    <AppShell measure="form"
       title="Create event"
       titleEl="Δημιουργία εκδήλωσης"
       description="Host a meetup, webinar or demo day for the community."

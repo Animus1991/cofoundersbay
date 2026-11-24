@@ -5418,3 +5418,18 @@ select:disabled {
     transition: opacity 120ms ease-out;
   }
 }
+
+/* ── Card grids (docs §135 A1.3) ──────────────────────────────────────────
+   One utility for every "column of full-width card rows" list: as many
+   --card-min columns as fit, equal gaps, cards top-aligned. `.card-grid-lg`
+   is for wide cards that want two across from ~1100px of content. Headings
+   between groups span the row with `col-span-full`. */
+.card-grid {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--card-min, 26rem)), 1fr));
+}
+.card-grid-lg {
+  --card-min: 40rem;
+}

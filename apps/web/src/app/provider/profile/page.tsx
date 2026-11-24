@@ -249,7 +249,7 @@ export default function ProviderProfilePage() {
 
   if (!mounted) {
     return (
-      <AppShell>
+      <AppShell measure="form">
         <div className="space-y-6">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-48 w-full" />
@@ -261,7 +261,7 @@ export default function ProviderProfilePage() {
   const serviceTypeCopy = SERVICE_TYPES.find(s => s.value === serviceType);
 
   return (
-    <AppShell
+    <AppShell measure="form"
       actions={
         <>
           <UnsavedMark dirty={unsaved.dirty} className="self-center" />

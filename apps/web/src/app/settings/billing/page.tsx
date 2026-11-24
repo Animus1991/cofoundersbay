@@ -203,7 +203,7 @@ export default function UserBillingPage() {
   ]);
 
   return (
-    <AppShell
+    <AppShell measure="form"
       actions={
         <Button variant="ghost" size="sm" asChild>
           <Link href="/settings">

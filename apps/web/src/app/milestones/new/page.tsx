@@ -115,7 +115,7 @@ export default function NewMilestonePage() {
   const optionalFilled = Boolean(description.trim() || notes.trim()) || category !== 'product' || priority !== 'medium';
 
   return (
-    <AppShell
+    <AppShell measure="form"
       showHelp
       askAi={ASK.milestoneNew}
       actions={

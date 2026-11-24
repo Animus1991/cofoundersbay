@@ -645,7 +645,7 @@ export default function NotificationsPage() {
   ];
 
   return (
-    <AppShell
+    <AppShell measure="reading"
       title={notificationsEn('page_title')}
       titleEl={notificationsEl('page_title')}
       titleSticker={{ glyph: 'bell', tint: 'warning' }}

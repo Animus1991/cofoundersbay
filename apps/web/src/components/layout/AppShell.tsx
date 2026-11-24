@@ -1,6 +1,6 @@
 'use client';
 
-import { type CSSProperties, type ElementType, ReactNode, createContext, useContext, memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type CSSProperties, ReactNode, createContext, useContext, memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { SideNav } from './SideNav';
@@ -23,8 +23,10 @@ import { PageHeaderSlot, HeroActionsSlot } from './PageHeaderSlot';
 import { recordInAppView } from '@/lib/in-app-history';
 import { PageLead } from './PageLead';
 import { InfoHint } from '@/components/common/InfoHint';
-import { SectionSticker, type StickerTint } from '@/components/dashboard/SectionSticker';
-import type { CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { SectionSticker } from '@/components/dashboard/SectionSticker';
+import { deriveTitleSticker, type TitleSticker } from '@/lib/title-sticker';
+import { bilingualAria } from '@/lib/i18n/format';
+import { Sparkles } from 'lucide-react';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -208,7 +210,7 @@ export function AppShellFrame({
               // No width cap. The column is already offset by the sidebar's own
               // width, so "full width" here means exactly the space the sidebar
               // leaves, never over it.
-              className={cn(appShellMainClasses, contentClassName)}
+              className={cn(appShellMainClasses, 'mx-auto max-w-[1440px]', contentClassName)}
             >
               {children}
             </main>
@@ -274,9 +276,16 @@ type AppShellProps = {
   leadAsHint?: boolean;
   /**
    * A tinted round sticker before the h1 — the SectionSticker idiom lifted
-   * from the section heads to the page itself.
+   * from the section heads to the page itself. `undefined` derives the mark
+   * from the route (its own glyph, else its nav entry's icon — docs §135
+   * A1); an explicit object wins; `false` keeps the title bare.
    */
-  titleSticker?: { glyph?: CfbGlyphName; icon?: ElementType; tint: StickerTint };
+  titleSticker?: TitleSticker | false;
+  /**
+   * A narrower reading measure for text-first pages, centred like the
+   * frame's 1440px cap (docs §135 A1.2). `reading` → 760px, `form` → 1040px.
+   */
+  measure?: 'reading' | 'form';
 };
 
 /**
@@ -304,9 +313,11 @@ export function AppShell({
   rail,
   leadAsHint = false,
   titleSticker,
+  measure,
 }: AppShellProps) {
   const insideFrame = useContext(InAppShellFrame);
   const pathname = usePathname() ?? '/';
+  const sticker = titleSticker === false ? undefined : titleSticker ?? deriveTitleSticker(pathname);
   const resolved = resolvePageHeader(pathname, { title, description, titleEl, descriptionEl });
   const pageTitle = resolved.title;
   const pageTitleEl = resolved.titleEl;
@@ -331,6 +342,15 @@ export function AppShell({
     return () => clearTimeout(timer);
   }, [descIntoHelp, descSeenKey]);
   const [metaSlot, setMetaSlot] = useState<HTMLDivElement | null>(null);
+  // Under sm the page-ask field folds behind an icon in the title row (docs
+  // §135 A1.4): the field stays mounted — collapsed, not unmounted — and
+  // tapping the assistant mark opens it in place and focuses it.
+  const [askOpen, setAskOpen] = useState(false);
+  const askRef = useRef<HTMLDivElement>(null);
+  const openAsk = () => {
+    setAskOpen(true);
+    window.requestAnimationFrame(() => askRef.current?.querySelector('input')?.focus());
+  };
   // When the title is visually off (hero mode, docs §133) the header's tools
   // would float alone in an empty band; a hero card registers a corner slot
   // for them instead.
@@ -353,7 +373,11 @@ export function AppShell({
     // Inside a frame the <main> belongs to the layout above, so a page-level
     // contentClassName (e.g. overflow-x-clip on /analytics, /discover,
     // /matches, pitch-deck) lands on this wrapper instead — same clipping.
-    <div className={cn('space-y-5', insideFrame && contentClassName)}>
+    <div className={cn(
+      'w-full space-y-5',
+      measure === 'reading' ? 'mx-auto max-w-[760px]' : measure === 'form' ? 'mx-auto max-w-[1040px]' : '',
+      insideFrame && contentClassName,
+    )}>
       {headerShown && (
         <header className="space-y-3 [container-type:inline-size]">
           {/* One header row, as in the AI Studio prototype (docs §64): the
@@ -387,10 +411,22 @@ export function AppShell({
               <div className={cn('min-w-0 [grid-area:title]', titleSrOnly && 'sr-only')} data-page-header="">
                 {pageTitle && (
                   <div className="flex items-center gap-2.5">
-                    {titleSticker ? <SectionSticker {...titleSticker} className="h-8 w-8" /> : null}
+                    {sticker ? <SectionSticker {...sticker} className="h-8 w-8" /> : null}
                     <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
                       <BilingualText en={pageTitle} el={pageTitleEl} />
                     </h1>
+                    {showAskAi && !titleSrOnly ? (
+                      <button
+                        type="button"
+                        aria-expanded={askOpen}
+                        aria-controls="page-ask-ai"
+                        aria-label={bilingualAria('Ask about this page', 'Ρωτήστε για αυτή τη σελίδα')}
+                        onClick={openAsk}
+                        className="ml-auto inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:hidden"
+                      >
+                        <Sparkles className="icon-md" aria-hidden="true" />
+                      </button>
+                    ) : null}
                   </div>
                 )}
                 {pageDescription && (leadAsHint ? (
@@ -423,10 +459,16 @@ export function AppShell({
                 </div>
               )}
               {showAskAi && (
-                <AIComposer
-                  prompt={askAiPrompt}
-                  className="w-full min-w-0 [grid-area:ask]"
-                />
+                <div
+                  id="page-ask-ai"
+                  ref={askRef}
+                  className={cn('w-full min-w-0 [grid-area:ask]', !askOpen && !titleSrOnly && 'max-sm:hidden')}
+                >
+                  <AIComposer
+                    prompt={askAiPrompt}
+                    className="w-full min-w-0"
+                  />
+                </div>
               )}
             </div>
           </section>

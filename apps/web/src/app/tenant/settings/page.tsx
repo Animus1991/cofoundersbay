@@ -99,7 +99,7 @@ export default function TenantSettingsPage() {
   });
 
   return (
-    <AppShell
+    <AppShell measure="form"
       title="Tenant Settings"
       description="General workspace settings: membership policy, notifications, and email preferences."
       actions={(

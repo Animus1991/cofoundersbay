@@ -168,7 +168,7 @@ export default function NotificationPreferencesPage() {
   );
 
   return (
-    <AppShell
+    <AppShell measure="form"
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="icon" className="sm:hidden" aria-label={bilingualAria('Settings', 'Ρυθμίσεις')} asChild>

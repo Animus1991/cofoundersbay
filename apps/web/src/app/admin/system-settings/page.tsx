@@ -23,7 +23,7 @@ export default function SystemSettingsPage() {
   const save = () => success('Settings saved', 'Platform configuration updated (demo).');
 
   return (
-    <AppShell
+    <AppShell measure="form"
       title="System settings"
       description="Global platform switches — maintenance mode, signups, support contact, and defaults."
       descriptionEl="Γενικοί διακόπτες της πλατφόρμας — λειτουργία συντήρησης, εγγραφές, επικοινωνία υποστήριξης και προεπιλογές."

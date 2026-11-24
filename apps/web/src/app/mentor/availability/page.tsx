@@ -279,7 +279,7 @@ export default function MentorAvailabilityPage() {
 
   if (!mounted) {
     return (
-      <AppShell showHelp>
+      <AppShell measure="form" showHelp>
         <div className="space-y-6">
           <Skeleton className="h-10 w-72" />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -291,7 +291,7 @@ export default function MentorAvailabilityPage() {
   }
 
   return (
-    <AppShell showHelp
+    <AppShell measure="form" showHelp
       actions={
         <>
           <Button onClick={() => void handleSave()} disabled={isSaving || storedFailed || storedLoading}>

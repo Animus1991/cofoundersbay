@@ -80,7 +80,7 @@ function ApplicationsPageContent() {
   // `idle` too: before the first read starts this drew an empty application for a frame.
   if (isLoadingWorkspaces || workspacesRead === 'idle') {
     return (
-      <AppShell showHelp>
+      <AppShell measure="form" showHelp>
         <div className="flex h-64 flex-col items-center justify-center gap-3">
           <Loader2 className="icon-xl animate-spin text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
@@ -94,7 +94,7 @@ function ApplicationsPageContent() {
   // docs §79: a failed read drew an empty YC application with Save All.
   if (!workspace && (workspacesRead === 'failed' || workspacesRead === 'ready')) {
     return (
-      <AppShell showHelp askAi={askAi}>
+      <AppShell measure="form" showHelp askAi={askAi}>
         <NoWorkspaceNotice
           state={workspacesRead === 'failed' ? 'failed' : 'none'}
           onRetry={() => { clearError(); void loadWorkspaces(true); }}
@@ -136,7 +136,7 @@ function ApplicationsPageContent() {
   ];
 
   return (
-    <AppShell
+    <AppShell measure="form"
       showHelp
       askAi={askAi}
       contentClassName="builder-copy overflow-x-clip"
