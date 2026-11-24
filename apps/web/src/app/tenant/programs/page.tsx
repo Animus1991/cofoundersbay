@@ -529,7 +529,7 @@ export default function TenantProgramsPage() {
         )}
 
         {/* Programs List */}
-        <div className="space-y-3">
+        <div className="card-grid">
           {filteredPrograms.map((program) => (
             <ProgramCard
               key={program.id}
@@ -540,7 +540,7 @@ export default function TenantProgramsPage() {
             />
           ))}
           {filteredPrograms.length === 0 && (
-            <EmptyTenantPrograms
+            <EmptyTenantPrograms className="col-span-full"
               filtersActive={!!search || statusFilterOn}
               onClearFilters={() => { setSearch(''); setStatusFilter('current'); }}
               active={namedFilters(

@@ -678,7 +678,7 @@ export default function ShortlistPage() {
                 compact
               />
             </p>
-            <div className={cn(viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-4' : 'space-y-4')}>
+            <div className={cn(viewMode === 'grid' ? 'card-grid' : 'space-y-4')}>
               {filtered.map((item) => (
                 <ShortlistCard
                   key={item.id}

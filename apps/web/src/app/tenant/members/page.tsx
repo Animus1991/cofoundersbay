@@ -495,8 +495,8 @@ export default function TenantMembersPage() {
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-4">
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
+            <div className="card-grid card-grid-lg">
+              <p className="col-span-full text-sm text-muted-foreground">
                 <BilingualText
                   en={`${filteredMembers.length} member${filteredMembers.length !== 1 ? 's' : ''} found`}
                   el={`${filteredMembers.length} ${filteredMembers.length !== 1 ? 'μέλη' : 'μέλος'}`}
@@ -507,7 +507,7 @@ export default function TenantMembersPage() {
                 <MemberCard key={member.id} member={member} {...memberActions} />
               ))}
               {filteredMembers.length === 0 && (
-                <EmptyTenantMembers
+                <EmptyTenantMembers className="col-span-full"
                   filtersActive={!!search || roleFilter !== 'all' || statusFilter !== 'all'}
                   onClearFilters={() => { setSearch(''); setRoleFilter('all'); setStatusFilter('all'); }}
                   active={namedFilters(

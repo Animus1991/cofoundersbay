@@ -451,7 +451,7 @@ export default function InvestorScoutingPage() {
       labelEl: 'Προτεινόμενες',
       badge: featured.length || null,
       content: (
-        <div className="space-y-3">
+        <div className="card-grid card-grid-lg">
           {featured.map((s) => (
             <RowHead
               key={s.id}
@@ -466,7 +466,7 @@ export default function InvestorScoutingPage() {
             />
           ))}
           {featured.length === 0 ? (
-            <p className="text-sm text-muted-foreground"><BilingualText en="No startup is featured right now." el="Καμία startup δεν προτείνεται αυτή τη στιγμή." wrap /></p>
+            <p className="col-span-full text-sm text-muted-foreground"><BilingualText en="No startup is featured right now." el="Καμία startup δεν προτείνεται αυτή τη στιγμή." wrap /></p>
           ) : null}
         </div>
       ),

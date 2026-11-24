@@ -353,8 +353,8 @@ export default function InvestorsPage() {
                 </Card>
               ))
             : (
-              // One card a row at every width, like Matches (docs §115/§125).
-              <div className="grid grid-cols-1 gap-3">
+              // A card grid from ~26rem columns at wide widths (docs §135 A2).
+              <div className="card-grid">
                 {filtered.map((inv) => (
                   <InvestorCard key={inv.id} investor={inv} saved={isSaved(inv)} onToggleSave={() => void toggleSave(inv)} />
                 ))}
@@ -363,7 +363,7 @@ export default function InvestorsPage() {
           {/* Not under a failed read: "No investors have joined yet" stood
               under "could not be loaded" (docs §86). */}
           {!isLoading && !isError && filtered.length === 0 && (
-            <Card>
+            <Card className="col-span-full">
               <CardContent className="py-14 text-center">
                 <TrendingUp className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" aria-hidden="true" />
                 <p className="card-title text-foreground">

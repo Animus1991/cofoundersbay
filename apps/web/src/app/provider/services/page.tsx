@@ -472,12 +472,12 @@ export default function ProviderServicesPage() {
         />
 
         {/* Services List */}
-        <div className="space-y-3">
+        <div className="card-grid">
           {filteredServices.map((service) => (
             <ServiceCard key={service.id} service={service} {...serviceActions} />
           ))}
           {filteredServices.length === 0 && (
-            <Card>
+            <Card className="col-span-full">
               <CardContent className="py-12 text-center">
                 <Store className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="card-title text-foreground"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></h3>

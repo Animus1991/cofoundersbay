@@ -367,7 +367,7 @@ export default function ManageGroupsPage() {
         )}
 
         {/* Groups */}
-        <div className="space-y-3">
+        <div className="card-grid">
           {filtered.map(group => (
             <GroupCard key={group.id} group={group} sample={showingSample} {...actions} />
           ))}

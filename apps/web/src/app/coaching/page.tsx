@@ -879,13 +879,13 @@ export default function CoachingPage() {
                 {upcomingMerged.length > 0 && (
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Upcoming" el="Επερχόμενες" compact /></p>
-                    <div className="space-y-3">{upcomingMerged.map(renderRow)}</div>
+                    <div className="card-grid">{upcomingMerged.map(renderRow)}</div>
                   </div>
                 )}
                 {completedMerged.length > 0 && (
                   <div className="mt-4">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /></p>
-                    <div className="space-y-3">{completedMerged.map(renderRow)}</div>
+                    <div className="card-grid">{completedMerged.map(renderRow)}</div>
                   </div>
                 )}
               </>

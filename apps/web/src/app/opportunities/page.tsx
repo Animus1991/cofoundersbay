@@ -914,8 +914,8 @@ export default function OpportunitiesPage() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
-                <p className="text-xs text-muted-foreground">
+              <div className="card-grid card-grid-lg">
+                <p className="col-span-full text-xs text-muted-foreground">
                   <BilingualText
                     en={opportunities.length === 1 ? opportunitiesEn('count_one') : opportunitiesEn('count_many').replace('{n}', String(opportunities.length))}
                     el={opportunities.length === 1 ? opportunitiesEl('count_one') : opportunitiesEl('count_many').replace('{n}', String(opportunities.length))}

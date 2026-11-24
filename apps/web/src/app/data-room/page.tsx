@@ -126,7 +126,7 @@ export default function SharedRoomsPage() {
             action={<Button size="sm" variant="outline" asChild><Link href="/fundraising"><BilingualText en={fundraisingEn('shared_own_room')} el={fundraisingEl('shared_own_room')} compact /></Link></Button>}
           />
         ) : (
-          rooms.map((room) => <RoomCard key={room.roundId} room={room} />)
+          <div className="card-grid">{rooms.map((room) => <RoomCard key={room.roundId} room={room} />)}</div>
         )}
       </div>
     </AppShell>

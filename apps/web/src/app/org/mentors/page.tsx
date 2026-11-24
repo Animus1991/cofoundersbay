@@ -438,13 +438,13 @@ export default function OrgMentorsPage() {
         )}
 
         {/* Mentors List */}
-        <div className="space-y-3">
-          {reading && mentors.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="h-28" />)}
+        <div className="card-grid">
+          {reading && mentors.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="col-span-full h-28" />)}
           {filteredMentors.map((mentor) => (
             <MentorCard key={mentor.id} mentor={mentor} sample={isSample} />
           ))}
           {!reading && filteredMentors.length === 0 && (
-            <EmptyOrgMentors filtersActive={!!search} onClearFilters={() => setSearch('')} active={namedFilters(namedQuery(search))} />
+            <EmptyOrgMentors className="col-span-full" filtersActive={!!search} onClearFilters={() => setSearch('')} active={namedFilters(namedQuery(search))} />
           )}
         </div>
       </div>

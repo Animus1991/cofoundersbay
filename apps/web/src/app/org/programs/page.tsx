@@ -432,9 +432,9 @@ export default function OrgProgramsPage() {
           </div>
         )}
 
-        <div className="space-y-3">
+        <div className="card-grid">
           {filtersActive && filteredPrograms.length > 0 && (
-            <p className="text-sm text-muted-foreground">
+            <p className="col-span-full text-sm text-muted-foreground">
               <BilingualText
                 en={`${filteredPrograms.length} of ${programs.length} programs`}
                 el={`${filteredPrograms.length} από ${programs.length} προγράμματα`}
@@ -447,7 +447,7 @@ export default function OrgProgramsPage() {
             <ProgramCard key={program.id} program={program} sample={isSample} />
           ))}
           {!reading && filteredPrograms.length === 0 && (
-            <EmptyOrgPrograms
+            <EmptyOrgPrograms className="col-span-full"
               filtersActive={filtersActive}
               onClearFilters={clearFilters}
               active={namedFilters(namedQuery(search), namedChoice(statusFilter, 'all', STATUS_LABEL))}

@@ -707,13 +707,13 @@ export default function ProgramsPage() {
           {/* All Programs */}
           <TabsContent value="all" className="mt-4">
             {isLoading ? (
-              <div className="space-y-3">
+              <div className="card-grid card-grid-lg">
                 {[...Array(4)].map((_, i) => <ProgramSkeleton key={i} />)}
               </div>
             ) : isError && !data ? (
               // A failed read said "No programs found · Try adjusting your
               // filters" with no filter set (docs §77).
-              <Card>
+              <Card className="col-span-full">
                 <CardContent className="py-8">
                   <p role="alert" className="font-medium">
                     <BilingualText en="Programmes could not be read just now." el="Τα προγράμματα δεν διαβάστηκαν αυτή τη στιγμή." compact wrap />
@@ -724,7 +724,7 @@ export default function ProgramsPage() {
                 </CardContent>
               </Card>
             ) : filtered.length === 0 ? (
-              <Card>
+              <Card className="col-span-full">
                 <CardContent className="py-8">
                   <p className="font-medium"><BilingualText en={programsEn('none_found')} el={programsEl('none_found')} compact /></p>
                   <p className="mt-1 max-w-prose text-sm text-muted-foreground">
@@ -753,7 +753,7 @@ export default function ProgramsPage() {
               </Card>
             ) : (
               // No "3 programs found": the tab above counts the same list.
-              <div className="space-y-3">
+              <div className="card-grid card-grid-lg">
                 {/* The open ones first, the nearest deadline at the top (docs §115); the rest keep their order. */}
                 {[...filtered].sort((a, b) => {
                   const open = Number(!acceptsApplications(a)) - Number(!acceptsApplications(b));
@@ -779,7 +779,7 @@ export default function ProgramsPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-3">
+              <div className="card-grid card-grid-lg">
                 {openPrograms.map((p) => (
                   <ProgramCard key={p.id} program={p} isEnrolled={enrolledIds.has(p.id)} onApply={setApplyTarget} />
                 ))}
@@ -798,7 +798,7 @@ export default function ProgramsPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-3">
+              <div className="card-grid card-grid-lg">
                 {myPrograms.map((p) => (
                   <ProgramCard key={p.id} program={p} isEnrolled={true} onApply={setApplyTarget} showTrack />
                 ))}

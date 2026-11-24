@@ -636,12 +636,12 @@ export default function InvestorWatchlistPage() {
             </div>
             ) : null}
 
-            <div className="space-y-3">
+            <div className="card-grid">
               {filtered.map(startup => (
                 <WatchlistCard key={startup.id} startup={startup} live={watchLive} {...watchActions} />
               ))}
               {filtered.length === 0 && !watchedLoading && (
-                <Card>
+                <Card className="col-span-full">
                   <CardContent className="py-12 text-center">
                     <Eye className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
                     {/* "No results · Add startups from the scouting feed",

@@ -96,7 +96,7 @@ export default function MentorshipManagementPage() {
   ]);
 
   return (
-    <AppShell
+    <AppShell measure="form"
       title="Mentorship management"
       titleEl="Διαχείριση καθοδήγησης"
       description="The mentor directory: who is available, who is booked, and how their sessions are rated."

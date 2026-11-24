@@ -533,12 +533,12 @@ export default function AdminProgramsPage() {
         </div>
 
         {/* Programs List */}
-        <div className="space-y-3">
+        <div className="card-grid">
           {filteredPrograms.map((program) => (
             <ProgramCard key={program.id} program={program} sample={showingSample} onView={setViewing} onArchive={archive} />
           ))}
           {filteredPrograms.length === 0 && (
-            <Card>
+            <Card className="col-span-full">
               <CardContent className="space-y-3">
                 <CardHead
                   title={<BilingualText en="No programs found" el="Δεν βρέθηκαν προγράμματα" compact wrap />}

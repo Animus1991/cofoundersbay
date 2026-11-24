@@ -437,15 +437,15 @@ export default function MentorSessionsPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="upcoming" className="space-y-3 mt-4">
+          <TabsContent value="upcoming" className="card-grid card-grid-lg mt-4">
             {isLoading || bookingsLoading ? (
-              <div className="flex items-center justify-center py-12">
+              <div className="col-span-full flex items-center justify-center py-12">
                 <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : upcomingRows.length > 0 ? (
               upcomingRows.map(renderRow)
             ) : (
-              <Card>
+              <Card className="col-span-full">
                 <CardContent className="py-12 text-center">
                   <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                   <h3 className="font-medium"><BilingualText en="No upcoming sessions" el="Δεν υπάρχουν επερχόμενες συνεδρίες" compact /></h3>
@@ -461,15 +461,15 @@ export default function MentorSessionsPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="past" className="space-y-3 mt-4">
+          <TabsContent value="past" className="card-grid card-grid-lg mt-4">
             {isLoading || bookingsLoading ? (
-              <div className="flex items-center justify-center py-12">
+              <div className="col-span-full flex items-center justify-center py-12">
                 <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : pastRows.length > 0 ? (
               pastRows.map(renderRow)
             ) : (
-              <Card>
+              <Card className="col-span-full">
                 <CardContent className="py-12 text-center">
                   <Clock className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                   <h3 className="font-medium"><BilingualText en="No past sessions" el="Δεν υπάρχουν παρελθούσες συνεδρίες" compact /></h3>

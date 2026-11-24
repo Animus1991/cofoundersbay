@@ -452,12 +452,12 @@ export default function ProviderProjectsPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-4 space-y-3">
+          <TabsContent value={activeTab} className="card-grid mt-4">
             {filteredProjects.map((project) => (
               <ProjectCard key={project.id} project={project} onView={setViewing} onComplete={live.length > 0 ? (pr) => void complete(pr) : undefined} onUpdateProgress={live.length > 0 ? openProgress : undefined} />
             ))}
             {filteredProjects.length === 0 && (
-              <Card>
+              <Card className="col-span-full">
                 <CardContent className="py-12 text-center">
                   <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                   {projects.length === 0 ? (

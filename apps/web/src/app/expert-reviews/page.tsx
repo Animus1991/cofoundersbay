@@ -664,7 +664,7 @@ export default function ExpertReviewsPage() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                   <BilingualText en="Active Requests" el="Ενεργά αιτήματα" compact />
                 </p>
-                <div className="space-y-4">{pending.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
+                <div className="card-grid">{pending.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
               </div>
             )}
             {submitted.length > 0 && (
@@ -672,7 +672,7 @@ export default function ExpertReviewsPage() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                   <BilingualText en="Completed Reviews" el="Ολοκληρωμένες αξιολογήσεις" compact />
                 </p>
-                <div className="space-y-4">{submitted.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
+                <div className="card-grid">{submitted.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
               </div>
             )}
             {reviewsEmpty && (

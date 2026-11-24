@@ -550,7 +550,7 @@ export default function JobsPage() {
           </Button>
         </CardContent></Card>
       ) : isLoading ? (
-        <div className="space-y-3">
+        <div className="card-grid">
           {Array.from({ length: 6 }).map((_, i) => (
             <JobSkeleton key={i} />
           ))}
@@ -621,7 +621,7 @@ export default function JobsPage() {
                   <BilingualText en={jobsEn('featured')} el={jobsEl('featured')} compact />
                 </h2>
               </div>
-              {featuredJobs.map((job) => <JobCard key={job.id} job={job} featured myId={myId} />)}
+              <div className="card-grid">{featuredJobs.map((job) => <JobCard key={job.id} job={job} featured myId={myId} />)}</div>
             </section>
           )}
 
@@ -634,7 +634,7 @@ export default function JobsPage() {
                   <BilingualText en={jobsEn('remote_section')} el={jobsEl('remote_section')} compact />
                 </h2>
               </div>
-              {remoteRest.map((job) => <JobCard key={job.id} job={job} myId={myId} />)}
+              <div className="card-grid">{remoteRest.map((job) => <JobCard key={job.id} job={job} myId={myId} />)}</div>
             </section>
           )}
 
@@ -646,7 +646,7 @@ export default function JobsPage() {
                   <BilingualText en={jobsEn('onsite_section')} el={jobsEl('onsite_section')} compact />
                 </h2>
               </div>
-              {onsiteRest.map((job) => <JobCard key={job.id} job={job} myId={myId} />)}
+              <div className="card-grid">{onsiteRest.map((job) => <JobCard key={job.id} job={job} myId={myId} />)}</div>
             </section>
           )}
         </div>

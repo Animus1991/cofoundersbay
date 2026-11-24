@@ -494,7 +494,7 @@ export default function MarketplacePage() {
 
           <TabsContent value={selectedCategory} className="space-y-6 mt-4">
             {isLoading && (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="card-grid">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i}><CardContent className="space-y-3">
                     <div className="flex gap-3"><Skeleton className="h-11 w-11 rounded-lg" /><div className="flex-1 space-y-1.5"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24" /></div></div>
@@ -505,7 +505,7 @@ export default function MarketplacePage() {
             )}
 
             {!isLoading && readFailed && (
-              <div className="flex flex-col items-start gap-3 py-12 text-left">
+              <div className="col-span-full flex flex-col items-start gap-3 py-12 text-left">
                 <p role="alert" className="card-body text-muted-foreground">
                   <BilingualText en="The services could not be read just now." el="Οι υπηρεσίες δεν διαβάστηκαν αυτή τη στιγμή." wrap />
                 </p>
@@ -523,7 +523,7 @@ export default function MarketplacePage() {
                       <TrendingUp className="icon-sm text-muted-foreground" />
                       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground"><BilingualText en="Featured Providers" el="Προτεινόμενοι πάροχοι" compact /></h2>
                     </div>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="card-grid">
                       {featured.map(p => <ProviderCard key={p.id} provider={p} featured />)}
                     </div>
                   </div>
@@ -534,7 +534,7 @@ export default function MarketplacePage() {
                     {featured.length > 0 && (
                       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground"><BilingualText en="All Providers" el="Όλοι οι πάροχοι" compact /></h2>
                     )}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <div className="card-grid">
                       {regular.map(p => <ProviderCard key={p.id} provider={p} />)}
                     </div>
                   </div>

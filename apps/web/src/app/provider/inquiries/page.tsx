@@ -463,12 +463,12 @@ export default function ProviderInquiriesPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-4 space-y-3">
+          <TabsContent value={activeTab} className="card-grid card-grid-lg mt-4">
             {filteredInquiries.map((inquiry) => (
               <InquiryCard key={inquiry.id} inquiry={inquiry} onStatus={live.length > 0 ? (i, st) => void setStatus(i, st) : undefined} />
             ))}
             {filteredInquiries.length === 0 && (
-              <Card>
+              <Card className="col-span-full">
                 <CardContent className="py-12 text-center">
                   <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                   {/* English only, and "No inquiries found" over an empty

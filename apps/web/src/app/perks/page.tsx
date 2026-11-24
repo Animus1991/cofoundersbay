@@ -482,7 +482,7 @@ export default function PerksPage() {
             ) : (
               // Two to a row from xl, as the prototype grids its perks: a long
               // single column made the offers a scroll rather than a choice.
-              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+              <div className="card-grid">
                 {shown.map((p) => <PerkCard key={p.id} perk={p} now={now} stage={stageOrNull} busy={busy} onClaim={() => void runClaim(p)} />)}
               </div>
             )}
@@ -497,7 +497,7 @@ export default function PerksPage() {
               empty('You have not claimed a perk yet. Claim one under Offers to see its code here.', 'Δεν έχετε διεκδικήσει ακόμη προσφορά. Διεκδικήστε μία στις Προσφορές για να δείτε εδώ τον κωδικό της.',
                 <Button size="sm" variant="outline" onClick={() => setTab('offers')}><BilingualText en="See the offers" el="Δείτε τις προσφορές" compact /></Button>)
             ) : (
-              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+              <div className="card-grid">
                 {claimed.map((p) => <PerkCard key={p.id} perk={p} now={now} stage={stageOrNull} busy={busy} />)}
               </div>
             )}

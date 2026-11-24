@@ -311,7 +311,7 @@ function IntrosContent() {
   );
 
   const empty = (en: string, el: string, cta?: React.ReactNode) => (
-    <Card>
+    <Card className="col-span-full">
       <CardContent className="space-y-3 text-sm text-muted-foreground">
         <BilingualText en={en} el={el} wrap />
         {cta}
@@ -346,7 +346,7 @@ function IntrosContent() {
             </Card>
           ) : (
             <>
-              <TabsContent value="forward" className="space-y-4">
+              <TabsContent value="forward" className="card-grid">
                 {toForward.length === 0
                   ? empty('Nobody has asked you for an introduction yet.', 'Κανείς δεν σας έχει ζητήσει ακόμη γνωριμία.')
                   : toForward.map((i) => (
@@ -389,9 +389,9 @@ function IntrosContent() {
                       />
                     ))}
               </TabsContent>
-              <TabsContent value="received" className="space-y-4">
+              <TabsContent value="received" className="card-grid">
                 {refusal ? (
-                  <div role="alert" className="space-y-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3 text-sm text-foreground">
+                  <div role="alert" className="col-span-full space-y-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3 text-sm text-foreground">
                     <p><BilingualText en={refusal.en} el={refusal.el} wrap /></p>
                     <Button size="sm" variant="outline" asChild>
                       <Link href={PROFILE_VERIFICATION_HREF}><BilingualText en="Verify on your profile" el="Επαλήθευση στο προφίλ σας" compact /></Link>
@@ -420,7 +420,7 @@ function IntrosContent() {
                       />
                     ))}
               </TabsContent>
-              <TabsContent value="sent" className="space-y-4">
+              <TabsContent value="sent" className="card-grid">
                 {sent.length === 0
                   ? empty(
                       'You have not asked for an introduction yet. Open the profile of someone you want to meet and choose “Ask for an introduction”.',

@@ -407,7 +407,7 @@ export default function CommitmentsPage() {
   const loading = cardsQ.isLoading || threadsQ.isLoading || now === null;
 
   const readFailed = (en: string, el: string, retry: () => void) => (
-    <div className="space-y-3 rounded-xl border border-dashed border-border p-6 text-center">
+    <div className="col-span-full space-y-3 rounded-xl border border-dashed border-border p-6 text-center">
       <p role="alert" className="text-sm text-muted-foreground"><BilingualText en={en} el={el} wrap /></p>
       <Button size="sm" variant="outline" onClick={retry}>
         <BilingualText en={CMT.try_again.en} el={CMT.try_again.el} compact />
@@ -458,9 +458,9 @@ export default function CommitmentsPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="mine" className="space-y-4">
+        <TabsContent value="mine" className="card-grid card-grid-lg">
           {loading ? (
-            <Skeleton className="h-48 w-full rounded-2xl" />
+            <Skeleton className="col-span-full h-48 w-full rounded-2xl" />
           ) : cardsQ.isError && liveCards.length === 0 ? (
             readFailed(CMT.cards_failed.en, CMT.cards_failed.el, () => void cardsQ.refetch())
           ) : liveCards.length === 0 ? (

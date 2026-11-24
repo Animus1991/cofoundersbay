@@ -264,9 +264,9 @@ export default function MentorRequestsPage() {
             <TabsTrigger value="declined" className="gap-2"><BilingualText en="Declined" el="Απορριφθέντα" compact />{declinedRequests.length > 0 && <Counter value={declinedRequests.length} />}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="pending" className="space-y-3 mt-4">
+          <TabsContent value="pending" className="card-grid mt-4">
             {isLoading ? (
-              <div className="flex items-center justify-center py-12">
+              <div className="col-span-full flex items-center justify-center py-12">
                 <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : pendingRequests.length > 0 ? (
@@ -280,7 +280,7 @@ export default function MentorRequestsPage() {
                 />
               ))
             ) : (
-              <Card>
+              <Card className="col-span-full">
                 <CardContent className="py-12 text-center">
                   <UserPlus className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                   <h3 className="font-medium"><BilingualText en="No pending requests" el="Δεν υπάρχουν αιτήματα σε αναμονή" /></h3>
@@ -292,9 +292,9 @@ export default function MentorRequestsPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="accepted" className="space-y-3 mt-4">
+          <TabsContent value="accepted" className="card-grid mt-4">
             {isLoading ? (
-              <div className="flex items-center justify-center py-12">
+              <div className="col-span-full flex items-center justify-center py-12">
                 <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : acceptedRequests.length > 0 ? (
@@ -302,7 +302,7 @@ export default function MentorRequestsPage() {
                 <RequestCard key={request.id} request={request} />
               ))
             ) : (
-              <Card>
+              <Card className="col-span-full">
                 <CardContent className="py-12 text-center">
                   <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                   <h3 className="font-medium"><BilingualText en="No accepted requests" el="Δεν υπάρχουν αποδεκτά αιτήματα" /></h3>
@@ -311,9 +311,9 @@ export default function MentorRequestsPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="declined" className="space-y-3 mt-4">
+          <TabsContent value="declined" className="card-grid mt-4">
             {isLoading ? (
-              <div className="flex items-center justify-center py-12">
+              <div className="col-span-full flex items-center justify-center py-12">
                 <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : declinedRequests.length > 0 ? (
@@ -321,7 +321,7 @@ export default function MentorRequestsPage() {
                 <RequestCard key={request.id} request={request} />
               ))
             ) : (
-              <Card>
+              <Card className="col-span-full">
                 <CardContent className="py-12 text-center">
                   <XCircle className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                   <h3 className="font-medium"><BilingualText en="No declined requests" el="Δεν υπάρχουν απορριφθέντα αιτήματα" /></h3>

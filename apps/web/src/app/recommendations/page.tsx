@@ -637,16 +637,16 @@ export default function RecommendationsPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-4 space-y-3">
+          <TabsContent value={activeTab} className="card-grid mt-4">
             {recsLoading ? (
               <Skeleton3 />
             ) : recsError ? (
-              <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+              <Card className="col-span-full"><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
                 <p role="alert" className="text-sm text-muted-foreground"><BilingualText en="Your picks could not be read just now." el="Οι προτάσεις σας δεν διαβάστηκαν αυτή τη στιγμή." /></p>
                 <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
               </CardContent></Card>
             ) : activeTab === 'saved' && savedIds.size === 0 ? (
-              <Card><CardContent className="py-14 text-center">
+              <Card className="col-span-full"><CardContent className="py-14 text-center">
                 <BookmarkPlus className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
                 <h3 className="font-semibold mb-1"><BilingualText en="No saved matches yet" el="Δεν υπάρχουν αποθηκευμένες αντιστοιχίσεις" /></h3>
                 <p className="text-sm text-muted-foreground"><BilingualText en="Bookmark matches you want to revisit later." el="Αποθηκεύστε αντιστοιχίσεις που θέλετε να επαναξεταστούν αργότερα." /></p>
@@ -664,7 +664,7 @@ export default function RecommendationsPage() {
                 />
               ))
             ) : (
-              <Card>
+              <Card className="col-span-full">
                 <CardContent className="py-14 text-center">
                   <Sparkles className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
                   <h3 className="font-semibold mb-1"><BilingualText en="No recommendations yet" el="Δεν υπάρχουν ακόμη προτάσεις" /></h3>

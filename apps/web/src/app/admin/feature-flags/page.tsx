@@ -531,9 +531,9 @@ export default function AdminFeatureFlagsPage() {
             <TabsTrigger value="disabled"><BilingualText en="Disabled" el="Ανενεργές" compact /></TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-4 space-y-3">
+          <TabsContent value={activeTab} className="card-grid card-grid-lg mt-4">
             {filtered.length === 0 ? (
-              <Card>
+              <Card className="col-span-full">
                 <CardContent>
                   <CardHead
                     title={<BilingualText en="No flags found" el="Δεν βρέθηκαν σημαίες" compact wrap />}

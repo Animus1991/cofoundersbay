@@ -474,9 +474,9 @@ export default function OrgStartupsPage() {
 
         {/* Results. "10 startups" repeated the Total tile above it; the line
             speaks only when a filter narrows the list. */}
-        <div className="space-y-3">
+        <div className="card-grid card-grid-lg">
           {filtersActive && filteredStartups.length > 0 && (
-            <p className="text-sm text-muted-foreground">
+            <p className="col-span-full text-sm text-muted-foreground">
               <BilingualText
                 en={`${filteredStartups.length} of ${startups.length} startups`}
                 el={`${filteredStartups.length} από ${startups.length} startups`}
@@ -484,12 +484,12 @@ export default function OrgStartupsPage() {
               />
             </p>
           )}
-          {reading && startups.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="h-28" />)}
+          {reading && startups.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="col-span-full h-28" />)}
           {filteredStartups.map((startup) => (
             <StartupCard key={startup.id} startup={startup} sample={isSample} />
           ))}
           {!reading && filteredStartups.length === 0 && (
-            <EmptyOrgStartups
+            <EmptyOrgStartups className="col-span-full"
               filtersActive={filtersActive}
               onClearFilters={clearFilters}
               active={namedFilters(

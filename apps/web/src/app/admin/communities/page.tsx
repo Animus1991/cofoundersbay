@@ -515,12 +515,12 @@ export default function AdminCommunitiesPage() {
         </div>
 
         {/* Communities List */}
-        <div className="space-y-3">
+        <div className="card-grid">
           {filteredCommunities.map((community) => (
             <CommunityCard key={community.id} community={community} sample={live.length === 0} onEdit={openEdit} onDelete={confirmDelete} />
           ))}
           {filteredCommunities.length === 0 && (
-            <Card>
+            <Card className="col-span-full">
               <CardContent>
                 <CardHead
                   title={<BilingualText en="No communities found" el="Δεν βρέθηκαν κοινότητες" compact wrap />}
