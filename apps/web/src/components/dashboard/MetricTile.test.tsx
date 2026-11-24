@@ -10,7 +10,7 @@ import { MetricTile } from './MetricTile';
 afterEach(cleanup);
 
 const wellOf = (container: HTMLElement) =>
-  container.querySelector('span.rounded-xl');
+  container.querySelector('span.rounded-2xl');
 
 describe('MetricTile family wells', () => {
   it('maps each family to its tinted well', () => {
@@ -34,8 +34,25 @@ describe('MetricTile family wells', () => {
 
   it('keeps the icon quiet — no well — when no family is given', () => {
     const { container } = render(<MetricTile label="Members" labelEl="Μέλη" value={12} icon={Users} />);
-    expect(container.querySelector('span.rounded-xl')).toBeNull();
+    expect(container.querySelector('span.rounded-2xl')).toBeNull();
     expect(container.querySelector('.text-muted-foreground\\/70')).not.toBeNull();
+  });
+
+  it('tints the tile at half strength by family, neutral stays a card', () => {
+    const cases: Array<[Parameters<typeof MetricTile>[0]['family'], string]> = [
+      ['people', 'bg-status-accent-bg/50'],
+      ['money', 'bg-status-success-bg/50'],
+      ['time', 'bg-status-warning-bg/50'],
+      ['risk', 'bg-status-danger-bg/50'],
+      ['neutral', 'bg-card'],
+    ];
+    for (const [family, cls] of cases) {
+      const { container, unmount } = render(
+        <MetricTile label="Members" labelEl="Μέλη" value={12} icon={Users} family={family} />,
+      );
+      expect(container.querySelector('[data-testid^="home-metric-"]')?.className, `family ${family}`).toContain(cls);
+      unmount();
+    }
   });
 
   it('renders the figure as the visual key at text-2xl', () => {

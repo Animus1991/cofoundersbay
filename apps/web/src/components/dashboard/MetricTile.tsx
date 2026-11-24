@@ -37,6 +37,16 @@ const FAMILY_WELL: Record<MetricTileFamily, string> = {
   neutral: 'bg-muted text-muted-foreground',
 };
 
+/* The family's tint at half strength on the tile itself (B1.4), so a row of
+   figures reads as coloured blocks. Neutral keeps the plain card. */
+const FAMILY_TINT: Record<MetricTileFamily, string> = {
+  people: 'bg-status-accent-bg/50',
+  money: 'bg-status-success-bg/50',
+  time: 'bg-status-warning-bg/50',
+  risk: 'bg-status-danger-bg/50',
+  neutral: 'bg-card',
+};
+
 export type MetricTileProps = {
   label: string;
   labelEl?: string;
@@ -85,13 +95,13 @@ export function MetricTile({ label, labelEl, value, icon: Icon, glyph, family, c
      stays the quiet grey mark it was. */
   const mark = symbol ? (
     family ? (
-      <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', FAMILY_WELL[family])}>{symbol}</span>
+      <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl', FAMILY_WELL[family])}>{symbol}</span>
     ) : (
       <span className="text-muted-foreground/70">{symbol}</span>
     )
   ) : null;
   const content = (
-    <Card data-testid={testId} className={cn('relative h-full min-w-0 overflow-hidden transition-colors group-hover:border-primary/30', className)}>
+    <Card data-testid={testId} className={cn('relative h-full min-w-0 overflow-hidden transition-colors group-hover:border-primary/30', family && FAMILY_TINT[family], className)}>
       <CardContent className={cn('flex h-full flex-col', centered && 'items-center text-center')}>
         <div className={cn('flex w-full items-start gap-3', centered ? 'flex-col items-center' : 'justify-between')}>
           {centered ? mark : null}

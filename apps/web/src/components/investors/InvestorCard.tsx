@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AskIntroDialog } from '@/components/intros/AskIntroDialog';
 import { bilingualInline } from '@/lib/i18n/format';
 import { cn, initialsOf } from '@/lib/utils';
-import { roleTone } from '@/lib/role-tone';
+import { roleRing, roleTone } from '@/lib/role-tone';
 import { STATUS } from '@/lib/semantic-colors';
 import { useHydrated } from '@/components/common/RelativeTime';
 import { isPreviewDemo } from '@/lib/preview-demo';
@@ -134,7 +134,7 @@ export function InvestorCard({
         <div>
           <CardHead
             mark={(
-              <Avatar className="h-16 w-16 ring-4 ring-status-success-bg">
+              <Avatar className={cn('h-16 w-16', roleRing('investor'))}>
                 <AvatarImage src={investor.avatarUrl} alt="" />
                 <AvatarFallback className={cn('text-sm font-semibold', roleTone('investor'))}>
                   {initials}

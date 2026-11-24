@@ -9,6 +9,17 @@ import type { AskPrompt } from '@/lib/page-questions';
 import { BilingualText } from '@/components/common/BilingualText';
 import { EmptyIllustration, type IllustrationType } from '@/components/common/EmptyIllustration';
 
+/** The disc's tint by the illustration the caller names (B1.4). */
+const DISC_TONE: Record<NonNullable<EmptyStateProps['illustration']>, string> = {
+  search: 'bg-status-info-bg',
+  connection: 'bg-status-accent-bg',
+  message: 'bg-status-accent-bg',
+  rocket: 'bg-status-success-bg',
+  profile: 'bg-status-info-bg',
+  calendar: 'bg-status-warning-bg',
+  default: 'bg-status-accent-bg',
+};
+
 type EmptyStateProps = {
   title: ReactNode;
   description?: ReactNode;
@@ -36,34 +47,37 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl border border-border bg-card/80 text-left',
+        'relative overflow-hidden rounded-2xl border border-border bg-card/80 text-center',
         sizeClasses[size],
         className,
       )}
     >
-      <div className="relative flex items-start gap-4">
+      <div className="relative flex flex-col items-center gap-4">
         {/* data-keep-icon: the Cursor rule hides a lone cfb-glyph in
-            #main-content; this mark is the state's sentence made visible. */}
+            #main-content; this mark is the state's sentence made visible.
+            B1.4: the illustration sits on a tinted disc, then the title,
+            then the one call to action. */}
         {illustration && (
           <div
             data-keep-icon=""
             className={cn(
-              'shrink-0 text-muted-foreground',
-              size === 'sm' ? 'h-12 w-12' : 'h-14 w-14 sm:h-20 sm:w-20',
+              'flex h-40 w-40 shrink-0 items-center justify-center rounded-full text-muted-foreground',
+              DISC_TONE[illustration],
             )}
           >
-            <EmptyIllustration type={illustration} />
+            <div className="h-28 w-28">
+              <EmptyIllustration type={illustration} />
+            </div>
           </div>
         )}
-        <div className="min-w-0 flex-1 space-y-4">
-        <div className="space-y-2">
-          <p className="max-w-prose break-words text-base font-semibold leading-snug">{title}</p>
+        <div className="min-w-0 max-w-prose space-y-2">
+          <p className="break-words text-base font-semibold leading-snug">{title}</p>
           {/* card-body: a step under the title on a phone too, where text-sm
               (14.91) sat 0.07px under the title's 14.98. */}
-          {description && <p className="card-body max-w-prose break-words text-muted-foreground">{description}</p>}
+          {description && <p className="card-body break-words text-muted-foreground">{description}</p>}
         </div>
         {(action || askAiPrompt) && (
-          <div className="flex flex-wrap items-center justify-start gap-2 pt-2" data-actions="">
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2" data-actions="">
             {action}
             {askAiPrompt && (inPlace ? (
               <Button variant="outline" size="sm" onClick={() => ask(askAiPrompt)}>
@@ -78,7 +92,6 @@ export function EmptyState({
             ))}
           </div>
         )}
-        </div>
       </div>
     </div>
   );

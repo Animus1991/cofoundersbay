@@ -5,6 +5,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Gift, UserSearch } from 'lucide-react';
 import type { VerificationMethod } from '@cofounderbay/shared';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { roleRing } from '@/lib/role-tone';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { CMT, evidenceCopy, kindCopy } from '@/lib/i18n/strings-commitments';
@@ -153,7 +154,7 @@ export function NeedCard({
         </div>
         {owner ? (
           <div className="flex min-w-0 items-center gap-3 pt-1">
-            <Avatar className="h-11 w-11 shrink-0 ring-4 ring-status-accent-bg" data-keep-icon="">
+            <Avatar className={cn('h-11 w-11 shrink-0', roleRing('founder'))} data-keep-icon="">
               <AvatarImage src={owner.avatarUrl ?? undefined} alt="" />
               <AvatarFallback className="bg-status-accent-bg text-2xs text-foreground">{initialsOf(owner.displayName)}</AvatarFallback>
             </Avatar>

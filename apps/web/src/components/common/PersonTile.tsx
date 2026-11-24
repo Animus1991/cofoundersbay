@@ -8,7 +8,7 @@ import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
-import { roleTone } from '@/lib/role-tone';
+import { roleRing, roleTone } from '@/lib/role-tone';
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn, initialsOf } from '@/lib/utils';
 
@@ -39,7 +39,7 @@ export function PersonTile({ userId, name, avatarUrl, role, headline, reason, me
 }) {
   const dest = href ?? (userId ? `/profiles/${userId}` : undefined);
   const face = (
-    <Avatar className="h-[4.5rem] w-[4.5rem] border border-border">
+    <Avatar className={cn('h-[4.5rem] w-[4.5rem]', roleRing(role))}>
       <AvatarImage src={avatarUrl || undefined} alt="" />
       <AvatarFallback className={cn('text-sm font-semibold', roleTone(role))}>{initialsOf(name)}</AvatarFallback>
     </Avatar>

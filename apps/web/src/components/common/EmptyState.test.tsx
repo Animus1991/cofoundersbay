@@ -5,14 +5,20 @@ import { EmptyState } from './EmptyState';
 afterEach(cleanup);
 
 describe('calm, actionable empty states', () => {
-  it('states the next step on the left, with its quiet mark beside it', () => {
+  it('states the next step under the tinted disc, with one call to action', () => {
     const action = vi.fn();
     const { container } = render(<EmptyState illustration="search" title="No results / Δεν υπάρχουν αποτελέσματα" description="Change the filters to broaden your search." action={<button onClick={action}>Reset filters</button>} />);
     expect(screen.getByText('No results / Δεν υπάρχουν αποτελέσματα')).toBeTruthy();
     expect(container.querySelector('svg[data-empty-illustration="search"]')).not.toBeNull();
-    expect(container.firstElementChild?.className).toContain('text-left');
+    expect(container.firstElementChild?.className).toContain('text-center');
+    // B1.4: the illustration sits on a h-40 rounded-full tinted disc.
+    const disc = container.querySelector('[data-keep-icon]') as HTMLElement;
+    expect(disc.className).toContain('h-40');
+    expect(disc.className).toContain('w-40');
+    expect(disc.className).toContain('rounded-full');
+    expect(disc.className).toContain('bg-status-info-bg');
     expect(container.innerHTML).not.toMatch(/animate-(float|pulse|spin|bounce)/);
-    expect(screen.getByText('Change the filters to broaden your search.').className).toContain('max-w-prose');
+    
     fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
     expect(action).toHaveBeenCalledOnce();
   });

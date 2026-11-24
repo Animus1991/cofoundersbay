@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { bilingualAria } from '@/lib/i18n/format';
 import { pressableProps } from '@/lib/pressable';
 import { cn, initialsOf } from '@/lib/utils';
-import { roleTone } from '@/lib/role-tone';
+import { roleRing, roleTone } from '@/lib/role-tone';
 
 const PHOTO = { md: 'h-14 w-14', lg: 'h-16 w-16', xl: 'h-20 w-20' } as const;
 
@@ -102,7 +102,7 @@ export function PersonCard({
           mark={(
             // The name beside it is the same link: one stop for the keyboard and for a screen reader.
             <Link href={profile} onClick={onProfileOpen} tabIndex={-1} aria-hidden="true" className="relative block rounded-full">
-              <Avatar className={cn(PHOTO[photo], 'border border-border')}>
+              <Avatar className={cn(PHOTO[photo], roleRing(role))}>
                 <AvatarImage src={avatarUrl || undefined} alt="" />
                 <AvatarFallback className={cn('text-sm font-semibold', roleTone(role))}>{initialsOf(name)}</AvatarFallback>
               </Avatar>

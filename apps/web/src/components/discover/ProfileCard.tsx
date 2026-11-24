@@ -31,7 +31,7 @@ import {
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { cn, initialsOf, relativeTimeLabel } from '@/lib/utils';
-import { roleTone } from '@/lib/role-tone';
+import { roleRing, roleTone } from '@/lib/role-tone';
 import { useToast } from '@/components/ui/toast';
 import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { FactLine } from '@/components/common/FactLine';
@@ -171,7 +171,7 @@ function ProfileCardInner({
 
   const profileLink = (avatarClass: string, fallbackClass: string, extra?: ReactNode) => (
     <Link href={`/profiles/${profile.userId}`} className="relative block" aria-label={bilingualAria(`Open ${profile.displayName}'s profile`, `Άνοιγμα προφίλ: ${profile.displayName}`)}>
-      <Avatar className={cn('h-10 w-10', avatarClass)}>
+      <Avatar className={cn('h-10 w-10', avatarClass, roleRing(profile.role))}>
         <AvatarImage src={profile.avatarUrl || undefined} alt="" />
         <AvatarFallback className={fallbackClass}>
           {initialsOf(profile.displayName)}

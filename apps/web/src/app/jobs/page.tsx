@@ -37,6 +37,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { roleRing } from '@/lib/role-tone';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
@@ -102,7 +103,7 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
       <CardContent className="space-y-3">
         <CardHead
           mark={(
-            <Avatar className={cn('h-14 w-14 ring-4 ring-status-accent-bg', job.logoUrl && 'rounded-xl')}>
+            <Avatar className={cn('h-14 w-14', roleRing('founder'), job.logoUrl && 'rounded-xl')}>
               <AvatarImage src={job.logoUrl ?? job.creator?.avatarUrl ?? undefined} alt="" />
               <AvatarFallback className="bg-status-accent-bg font-semibold text-primary-accessible">
                 {initialsOf(job.creator?.displayName ?? '')}
