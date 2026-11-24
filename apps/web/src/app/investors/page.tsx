@@ -341,14 +341,12 @@ export default function InvestorsPage() {
           )}
           {isLoading
             ? Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="flex gap-4">
-                    <Skeleton className="h-11 w-11 shrink-0 rounded-lg" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-48" />
-                      <Skeleton className="h-3 w-64" />
-                      <Skeleton className="h-3 w-40" />
-                    </div>
+                <Card key={i} className="overflow-hidden lg:flex">
+                  <Skeleton className="h-28 w-full lg:h-auto lg:w-56 lg:self-stretch" />
+                  <CardContent className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-64" />
+                    <Skeleton className="h-3 w-40" />
                   </CardContent>
                 </Card>
               ))

@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { CardMoreMenu } from '@/components/common/CardMoreMenu';
+import { CoverWash } from '@/components/common/CoverWash';
+import { DateBadge } from '@/components/common/DateBadge';
 import { FactLine } from '@/components/common/FactLine';
 import { SaveItemButton } from '@/components/common/SaveItemButton';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
@@ -134,11 +136,31 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
     );
   }
 
+  /* The catalogue anatomy (docs §134): the visual key first — the company's
+     mark when there is one, the accent wash with the type's glyph otherwise —
+     with the closing date's badge on it; then the title, one facts line, who
+     posted it, the tags and the one verb with the rest in the menu. */
+  const badgeDate = opportunity.deadline ?? opportunity.createdAt;
+  const TypeIcon = cfg.icon;
   return (
-    <Card id={`opportunity-${opportunity.id}`} className={cardClass}>
-      <CardContent className="space-y-3">
+    <Card id={`opportunity-${opportunity.id}`} className={cn(cardClass, 'overflow-hidden lg:flex')}>
+      <div className="relative h-28 w-full overflow-hidden lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch">
+        <CoverWash tone="accent">
+          {opportunity.companyLogo ? (
+            <Avatar className="h-16 w-16 rounded-xl border-2 border-card bg-card shadow-sm">
+              <AvatarImage src={opportunity.companyLogo} alt="" className="object-contain p-2" />
+              <AvatarFallback className="rounded-xl bg-card font-semibold text-status-accent">{initialsOf(opportunity.company ?? opportunity.title)}</AvatarFallback>
+            </Avatar>
+          ) : opportunity.company ? (
+            <TypeIcon className="icon-lg text-status-accent" aria-hidden="true" />
+          ) : (
+            mark('h-16 w-16')
+          )}
+        </CoverWash>
+        <DateBadge date={badgeDate} />
+      </div>
+      <CardContent className="min-w-0 space-y-3 lg:flex-1">
         <CardHead
-          mark={mark('h-10 w-10')}
           title={opportunity.title}
           /* Company, type and remote are facts about the listing: one line,
              where the type and remote were two tinted pills. */
@@ -149,6 +171,9 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
                 opportunity.company,
                 <BilingualText key="type" en={opportunitiesEn(cfg.labelKey)} el={opportunitiesEl(cfg.labelKey)} compact />,
                 opportunity.isRemote ? <BilingualText key="remote" en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact /> : null,
+                opportunity.location,
+                deadlineItem,
+                postedAgo,
               ]}
             />
           )}
@@ -158,19 +183,30 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
           <p className="card-body line-clamp-2 text-muted-foreground">{opportunity.description}</p>
         )}
 
-        <FactLine items={opportunity.tags ?? []} />
+        {/* Who posted it: the poster's face small on the card's axis. */}
+        {opportunity.createdBy.displayName ? (
+          <div className="flex min-w-0 items-center gap-2">
+            <Avatar className="h-5 w-5">
+              <AvatarImage src={opportunity.createdBy?.avatarUrl ?? undefined} alt="" />
+              <AvatarFallback className="bg-status-accent-bg text-[0.625rem] text-foreground">{initialsOf(opportunity.createdBy.displayName)}</AvatarFallback>
+            </Avatar>
+            <span className="card-meta min-w-0 truncate text-muted-foreground">
+              <BilingualText en={`Posted by ${opportunity.createdBy.displayName}`} el={`Από ${opportunity.createdBy.displayName}`} compact />
+            </span>
+          </div>
+        ) : null}
 
-        <FactLine
-          items={[
-            opportunity.location,
-            deadlineItem,
-            // A bare name at the end of the line did not say who it was.
-            opportunity.createdBy.displayName ? (
-              <BilingualText key="by" en={`Posted by ${opportunity.createdBy.displayName}`} el={`Από ${opportunity.createdBy.displayName}`} compact />
-            ) : null,
-            postedAgo,
-          ]}
-        />
+        {/* Tags as pills, three at a glance — the rest are on the detail. */}
+        {(opportunity.tags?.length ?? 0) > 0 ? (
+          <div className="flex flex-wrap items-center gap-1">
+            {opportunity.tags.slice(0, 3).map((tag) => (
+              <span key={tag} className="rounded-full border border-transparent bg-status-accent-bg px-2 py-0.5 card-meta text-status-accent">{tag}</span>
+            ))}
+            {opportunity.tags.length > 3 ? (
+              <span className="quiet-tag card-meta" title={opportunity.tags.slice(3).join(', ')}>+{opportunity.tags.length - 3}</span>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="flex flex-wrap gap-2 pt-1">{actions}</div>
       </CardContent>

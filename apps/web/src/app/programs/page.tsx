@@ -47,7 +47,7 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { PROGRAMS_QUESTION } from '@/lib/page-questions';
 import { bilingualAria } from '@/lib/i18n/format';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
@@ -63,6 +63,9 @@ import { pressableProps } from '@/lib/pressable';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { CardMoreMenu } from '@/components/common/CardMoreMenu';
+import { CoverWash } from '@/components/common/CoverWash';
+import { DateBadge } from '@/components/common/DateBadge';
 import { Counter } from '@/components/ui/counter';
 import { calendarDaysUntil } from '@/lib/calendar-days';
 import { useCoverFailed } from '@/hooks/useCoverFailed';
@@ -249,37 +252,30 @@ function ProgramCard({
   const cover = useCoverFailed(program.coverImageUrl);
   const showCover = Boolean(program.coverImageUrl) && !cover.failed;
   const accepting = acceptsApplications(program);
+  const badgeDate = program.applicationDeadline ?? program.startDate;
 
-  // The Opportunities card, copied: mark and title with the organiser and
-  // kind under it, the state at the right, then the sentence, the facts and
-  // the actions, all on the mark's left edge.
+  /* The catalogue anatomy (docs §134): the cover — or the success wash with
+     the programme's glyph when there is none — at the card's left from lg
+     (a top banner below), the closing/starting date's badge on it; then the
+     title, one facts line, the organiser, and the one verb with the rest in
+     the menu. */
   return (
-    // From lg the cover sits at the card's left, the full height of it, as
-    // the AI Studio prototype lists programmes: the picture stays, and the
-    // list reads as rows instead of a stack of banners.
-    // A cover that fails to load leaves no column: it was a blank 224px
-    // beside every programme (docs §77).
-    <Card className={cn('card-interactive overflow-hidden transition-all hover:border-primary/30 group', showCover && 'lg:flex', isEnrolled && 'border-primary/40')}>
-      {showCover ? (
-        <img ref={cover.ref} onError={cover.onError} src={program.coverImageUrl ?? undefined} alt="" referrerPolicy="no-referrer" className="h-28 w-full object-cover lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch" />
-      ) : null}
+    <Card className={cn('card-interactive overflow-hidden transition-all hover:border-primary/30 group lg:flex', isEnrolled && 'border-primary/40')}>
+      <div className="relative h-28 w-full overflow-hidden lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch">
+        {showCover ? (
+          <img ref={cover.ref} onError={cover.onError} src={program.coverImageUrl ?? undefined} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
+        ) : (
+          <CoverWash tone="success" icon={TypeIcon} />
+        )}
+        {badgeDate ? <DateBadge date={badgeDate} /> : null}
+      </div>
       <CardContent className="min-w-0 space-y-3 lg:flex-1">
         <CardHead
-          mark={(
-            <Avatar className="h-10 w-10 rounded-xl">
-              <AvatarImage src={program.organization?.logoUrl ?? undefined} />
-              {/* Stands in for the organisation's logo: an avatar, not decoration. */}
-              <AvatarFallback data-keep-icon className="rounded-xl bg-status-success-bg text-primary-accessible">
-                <TypeIcon className="icon-md" aria-hidden="true" />
-              </AvatarFallback>
-            </Avatar>
-          )}
           title={program.title}
           subtitle={(
             <FactLine
               className="text-sm"
               items={[
-                program.organization?.name,
                 <BilingualText key="type" en={type.en} el={type.el} compact />,
               ]}
             />
@@ -299,14 +295,33 @@ function ProgramCard({
           <p className="card-body line-clamp-2 text-muted-foreground">{program.description}</p>
         )}
 
-        {/* "Any" stood alone on its line: any what (docs §77). */}
-        <FactLine
-          items={(program.industries ?? []).slice(0, 5).map((industry) =>
-            /^any$/i.test(industry.trim())
-              ? <BilingualText key="any" en="Any industry" el="Κάθε κλάδος" compact />
-              : industry,
-          )}
-        />
+        {/* Who runs it: the organisation's mark small on the card's axis. */}
+        {program.organization?.name ? (
+          <div className="flex min-w-0 items-center gap-2">
+            <Avatar className="h-5 w-5 rounded-md">
+              <AvatarImage src={program.organization?.logoUrl ?? undefined} alt="" />
+              <AvatarFallback className="rounded-md bg-status-success-bg text-[0.625rem] text-primary-accessible">{initialsOf(program.organization.name)}</AvatarFallback>
+            </Avatar>
+            <span className="card-meta min-w-0 truncate text-muted-foreground">{program.organization.name}</span>
+          </div>
+        ) : null}
+
+        {/* Industries as pills, three at a glance — the rest on the detail.
+            "Any" stood alone on its line: any what (docs §77). */}
+        {(program.industries ?? []).length > 0 ? (
+          <div className="flex flex-wrap items-center gap-1">
+            {program.industries.slice(0, 3).map((industry) => (
+              /^any$/i.test(industry.trim()) ? (
+                <span key="any" className="rounded-full border border-transparent bg-status-success-bg px-2 py-0.5 card-meta text-status-success"><BilingualText en="Any industry" el="Κάθε κλάδος" compact /></span>
+              ) : (
+                <span key={industry} className="rounded-full border border-transparent bg-status-success-bg px-2 py-0.5 card-meta text-status-success">{industry}</span>
+              )
+            ))}
+            {program.industries.length > 3 ? (
+              <span className="quiet-tag card-meta" title={program.industries.slice(3).join(', ')}>+{program.industries.length - 3}</span>
+            ) : null}
+          </div>
+        ) : null}
 
         <FactLine
           label={bilingualAria('When and where', 'Πότε και πού')}
@@ -349,11 +364,19 @@ function ProgramCard({
           </p>
         ) : null}
 
+        {/* One verb (docs §115/§134): Apply where it is open, Details where it
+            is not; the other way in lives on the card's menu. */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
-          {accepting && !isEnrolled && !isFull && (
+          {accepting && !isEnrolled && !isFull ? (
             <Button size="sm" className="gap-1.5" onClick={(e) => { e.preventDefault(); onApply(program); }}>
               <BilingualText en={programsEn('apply_now')} el={programsEl('apply_now')} compact />
               <ArrowRight className="icon-sm" aria-hidden="true" />
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline" asChild>
+              <Link href={`/programs/${program.id}`}>
+                <BilingualText en="View details" el="Λεπτομέρειες" compact />
+              </Link>
             </Button>
           )}
           {isEnrolled && (
@@ -366,11 +389,11 @@ function ProgramCard({
               </Button>
             </WithDisabledReason>
           )}
-          <Button size="sm" variant="outline" asChild>
-            <Link href={`/programs/${program.id}`}>
-              <BilingualText en="View details" el="Λεπτομέρειες" compact />
-            </Link>
-          </Button>
+          {accepting && !isEnrolled && !isFull ? (
+            <CardMoreMenu name={program.title} items={[
+              { key: 'details', en: 'View details', el: 'Λεπτομέρειες', icon: ArrowRight, href: `/programs/${program.id}` },
+            ]} />
+          ) : null}
           {/* Why there is no Apply: "2 spots left" sat over a card with
               nothing to press (docs §77). */}
           {!accepting && !isEnrolled ? (
@@ -388,21 +411,19 @@ function ProgramCard({
 
 function ProgramSkeleton() {
   return (
-    <Card><CardContent>
-      <div className="flex gap-4">
-        <Skeleton className="h-14 w-14 rounded-xl flex-shrink-0" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-5 w-48" />
-          <Skeleton className="h-3.5 w-32" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-          <div className="flex gap-2 pt-1">
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="h-8 w-24" />
-          </div>
+    <Card className="overflow-hidden lg:flex">
+      <Skeleton className="h-28 w-full lg:h-auto lg:w-56 lg:self-stretch" />
+      <CardContent className="flex-1 space-y-2">
+        <Skeleton className="h-5 w-48" />
+        <Skeleton className="h-3.5 w-32" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <div className="flex gap-2 pt-1">
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-8 w-24" />
         </div>
-      </div>
-    </CardContent></Card>
+      </CardContent>
+    </Card>
   );
 }
 

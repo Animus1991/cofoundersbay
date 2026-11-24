@@ -883,14 +883,15 @@ export default function OpportunitiesPage() {
               </CardContent></Card>
             ) : oppLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i}><CardContent className="flex gap-4">
-                  <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
-                  <div className="flex-1 space-y-2">
+                <Card key={i} className="overflow-hidden lg:flex">
+                  <Skeleton className="h-28 w-full lg:h-auto lg:w-56 lg:self-stretch" />
+                  <CardContent className="flex-1 space-y-3">
                     <Skeleton className="h-4 w-48" />
                     <Skeleton className="h-3 w-32" />
                     <Skeleton className="h-3 w-64" />
-                  </div>
-                </CardContent></Card>
+                    <Skeleton className="h-3 w-40" />
+                  </CardContent>
+                </Card>
               ))
             ) : opportunities.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
