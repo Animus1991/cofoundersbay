@@ -175,10 +175,12 @@ export function EventCard({
     const fullDate = fmtDate(event.startDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     return (
       <Card className={cn('group overflow-hidden', className)}>
-        {/* The big photo hero (docs §132.1): a 16:9 cover — the tinted wash
-            when there is none — with only the date badge and the kind on it;
-            every word lives in the solid panel under the photo. */}
-        <div className="relative aspect-video w-full overflow-hidden">
+        {/* The big photo hero (docs §132.1): at lg the photo takes the left
+            three-fifths and the words centre at its right, so the first grid
+            row stays on the first screen; at md one column with the cover
+            capped; every word lives in the solid panel, never on the photo. */}
+        <div className="lg:flex">
+        <div className="relative aspect-video w-full overflow-hidden max-md:max-h-[240px] md:max-h-[260px] lg:aspect-auto lg:max-h-[300px] lg:w-3/5">
           {event.coverImage && !cover.failed ? (
             <img
               ref={cover.ref}
@@ -212,7 +214,7 @@ export function EventCard({
           </div>
         </div>
 
-        <CardContent className="space-y-3 pt-4">
+        <CardContent className="space-y-3 pt-4 lg:flex lg:w-2/5 lg:flex-col lg:justify-center">
           <Link
             href={`/events/${event.id}`}
             className="block text-[1.375rem] font-semibold leading-tight text-foreground transition-colors hover:text-primary-accessible sm:text-2xl"
@@ -296,6 +298,7 @@ export function EventCard({
             </div>
           </div>
         </CardContent>
+        </div>
       </Card>
     );
   }
