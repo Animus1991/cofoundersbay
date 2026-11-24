@@ -261,7 +261,7 @@ function ProgramCard({
   return (
     <Card className={cn('card-interactive overflow-hidden transition-all hover:border-primary/30 group', showCover && 'lg:flex', isEnrolled && 'border-primary/40')}>
       {showCover ? (
-        <div className="relative h-28 w-full overflow-hidden lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch">
+        <div className="relative h-28 w-full overflow-hidden lg:h-auto lg:max-h-[320px] lg:w-56 lg:shrink-0 lg:self-start">
           <img ref={cover.ref} onError={cover.onError} src={program.coverImageUrl ?? undefined} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
           {badgeDate ? <DateBadge date={badgeDate} /> : null}
         </div>

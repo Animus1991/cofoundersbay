@@ -326,7 +326,7 @@ export default function ShortlistPage() {
   // Visible string slots take the reader's language, not both joined.
   const say = useBilingualString();
   const qc = useQueryClient();
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [sortBy, setSortBy] = useState<SortBy>('saved_newest');
   const [searchQuery, setSearchQuery] = useState('');

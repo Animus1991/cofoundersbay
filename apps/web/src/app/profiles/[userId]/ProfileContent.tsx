@@ -312,7 +312,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   // beside the facts.
   if (isLoading)
     return (
-      <AppShell>
+      <AppShell titleSticker={{ glyph: 'profile', tint: 'primary' }}>
         <div className="space-y-6">
           <Skeleton className="h-64 w-full rounded-2xl" />
           <div className="[container-type:inline-size]">
@@ -333,7 +333,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   const notFound = !profile && (!isError || (readError instanceof ApiError && (readError.status === 404 || readError.status === 403)));
   if (isError || !profile)
     return (
-      <AppShell>
+      <AppShell titleSticker={{ glyph: 'profile', tint: 'primary' }}>
         <div className="flex flex-col items-center gap-4 py-24 text-center">
           {notFound ? (
             <>
@@ -435,6 +435,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
 
   return (
     <AppShell
+      titleSticker={{ glyph: 'profile', tint: 'primary' }}
       // The header keeps the registry's "Profile" title and line: the person's
       // name and headline are the top card's own, read once, as on a
       // professional profile. Passing them here printed both twice.
