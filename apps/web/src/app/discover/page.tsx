@@ -8,20 +8,7 @@ import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  LayoutGrid,
-  List,
-  TrendingUp,
-  Users,
-  ArrowRight,
-  Rocket,
-  GraduationCap,
-  DollarSign,
-  Briefcase,
-  Star,
-  Bookmark,
-  Search,
-} from 'lucide-react';
+import { LayoutGrid, List, TrendingUp, Users, ArrowRight, Rocket, GraduationCap, DollarSign, Briefcase, Star, Bookmark, Search, Bell } from 'lucide-react';
 import {
   searchProfiles, getRecommendations, getDashboardStats, getMeProfile, recordMatchFeedback, restoreMatchFeedback, sendConnectionRequest, saveToShortlist, createSavedSearch, type SearchHit
 } from '@/lib/api';
@@ -33,10 +20,8 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { bilingualInline } from '@/lib/i18n/format';
-import { CfbFigure } from '@/components/illustrations/CfbCast';
 import { RailPeople } from '@/components/layout/RailPeople';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -70,17 +55,19 @@ type ViewMode = 'grid' | 'list' | 'match';
  * beside a pinned page rail, where three cut "Elena Papadopoulos" over two
  * lines (docs §86). A base of one column stays for twMerge to replace.
  */
-const PEOPLE_GRID = 'grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))]';
+const PEOPLE_GRID = 'card-grid [--card-min:24rem]';
 type RoleFilter = 'all' | 'founder' | 'cofounder' | 'mentor' | 'investor' | 'service_provider';
 
-/* The four doors onto the role filter (docs §131.3): the same value the
-   chips set, on the role's own tint. */
-const INTENT_TILES: { role: RoleFilter; en: string; el: string; tint: string; figure: () => React.ReactNode }[] = [
-  { role: 'founder',          en: 'Founder',           el: 'Συνιδρυτής',       tint: 'bg-status-accent-bg text-status-accent',  figure: () => <CfbFigure id="founder" className="h-14 w-auto" /> },
-  { role: 'mentor',           en: 'Mentor',            el: 'Μέντορας',         tint: 'bg-status-warning-bg text-status-warning', figure: () => <CfbFigure id="mentor" className="h-14 w-auto" /> },
-  { role: 'investor',         en: 'Investor',          el: 'Επενδυτής',        tint: 'bg-status-success-bg text-status-success', figure: () => <CfbFigure id="investor" className="h-14 w-auto" /> },
-  { role: 'service_provider', en: 'Team/Organisation', el: 'Ομάδα/Οργανισμός', tint: 'bg-status-info-bg text-status-info',        figure: () => <CfbFigure id="builder" className="h-14 w-auto" /> },
-];
+/* The role tiles' tints — the same role filter drawn as tinted tiles when
+   nothing is asked yet (docs §135 A5.1). */
+const ROLE_TILE_TINT: Partial<Record<RoleFilter, string>> = {
+  all: 'bg-muted text-foreground',
+  founder: 'bg-status-accent-bg text-status-accent',
+  cofounder: 'bg-status-accent-bg text-status-accent',
+  mentor: 'bg-status-warning-bg text-status-warning',
+  investor: 'bg-status-success-bg text-status-success',
+  service_provider: 'bg-status-info-bg text-status-info',
+};
 
 const ROLE_FILTERS: { value: RoleFilter; labelEn: string; labelEl: string; icon: React.ElementType }[] = [
   { value: 'all',              labelEn: discoverEn('all'),              labelEl: discoverEl('all'),              icon: Users         },
@@ -642,57 +629,61 @@ export default function DiscoverPage() {
             onSaveSearch={openSaveSearch}
           />
 
-          {/* Who: the role is how a person is looked for, so its chips sit in
-              view with how many of the results each finds (the mentors page
-              does the same with expertise; docs §62.5, §111). */}
+          {/* Who: one role control (docs §135 A5). Nothing asked yet → the
+              same chips are drawn as tinted tiles, a scrolling row on the
+              phone and a wrapping row from sm; a role picked → the chips. */}
           {!loading && !searchFailed && hits.length > 0 ? (
-            <div className="-mt-4 flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label={bilingualInline('Role', 'Ρόλος')}>
-              {roleChips.map((r) => {
-                const on = roleFilter === r.value;
-                return (
-                  <button
-                    key={r.value}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => setRoleFilter(r.value)}
-                    className={cn(
-                      'tap-target-y inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                      on ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
-                    )}
-                  >
-                    <BilingualText en={r.labelEn} el={r.labelEl} compact />
-                    <span className="tabular-nums opacity-70">{r.count}</span>
-                  </button>
-                );
-              })}
-            </div>
-          ) : null}
-
-          {/* The intent tiles lead when nothing is asked yet (docs §131.3):
-              four tinted doors into the same role filter the chips set. */}
-          {!loading && roleFilter === 'all' && discoverFilterNames(filters).length === 0 ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" role="group" aria-label={bilingualInline('Who are you looking for?', 'Ποιον ψάχνετε;')} data-intent-tiles="">
-              {INTENT_TILES.map((tile) => {
-                const TileFigure = tile.figure;
-                return (
-                  <button
-                    key={tile.role}
-                    type="button"
-                    onClick={() => setRoleFilter(tile.role)}
-                    aria-pressed="false"
-                    className={cn('focus-ring group flex flex-col items-center gap-2 rounded-2xl p-4 text-center transition-colors hover:brightness-[0.97]', tile.tint)}
-                  >
-                    <span data-keep-icon="" className="text-current"><TileFigure /></span>
-                    <span className="text-sm font-medium"><BilingualText en={tile.en} el={tile.el} compact /></span>
-                  </button>
-                );
-              })}
-            </div>
+            roleFilter === 'all' && !filters.q.trim() ? (
+              <div className="-mt-4 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible" role="group" aria-label={bilingualInline('Who are you looking for?', 'Ποιον ψάχνετε;')} data-intent-tiles="">
+                {roleChips.map((r) => {
+                  const Icon = r.icon;
+                  return (
+                    <button
+                      key={r.value}
+                      type="button"
+                      aria-pressed="false"
+                      onClick={() => setRoleFilter(r.value)}
+                      className={cn(
+                        'focus-ring inline-flex h-14 shrink-0 items-center gap-2.5 rounded-2xl px-4 text-left transition-colors hover:brightness-[0.97]',
+                        ROLE_TILE_TINT[r.value] ?? 'bg-muted text-foreground',
+                      )}
+                    >
+                      <span data-keep-icon="" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/60"><Icon className="icon-md" aria-hidden="true" /></span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium"><BilingualText en={r.labelEn} el={r.labelEl} compact /></span>
+                        <span className="block text-xs tabular-nums opacity-80">{r.count}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="-mt-4 flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label={bilingualInline('Role', 'Ρόλος')}>
+                {roleChips.map((r) => {
+                  const on = roleFilter === r.value;
+                  return (
+                    <button
+                      key={r.value}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => setRoleFilter(r.value)}
+                      className={cn(
+                        'tap-target-y inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                        on ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                      )}
+                    >
+                      <BilingualText en={r.labelEn} el={r.labelEl} compact />
+                      <span className="tabular-nums opacity-70">{r.count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )
           ) : null}
 
           {/* Results */}
           {loading && (
-            <div className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && PEOPLE_GRID)}>
+            <div className={cn(viewMode === 'grid' ? PEOPLE_GRID : 'grid grid-cols-1 gap-4')}>
               {[...Array(6)].map((_, i) => (
                 <ProfileCardSkeleton key={i} variant={viewMode === 'list' ? 'compact' : 'default'} />
               ))}
@@ -700,29 +691,37 @@ export default function DiscoverPage() {
           )}
 
           {!loading && searchFailed && (
-            <Card>
-              <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-                <p role="alert" className="text-sm text-muted-foreground">
-                  <BilingualText en="Profiles could not be searched just now." el="Η αναζήτηση προφίλ δεν έγινε αυτή τη στιγμή." wrap />
-                </p>
-                <Button variant="outline" size="sm" onClick={() => void runSearch()}>
-                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-                </Button>
-              </CardContent>
-            </Card>
+            <div role="alert">
+              <EmptyState
+                illustration="default"
+                size="sm"
+                title={<BilingualText en="Profiles could not be searched just now." el="Η αναζήτηση προφίλ δεν έγινε αυτή τη στιγμή." wrap />}
+                action={(
+                  <Button variant="outline" size="sm" onClick={() => void runSearch()}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                )}
+              />
+            </div>
           )}
 
           {!loading && roleHits.length === 0 && hits.length > 0 && roleFilter !== 'all' && (
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <p className="text-sm text-muted-foreground">
+            <EmptyState
+              illustration="search"
+              size="sm"
+              title={(
                 <BilingualText
                   en={`No ${roleFilter.replace('_', ' ')}s in these results.`}
                   el="Κανένα αποτέλεσμα με αυτόν τον ρόλο."
                   wrap
                 />
-              </p>
-              <button onClick={() => setRoleFilter('all')} className="text-xs text-primary-accessible hover:underline"><BilingualText en="Show all roles" el="Όλοι οι ρόλοι" compact /></button>
-            </div>
+              )}
+              action={(
+                <Button variant="ghost" size="sm" onClick={() => setRoleFilter('all')}>
+                  <BilingualText en="Show all roles" el="Όλοι οι ρόλοι" compact />
+                </Button>
+              )}
+            />
           )}
 
           {!loading && !searchFailed && hits.length === 0 && (
@@ -767,7 +766,7 @@ export default function DiscoverPage() {
               </div>
               {/* The same columns as the results under it: the promoted card
                   was half the row wide beside cards a third wide. */}
-              <div className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && PEOPLE_GRID)}>
+              <div className={cn(viewMode === 'grid' ? PEOPLE_GRID : 'grid grid-cols-1 gap-4')}>
                 {promotedHits.map((hit) => {
                   const profile = hitToProfile(hit);
                   return (
@@ -790,7 +789,7 @@ export default function DiscoverPage() {
             <AnimatedList
               animation="fade-in-up"
               staggerDelay={50}
-              className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && PEOPLE_GRID)}
+              className={cn(viewMode === 'grid' ? PEOPLE_GRID : 'grid grid-cols-1 gap-4')}
             >
               {promotedLayout(promotedHits.length) === 'inline' ? promotedHits.map((hit) => {
                 const profile = hitToProfile(hit);
@@ -954,7 +953,7 @@ export default function DiscoverPage() {
           it can re-run from /saved-searches and raise alerts. */}
       <Dialog open={saveSearchOpen} onOpenChange={setSaveSearchOpen}>
         <DialogContent>
-          <DialogHeader>
+          <DialogHeader icon={Bell} tone="warning">
             <DialogTitle><BilingualText en={discoverEn('save_search_title')} el={discoverEl('save_search_title')} compact /></DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">

@@ -149,7 +149,8 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
     if (typeof val === 'string' && val.trim()) {
       return (
         <div key={key} className="space-y-1">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{label}</p>
+          <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />{label}</p>
           <p className="text-sm whitespace-pre-wrap">{val}</p>
         </div>
       );
@@ -157,7 +158,8 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
     if (typeof val === 'number') {
       return (
         <div key={key} className="space-y-1">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{label}</p>
+          <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />{label}</p>
           <p className="text-sm font-medium">{val.toLocaleString('en-GB')}</p>
         </div>
       );
@@ -165,7 +167,8 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
     if (Array.isArray(val) && val.length > 0) {
       return (
         <div key={key} className="space-y-1">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{label}</p>
+          <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" />{label}</p>
           <ul className="space-y-1">
             {/* An object in a list printed as JSON ({"name":…}); it reads as
                 its words now, and a long list says how much it left out. */}

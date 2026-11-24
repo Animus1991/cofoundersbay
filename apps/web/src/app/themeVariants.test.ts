@@ -7,7 +7,7 @@ import { planCopilotTools } from '@/lib/copilot-planner';
 import { listDeclarations } from '@cofounderbay/shared';
 
 /**
- * Three accents beside their originals (docs §135): Bordeaux on Terracotta,
+ * Three accents beside their originals (docs §139): Bordeaux on Terracotta,
  * Sky on Cyan, Graphite on Light. Each keeps its base's data-theme and swaps
  * the accent tokens with data-variant; the originals keep their own values.
  */

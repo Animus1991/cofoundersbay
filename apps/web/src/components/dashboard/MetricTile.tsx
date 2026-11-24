@@ -26,6 +26,27 @@ import { cn } from '@/lib/utils';
  * With `href` the whole tile is the link to the page that lists what it
  * counts.
  */
+/** What the figure counts — picks the tinted well the icon sits in (§134). */
+export type MetricTileFamily = 'people' | 'money' | 'time' | 'risk' | 'neutral';
+
+const FAMILY_WELL: Record<MetricTileFamily, string> = {
+  people: 'bg-status-accent-bg text-status-accent',
+  money: 'bg-status-success-bg text-status-success',
+  time: 'bg-status-warning-bg text-status-warning',
+  risk: 'bg-status-danger-bg text-status-danger',
+  neutral: 'bg-muted text-muted-foreground',
+};
+
+/* The family's tint at half strength on the tile itself (B1.4), so a row of
+   figures reads as coloured blocks. Neutral keeps the plain card. */
+const FAMILY_TINT: Record<MetricTileFamily, string> = {
+  people: 'bg-status-accent-bg/50',
+  money: 'bg-status-success-bg/50',
+  time: 'bg-status-warning-bg/50',
+  risk: 'bg-status-danger-bg/50',
+  neutral: 'bg-card',
+};
+
 export type MetricTileProps = {
   label: string;
   labelEl?: string;
@@ -33,6 +54,8 @@ export type MetricTileProps = {
   /** A lucide icon, or `glyph` for the product's own glyph set. */
   icon?: ElementType;
   glyph?: CfbGlyphName;
+  /** The metric family: people, money, time/events, risk/moderation, neutral. */
+  family?: MetricTileFamily;
   caption?: string;
   captionEl?: string;
   trend?: { value: number; positive: boolean; en?: string; el?: string };
@@ -60,16 +83,25 @@ export type MetricTileProps = {
   edge?: ReactNode;
 };
 
-export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, captionEl, trend, href, className, labelClassName, valueClassName, metaClassName, align = 'start', trendVisual, edge }: MetricTileProps) {
+export function MetricTile({ label, labelEl, value, icon: Icon, glyph, family, caption, captionEl, trend, href, className, labelClassName, valueClassName, metaClassName, align = 'start', trendVisual, edge }: MetricTileProps) {
   const testId = `home-metric-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
   const centered = align === 'center';
-  const mark = glyph ? (
-    <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
+  const symbol = glyph ? (
+    <CfbGlyph name={glyph} className="icon-sm shrink-0" />
   ) : Icon ? (
-    <Icon className="icon-sm shrink-0 text-muted-foreground/70" aria-hidden="true" />
+    <Icon className="icon-sm shrink-0" aria-hidden="true" />
+  ) : null;
+  /* A family puts the icon in its tinted well (§134); without one the icon
+     stays the quiet grey mark it was. */
+  const mark = symbol ? (
+    family ? (
+      <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl', FAMILY_WELL[family])}>{symbol}</span>
+    ) : (
+      <span className="text-muted-foreground/70">{symbol}</span>
+    )
   ) : null;
   const content = (
-    <Card data-testid={testId} className={cn('relative h-full min-w-0 overflow-hidden transition-colors group-hover:border-primary/30', className)}>
+    <Card data-testid={testId} className={cn('relative h-full min-w-0 overflow-hidden transition-colors group-hover:border-primary/30', family && FAMILY_TINT[family], className)}>
       <CardContent className={cn('flex h-full flex-col', centered && 'items-center text-center')}>
         <div className={cn('flex w-full items-start gap-3', centered ? 'flex-col items-center' : 'justify-between')}>
           {centered ? mark : null}
@@ -77,7 +109,8 @@ export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, 
             <p className={cn('page-stat-label leading-snug text-muted-foreground', labelClassName)}>
               <BilingualText en={label} el={labelEl} stacked wrap />
             </p>
-            <p data-testid={`${testId}-value`} className={cn('page-stat font-semibold tabular-nums tracking-tight', valueClassName)}>{value}</p>
+            {/* The figure is the tile's visual key (§134): 24px, tabular. */}
+            <p data-testid={`${testId}-value`} className={cn('text-2xl font-semibold tabular-nums tracking-tight', valueClassName)}>{value}</p>
           </div>
           {centered ? null : mark}
         </div>

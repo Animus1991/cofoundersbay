@@ -1,6 +1,7 @@
 'use client';
 
 import { RouteError } from '@/components/common/RouteError';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
 export default function MembersError({
   error,
@@ -10,8 +11,11 @@ export default function MembersError({
   reset: () => void;
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 py-16">
+    <div className="flex min-h-screen flex-col gap-6 px-6 py-16">
+      <HeaderBandSkeleton />
+      <div className="flex flex-1 items-center justify-center">
       <RouteError error={error} reset={reset} section="Members" backHref="/" backLabel="Back to home" />
+      </div>
     </div>
   );
 }

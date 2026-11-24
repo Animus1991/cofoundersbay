@@ -4,7 +4,6 @@ import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   AlarmClock,
-  AlertTriangle,
   ArrowUpDown,
   Ban,
   Bookmark,
@@ -326,7 +325,7 @@ export default function ShortlistPage() {
   // Visible string slots take the reader's language, not both joined.
   const say = useBilingualString();
   const qc = useQueryClient();
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [sortBy, setSortBy] = useState<SortBy>('saved_newest');
   const [searchQuery, setSearchQuery] = useState('');
@@ -620,10 +619,15 @@ export default function ShortlistPage() {
 
         {/* Content */}
         {isError ? (
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
-            <AlertTriangle className="icon-xl text-muted-foreground/50" />
-            <p role="alert" className="text-sm text-muted-foreground"><BilingualText en={shortlistEn('load_failed')} el={shortlistEl('load_failed')} compact wrap /></p>
-            <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en={shortlistEn('retry')} el={shortlistEl('retry')} compact /></Button>
+          <div role="alert">
+            <EmptyState
+              illustration="default"
+              size="sm"
+              title={<BilingualText en={shortlistEn('load_failed')} el={shortlistEl('load_failed')} compact wrap />}
+              action={(
+                <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en={shortlistEn('retry')} el={shortlistEl('retry')} compact /></Button>
+              )}
+            />
           </div>
         ) : isLoading ? (
           <div className={cn('gap-3', viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2' : 'space-y-3')}>
@@ -678,7 +682,7 @@ export default function ShortlistPage() {
                 compact
               />
             </p>
-            <div className={cn(viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-4' : 'space-y-4')}>
+            <div className={cn(viewMode === 'grid' ? 'card-grid' : 'space-y-4')}>
               {filtered.map((item) => (
                 <ShortlistCard
                   key={item.id}

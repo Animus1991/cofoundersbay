@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  MessageSquare,
   Search,
   MoreVertical,
   Mail,
@@ -36,6 +35,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
@@ -463,30 +463,26 @@ export default function ProviderInquiriesPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-4 space-y-3">
+          <TabsContent value={activeTab} className="card-grid card-grid-lg mt-4">
             {filteredInquiries.map((inquiry) => (
               <InquiryCard key={inquiry.id} inquiry={inquiry} onStatus={live.length > 0 ? (i, st) => void setStatus(i, st) : undefined} />
             ))}
             {filteredInquiries.length === 0 && (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  {/* English only, and "No inquiries found" over an empty
-                      book as over a search with no match. */}
-                  {inquiries.length === 0 ? (
-                    <>
-                      <h3 className="card-title text-foreground"><BilingualText en="No inquiries yet" el="Δεν υπάρχουν ακόμη αιτήματα" compact /></h3>
-                      <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Founders who ask about one of your live services appear here." el="Οι ιδρυτές που ρωτούν για μια ενεργή υπηρεσία σας εμφανίζονται εδώ." wrap /></p>
-                      <Button size="sm" variant="outline" className="mt-4" asChild><Link href="/provider/services"><BilingualText en="Your services" el="Οι υπηρεσίες σας" compact /></Link></Button>
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="card-title text-foreground"><BilingualText en="No inquiries found" el="Δεν βρέθηκαν αιτήματα" compact /></h3>
-                      <p className="text-sm text-muted-foreground mt-1"><BilingualText en="None in this tab matches the search." el="Κανένα σε αυτή την καρτέλα δεν ταιριάζει με την αναζήτηση." wrap /></p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+              // An empty book says where inquiries come from; a searched one
+              // says nothing matched (B2.5).
+              <EmptyState
+                className="col-span-full"
+                illustration={inquiries.length === 0 ? 'message' : 'search'}
+                title={inquiries.length === 0
+                  ? <BilingualText en="No inquiries yet" el="Δεν υπάρχουν ακόμη αιτήματα" compact />
+                  : <BilingualText en="No inquiries found" el="Δεν βρέθηκαν αιτήματα" compact />}
+                description={inquiries.length === 0
+                  ? <BilingualText en="Founders who ask about one of your live services appear here." el="Οι ιδρυτές που ρωτούν για μια ενεργή υπηρεσία σας εμφανίζονται εδώ." wrap />
+                  : <BilingualText en="None in this tab matches the search." el="Κανένα σε αυτή την καρτέλα δεν ταιριάζει με την αναζήτηση." wrap />}
+                action={inquiries.length === 0 ? (
+                  <Button size="sm" variant="outline" asChild><Link href="/provider/services"><BilingualText en="Your services" el="Οι υπηρεσίες σας" compact /></Link></Button>
+                ) : undefined}
+              />
             )}
           </TabsContent>
         </Tabs>

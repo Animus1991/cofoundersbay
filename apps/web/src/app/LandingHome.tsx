@@ -248,7 +248,8 @@ const FOOTER: Array<{ title: Pair; links: Array<{ href: string; label: Pair }> }
 function SectionHeading({ eyebrow, title, lead }: { eyebrow: Pair; title: Pair; lead?: Pair }) {
   return (
     <div className="mx-auto mb-8 max-w-2xl text-center">
-      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"><T p={eyebrow} /></p>
+      <p className="flex items-center justify-center gap-2 mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" /><T p={eyebrow} /></p>
       <h2 className="landing-section font-display font-semibold text-foreground"><T p={title} wrap /></h2>
       {lead ? <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground"><BilingualText en={lead.en} el={lead.el} wrap /></p> : null}
     </div>
@@ -425,9 +426,9 @@ export function LandingHome() {
             eyebrow={{ en: 'Roles', el: 'Ρόλοι' }}
             title={{ en: 'Built for every role in a founding team’s first year', el: 'Φτιαγμένο για κάθε ρόλο στον πρώτο χρόνο μιας ιδρυτικής ομάδας' }}
           />
-          <div className="sm:grid sm:grid-cols-2 gap-4 lg:grid-cols-4 max-sm:-mx-6 max-sm:flex max-sm:snap-x max-sm:overflow-x-auto max-sm:px-6 max-sm:pb-2 max-sm:*:w-72 max-sm:*:shrink-0 max-sm:*:snap-start">
+          <div className="sm:grid sm:grid-cols-2 items-start gap-4 lg:grid-cols-4 max-sm:-mx-6 max-sm:flex max-sm:snap-x max-sm:overflow-x-auto max-sm:px-6 max-sm:pb-2 max-sm:*:w-72 max-sm:*:shrink-0 max-sm:*:snap-start">
             {PERSONAS.map(({ icon: Icon, role, headline, bullets, join, start }) => (
-              <Card key={role.en} className="h-full">
+              <Card key={role.en} className="flex h-full flex-col">
                 <CardHeader className="pb-3">
                   <Badge variant="outline" className="w-fit gap-1.5 text-xs text-primary-accessible">
                     <Icon className="icon-sm" />
@@ -435,16 +436,20 @@ export function LandingHome() {
                   </Badge>
                   <CardTitle><T p={headline} wrap /></CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="flex flex-1 flex-col gap-2">
                   {bullets.map((bullet) => (
                     <div key={bullet.en} className="flex items-start gap-2 text-sm text-muted-foreground">
                       <CheckCircle className="mt-0.5 icon-sm shrink-0 text-status-success" />
                       <BilingualText en={bullet.en} el={bullet.el} wrap />
                     </div>
                   ))}
-                  <Link href={`/register?role=${join}`} className="inline-flex pt-2 text-sm font-medium text-primary-accessible hover:underline">
-                    <T p={start} wrap />
-                  </Link>
+                  {/* The persona's verb is the same pill every primary
+                      action wears (docs §137, B2.4). */}
+                  <Button variant="outline" size="sm" asChild className="mt-auto w-fit">
+                    <Link href={`/register?role=${join}`}>
+                      <T p={start} wrap />
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             ))}

@@ -12,7 +12,6 @@ import {
   Plus,
   ExternalLink,
   Loader2,
-  AlertCircle,
   Star,
   Code2,
   Megaphone,
@@ -37,6 +36,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { roleRing } from '@/lib/role-tone';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
@@ -52,6 +52,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { KindPill } from '@/components/common/KindPill';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK, type AskText } from '@/lib/page-questions';
@@ -100,9 +101,12 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
       featured && 'border-primary-muted bg-primary-subtle'
     )}>
       <CardContent className="space-y-3">
+        {/* The family's chip opens the card's content — on the featured
+            card it sits over the primary wash. */}
+        <KindPill glyph="briefcase" tone="accent" en="Role" el="Θέση" />
         <CardHead
           mark={(
-            <Avatar className={cn('h-14 w-14', job.logoUrl && 'rounded-xl')}>
+            <Avatar className={cn('h-14 w-14', roleRing('founder'), job.logoUrl && 'rounded-xl')}>
               <AvatarImage src={job.logoUrl ?? job.creator?.avatarUrl ?? undefined} alt="" />
               <AvatarFallback className="bg-status-accent-bg font-semibold text-primary-accessible">
                 {initialsOf(job.creator?.displayName ?? '')}
@@ -217,7 +221,7 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={Plus} tone="primary">
           <DialogTitle>
             <BilingualText en={jobsEn('dialog_title')} el={jobsEl('dialog_title')} compact />
           </DialogTitle>
@@ -540,17 +544,20 @@ export default function JobsPage() {
       </div>
 
       {isError ? (
-        <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-          <AlertCircle className="icon-xl text-muted-foreground" />
-          <p role="alert" className="text-sm text-muted-foreground">
-            <BilingualText en={jobsEn('load_failed')} el={jobsEl('load_failed')} compact />
-          </p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            <BilingualText en={jobsEn('try_again')} el={jobsEl('try_again')} compact />
-          </Button>
-        </CardContent></Card>
+        <div role="alert">
+          <EmptyState
+            illustration="default"
+            size="sm"
+            title={<BilingualText en={jobsEn('load_failed')} el={jobsEl('load_failed')} compact />}
+            action={(
+              <Button variant="secondary" size="sm" onClick={() => refetch()}>
+                <BilingualText en={jobsEn('try_again')} el={jobsEl('try_again')} compact />
+              </Button>
+            )}
+          />
+        </div>
       ) : isLoading ? (
-        <div className="space-y-3">
+        <div className="card-grid">
           {Array.from({ length: 6 }).map((_, i) => (
             <JobSkeleton key={i} />
           ))}
@@ -617,11 +624,12 @@ export default function JobsPage() {
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <SectionSticker icon={Sparkles} tint="accent" />
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
                   <BilingualText en={jobsEn('featured')} el={jobsEl('featured')} compact />
                 </h2>
               </div>
-              {featuredJobs.map((job) => <JobCard key={job.id} job={job} featured myId={myId} />)}
+              <div className="card-grid">{featuredJobs.map((job) => <JobCard key={job.id} job={job} featured myId={myId} />)}</div>
             </section>
           )}
 
@@ -630,11 +638,12 @@ export default function JobsPage() {
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <SectionSticker icon={Wifi} tint="success" />
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />
                   <BilingualText en={jobsEn('remote_section')} el={jobsEl('remote_section')} compact />
                 </h2>
               </div>
-              {remoteRest.map((job) => <JobCard key={job.id} job={job} myId={myId} />)}
+              <div className="card-grid">{remoteRest.map((job) => <JobCard key={job.id} job={job} myId={myId} />)}</div>
             </section>
           )}
 
@@ -642,11 +651,12 @@ export default function JobsPage() {
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <SectionSticker icon={MapPin} tint="info" />
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" />
                   <BilingualText en={jobsEn('onsite_section')} el={jobsEl('onsite_section')} compact />
                 </h2>
               </div>
-              {onsiteRest.map((job) => <JobCard key={job.id} job={job} myId={myId} />)}
+              <div className="card-grid">{onsiteRest.map((job) => <JobCard key={job.id} job={job} myId={myId} />)}</div>
             </section>
           )}
         </div>

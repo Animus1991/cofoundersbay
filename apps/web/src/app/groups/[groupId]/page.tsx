@@ -30,6 +30,7 @@ import { StatusText } from '@/components/common/StatusText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { roleRing, roleTone } from '@/lib/role-tone';
 import { useToast } from '@/components/ui/toast';
 import { ListEmptyState } from '@/components/common/EmptyStates';
 import { STATUS } from '@/lib/semantic-colors';
@@ -113,7 +114,7 @@ function PostCard({
   // A post reads like every card: the author's mark and name with the time
   // under it, the post on the mark's edge, then the reactions in the foot.
   return (
-    <Card className="transition-all hover:border-primary/20">
+    <Card className="card-interactive transition-all hover:border-primary/20">
       <CardContent className="space-y-3">
         {post.isPinned && (
           <p className="flex items-center gap-1.5 text-xs font-medium text-primary-accessible">
@@ -124,9 +125,11 @@ function PostCard({
 
         <CardHead
           mark={(
-            <Avatar className="h-10 w-10">
+            /* The author's ring and tint name their role's family, the same
+               avatar as the feed's PostCard draws (B2.2). */
+            <Avatar className={cn('h-10 w-10', roleRing(post.author?.role))}>
               <AvatarImage src={post.author?.avatarUrl ?? undefined} alt="" />
-              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(post.author?.displayName)}</AvatarFallback>
+              <AvatarFallback className={cn('font-semibold', roleTone(post.author?.role))}>{initialsOf(post.author?.displayName)}</AvatarFallback>
             </Avatar>
           )}
           title={post.author?.displayName ?? <BilingualText en="Member" el="Μέλος" compact />}
@@ -158,11 +161,12 @@ function PostCard({
 
         {/* Reactions and comments: framed controls, so their edge is the
             card's axis rather than a ghost button's padding. */}
+        {/* The same tinted action pills as the feed's PostCard (B2.2). */}
         <CardFoot>
           <div className="relative">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
               // The name carries the number the button shows ("14").
               aria-label={post.reactionCount > 0
@@ -170,7 +174,7 @@ function PostCard({
                 : bilingualAria('React', 'Αντίδραση')}
               aria-expanded={showReactions}
               onClick={() => setShowReactions((p) => !p)}
-              className={cn('gap-1.5', post.myReaction && 'border-primary/30 bg-primary/10 text-primary-accessible')}
+              className={cn('gap-1.5 rounded-full hover:bg-status-accent-bg hover:text-status-accent', post.myReaction && 'bg-status-accent-bg text-status-accent')}
             >
               {post.myReaction ?? <Heart className="icon-sm" aria-hidden="true" />}
               {post.reactionCount > 0 && <span className="tabular-nums">{post.reactionCount}</span>}
@@ -199,11 +203,11 @@ function PostCard({
               number in front of an imperative. */}
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
             aria-expanded={showComments}
             onClick={() => setShowComments((p) => !p)}
-            className="gap-1.5"
+            className="gap-1.5 rounded-full hover:bg-status-info-bg hover:text-status-info"
           >
             <MessageCircle className="icon-sm" aria-hidden="true" />
             {showComments

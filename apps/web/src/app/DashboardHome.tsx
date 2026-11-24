@@ -38,6 +38,7 @@ import {
 import { queryKeys, qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, NavIcon, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { EmptyState } from '@/components/common/EmptyState';
 import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { formatFee } from '@/lib/mentor-fee';
@@ -505,22 +506,21 @@ export function DashboardHome() {
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-3 py-8 text-center">
-                    <CfbGlyph name="people" className="icon-xl text-muted-foreground/40" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        <BilingualText en={dashboardEn('no_matches_yet')} el={dashboardEl('no_matches_yet')} />
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        <BilingualText en={dashboardEn('complete_profile_for_matches')} el={dashboardEl('complete_profile_for_matches')} />
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href="/profile/edit">
-                        <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
-                      </Link>
-                    </Button>
-                  </div>
+                  // The shared empty state, frame off inside the card (B2.5).
+                  <EmptyState
+                    className="border-0 bg-transparent"
+                    illustration="connection"
+                    size="sm"
+                    title={<BilingualText en={dashboardEn('no_matches_yet')} el={dashboardEl('no_matches_yet')} />}
+                    description={<BilingualText en={dashboardEn('complete_profile_for_matches')} el={dashboardEl('complete_profile_for_matches')} />}
+                    action={(
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href="/profile/edit">
+                          <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
+                        </Link>
+                      </Button>
+                    )}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -643,7 +643,8 @@ export function DashboardHome() {
                     <p className="text-lg font-bold text-foreground tabular-nums">
                       {statsData?.activeProfiles?.toLocaleString('en-GB') ?? '—'}
                     </p>
-                    <p className="text-2xs text-muted-foreground uppercase tracking-wide">
+                    <p className="flex items-center gap-2 text-2xs text-muted-foreground uppercase tracking-wide">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
                       <BilingualText en="Active members" el="Ενεργά μέλη" compact />
                     </p>
                   </div>
@@ -651,7 +652,8 @@ export function DashboardHome() {
                     <p className="text-lg font-bold text-foreground tabular-nums">
                       {statsData?.matchesThisWeek ?? '—'}
                     </p>
-                    <p className="text-2xs text-muted-foreground uppercase tracking-wide">
+                    <p className="flex items-center gap-2 text-2xs text-muted-foreground uppercase tracking-wide">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />
                       <BilingualText en="Matches/week" el="Ταιριάσματα/εβδ." compact />
                     </p>
                   </div>

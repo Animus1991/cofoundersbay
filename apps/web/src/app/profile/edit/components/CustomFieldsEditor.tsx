@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 
 interface CustomField {
   id: string;
@@ -197,16 +198,19 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
 
         {fields.length === 0 && (
           <Card className="border-dashed">
-            <CardContent className="py-12 text-center">
-              <Briefcase className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
-              <h3 className="text-lg font-semibold mb-2"><BilingualText en="No custom fields yet" el="Δεν υπάρχουν προσαρμοσμένα πεδία ακόμα" compact /></h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                <BilingualText en="Add custom fields to showcase additional information" el="Προσθέστε πεδία για επιπλέον πληροφορίες" wrap />
-              </p>
-              <Button onClick={addField} variant="outline">
-                <Plus className="icon-sm mr-2" />
-                <BilingualText en="Add Your First Field" el="Προσθέστε το πρώτο πεδίο" compact />
-              </Button>
+            <CardContent className="p-0">
+              <EmptyState
+                className="border-0 bg-transparent"
+                illustration="default"
+                title={<BilingualText en="No custom fields yet" el="Δεν υπάρχουν προσαρμοσμένα πεδία ακόμα" compact />}
+                description={<BilingualText en="Add custom fields to showcase additional information" el="Προσθέστε πεδία για επιπλέον πληροφορίες" wrap />}
+                action={(
+                  <Button onClick={addField} variant="outline">
+                    <Plus className="icon-sm mr-2" />
+                    <BilingualText en="Add Your First Field" el="Προσθέστε το πρώτο πεδίο" compact />
+                  </Button>
+                )}
+              />
             </CardContent>
           </Card>
         )}

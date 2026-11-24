@@ -1,9 +1,13 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { Gift, UserSearch } from 'lucide-react';
 import type { VerificationMethod } from '@cofounderbay/shared';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { roleRing } from '@/lib/role-tone';
 import { BilingualText } from '@/components/common/BilingualText';
+import { KindPill } from '@/components/common/KindPill';
 import { StatusText } from '@/components/common/StatusText';
 import { CMT, evidenceCopy, kindCopy } from '@/lib/i18n/strings-commitments';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -35,19 +39,30 @@ export type NeedCardView = {
 function Field({
   label,
   tone = 'lead',
+  icon,
   children,
 }: {
   label: { en: string; el: string };
   /** lead: the ask; aside: project context; offer: the terms; meta: proof. */
   tone?: 'lead' | 'aside' | 'offer' | 'meta';
+  /** A 20px tinted well on the label, the card's second small mark. */
+  icon?: { Icon: LucideIcon; tint: 'accent' | 'success' };
   children: ReactNode;
 }) {
   return (
     <div data-card-field={tone}>
       <dt className={cn(
-        'text-xs card-meta font-medium text-muted-foreground',
+        'flex items-center gap-1.5 text-xs card-meta font-medium text-muted-foreground',
         tone === 'offer' && 'text-primary-accessible',
       )}>
+        {icon ? (
+          <span className={cn(
+            'flex h-5 w-5 shrink-0 items-center justify-center rounded-md',
+            icon.tint === 'accent' ? 'bg-status-accent-bg text-status-accent' : 'bg-status-success-bg text-status-success',
+          )} aria-hidden="true">
+            <icon.Icon className="h-3 w-3" />
+          </span>
+        ) : null}
         <BilingualText en={label.en} el={label.el} compact wrap />
       </dt>
       <dd
@@ -127,25 +142,29 @@ export function NeedCard({
   return (
     <article data-need-card="" className={cn('space-y-4', className)}>
       <header className="space-y-1.5">
-        <div className="flex items-start justify-between gap-3">
-          <p className="min-w-0 pt-0.5 text-xs card-meta text-muted-foreground">
-            <BilingualText
-              en={version ? `${kind.en} · ${CMT.version.en} ${version}` : kind.en}
-              el={version ? `${kind.el} · ${CMT.version.el} ${version}` : kind.el}
-              compact
-              wrap
-            />
-          </p>
+        {/* The family's chip first, the need's own kind on the same row. */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <KindPill glyph="pact" tone="accent" en="Need" el="Ανάγκη" />
+            <p className="min-w-0 text-xs card-meta text-muted-foreground">
+              <BilingualText
+                en={version ? `${kind.en} · ${CMT.version.en} ${version}` : kind.en}
+                el={version ? `${kind.el} · ${CMT.version.el} ${version}` : kind.el}
+                compact
+                wrap
+              />
+            </p>
+          </div>
           {card.outcome ? <OutcomeChip outcome={card.outcome} reason={card.closedReason} /> : null}
         </div>
-        <Heading className="card-title text-foreground">{card.title || '—'}</Heading>
         {owner ? (
-          <div className="flex min-w-0 items-center gap-2.5 pt-1.5">
-            <Avatar className="h-10 w-10" data-keep-icon="">
+          <div className="flex min-w-0 items-center gap-3 pt-1">
+            <Avatar className={cn('h-11 w-11 shrink-0', roleRing('founder'))} data-keep-icon="">
               <AvatarImage src={owner.avatarUrl ?? undefined} alt="" />
               <AvatarFallback className="bg-status-accent-bg text-2xs text-foreground">{initialsOf(owner.displayName)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
+              <Heading className="card-title text-foreground">{card.title || '—'}</Heading>
               <p className="card-subtitle card-byline flex min-w-0 items-center gap-1">
                 <span className="min-w-0 truncate">{owner.displayName}</span>
                 <VerifiedBadge methods={owner.verifiedMethods ?? []} variant="mark" />
@@ -153,7 +172,9 @@ export function NeedCard({
               {owner.headline ? <p className="text-xs card-meta text-muted-foreground">{owner.headline}</p> : null}
             </div>
           </div>
-        ) : null}
+        ) : (
+          <Heading className="card-title text-foreground">{card.title || '—'}</Heading>
+        )}
       </header>
 
       <dl className="space-y-3">
@@ -171,8 +192,8 @@ export function NeedCard({
           className="grid grid-cols-1 gap-y-3 md:grid-cols-2 md:gap-x-4 md:gap-y-0"
         >
           {/* On a wall two lines say who is wanted; the card's own page says the rest. */}
-          {card.missing ? <Field label={CMT.missing}>{compact ? <span className="line-clamp-2">{card.missing}</span> : card.missing}</Field> : null}
-          <Field label={CMT.offer} tone="offer">
+          {card.missing ? <Field label={CMT.missing} icon={{ Icon: UserSearch, tint: 'accent' }}>{compact ? <span className="line-clamp-2">{card.missing}</span> : card.missing}</Field> : null}
+          <Field label={CMT.offer} tone="offer" icon={{ Icon: Gift, tint: 'success' }}>
             <span className="block font-medium">{card.offer?.role || '—'}</span>
             {offerLine.length ? <span className="block font-medium tabular-nums">{offerLine.join(' · ')}</span> : null}
             {!compact && card.offer.scope ? <span className="mt-1 block font-normal text-muted-foreground">{card.offer.scope}</span> : null}

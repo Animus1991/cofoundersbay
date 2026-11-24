@@ -23,6 +23,9 @@ import { YourPagesRow } from '@/components/dashboard/YourPages';
 import { HomeActionShelf } from '@/components/dashboard/HomeActionShelf';
 import { DictationButton } from '@/components/ai/DictationButton';
 import { HeroActionsSlot } from '@/components/layout/PageHeaderSlot';
+import { SectionSticker } from '@/components/dashboard/SectionSticker';
+import { deriveTitleSticker } from '@/lib/title-sticker';
+import { getPageMeta } from '@/lib/page-registry';
 
 type Part = { en: string; el: string };
 
@@ -99,9 +102,10 @@ export function partOfDay(hour: number): Part {
  * - Under them, "Your pages": what the reader pinned and opens most, each
  *   with its `G` number (`YourPagesRow`, docs §107).
  */
-export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true, plain = false, greeting = true, hero = false, purposeEn, purposeEl }: { /** Off where the page's own title already greets the reader (/home). */ greeting?: boolean; role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean; /** Only the question box: the shortcuts live in the page's tools (docs §116). */ plain?: boolean; /** The Parea method: a solid brand card — greeting, one line, the box, three intents, the role's glyph well (docs §131.2, §133.8). */ hero?: boolean; /** One short purpose line under the greeting in the hero card. */ purposeEn?: string; purposeEl?: string }) {
+export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true, plain = false, greeting = true, hero = false, band = false, purposeEn, purposeEl }: { /** Off where the page's own title already greets the reader (/home). */ greeting?: boolean; role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean; /** Only the question box: the shortcuts live in the page's tools (docs §116). */ plain?: boolean; /** The Parea method: a solid brand card — greeting, one line, the box, three intents, the role's glyph well (docs §131.2, §133.8). */ hero?: boolean; /** The role overview's own look: a tinted band — the page's title as the overline, greeting, lead, the one-row ask pill (docs §135 A4). */ band?: boolean; /** One short purpose line under the greeting in the hero card. */ purposeEn?: string; purposeEl?: string }) {
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
+  const pathname = usePathname();
   const run = useHomeAskRun();
   // Where the page header's tools land in hero mode (docs §133): the AppShell
   // portals them into this corner slot of the card.
@@ -230,20 +234,51 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
     </>
   );
 
+  // The band's overline repeats the page's title with its sticker: the real
+  // h1 is sr-only on these pages, so the band says where the reader is
+  // (visible but aria-hidden — one accessible heading, the greeting).
+  const bandMeta = band && pathname ? getPageMeta(pathname) : undefined;
+  const bandSticker = band && pathname ? deriveTitleSticker(pathname) : undefined;
+  const bandBody = (
+    <>
+      {bandMeta ? (
+        <p aria-hidden="true" className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-widest text-primary-accessible">
+          {bandSticker ? <SectionSticker {...bandSticker} className="h-5 w-5" /> : null}
+          <BilingualText en={bandMeta.title} el={bandMeta.titleEl ?? bandMeta.title} compact />
+        </p>
+      ) : null}
+      <h2 id={`${boxId}-title`} hidden={!greeting} className="break-words text-xl font-semibold text-foreground sm:text-2xl" data-testid="home-greeting">
+        <BilingualText
+          en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.`}
+          el={`${hello.el}${name?.trim() ? `, ${name.trim()}` : ''}.`}
+          stacked
+          wrap
+          secondaryFrom="lg"
+        />
+      </h2>
+      {lead ? (
+        <p className="line-clamp-2 break-words text-sm text-muted-foreground" data-testid="home-band-lead">
+          <BilingualText en={lead.en} el={lead.el} compact wrap />
+        </p>
+      ) : null}
+    </>
+  );
+
   return (
     <section
       aria-labelledby={greeting ? `${boxId}-title` : undefined}
       aria-label={greeting ? undefined : bilingualAria('Ask the assistant', 'Ρωτήστε τον βοηθό')}
-      className={hero ? 'relative rounded-3xl bg-primary p-4 text-primary-foreground sm:p-7' : 'space-y-3'}
+      className={hero ? 'relative rounded-3xl bg-primary p-4 text-primary-foreground sm:p-7' : band ? 'relative rounded-3xl bg-primary/10 p-4 sm:p-6' : 'space-y-3'}
       data-home-ask={greeting ? 'greeting' : 'box'}
       data-hero={hero || undefined}
+      data-band={band || undefined}
       data-testid={`home-${role}-assistant`}
     >
       {/* The figure joins only from xl (docs §133.4): below it the card is one
           column, no cut-off figure beside or above the greeting. */}
-      <div className={hero ? 'grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
-        <div className={hero ? 'min-w-0 space-y-3 pe-10' : 'space-y-3'}>
-          {hero ? heroBody : (
+      <div className={hero || band ? 'grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
+        <div className={hero ? 'min-w-0 space-y-3 pe-10' : band ? 'min-w-0 space-y-3 pe-10' : 'space-y-3'}>
+          {hero ? heroBody : band ? bandBody : (
             <p id={`${boxId}-title`} hidden={!greeting} className="break-words text-sm text-muted-foreground" data-testid="home-greeting">
               {/* Without a name the greeting is just the greeting: the homes used
                   to fill in their role word, so a Greek reader met "Καλημέρα,
@@ -264,7 +299,11 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
           /* The hero field is one row — the pill, the placeholder, send at the
              right end; the scope picker lives with the intent chips (§133.4). */
           ? 'relative flex items-center gap-1 rounded-full border border-input bg-card py-1.5 pe-1.5 ps-4 shadow-sm transition-colors focus-within:border-primary-muted'
-          : 'rounded-xl border border-input bg-card shadow-sm transition-colors focus-within:border-primary-muted'}
+          : band
+            /* The band's ask pill: same one row, a quieter border, the scope
+               picker as the quiet control at its right (docs §135 A4). */
+            ? 'relative flex items-center gap-1 rounded-full border border-border/60 bg-card py-1.5 pe-1.5 ps-4 shadow-sm transition-colors focus-within:border-primary-muted'
+            : 'rounded-xl border border-input bg-card shadow-sm transition-colors focus-within:border-primary-muted'}
       >
         <label htmlFor={`${boxId}-box`} className="sr-only">
           <BilingualText en="Ask the assistant" el="Ρωτήστε τον βοηθό" compact />
@@ -280,17 +319,17 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
           aria-controls={listOpen ? `${boxId}-commands` : undefined}
           aria-autocomplete="list"
           aria-activedescendant={listOpen ? `${boxId}-command-${active}` : undefined}
-          rows={hero ? 1 : 2}
+          rows={hero || band ? 1 : 2}
           maxLength={2000}
           placeholder={sayOne('Ask anything, or ask for something to be done', 'Ρωτήστε οτιδήποτε ή ζητήστε να γίνει κάτι')}
-          className={hero
+          className={hero || band
             // nowrap: the one-row pill never shows a sliver of a wrapped
             // placeholder line; Shift+Enter still inserts a newline.
             ? 'block h-9 w-full min-w-0 resize-none whitespace-nowrap bg-transparent py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground'
             : 'block max-h-48 min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3 text-sm text-foreground outline-none placeholder:text-muted-foreground'}
         />
         {listOpen && commands ? (
-          <ul id={`${boxId}-commands`} data-testid="home-command-list" role="listbox" aria-label={bilingualAria('Commands', 'Εντολές')} className={hero ? 'absolute inset-x-2 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1' : 'mx-2 mb-2 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1'}>
+          <ul id={`${boxId}-commands`} data-testid="home-command-list" role="listbox" aria-label={bilingualAria('Commands', 'Εντολές')} className={hero || band ? 'absolute inset-x-2 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1' : 'mx-2 mb-2 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1'}>
             {commands.map((command, index) => (
               <li
                 key={command.id}
@@ -311,11 +350,13 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
             ))}
           </ul>
         ) : null}
-        {hero ? (
+        {hero || band ? (
           /* One row in hero mode: dictation beside send at the right end
-             (docs §107.7-7, §133.4); the scope picker is up with the chips. */
+             (docs §107.7-7, §133.4); the scope picker is up with the chips. In
+             band mode it is the quiet control at the pill's right (§135 A4). */
           <span className="flex shrink-0 items-center gap-1">
             <DictationButton value={value} onChange={setValue} size="small" />
+            {band ? scopeMenu : null}
             <Button
               type="submit"
               data-testid="home-ask-submit"
@@ -353,7 +394,7 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
         )}
       </form>
 
-      {hero ? intentChips : (
+      {hero ? intentChips : band ? null : (
         <>
           {plain ? null : <HomeActionShelf actions={config.actions} now={showWaiting ? now : []} run={run} />}
 
@@ -372,6 +413,14 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
             </span>
             <CfbGlyph name="spark" className="absolute -right-1 -top-1 h-6 w-6 text-primary-foreground" />
           </div>
+        ) : band ? (
+          /* The same idea in the band's palette: a smaller tinted well with
+             the role glyph, from xl (docs §135 A4). */
+          <div data-keep-icon="" data-hero-figure="" className="relative hidden xl:block" aria-hidden="true">
+            <span className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/15 text-primary-accessible">
+              <CfbGlyph name={ROLE_GLYPH[role] ?? 'spark'} className="h-10 w-10" />
+            </span>
+          </div>
         ) : null}
       </div>
       {hero ? (
@@ -381,6 +430,12 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
           ref={heroActionsSlot}
           data-hero-actions=""
           className="absolute end-4 top-4 z-10 flex items-center gap-2 empty:hidden [&_button]:border-white/40 [&_button]:bg-white/15 [&_button]:text-primary-foreground [&_button:hover]:border-white/60 [&_button:hover]:bg-white/25 [&_button:hover]:text-primary-foreground"
+        />
+      ) : band ? (
+        <div
+          ref={heroActionsSlot}
+          data-hero-actions=""
+          className="absolute end-4 top-4 z-10 flex items-center gap-2 empty:hidden"
         />
       ) : null}
     </section>

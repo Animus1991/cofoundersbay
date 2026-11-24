@@ -411,13 +411,13 @@ export default function OrgCohortsPage() {
         </>)}
 
         {/* Cohorts List */}
-        <div className="space-y-3">
+        <div className="card-grid">
           {filteredCohorts.map((cohort) => (
             <CohortCard key={cohort.id} cohort={cohort} sample={isSample} />
           ))}
-          {reading && cohorts.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="h-32" />)}
+          {reading && cohorts.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="col-span-full h-32" />)}
           {!reading && filteredCohorts.length === 0 && (
-            <EmptyOrgCohorts
+            <EmptyOrgCohorts className="col-span-full"
               filtersActive={!!search || statusFilter !== 'all'}
               onClearFilters={() => { setSearch(''); setStatusFilter('all'); }}
               active={namedFilters(namedQuery(search), namedChoice(statusFilter, 'all', {

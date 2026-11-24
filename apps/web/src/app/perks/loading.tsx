@@ -1,8 +1,10 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
 export default function PerksLoading() {
   return (
     <div className="mx-auto w-full min-w-0 space-y-4 px-4 pt-6" aria-busy="true">
+    <HeaderBandSkeleton />
       <Skeleton className="h-8 w-48" />
       <Skeleton className="h-10 w-full max-w-md rounded-xl" />
       {Array.from({ length: 3 }).map((_, i) => (

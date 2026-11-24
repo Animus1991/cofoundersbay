@@ -4,21 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQueries, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  GraduationCap,
-  Calendar,
-  Users,
-  Loader2,
-  BookOpen,
-  Star,
-  Search,
-  Award,
-  TrendingUp,
-  BadgeCheck,
-  X,
-  MessageCircle,
-  CalendarDays,
-} from 'lucide-react';
+import { GraduationCap, Calendar, Users, Loader2, BookOpen, Star, Search, Award, TrendingUp, BadgeCheck, X, MessageCircle, CalendarDays, CalendarClock } from 'lucide-react';
 import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, getMyMentorships, getMentorshipSessions, discoverMentors, listExperts, type MentorBookingItem, type MentorshipRelationshipItem, type MentorshipSessionItem } from '@/lib/api';
 import { BookingCard, MEETING_TYPE_LABEL } from '@/components/mentoring/BookingCard';
 import { SessionDateTile } from '@/components/mentoring/SessionDateTile';
@@ -330,7 +316,7 @@ function BookingModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+        <DialogHeader icon={CalendarClock} tone="warning">
           <DialogTitle>
             <BilingualText en={`Book a session with ${mentor.displayName}`} el={`Κράτηση συνεδρίας με ${mentor.displayName}`} />
           </DialogTitle>
@@ -1051,18 +1037,22 @@ export default function MentoringPage() {
           </div>
 
           {mentorsError || reviewersFailed ? (
-            <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-sm text-muted-foreground">
-                {mentorsError ? (
+            <div role="alert">
+              <EmptyState
+                illustration="default"
+                size="sm"
+                title={mentorsError ? (
                   <BilingualText en="Mentors could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των μεντόρων." wrap />
                 ) : (
                   <BilingualText en="The reviewers could not be read just now." el="Οι αξιολογητές δεν διαβάστηκαν αυτή τη στιγμή." wrap />
                 )}
-              </p>
-              <Button variant="outline" size="sm" onClick={() => { void queryClient.invalidateQueries({ queryKey: qk('mentors') }); if (reviewersFailed) void refetchExperts(); }}>
-                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-              </Button>
-            </CardContent></Card>
+                action={(
+                  <Button variant="outline" size="sm" onClick={() => { void queryClient.invalidateQueries({ queryKey: qk('mentors') }); if (reviewersFailed) void refetchExperts(); }}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                )}
+              />
+            </div>
           ) : directoryLoading ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {Array.from({ length: 4 }).map((_, i) => <MentorSkeleton key={i} />)}

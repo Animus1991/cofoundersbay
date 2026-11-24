@@ -67,7 +67,7 @@ export function CardHead({
         {meta ? <div className={cn('text-xs text-muted-foreground', roomy ? 'mt-1.5' : 'mt-0.5')}>{meta}</div> : null}
       </div>
       {aside ? (
-        <div className={cn('flex min-w-0 flex-wrap items-center gap-2 text-xs text-muted-foreground sm:justify-end', asidePlace, asideStays && 'justify-end pt-0.5', asideClassName)}>{aside}</div>
+        <div className={cn('flex min-w-0 flex-wrap items-center gap-2 text-xs text-muted-foreground sm:justify-end [&>*]:min-w-0 [&>*]:max-w-full', asidePlace, asideStays && 'justify-end pt-0.5', asideClassName)}>{aside}</div>
       ) : null}
     </div>
   );

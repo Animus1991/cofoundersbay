@@ -1,13 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Search,
-  MoreVertical,
-  CheckCircle2,
-  XCircle,
-  Clock,
-} from 'lucide-react';
+import { Search, MoreVertical, CheckCircle2, XCircle, Clock, Info } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { FailedLine } from '@/components/dashboard/SectionCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -532,7 +526,7 @@ export default function OrgApplicationsPage() {
         </>)}
 
         {/* Applications List */}
-        <div className="space-y-3">
+        <div className="card-grid card-grid-lg">
           {filteredApplications.map((application) => (
             <ApplicationCard
               key={application.id}
@@ -541,9 +535,9 @@ export default function OrgApplicationsPage() {
               onReview={setReviewing}
             />
           ))}
-          {reading && applications.length === 0 && [0, 1, 2].map((i) => <Skeleton key={i} className="h-24" />)}
+          {reading && applications.length === 0 && [0, 1, 2].map((i) => <Skeleton key={i} className="col-span-full h-24" />)}
           {!reading && !(participantsFailed > 0 && applications.length === 0) && filteredApplications.length === 0 && (
-            <EmptyOrgApplications
+            <EmptyOrgApplications className="col-span-full"
               filtersActive={filtersActive}
               onClearFilters={clearFilters}
               active={namedFilters(
@@ -561,7 +555,7 @@ export default function OrgApplicationsPage() {
       </div>
       <Dialog open={reviewing !== null} onOpenChange={(o) => { if (!o) setReviewing(null); }}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Info} tone="neutral">
             <DialogTitle>{reviewing?.startupName}</DialogTitle>
             <DialogDescription>
               {reviewing ? (

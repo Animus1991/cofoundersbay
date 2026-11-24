@@ -7,6 +7,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { messagesEl, messagesEn } from '@/lib/i18n/strings-messages';
 import { bilingualAria } from '@/lib/i18n/format';
+import { MessageSquare } from 'lucide-react';
 
 export type ForwardTarget = { id: string; recipientName: string; recipientAvatar?: string | null };
 
@@ -33,7 +34,7 @@ export function ForwardMessageDialog({
   return (
     <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
       <DialogContent className="max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={MessageSquare} tone="accent">
           <DialogTitle><BilingualText en={messagesEn('forward_title')} el={messagesEl('forward_title')} compact /></DialogTitle>
           <DialogDescription className="line-clamp-2">{preview}</DialogDescription>
         </DialogHeader>

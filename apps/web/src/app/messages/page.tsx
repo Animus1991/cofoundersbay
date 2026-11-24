@@ -195,7 +195,8 @@ function IntroDetailPane({
             <BilingualText en={messagesEn('back_to_conversations')} el={messagesEl('back_to_conversations')} compact />
           </Button>
         )}
-        <p className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <p className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
           <BilingualText en={messagesEn('connection_request')} el={messagesEl('connection_request')} compact />
         </p>
         {/* The request as its card shows it: the person's mark, the name with

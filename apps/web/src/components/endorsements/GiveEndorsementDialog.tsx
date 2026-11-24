@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, Loader2, Search, UserRound, X } from 'lucide-react';
+import { Check, Loader2, Search, UserRound, X, Pencil } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -151,7 +151,7 @@ export function GiveEndorsementDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
-        <DialogHeader>
+        <DialogHeader icon={Pencil} tone="primary">
           <DialogTitle>
             <BilingualText en="Give an endorsement" el="Δώστε μια σύσταση" />
           </DialogTitle>

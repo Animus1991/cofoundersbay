@@ -3,15 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  GraduationCap,
-  Search,
-  Plus,
-  MoreVertical,
-  Edit,
-  Trash2,
-  Eye,
-} from 'lucide-react';
+import { GraduationCap, Search, Plus, MoreVertical, Edit, Trash2, Eye, Pencil } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Input } from '@/components/ui/input';
@@ -529,7 +521,7 @@ export default function TenantProgramsPage() {
         )}
 
         {/* Programs List */}
-        <div className="space-y-3">
+        <div className="card-grid">
           {filteredPrograms.map((program) => (
             <ProgramCard
               key={program.id}
@@ -540,7 +532,7 @@ export default function TenantProgramsPage() {
             />
           ))}
           {filteredPrograms.length === 0 && (
-            <EmptyTenantPrograms
+            <EmptyTenantPrograms className="col-span-full"
               filtersActive={!!search || statusFilterOn}
               onClearFilters={() => { setSearch(''); setStatusFilter('current'); }}
               active={namedFilters(
@@ -557,7 +549,7 @@ export default function TenantProgramsPage() {
       {/* Create / edit program */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Pencil} tone="primary">
             <DialogTitle>{form.id ? 'Edit program' : 'Create program'}</DialogTitle>
             <DialogDescription className="sr-only"><BilingualText en="Create or edit the program's name, description and type." el="Δημιουργία ή επεξεργασία ονόματος, περιγραφής και τύπου προγράμματος." /></DialogDescription>
           </DialogHeader>

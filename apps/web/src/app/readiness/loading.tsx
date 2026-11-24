@@ -1,8 +1,10 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
 export default function ReadinessLoading() {
   return (
     <div className="min-h-screen pb-20 lg:pb-16">
+    <HeaderBandSkeleton />
       <div className="mx-auto w-full min-w-0 px-4 pt-6 space-y-6">
         <div className="py-3 space-y-2">
           <Skeleton className="h-8 w-52" />

@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { bilingualInline } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { foldText, searchPages } from '@/lib/page-search';
 import { FileText, History, Pin } from 'lucide-react';
@@ -484,22 +485,25 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
         {/* Command list */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
           {filteredCommands.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-8 text-center text-sm text-muted-foreground">
-              <p>
-                {mode === 'people' && term.length < 2 ? (
-                  <BilingualText en="Type a name or a skill after @." el="Γράψτε ένα όνομα ή μια δεξιότητα μετά το @." wrap />
-                ) : mode === 'people' ? (
-                  <BilingualText en="Nobody matches yet." el="Κανείς δεν ταιριάζει ακόμη." wrap />
-                ) : mode === 'pages' && !term ? (
-                  <BilingualText en="Type a page name after /." el="Γράψτε το όνομα μιας σελίδας μετά το /." wrap />
-                ) : (
-                  <BilingualText en="No commands match this search." el="Καμία εντολή δεν ταιριάζει σε αυτή την αναζήτηση." wrap />
-                )}
-              </p>
-              <Button type="button" variant="outline" size="sm" onClick={() => setSearch('')}>
-                <BilingualText en="Clear search" el="Εκκαθάριση αναζήτησης" compact />
-              </Button>
-            </div>
+            <EmptyState
+              className="border-0 bg-transparent py-8"
+              illustration="search"
+              size="sm"
+              title={mode === 'people' && term.length < 2 ? (
+                <BilingualText en="Type a name or a skill after @." el="Γράψτε ένα όνομα ή μια δεξιότητα μετά το @." wrap />
+              ) : mode === 'people' ? (
+                <BilingualText en="Nobody matches yet." el="Κανείς δεν ταιριάζει ακόμη." wrap />
+              ) : mode === 'pages' && !term ? (
+                <BilingualText en="Type a page name after /." el="Γράψτε το όνομα μιας σελίδας μετά το /." wrap />
+              ) : (
+                <BilingualText en="No commands match this search." el="Καμία εντολή δεν ταιριάζει σε αυτή την αναζήτηση." wrap />
+              )}
+              action={(
+                <Button type="button" variant="outline" size="sm" onClick={() => setSearch('')}>
+                  <BilingualText en="Clear search" el="Εκκαθάριση αναζήτησης" compact />
+                </Button>
+              )}
+            />
           ) : (
             Object.entries(groupedCommands).map(([category, items]) => {
               if (items.length === 0) return null;

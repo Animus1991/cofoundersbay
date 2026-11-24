@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { LayoutDashboard, ShieldAlert, UserCog } from 'lucide-react';
+import { LayoutDashboard, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/brand/Logo';
+import { EmptyState } from '@/components/common/EmptyState';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 
@@ -23,32 +24,40 @@ export default function UnauthorizedPage() {
   return (
     <MainLandmark className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
       <Logo size="sm" />
-      <ShieldAlert className="mt-8 icon-xl text-status-warning" aria-hidden="true" />
-      <h1 className="mt-3 text-xl font-semibold text-foreground">
+      {/* The shared empty state draws the disc, the words and the ways on
+          (B2.5); the h1 stays for the document's outline. */}
+      <h1 className="sr-only">
         <BilingualText en="You do not have access to this page" el="Δεν έχετε πρόσβαση σε αυτή τη σελίδα" compact wrap />
       </h1>
-      <p className="mt-3 max-w-md text-sm text-muted-foreground">
-        <BilingualText
-          en="It needs a role your account does not have yet. Switch to a role that has it, or ask an administrator to add the role to your account."
-          el="Απαιτεί έναν ρόλο που ο λογαριασμός σας δεν έχει ακόμη. Αλλάξτε σε ρόλο που τον έχει ή ζητήστε από έναν διαχειριστή να τον προσθέσει."
-          compact
-          wrap
-        />
-      </p>
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-        <Button asChild>
-          <Link href="/dashboard" className="gap-2">
-            <LayoutDashboard className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Go to your dashboard" el="Στον πίνακα ελέγχου" compact />
-          </Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/settings" className="gap-2">
-            <UserCog className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Account and roles" el="Λογαριασμός και ρόλοι" compact />
-          </Link>
-        </Button>
-      </div>
+      <EmptyState
+        className="mt-8 w-full max-w-lg"
+        illustration="default"
+        title={<BilingualText en="You do not have access to this page" el="Δεν έχετε πρόσβαση σε αυτή τη σελίδα" compact wrap />}
+        description={(
+          <BilingualText
+            en="It needs a role your account does not have yet. Switch to a role that has it, or ask an administrator to add the role to your account."
+            el="Απαιτεί έναν ρόλο που ο λογαριασμός σας δεν έχει ακόμη. Αλλάξτε σε ρόλο που τον έχει ή ζητήστε από έναν διαχειριστή να τον προσθέσει."
+            compact
+            wrap
+          />
+        )}
+        action={(
+          <>
+            <Button asChild>
+              <Link href="/dashboard" className="gap-2">
+                <LayoutDashboard className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Go to your dashboard" el="Στον πίνακα ελέγχου" compact />
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/settings" className="gap-2">
+                <UserCog className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Account and roles" el="Λογαριασμός και ρόλοι" compact />
+              </Link>
+            </Button>
+          </>
+        )}
+      />
     </MainLandmark>
   );
 }

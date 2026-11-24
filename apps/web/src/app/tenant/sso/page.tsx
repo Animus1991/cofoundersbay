@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTenant } from '@/components/providers/TenantContext';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import {
@@ -401,10 +402,10 @@ export default function TenantSSOPage() {
   if (!tenantId) {
     return (
       <AppShell>
-        <div className="py-12 text-center text-muted-foreground">
-          <Shield className="h-10 w-10 mx-auto mb-3" aria-hidden="true" />
-          <p><BilingualText en="No organisation is selected. Open this page from your organisation." el="Δεν έχει επιλεγεί οργανισμός. Ανοίξτε αυτή τη σελίδα από τον οργανισμό σας." wrap /></p>
-        </div>
+        <EmptyState
+          illustration="default"
+          title={<BilingualText en="No organisation is selected. Open this page from your organisation." el="Δεν έχει επιλεγεί οργανισμός. Ανοίξτε αυτή τη σελίδα από τον οργανισμό σας." wrap />}
+        />
       </AppShell>
     );
   }
@@ -575,11 +576,12 @@ export default function TenantSSOPage() {
             {providersLoading ? (
               <div className="space-y-3">{[1,2].map(i => <div key={i} className="h-20 rounded-xl bg-muted/50 animate-pulse" />)}</div>
             ) : !providers?.length ? (
-              <div className="py-10 text-center text-muted-foreground border border-dashed rounded-xl">
-                <Key className="icon-xl mx-auto mb-2" aria-hidden="true" />
-                <p className="text-sm"><BilingualText en="No identity providers yet" el="Δεν υπάρχουν πάροχοι ταυτότητας ακόμα" compact /></p>
-                <p className="text-xs mt-1"><BilingualText en="Use Add provider above to connect OIDC or SAML." el="Χρησιμοποιήστε την Προσθήκη παρόχου για σύνδεση OIDC ή SAML." wrap /></p>
-              </div>
+              <EmptyState
+                illustration="default"
+                size="sm"
+                title={<BilingualText en="No identity providers yet" el="Δεν υπάρχουν πάροχοι ταυτότητας ακόμα" compact />}
+                description={<BilingualText en="Use Add provider above to connect OIDC or SAML." el="Χρησιμοποιήστε την Προσθήκη παρόχου για σύνδεση OIDC ή SAML." wrap />}
+              />
             ) : (
               <div className="space-y-3">
                 {providers.map(p => (
@@ -740,11 +742,12 @@ export default function TenantSSOPage() {
                 {domainsLoading ? (
                   <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-12 rounded-lg bg-muted/50 animate-pulse" />)}</div>
                 ) : !domainMappings?.length ? (
-                  <div className="py-8 text-center text-muted-foreground border border-dashed rounded-xl">
-                    <Globe className="h-7 w-7 mx-auto mb-2" aria-hidden="true" />
-                    <p className="text-sm"><BilingualText en="No email domains yet" el="Δεν υπάρχουν τομείς email ακόμα" compact /></p>
-                    <p className="text-xs mt-1"><BilingualText en="Add your organisation's email domain so the sign-in page can offer SSO." el="Προσθέστε τον τομέα email του οργανισμού σας ώστε η σελίδα σύνδεσης να προτείνει SSO." wrap /></p>
-                  </div>
+                  <EmptyState
+                    illustration="default"
+                    size="sm"
+                    title={<BilingualText en="No email domains yet" el="Δεν υπάρχουν τομείς email ακόμα" compact />}
+                    description={<BilingualText en="Add your organisation's email domain so the sign-in page can offer SSO." el="Προσθέστε τον τομέα email του οργανισμού σας ώστε η σελίδα σύνδεσης να προτείνει SSO." wrap />}
+                  />
                 ) : (
                   <div className="card-rows">
                     {domainMappings.map(m => (

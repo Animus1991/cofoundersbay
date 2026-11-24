@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useState } from 'react';
-import { Image, Link2, Hash, AtSign, Send, X } from 'lucide-react';
+import { Image, Link2, Hash, AtSign, X, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -143,9 +143,8 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
       {/* Expanded dialog */}
       <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
         <DialogContent className="max-w-lg">
-          <DialogHeader>
+          <DialogHeader icon={Plus} tone="primary">
             <DialogTitle className="flex items-center gap-2">
-              <Send className="icon-md text-muted-foreground" />
               <BilingualText en="Create Post" el="Νέα ανάρτηση" />
             </DialogTitle>
             <DialogDescription className="sr-only"><BilingualText en="Write and publish a post to the feed." el="Συντάξτε και δημοσιεύστε μια ανάρτηση στη ροή." /></DialogDescription>

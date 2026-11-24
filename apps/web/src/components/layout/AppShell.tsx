@@ -1,6 +1,6 @@
 'use client';
 
-import { type CSSProperties, type ElementType, ReactNode, createContext, useContext, memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type CSSProperties, ReactNode, createContext, useContext, memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { SideNav } from './SideNav';
@@ -23,8 +23,11 @@ import { PageHeaderSlot, HeroActionsSlot } from './PageHeaderSlot';
 import { recordInAppView } from '@/lib/in-app-history';
 import { PageLead } from './PageLead';
 import { InfoHint } from '@/components/common/InfoHint';
-import { SectionSticker, type StickerTint } from '@/components/dashboard/SectionSticker';
-import type { CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { STICKER_BAND_BG, STICKER_BAND_GLYPH } from '@/components/dashboard/SectionSticker';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { deriveTitleSticker, type TitleSticker } from '@/lib/title-sticker';
+import { bilingualAria } from '@/lib/i18n/format';
+import { Sparkles } from 'lucide-react';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -274,9 +277,11 @@ type AppShellProps = {
   leadAsHint?: boolean;
   /**
    * A tinted round sticker before the h1 — the SectionSticker idiom lifted
-   * from the section heads to the page itself.
+   * from the section heads to the page itself. `undefined` derives the mark
+   * from the route (its own glyph, else its nav entry's icon — docs §135
+   * A1); an explicit object wins; `false` keeps the title bare.
    */
-  titleSticker?: { glyph?: CfbGlyphName; icon?: ElementType; tint: StickerTint };
+  titleSticker?: TitleSticker | false;
 };
 
 /**
@@ -307,6 +312,7 @@ export function AppShell({
 }: AppShellProps) {
   const insideFrame = useContext(InAppShellFrame);
   const pathname = usePathname() ?? '/';
+  const sticker = titleSticker === false ? undefined : titleSticker ?? deriveTitleSticker(pathname);
   const resolved = resolvePageHeader(pathname, { title, description, titleEl, descriptionEl });
   const pageTitle = resolved.title;
   const pageTitleEl = resolved.titleEl;
@@ -331,6 +337,15 @@ export function AppShell({
     return () => clearTimeout(timer);
   }, [descIntoHelp, descSeenKey]);
   const [metaSlot, setMetaSlot] = useState<HTMLDivElement | null>(null);
+  // Under sm the page-ask field folds behind an icon in the title row (docs
+  // §135 A1.4): the field stays mounted — collapsed, not unmounted — and
+  // tapping the assistant mark opens it in place and focuses it.
+  const [askOpen, setAskOpen] = useState(false);
+  const askRef = useRef<HTMLDivElement>(null);
+  const openAsk = () => {
+    setAskOpen(true);
+    window.requestAnimationFrame(() => askRef.current?.querySelector('input')?.focus());
+  };
   // When the title is visually off (hero mode, docs §133) the header's tools
   // would float alone in an empty band; a hero card registers a corner slot
   // for them instead.
@@ -343,6 +358,12 @@ export function AppShell({
       };
 
   const headerShown = Boolean(pageTitle || pageDescription || actions || showAskAi || showHelp);
+  // The header is one tinted band (B1.2): the sticker's own wash behind the
+  // title row, the description, the page facts and the ask field, so every
+  // page opens on colour. Off only where the title itself is not painted
+  // (hero mode) or the page is full-height (the header never renders there).
+  const headerBanded = headerShown && !titleSrOnly;
+  const bandBg = STICKER_BAND_BG[sticker?.tint ?? 'neutral'];
   // The star that pins this page to the reader's own pages (docs §110):
   // every page with a header that can be one of them; never a home.
   const pinnable = isPinnablePath(pathname);
@@ -353,9 +374,17 @@ export function AppShell({
     // Inside a frame the <main> belongs to the layout above, so a page-level
     // contentClassName (e.g. overflow-x-clip on /analytics, /discover,
     // /matches, pitch-deck) lands on this wrapper instead — same clipping.
-    <div className={cn('space-y-5', insideFrame && contentClassName)}>
+    <div className={cn(
+      'w-full space-y-5',
+      insideFrame && contentClassName,
+    )}>
       {headerShown && (
-        <header className="space-y-3 [container-type:inline-size]">
+        <header
+          className={cn(
+            'space-y-3 [container-type:inline-size]',
+            headerBanded && cn('rounded-2xl px-3 py-3 sm:rounded-3xl sm:px-6 sm:py-5', bandBg),
+          )}
+        >
           {/* One header row, as in the AI Studio prototype (docs §64): the
               title on the left; the page's actions, the ask field and help on
               the right, in the same place on every page (GitHub's PageHeader,
@@ -387,10 +416,35 @@ export function AppShell({
               <div className={cn('min-w-0 [grid-area:title]', titleSrOnly && 'sr-only')} data-page-header="">
                 {pageTitle && (
                   <div className="flex items-center gap-2.5">
-                    {titleSticker ? <SectionSticker {...titleSticker} className="h-8 w-8" /> : null}
+                    {sticker ? (
+                      /* The band's own mark (B1.2): a card squircle carrying
+                         the route glyph in the band's ink. */
+                      <span
+                        data-keep-icon=""
+                        aria-hidden="true"
+                        className={cn(
+                          'flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-card shadow-sm sm:h-11 sm:w-11',
+                          STICKER_BAND_GLYPH[sticker.tint],
+                        )}
+                      >
+                        {sticker.icon ? <sticker.icon className="icon-md" /> : <CfbGlyph name={sticker.glyph ?? 'default'} className="icon-md" />}
+                      </span>
+                    ) : null}
                     <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
                       <BilingualText en={pageTitle} el={pageTitleEl} />
                     </h1>
+                    {showAskAi && !titleSrOnly ? (
+                      <button
+                        type="button"
+                        aria-expanded={askOpen}
+                        aria-controls="page-ask-ai"
+                        aria-label={bilingualAria('Ask about this page', 'Ρωτήστε για αυτή τη σελίδα')}
+                        onClick={openAsk}
+                        className="ml-auto inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:hidden"
+                      >
+                        <Sparkles className="icon-md" aria-hidden="true" />
+                      </button>
+                    ) : null}
                   </div>
                 )}
                 {pageDescription && (leadAsHint ? (
@@ -423,10 +477,16 @@ export function AppShell({
                 </div>
               )}
               {showAskAi && (
-                <AIComposer
-                  prompt={askAiPrompt}
-                  className="w-full min-w-0 [grid-area:ask]"
-                />
+                <div
+                  id="page-ask-ai"
+                  ref={askRef}
+                  className={cn('w-full min-w-0 [grid-area:ask]', !askOpen && !titleSrOnly && 'max-sm:hidden')}
+                >
+                  <AIComposer
+                    prompt={askAiPrompt}
+                    className="w-full min-w-0"
+                  />
+                </div>
               )}
             </div>
           </section>

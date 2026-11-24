@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import { fundraisingEl, fundraisingEn, useFundraisingPrimaryText } from '@/lib/i18n/strings-fundraising';
+import { CalendarClock } from 'lucide-react';
 
 /** What to do next with one investor, and when. Clearing it is how a done step leaves the home. */
 export function FollowUpDialog({
@@ -54,7 +55,7 @@ export function FollowUpDialog({
             void save(date || null, step.trim() || null);
           }}
         >
-          <DialogHeader>
+          <DialogHeader icon={CalendarClock} tone="warning">
             <DialogTitle><BilingualText en={fundraisingEn('followup_title')} el={fundraisingEl('followup_title')} compact /></DialogTitle>
             <DialogDescription>{lead?.name}</DialogDescription>
           </DialogHeader>

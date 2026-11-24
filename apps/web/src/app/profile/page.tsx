@@ -190,7 +190,8 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
     if (!Array.isArray(arr) || arr.length === 0) return null;
     return (
       <div className="space-y-1.5">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />{label}</p>
         <FactLine className="text-sm text-foreground" items={(arr as string[]).map((item) => <StatusText key={item} value={item} />)} />
       </div>
     );
@@ -200,7 +201,8 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
     if (!val || (typeof val === 'string' && !val.trim())) return null;
     return (
       <div className="space-y-0.5">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />{label}</p>
         {/* Enum values ("idea", "full_time") read as words; free text passes through. */}
         <p className="card-body text-foreground">{typeof val === 'string' ? <StatusText value={val} /> : String(val)}</p>
       </div>
@@ -280,7 +282,8 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
         )}
         {linkEntries && linkEntries.length > 0 && (
           <div className="space-y-1.5 pt-2 border-t border-border">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" />
               <BilingualText en={profileEn('links')} el={profileEl('links')} />
             </p>
             <div className="flex flex-wrap gap-2">

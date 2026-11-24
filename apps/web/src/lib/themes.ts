@@ -7,7 +7,7 @@ export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'co
  * prototype's look (`data-theme="studio"`, docs §63); `lilac` is the Light
  * theme before it, kept as a choice.
  *
- * A theme with a `variant` is another accent on a named theme (docs §135):
+ * A theme with a `variant` is another accent on a named theme (docs §139):
  * it carries the base's `data-theme`, so every rule of that theme (surfaces,
  * status tones, its component layer) applies, and `data-variant` swaps only
  * the accent tokens. Bordeaux is Terracotta's, Sky is Cyan's, Graphite is
@@ -294,7 +294,7 @@ export const themes: Record<ThemeName, ThemeColors> = {
     ring: '336 27% 42%',
   },
   wine: {
-    // "Bordeaux", Terracotta with the owner's wine (docs §135) — legacy inline fallback only.
+    // "Bordeaux", Terracotta with the owner's wine (docs §139) — legacy inline fallback only.
     background: '336 18% 95.8%',
     foreground: '336 12% 12%',
     card: '336 26% 98.6%',
@@ -316,7 +316,7 @@ export const themes: Record<ThemeName, ThemeColors> = {
     ring: '329.17 59.02% 38%',
   },
   sky: {
-    // "Sky", Cyan with the owner's sky (docs §135) — legacy inline fallback only.
+    // "Sky", Cyan with the owner's sky (docs §139) — legacy inline fallback only.
     background: '195 26% 96%', // #eef6f7
     foreground: '220 100% 3%', // #000724
     card: '0 0% 100%', // #ffffff
@@ -338,7 +338,7 @@ export const themes: Record<ThemeName, ThemeColors> = {
     ring: '193.7 71.75% 41%',
   },
   graphite: {
-    // "Graphite", Light with the owner's soft ink (docs §135) — legacy inline fallback only.
+    // "Graphite", Light with the owner's soft ink (docs §139) — legacy inline fallback only.
     background: '0 0% 100%',
     foreground: '222.2 84% 4.9%',
     card: '0 0% 100%',
@@ -427,7 +427,7 @@ export function applyTheme(themeName: ThemeName) {
     case 'wine':
     case 'sky':
     case 'graphite': {
-      // Another accent on a named theme (THEME_ROOT, docs §135).
+      // Another accent on a named theme (THEME_ROOT, docs §139).
       const entry = THEME_ROOT[themeName];
       root.classList.add(entry.mode);
       if (entry.dataTheme) root.setAttribute('data-theme', entry.dataTheme);

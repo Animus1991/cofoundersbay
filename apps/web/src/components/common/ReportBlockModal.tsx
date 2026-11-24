@@ -216,9 +216,8 @@ export function ReportBlockModal({
       <DialogContent className="sm:max-w-md">
         {step === 'select' && mode === 'both' && (
           <>
-            <DialogHeader>
+            <DialogHeader icon={Flag} tone="warning">
               <DialogTitle className="flex items-center gap-2">
-                <Shield className="icon-md text-muted-foreground" />
                 <BilingualText en="What would you like to do?" el="Τι θέλετε να κάνετε;" compact wrap />
               </DialogTitle>
               <DialogDescription>
@@ -232,8 +231,7 @@ export function ReportBlockModal({
                 className="w-full flex items-start gap-3 rounded-lg border border-border p-4 text-left hover:bg-muted/50 transition-colors"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-warning-bg">
-                  <Flag className="icon-md text-status-warning" />
-                </div>
+                  </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground"><BilingualText en="Report user" el="Αναφορά χρήστη" compact /></p>
                   <p className="text-xs text-muted-foreground">
@@ -247,8 +245,7 @@ export function ReportBlockModal({
                 className="w-full flex items-start gap-3 rounded-lg border border-border p-4 text-left hover:bg-muted/50 transition-colors"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-                  <Ban className="icon-md text-destructive-accessible" />
-                </div>
+                  </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground"><BilingualText en="Block user" el="Αποκλεισμός χρήστη" compact /></p>
                   <p className="text-xs text-muted-foreground">
@@ -262,7 +259,7 @@ export function ReportBlockModal({
 
         {(step === 'report' || (step === 'select' && mode === 'report')) && (
           <>
-            <DialogHeader>
+            <DialogHeader icon={Flag} tone="warning">
               <DialogTitle className="flex items-center gap-2">
                 <Flag className="icon-md text-status-warning" />
                 <BilingualText en={`Report ${userName}`} el={`Αναφορά: ${userName}`} compact wrap />
@@ -365,7 +362,7 @@ export function ReportBlockModal({
 
         {(step === 'block' || (step === 'select' && mode === 'block')) && (
           <>
-            <DialogHeader>
+            <DialogHeader icon={Flag} tone="warning">
               <DialogTitle className="flex items-center gap-2">
                 <Ban className="icon-md text-destructive-accessible" />
                 <BilingualText en={`Block ${userName}?`} el={`Αποκλεισμός: ${userName};`} compact wrap />

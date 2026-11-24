@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { Check, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -55,7 +56,7 @@ export function ConfirmDialog({
         onEscapeKeyDown={(event) => { if (loading) event.preventDefault(); }}
         onInteractOutside={(event) => { if (loading) event.preventDefault(); }}
       >
-        <DialogHeader>
+        <DialogHeader icon={variant === 'destructive' ? Trash2 : Check} tone={variant === 'destructive' ? 'danger' : 'primary'}>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>

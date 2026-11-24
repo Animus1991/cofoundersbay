@@ -280,21 +280,24 @@ export default function MentorReviewsPage() {
         </div>
 
         {/* Reviews List */}
-        <div className="space-y-3">
+        <div className="card-grid">
           {filteredReviews.map((review) => (
             <ReviewCard key={review.id} review={review} />
           ))}
           {filteredReviews.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium"><BilingualText en="No reviews found" el="Δεν βρέθηκαν αξιολογήσεις" compact /></h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  <BilingualText en="No review matches the search or the rating." el="Καμία αξιολόγηση δεν ταιριάζει με την αναζήτηση ή τη βαθμολογία." wrap />
-                </p>
-                <Button variant="outline" size="sm" className="mt-4" onClick={() => { setSearch(''); setRatingFilter('all'); }}>
-                  <BilingualText en="Clear search and rating" el="Καθαρισμός αναζήτησης και βαθμολογίας" compact />
-                </Button>
+            <Card className="col-span-full">
+              <CardContent className="p-0">
+                <EmptyState
+                  className="border-0 bg-transparent"
+                  illustration="search"
+                  title={<BilingualText en="No reviews found" el="Δεν βρέθηκαν αξιολογήσεις" compact />}
+                  description={<BilingualText en="No review matches the search or the rating." el="Καμία αξιολόγηση δεν ταιριάζει με την αναζήτηση ή τη βαθμολογία." wrap />}
+                  action={(
+                    <Button variant="outline" size="sm" onClick={() => { setSearch(''); setRatingFilter('all'); }}>
+                      <BilingualText en="Clear search and rating" el="Καθαρισμός αναζήτησης και βαθμολογίας" compact />
+                    </Button>
+                  )}
+                />
               </CardContent>
             </Card>
           )}

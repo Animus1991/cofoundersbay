@@ -33,7 +33,7 @@ export const THEME_OPTIONS = [
     swatch: ['#fafaf9', '#292524', '#765fe7'],
   },
   {
-    // Light with a soft graphite ink instead of near-black (docs §135).
+    // Light with a soft graphite ink instead of near-black (docs §139).
     name: 'graphite' as ThemeName,
     label: 'Graphite',
     description: 'Warm stone with soft graphite',
@@ -63,7 +63,7 @@ export const THEME_OPTIONS = [
     swatch: ['#f2f6f7', '#207da5', '#3c6e83'],
   },
   {
-    // Cyan with the bright sky fill and deep letters (docs §135).
+    // Cyan with the bright sky fill and deep letters (docs §139).
     name: 'sky' as ThemeName,
     label: 'Sky',
     description: 'Bright sky blue with deep letters',
@@ -99,7 +99,7 @@ export const THEME_OPTIONS = [
     swatch: ['#f5eff2', '#985d75', '#7b475b'],
   },
   {
-    // Terracotta with a deep wine (docs §135).
+    // Terracotta with a deep wine (docs §139).
     name: 'wine' as ThemeName,
     label: 'Bordeaux',
     description: 'Deep wine on a soft blush',

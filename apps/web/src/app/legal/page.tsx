@@ -186,7 +186,7 @@ export default function LegalHubPage() {
         </Card>
 
         {/* The two things to do first, before any template. */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[2fr_1fr]">
           <Card className="border-status-danger-border/40">
             <CardContent className="space-y-3 pt-5">
               <CardHead

@@ -1,7 +1,9 @@
 'use client';
 
-import type { HTMLAttributes, ReactNode } from 'react';
+import { useContext, type HTMLAttributes, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { BilingualText } from '@/components/common/BilingualText';
+import { PageHeaderSlot } from '@/components/layout/PageHeaderSlot';
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 
@@ -46,10 +48,11 @@ export function PageFacts({
   labelEl: string;
   className?: string;
 } & Omit<HTMLAttributes<HTMLUListElement>, 'children'>) {
+  const { inHeader, slot } = useContext(PageHeaderSlot);
   // A dash is not a figure: "— average readiness" read as a broken number.
   const shown = facts.filter((fact) => fact.value !== null && fact.value !== undefined && fact.value !== '' && fact.value !== '—');
   if (shown.length === 0) return null;
-  return (
+  const list = (
     <ul
       aria-label={bilingualAria(labelEn, labelEl)}
       data-page-facts=""
@@ -85,4 +88,10 @@ export function PageFacts({
       })}
     </ul>
   );
+  // Inside a page header the line joins the header band's meta row (B1.2),
+  // beside the collapsed sample note, instead of a row of its own above the
+  // content; until that row has mounted it renders nothing, so it never
+  // flashes in the body first.
+  if (inHeader) return slot ? createPortal(list, slot) : null;
+  return list;
 }

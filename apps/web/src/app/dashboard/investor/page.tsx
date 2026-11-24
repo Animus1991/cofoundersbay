@@ -292,12 +292,36 @@ export default function InvestorDashboard() {
     },
   ];
   return (
-    <AppShell askAi={false} showHelp rail={rail}
+    <AppShell titleSrOnly askAi={false} showHelp rail={rail}
       description="Pipeline health, deal flow, and portfolio performance — in one view."
       descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
     >
       <div className="space-y-6">
-        <HomeAskHero role="investor" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
+        <HomeAskHero role="investor" showWaiting={false} band name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          <MetricTile family="neutral" icon={Briefcase} label="Deal flow" labelEl="Ροή συμφωνιών" value={summary?.totalDeals ?? '—'} caption="Deals on your board" captionEl="Συμφωνίες στον πίνακά σας" href="/investor/pipeline" />
+          <MetricTile family="time" icon={Target} label="Active deals" labelEl="Ενεργές συμφωνίες" value={dealsPage ? active.length : '—'} caption="Reviewing to negotiating" captionEl="Από αξιολόγηση έως διαπραγμάτευση" href="/investor/pipeline" />
+          <MetricTile
+            family="money"
+            icon={Building2}
+            label="Portfolio"
+            labelEl="Χαρτοφυλάκιο"
+            value={summary?.investments ?? '—'}
+            caption={summary ? `${money(summary.currentValueCents, currency)} current value` : undefined}
+            captionEl={summary ? `${money(summary.currentValueCents, currency)} τρέχουσα αξία` : undefined}
+            href="/investor/portfolio"
+          />
+          <MetricTile
+            family="money"
+            icon={TrendingUp}
+            label="Return"
+            labelEl="Απόδοση"
+            value={summary?.returnPct == null ? '—' : `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}%`}
+            caption={summary ? `on ${money(summary.deployedCents, currency)} deployed` : undefined}
+            captionEl={summary ? `επί ${money(summary.deployedCents, currency)} επενδυμένων` : undefined}
+            href="/investor/analytics"
+          />
+        </div>
         <HomeToday />
 
         {!dealsLoading && active[0] ? (
@@ -316,28 +340,6 @@ export default function InvestorDashboard() {
         ) : null}
 
         {/* The four figures, each linking to the page that holds its rows. */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-          <MetricTile icon={Briefcase} label="Deal flow" labelEl="Ροή συμφωνιών" value={summary?.totalDeals ?? '—'} caption="Deals on your board" captionEl="Συμφωνίες στον πίνακά σας" href="/investor/pipeline" />
-          <MetricTile icon={Target} label="Active deals" labelEl="Ενεργές συμφωνίες" value={dealsPage ? active.length : '—'} caption="Reviewing to negotiating" captionEl="Από αξιολόγηση έως διαπραγμάτευση" href="/investor/pipeline" />
-          <MetricTile
-            icon={Building2}
-            label="Portfolio"
-            labelEl="Χαρτοφυλάκιο"
-            value={summary?.investments ?? '—'}
-            caption={summary ? `${money(summary.currentValueCents, currency)} current value` : undefined}
-            captionEl={summary ? `${money(summary.currentValueCents, currency)} τρέχουσα αξία` : undefined}
-            href="/investor/portfolio"
-          />
-          <MetricTile
-            icon={TrendingUp}
-            label="Return"
-            labelEl="Απόδοση"
-            value={summary?.returnPct == null ? '—' : `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}%`}
-            caption={summary ? `on ${money(summary.deployedCents, currency)} deployed` : undefined}
-            captionEl={summary ? `επί ${money(summary.deployedCents, currency)} επενδυμένων` : undefined}
-            href="/investor/analytics"
-          />
-        </div>
 
         <HomeFold storageKey="cfb.dashboard.investor.full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

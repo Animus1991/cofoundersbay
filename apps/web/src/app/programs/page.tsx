@@ -4,27 +4,8 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Search,
-  Award,
-  Users,
-  Building2,
-  Rocket,
-  GraduationCap,
-  Loader2,
-  RefreshCw,
-  CheckCircle2,
-  Globe,
-  BookmarkCheck,
-  ArrowRight,
-  Zap,
-  X,
-  Handshake,
-  Briefcase,
-  FileText,
-} from 'lucide-react';
+import { Search, Award, Users, Building2, Rocket, GraduationCap, Loader2, RefreshCw, CheckCircle2, Globe, ArrowRight, Zap, X, Handshake, Briefcase, FileText, Send } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
-import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
@@ -41,6 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { PROGRAMS_STRINGS, programsEn, programsEl } from '@/lib/i18n/strings-programs';
 import type { BilingualPair } from '@/lib/i18n/types';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -63,6 +45,9 @@ import { pressableProps } from '@/lib/pressable';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { KindPill } from '@/components/common/KindPill';
+import { CardMoreMenu } from '@/components/common/CardMoreMenu';
+import { DateBadge } from '@/components/common/DateBadge';
 import { Counter } from '@/components/ui/counter';
 import { calendarDaysUntil } from '@/lib/calendar-days';
 import { useCoverFailed } from '@/hooks/useCoverFailed';
@@ -141,7 +126,7 @@ function ApplyModal({
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg">
-        <DialogHeader>
+        <DialogHeader icon={Send} tone="success">
           <DialogTitle>
             <BilingualText
               en={`${programsEn('apply_to')} ${program.title}`}
@@ -249,21 +234,23 @@ function ProgramCard({
   const cover = useCoverFailed(program.coverImageUrl);
   const showCover = Boolean(program.coverImageUrl) && !cover.failed;
   const accepting = acceptsApplications(program);
+  const badgeDate = program.applicationDeadline ?? program.startDate;
 
-  // The Opportunities card, copied: mark and title with the organiser and
-  // kind under it, the state at the right, then the sentence, the facts and
-  // the actions, all on the mark's left edge.
+  /* The catalogue anatomy (docs §135 A0): the cover at the card's left from
+     lg (a top banner below) only when a cover actually loads — a cover that
+     fails leaves no column (docs §77) — with the closing/starting date's
+     badge on it; then the title, the organiser's name with its logo and the
+     kind in one facts line, and the one verb with the rest in the menu. */
   return (
-    // From lg the cover sits at the card's left, the full height of it, as
-    // the AI Studio prototype lists programmes: the picture stays, and the
-    // list reads as rows instead of a stack of banners.
-    // A cover that fails to load leaves no column: it was a blank 224px
-    // beside every programme (docs §77).
     <Card className={cn('card-interactive overflow-hidden transition-all hover:border-primary/30 group', showCover && 'lg:flex', isEnrolled && 'border-primary/40')}>
       {showCover ? (
-        <img ref={cover.ref} onError={cover.onError} src={program.coverImageUrl ?? undefined} alt="" referrerPolicy="no-referrer" className="h-28 w-full object-cover lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch" />
+        <div className="relative h-28 w-full overflow-hidden lg:h-auto lg:max-h-[320px] lg:w-56 lg:shrink-0 lg:self-start">
+          <img ref={cover.ref} onError={cover.onError} src={program.coverImageUrl ?? undefined} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
+          {badgeDate ? <DateBadge date={badgeDate} /> : null}
+        </div>
       ) : null}
       <CardContent className="min-w-0 space-y-3 lg:flex-1">
+        <KindPill glyph="award" tone="info" en="Program" el="Πρόγραμμα" />
         <CardHead
           mark={(
             <Avatar className="h-10 w-10 rounded-xl">
@@ -279,7 +266,15 @@ function ProgramCard({
             <FactLine
               className="text-sm"
               items={[
-                program.organization?.name,
+                program.organization?.name ? (
+                  <span key="org" className="inline-flex min-w-0 items-center gap-1.5">
+                    <Avatar className="h-4 w-4 rounded">
+                      <AvatarImage src={program.organization?.logoUrl ?? undefined} alt="" />
+                      <AvatarFallback className="rounded bg-status-success-bg text-primary-accessible"><TypeIcon className="h-2.5 w-2.5" aria-hidden="true" /></AvatarFallback>
+                    </Avatar>
+                    <span className="min-w-0 truncate">{program.organization.name}</span>
+                  </span>
+                ) : null,
                 <BilingualText key="type" en={type.en} el={type.el} compact />,
               ]}
             />
@@ -299,14 +294,22 @@ function ProgramCard({
           <p className="card-body line-clamp-2 text-muted-foreground">{program.description}</p>
         )}
 
-        {/* "Any" stood alone on its line: any what (docs §77). */}
-        <FactLine
-          items={(program.industries ?? []).slice(0, 5).map((industry) =>
-            /^any$/i.test(industry.trim())
-              ? <BilingualText key="any" en="Any industry" el="Κάθε κλάδος" compact />
-              : industry,
-          )}
-        />
+        {/* Industries as pills, three at a glance — the rest on the detail.
+            "Any" stood alone on its line: any what (docs §77). */}
+        {(program.industries ?? []).length > 0 ? (
+          <div className="flex flex-wrap items-center gap-1">
+            {program.industries.slice(0, 3).map((industry) => (
+              /^any$/i.test(industry.trim()) ? (
+                <span key="any" className="rounded-full border border-transparent bg-status-success-bg px-2 py-0.5 card-meta text-status-success"><BilingualText en="Any industry" el="Κάθε κλάδος" compact /></span>
+              ) : (
+                <span key={industry} className="rounded-full border border-transparent bg-status-success-bg px-2 py-0.5 card-meta text-status-success">{industry}</span>
+              )
+            ))}
+            {program.industries.length > 3 ? (
+              <span className="quiet-tag card-meta" title={program.industries.slice(3).join(', ')}>+{program.industries.length - 3}</span>
+            ) : null}
+          </div>
+        ) : null}
 
         <FactLine
           label={bilingualAria('When and where', 'Πότε και πού')}
@@ -349,11 +352,19 @@ function ProgramCard({
           </p>
         ) : null}
 
+        {/* One verb (docs §115/§134): Apply where it is open, Details where it
+            is not; the other way in lives on the card's menu. */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
-          {accepting && !isEnrolled && !isFull && (
+          {accepting && !isEnrolled && !isFull ? (
             <Button size="sm" className="gap-1.5" onClick={(e) => { e.preventDefault(); onApply(program); }}>
               <BilingualText en={programsEn('apply_now')} el={programsEl('apply_now')} compact />
               <ArrowRight className="icon-sm" aria-hidden="true" />
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline" asChild>
+              <Link href={`/programs/${program.id}`}>
+                <BilingualText en="View details" el="Λεπτομέρειες" compact />
+              </Link>
             </Button>
           )}
           {isEnrolled && (
@@ -366,11 +377,11 @@ function ProgramCard({
               </Button>
             </WithDisabledReason>
           )}
-          <Button size="sm" variant="outline" asChild>
-            <Link href={`/programs/${program.id}`}>
-              <BilingualText en="View details" el="Λεπτομέρειες" compact />
-            </Link>
-          </Button>
+          {accepting && !isEnrolled && !isFull ? (
+            <CardMoreMenu name={program.title} items={[
+              { key: 'details', en: 'View details', el: 'Λεπτομέρειες', icon: ArrowRight, href: `/programs/${program.id}` },
+            ]} />
+          ) : null}
           {/* Why there is no Apply: "2 spots left" sat over a card with
               nothing to press (docs §77). */}
           {!accepting && !isEnrolled ? (
@@ -388,21 +399,19 @@ function ProgramCard({
 
 function ProgramSkeleton() {
   return (
-    <Card><CardContent>
-      <div className="flex gap-4">
-        <Skeleton className="h-14 w-14 rounded-xl flex-shrink-0" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-5 w-48" />
-          <Skeleton className="h-3.5 w-32" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-          <div className="flex gap-2 pt-1">
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="h-8 w-24" />
-          </div>
+    <Card className="overflow-hidden lg:flex">
+      <Skeleton className="h-28 w-full lg:h-auto lg:w-56 lg:self-stretch" />
+      <CardContent className="flex-1 space-y-2">
+        <Skeleton className="h-5 w-48" />
+        <Skeleton className="h-3.5 w-32" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <div className="flex gap-2 pt-1">
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-8 w-24" />
         </div>
-      </div>
-    </CardContent></Card>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -682,13 +691,13 @@ export default function ProgramsPage() {
           {/* All Programs */}
           <TabsContent value="all" className="mt-4">
             {isLoading ? (
-              <div className="space-y-3">
+              <div className="card-grid card-grid-lg">
                 {[...Array(4)].map((_, i) => <ProgramSkeleton key={i} />)}
               </div>
             ) : isError && !data ? (
               // A failed read said "No programs found · Try adjusting your
               // filters" with no filter set (docs §77).
-              <Card>
+              <Card className="col-span-full">
                 <CardContent className="py-8">
                   <p role="alert" className="font-medium">
                     <BilingualText en="Programmes could not be read just now." el="Τα προγράμματα δεν διαβάστηκαν αυτή τη στιγμή." compact wrap />
@@ -699,7 +708,7 @@ export default function ProgramsPage() {
                 </CardContent>
               </Card>
             ) : filtered.length === 0 ? (
-              <Card>
+              <Card className="col-span-full">
                 <CardContent className="py-8">
                   <p className="font-medium"><BilingualText en={programsEn('none_found')} el={programsEl('none_found')} compact /></p>
                   <p className="mt-1 max-w-prose text-sm text-muted-foreground">
@@ -728,7 +737,7 @@ export default function ProgramsPage() {
               </Card>
             ) : (
               // No "3 programs found": the tab above counts the same list.
-              <div className="space-y-3">
+              <div className="card-grid card-grid-lg">
                 {/* The open ones first, the nearest deadline at the top (docs §115); the rest keep their order. */}
                 {[...filtered].sort((a, b) => {
                   const open = Number(!acceptsApplications(a)) - Number(!acceptsApplications(b));
@@ -746,15 +755,13 @@ export default function ProgramsPage() {
           {/* Open Programs */}
           <TabsContent value="open" className="mt-4">
             {openPrograms.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Zap className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                  <p className="font-medium"><BilingualText en={programsEn('none_open')} el={programsEl('none_open')} compact /></p>
-                  <p className="text-sm text-muted-foreground mt-1"><BilingualText en={programsEn('none_open_hint')} el={programsEl('none_open_hint')} wrap /></p>
-                </CardContent>
-              </Card>
+              <EmptyState
+                illustration="default"
+                title={<BilingualText en={programsEn('none_open')} el={programsEl('none_open')} compact />}
+                description={<BilingualText en={programsEn('none_open_hint')} el={programsEl('none_open_hint')} wrap />}
+              />
             ) : (
-              <div className="space-y-3">
+              <div className="card-grid card-grid-lg">
                 {openPrograms.map((p) => (
                   <ProgramCard key={p.id} program={p} isEnrolled={enrolledIds.has(p.id)} onApply={setApplyTarget} />
                 ))}
@@ -765,15 +772,13 @@ export default function ProgramsPage() {
           {/* My Applications */}
           <TabsContent value="mine" className="mt-4">
             {myPrograms.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <BookmarkCheck className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                  <p className="font-medium"><BilingualText en={programsEn('none_applied')} el={programsEl('none_applied')} compact /></p>
-                  <p className="text-sm text-muted-foreground mt-1"><BilingualText en={programsEn('none_applied_hint')} el={programsEl('none_applied_hint')} wrap /></p>
-                </CardContent>
-              </Card>
+              <EmptyState
+                illustration="default"
+                title={<BilingualText en={programsEn('none_applied')} el={programsEl('none_applied')} compact />}
+                description={<BilingualText en={programsEn('none_applied_hint')} el={programsEl('none_applied_hint')} wrap />}
+              />
             ) : (
-              <div className="space-y-3">
+              <div className="card-grid card-grid-lg">
                 {myPrograms.map((p) => (
                   <ProgramCard key={p.id} program={p} isEnrolled={true} onApply={setApplyTarget} showTrack />
                 ))}

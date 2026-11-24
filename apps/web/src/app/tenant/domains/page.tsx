@@ -23,13 +23,14 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { StatusText } from '@/components/common/StatusText';
+import type { StatusTone } from '@/lib/semantic-colors';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
 import { PageFacts } from '@/components/common/PageFacts';
 import {
-  Globe, Plus, Trash2, CheckCircle2, XCircle, Clock, RefreshCw,
+  Globe, Plus, Trash2, CheckCircle2, XCircle, RefreshCw,
   Star, Power, Copy, ChevronDown, ChevronRight, Link2, AlertTriangle,
   Shield, Info,
 } from 'lucide-react';
@@ -39,13 +40,17 @@ import { elWord } from '@/lib/rows-el';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+// The verification word is the shared tinted status pill (B2.3); the
+// per-state tone is the same the badges carried.
+const DOMAIN_STATUS_TONE: Record<TenantDomainItem['verificationStatus'], StatusTone> = {
+  verified: 'success',
+  pending: 'warning',
+  failed: 'danger',
+  expired: 'neutral',
+};
+
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
-  switch (status) {
-    case 'verified': return <Badge className="bg-status-success-bg text-status-success border-status-success-border gap-1" size="sm"><CheckCircle2 className="icon-sm" /><BilingualText en="Verified" el="Επαληθευμένος" compact /></Badge>;
-    case 'pending':  return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border gap-1" size="sm"><Clock className="icon-sm" /><BilingualText en="Pending" el="Σε αναμονή" compact /></Badge>;
-    case 'failed':   return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border gap-1" size="sm"><XCircle className="icon-sm" /><BilingualText en="Failed" el="Απέτυχε" compact /></Badge>;
-    case 'expired':  return <Badge className="bg-muted text-muted-foreground border-border gap-1" size="sm"><XCircle className="icon-sm" /><BilingualText en="Expired" el="Έληξε" compact /></Badge>;
-  }
+  return <StatusText value={status} tone={DOMAIN_STATUS_TONE[status] ?? 'neutral'} />;
 }
 
 function CopyButton({ value }: { value: string }) {
@@ -75,13 +80,14 @@ function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
 
       {/* Step 1 — TXT verification */}
       <div className="space-y-1.5">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"><BilingualText en="Step 1 — TXT Verification Record" el="Βήμα 1 — Εγγραφή TXT επαλήθευσης" compact /></p>
+        <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" /><BilingualText en="Step 1 — TXT Verification Record" el="Βήμα 1 — Εγγραφή TXT επαλήθευσης" compact /></p>
         <div className="rounded-md border border-border bg-background overflow-hidden">
           <table className="w-full text-xs">
-            <thead className="bg-muted/40">
+            <thead className="bg-muted/50">
               <tr>
                 {['Type', 'Host / Name', 'Value', 'TTL'].map(h => (
-                  <th key={h} className="px-3 py-1.5 text-left font-medium text-muted-foreground">{h}</th>
+                  <th key={h} className="px-3 py-1.5 text-left text-2xs font-medium uppercase tracking-wide text-muted-foreground">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -106,13 +112,14 @@ function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
 
       {/* Step 2 — CNAME */}
       <div className="space-y-1.5">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"><BilingualText en="Step 2 — CNAME Record" el="Βήμα 2 — Εγγραφή CNAME" compact /></p>
+        <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" /><BilingualText en="Step 2 — CNAME Record" el="Βήμα 2 — Εγγραφή CNAME" compact /></p>
         <div className="rounded-md border border-border bg-background overflow-hidden">
           <table className="w-full text-xs">
-            <thead className="bg-muted/40">
+            <thead className="bg-muted/50">
               <tr>
                 {['Type', 'Host / Name', 'Points to', 'TTL'].map(h => (
-                  <th key={h} className="px-3 py-1.5 text-left font-medium text-muted-foreground">{h}</th>
+                  <th key={h} className="px-3 py-1.5 text-left text-2xs font-medium uppercase tracking-wide text-muted-foreground">{h}</th>
                 ))}
               </tr>
             </thead>

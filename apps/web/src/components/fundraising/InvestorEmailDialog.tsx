@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { investorEmailDraft, mailtoHref } from '@/lib/investor-email';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { MessageSquare } from 'lucide-react';
 
 export type InvestorEmailTarget = {
   name: string;
@@ -49,7 +50,7 @@ export function InvestorEmailDialog({ target, sender, onClose }: { target: Inves
   return (
     <Dialog open={Boolean(target)} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader icon={MessageSquare} tone="accent">
           <DialogTitle><BilingualText en={`Email to ${target?.name ?? ''}`} el={`Email σε ${target?.nameEl ?? target?.name ?? ''}`} compact /></DialogTitle>
           <DialogDescription>
             <BilingualText en="It opens in your own mail app. Nothing is sent from here." el="Ανοίγει στο δικό σας πρόγραμμα email. Από εδώ δεν στέλνεται τίποτα." compact wrap />

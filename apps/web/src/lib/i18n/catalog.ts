@@ -159,7 +159,7 @@ const el: Record<string, string> = {
   'Warm neutral with a soft apricot': 'Ζεστό ουδέτερο με απαλό βερικοκί',
   'Soft mauve with a dusty rose': 'Απαλό μοβ με σκονισμένο ροζ',
   Terracotta: 'Τερακότα',
-  // The three accents added beside their originals (docs §135).
+  // The three accents added beside their originals (docs §139).
   Bordeaux: 'Μπορντό',
   'Deep wine on a soft blush': 'Βαθύ μπορντό σε απαλό ρόδινο',
   Sky: 'Ουρανί',

@@ -137,7 +137,7 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
                       <BilingualText en="Preview" el="Προεπισκόπηση" compact />
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive-accessible" disabled={!onDelete} onSelect={() => onDelete?.(service)}>
+                  <DropdownMenuItem className="text-status-danger" disabled={!onDelete} onSelect={() => onDelete?.(service)}>
                     <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
                     <BilingualText en="Delete" el="Διαγραφή" compact />
                   </DropdownMenuItem>
@@ -472,23 +472,22 @@ export default function ProviderServicesPage() {
         />
 
         {/* Services List */}
-        <div className="space-y-3">
+        <div className="card-grid">
           {filteredServices.map((service) => (
             <ServiceCard key={service.id} service={service} {...serviceActions} />
           ))}
           {filteredServices.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Store className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="card-title text-foreground"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  <BilingualText en="No listing matches the search." el="Καμία καταχώριση δεν ταιριάζει με την αναζήτηση." wrap />
-                </p>
-                <Button variant="outline" size="sm" className="mt-4" onClick={() => setSearch('')}>
+            <EmptyState
+              className="col-span-full"
+              illustration="search"
+              title={<BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact />}
+              description={<BilingualText en="No listing matches the search." el="Καμία καταχώριση δεν ταιριάζει με την αναζήτηση." wrap />}
+              action={(
+                <Button variant="outline" size="sm" onClick={() => setSearch('')}>
                   <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
                 </Button>
-              </CardContent>
-            </Card>
+              )}
+            />
           )}
         </div>
         </>
@@ -496,7 +495,7 @@ export default function ProviderServicesPage() {
       </div>
       <Dialog open={editing !== null || creating} onOpenChange={(o) => { if (!o) { setEditing(null); setCreating(false); } }}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Plus} tone="primary">
             <DialogTitle>{creating ? <BilingualText en="New listing" el="Νέα καταχώριση" compact /> : <BilingualText en="Edit listing" el="Επεξεργασία καταχώρισης" compact />}</DialogTitle>
             <DialogDescription>{creating ? <BilingualText en="Published to the services marketplace." el="Δημοσιεύεται στον κατάλογο υπηρεσιών." wrap /> : <BilingualText en="Saved to your marketplace listing." el="Αποθηκεύεται στην καταχώρισή σας." wrap />}</DialogDescription>
           </DialogHeader>

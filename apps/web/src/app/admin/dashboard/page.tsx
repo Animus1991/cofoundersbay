@@ -240,7 +240,7 @@ export default function AdminDashboardPage() {
     },
   ];
   return (
-    <AppShell
+    <AppShell titleSrOnly
       askAi={false}
       rail={rail}
       title="Platform overview"
@@ -249,7 +249,7 @@ export default function AdminDashboardPage() {
       descriptionEl="Ποιοι χρησιμοποιούν την πλατφόρμα, τι περιμένει διαχειριστή και πώς λειτουργεί το API."
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          <div role="group" aria-label={bilingualAria('Period', 'Περίοδος')} className="inline-flex items-center gap-0.5 rounded-xl border border-border bg-muted/40 p-0.5">
+          <div role="group" aria-label={bilingualAria('Period', 'Περίοδος')} className="tab-strip inline-flex max-w-full items-center gap-1 overflow-x-auto scrollbar-hide rounded-full bg-muted/70 p-1">
             {PERIODS.map((p) => (
               <button
                 key={p.value}
@@ -257,8 +257,8 @@ export default function AdminDashboardPage() {
                 aria-pressed={period === p.value}
                 onClick={() => setPeriod(p.value)}
                 className={cn(
-                  'min-h-9 rounded-lg px-3 text-sm font-medium transition-colors focus-ring',
-                  period === p.value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+                  'min-h-9 shrink-0 whitespace-nowrap rounded-full px-3.5 text-sm font-medium transition-colors focus-ring',
+                  period === p.value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 <BilingualText en={p.short} el={p.shortEl} compact />
@@ -275,7 +275,48 @@ export default function AdminDashboardPage() {
       <div className="space-y-6">
         {/* What waits on the reader comes in Today below, as on every role's home
             (docs §115): the hero's own waiting chips would say it twice. */}
-        <HomeAskHero role="admin" showWaiting={false} plain name={me?.displayName} lead={{ en: 'What is waiting on you, and how the platform is doing.', el: 'Τι εκκρεμεί για εσάς και πώς πάει η πλατφόρμα.' }} />
+        <HomeAskHero role="admin" showWaiting={false} band name={me?.displayName} lead={{ en: 'What is waiting on you, and how the platform is doing.', el: 'Τι εκκρεμεί για εσάς και πώς πάει η πλατφόρμα.' }} />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          <MetricTile
+            family="people"
+            icon={Users}
+            label="Users"
+            labelEl="Χρήστες"
+            value={statsUnknown ? dash : total.toLocaleString('en-GB')}
+            caption={newUsers != null ? `${newUsers} new · ${periodLabel.en.toLowerCase()}` : undefined}
+            captionEl={newUsers != null ? `${newUsers} νέοι · ${periodLabel.el.toLowerCase()}` : undefined}
+            href="/admin/users"
+          />
+          <MetricTile
+            family="people"
+            icon={UserCheck}
+            label="Active users"
+            labelEl="Ενεργοί χρήστες"
+            value={statsUnknown || activeUsers == null ? dash : activeUsers.toLocaleString('en-GB')}
+            caption={activeShare != null ? `${activeShare}% of all users · ${periodLabel.en.toLowerCase()}` : undefined}
+            captionEl={activeShare != null ? `${activeShare}% του συνόλου · ${periodLabel.el.toLowerCase()}` : undefined}
+          />
+          <MetricTile
+            family="risk"
+            icon={Flag}
+            label="Reports to review"
+            labelEl="Αναφορές προς έλεγχο"
+            value={statsUnknown ? dash : pendingReports}
+            caption={statsUnknown ? 'Opens the moderation queue' : pendingReports ? 'Open the moderation queue' : 'The queue is clear'}
+            captionEl={statsUnknown ? 'Ανοίγει την ουρά ελέγχου' : pendingReports ? 'Άνοιγμα ουράς ελέγχου' : 'Η ουρά είναι άδεια'}
+            href="/admin"
+          />
+          <MetricTile
+            family="risk"
+            icon={ShieldAlert}
+            label="Abuse flags"
+            labelEl="Σημάνσεις κατάχρησης"
+            value={abuse ? pendingFlags : dash}
+            caption={abuse ? `${abuse.totalFlags} raised · ${abuse.dismissedFlags} dismissed` : undefined}
+            captionEl={abuse ? `${abuse.totalFlags} συνολικά · ${abuse.dismissedFlags} απορρίφθηκαν` : undefined}
+            href="/admin/security-monitoring"
+          />
+        </div>
         <HomeToday />
         {attention[0] ? (
           <HomeNextStep
@@ -290,43 +331,6 @@ export default function AdminDashboardPage() {
           />
         ) : null}
         {/* Four figures; the two that ask for work link to where it is done. */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          <MetricTile
-            icon={Users}
-            label="Users"
-            labelEl="Χρήστες"
-            value={statsUnknown ? dash : total.toLocaleString('en-GB')}
-            caption={newUsers != null ? `${newUsers} new · ${periodLabel.en.toLowerCase()}` : undefined}
-            captionEl={newUsers != null ? `${newUsers} νέοι · ${periodLabel.el.toLowerCase()}` : undefined}
-            href="/admin/users"
-          />
-          <MetricTile
-            icon={UserCheck}
-            label="Active users"
-            labelEl="Ενεργοί χρήστες"
-            value={statsUnknown || activeUsers == null ? dash : activeUsers.toLocaleString('en-GB')}
-            caption={activeShare != null ? `${activeShare}% of all users · ${periodLabel.en.toLowerCase()}` : undefined}
-            captionEl={activeShare != null ? `${activeShare}% του συνόλου · ${periodLabel.el.toLowerCase()}` : undefined}
-          />
-          <MetricTile
-            icon={Flag}
-            label="Reports to review"
-            labelEl="Αναφορές προς έλεγχο"
-            value={statsUnknown ? dash : pendingReports}
-            caption={statsUnknown ? 'Opens the moderation queue' : pendingReports ? 'Open the moderation queue' : 'The queue is clear'}
-            captionEl={statsUnknown ? 'Ανοίγει την ουρά ελέγχου' : pendingReports ? 'Άνοιγμα ουράς ελέγχου' : 'Η ουρά είναι άδεια'}
-            href="/admin"
-          />
-          <MetricTile
-            icon={ShieldAlert}
-            label="Abuse flags"
-            labelEl="Σημάνσεις κατάχρησης"
-            value={abuse ? pendingFlags : dash}
-            caption={abuse ? `${abuse.totalFlags} raised · ${abuse.dismissedFlags} dismissed` : undefined}
-            captionEl={abuse ? `${abuse.totalFlags} συνολικά · ${abuse.dismissedFlags} απορρίφθηκαν` : undefined}
-            href="/admin/security-monitoring"
-          />
-        </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="min-w-0 space-y-6 lg:col-span-2">

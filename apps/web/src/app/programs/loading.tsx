@@ -1,9 +1,11 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
 export default function ProgramsLoading() {
   return (
     <div className="space-y-5 pb-10">
+    <HeaderBandSkeleton />
       {/* Stats bar */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (

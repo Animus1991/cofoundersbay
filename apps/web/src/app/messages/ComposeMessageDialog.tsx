@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Search } from 'lucide-react';
+import { Search, MessageSquare } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -100,7 +101,7 @@ export function ComposeMessageDialog({
       }}
     >
       <DialogContent className="rounded-xl sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={MessageSquare} tone="accent">
           <DialogTitle>
             <BilingualText en={messagesEn('new_message')} el={messagesEl('new_message')} />
           </DialogTitle>
@@ -120,31 +121,33 @@ export function ComposeMessageDialog({
         </div>
         <div className="mt-3 max-h-[min(50vh,20rem)] space-y-1 overflow-y-auto">
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 px-4 py-8 text-center">
-              <CfbGlyph name="people" className="icon-lg text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground">
-                {candidates.length === 0 && connectionsFailed ? (
-                  <BilingualText en={messagesEn('connections_failed')} el={messagesEl('connections_failed')} />
-                ) : candidates.length === 0 ? (
-                  <BilingualText en={messagesEn('compose_none')} el={messagesEl('compose_none')} />
-                ) : (
-                  <BilingualText en={messagesEn('compose_empty')} el={messagesEl('compose_empty')} />
-                )}
-              </p>
-              <div className="flex gap-2">
-                <Button asChild size="sm" variant="outline" className="rounded-xl">
-                  <Link href="/discover">
-                    <CfbGlyph name="discover" className="icon-sm mr-1.5" />
-                    <BilingualText en={messagesEn('find_people')} el={messagesEl('find_people')} compact />
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="ghost" className="rounded-xl">
-                  <Link href="/connections">
-                    <BilingualText en={messagesEn('view_connections')} el={messagesEl('view_connections')} compact />
-                  </Link>
-                </Button>
-              </div>
-            </div>
+            <EmptyState
+              className="border-0 bg-transparent py-8"
+              illustration="connection"
+              size="sm"
+              title={candidates.length === 0 && connectionsFailed ? (
+                <BilingualText en={messagesEn('connections_failed')} el={messagesEl('connections_failed')} />
+              ) : candidates.length === 0 ? (
+                <BilingualText en={messagesEn('compose_none')} el={messagesEl('compose_none')} />
+              ) : (
+                <BilingualText en={messagesEn('compose_empty')} el={messagesEl('compose_empty')} />
+              )}
+              action={(
+                <>
+                  <Button asChild size="sm" variant="outline" className="rounded-xl">
+                    <Link href="/discover">
+                      <CfbGlyph name="discover" className="icon-sm mr-1.5" />
+                      <BilingualText en={messagesEn('find_people')} el={messagesEl('find_people')} compact />
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" variant="ghost" className="rounded-xl">
+                    <Link href="/connections">
+                      <BilingualText en={messagesEn('view_connections')} el={messagesEl('view_connections')} compact />
+                    </Link>
+                  </Button>
+                </>
+              )}
+            />
           ) : (
             filtered.map((person) => (
               <button

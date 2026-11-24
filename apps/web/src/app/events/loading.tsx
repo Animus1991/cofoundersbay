@@ -1,8 +1,10 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
 export default function EventsLoading() {
   return (
     <div className="min-h-screen bg-hero-radial pb-20 lg:pb-16">
+    <HeaderBandSkeleton />
       <div className="mx-auto w-full min-w-0 px-4 pt-6">
         <div className="flex items-center justify-between py-3">
           <Skeleton className="h-8 w-40" />

@@ -60,6 +60,7 @@ import { calendarDaysUntil } from '@/lib/calendar-days';
 import { Textarea } from '@/components/ui/textarea';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -166,9 +167,7 @@ function roleChip(role: string) {
   return STATUS[ROLE_TONE[role] ?? 'neutral'].chip;
 }
 
-function memberStatusChip(status: string) {
-  return STATUS[MEMBER_STATUS_TONE[status] ?? 'neutral'].chip;
-}
+
 
 function StatCard({ title, titleEl, value, change, trend }: {
   title: string;
@@ -520,7 +519,8 @@ export default function OrgAdminPage() {
       content: (
         <div className="space-y-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></p>
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" /><BilingualText en="Role" el="Ρόλος" compact /></p>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger aria-label={bilingualAria('Role', 'Ρόλος')} className="mt-2">
                 <SelectValue placeholder={sayOne("All roles", "Όλοι οι ρόλοι")} />
@@ -537,7 +537,8 @@ export default function OrgAdminPage() {
             </Select>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></p>
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" /><BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger aria-label={bilingualAria('Status', 'Κατάσταση')} className="mt-2">
                 <SelectValue placeholder={sayOne("All statuses", "Όλες οι καταστάσεις")} />
@@ -603,14 +604,15 @@ export default function OrgAdminPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="flex flex-col items-center gap-4 py-16 text-center">
-            <h1 className="text-xl font-semibold">
-              <BilingualText en="Organization not found" el="Ο οργανισμός δεν βρέθηκε" compact />
-            </h1>
-            <Button variant="outline" asChild>
-              <Link href="/org/dashboard"><BilingualText en="Back to organization dashboard" el="Πίσω στον πίνακα οργανισμού" compact /></Link>
-            </Button>
-          </div>
+          <EmptyState
+            illustration="search"
+            title={<BilingualText en="Organization not found" el="Ο οργανισμός δεν βρέθηκε" compact />}
+            action={(
+              <Button variant="outline" asChild>
+                <Link href="/org/dashboard"><BilingualText en="Back to organization dashboard" el="Πίσω στον πίνακα οργανισμού" compact /></Link>
+              </Button>
+            )}
+          />
         )}
       </AppShell>
     );
@@ -717,15 +719,15 @@ export default function OrgAdminPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn('capitalize border', roleChip(member.role))}>
-                          {member.role === 'owner' && <Crown className="icon-sm mr-1" />}
-                          <StatusText value={member.role} />
-                        </Badge>
+                        {/* The state pill itself, not a badge around it
+                            (B2.3); the owner's crown stays beside it. */}
+                        <span className="inline-flex items-center gap-1">
+                          {member.role === 'owner' && <Crown className="icon-sm text-status-warning" aria-hidden="true" />}
+                          <StatusText value={member.role} tone={ROLE_TONE[member.role] ?? 'neutral'} />
+                        </span>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn('capitalize border', memberStatusChip(member.status))}>
-                          <StatusText value={member.status} />
-                        </Badge>
+                        <StatusText value={member.status} tone={MEMBER_STATUS_TONE[member.status] ?? 'neutral'} />
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {fmtDate(member.joinedAt, { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -789,8 +791,8 @@ export default function OrgAdminPage() {
                   ))}
                   {isLive && filteredMembers.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
-                        <BilingualText en="No members match the current filters." el="Κανένα μέλος δεν ταιριάζει με τα φίλτρα." wrap />
+                      <TableCell colSpan={5}>
+                        <EmptyState className="border-0 bg-transparent py-6" illustration={null} size="sm" title={<BilingualText en="No members match the current filters." el="Κανένα μέλος δεν ταιριάζει με τα φίλτρα." wrap />} />
                       </TableCell>
                     </TableRow>
                   )}
@@ -933,7 +935,7 @@ export default function OrgAdminPage() {
           way, which adds at once. */}
       <Dialog open={inviteOpen} onOpenChange={(o) => { setInviteOpen(o); if (!o) setSent(null); }}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={UserPlus} tone="accent">
             <DialogTitle><BilingualText en="Invite member" el="Πρόσκληση μέλους" compact /></DialogTitle>
             <DialogDescription>
               {inviteMode === 'email'

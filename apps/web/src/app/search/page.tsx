@@ -25,7 +25,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { EmptyState as CommonEmptyState } from '@/components/common/EmptyState';
 import { bilingualAria } from '@/lib/i18n/format';
 import {
   searchEn,
@@ -273,7 +273,7 @@ function ResultCard({ result }: { result: SearchResult }) {
   );
 }
 
-function EmptyState({
+function SearchEmpty({
   query,
   category,
   onClear,
@@ -283,7 +283,6 @@ function EmptyState({
   onClear?: () => void;
 }) {
   const idle = !query;
-  const { ask } = useAskAssistant();
   const askPrompt = query
     ? {
         en: `No search results for "${query}" in ${categoryLabelEn(category)}. Suggest better people, jobs, or events to look for.`,
@@ -294,11 +293,11 @@ function EmptyState({
         el: 'Βοήθησέ με να ψάξω στο δίκτυο για συμπληρωματικό συνιδρυτή.',
       };
   return (
-    <div className="flex flex-col items-center justify-center py-10 text-center sm:py-12">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-        <Search className="icon-lg text-muted-foreground" />
-      </div>
-      <h3 className="mb-2 text-lg font-semibold text-foreground">
+    <CommonEmptyState
+      className="border-0 bg-transparent py-10 sm:py-12"
+      illustration="search"
+      askAiPrompt={askPrompt}
+      title={(
         <BilingualText
           en={idle ? searchEn('idle_title') : searchEn('empty_title')}
           el={idle ? searchEl('idle_title') : searchEl('empty_title')}
@@ -306,65 +305,61 @@ function EmptyState({
           wrap
           secondaryFrom="lg"
         />
-      </h3>
-      <p className="mb-6 max-w-sm text-sm text-muted-foreground">
-        {query ? (
-          <BilingualText
-            en={noMatchMessageEn(query, category)}
-            el={noMatchMessageEl(query, category)}
-            stacked
-            wrap
-            secondaryFrom="lg"
-          />
-        ) : (
-          <BilingualText
-            en={searchEn('empty_hint')}
-            el={searchEl('empty_hint')}
-            stacked
-            wrap
-            secondaryFrom="lg"
-          />
-        )}
-      </p>
-      <div className="flex flex-wrap justify-center gap-2">
-        {onClear ? (
-          <Button type="button" variant="outline" size="sm" onClick={onClear}>
-            <BilingualText en={searchEn('clear_search')} el={searchEl('clear_search')} compact secondaryFrom="lg" />
+      )}
+      description={query ? (
+        <BilingualText
+          en={noMatchMessageEn(query, category)}
+          el={noMatchMessageEl(query, category)}
+          stacked
+          wrap
+          secondaryFrom="lg"
+        />
+      ) : (
+        <BilingualText
+          en={searchEn('empty_hint')}
+          el={searchEl('empty_hint')}
+          stacked
+          wrap
+          secondaryFrom="lg"
+        />
+      )}
+      action={(
+        <>
+          {onClear ? (
+            <Button type="button" variant="outline" size="sm" onClick={onClear}>
+              <BilingualText en={searchEn('clear_search')} el={searchEl('clear_search')} compact secondaryFrom="lg" />
+            </Button>
+          ) : null}
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link href="/discover">
+              <Users className="icon-sm" />
+              <BilingualText en={searchEn('browse_people')} el={searchEl('browse_people')} compact secondaryFrom="lg" />
+            </Link>
           </Button>
-        ) : null}
-        <Button variant="outline" size="sm" className="gap-2" asChild>
-          <Link href="/discover">
-            <Users className="icon-sm" />
-            <BilingualText en={searchEn('browse_people')} el={searchEl('browse_people')} compact secondaryFrom="lg" />
-          </Link>
-        </Button>
-        {/* One row of ways in. "Quick Links" under it repeated three of
-            them as cards (people, jobs, events) and added mentors, which
-            is here now (docs §86). */}
-        <Button variant="outline" size="sm" className="gap-2" asChild>
-          <Link href="/mentoring">
-            <GraduationCap className="icon-sm" />
-            <BilingualText en={searchEn('find_mentors_title')} el={searchEl('find_mentors_title')} compact secondaryFrom="lg" />
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" className="gap-2" asChild>
-          <Link href="/jobs">
-            <Briefcase className="icon-sm" />
-            <BilingualText en={searchEn('browse_jobs')} el={searchEl('browse_jobs')} compact secondaryFrom="lg" />
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" className="gap-2" asChild>
-          <Link href="/events">
-            <Calendar className="icon-sm" />
-            <BilingualText en={searchEn('browse_events')} el={searchEl('browse_events')} compact secondaryFrom="lg" />
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => ask(askPrompt)}>
-          <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
-          <BilingualText en={searchEn('ask_ai')} el={searchEl('ask_ai')} compact secondaryFrom="lg" />
-        </Button>
-      </div>
-    </div>
+          {/* One row of ways in. "Quick Links" under it repeated three of
+              them as cards (people, jobs, events) and added mentors, which
+              is here now (docs §86). */}
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link href="/mentoring">
+              <GraduationCap className="icon-sm" />
+              <BilingualText en={searchEn('find_mentors_title')} el={searchEl('find_mentors_title')} compact secondaryFrom="lg" />
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link href="/jobs">
+              <Briefcase className="icon-sm" />
+              <BilingualText en={searchEn('browse_jobs')} el={searchEl('browse_jobs')} compact secondaryFrom="lg" />
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link href="/events">
+              <Calendar className="icon-sm" />
+              <BilingualText en={searchEn('browse_events')} el={searchEl('browse_events')} compact secondaryFrom="lg" />
+            </Link>
+          </Button>
+        </>
+      )}
+    />
   );
 }
 
@@ -639,7 +634,7 @@ export default function SearchPage() {
         {/* Results */}
         <div className="mt-4">
           {debouncedQuery.length < 2 ? (
-            <EmptyState query="" category={category} />
+            <SearchEmpty query="" category={category} />
           ) : isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -647,23 +642,20 @@ export default function SearchPage() {
               ))}
             </div>
           ) : isError ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 mb-4">
-                <X className="h-7 w-7 text-destructive-accessible" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                <BilingualText en={searchEn('search_failed_title')} el={searchEl('search_failed_title')} />
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                <BilingualText en={searchEn('search_failed_body')} el={searchEl('search_failed_body')} />
-              </p>
-              {/* The search again, not the whole page. */}
-              <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}>
-                <BilingualText en={searchEn('retry')} el={searchEl('retry')} />
-              </Button>
+            <div role="alert">
+              <CommonEmptyState
+                illustration="default"
+                title={<BilingualText en={searchEn('search_failed_title')} el={searchEl('search_failed_title')} />}
+                description={<BilingualText en={searchEn('search_failed_body')} el={searchEl('search_failed_body')} />}
+                action={(
+                  <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}>
+                    <BilingualText en={searchEn('retry')} el={searchEl('retry')} />
+                  </Button>
+                )}
+              />
             </div>
           ) : results.length === 0 ? (
-            <EmptyState
+            <SearchEmpty
               query={debouncedQuery}
               category={category}
               onClear={() => {

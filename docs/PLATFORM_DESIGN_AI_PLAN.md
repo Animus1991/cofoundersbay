@@ -9664,13 +9664,166 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
 - Sweep σε `/home /dashboard/founder` στα **1024/1280/1440/390**: 2×200, 0 σφάλματα, 0 xScroll (οι rails σκρολάρουν εσωτερικά, η σελίδα όχι), 0 unnamed, 0 deadBands, 0 blankIcons.
 - Στιγμιότυπα `Temp\cfb-sweep\mockups\home-fix\`: `home-{1024,1280,1440,390}.png` + `dashboard_founder-*` στο θέμα `minimal` (το πράσινο primary του χρήστη, `#38863a`) και τα ίδια οκτώ με `-playful` — όλα 200/0 σφάλματα. Οπτικός έλεγχος: ☆ μέσα στη γωνία του card, μία γραμμή pill, scope στη σειρά chips, φιγούρα μόνο ≥xl.
 
-> Σημείωση συγχώνευσης (2026-11-24): οι ενότητες §134–§138 ήταν οι §124–§128 του κλάδου `claude/next16` (13–16/11). Το main απέκτησε στο μεταξύ δικούς του §124–§133 (γύροι του Devin, 22–24/11). Όπου ο Devin ξανάγραψε την ίδια αλλαγή, συγχωνεύτηκε η δική του υλοποίηση· οι ενότητες εδώ λένε ποια (§138).
+## 134. Κύμα 3 — κατάλογοι, επισκοπήσεις ρόλων και η σάρωση όλων των διαδρομών
 
-## 134. Γύρος 2026-11-13 — οι έξι προτάσεις του §123
+Το ίδιο φίλτρο «εικόνα/χρώμα/σχήμα πρώτα» πέρασε στις υπόλοιπες οικογένειες, και μια πλήρης σάρωση 118 διαδρομών × EL/EN × 390/1024/1440 μέτρησε το νέο κέλυφος πριν και μετά τις αλλαγές.
+
+### 134.A Πλήρης σάρωση διαδρομών και τα ελαττώματα που βρέθηκαν
+
+Η σάρωση (`wave3-sweep.mjs`, πελάτης demo με δύο νέους ελεγκτές: ορατά κείμενα που επικαλύπτονται >4px και στις δύο διαστάσεις, ζώνη κεφαλίδας >120px που κρατά μόνο τίτλο) βρήκε και διόρθωσε, διαδρομή → ελάττωμα → διόρθωση:
+
+- `/discover` — το aside της κεφαλίδας κάρτας (chip Προωθημένο + chip %) ξεχείλιζε αριστερά πάνω στο RoleBadge του τίτλου· ο εσωτερικός wrapper έγινε `flex flex-wrap … max-w-full` (`ProfileCard.tsx`, compact+default) και το ίδιο στο `CardAnatomy.tsx` `CardHead`.
+- `/calendar` — xScroll ~137px στα 1024· το `lg:grid-cols-[300px_1fr]` διογκωνόταν από το min-content της ατζέντας → `minmax(0,1fr)` και στις δύο θέσεις.
+- `/legal` — deadBand 124px στα 1024· η κάρτα «Υπογράψτε πρώτα αυτά» τεντωνόταν στο ύψος της διπλανής → `items-start` στο grid.
+- `/pitch/[id]` — deadBand 278px· το `flex-1 min-h-[520px]` άφηνε κενό κάτω από κοντές διαφάνειες → το στάδιο έγινε `grid` ώστε η διαφάνεια να γεμίζει.
+- `/research/board-gtm` — 13 επικαλύψεις στα 1024· το αδιαφανές πλαίσιο-επιθεωρητή άφηνε να φαίνεται το label του καμβά πάνω στους κόμβους → opaque φόντο στο `CanvasInspectorPanel` + ο ελεγκτής κόβει τα ορθογώνια κειμένου σε πρόγονους overflow-hidden (διορθώνει και τα ψευδώς θετικά closed-`<details>`).
+- `/matches` + `/mentor/availability` — deadBands 103/63px στα 1024 (κάρτες που τέντωναν στο ύψος της διπλανής) → `items-start` στα δύο grid.
+- `/pitch/preview-doc-pitch` — xScroll 4px στα 390· η σειρά πλοήγησης με «Προηγούμενη/Επόμενη» + μετρητή ξεχείλιζε → `flex-wrap`, ο μετρητής παίρνει δική του γραμμή κάτω από `sm`.
+- Ψευδώς θετικά που έκλεισαν: `/programs` και `/commitments/need-harbor` (ορθογώνια κλειστών `<details>`, union boxes τυλιγμένων spans).
+
+Πλήρης πίνακας: `Temp\cfb-sweep\wave3\matrix.md` — 768 κελιά διαδρομών, όλα μηδέν μετά τις διορθώσεις (ανα-μέτρηση των flagged μονοπατιών: καθαρά).
+
+### 134.B Μία ανατομία κάρτας για την οικογένεια καταλόγων
+
+`/opportunities`, `/jobs`, `/programs`, `/investors`: οπτικό κλειδί πρώτα — πλαϊνό εξώφυλλο `lg:w-56` ή πάνω banner `h-28`· όταν δεν υπάρχει εικόνα, αποχρωματισμένο `CoverWash` με το glyph της οντότητας (opportunities=accent, jobs=primary, programs/investors=success). `DateBadge` στη γωνία όπου υπάρχει ημερομηνία (deadline/cohort/posted — το ίδιο κοινό στοιχείο με το `EventCard`, sr-only πλήρης ημερομηνία)· τίτλος → μία `card-meta` γραμμή στοιχείων → γραμμή διοργανωτή με avatar 20px → ΕΝΑ πρωτεύον ρήμα + `CardMoreMenu` με τα υπόλοιπα· tag pills ≤3 + «+n». Skeletons αντικατοπτρίζουν. `DateBadge`/`CoverWash` εξήχθησαν σε `components/common/` και το `EventCard` τα ξαναχρησιμοποιεί (χωρίς οπτική αλλαγή εκεί). Φίλτρα, αναζήτηση, ταξινόμηση, saved, apply/propose ροές ανέγγιχτες — κάθε προηγούμενο ρήμα εξακολουθεί να αποδίδεται (test asserts ανά κάρτα).
+
+### 134.C Επισκοπήσεις ρόλων
+
+`MetricTile` πήρε αποχρωματισμένο icon-well ανά οικογένεια μετρικής (people=accent, money=success, time/events=warning, risk/moderation=destructive, neutral=muted)· η τιμή είναι το οπτικό κλειδί (`text-2xl tabular-nums`), το label `card-meta`. Οι ενότητες ανθρώπων στα `/dashboard/{founder,incubator,investor,mentor,provider}` ξαναχρησιμοποιούν το εξαγόμενο `PersonTile`/`PersonTileRail` (`components/common/PersonTile.tsx`) — το ίδιο πλακίδιο 200px με το `HomePeople`. Rails, quick actions, charts, tour ανέγγιχτα.
+
+### 134.D Builder + Settings
+
+`/builder`: τα πλακίδια εργαλείων πήραν icon wells με απόχρωση ανά οικογένεια εργαλείου και μία γραμμή σκοπού (υπάρχον κείμενο κομμένο σε μία γραμμή· το πλήρες μένει στη σελίδα του εργαλείου). `/settings`: η πλοήγηση ενοτήτων πήρε icon wells. Καμία αλλαγή συμπεριφοράς.
+
+### 134.Ε Επαλήθευση
+
+- `tsc --noEmit --incremental false`: καθαρό. eslint: 0 errors· warnings όλες προϋπάρχουσες (επαληθεύτηκαν έναντι baseline)· αφαιρέθηκαν orphaned imports στο `FounderDashboardContent` και το νέο `<img>` έγινε `Avatar`/`AvatarImage`.
+- Tests: νέα `DateBadge.test.tsx` (sr-only πλήρης ημερομηνία), `CoverWash.test.tsx` (απόχρωση ανά οικογένεια), `MetricTile.test.tsx` (χάρτης tint), `programsCardActions.test.tsx` (κάθε προηγούμενο ρήμα αποδίδεται κάπου στην κάρτα)· `HomePeople.test.tsx` ενημερώθηκε για το `PersonTileRail`. Πλήρες suite: **όλα πράσινα** μετά τις διορθώσεις (3 αρχικές αποτυχίες — layoutGuards, optionalChainCoverage, HomePeople — όλες διορθώθηκαν).
+- `check-theme-contrast.py`: 0 κάτω από 4.5:1 σε όλα τα θέματα.
+- Πλήρης μήτρα 118 διαδρομών × 2 γλώσσες × 3 πλάτη μετά τις αλλαγές: 0 σφάλματα, 0 xScroll, 0 unnamed, 0 overlaps, 0 bandWaste, 0 deadBands, 0 blankIcons (§134.A λίστα).
+- Composites δύο λωρίδων (τώρα | πρόταση, χωρίς αντίστοιχο Parea): `Temp\cfb-sweep\mockups\wave3\compare2-{opportunities,jobs,programs,investors,dashboard_founder,dashboard_investor,builder,settings}-{1440,390}.png` + `stack2-*-390.png` + `index.html` — 17/24 >150KB· τα μικρότερα (82–131KB στα 390) επαληθεύτηκαν οπτικά: αραιές λίστες, αληθινό περιεχόμενο.
+
+## 135. Κύμα 4 (Spec A) — πλήρες πλάτος, αυτόματα title stickers, band-επισκοπήσεις και τηλέφωνο
+
+Το κύμα 4 εφάρμοσε το `WAVE4_SPEC_A` πάνω στο `devin/parea-wave3`: η μέτρηση του ιδιοκτήτη στα 1920×900 έδειξε ότι main και κύμα 3 είχαν τα ίδια δομικά μεγέθη, οπότε αυτό το πέρασμα έπρεπε να τα κινήσει.
+
+### 135.A0 Αναδίπλωση του catalogue panel
+
+Η ανατομία του κύματος 3 αποδείχθηκε άδεια τεχνική στην πράξη: αποχρωματισμένο block με μικρό glyph αντί για αληθινό σήμα, και κενό banner 112px ανά κάρτα στο τηλέφωνο. Το A0 επανέφερε τα αληθινά marks (Avatar/logo, DateBadge όπου υπάρχει ημερομηνία) και καθάρισε τα κενά wash panels — χωρίς blank στήλη όταν το cover αποτυγχάνει (§77). Skeletons αντικατοπτρίζουν την κάρτα.
+
+### 135.A1 Shell — αυτόματα stickers, card-grid, ask σε εικονίδιο (το cap αποσύρθηκε)
+
+- `deriveTitleSticker(pathname)` (`lib/title-sticker.ts`): κάθε σελίδα AppShell με ορατό h1 δείχνει sticker — το glyph της διαδρομής πρώτα (tint από το είδος του), αλλιώς το εικονίδιο του nav entry που κατέχει το path, αποχρωματισμένο από το section του registry. `titleSticker={{...}}` κερδίζει, `false` κρύβει. 11 σελίδες δηλώνουν ρητό sticker· καμία δεν περνά `false`. Οι `titleSrOnly` σελίδες (7: `/home` + 6 dashboards) έχουν h1 στο hero/band αντί για header, οπότε το κριτήριο δεν ισχύει εκεί.
+- `.card-grid` / `.card-grid-lg` στο `globals.css`: `auto-fill minmax(min(100%, 26rem/40rem), 1fr)` με `align-items: start`.
+- Στο τηλέφωνο το `#page-ask-ai` κρύβεται πίσω από pill-εικονίδιο `aria-controls` δίπλα στον τίτλο (`max-sm:hidden` μέχρι το άνοιγμα· `aria-expanded`)· το πεδίο μένει mounted. Σελίδες `titleSrOnly` δεν έχουν shell ask — το δικό τους είναι μέσα στο hero/band.
+- **Πλάτος περιεχομένου:** το A1.2 δοκίμασε `max-w-[1440px]` + `measure` prop· ο ιδιοκτήτης το απέρριψε («δεν ζήτησα ποτέ την μείωση του πλάτους») και αφαιρέθηκε ολοκληρωτικά (`1236ef67`, συμπ. των ~45 call sites και των `max-w-[72ch]` στο `/legal`). Το περιεχόμενο είναι πλήρες πλάτος σε κάθε σελίδα — το `card-grid` χρησιμοποιεί όλο το πλάτος (4 στη σειρά στα 1920). Κανένα page-level max-width/centring/measure δεν επανέρχεται.
+
+### 135.A2 Λίστες → card-grid στα φαρδιά πλάτη
+
+38 σελίδες-λίστες πέρασαν σε `card-grid`/`card-grid-lg` με `col-span-full` στα μη-καρτέλα siblings (`6148333a`). Στα 1920 καμία δεν είναι πλέον στήλη πλήρους-πλάτους καρτών: 3–4 στήλες (534px/397px). Σελίδες που έμειναν σειρές επίτηδες: `/admin/mentorship-management` (roster μέσα σε SectionCard — πίνακας ρόστερ, όχι κάρτες)· `/shortlist` είχε toggle list/grid με default list — το default έγινε grid (`7da20527`). `/investor/scouting` κρατά `card-grid-lg` + fold φίλτρου (A5).
+
+### 135.A3 Covers ποτέ δεν παίρνουν την πρώτη οθόνη
+
+`CoverImage` `sm:max-h-[240px]`, εξώφυλλα detail προγραμμάτων/events `max-h-[320px]`, `/learning` ίδιο (`39b46092`). Ο πλαϊνός cover του `/programs` τέντωνε στο ύψος της κάρτας (406px) → `lg:max-h-[320px] lg:self-start` (`7da20527`). Αποτέλεσμα: 0 first-screen εικόνα >340px στις 162 διαδρομές· εξαίρεση `/themes/alliance` (διαφημιστική showcase με δικό της chrome — ο ήρωας 506/896px είναι το περιεχόμενό της, όχι σελίδα εργαλείου).
+
+### 135.A4 Band-επισκοπήσεις
+
+Τρίτη μορφή `band` στο `HomeAskHero` δίπλα σε `hero`/`plain`: `bg-primary/10` block με overline = τίτλος σελίδας (`getPageMeta` + `deriveTitleSticker`, aria-hidden), χαιρετισμός `data-testid="home-greeting"`, μία-γραμμή ask pill με `scopeMenu` ως ήσυχο εσωτερικό control, role-glyph well `hidden xl:block`, `HeroActionsSlot` πάνω δεξιά. MetricTile grid ακριβώς κάτω από το band στα 6 role dashboards + admin· `/tenant/dashboard` (χωρίς hero) πήρε figures-first + families. Figures πρώτα, όπως στο spec.
+
+### 135.A5 Τηλέφωνο
+
+`/discover`: τα intent tiles «Ποιον ψάχνετε;» (αποχρωματισμένα, count) γίνονται role chips μόλις επιλεγεί ρόλος ή γραφτεί αναζήτηση· pill rows scroll στο κινητό· `/investor/scouting` fold φίλτρου· `/investor/portfolio` 2×2 tiles.
+
+### 135.Ε Επαλήθευση
+
+- `tsc --noEmit --incremental false`: καθαρό. eslint: 0 errors, warnings όλες προϋπάρχουσες (baseline). `check-theme-contrast.py`: 0 κάτω από 4.5:1. Πλήρες suite: **305 αρχεία / 2000 τεστ — όλα πράσινα**.
+- Μήτρα **162 διαδρομές (public/member/admin contexts) × {EL,EN} × {390,1024,1440,1920}** (`wave4-sweep.mjs`, `cfb-sweep\wave3\matrix-{lang}-{w}.txt`): 0 errors, 0 xScroll, 0 unnamed, 0 overlaps, 0 deadBands, 0 blankIcons παντού — `/this-does-not-exist` απαντά 404 όπως σχεδιάστηκε.
+  - Flags που βρέθηκαν και διορθώθηκαν: `/admin/users` επικάλυψη header «Τελευταία δραστηριότητα»∩«Κατάσταση» στα 1024 EL (compact nowrap → wrap)· dead bands από grid-stretch σε `/` (personas), `/tenant/dashboard`, `/admin/analytics`, `/tenant/domains` (items-start / mt-auto CTA)· `/programs` πλαϊνό cover 406px (>340)· `/shortlist` default list→grid· `/profiles/[userId]` έλλειπε sticker.
+  - Artifacts μέτρησης, όχι ελαττώματα: 4 redirect shims (`/{investor,mentor,org,provider}/dashboard`, `/research/canvas`) κατέστρεφαν το eval context mid-probe — το sweep περιμένει τον προορισμό και μετρά εκεί· skeleton shimmer bars μετρούνταν ως dead bands κατά το loading — το sweep περιμένει να σταματήσει το `.animate-pulse`.
+- Στόχοι του spec: `/discover` πρώτο οργανικό αποτέλεσμα top=**588px <700** στα 390· ask-field collapsed παντού (hero-mode σελίδες το κρατούν στο band)· 38 A2 σελίδες με πολλαπλές στήλες στα 1920.
+
+## 136. Κύμα 4 (Spec B1) — το look: πάτωμα χρώματος, band κεφαλίδας, pills, καταστάσεις και overlays
+
+Ο ιδιοκτήτης ρώτησε γιατί δεν φαίνεται καμία αισθητική αλλαγή — και είχε δίκιο: το αποθηκευμένο θέμα του είναι Mint, όπου τα πέντε σημασιολογικά tints ήταν `H 21% 91%` πάνω σε κρεμ σελίδα (σχεδόν άχρωμα), και στα σκοτεινά `H 12% 12%`. Το B1 δούλεψε σε επίπεδο shell/primitive ώστε να φτάσει σε κάθε σελίδα χωρίς επεξεργασία ανά σελίδα. Review σε Mint 1920×900 και 390×844.
+
+### 136.B1.1 Πάτωμα χρώματος για τα σημασιολογικά tints
+
+Στο `globals.css`, κάθε theme block με `--status-*-bg` πήρε: light themes bg S≥55%·L 84–92%, border S≥40%·L 72–80%, fg ίδιας οικογένειας χρώματος με L ρυθμισμένο ώστε ≥4.6:1 **και** πάνω στο tint **και** πάνω στο `--card`· dark themes bg S≥35%·L 16–20%· το `neutral` έμεινε ήσυχο. Στο Mint το accent μετακινήθηκε 165→176 και το success 135→122 ώστε το «άτομα» aqua να ξεχωρίζει από το «χρήμα» leaf-green. Το `check-theme-contrast.py` μετρά πλέον `foreground`/`muted-foreground` πάνω σε κάθε `status-*-bg` (το band του B1.2 βάζει σώμα και helper text πάνω σε tint)· το muted περνά ≥4.5 παντού, οπότε δεν χρειάστηκε το `foreground/80` fallback. Νέος φύλακας `lib/tintChroma.test.ts`: διαβάζει το `globals.css` και επιβάλλει το πάτωμα ανά theme block — κανένα tint δεν μπορεί να ξαναγκριάσει.
+
+### 136.B1.2 Η κεφαλίδα της σελίδας είναι ένα αποχρωματισμένο band
+
+Στο `AppShell`, όταν ο header δείχνει και ο τίτλος δεν είναι `titleSrOnly` (`headerBanded = headerShown && !titleSrOnly`· το `fullHeight` δεν έχει header): το block γίνεται band `rounded-2xl px-3 py-3 sm:rounded-3xl sm:px-6 sm:py-5` με φόντο από το resolved sticker tint (`STICKER_BAND_BG`: accent/info/success/warning → `bg-status-*-bg`, primary → `bg-primary/10`, neutral/none → `bg-muted`). Το sticker μέσα στο band: `h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-card shadow-sm` με glyph στο `STICKER_BAND_GLYPH` fg· description, `PageFacts` και page-ask (σε `bg-card`) κάθονται στο band. Νέο `HeaderBandSkeleton` (route-derived tint μέσω `deriveTitleSticker`): 43 loading.tsx το καλούν, 18 routes μέσω `AppRouteLoading` variants, 55 AppShell-framed `error.tsx` shells, 4 centered-layout error pages χειροκίνητα — οι public/unframed έμειναν όπως ήταν. Verified: `/members` band `rgb(191,237,234)`, `/settings` `bg-primary/10`, `/dashboard` unbanded (hero).
+
+### 136.B1.3 Σχήματα: κουμπιά, tabs, badges, καταστάσεις
+
+- `Button`: `rounded-full` στο base (το `link` κρατά `rounded-none`)· τα icon sizes είναι κύκλοι. Search fields με leading Search icon → `rounded-full` σε ~30 αρχεία.
+- `Tabs`: list `rounded-full bg-muted/70 p-1 gap-1`, trigger `rounded-full px-3.5`, **active solid** `bg-primary text-primary-foreground shadow-sm`· count μέσω `Counter` pill. Τα `.tab-strip` rules (~2914) συμφιλιώθηκαν, δεν σβήστηκαν. Hand-rolled tab rows στο ίδιο solid style: admin/dashboard period picker, builder/calculators tool switcher, analytics period, commitments/[id] response tabs (`role="tab"` row) — τα `aria-pressed` filter groups έμειναν (είναι φίλτρα, όχι tabs).
+- `Badge`: default `bg-primary/15 text-primary-accessible`, secondary `bg-muted text-foreground`, νέα variants `success|warning|info|accent|danger` στα status tokens· outline ίδιο.
+- `StatusText`: αποχρωματισμένο pill με 6px dot + ίδια δίγλωσση λέξη (value→tone map + `tone` override)· ~10 call sites ξετυλίχτηκαν από περιττά `<Badge>` (2 αχρείαστα imports αφαιρέθηκαν).
+- `SectionSticker` default `h-8 w-8 rounded-xl` (squircle — κύκλοι μόνο για πρόσωπα). `card-interactive`: `hover:-translate-y-0.5 hover:shadow-md` (το reduced-motion reset υπήρχε).
+
+### 136.B1.4 Marks με παρουσία
+
+`EmptyState`: illustration `h-28 w-28` σε `h-40 w-40 rounded-full` αποχρωματισμένο δίσκο + ένα pill CTA (ίδια κείμενα/ενέργειες). `MetricTile` με `family`: well `h-11 w-11 rounded-2xl`, tile σε `bg-status-x-bg/50` (neutral μένει `bg-card`) — το figures strip διαβάζεται ως έγχρωμα blocks. `roleRing(role)` δίπλα στο `roleTone`: 3px `ring-status-x-border` στα avatars των `PersonTile`/`PersonCard`/`ProfileCard`/`InvestorCard`/`JobCard`/`NeedCard`.
+
+### 136.B1.5 Dialogs και menus μέσα από τα primitives
+
+`DialogContent`: `rounded-3xl shadow-xl border-border/60`· overlay `bg-black/40 backdrop-blur-[2px]`· close button κύκλος. `DialogHeader` πήρε `icon?: ElementType` + `tone?` → `h-11 w-11 rounded-2xl` αποχρωματισμένο well αριστερά του τίτλου. `ConfirmDialog`: `Trash2`·danger για destructive, `Check`·primary αλλιώς· `share-modal` `Share2`·info, `export-dialog` `Download`·info. `DropdownMenuContent`: `rounded-2xl p-1.5 shadow-lg border-border/60`, items `rounded-lg gap-2`, destructive items σε `text-status-danger` (18 call-site αρχεία από `text-destructive-accessible`). Codemod πέρασε `icon`+`tone` στους **79 `<DialogHeader>` σε 67 αρχεία** κατά τον verb map του spec και ξεφόρτωσε τα inline εικονίδια από τους τίτλους — εκτός map (έπεσαν σε `Info`·neutral): admin/programs, admin/reports, admin/user-management, matches, org/applications, provider/projects, recommendations, builder ReviewPanel, VersionHistoryDrawer, KeyboardShortcutsDialog, YourPages, PageRail expanded, MatchScoreExplainer, BoardHistoryDrawer, BoardSettingsPanel, BoardTemplates, CanvasVersionPanel ×3, EntityReferenceSelector. Νέο `ui/dialog.test.tsx` (4 τεστ: well per tone, χωρίς icon κανένα well, ConfirmDialog wells).
+
+### 136.B1.6 `/milestones/new` διπλό primary
+
+Το selected category chip ήταν `bg-primary` — το δεύτερο primary της σελίδας. Έγινε outline-selection (`border-primary` + tint/text)· και τα δύο controls έμειναν.
+
+### 136.Ε Επαλήθευση
+
+- `tsc --noEmit --incremental false`: καθαρό. eslint στα 209 αρχεία που άλλαξε το B1: 0 errors· 6 νέα unused warnings από τα codemods (Send/Keyboard/Settings imports, statusColors/REPORT_STATUS maps, screen/Trash2 στο νέο τεστ) αφαιρέθηκαν στο `df39adf8` — τα υπόλοιπα είναι baseline. Πλήρες suite: **309 αρχεία / 2016 τεστ — όλα πράσινα**. `check-theme-contrast.py`: **0 κάτω από 4.5:1** σε όλα τα θέματα με τα νέα tint pairs.
+- Μήτρα **162 διαδρομές × {EL,EN} × {390,1024,1440,1920} σε Mint** (`wave4-sweep.mjs`): 0 errors, 0 xScroll, 0 unnamed, 0 overlaps, 0 bandWaste, 0 deadBands, 0 blankIcons και στις 8 πάσες — `/this-does-not-exist` 404 όπως σχεδιάστηκε. Member group (121 διαδρομές) στα 1920 σε `playful` **και** `playful-dark`: καθαρές (`CFB_SWEEP_THEME` στο `wave4-sweep-theme.mjs`, details σε `matrix-det-1920-en-{theme}.txt`).
+- 12 dialogs σε Mint στα 1440+390 → `cfb-sweep\mockups\wave4\dialog-*.png` (24): new-message, intro, propose, apply, invite, share-room, delete-account, report, schedule, need-card alert, shortcuts, image-cropper — wells με τόνο, `rounded-3xl`, blur overlay, pill κουμπιά. Το «create post» δεν υπάρχει ως dialog (ο συντάκτης του feed ανοίγει inline· το `CreatePost` component είναι αχρησιμοποίητο) — στη θέση του ο image cropper· το `ConfirmDialog` του data room είναι live-only στο demo, ο danger τόνος φαίνεται στο delete-account.
+- Ανοικτές αποφάσεις: το `muted-foreground` βαθύνθηκε ελάχιστα στο B1.1 για τα νέα tint pairs· fallback `foreground/80` στο band δεν χρειάστηκε (muted ≥4.5 παντού).
+
+## 137. Κύμα 4 (Spec B2) — η εμφάνιση ανά οικογένεια: kind pills, streams, πίνακες, auth/legal, EmptyState
+
+Το B1 ζωγράφισε το κέλυφος· το B2 ζωγραφίζει τις επιφάνειες περιεχομένου — κεφαλές καρτών καταλόγου, ροές, πίνακες, τείχη auth/legal — πάντα μέσα από κοινά primitives ώστε κάθε αλλαγή να πέφτει σε πολλές σελίδες μαζί. Ίδιοι σκληροί κανόνες: τίποτα δεν αφαιρείται, πλήρες πλάτος, επίπεδο χρώμα, ≥4.5:1, δίγλωσσο. Review σε Mint 1920×900 και 390×844.
+
+### 137.B2.1 Kind pill σε κάθε κάρτα καταλόγου
+
+Κάθε κάρτα καταλόγου πήρε `KindPill` στην κορυφή του περιεχομένου — μικρό chip στο `status-*-bg`/`fg` της οικογένειας με το glyph της και μία δίγλωσση λέξη («Ανάγκη», «Θέση», «Πρόγραμμα», «Επενδυτής», «Εκδήλωση» …). Ο τόνος ακολουθεί τη χαρτογράφηση του nav: άτομα/δουλειά→accent, χρήμα→success, γνώση→info, εκδηλώσεις/χρόνος→warning. Renderers που το πήραν: `NeedCard`, `OpportunityCard`, `ProgramCard`, `JobCard`, `InvestorCard`, `EventCard`, `PersonCard`/`ProfileCard`. Στο `NeedCard` το pill μοιράζεται μία σειρά με το kind-meta ώστε το `<header>` να μένει κάτω από το όριο 120px του sweep στα 390 (122→93px).
+
+### 137.B2.2 Ροές (feed / updates / groups wall)
+
+Οι συντάκτες (`FeedPostComposer` και ο twin των updates): avatar με `roleRing`, το κουμπί ανάρτησης pill, και τα media/action εικονίδια σε αποχρωματισμένα wells (φωτογραφίες info, εκδήλωση warning, poll accent). `PostCard` (κοινή + η τοπική δίδυμη του `/feed`): `card-interactive` lift στο hover, η σειρά like/comment/share είναι icon+word pills που χρωματίζονται στο hover (`hover:bg-status-x-bg` με το αντίστοιχο `fg`), το «…» μένου είναι το γυαλισμένο dropdown του B1. Pinned/featured κράτησε το υπάρχον σήμα.
+
+### 137.B2.3 Πίνακες διαβάζονται όπως τα υπόλοιπα
+
+Στο κοινό `Table` primitive: header row `bg-muted/50` με `text-2xs` uppercase `text-muted-foreground` ετικέτες, body rows `hover:bg-muted/40` (hover off σε reduced motion), cells `py-3`. Όλες οι στήλες-κατάσταση (active/invited/suspended/draft/published/pending) έγιναν tinted status pills — στο κοινό cell όπου υπήρχε, αλλιώς ανά πίνακα.
+
+### 137.B2.4 Auth και δημόσιες σελίδες
+
+`/login`, `/register`, `/forgot-password`, `/reset-password`: αμυδρό αποχρωματισμένο wash σελίδας (επίπεδο), form card `rounded-3xl shadow-md`, το λογότυπο σε tinted squircle πάνω από τον τίτλο, primary action pill. Landing `/`: οι persona cards πήραν pill CTA. `/pricing`: η featured tier έχει accent tint band στην κορυφή της (όχι μόνο shadow).
+
+### 137.B2.5 Οι τοίχοι λέξεων και τα κενά
+
+`/privacy`, `/terms` (member copies): πλήρες πλάτος κρατήθηκε — κάθε h2 πήρε `h-4 w-4` squircle marker στον τόνο της ενότητας (`SECTION_TINTS`: accent/info/success/warning εναλλάξ). `/unauthorized`, το not-found fallback και τα κενά του `/invite` δρομολογήθηκαν μέσω `EmptyState`. Grep βρήκε ~85 χειροποίητα empty/error states που παρακάμπταν το shared component — ~80 μετατράπηκαν σε ~40 αρχεία (feed, discover, notifications ×3, events, intros, recommendations, opportunities, milestones, achievements ×3, activity, jobs, groups, mentoring, admin/user-management, admin/audit-log, connections, members, endorsements, investor/*, programs, projects, startups, data-room, referrals, research, saved-searches, shortlist, search, mentor/*, provider/*, tenant/sso, matches, ai, analytics, messaging, builder, profile CustomFieldsEditor, ComposeMessageDialog, NotificationCenter, NotificationsBell, CommandPalette, CommentsPanel, AskedOfMe). Σκόπιμα εξαιρέθηκαν: pricing hero/CTA, t/[slug] hero, `RouteError` (πλήρες layout), thread-empty του ChatWindow με avatar, loading spinners.
+
+### 137.B2.6 Μικρά που έμειναν
+
+- Ετικέτες-κλειδιά μέσα στις σελίδες: τα επαναλαμβανόμενα `text-2xs`/`text-xs` `uppercase tracking-*` section labels (όχι το h1 της σελίδας) πήραν τον ίδιο μικρό αποχρωματισμένο marker — `h-4 w-4 rounded-md border` με `bg-status-*-bg`/`border-status-*-border` εναλλάξ, η γραμμή έγινε `flex items-center gap-2` (`justify-center` όπου centred) — 57 labels σε 31 αρχεία, table cells/chips/dialogs εξαιρέθηκαν.
+- Οι 4 χειροποίητες σειρές tabs του B1 στα 390: admin/dashboard period picker, analytics period (μέσα στο rail), builder/calculators, commitments/[id] responses — όλες τώρα `tab-strip` + `overflow-x-auto scrollbar-hide` με `shrink-0 whitespace-nowrap` items· ελεγμένο στον browser: calculators scrollWidth 594 > clientWidth 358 σε μία γραμμή, admin χωρά (265=265), κανένα wrap σε στήλη, 0 xScroll.
+
+### 137.Ε Επαλήθευση
+
+- `tsc --noEmit --incremental false`: καθαρό. eslint στα 102 touched αρχεία: **0 errors, 0 νέα warnings** (204 baseline· τα icons που ξέμειναν από τις EmptyState μετατροπές — Users, User, Activity, List, LayoutGrid, Calendar, Clock, UserPlus, SectionSticker, FactLine, RoleBadge, CfbGlyph — αφαιρέθηκαν· prop destructures ήταν ήδη baseline). Πλήρες suite: **309 αρχεία / 2016 τεστ — όλα πράσινα**. `check-theme-contrast.py`: **0 κάτω από 4.5:1** σε όλα τα θέματα.
+- Μήτρα **162 διαδρομές × {EL,EN} × {390,1024,1440,1920} σε Mint** (`wave4-sweep-theme.mjs`): 0 errors, 0 xScroll, 0 unnamed, 0 overlaps, 0 deadBands, 0 blankIcons και στις 8 πάσες. Μοναδικό flag: `bandWaste /:122–124px` στις 4 πρώτες πάσες — το `<header>` του `NeedCard` πέρασε το 120px από το B2.1 kind pill· έγινε μία σειρά (93px) και η `/` ξαναμετρήθηκε καθαρή στα {390,1024}×{EL,EN} μέσα από το ίδιο script. Member group (121 διαδρομές) στα 1920 σε `playful` **και** `playful-dark`: καθαρές.
+- 14 στιγμιότυπα σε Mint στα {1440,390} → `cfb-sweep\mockups\wave4b2\` (28 αρχεία): feed, updates, discover, opportunities, jobs, programs + detail, investors, members, admin/users, login, register, pricing, legal.
+- Ανοικτές αποφάσεις: ο marker των B2.6 labels εναλλάσσει τους 4 τόνους ανά αρχείο (ίδιος κανόνας με τα legal h2s)· οι `aria-pressed` filter groups έμειναν χωρίς `tab-strip` (είναι φίλτρα, όχι tabs).
+
+> Σημείωση συγχώνευσης (2026-11-25): οι ενότητες §138–§141 ήταν οι §124–§127 του κλάδου `claude/next16` (13–16/11), και η §142 ο γύρος της συγχώνευσης. Στο μεταξύ το main απέκτησε τις §124–§133 (γύροι του Devin, 22–24/11) και ο τοπικός κλάδος `devin/parea-wave3` τις §134–§137 (κύματα 3 και 4). Όπου η ίδια αλλαγή έγινε δύο φορές, κρατήθηκε η υλοποίηση του Devin· η §142 λέει ποια.
+
+## 138. Γύρος 2026-11-13 — οι έξι προτάσεις του §123
 
 Ο ιδιοκτήτης ζήτησε να συγχωνευτεί ο §123 στο main (έγινε, 063a56b9) και να γίνουν και οι έξι προτάσεις του §123.6. Για τους λογαριασμούς δοκιμών επιλέχθηκε κανόνας στο API και όχι διαγραφή από τη βάση.
 
-### 134.1 Αλλαγές
+### 142.1 Αλλαγές
 
 | # | Πρόταση | Τι έγινε |
 |---|---|---|
@@ -9683,7 +9836,7 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
 
 Δεν αφαιρέθηκε λειτουργία· ό,τι έφυγε από την πρώτη ματιά είναι ένα πάτημα μακριά.
 
-### 134.2 Μετρήσεις
+### 142.2 Μετρήσεις
 
 Παραγωγικό build του main πριν από τον §123 (3100) απέναντι στο build του γύρου (3103), demo.
 
@@ -9700,20 +9853,20 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
 
 Ο κατάλογος επενδυτών ψηλώνει στο κινητό, γιατί μία κάρτα ανά σειρά θέλει περισσότερο ύψος· σε αντάλλαγμα η πρώτη οθόνη έχει 14 χειρισμούς αντί για 20, τα ονόματα δεν σπάνε και κάθε κάρτα έχει ένα κουμπί. Η επισκόπηση επενδυτή στο κινητό δεν συγκρίνεται: το παλιό build έδειχνε εκεί μόνο την κατάσταση φόρτωσης τη στιγμή της μέτρησης.
 
-### 134.3 Έλεγχοι
+### 142.3 Έλεγχοι
 
 - Typecheck web και API καθαρό. ESLint: κανένα νέο εύρημα στις αλλαγμένες γραμμές (τα 35 του `matching.service.ts` είναι παλιά `any`, εκτός των αλλαγών).
 - Probe 124 στο παραγωγικό build, 390 και 1440: 33/33. Πρώτη εκτέλεση: 14/33, για δύο λόγους. Το probe έψαχνε `data-testid`, που το παραγωγικό build αφαιρεί, και διορθώθηκε. Η σπίθα κρυβόταν από τον κανόνα `button[data-slot="button"]:has(…) .cfb-glyph`, που δεν σεβόταν το `data-keep-icon`, και διορθώθηκε στο CSS.
 - Νέο test στο API: `isListableCandidate` (2 περιπτώσεις, 8 ελέγχοι).
 - Σουίτες σε ήσυχη μηχανή: web 280 αρχεία, 1.911 tests· API 89 αρχεία, 764 tests· 0 αποτυχίες.
 
-## 135. Γύρος 2026-11-13 — τρία νέα θέματα δίπλα στα αρχικά
+## 139. Γύρος 2026-11-13 — τρία νέα θέματα δίπλα στα αρχικά
 
-### 135.1 Το αίτημα
+### 139.1 Το αίτημα
 
 Ο ιδιοκτήτης πρότεινε τρία χρώματα: #61193E για το Terracotta, #67C9E6 για το Cyan και #575755 αντί για το #292524 του Φωτεινού. Μετά την πρώτη εκδοχή ζήτησε το νέο Terracotta 10% πιο ανοιχτό, και τα τρία ως νέα θέματα με άλλα ονόματα, με τα αρχικά να μένουν ως έχουν.
 
-### 135.2 Πώς χτίστηκαν
+### 139.2 Πώς χτίστηκαν
 
 Κάθε νέο θέμα είναι μια **παραλλαγή** ενός αρχικού. Κρατά το `data-theme` του αρχικού και προσθέτει `data-variant`. Έτσι ισχύουν όλοι οι κανόνες του αρχικού (επιφάνειες, χρώματα κατάστασης, μπάρες, το στρώμα του Φωτεινού για την επιλεγμένη σελίδα και την κάρτα «Συνεχίστε»), και αλλάζουν μόνο τα tokens του τονικού χρώματος. Ο κανόνας `html[data-theme="…"][data-variant="…"]` έχει specificity (0,2,1) και νικά τον αρχικό (0,1,1).
 
@@ -9725,7 +9878,7 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
 
 Στο Ουρανί, όπου το χρώμα του θέματος χρησιμοποιείται σκέτο ως κείμενο ή εικονίδιο (`text-primary`, 11 σημεία), παίρνει τη σκουρότερη απόχρωση των συνδέσμων. Το ένα στοιχείο με φόντο στην απόχρωση αυτή (`bg-primary-accessible`) παίρνει λευκά γράμματα.
 
-### 135.3 Πού δηλώθηκαν
+### 139.3 Πού δηλώθηκαν
 
 - `lib/themes.ts`: `ThemeName`, `THEME_ROOT` με το νέο πεδίο `variant`, τα εφεδρικά χρώματα και το `applyTheme`, που βάζει και καθαρίζει το `data-variant`.
 - `RoleTheme`, και το script εκκίνησης του `app/layout.tsx`, ώστε να μην υπάρχει αναλαμπή πριν από την πρώτη εικόνα.
@@ -9733,28 +9886,28 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
 - Κατάλογος ελληνικών: Μπορντό, Ουρανί, Γραφίτης, με τις περιγραφές τους· και το «Τερακότα», που έλειπε.
 - Ο βοηθός: `set_theme` στην κοινή δήλωση και στο `action-registry`, και λέξεις στον planner («μπορντό», «ουρανί», «γραφίτης»).
 
-### 135.4 Έλεγχοι
+### 139.4 Έλεγχοι
 
 - Typecheck web και API καθαρό· ESLint: κανένα εύρημα στις αλλαγμένες γραμμές.
 - Νέο `themeVariants.test.ts` (7 tests): τα αρχικά κρατούν τις τιμές τους· τα νέα έχουν τα χρώματα του ιδιοκτήτη· όρια αντίθεσης (γράμματα ≥ 4,5, σύνδεσμοι ≥ 4,5, δακτύλιος ≥ 3)· το `applyTheme` βάζει και καθαρίζει το `data-variant`· η σειρά και τα ελληνικά ονόματα· ο βοηθός τα αναγνωρίζει και επιτρέπεται να τα ορίσει.
 - Στο παραγωγικό build, 7/7: τα τρία αρχικά δίνουν ίδιο χρώμα κουμπιού με το build χωρίς την αλλαγή, και τα τρία νέα έχουν τη σωστή βάση, παραλλαγή και τόνο.
 - Σουίτες σε ήσυχη μηχανή: web 281 αρχεία, 1.918 tests· API 89 αρχεία, 764 tests· 0 αποτυχίες.
 
-## 136. Γύρος 2026-11-14 — ο έλεγχος μετά τον §135 και ό,τι έμενε
+## 140. Γύρος 2026-11-14 — ο έλεγχος μετά τον §139 και ό,τι έμενε
 
-### 136.1 Τι ελέγχθηκε
+### 140.1 Τι ελέγχθηκε
 
-Το main έμεινε στο 063a56b9 και ο κλάδος `claude/next16` (1e6ee398, §134–§135) περιμένει τη συγχώνευση. Στον δεύτερο έλεγχο του GitHub (16/11) βρέθηκε δουλειά άλλου μοντέλου: ο κλάδος `claude/project-audit-upgrade-y2ebnr` μιας συνεδρίας Claude στο cloud (136.4, #5). Ο έλεγχος έγινε πάνω στον κλάδο, σε παραγωγικό build, με τα εργαλεία των προηγούμενων γύρων και τρία νέα:
+Το main έμεινε στο 063a56b9 και ο κλάδος `claude/next16` (1e6ee398, §138–§139) περιμένει τη συγχώνευση. Στον δεύτερο έλεγχο του GitHub (16/11) βρέθηκε δουλειά άλλου μοντέλου: ο κλάδος `claude/project-audit-upgrade-y2ebnr` μιας συνεδρίας Claude στο cloud (140.4, #5). Ο έλεγχος έγινε πάνω στον κλάδο, σε παραγωγικό build, με τα εργαλεία των προηγούμενων γύρων και τρία νέα:
 
 - **Απογραφή θορύβου** σε 163 διαδρομές × 2 πλάτη (326 μετρήσεις): 0 σφάλματα, 0 πλάγια κύλιση. Σε σχέση με πριν από τον §123: διάμεσο ύψος στο κινητό 1.484 → 1.397px, συνολικό ύψος όλων των σελίδων 283.873 → 277.980px στο κινητό και 248.457 → 237.108px στα 1440, χειρισμοί 3.934 → 3.814 στα 1440.
 - **Κάλυψη του βοηθού** (`scripts/ai-coverage.mjs`): 176 σελίδες, 126 χειρίσιμες από τον βοηθό, 18 μόνο για ερώτηση (φόρμες που συμπληρώνει με προσχέδιο και επιβεβαιώνει το μέλος, ρυθμίσεις ασφαλείας, πληρωμές), 32 χωρίς βοηθό με δηλωμένο λόγο, 0 ανεξήγητες. 106 δηλωμένες δυνατότητες.
 - **Ζωντανές απαντήσεις του βοηθού** (νέο, `assistant_live.mjs`): σε δέκα σελίδες, «Τι είναι αυτή η σελίδα;» και ένα αίτημα της σελίδας, στα ελληνικά. 27/29. Οι δύο αποτυχίες ήταν ευρήματα: το «ανεσταλμένους» δεν έβρισκε το «Σε αναστολή» (ελληνική κλίση), και σε ερωτήσεις που η σελίδα δεν απαντά μόνη της η απάντηση άνοιγε με «Είστε συνδεδεμένοι ως Alex Demo (ιδρυτής, Αθήνα)».
 - **Σελίδες χωρίς κλήση API** στο δέντρο τους: 8 από 176 (ήταν 60 τον Σεπτέμβριο), όλες τίμιες επιδείξεις με σημείωση δείγματος και κουμπιά που δηλώνουν γιατί δεν εκτελούνται.
-- **Αρχιτεκτονική**: 29 components που δεν εισάγει τίποτα (οι τελευταίες αλλαγές τους ήταν μόνο οριζόντια περάσματα i18n και lint), ανάμεσά τους δύο ολόκληρα νήματα μηνυμάτων (`MessageThread`, `EnhancedMessageThread`) ενώ το `/messages` χρησιμοποιεί το `ChatWindow`, και ο `ResearchCanvas` (1.540 γραμμές). Καταγράφονται στο 136.4 και δεν σβήνονται χωρίς απόφαση.
-- **Sweep πλατφόρμας** (149 διαδρομές, 1440, ιδρυτής) στο build του §135: 0 στοιχεία χωρίς όνομα (ήταν 6), 0 νεκρές ζώνες (ήταν 1, `/analytics`), 0 κενά εικονίδια, 0 πλάγια κύλιση. Μία διαδρομή, το `/org/programs`, δεν φόρτωσε μέσα σε 45s· ξαναελέγχθηκε στο 136.3.
+- **Αρχιτεκτονική**: 29 components που δεν εισάγει τίποτα (οι τελευταίες αλλαγές τους ήταν μόνο οριζόντια περάσματα i18n και lint), ανάμεσά τους δύο ολόκληρα νήματα μηνυμάτων (`MessageThread`, `EnhancedMessageThread`) ενώ το `/messages` χρησιμοποιεί το `ChatWindow`, και ο `ResearchCanvas` (1.540 γραμμές). Καταγράφονται στο 140.4 και δεν σβήνονται χωρίς απόφαση.
+- **Sweep πλατφόρμας** (149 διαδρομές, 1440, ιδρυτής) στο build του §139: 0 στοιχεία χωρίς όνομα (ήταν 6), 0 νεκρές ζώνες (ήταν 1, `/analytics`), 0 κενά εικονίδια, 0 πλάγια κύλιση. Μία διαδρομή, το `/org/programs`, δεν φόρτωσε μέσα σε 45s· ξαναελέγχθηκε στο 140.3.
 - **Sweep κινητού** στο ίδιο build, για πρώτη φορά σε πέντε πλάτη (320/360/390/414/430) και ως ιδρυτής: 690/745 καθαρές μετρήσεις, 0 πλάγια κύλιση, 0 κομμένο κείμενο, 0 επικαλύψεις. Τα υπόλοιπα 55 είναι τέσσερα πραγματικά ευρήματα (αλλαγή 6), δύο ψευδή του εργαλείου και τα γνωστά 404 (`/test-onboarding`, `/themes/alliance`). Ψευδή: η «Σήμανση όλων ως αναγνωσμένων» στο κινητό είναι κρυμμένη για αναγνώστη οθόνης (`max-sm:sr-only`), και το εργαλείο αναγνώριζε μόνο την κλάση `sr-only` (διορθώθηκε στο `scripts/mobile-sweep.mjs`)· τα σφάλματα φόρτωσης στο `/calendar` προήλθαν από την επανεκκίνηση του server στη μέση του sweep.
 
-### 136.2 Αλλαγές
+### 140.2 Αλλαγές
 
 | # | Πού | Αλλαγή | Γιατί |
 |---|---|---|---|
@@ -9768,43 +9921,43 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
 
 Δεν αφαιρέθηκε λειτουργία.
 
-### 136.3 Έλεγχοι
+### 140.3 Έλεγχοι
 
 - Typecheck web καθαρό· ESLint: κανένα εύρημα στις αλλαγμένες γραμμές.
 - Νέο test στο `pageControls.test.tsx`: «Δείξε μόνο τους ανεσταλμένους χρήστες» → «Σε αναστολή», «δείξε τους αποκλεισμένους» → «Αποκλεισμένοι», «φίλτρο: ενεργοί» → «Ενεργοί».
 - Στο παραγωγικό build, 12/12: το «ανεσταλμένους» προτείνει το φίλτρο και η εφαρμογή του αφήνει «1 από 13 χρήστες · Σε αναστολή»· η απάντηση στο «Πού υστερώ περισσότερο;» ανοίγει με «Η ετοιμότητα είναι 42% (ασθενέστερο: Προϊόν)»· στις ειδοποιήσεις η σύνοψη ανοίγει με ό,τι περιμένει· το «Ποια είναι η κατάστασή μου;» ανοίγει ακόμη με το όνομα· 12 εργαλεία γραμμής κρυμμένα με ποντίκι, ένα με hover, όλα ορατά στην αφή· καμία κατάληξη δείγματος στο Builder· ένα κουμπί ανά κάρτα στις Ευκαιρίες, η «Σύνταξη προσέγγισης» στο μενού· κανένα σφάλμα σελίδας.
-- Ζωντανές απαντήσεις του βοηθού: οι δύο αποτυχίες του 136.1 είναι πια επιτυχίες του παραπάνω ελέγχου.
+- Ζωντανές απαντήσεις του βοηθού: οι δύο αποτυχίες του 140.1 είναι πια επιτυχίες του παραπάνω ελέγχου.
 - Sweep κινητού ξανά στις διαδρομές των αλλαγών 6–7 (επισκοπήσεις ρόλων, ετοιμότητα, ειδοποιήσεις, κοινότητες, προγράμματα, διαχείριση ομάδων, έσοδα μέντορα, ημερολόγιο), σε πέντε πλάτη: 113/113 καθαρές. Το `/org/programs` και το `/calendar` φορτώνουν (200).
 - Σάρωση μικρογραφιών: από 11 εικόνες σε 3 σελίδες με λάθος αναλογία, σε 0· 64×40 στα 390, 52×32 στα 1440 (το 82% της ρίζας).
 - Σουίτες σε ήσυχη μηχανή: web 281 αρχεία, 1.919 tests· API 89 αρχεία, 764 tests· 0 αποτυχίες.
 
-### 136.4 Τι μένει: για απόφαση του ιδιοκτήτη
+### 140.4 Τι μένει: για απόφαση του ιδιοκτήτη
 
 | # | Θέμα | Πρόταση |
 |---|---|---|
 | 1 | 29 components που δεν εισάγει τίποτα (`components/messages/MessageThread`, `app/messages/components/EnhancedMessageThread`, `canvas/ResearchCanvas`, `members/EnhancedMemberDirectory`, `research/AIAnalysisPanel`, `research/BoardHistoryDrawer`, `common/RoleSwitcher`, `common/ScheduleCallModal`, `recommendations/SmartRecommendations`, `analytics/AdvancedAnalyticsDashboard`, `profile/ProfileCompleteness`, `settings/LinkedAccounts`, `social/InviteSystem`, `ui/enhanced-card`, `ui/skeletons`, `ui/export-dialog`, `ui/rich-text-editor`, `ui/share-modal`, `ui/date-range-picker`, `common/DemoDataToggle`, `common/LanguagePreferenceToggle`, `common/LazyComponents`, `common/PageSkeletons`, `common/PageTransition`, `dashboard/DashboardGreeting`, `gamification/WorkspaceScoringWidget`, `optimization/VirtualList`, `billing/FeatureGate`, `builder/ArtifactDiffView`) | Διαγραφή όσων είναι παλιές εκδοχές μονταρισμένων (τα δύο νήματα μηνυμάτων, το `ThemeToggle` που αντικατέστησε ο `ThemeSwitcher`), ή διατήρηση σε φάκελο `legacy/` ώστε να μη μετρούν στα περάσματα i18n και lint. Κανένα δεν αφαιρεί λειτουργία από οθόνη |
 | 2 | Οι 18 σελίδες «μόνο για ερώτηση» | Μένουν έτσι σκόπιμα: ο βοηθός συντάσσει, το μέλος πατά Αποθήκευση· οι ρυθμίσεις SSO και οι πληρωμές δεν γίνονται από τον βοηθό |
 | 3 | Τα 8 κενά API (data room αρχεία, κλειδιά API, webhooks, αναφορές ομάδων, ρυθμίσεις συστήματος, υπολογιστές, νομικά, δημιουργία έργου) | Backend μόνο όταν αποφασιστεί ότι η λειτουργία θέλει αποθήκευση· μέχρι τότε οι σελίδες λένε τι είναι δείγμα |
-| 4 | Branches στο GitHub | 12 συγχωνευμένα + το WIP του Devin προς διαγραφή, το `ccr-6a8a4e93-sxfuib` θέλει απόφαση (§135) |
-| 5 | Ο κλάδος `claude/project-audit-upgrade-y2ebnr` (93a95a0c, συνεδρία Claude στο cloud, 14/11) | Δουλειά άλλου μοντέλου πάνω στο ίδιο main (063a56b9): θέματα σύνοψης email, δημιουργία οργανισμού, ρόλοι μελών κοινότητας, κονσόλα κατάχρησης, επαναφορά κλάδων καμβά, πίνακες κινητού, χρώματα μετρητών στο σκοτεινό θέμα, θέση του Exit στο demo. Η ενότητά του στα docs λέγεται κι αυτή «§134». Με το `claude/next16` συγκρούεται μόνο στο `globals.css` και στα docs, και στα δύο επειδή και οι δύο πρόσθεσαν στο τέλος. Δεν συγχωνεύτηκε εδώ: θέλει την απόφαση του ιδιοκτήτη |
+| 4 | Branches στο GitHub | 12 συγχωνευμένα + το WIP του Devin προς διαγραφή, το `ccr-6a8a4e93-sxfuib` θέλει απόφαση (§139) |
+| 5 | Ο κλάδος `claude/project-audit-upgrade-y2ebnr` (93a95a0c, συνεδρία Claude στο cloud, 14/11) | Δουλειά άλλου μοντέλου πάνω στο ίδιο main (063a56b9): θέματα σύνοψης email, δημιουργία οργανισμού, ρόλοι μελών κοινότητας, κονσόλα κατάχρησης, επαναφορά κλάδων καμβά, πίνακες κινητού, χρώματα μετρητών στο σκοτεινό θέμα, θέση του Exit στο demo. Η ενότητά του στα docs λέγεται κι αυτή «§138». Με το `claude/next16` συγκρούεται μόνο στο `globals.css` και στα docs, και στα δύο επειδή και οι δύο πρόσθεσαν στο τέλος. Δεν συγχωνεύτηκε εδώ: θέλει την απόφαση του ιδιοκτήτη |
 
-## 137. Γύρος 2026-11-16 — ο βοηθός στις σελίδες διαχείρισης, και η απάντηση με μία κάρτα
+## 141. Γύρος 2026-11-16 — ο βοηθός στις σελίδες διαχείρισης, και η απάντηση με μία κάρτα
 
-### 137.1 Τι ελέγχθηκε
+### 141.1 Τι ελέγχθηκε
 
-- **Ο κλάδος του άλλου μοντέλου** (`claude/project-audit-upgrade-y2ebnr`, 136.4 #5): δοκιμαστική συγχώνευση με το `claude/next16` σε τοπικό κλάδο (`trial/merge-y2ebnr`, χωρίς push). Συγκρούσεις μόνο στο `globals.css` και στα docs, και στα δύο γιατί και οι δύο πλευρές πρόσθεσαν στο τέλος. Λύθηκαν κρατώντας και τα δύο. Typecheck web και API καθαρό. Web 287 αρχεία, 1.939 tests· API 92 αρχεία, 781 tests· 0 αποτυχίες. Οι δύο κλάδοι μπαίνουν μαζί στο main χωρίς πρόβλημα.
-- **Επαναλήψεις μετά τον §136.** Όσες μένουν είναι δομή, όχι θόρυβος, και δεν άλλαξαν:
+- **Ο κλάδος του άλλου μοντέλου** (`claude/project-audit-upgrade-y2ebnr`, 140.4 #5): δοκιμαστική συγχώνευση με το `claude/next16` σε τοπικό κλάδο (`trial/merge-y2ebnr`, χωρίς push). Συγκρούσεις μόνο στο `globals.css` και στα docs, και στα δύο γιατί και οι δύο πλευρές πρόσθεσαν στο τέλος. Λύθηκαν κρατώντας και τα δύο. Typecheck web και API καθαρό. Web 287 αρχεία, 1.939 tests· API 92 αρχεία, 781 tests· 0 αποτυχίες. Οι δύο κλάδοι μπαίνουν μαζί στο main χωρίς πρόβλημα.
+- **Επαναλήψεις μετά τον §140.** Όσες μένουν είναι δομή, όχι θόρυβος, και δεν άλλαξαν:
   - το ένα κουμπί κάθε κάρτας στις Θέσεις («Ερώτηση για τη θέση»),
   - η ερώτηση κάθε διάστασης στην Ετοιμότητα,
   - τα φίλτρα και οι επικεφαλίδες της Βοήθειας,
   - ο τόπος και το πρόγραμμα κάθε αίτησης στις Αιτήσεις του οργανισμού,
   - η πρόταση «δεν υπόσχεται χρηματοδότηση». Αυτή εμφανίζεται δύο φορές σε μια κάρτα ανάγκης, γιατί η κάρτα έχει όρους σε δύο σημεία και ο κανόνας του `nonGuarantee.test.ts` τη θέλει δίπλα σε καθένα.
 
-  Τα δύο κουμπιά ανά κάρτα στους Επενδυτές, στην επιφάνεια εργασίας, είναι πρόταση (137.4).
+  Τα δύο κουμπιά ανά κάρτα στους Επενδυτές, στην επιφάνεια εργασίας, είναι πρόταση (141.4).
 - **Κάλυψη του βοηθού.** Από τις 18 σελίδες «μόνο για ερώτηση», τρεις είχαν χειρισμούς που αποθηκεύουν ή ρυθμίζουν επί τόπου, χωρίς κανέναν δηλωμένο στον βοηθό: `/org/settings`, `/tenant/settings`, `/tenant/branding`.
 - **Ζωντανές απαντήσεις.** Όταν ο βοηθός πρότεινε χειρισμό της σελίδας, η απάντηση άνοιγε με την ξενάγηση πέντε προτάσεων («Μπορώ να βρω άτομα… Δοκιμάστε: «βρες τεχνικό συνιδρυτή στην Αθήνα»…»), πάνω από την κάρτα «Ανοιχτές αιτήσεις: Κλειστό». Στο «είναι ήδη στο «Κλειστό»» ακολουθούσε η γενική σύνοψη (μηνύματα, γνωριμίες, ειδοποιήσεις).
 
-### 137.2 Αλλαγές
+### 141.2 Αλλαγές
 
 | # | Πού | Αλλαγή | Γιατί |
 |---|---|---|---|
@@ -9816,7 +9969,7 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
 
 Κάλυψη: 129 χειρίσιμες σελίδες (ήταν 126), 15 μόνο για ερώτηση (ήταν 18), 32 χωρίς βοηθό με δηλωμένο λόγο, 0 ανεξήγητες. Δεν αφαιρέθηκε λειτουργία.
 
-### 137.3 Έλεγχοι
+### 141.3 Έλεγχοι
 
 - Typecheck web καθαρό· ESLint: κανένα εύρημα στις αλλαγμένες γραμμές.
 - Νέα tests:
@@ -9835,15 +9988,15 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
   - το «Δημοσίευσε την εμφάνιση» προτείνει τη δημοσίευση·
   - το «Ενεργοποίησε τις ώρες ησυχίας» προτείνει «Ενεργές»·
   - κανένα σφάλμα σελίδας.
-- Έλεγχος του §136 στο ίδιο build: 12/12. Ζωντανές απαντήσεις σε δέκα σελίδες: 28/29· η μία αποτυχία είναι το `/messages`, που σκόπιμα δεν έχει πεδίο ερώτησης στην κεφαλίδα.
+- Έλεγχος του §140 στο ίδιο build: 12/12. Ζωντανές απαντήσεις σε δέκα σελίδες: 28/29· η μία αποτυχία είναι το `/messages`, που σκόπιμα δεν έχει πεδίο ερώτησης στην κεφαλίδα.
 - Σουίτες σε ήσυχη μηχανή: web 281 αρχεία, 1.923 tests· API 89 αρχεία, 764 tests· 0 αποτυχίες.
 
-### 137.4 Για απόφαση του ιδιοκτήτη
+### 141.4 Για απόφαση του ιδιοκτήτη
 
 | # | Θέμα | Πρόταση |
 |---|---|---|
-| 1 | Συγχώνευση των δύο κλάδων | Πρώτα το PR `claude/next16` → main, μετά ο `claude/project-audit-upgrade-y2ebnr`. Στο GitHub θα δείξει σύγκρουση σε δύο αρχεία, που λύνεται κρατώντας και τις δύο πλευρές. Αν συμφωνείτε, τον συγχωνεύω εγώ στο `claude/next16`, ώστε να μείνει ένα PR. Η ενότητα «§134» του κλάδου μπαίνει ως §124Α, ώστε οι αναφορές «docs §134» στον κώδικά του να δείχνουν ακόμη το σωστό σημείο |
-| 2 | Επενδυτές, επιφάνεια εργασίας | Ένα κουμπί ανά κάρτα, όπως στο κινητό από τον §134: «Απευθείας μήνυμα» ως κουμπί, «Ζητήστε γνωριμία» στο μενού. Αλλάζει διάταξη που εγκρίθηκε μόνο για το κινητό |
+| 1 | Συγχώνευση των δύο κλάδων | Πρώτα το PR `claude/next16` → main, μετά ο `claude/project-audit-upgrade-y2ebnr`. Στο GitHub θα δείξει σύγκρουση σε δύο αρχεία, που λύνεται κρατώντας και τις δύο πλευρές. Αν συμφωνείτε, τον συγχωνεύω εγώ στο `claude/next16`, ώστε να μείνει ένα PR. Η ενότητα «§138» του κλάδου μπαίνει ως §124Α, ώστε οι αναφορές «docs §138» στον κώδικά του να δείχνουν ακόμη το σωστό σημείο |
+| 2 | Επενδυτές, επιφάνεια εργασίας | Ένα κουμπί ανά κάρτα, όπως στο κινητό από τον §138: «Απευθείας μήνυμα» ως κουμπί, «Ζητήστε γνωριμία» στο μενού. Αλλάζει διάταξη που εγκρίθηκε μόνο για το κινητό |
 | 3 | Μετά τη συγχώνευση του y2ebnr | Να δηλωθούν στον βοηθό τα νέα του σημεία: οι διακόπτες θεμάτων της σύνοψης στις Ειδοποιήσεις, το μενού μελών της κοινότητας, η δημιουργία οργανισμού |
 
 ## 124Α. Γύροι 2026-11-11/14 — έλεγχος συνοχής, λειτουργίες χωρίς οθόνη, και οι τέσσερις σελίδες

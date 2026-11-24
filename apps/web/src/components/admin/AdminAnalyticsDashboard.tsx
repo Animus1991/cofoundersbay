@@ -272,11 +272,11 @@ export function AdminAnalyticsDashboard() {
           <div className="relative overflow-auto max-h-[220px]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-muted-foreground border-b border-border">
-                  <th className="pb-2 font-medium"><BilingualText en="Badge" el="Διάκριση" compact /></th>
-                  <th className="pb-2 font-medium"><BilingualText en="Rarity" el="Σπανιότητα" compact /></th>
-                  <th className="pb-2 font-medium text-right"><BilingualText en="Unlocks" el="Αποκτήσεις" compact /></th>
-                  <th className="pb-2 font-medium text-right"><BilingualText en="Rate" el="Ποσοστό" compact /></th>
+                <tr className="text-left border-b border-border bg-muted/50">
+                  <th className="px-2 pb-2 text-2xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Badge" el="Διάκριση" compact /></th>
+                  <th className="px-2 pb-2 text-2xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Rarity" el="Σπανιότητα" compact /></th>
+                  <th className="px-2 pb-2 text-2xs font-medium uppercase tracking-wide text-muted-foreground text-right"><BilingualText en="Unlocks" el="Αποκτήσεις" compact /></th>
+                  <th className="px-2 pb-2 text-2xs font-medium uppercase tracking-wide text-muted-foreground text-right"><BilingualText en="Rate" el="Ποσοστό" compact /></th>
                 </tr>
               </thead>
               <tbody>
@@ -286,7 +286,7 @@ export function AdminAnalyticsDashboard() {
                   </tr>
                 ) : (
                   badgeRates.map((b) => (
-                    <tr key={b.badgeId} className="border-b border-border hover:bg-muted">
+                    <tr key={b.badgeId} className="border-b border-border motion-safe:hover:bg-muted/40">
                       <td className="py-1.5 font-medium text-foreground">{b.name}</td>
                       <td className="py-1.5">
                         <span

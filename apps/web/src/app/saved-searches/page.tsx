@@ -2,18 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Search,
-  Bell,
-  Trash2,
-  Play,
-  Plus,
-  Edit2,
-  MoreHorizontal,
-  Sparkles,
-  Users,
-  Target,
-} from 'lucide-react';
+import { Search, Bell, Trash2, Play, Plus, Edit2, MoreHorizontal, Sparkles, Users, Target, Pencil } from 'lucide-react';
 import {
   listSavedSearches,
   updateSavedSearch,
@@ -183,7 +172,7 @@ function SearchCard({
                 <BilingualText en={savedSearchesEn('edit')} el={savedSearchesEl('edit')} compact />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
+              <DropdownMenuItem onClick={onDelete} className="text-status-danger">
                 <Trash2 className="icon-sm mr-2 shrink-0" aria-hidden="true" />
                 <BilingualText en={savedSearchesEn('delete')} el={savedSearchesEl('delete')} compact />
               </DropdownMenuItem>
@@ -254,7 +243,7 @@ function EditSearchDialog({
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader icon={Pencil} tone="primary">
           <DialogTitle><BilingualText en={savedSearchesEn('edit_title')} el={savedSearchesEl('edit_title')} compact wrap /></DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="Rename the search or change how often it alerts you." el="Μετονομάστε την αναζήτηση ή αλλάξτε τη συχνότητα ειδοποιήσεων." /></DialogDescription>
         </DialogHeader>
@@ -499,16 +488,18 @@ export default function SavedSearchesPage() {
             {[0, 1, 2].map((i) => <Skeleton key={i} className="h-36 w-full rounded-2xl" />)}
           </div>
         ) : isError && !data ? (
-          <Card>
-            <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-              <p role="alert" className="text-sm text-muted-foreground">
-                <BilingualText en={savedSearchesEn('load_failed')} el={savedSearchesEl('load_failed')} wrap />
-              </p>
-              <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
-                <BilingualText en={savedSearchesEn('try_again')} el={savedSearchesEl('try_again')} compact />
-              </Button>
-            </CardContent>
-          </Card>
+          <div role="alert">
+            <EmptyState
+              illustration="default"
+              size="sm"
+              title={<BilingualText en={savedSearchesEn('load_failed')} el={savedSearchesEl('load_failed')} wrap />}
+              action={(
+                <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
+                  <BilingualText en={savedSearchesEn('try_again')} el={savedSearchesEl('try_again')} compact />
+                </Button>
+              )}
+            />
+          </div>
         ) : searches.length === 0 ? (
           <EmptyState
             illustration="search"
@@ -525,7 +516,7 @@ export default function SavedSearchesPage() {
             }
           />
         ) : (
-          <div className="space-y-3">
+          <div className="card-grid">
             {/* The searches with new results first (docs §115); the rest keep the
                 API's order (the sort is stable). */}
             {[...searches].sort((x, y) => Number((y.newResults ?? 0) > 0) - Number((x.newResults ?? 0) > 0)).map((search) => (

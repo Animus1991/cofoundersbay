@@ -1,9 +1,11 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
 export default function MembersLoading() {
   return (
     <div className="space-y-4">
+    <HeaderBandSkeleton />
       {/* Search and Controls */}
       <div className="flex flex-col sm:flex-row gap-3">
         <Skeleton className="h-10 flex-1" />

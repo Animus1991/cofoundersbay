@@ -332,7 +332,7 @@ function ReportCard({
                   <BilingualText en="Dismiss" el="Απόρριψη" compact />
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onBanUser} className="text-destructive-accessible">
+                <DropdownMenuItem onClick={onBanUser} className="text-status-danger">
                   <Ban className="icon-sm mr-2" />
                   <BilingualText en="Ban user" el="Αποκλεισμός χρήστη" compact />
                 </DropdownMenuItem>
@@ -445,7 +445,7 @@ function UserRow({
                   </DropdownMenuItem>
                 )}
                 {user.moderationStatus !== 'banned' && (
-                  <DropdownMenuItem onClick={onBan} className="text-destructive-accessible">
+                  <DropdownMenuItem onClick={onBan} className="text-status-danger">
                     <Ban className="mr-2 icon-sm" />
                     <BilingualText en="Ban permanently" el="Οριστικός αποκλεισμός" compact />
                   </DropdownMenuItem>

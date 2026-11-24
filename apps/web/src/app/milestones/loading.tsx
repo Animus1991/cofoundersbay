@@ -1,9 +1,11 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { appShellLoadingClasses } from '@/lib/layout-config';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
 export default function MilestonesLoading() {
   return (
     <div className="min-h-screen pb-20 lg:pb-16">
+    <HeaderBandSkeleton />
       <div className={appShellLoadingClasses + ' space-y-6'}>
         <div className="flex items-center justify-between py-3">
           <Skeleton className="h-8 w-36" />

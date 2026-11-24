@@ -10,7 +10,6 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { usePageControls, usePageList } from '@/lib/page-controls';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -23,7 +22,7 @@ import { ASK, type AskPrompt } from '@/lib/page-questions';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { isPreviewDemo } from '@/lib/preview-demo';
-import { cn, initialsOf } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { queryKeys, qk } from '@/lib/query-keys';
 import {
@@ -49,6 +48,7 @@ import {
 import { CommitmentOutcomes } from '@/components/commitments/CommitmentOutcomes';
 import { WhatsNewRail } from '@/components/dashboard/WhatsNewPanel';
 import { MetricTile } from '@/components/dashboard/MetricTile';
+import { PersonTile, PersonTileRail } from '@/components/common/PersonTile';
 import { ProgressSegments } from '@/components/dashboard/ProgressSegments';
 import { Sparkline } from '@/components/charts/Sparkline';
 import { FounderProgressCard } from '@/components/gamification/FounderProgressCard';
@@ -63,7 +63,6 @@ import {
 } from '@/components/dashboard/FounderFirstMove';
 import { listCommitmentThreads } from '@/lib/commitments-api';
 import { waitsOnMe } from '@/lib/commitments-next';
-import { RowHead } from '@/components/dashboard/SectionCard';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
 import { XPProgressWidget } from '@/components/gamification/XPProgressWidget';
@@ -268,7 +267,13 @@ function RailListLink({ href, en, el }: { href: string; en: string; el: string }
  * without a frame of its own (a bordered box per match drew a card inside
  * the card).
  */
-function MatchPreviewRow({ match, viewer }: { match: SearchHit; viewer: ViewerFacts | null }) {
+/**
+ * A match as a tile of the Top Matches rail (docs §134): the shared 200px
+ * `PersonTile` — face, name, role, headline, the reason — with the score
+ * beside the badge and the match page as the tile's verb (the row linked
+ * there too).
+ */
+function MatchPreviewTile({ match, viewer }: { match: SearchHit; viewer: ViewerFacts | null }) {
   // Stamped once at mount, like /discover: an impure read inside the render
   // body is flagged, and this card only exists after mount anyway.
   const [nowMs] = useState(() => Date.now());
@@ -276,37 +281,36 @@ function MatchPreviewRow({ match, viewer }: { match: SearchHit; viewer: ViewerFa
   const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? 'text-primary-accessible' : STATUS.warning.icon;
   // The most telling reason, as the person's card on /matches puts it first.
   const reason = explainMatch(match, viewer, { nowMs })[0] ?? null;
+  const name = match.displayName ?? '';
   return (
-    <Link href={`/matches/${match.userId}`} className="axis-row group block rounded-md transition-colors hover:bg-accent focus-ring">
-      <RowHead
-        mark={(
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={match.avatarUrl ?? undefined} alt="" />
-            <AvatarFallback className="bg-muted text-sm font-medium text-muted-foreground">
-              {initialsOf(match.displayName)}
-            </AvatarFallback>
-          </Avatar>
-        )}
-        title={<span className="block truncate">{match.displayName}</span>}
-        // Both lines wrap inside two lines. A compact (one-line) BilingualText
-        // inside line-clamp ran past the rail's edge and was cut mid-word,
-        // with no ellipsis ("Full-stc", "a co-four"; docs §69).
-        subtitle={match.headline ? (
-          <span className="line-clamp-2">
-            {PREVIEW_HEADLINE_EL[match.headline]
-              ? <BilingualText en={match.headline} el={PREVIEW_HEADLINE_EL[match.headline]} compact wrap />
-              : match.headline}
-          </span>
-        ) : undefined}
-        meta={reason ? <span className="line-clamp-2"><BilingualText en={reason.en} el={reason.el} compact wrap /></span> : undefined}
-        asideStays
-        aside={(
-          <span className={cn('flex items-center gap-0.5 text-sm font-semibold tabular-nums', scoreColor)}>
-            <CfbGlyph name="spark" className="icon-sm" />{score}%
-          </span>
-        )}
-      />
-    </Link>
+    <PersonTile
+      userId={match.userId}
+      name={name}
+      avatarUrl={match.avatarUrl}
+      role={match.role}
+      href={`/matches/${match.userId}`}
+      headline={match.headline
+        ? (PREVIEW_HEADLINE_EL[match.headline]
+          ? <BilingualText en={match.headline} el={PREVIEW_HEADLINE_EL[match.headline]} compact />
+          : match.headline)
+        : null}
+      reason={reason}
+      meta={(
+        <span className={cn('inline-flex items-center gap-0.5 text-xs font-semibold tabular-nums', scoreColor)}>
+          <CfbGlyph name="spark" className="icon-sm" aria-hidden="true" />{score}%
+        </span>
+      )}
+      action={(
+        <Button size="sm" className="w-full" asChild aria-label={bilingualAria(`Open the match with ${name}`, `Άνοιγμα αντιστοίχισης: ${name}`)}>
+          <Link href={`/matches/${match.userId}`}>
+            <BilingualText en="View match" el="Προβολή" compact />
+          </Link>
+        </Button>
+      )}
+      more={[
+        { key: 'profile', en: 'Full profile', el: 'Πλήρες προφίλ', icon: ArrowRight, href: `/profiles/${match.userId}` },
+      ]}
+    />
   );
 }
 
@@ -947,11 +951,14 @@ export default function FounderDashboardContent() {
       </CardHeader>
       <CardContent className="space-y-3">
         {(recommendations?.suggestions?.length ?? 0) > 0 && (
-          <div className="card-rows">
+          /* The people rail the home draws (docs §134): the same 200px
+             portrait tiles — face, name, role, reason, the score beside the
+             badge — where a flat row of names used to sit. */
+          <PersonTileRail labelEn={dashboardEn('top_matches')} labelEl={dashboardEl('top_matches')}>
             {recommendations?.suggestions?.slice(0, 3).map((match: SearchHit) => (
-              <MatchPreviewRow key={match.userId} match={match} viewer={viewer} />
+              <MatchPreviewTile key={match.userId} match={match} viewer={viewer} />
             ))}
-          </div>
+          </PersonTileRail>
         )}
         {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
           <div className="space-y-3">
@@ -1232,7 +1239,7 @@ export default function FounderDashboardContent() {
     },
   ];
   return (
-    <AppShell
+    <AppShell titleSrOnly
       rail={rail}
       showHelp
       // One question box on this page: the home's own (HomeAskHero, below the
@@ -1251,7 +1258,57 @@ export default function FounderDashboardContent() {
         {/* GitHub's home: a greeting over one question box and the jobs to
             start from. The weekly brief the header's field used to send is
             the "My week" chip. */}
-        <HomeAskHero role="founder" followUpsDue={dueFollowUps.length} showWaiting={false} plain name={own?.displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
+        <HomeAskHero role="founder" followUpsDue={dueFollowUps.length} showWaiting={false} band name={own?.displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
+        <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" data-tour="founder-stats">
+          <MetricTile
+            glyph="profile"
+            family="people"
+            label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
+            value={userMetrics?.profileViews ?? '—'}
+            trend={profileViewsTrend}
+            trendVisual={profileViewPoints.length > 1 ? <Sparkline points={profileViewPoints} /> : undefined}
+            caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
+            captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
+            href="/analytics"
+          />
+          <MetricTile
+            glyph="matches"
+            family="people"
+            label="Recommended matches" labelEl="Προτεινόμενες αντιστοιχίσεις"
+            value={matchCount ?? recommendations?.suggestions?.length ?? '—'}
+            caption="People who fit your criteria"
+            captionEl="Άτομα που ταιριάζουν στα κριτήριά σας"
+            href="/matches"
+          />
+          <MetricTile
+            glyph="messages"
+            family="neutral"
+            label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
+            value={unreadMessages}
+            href="/messages"
+            caption={unreadMessages > 0 ? `${unreadMessages} waiting in Messages` : 'Inbox caught up'}
+            captionEl={unreadMessages > 0 ? `${unreadMessages} σε αναμονή στα Μηνύματα` : 'Όλα διαβασμένα'}
+          />
+          <MetricTile
+            glyph="flag"
+            family="time"
+            label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
+            value={milestonesFailed && milestones.length === 0 ? '—' : `${completedMilestoneCount}/${milestones.length}`}
+            href="/milestones"
+            edge={milestones.length > 0 ? (
+              <ProgressSegments
+                total={milestones.length}
+                segments={[
+                  { key: 'done', value: completedMilestoneCount, tone: 'done' },
+                  { key: 'active', value: activeMilestoneCount, tone: 'active' },
+                  { key: 'late', value: overdueMilestoneCount, tone: 'late' },
+                ]}
+              />
+            ) : undefined}
+            caption={milestonesFailed && milestones.length === 0 ? 'Not read: the server is unavailable. Opens milestones' : milestoneCaption.en}
+            captionEl={milestonesFailed && milestones.length === 0 ? 'Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα ορόσημα' : milestoneCaption.el}
+          />
+        </div>
 
         {showFirstMove && (
           <FounderFirstMove
@@ -1272,56 +1329,6 @@ export default function FounderDashboardContent() {
             shortcuts in the page's tools. */}
         <div data-tour="founder-today"><HomeToday /></div>
 
-        <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" data-tour="founder-stats">
-          <MetricTile
-            align="center"
-            glyph="profile"
-            label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
-            value={userMetrics?.profileViews ?? '—'}
-            trend={profileViewsTrend}
-            trendVisual={profileViewPoints.length > 1 ? <Sparkline points={profileViewPoints} /> : undefined}
-            caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
-            captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
-            href="/analytics"
-          />
-          <MetricTile
-            align="center"
-            glyph="matches"
-            label="Recommended matches" labelEl="Προτεινόμενες αντιστοιχίσεις"
-            value={matchCount ?? recommendations?.suggestions?.length ?? '—'}
-            caption="People who fit your criteria"
-            captionEl="Άτομα που ταιριάζουν στα κριτήριά σας"
-            href="/matches"
-          />
-          <MetricTile
-            align="center"
-            glyph="messages"
-            label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
-            value={unreadMessages}
-            href="/messages"
-            caption={unreadMessages > 0 ? `${unreadMessages} waiting in Messages` : 'Inbox caught up'}
-            captionEl={unreadMessages > 0 ? `${unreadMessages} σε αναμονή στα Μηνύματα` : 'Όλα διαβασμένα'}
-          />
-          <MetricTile
-            align="center"
-            glyph="flag"
-            label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
-            value={milestonesFailed && milestones.length === 0 ? '—' : `${completedMilestoneCount}/${milestones.length}`}
-            href="/milestones"
-            edge={milestones.length > 0 ? (
-              <ProgressSegments
-                total={milestones.length}
-                segments={[
-                  { key: 'done', value: completedMilestoneCount, tone: 'done' },
-                  { key: 'active', value: activeMilestoneCount, tone: 'active' },
-                  { key: 'late', value: overdueMilestoneCount, tone: 'late' },
-                ]}
-              />
-            ) : undefined}
-            caption={milestonesFailed && milestones.length === 0 ? 'Not read: the server is unavailable. Opens milestones' : milestoneCaption.en}
-            captionEl={milestonesFailed && milestones.length === 0 ? 'Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα ορόσημα' : milestoneCaption.el}
-          />
-        </div>
 
         <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-2">
           <div className="min-w-0 space-y-5">

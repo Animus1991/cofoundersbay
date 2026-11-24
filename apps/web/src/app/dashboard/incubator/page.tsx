@@ -254,7 +254,7 @@ export default function IncubatorDashboard() {
     { id: 'open_applications', labelEn: 'Review program applications', labelEl: 'Έλεγχος αιτήσεων προγραμμάτων', writes: false, run: () => router.push('/org/applications') },
     { id: 'open_programs', labelEn: 'Manage programs', labelEl: 'Διαχείριση προγραμμάτων', writes: false, run: () => router.push('/org/programs') },
     { id: 'open_startups', labelEn: 'Open portfolio startups', labelEl: 'Άνοιγμα startups οργανισμού', writes: false, run: () => router.push('/org/startups') },
-    // Opens the form the "No organisation yet" card opens (docs §138): the
+    // Opens the form the "No organisation yet" card opens (docs §142): the
     // person fills it and presses Create, so nothing is written from here.
     {
       id: 'create_organisation',
@@ -303,7 +303,7 @@ export default function IncubatorDashboard() {
     },
   ];
   return (
-    <AppShell askAi={false} showHelp rail={rail}
+    <AppShell titleSrOnly askAi={false} showHelp rail={rail}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1.5">
@@ -320,7 +320,49 @@ export default function IncubatorDashboard() {
       }
     >
       <div className="space-y-6">
-        <HomeAskHero role="incubator" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
+        <HomeAskHero role="incubator" showWaiting={false} band name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          <MetricTile
+            family="time"
+            icon={LayoutGrid}
+            label="Running programs"
+            labelEl="Ενεργά προγράμματα"
+            value={loading || programsFailed ? '—' : running.length}
+            caption={programsFailed ? 'Not read just now' : `${upcoming.length} upcoming · ${completed.length} completed`}
+            captionEl={programsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : `${upcoming.length} προσεχώς · ${completed.length} ολοκληρωμένα`}
+            href="/org/programs"
+          />
+          <MetricTile
+            family="people"
+            icon={Rocket}
+            label="Startups in programs"
+            labelEl="Startups σε προγράμματα"
+            value={loading || programsFailed || participantsFailed ? '—' : inPrograms.length}
+            caption={programsFailed || participantsFailed ? 'Not read just now' : `${alumni.length} alumni`}
+            captionEl={programsFailed || participantsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : `${alumni.length} απόφοιτοι`}
+            href="/org/startups"
+          />
+          <MetricTile
+            family="people"
+            icon={GraduationCap}
+            label="Mentors"
+            labelEl="Μέντορες"
+            value={mentorData && !mentorsFailed ? mentors.length : '—'}
+            caption={mentorsFailed ? 'Not read just now' : menteeSlots ? `${menteesTaken} of ${menteeSlots} mentee places taken` : 'Your mentor pool'}
+            captionEl={mentorsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : menteeSlots ? `${menteesTaken} από ${menteeSlots} θέσεις καθοδηγούμενων` : 'Η δεξαμενή μεντόρων σας'}
+            href="/org/mentors"
+          />
+          <MetricTile
+            family="time"
+            icon={UserPlus}
+            label="Applications waiting"
+            labelEl="Αιτήσεις σε αναμονή"
+            value={loading || programsFailed || participantsFailed ? '—' : waiting.length}
+            caption={programsFailed ? 'Not read just now' : nextClose ? `${nextClose.p.title.split(' · ')[0]} closes in ${nextClose.d} days` : 'No round is open'}
+            captionEl={programsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : nextClose ? `${nextClose.p.title.split(' · ')[0]}: κλείνει σε ${nextClose.d} ημέρες` : 'Κανένας γύρος ανοιχτός'}
+            href="/org/applications"
+          />
+        </div>
         <HomeToday />
 
         {!loading && nextApplication ? (
@@ -362,44 +404,6 @@ export default function IncubatorDashboard() {
         )}
 
         {/* Four figures, each the length of a list one click away. */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-          <MetricTile
-            icon={LayoutGrid}
-            label="Running programs"
-            labelEl="Ενεργά προγράμματα"
-            value={loading || programsFailed ? '—' : running.length}
-            caption={programsFailed ? 'Not read just now' : `${upcoming.length} upcoming · ${completed.length} completed`}
-            captionEl={programsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : `${upcoming.length} προσεχώς · ${completed.length} ολοκληρωμένα`}
-            href="/org/programs"
-          />
-          <MetricTile
-            icon={Rocket}
-            label="Startups in programs"
-            labelEl="Startups σε προγράμματα"
-            value={loading || programsFailed || participantsFailed ? '—' : inPrograms.length}
-            caption={programsFailed || participantsFailed ? 'Not read just now' : `${alumni.length} alumni`}
-            captionEl={programsFailed || participantsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : `${alumni.length} απόφοιτοι`}
-            href="/org/startups"
-          />
-          <MetricTile
-            icon={GraduationCap}
-            label="Mentors"
-            labelEl="Μέντορες"
-            value={mentorData && !mentorsFailed ? mentors.length : '—'}
-            caption={mentorsFailed ? 'Not read just now' : menteeSlots ? `${menteesTaken} of ${menteeSlots} mentee places taken` : 'Your mentor pool'}
-            captionEl={mentorsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : menteeSlots ? `${menteesTaken} από ${menteeSlots} θέσεις καθοδηγούμενων` : 'Η δεξαμενή μεντόρων σας'}
-            href="/org/mentors"
-          />
-          <MetricTile
-            icon={UserPlus}
-            label="Applications waiting"
-            labelEl="Αιτήσεις σε αναμονή"
-            value={loading || programsFailed || participantsFailed ? '—' : waiting.length}
-            caption={programsFailed ? 'Not read just now' : nextClose ? `${nextClose.p.title.split(' · ')[0]} closes in ${nextClose.d} days` : 'No round is open'}
-            captionEl={programsFailed ? 'Δεν διαβάστηκε αυτή τη στιγμή' : nextClose ? `${nextClose.p.title.split(' · ')[0]}: κλείνει σε ${nextClose.d} ημέρες` : 'Κανένας γύρος ανοιχτός'}
-            href="/org/applications"
-          />
-        </div>
 
         <HomeFold storageKey="cfb.dashboard.incubator.full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

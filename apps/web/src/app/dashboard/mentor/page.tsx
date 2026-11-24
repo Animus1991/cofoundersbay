@@ -4,9 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
+  ArrowRight,
   Calendar,
   DollarSign,
-  MessageCircle,
   Star,
   TrendingUp,
   UserCheck,
@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { BilingualText } from '@/components/common/BilingualText';
 import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
+import { PersonTile, PersonTileRail } from '@/components/common/PersonTile';
 import { EmptyLine, FailedLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { bilingualInline } from '@/lib/i18n/format';
 import { useSession } from '@/hooks/useSession';
@@ -67,40 +68,27 @@ function sessionWhen(iso: string, locale: 'en-GB' | 'el-GR' = 'en-GB'): string {
   return `${day} · ${time}`;
 }
 
-function MenteeRowItem({ mentee }: { mentee: MenteeRow }) {
+function MenteeTile({ mentee }: { mentee: MenteeRow }) {
   return (
-    <RowHead
-      mark={(
-        <Avatar className="h-10 w-10">
-          <AvatarImage src={mentee.avatarUrl ?? undefined} alt="" />
-          <AvatarFallback className="bg-primary/10 text-primary-accessible">{initialsOf(mentee.name)}</AvatarFallback>
-        </Avatar>
+    <PersonTile
+      userId={mentee.id}
+      name={mentee.name}
+      avatarUrl={mentee.avatarUrl}
+      headline={mentee.startup || <BilingualText en="No startup yet" el="Χωρίς startup ακόμη" compact />}
+      reason={{
+        en: `${mentee.sessionsCompleted} ${mentee.sessionsCompleted === 1 ? 'session' : 'sessions'}`,
+        el: `${mentee.sessionsCompleted} ${mentee.sessionsCompleted === 1 ? 'συνεδρία' : 'συνεδρίες'}`,
+      }}
+      action={(
+        <Button size="sm" className="w-full" asChild aria-label={bilingualInline(`Message ${mentee.name}`, `Μήνυμα σε ${mentee.name}`)}>
+          <Link href={mentee.id ? `/messages?to=${mentee.id}` : '/messages'}>
+            <BilingualText en="Message" el="Μήνυμα" compact />
+          </Link>
+        </Button>
       )}
-      title={<span className="block truncate">{mentee.name}</span>}
-      subtitle={(
-        <span className="block truncate">
-          {mentee.startup || <BilingualText en="No startup yet" el="Χωρίς startup ακόμη" compact />}
-        </span>
-      )}
-      asideStays
-      aside={(
-        <>
-          <span className="tabular-nums">
-            <BilingualText
-              en={`${mentee.sessionsCompleted} ${mentee.sessionsCompleted === 1 ? 'session' : 'sessions'}`}
-              el={`${mentee.sessionsCompleted} ${mentee.sessionsCompleted === 1 ? 'συνεδρία' : 'συνεδρίες'}`}
-              compact
-            />
-          </span>
-          {/* Named per mentee: three unnamed icon buttons read as "button" three
-              times, and axe reported button-name (critical). */}
-          <Button variant="ghost" size="icon" aria-label={bilingualInline(`Message ${mentee.name}`, `Μήνυμα σε ${mentee.name}`)} asChild>
-            <Link href={mentee.id ? `/messages?to=${mentee.id}` : '/messages'}>
-              <MessageCircle className="icon-sm" aria-hidden="true" />
-            </Link>
-          </Button>
-        </>
-      )}
+      more={mentee.id ? [
+        { key: 'profile', en: 'Full profile', el: 'Πλήρες προφίλ', icon: ArrowRight, href: `/profiles/${mentee.id}` },
+      ] : []}
     />
   );
 }
@@ -401,12 +389,54 @@ export default function MentorDashboard() {
     },
   ];
   return (
-    <AppShell askAi={false} showHelp rail={rail}
+    <AppShell titleSrOnly askAi={false} showHelp rail={rail}
       description="Sessions, mentee requests, reviews, and earnings at a glance."
       descriptionEl="Συνεδρίες, αιτήματα καθοδηγούμενων, αξιολογήσεις και έσοδα με μια ματιά."
     >
       <div className="space-y-6">
-        <HomeAskHero role="mentor" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
+        <HomeAskHero role="mentor" showWaiting={false} band name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          <MetricTile
+            family="people"
+            icon={Users}
+            label="Active mentees"
+            labelEl="Ενεργοί καθοδηγούμενοι"
+            value={!menteesKnown || (relFailed && !stats) ? '\u2014' : mentorStats.activeMentees}
+            caption={!menteesKnown || (relFailed && !stats) ? undefined : mentorStats.completedMentorships ? `${mentorStats.completedMentorships} completed before` : 'In progress now'}
+            captionEl={!menteesKnown || (relFailed && !stats) ? undefined : mentorStats.completedMentorships ? `${mentorStats.completedMentorships} ολοκληρωμένες πριν` : 'Σε εξέλιξη τώρα'}
+            href="/mentor/mentees"
+          />
+          <MetricTile
+            family="time"
+            icon={Calendar}
+            label="Upcoming sessions"
+            labelEl="Επόμενες συνεδρίες"
+            value={!sessionsKnown || sessionsFailed ? '\u2014' : mentorStats.upcomingSessions}
+            caption={!sessionsKnown || sessionsFailed ? undefined : nextSession ? `Next ${sessionWhen(nextSession.scheduledAt)}` : 'Nothing scheduled'}
+            captionEl={!sessionsKnown || sessionsFailed ? undefined : nextSession ? `Επόμενη ${sessionWhen(nextSession.scheduledAt, 'el-GR')}` : 'Τίποτα προγραμματισμένο'}
+            href="/mentor/sessions"
+          />
+          <MetricTile
+            family="money"
+            icon={DollarSign}
+            label="Earnings this month"
+            labelEl="Έσοδα μήνα"
+            value={mentorStats.earningsThisMonth ?? '\u2014'}
+            caption={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth}h paid${mentorStats.pendingThisMonth ? ` · ${mentorStats.pendingThisMonth} pending` : ''}` : 'Paid sessions appear on Earnings'}
+            captionEl={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth} ώρες πληρωμένες${mentorStats.pendingThisMonth ? ` · ${mentorStats.pendingThisMonth} σε εκκρεμότητα` : ''}` : 'Οι πληρωμένες συνεδρίες εμφανίζονται στα Έσοδα'}
+            href="/mentor/earnings"
+          />
+          <MetricTile
+            family="neutral"
+            icon={Star}
+            label="Average rating"
+            labelEl="Μέση βαθμολογία"
+            value={mentorStats.avgRating}
+            caption={rating ? `From ${rating.count} reviews` : averageRating != null ? 'Across your reviews' : stats ? 'No reviews recorded yet' : undefined}
+            captionEl={rating ? `Από ${rating.count} αξιολογήσεις` : averageRating != null ? 'Από τις αξιολογήσεις σας' : stats ? 'Καμία αξιολόγηση ακόμα' : undefined}
+            href="/mentor/reviews"
+          />
+        </div>
         <HomeToday />
 
         {/* One next step, before everything else. Within the hour it stays the
@@ -448,44 +478,6 @@ export default function MentorDashboard() {
 
         {/* Four figures, each a different fact and each linking to its rows.
             Rating and hours were drawn twice (a tile and a tinted banner). */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-          <MetricTile
-            icon={Users}
-            label="Active mentees"
-            labelEl="Ενεργοί καθοδηγούμενοι"
-            value={!menteesKnown || (relFailed && !stats) ? '\u2014' : mentorStats.activeMentees}
-            caption={!menteesKnown || (relFailed && !stats) ? undefined : mentorStats.completedMentorships ? `${mentorStats.completedMentorships} completed before` : 'In progress now'}
-            captionEl={!menteesKnown || (relFailed && !stats) ? undefined : mentorStats.completedMentorships ? `${mentorStats.completedMentorships} ολοκληρωμένες πριν` : 'Σε εξέλιξη τώρα'}
-            href="/mentor/mentees"
-          />
-          <MetricTile
-            icon={Calendar}
-            label="Upcoming sessions"
-            labelEl="Επόμενες συνεδρίες"
-            value={!sessionsKnown || sessionsFailed ? '\u2014' : mentorStats.upcomingSessions}
-            caption={!sessionsKnown || sessionsFailed ? undefined : nextSession ? `Next ${sessionWhen(nextSession.scheduledAt)}` : 'Nothing scheduled'}
-            captionEl={!sessionsKnown || sessionsFailed ? undefined : nextSession ? `Επόμενη ${sessionWhen(nextSession.scheduledAt, 'el-GR')}` : 'Τίποτα προγραμματισμένο'}
-            href="/mentor/sessions"
-          />
-          <MetricTile
-            icon={DollarSign}
-            label="Earnings this month"
-            labelEl="Έσοδα μήνα"
-            value={mentorStats.earningsThisMonth ?? '\u2014'}
-            caption={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth}h paid${mentorStats.pendingThisMonth ? ` · ${mentorStats.pendingThisMonth} pending` : ''}` : 'Paid sessions appear on Earnings'}
-            captionEl={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth} ώρες πληρωμένες${mentorStats.pendingThisMonth ? ` · ${mentorStats.pendingThisMonth} σε εκκρεμότητα` : ''}` : 'Οι πληρωμένες συνεδρίες εμφανίζονται στα Έσοδα'}
-            href="/mentor/earnings"
-          />
-          <MetricTile
-            icon={Star}
-            label="Average rating"
-            labelEl="Μέση βαθμολογία"
-            value={mentorStats.avgRating}
-            caption={rating ? `From ${rating.count} reviews` : averageRating != null ? 'Across your reviews' : stats ? 'No reviews recorded yet' : undefined}
-            captionEl={rating ? `Από ${rating.count} αξιολογήσεις` : averageRating != null ? 'Από τις αξιολογήσεις σας' : stats ? 'Καμία αξιολόγηση ακόμα' : undefined}
-            href="/mentor/reviews"
-          />
-        </div>
 
         <HomeFold storageKey="cfb.dashboard.mentor.full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -517,10 +509,15 @@ export default function MentorDashboard() {
               ) : sessionsKnown && upcomingAll.length === 0 && <EmptyLine en="No upcoming sessions scheduled." el="Δεν υπάρχουν προγραμματισμένες συνεδρίες." />}
             </SectionCard>
 
-            <SectionCard title="Your mentees" titleEl="Οι καθοδηγούμενοί σας" icon={UserCheck} iconTint="accent" action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }} contentClassName="card-rows">
-              {mentees.map((mentee) => (
-                <MenteeRowItem key={mentee.id} mentee={mentee} />
-              ))}
+            <SectionCard title="Your mentees" titleEl="Οι καθοδηγούμενοί σας" icon={UserCheck} iconTint="accent" action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }}>
+              {/* The people rail the home draws (docs §134): the same 200px
+                  portrait tiles where plain rows used to sit; Message stays
+                  the verb, the profile joins the tile's menu. */}
+              <PersonTileRail labelEn="Your mentees" labelEl="Οι καθοδηγούμενοί σας">
+                {mentees.map((mentee) => (
+                  <MenteeTile key={mentee.id} mentee={mentee} />
+                ))}
+              </PersonTileRail>
               {relFailed ? (
                 <FailedLine en="Your mentees could not be read just now." el="Οι καθοδηγούμενοί σας δεν διαβάστηκαν αυτή τη στιγμή." busy={relFetching} onRetry={() => void refetchRel()} />
               ) : menteesKnown && mentees.length === 0 && <EmptyLine en="Accepted requests become mentees here." el="Τα αιτήματα που αποδέχεστε εμφανίζονται εδώ ως καθοδηγούμενοι." />}

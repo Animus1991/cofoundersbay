@@ -351,9 +351,8 @@ export function ConversationValidationMenu({
       {/* Mode selection dialog */}
       <Dialog open={showModeDialog} onOpenChange={setShowModeDialog}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={ShieldCheck} tone="success">
             <DialogTitle className="flex items-center gap-2">
-              <Shield className="icon-md text-muted-foreground" />
               <BilingualText en="Conversation validation mode" el="Λειτουργία επικύρωσης συνομιλίας" compact />
             </DialogTitle>
             <DialogDescription>

@@ -36,7 +36,8 @@ import {
   listCoupons, createCoupon, deleteCoupon,
   type BillingSubscription, type BillingInvoice, type BillingPlanItem, type PromotionCodeItem,
 } from '@/lib/api';
-import { formatCents, STATUS_COLORS } from '@/lib/billing';
+import { formatCents } from '@/lib/billing';
+import type { StatusTone } from '@/lib/semantic-colors';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
@@ -54,6 +55,19 @@ function subscriptionOwner(sub: BillingSubscription): string {
     ?? (owner as { name?: string })?.name
     ?? sub.userId ?? sub.tenantId ?? '—';
 }
+
+// The subscription-state words' tones — billing's own nuance (a trial is
+// informational, a cancelled plan is quiet), kept through the shared pill.
+const SUB_STATUS_TONE: Record<string, StatusTone> = {
+  active: 'success',
+  trialing: 'info',
+  past_due: 'warning',
+  canceled: 'neutral',
+  unpaid: 'danger',
+  incomplete: 'warning',
+  incomplete_expired: 'danger',
+  paused: 'neutral',
+};
 
 function SubRow({
   sub, plans, onExtendTrial, onCancel, onOverride,
@@ -96,9 +110,9 @@ function SubRow({
         )}
         aside={(
           <>
-            <Badge variant="outline" className={cn('text-xs shrink-0', STATUS_COLORS[sub.status] ?? '')}>
-              <StatusText value={sub.status} />
-            </Badge>
+            {/* The tinted status pill itself, not a badge around it (B2.3);
+                the subscription's own tone map, same hues as before. */}
+            <StatusText value={sub.status} tone={SUB_STATUS_TONE[sub.status]} />
             <span className="font-medium tabular-nums text-foreground">
               {formatCents(annual ? (sub.plan?.priceAnnual ?? 0) : (sub.plan?.priceMonthly ?? 0), sub.plan?.currency)}
               <span className="text-muted-foreground"><BilingualText en={annual ? '/yr' : '/mo'} el={annual ? '/έτος' : '/μήνα'} compact /></span>
@@ -124,13 +138,6 @@ function SubRow({
 }
 
 function InvRow({ inv }: { inv: BillingInvoice }) {
-  const statusColors: Record<string, string> = {
-    paid: 'bg-status-success-bg text-status-success border-status-success-border',
-    open: 'bg-status-info-bg text-status-info border-status-info-border',
-    draft: 'bg-muted text-muted-foreground border-border',
-    void: 'bg-muted text-muted-foreground border-border',
-    uncollectible: 'bg-status-danger-bg text-status-danger border-status-danger-border',
-  };
   const sub = (inv as Record<string, unknown>).subscription as { user?: { email?: string }; tenant?: { name?: string } } | null;
   const ownerLabel = sub?.user?.email ?? sub?.tenant?.name ?? inv.subscriptionId.slice(0, 8);
 
@@ -143,7 +150,7 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
         subtitle={<FactLine items={[<span key="owner" translate="no">{ownerLabel}</span>, fmtDate(inv.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })]} />}
         aside={(
           <>
-            <Badge variant="outline" className={cn('text-xs', statusColors[inv.status] ?? '')}><StatusText value={inv.status} /></Badge>
+            <StatusText value={inv.status} />
             <span className="font-medium tabular-nums text-foreground">{formatCents(inv.total, inv.currency)}</span>
             {inv.hostedInvoiceUrl && (
               // A <button> inside an <a> is two interactive elements nested - one
@@ -661,7 +668,7 @@ export default function AdminBillingPage() {
       {/* Override Dialog */}
       <Dialog open={Boolean(overrideTarget)} onOpenChange={open => !open && setOverrideTarget(null)}>
         <DialogContent>
-          <DialogHeader>
+          <DialogHeader icon={CreditCard} tone="success">
             <DialogTitle><BilingualText en="Override Subscription Plan" el="Παράκαμψη πλάνου συνδρομής" compact /></DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">

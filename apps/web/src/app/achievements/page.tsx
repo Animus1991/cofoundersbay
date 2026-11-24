@@ -27,6 +27,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailOptions } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { RowHead } from '@/components/dashboard/SectionCard';
@@ -793,13 +794,11 @@ export default function AchievementsPage() {
                     <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
                   ))
                 ) : (
-                  <Card>
-                    <CardContent className="py-12 text-center">
-                      <Award className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-                      <h3 className="card-title mb-2"><BilingualText en={achievementsEn('no_achievements_found')} el={achievementsEl('no_achievements_found')} /></h3>
-                      <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('try_adjusting_filters')} el={achievementsEl('try_adjusting_filters')} /></p>
-                    </CardContent>
-                  </Card>
+                  <EmptyState
+                    illustration="search"
+                    title={<BilingualText en={achievementsEn('no_achievements_found')} el={achievementsEl('no_achievements_found')} />}
+                    description={<BilingualText en={achievementsEn('try_adjusting_filters')} el={achievementsEl('try_adjusting_filters')} />}
+                  />
                 )}
               </div>
               )}
@@ -811,13 +810,11 @@ export default function AchievementsPage() {
                     <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
                   ))
                 ) : (
-                  <Card>
-                    <CardContent className="py-12 text-center">
-                      <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-                      <h3 className="card-title mb-2"><BilingualText en={achievementsEn('no_unlocked_achievements')} el={achievementsEl('no_unlocked_achievements')} /></h3>
-                      <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('start_engaging')} el={achievementsEl('start_engaging')} /></p>
-                    </CardContent>
-                  </Card>
+                  <EmptyState
+                    illustration="default"
+                    title={<BilingualText en={achievementsEn('no_unlocked_achievements')} el={achievementsEl('no_unlocked_achievements')} />}
+                    description={<BilingualText en={achievementsEn('start_engaging')} el={achievementsEl('start_engaging')} />}
+                  />
                 )}
               </div>
               )}
@@ -829,12 +826,10 @@ export default function AchievementsPage() {
                     <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
                   ))
                 ) : (
-                  <Card>
-                    <CardContent className="py-12 text-center">
-                      <Lock className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-                      <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('all_badges_unlocked')} el={achievementsEl('all_badges_unlocked')} /></p>
-                    </CardContent>
-                  </Card>
+                  <EmptyState
+                    illustration="default"
+                    title={<BilingualText en={achievementsEn('all_badges_unlocked')} el={achievementsEl('all_badges_unlocked')} />}
+                  />
                 )}
               </div>
               )}

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { disableTwoFactor, getTwoFactorStatus } from '@/lib/api';
-import { Shield, ShieldCheck, ShieldOff, AlertTriangle } from 'lucide-react';
+import { Shield, ShieldCheck, ShieldOff, AlertTriangle, Trash2 } from 'lucide-react';
 import { TwoFactorSetup } from './TwoFactorSetup';
 import {
   Dialog,
@@ -73,7 +73,7 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
 
         <Dialog open={showDisable} onOpenChange={setShowDisable}>
           <DialogContent>
-            <DialogHeader>
+            <DialogHeader icon={Trash2} tone="danger">
               <DialogTitle><BilingualText en="Disable Two-Factor Authentication" el="Απενεργοποίηση ελέγχου δύο παραγόντων" wrap /></DialogTitle>
               <DialogDescription>
                 <BilingualText en="Enter a verification code from your authenticator app to confirm." el="Εισάγετε κωδικό από την εφαρμογή ελέγχου ταυτότητας για επιβεβαίωση." wrap />
@@ -142,7 +142,7 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
 
       <Dialog open={showSetup} onOpenChange={setShowSetup}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={ShieldCheck} tone="success">
             <DialogTitle><BilingualText en="Set Up Two-Factor Authentication" el="Ρύθμιση ελέγχου δύο παραγόντων" compact /></DialogTitle>
             <DialogDescription>
               <BilingualText en="Secure your account with an authenticator app like Google Authenticator or Authy." el="Ασφαλίστε τον λογαριασμό σας με εφαρμογή όπως Google Authenticator ή Authy." wrap />

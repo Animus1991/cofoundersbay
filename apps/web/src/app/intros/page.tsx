@@ -10,6 +10,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailStats } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { NetworkTabs } from '@/components/network/NetworkTabs';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Badge } from '@/components/ui/badge';
@@ -311,7 +312,7 @@ function IntrosContent() {
   );
 
   const empty = (en: string, el: string, cta?: React.ReactNode) => (
-    <Card>
+    <Card className="col-span-full">
       <CardContent className="space-y-3 text-sm text-muted-foreground">
         <BilingualText en={en} el={el} wrap />
         {cta}
@@ -334,19 +335,21 @@ function IntrosContent() {
             <Skeleton className="h-40 w-full rounded-2xl" />
           ) : intros.isError && !intros.data ? (
             // A failed read is not "Nobody has asked you" (docs §87).
-            <Card>
-              <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-                <p role="alert" className="text-sm text-muted-foreground">
-                  <BilingualText en="Your introductions could not be read just now." el="Οι γνωριμίες σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
-                </p>
-                <Button size="sm" variant="outline" onClick={() => void intros.refetch()} disabled={intros.isFetching}>
-                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-                </Button>
-              </CardContent>
-            </Card>
+            <div role="alert">
+              <EmptyState
+                illustration="default"
+                size="sm"
+                title={<BilingualText en="Your introductions could not be read just now." el="Οι γνωριμίες σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />}
+                action={(
+                  <Button size="sm" variant="outline" onClick={() => void intros.refetch()} disabled={intros.isFetching}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                )}
+              />
+            </div>
           ) : (
             <>
-              <TabsContent value="forward" className="space-y-4">
+              <TabsContent value="forward" className="card-grid">
                 {toForward.length === 0
                   ? empty('Nobody has asked you for an introduction yet.', 'Κανείς δεν σας έχει ζητήσει ακόμη γνωριμία.')
                   : toForward.map((i) => (
@@ -389,9 +392,9 @@ function IntrosContent() {
                       />
                     ))}
               </TabsContent>
-              <TabsContent value="received" className="space-y-4">
+              <TabsContent value="received" className="card-grid">
                 {refusal ? (
-                  <div role="alert" className="space-y-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3 text-sm text-foreground">
+                  <div role="alert" className="col-span-full space-y-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3 text-sm text-foreground">
                     <p><BilingualText en={refusal.en} el={refusal.el} wrap /></p>
                     <Button size="sm" variant="outline" asChild>
                       <Link href={PROFILE_VERIFICATION_HREF}><BilingualText en="Verify on your profile" el="Επαλήθευση στο προφίλ σας" compact /></Link>
@@ -420,7 +423,7 @@ function IntrosContent() {
                       />
                     ))}
               </TabsContent>
-              <TabsContent value="sent" className="space-y-4">
+              <TabsContent value="sent" className="card-grid">
                 {sent.length === 0
                   ? empty(
                       'You have not asked for an introduction yet. Open the profile of someone you want to meet and choose “Ask for an introduction”.',

@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  UserPlus,
   Clock,
   CheckCircle2,
   XCircle,
@@ -21,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { formatDate } from '@/lib/i18n/format';
 import { useSession } from '@/hooks/useSession';
 import { useToast } from '@/components/ui/toast';
@@ -264,9 +264,9 @@ export default function MentorRequestsPage() {
             <TabsTrigger value="declined" className="gap-2"><BilingualText en="Declined" el="Απορριφθέντα" compact />{declinedRequests.length > 0 && <Counter value={declinedRequests.length} />}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="pending" className="space-y-3 mt-4">
+          <TabsContent value="pending" className="card-grid mt-4">
             {isLoading ? (
-              <div className="flex items-center justify-center py-12">
+              <div className="col-span-full flex items-center justify-center py-12">
                 <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : pendingRequests.length > 0 ? (
@@ -280,21 +280,22 @@ export default function MentorRequestsPage() {
                 />
               ))
             ) : (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <UserPlus className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium"><BilingualText en="No pending requests" el="Δεν υπάρχουν αιτήματα σε αναμονή" /></h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    <BilingualText en="New mentorship requests will appear here." el="Τα νέα αιτήματα καθοδήγησης θα εμφανίζονται εδώ." wrap />
-                  </p>
+              <Card className="col-span-full">
+                <CardContent className="p-0">
+                  <EmptyState
+                    className="border-0 bg-transparent"
+                    illustration="message"
+                    title={<BilingualText en="No pending requests" el="Δεν υπάρχουν αιτήματα σε αναμονή" />}
+                    description={<BilingualText en="New mentorship requests will appear here." el="Τα νέα αιτήματα καθοδήγησης θα εμφανίζονται εδώ." wrap />}
+                  />
                 </CardContent>
               </Card>
             )}
           </TabsContent>
 
-          <TabsContent value="accepted" className="space-y-3 mt-4">
+          <TabsContent value="accepted" className="card-grid mt-4">
             {isLoading ? (
-              <div className="flex items-center justify-center py-12">
+              <div className="col-span-full flex items-center justify-center py-12">
                 <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : acceptedRequests.length > 0 ? (
@@ -302,18 +303,21 @@ export default function MentorRequestsPage() {
                 <RequestCard key={request.id} request={request} />
               ))
             ) : (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium"><BilingualText en="No accepted requests" el="Δεν υπάρχουν αποδεκτά αιτήματα" /></h3>
+              <Card className="col-span-full">
+                <CardContent className="p-0">
+                  <EmptyState
+                    className="border-0 bg-transparent"
+                    illustration="message"
+                    title={<BilingualText en="No accepted requests" el="Δεν υπάρχουν αποδεκτά αιτήματα" />}
+                  />
                 </CardContent>
               </Card>
             )}
           </TabsContent>
 
-          <TabsContent value="declined" className="space-y-3 mt-4">
+          <TabsContent value="declined" className="card-grid mt-4">
             {isLoading ? (
-              <div className="flex items-center justify-center py-12">
+              <div className="col-span-full flex items-center justify-center py-12">
                 <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : declinedRequests.length > 0 ? (
@@ -321,10 +325,13 @@ export default function MentorRequestsPage() {
                 <RequestCard key={request.id} request={request} />
               ))
             ) : (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <XCircle className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium"><BilingualText en="No declined requests" el="Δεν υπάρχουν απορριφθέντα αιτήματα" /></h3>
+              <Card className="col-span-full">
+                <CardContent className="p-0">
+                  <EmptyState
+                    className="border-0 bg-transparent"
+                    illustration="message"
+                    title={<BilingualText en="No declined requests" el="Δεν υπάρχουν απορριφθέντα αιτήματα" />}
+                  />
                 </CardContent>
               </Card>
             )}

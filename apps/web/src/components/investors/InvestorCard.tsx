@@ -7,13 +7,14 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { KindPill } from '@/components/common/KindPill';
 import { CardMoreMenu } from '@/components/common/CardMoreMenu';
 import { FactLine } from '@/components/common/FactLine';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AskIntroDialog } from '@/components/intros/AskIntroDialog';
 import { bilingualInline } from '@/lib/i18n/format';
 import { cn, initialsOf } from '@/lib/utils';
-import { roleTone } from '@/lib/role-tone';
+import { roleRing, roleTone } from '@/lib/role-tone';
 import { STATUS } from '@/lib/semantic-colors';
 import { useHydrated } from '@/components/common/RelativeTime';
 import { isPreviewDemo } from '@/lib/preview-demo';
@@ -129,12 +130,13 @@ export function InvestorCard({
   return (
     <Card className="group overflow-hidden transition-all hover:border-primary/30">
       <CardContent className="space-y-3">
+          <KindPill glyph="growth" tone="success" en="Investor" el="Επενδυτής" />
         {/* One anatomy at every width (docs §115/§125): the full head with
             Save in its corner; the thesis is under More on a phone. */}
         <div>
           <CardHead
             mark={(
-              <Avatar className="h-16 w-16">
+              <Avatar className={cn('h-16 w-16', roleRing('investor'))}>
                 <AvatarImage src={investor.avatarUrl} alt="" />
                 <AvatarFallback className={cn('text-sm font-semibold', roleTone('investor'))}>
                   {initials}

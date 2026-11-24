@@ -217,7 +217,10 @@ export default function NewMilestonePage() {
                             className={cn(
                               'rounded-full border px-3 py-1 text-xs font-medium transition-all',
                               category === c
-                                ? 'border-primary bg-primary text-primary-foreground'
+                                // B1.6: one primary action per card — the picked
+                                // category is an outline emphasis, the submit
+                                // keeps the solid fill.
+                                ? 'border-primary bg-primary/10 text-primary-accessible'
                                 : 'border-border bg-background text-muted-foreground hover:border-primary/50',
                             )}
                           >

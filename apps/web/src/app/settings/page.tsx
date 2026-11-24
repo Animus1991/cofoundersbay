@@ -31,6 +31,9 @@ import {
   Download,
   Activity,
   Sparkles,
+  Languages,
+  Palette,
+  Star,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -370,18 +373,18 @@ const MORE_SETTINGS = [
  * `/settings#billing` is a link too. The words are each card's own heading.
  */
 const PAGE_SECTIONS = [
-  { id: 'language', en: 'Language', el: 'Γλώσσα' },
-  { id: 'appearance', en: 'Appearance', el: 'Εμφάνιση' },
-  { id: 'your-pages', en: 'Your pages', el: 'Οι σελίδες σας' },
-  { id: 'billing', en: 'Billing', el: 'Χρέωση' },
-  { id: 'connected-accounts', en: 'Connected accounts', el: 'Συνδεδεμένοι λογαριασμοί' },
-  { id: 'account', en: 'Account', el: 'Λογαριασμός' },
-  { id: 'change-password', en: 'Change password', el: 'Αλλαγή κωδικού' },
-  { id: 'security', en: 'Security', el: 'Ασφάλεια' },
-  { id: 'notifications', en: 'Notifications', el: 'Ειδοποιήσεις' },
-  { id: 'on-your-profile', en: 'On your profile', el: 'Στο προφίλ σας' },
-  { id: 'privacy', en: 'Privacy & Visibility', el: 'Απόρρητο και ορατότητα' },
-  { id: 'danger-zone', en: 'Danger Zone', el: 'Επικίνδυνη ζώνη' },
+  { id: 'language', en: 'Language', el: 'Γλώσσα', icon: Languages },
+  { id: 'appearance', en: 'Appearance', el: 'Εμφάνιση', icon: Palette },
+  { id: 'your-pages', en: 'Your pages', el: 'Οι σελίδες σας', icon: Star },
+  { id: 'billing', en: 'Billing', el: 'Χρέωση', icon: CreditCard },
+  { id: 'connected-accounts', en: 'Connected accounts', el: 'Συνδεδεμένοι λογαριασμοί', icon: Link2 },
+  { id: 'account', en: 'Account', el: 'Λογαριασμός', icon: User },
+  { id: 'change-password', en: 'Change password', el: 'Αλλαγή κωδικού', icon: KeyRound },
+  { id: 'security', en: 'Security', el: 'Ασφάλεια', icon: Shield },
+  { id: 'notifications', en: 'Notifications', el: 'Ειδοποιήσεις', icon: Bell },
+  { id: 'on-your-profile', en: 'On your profile', el: 'Στο προφίλ σας', icon: Eye },
+  { id: 'privacy', en: 'Privacy & Visibility', el: 'Απόρρητο και ορατότητα', icon: Lock },
+  { id: 'danger-zone', en: 'Danger Zone', el: 'Επικίνδυνη ζώνη', icon: AlertTriangle },
 ] as const;
 
 /*
@@ -934,7 +937,7 @@ export default function SettingsPage() {
       content: (
         <nav aria-label={bilingualAria('On this page', 'Σε αυτή τη σελίδα')} className="space-y-0.5">
           {PAGE_SECTIONS.map((section) => (
-            <RailLink key={section.id} href={`#${section.id}`} en={section.en} el={section.el} />
+            <RailLink key={section.id} href={`#${section.id}`} icon={section.icon} iconWell en={section.en} el={section.el} />
           ))}
         </nav>
       ),
@@ -994,8 +997,11 @@ export default function SettingsPage() {
                 <li key={section.id}>
                   <a
                     href={`#${section.id}`}
-                    className="tap-target-y inline-flex shrink-0 items-center rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground focus-ring"
+                    className="tap-target-y inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground focus-ring"
                   >
+                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                      <section.icon className="icon-sm" aria-hidden="true" />
+                    </span>
                     <BilingualText en={section.en} el={section.el} compact />
                   </a>
                 </li>

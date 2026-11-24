@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, Check, X, Upload } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Check, X, Upload, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -223,7 +223,7 @@ export function ImageCropper({
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={Pencil} tone="primary">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription className="sr-only">{bilingualInline('Upload an image and adjust its crop.', 'Ανεβάστε εικόνα και προσαρμόστε την περικοπή της.')}</DialogDescription>
         </DialogHeader>

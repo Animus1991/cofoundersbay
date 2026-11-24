@@ -17,6 +17,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { KindPill } from '@/components/common/KindPill';
+import { CoverWash } from '@/components/common/CoverWash';
+import { DateBadge } from '@/components/common/DateBadge';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { PhotoChip } from '@/components/common/PhotoChip';
@@ -172,7 +175,6 @@ export function EventCard({
   }
 
   if (variant === 'featured') {
-    const fullDate = fmtDate(event.startDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     return (
       <Card className={cn('group overflow-hidden', className)}>
         {/* The big photo hero (docs §132.1): at lg the photo takes the left
@@ -191,20 +193,10 @@ export function EventCard({
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="h-full w-full bg-status-warning-bg" aria-hidden="true" />
+            <CoverWash tone="warning" />
           )}
           {/* Date badge on the cover, the same square as the grid cards. */}
-          <div data-card-mark="" className="absolute left-4 top-4">
-            <div className="flex h-12 w-12 flex-col items-center justify-center rounded-xl bg-card text-center shadow-sm">
-              <span className="text-base font-bold tabular-nums text-primary-accessible" aria-hidden="true">
-                {event.startDate.getDate()}
-              </span>
-              <span className="card-meta leading-none text-muted-foreground" aria-hidden="true">
-                {fmtDate(event.startDate, { month: 'short' })}
-              </span>
-            </div>
-            <span className="sr-only">{fullDate}</span>
-          </div>
+          <DateBadge date={event.startDate} size="lg" />
           {/* Type: an opaque chip, so it reads on any photo. */}
           <div className="absolute right-4 top-4">
             <PhotoChip>
@@ -215,6 +207,7 @@ export function EventCard({
         </div>
 
         <CardContent className="space-y-3 pt-4 lg:flex lg:w-2/5 lg:flex-col lg:justify-center">
+          <KindPill glyph="calendar" tone="warning" en="Event" el="Εκδήλωση" />
           <Link
             href={`/events/${event.id}`}
             className="block text-[1.375rem] font-semibold leading-tight text-foreground transition-colors hover:text-primary-accessible sm:text-2xl"
@@ -306,28 +299,17 @@ export function EventCard({
   // Default variant: the image leads — a 16:9 cover (the category's warning
   // wash when there is none) with the date badge on it; then the title, the
   // where·when, who runs it, and the one RSVP verb (docs §130.3).
-  const fullDate = fmtDate(event.startDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   return (
     <Card className={cn('group overflow-hidden hover:border-primary/30 transition-colors', className)}>
       <div className="relative aspect-video w-full overflow-hidden">
         {event.coverImage && !cover.failed ? (
           <img ref={cover.ref} onError={cover.onError} src={event.coverImage} alt="" referrerPolicy="no-referrer" loading="lazy" className="h-full w-full object-cover" />
         ) : (
-          <div className="h-full w-full bg-status-warning-bg" aria-hidden="true" />
+          <CoverWash tone="warning" />
         )}
         {/* Date badge on the cover: a solid card square so it reads on any
             photo; the sr-only line carries the full date (docs §130.3). */}
-        <div data-card-mark="" className="absolute left-3 top-3">
-          <div className="flex h-11 w-11 flex-col items-center justify-center rounded-xl bg-card text-center shadow-sm">
-            <span className="text-sm font-bold tabular-nums text-primary-accessible" aria-hidden="true">
-              {event.startDate.getDate()}
-            </span>
-            <span className="card-meta leading-none text-muted-foreground" aria-hidden="true">
-              {fmtDate(event.startDate, { month: 'short' })}
-            </span>
-          </div>
-          <span className="sr-only">{fullDate}</span>
-        </div>
+        <DateBadge date={event.startDate} />
         {/* The format chip is opaque: the same read on photo and wash. */}
         <div className="absolute right-3 top-3">
           <PhotoChip>
@@ -337,6 +319,7 @@ export function EventCard({
         </div>
       </div>
       <CardContent className="space-y-3">
+        <KindPill glyph="calendar" tone="warning" en="Event" el="Εκδήλωση" />
         <CardHead
           title={(
             <Link

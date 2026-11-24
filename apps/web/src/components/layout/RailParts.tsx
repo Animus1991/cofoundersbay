@@ -163,6 +163,7 @@ export function RailAction({
 export function RailLink({
   href,
   icon: Icon,
+  iconWell = false,
   en,
   el,
   descEn,
@@ -170,6 +171,8 @@ export function RailLink({
 }: {
   href: string;
   icon?: ElementType;
+  /** The icon in a small muted well (docs §134), not a bare mark. */
+  iconWell?: boolean;
   en: string;
   el?: string;
   descEn?: string;
@@ -179,7 +182,15 @@ export function RailLink({
     'tap-target flex min-h-10 w-full items-start gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm text-foreground hover:bg-muted/70';
   const body = (
     <>
-      {Icon ? <Icon className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" /> : null}
+      {Icon ? (
+        iconWell ? (
+          <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+            <Icon className="icon-sm" aria-hidden="true" />
+          </span>
+        ) : (
+          <Icon className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        )
+      ) : null}
       <span className="min-w-0 flex-1">
         <span className="block">
           <BilingualText en={en} el={el} compact wrap />

@@ -14,6 +14,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -328,16 +329,18 @@ export default function InvestorsPage() {
 
         <div className="space-y-3">
           {isError && (
-            <Card>
-              <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
-                <p role="alert" className="text-sm text-muted-foreground">
-                  <BilingualText en="The investor directory could not be read just now." el="Ο κατάλογος επενδυτών δεν διαβάστηκε αυτή τη στιγμή." wrap />
-                </p>
-                <Button variant="outline" size="sm" onClick={() => refetch()}>
-                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-                </Button>
-              </CardContent>
-            </Card>
+            <div role="alert">
+              <EmptyState
+                illustration="default"
+                size="sm"
+                title={<BilingualText en="The investor directory could not be read just now." el="Ο κατάλογος επενδυτών δεν διαβάστηκε αυτή τη στιγμή." wrap />}
+                action={(
+                  <Button variant="outline" size="sm" onClick={() => refetch()}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                )}
+              />
+            </div>
           )}
           {isLoading
             ? Array.from({ length: 3 }).map((_, i) => (
@@ -353,8 +356,8 @@ export default function InvestorsPage() {
                 </Card>
               ))
             : (
-              // One card a row at every width, like Matches (docs §115/§125).
-              <div className="grid grid-cols-1 gap-3">
+              // A card grid from ~26rem columns at wide widths (docs §135 A2).
+              <div className="card-grid">
                 {filtered.map((inv) => (
                   <InvestorCard key={inv.id} investor={inv} saved={isSaved(inv)} onToggleSave={() => void toggleSave(inv)} />
                 ))}
@@ -363,22 +366,19 @@ export default function InvestorsPage() {
           {/* Not under a failed read: "No investors have joined yet" stood
               under "could not be loaded" (docs §86). */}
           {!isLoading && !isError && filtered.length === 0 && (
-            <Card>
-              <CardContent className="py-14 text-center">
-                <TrendingUp className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" aria-hidden="true" />
-                <p className="card-title text-foreground">
-                  {directory.length === 0 && !query
-                    ? <BilingualText en="No investors have joined yet" el="Δεν έχουν εγγραφεί ακόμα επενδυτές" />
-                    : <BilingualText en="No investors match" el="Κανένας επενδυτής δεν ταιριάζει" />}
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {activeFilters > 0
-                    ? <BilingualText en="The filters in the side panel may be hiding people. Type and scouting are known only for complete investor profiles." el="Τα φίλτρα του πλευρικού πάνελ ίσως κρύβουν άτομα. Ο τύπος και η αναζήτηση είναι γνωστά μόνο για πλήρη προφίλ επενδυτών." wrap />
-                    : query
-                      ? <BilingualText en="Try a different name, firm or industry." el="Δοκιμάστε άλλο όνομα, εταιρεία ή κλάδο." wrap />
-                      : <BilingualText en="Investors appear here once they join with the investor role." el="Οι επενδυτές εμφανίζονται εδώ όταν εγγραφούν με τον ρόλο του επενδυτή." wrap />}
-                </p>
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <EmptyState
+              className="col-span-full"
+              illustration="search"
+              title={directory.length === 0 && !query
+                ? <BilingualText en="No investors have joined yet" el="Δεν έχουν εγγραφεί ακόμα επενδυτές" />
+                : <BilingualText en="No investors match" el="Κανένας επενδυτής δεν ταιριάζει" />}
+              description={activeFilters > 0
+                ? <BilingualText en="The filters in the side panel may be hiding people. Type and scouting are known only for complete investor profiles." el="Τα φίλτρα του πλευρικού πάνελ ίσως κρύβουν άτομα. Ο τύπος και η αναζήτηση είναι γνωστά μόνο για πλήρη προφίλ επενδυτών." wrap />
+                : query
+                  ? <BilingualText en="Try a different name, firm or industry." el="Δοκιμάστε άλλο όνομα, εταιρεία ή κλάδο." wrap />
+                  : <BilingualText en="Investors appear here once they join with the investor role." el="Οι επενδυτές εμφανίζονται εδώ όταν εγγραφούν με τον ρόλο του επενδυτή." wrap />}
+              action={(
+                <>
                   {activeFilters > 0 && (
                     <Button variant="secondary" size="sm" onClick={() => openRailSection('filters')}>
                       <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
@@ -397,9 +397,9 @@ export default function InvestorsPage() {
                       </Link>
                     </Button>
                   )}
-                </div>
-              </CardContent>
-            </Card>
+                </>
+              )}
+            />
           )}
         </div>
       </div>

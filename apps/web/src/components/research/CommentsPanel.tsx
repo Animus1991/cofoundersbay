@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageCircle, Send, Check, Trash2, Loader2, X } from 'lucide-react';
+import { EmptyState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -179,11 +180,13 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
             <Loader2 className="icon-md animate-spin text-muted-foreground" />
           </div>
         ) : displayed.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <MessageCircle className="icon-xl text-muted-foreground/40 mb-2" />
-            <p className="text-sm text-muted-foreground">No comments yet</p>
-            <p className="text-xs text-muted-foreground mt-1">Start the conversation below</p>
-          </div>
+          <EmptyState
+            className="border-0 bg-transparent py-8"
+            illustration="message"
+            size="sm"
+            title="No comments yet"
+            description="Start the conversation below"
+          />
         ) : (
           displayed.map((comment) => (
             <CommentBubble

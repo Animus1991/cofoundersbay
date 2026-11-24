@@ -6,12 +6,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  ArrowRight, UserPlus, ArrowUpDown, RefreshCw, BarChart3, Zap,
-  X, LayoutGrid, List, Search, MapPin, Briefcase, GraduationCap, DollarSign, Users,
-  Bookmark, BookmarkCheck, MessageCircle, RotateCcw, SlidersHorizontal, Clock,
-  CheckSquare,
-} from 'lucide-react';
+import { ArrowRight, UserPlus, ArrowUpDown, RefreshCw, BarChart3, Zap, X, Search, MapPin, Briefcase, GraduationCap, DollarSign, Users, Bookmark, BookmarkCheck, MessageCircle, RotateCcw, Clock, CheckSquare, Info } from 'lucide-react';
 import { getRecommendations, getMatchBreakdown, getMeProfile, respondToConnectionRequest, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, restoreMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { createPassLedger } from '@/lib/match-pass';
 import { AppShell } from '@/components/layout/AppShell';
@@ -160,9 +155,8 @@ function CompatibilityModal({
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[min(90dvh,calc(100svh-2rem))] max-w-md overflow-y-auto max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
-        <DialogHeader>
+        <DialogHeader icon={Info} tone="neutral">
           <DialogTitle className="flex items-center gap-2">
-            <BarChart3 className="icon-md text-muted-foreground" />
             <BilingualText en={`${matchesEn('compatibility_with')} ${hit.displayName}`} el={`${matchesEl('compatibility_with')} ${hit.displayName}`} />
           </DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="Compatibility score, reasons, points worth discussing and dimensions for this match." el="Βαθμός συμβατότητας, λόγοι, σημεία για συζήτηση και διαστάσεις για αυτή την αντιστοίχιση." /></DialogDescription>
@@ -188,7 +182,8 @@ function CompatibilityModal({
 
         {reasons.length > 0 && (
           <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-1.5">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
               <BilingualText en={matchesEn('why_you_match')} el={matchesEl('why_you_match')} />
             </p>
             {reasons.map((r, i) => (
@@ -202,7 +197,8 @@ function CompatibilityModal({
 
         {frictions.length > 0 && (
           <div className="rounded-lg border border-border bg-status-warning-bg/40 p-3 space-y-1.5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />
               <BilingualText en={matchesEn('watch_outs')} el={matchesEl('watch_outs')} />
             </p>
             {frictions.map((f) => (
@@ -236,7 +232,8 @@ function CompatibilityModal({
 
         {strengths.length > 0 && (
           <div className="rounded-lg border border-border bg-status-success-bg/40 p-3 space-y-1.5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" />
               <BilingualText en={matchesEn('shared_strengths')} el={matchesEl('shared_strengths')} />
             </p>
             <FactLine className="text-sm text-foreground" items={strengths.map((t) => <BilingualText key={t.en} en={t.en} el={t.el} compact />)} />
@@ -1192,18 +1189,20 @@ export default function MatchesPage() {
           />
         )}
 
-        {/* ── Error state ── */}
+        {/* ── Error state: the shared empty state's frame (B2.5). ── */}
         {hasToken && isError && (
-          <Card className="shadow-sm border-border">
-            <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-sm text-muted-foreground">
-                <BilingualText en={matchesEn('failed_to_load')} el={matchesEl('failed_to_load')} />
-              </p>
-              <Button variant="secondary" size="sm" onClick={() => void refetch()}>
-                <BilingualText en={matchesEn('retry')} el={matchesEl('retry')} />
-              </Button>
-            </CardContent>
-          </Card>
+          <div role="alert">
+            <EmptyState
+              illustration="search"
+              size="sm"
+              title={<BilingualText en={matchesEn('failed_to_load')} el={matchesEl('failed_to_load')} />}
+              action={(
+                <Button variant="secondary" size="sm" onClick={() => void refetch()}>
+                  <BilingualText en={matchesEn('retry')} el={matchesEl('retry')} />
+                </Button>
+              )}
+            />
+          </div>
         )}
 
         {/* ── Loading skeletons ── */}
@@ -1387,20 +1386,25 @@ export default function MatchesPage() {
               {/* No results for filters */}
               {filtered.length === 0 && (
                 <Card className="shadow-sm border-border">
-                  <CardContent className="py-12 text-center">
-                    <SlidersHorizontal className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" aria-hidden="true" />
-                    <p className="font-medium text-foreground mb-1"><BilingualText en="No matches for these filters" el="Καμία αντιστοίχιση για αυτά τα φίλτρα" compact /></p>
-                    <p className="text-sm text-muted-foreground mb-4"><BilingualText en="Try adjusting your tier, role, or location filter" el="Αλλάξτε το φίλτρο βαθμίδας, ρόλου ή τοποθεσίας" wrap /></p>
-                    <Button variant="outline" size="sm" onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}>
-                      <BilingualText en="Clear all filters" el="Καθαρισμός όλων των φίλτρων" compact />
-                    </Button>
+                  <CardContent className="p-0">
+                    <EmptyState
+                      className="border-0 bg-transparent"
+                      illustration="search"
+                      title={<BilingualText en="No matches for these filters" el="Καμία αντιστοίχιση για αυτά τα φίλτρα" compact />}
+                      description={<BilingualText en="Try adjusting your tier, role, or location filter" el="Αλλάξτε το φίλτρο βαθμίδας, ρόλου ή τοποθεσίας" wrap />}
+                      action={(
+                        <Button variant="outline" size="sm" onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}>
+                          <BilingualText en="Clear all filters" el="Καθαρισμός όλων των φίλτρων" compact />
+                        </Button>
+                      )}
+                    />
                   </CardContent>
                 </Card>
               )}
 
               {/* Matches grid */}
               {filtered.length > 0 && viewMode !== 'list' && (
-                <div className={cn('grid grid-cols-1 gap-4',
+                <div className={cn('grid grid-cols-1 items-start gap-4',
                   viewMode === 'grid3' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2')}
                   data-tour="matches-grid">
                   {filtered.map((hit) => {

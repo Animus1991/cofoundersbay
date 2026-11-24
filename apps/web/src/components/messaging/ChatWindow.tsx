@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import {
   ConversationValidationMenu,
@@ -762,7 +763,7 @@ export function ChatWindow({
                   <Flag className="icon-sm mr-2" />
                   <BilingualText en={messagesEn('report')} el={messagesEl('report')} compact />
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={onBlock} className="text-destructive-accessible">
+                <DropdownMenuItem onClick={onBlock} className="text-status-danger">
                   <Ban className="icon-sm mr-2" />
                   <BilingualText en={messagesEn('block')} el={messagesEl('block')} compact />
                 </DropdownMenuItem>
@@ -907,15 +908,18 @@ export function ChatWindow({
           </div>
         )}
         {threadState === 'failed' && messages.length === 0 && (
-          <div className="mb-6 flex flex-col items-center gap-3 px-4 py-8 text-center">
-            <p role="alert" className="max-w-sm text-sm font-medium text-foreground">
-              <BilingualText en={messagesEn('thread_failed')} el={messagesEl('thread_failed')} wrap />
-            </p>
-            {onRetryThread && (
-              <Button type="button" size="sm" variant="outline" onClick={onRetryThread}>
-                <BilingualText en={messagesEn('retry')} el={messagesEl('retry')} compact />
-              </Button>
-            )}
+          <div role="alert" className="mb-6 px-4">
+            <EmptyState
+              className="border-0 bg-transparent"
+              illustration="default"
+              size="sm"
+              title={<BilingualText en={messagesEn('thread_failed')} el={messagesEl('thread_failed')} wrap />}
+              action={onRetryThread ? (
+                <Button type="button" size="sm" variant="outline" onClick={onRetryThread}>
+                  <BilingualText en={messagesEn('retry')} el={messagesEl('retry')} compact />
+                </Button>
+              ) : undefined}
+            />
           </div>
         )}
         {threadState === 'ready' && messages.length === 0 && !searchQuery && (
@@ -1266,7 +1270,8 @@ export function NoChatSelected({
         )}
         {state === 'pick' && recent && recent.length > 0 && onSelectRecent && (
           <div className="w-full space-y-2 md:hidden">
-            <p className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
               <BilingualText en={messagesEn('recent_conversations')} el={messagesEl('recent_conversations')} compact />
             </p>
             <div className="flex flex-wrap justify-center gap-2">

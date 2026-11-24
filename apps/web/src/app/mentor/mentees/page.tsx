@@ -4,7 +4,6 @@ import { StatusText } from '@/components/common/StatusText';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Users,
   MessageCircle,
   Calendar,
   Loader2,
@@ -27,6 +26,7 @@ import {
 } from '@/lib/api';
 import { isUpcoming, fromBooking } from '@/lib/mentoring/sessions';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
@@ -254,10 +254,10 @@ export default function MenteesPage() {
         />
 
         {/* Active Mentees */}
-        <div className="space-y-3">
-          <h2 className="text-base font-semibold text-foreground"><BilingualText en="Active" el="Ενεργοί" compact /><Counter value={activeRelationships.length} /></h2>
+        <div className="card-grid">
+          <h2 className="col-span-full text-base font-semibold text-foreground"><BilingualText en="Active" el="Ενεργοί" compact /><Counter value={activeRelationships.length} /></h2>
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="col-span-full flex items-center justify-center py-12">
               <Loader2 className="icon-xl animate-spin text-muted-foreground" />
             </div>
           ) : activeRelationships.length > 0 ? (
@@ -265,16 +265,19 @@ export default function MenteesPage() {
               <MenteeCard key={relationship.id} relationship={relationship} upcomingBookings={upcomingBookingsByMentee.get(relationship.menteeId) ?? 0} />
             ))
           ) : (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium"><BilingualText en="No active mentees" el="Δεν υπάρχουν ενεργοί καθοδηγούμενοι" compact /></h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  <BilingualText en="Accept mentorship requests to start mentoring" el="Αποδεχτείτε αιτήματα καθοδήγησης για να ξεκινήσετε" wrap />
-                </p>
-                <Button className="mt-4" asChild>
-                  <Link href="/mentor/requests"><BilingualText en="View Requests" el="Προβολή αιτημάτων" compact /></Link>
-                </Button>
+            <Card className="col-span-full">
+              <CardContent className="p-0">
+                <EmptyState
+                  className="border-0 bg-transparent"
+                  illustration="connection"
+                  title={<BilingualText en="No active mentees" el="Δεν υπάρχουν ενεργοί καθοδηγούμενοι" compact />}
+                  description={<BilingualText en="Accept mentorship requests to start mentoring" el="Αποδεχτείτε αιτήματα καθοδήγησης για να ξεκινήσετε" wrap />}
+                  action={(
+                    <Button asChild>
+                      <Link href="/mentor/requests"><BilingualText en="View Requests" el="Προβολή αιτημάτων" compact /></Link>
+                    </Button>
+                  )}
+                />
               </CardContent>
             </Card>
           )}
@@ -282,8 +285,8 @@ export default function MenteesPage() {
 
         {/* Paused Mentees */}
         {pausedRelationships.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-base font-semibold text-foreground"><BilingualText en="Paused" el="Σε παύση" compact /><Counter value={pausedRelationships.length} /></h2>
+          <div className="card-grid">
+            <h2 className="col-span-full text-base font-semibold text-foreground"><BilingualText en="Paused" el="Σε παύση" compact /><Counter value={pausedRelationships.length} /></h2>
             {pausedRelationships.map((relationship) => (
               <MenteeCard key={relationship.id} relationship={relationship} upcomingBookings={upcomingBookingsByMentee.get(relationship.menteeId) ?? 0} />
             ))}
@@ -292,8 +295,8 @@ export default function MenteesPage() {
 
         {/* Completed Mentees */}
         {completedRelationships.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-base font-semibold text-foreground"><BilingualText en="Completed" el="Ολοκληρωμένοι" compact /><Counter value={completedRelationships.length} /></h2>
+          <div className="card-grid">
+            <h2 className="col-span-full text-base font-semibold text-foreground"><BilingualText en="Completed" el="Ολοκληρωμένοι" compact /><Counter value={completedRelationships.length} /></h2>
             {completedRelationships.map((relationship) => (
               <MenteeCard key={relationship.id} relationship={relationship} upcomingBookings={upcomingBookingsByMentee.get(relationship.menteeId) ?? 0} />
             ))}

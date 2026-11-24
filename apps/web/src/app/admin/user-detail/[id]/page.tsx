@@ -61,13 +61,6 @@ const STATUS: Record<AdminUserItem['moderationStatus'], { en: string; el: string
   banned: { en: 'Banned', el: 'Αποκλεισμένος', variant: 'destructive' },
 };
 
-const REPORT_STATUS: Record<string, 'warning' | 'success' | 'secondary' | 'info'> = {
-  pending: 'warning',
-  reviewed: 'info',
-  resolved: 'success',
-  dismissed: 'secondary',
-};
-
 /*
  * Every id opened "John Doe", john@example.com, 42 connections, and three
  * buttons that toasted "Demo only" - in production as well. The page now
@@ -363,7 +356,7 @@ export default function AdminUserDetailPage() {
                         ]}
                       />
                     )}
-                    aside={<Badge variant={REPORT_STATUS[r.status] ?? 'secondary'} size="sm"><StatusText value={r.status} /></Badge>}
+                    aside={<StatusText value={r.status} />}
                   />
                   {r.reason ? <p className="text-sm text-muted-foreground first-letter:uppercase">{r.reason}</p> : null}
                 </div>

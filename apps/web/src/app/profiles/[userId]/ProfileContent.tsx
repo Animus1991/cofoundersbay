@@ -55,6 +55,7 @@ import { StatusText, statusEl } from '@/components/common/StatusText';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
@@ -106,7 +107,8 @@ function PayloadEntry({ entryKey, value }: { entryKey: string; value: RolePayloa
   if (Array.isArray(value) && value.length > 0) {
     return (
       <div className="space-y-1.5">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />{label}</p>
         {/* Enum values ("full_time", "pre_seed") read as words in both
             languages; free text passes through, capitalised. */}
         <FactLine className="text-sm text-foreground" items={(value as string[]).map((item) => <StatusText key={item} value={item} />)} />
@@ -116,7 +118,8 @@ function PayloadEntry({ entryKey, value }: { entryKey: string; value: RolePayloa
   if (typeof value === 'string' && value.trim()) {
     return (
       <div className="space-y-0.5">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />{label}</p>
         <p className="card-body text-foreground"><StatusText value={value} /></p>
       </div>
     );
@@ -312,7 +315,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   // beside the facts.
   if (isLoading)
     return (
-      <AppShell>
+      <AppShell titleSticker={{ glyph: 'profile', tint: 'primary' }}>
         <div className="space-y-6">
           <Skeleton className="h-64 w-full rounded-2xl" />
           <div className="[container-type:inline-size]">
@@ -333,37 +336,41 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   const notFound = !profile && (!isError || (readError instanceof ApiError && (readError.status === 404 || readError.status === 403)));
   if (isError || !profile)
     return (
-      <AppShell>
-        <div className="flex flex-col items-center gap-4 py-24 text-center">
+      <AppShell titleSticker={{ glyph: 'profile', tint: 'primary' }}>
+        <div className="py-24">
           {notFound ? (
-            <>
-              <p className="text-lg font-semibold text-foreground">
-                <BilingualText en="Profile not found" el="Το προφίλ δεν βρέθηκε" />
-              </p>
-              <p className="text-sm text-muted-foreground">
+            <EmptyState
+              illustration="profile"
+              title={<BilingualText en="Profile not found" el="Το προφίλ δεν βρέθηκε" />}
+              description={(
                 <BilingualText
                   en="This profile may have been removed or is not publicly visible."
                   el="Αυτό το προφίλ μπορεί να έχει αφαιρεθεί ή να μην είναι δημόσια ορατό."
                 />
-              </p>
-              <Button variant="outline" size="sm" onClick={goBack}>
-                <BilingualText en="Go back" el="Επιστροφή" compact />
-              </Button>
-            </>
-          ) : (
-            <>
-              <p role="alert" className="text-lg font-semibold text-foreground">
-                <BilingualText en="This profile could not be read just now." el="Το προφίλ δεν διαβάστηκε αυτή τη στιγμή." wrap />
-              </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
-                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={goBack}>
+              )}
+              action={(
+                <Button variant="outline" size="sm" onClick={goBack}>
                   <BilingualText en="Go back" el="Επιστροφή" compact />
                 </Button>
-              </div>
-            </>
+              )}
+            />
+          ) : (
+            <div role="alert">
+              <EmptyState
+                illustration="default"
+                title={<BilingualText en="This profile could not be read just now." el="Το προφίλ δεν διαβάστηκε αυτή τη στιγμή." wrap />}
+                action={(
+                  <>
+                    <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
+                      <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={goBack}>
+                      <BilingualText en="Go back" el="Επιστροφή" compact />
+                    </Button>
+                  </>
+                )}
+              />
+            </div>
           )}
         </div>
       </AppShell>
@@ -435,6 +442,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
 
   return (
     <AppShell
+      titleSticker={{ glyph: 'profile', tint: 'primary' }}
       // The header keeps the registry's "Profile" title and line: the person's
       // name and headline are the top card's own, read once, as on a
       // professional profile. Passing them here printed both twice.
@@ -612,7 +620,8 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
 
               {rolePayload.links && typeof rolePayload.links === 'object' && (
                 <div className="space-y-1.5 pt-2 border-t border-border">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider"><BilingualText en="Links" el="Σύνδεσμοι" compact /></p>
+                  <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" /><BilingualText en="Links" el="Σύνδεσμοι" compact /></p>
                   <div className="flex flex-wrap gap-2">
                     {(
                       [

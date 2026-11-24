@@ -127,14 +127,14 @@ export default function CalculatorsPage() {
     <AppShell showHelp>
       <div className="space-y-6 pb-10">
         {/* One at a time on a phone: four forms in a row of tabs, not four screens of scrolling. */}
-        <div className="flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1" role="group" aria-label="Calculators">
+        <div className="tab-strip inline-flex max-w-full gap-1 overflow-x-auto scrollbar-hide rounded-full bg-muted/70 p-1" role="group" aria-label="Calculators">
           {TOOLS.map((t) => (
             <button
               key={t.value}
               type="button"
               aria-pressed={tool === t.value}
               onClick={() => setTool(t.value)}
-              className={cn('rounded-lg px-3 py-2 text-sm font-medium transition-all', tool === t.value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+              className={cn('shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-medium transition-all', tool === t.value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
             >
               <BilingualText en={t.en} el={t.el} compact />
             </button>

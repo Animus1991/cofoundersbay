@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BilingualText } from '@/components/common/BilingualText';
-import { Keyboard } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useUsageProfile } from '@/hooks/useUsageProfile';
 
 type ShortcutRow = { keys: string[]; en: string; el: string; seq?: boolean };
@@ -77,9 +77,8 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: { open: boolean;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={Info} tone="neutral">
           <DialogTitle className="flex items-center gap-2">
-            <Keyboard className="icon-sm text-muted-foreground" aria-hidden="true" />
             <BilingualText en="Keyboard shortcuts" el="Συντομεύσεις πληκτρολογίου" />
           </DialogTitle>
           <DialogDescription>

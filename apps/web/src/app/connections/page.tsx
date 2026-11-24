@@ -498,16 +498,22 @@ export default function ConnectionsPage() {
         </TabsList>
 
         {/* Requests waiting on the reader */}
-        <TabsContent value="received" className="mt-6 space-y-3">
+        <TabsContent value="received" className="mt-6 card-grid">
           {isError ? (
-            <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <p role="alert" className="text-sm text-muted-foreground"><BilingualText en={connectionsEn('requests_failed')} el={connectionsEl('requests_failed')} wrap /></p>
-              <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
-            </CardContent></Card>
+            <div role="alert" className="col-span-full">
+              <EmptyState
+                illustration="default"
+                size="sm"
+                title={<BilingualText en={connectionsEn('requests_failed')} el={connectionsEl('requests_failed')} wrap />}
+                action={(
+                  <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
+                )}
+              />
+            </div>
           ) : isLoading ? (
             Array.from({ length: 3 }).map((_, i) => <ConnectionSkeleton key={i} />)
           ) : connections.length === 0 ? (
-            <EmptyState
+            <EmptyState className="col-span-full"
               illustration="default"
               title={<BilingualText en={connectionsEn('no_requests_waiting')} el={connectionsEl('no_requests_waiting')} />}
               description={<BilingualText en={connectionsEn('no_intro_desc')} el={connectionsEl('no_intro_desc')} />}
@@ -536,16 +542,22 @@ export default function ConnectionsPage() {
 
         {/* Standard tabs */}
         {(['sent', 'accepted'] as const).map((t) => (
-          <TabsContent key={t} value={t} className="mt-6 space-y-3">
+          <TabsContent key={t} value={t} className="mt-6 card-grid">
             {isError && tab === t ? (
-              <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p role="alert" className="text-sm text-muted-foreground"><BilingualText en={t === 'sent' ? connectionsEn('requests_failed') : connectionsEn('connections_failed')} el={t === 'sent' ? connectionsEl('requests_failed') : connectionsEl('connections_failed')} wrap /></p>
-                <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
-              </CardContent></Card>
+              <div role="alert" className="col-span-full">
+                <EmptyState
+                  illustration="default"
+                  size="sm"
+                  title={<BilingualText en={t === 'sent' ? connectionsEn('requests_failed') : connectionsEn('connections_failed')} el={t === 'sent' ? connectionsEl('requests_failed') : connectionsEl('connections_failed')} wrap />}
+                  action={(
+                    <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
+                  )}
+                />
+              </div>
             ) : isLoading && tab === t ? (
               Array.from({ length: 3 }).map((_, i) => <ConnectionSkeleton key={i} />)
             ) : connections.length === 0 ? (
-              <EmptyState
+              <EmptyState className="col-span-full"
                 illustration={t === 'accepted' ? 'connection' : 'default'}
                 title={
                   <BilingualText

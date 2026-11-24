@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Briefcase,
@@ -350,7 +351,7 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={Plus} tone="primary">
           <DialogTitle>
             <BilingualText en={opportunitiesEn('post')} el={opportunitiesEl('post')} compact />
           </DialogTitle>
@@ -873,14 +874,18 @@ export default function OpportunitiesPage() {
             />
 
             {oppError ? (
-              <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p role="alert" className="text-sm text-muted-foreground">
-                  <BilingualText en={opportunitiesEn('load_failed')} el={opportunitiesEl('load_failed')} compact />
-                </p>
-                <Button variant="secondary" size="sm" onClick={() => refetchOpp()}>
-                  <BilingualText en={opportunitiesEn('try_again')} el={opportunitiesEl('try_again')} compact />
-                </Button>
-              </CardContent></Card>
+              <div role="alert">
+                <EmptyState
+                  illustration="default"
+                  size="sm"
+                  title={<BilingualText en={opportunitiesEn('load_failed')} el={opportunitiesEl('load_failed')} compact />}
+                  action={(
+                    <Button variant="secondary" size="sm" onClick={() => refetchOpp()}>
+                      <BilingualText en={opportunitiesEn('try_again')} el={opportunitiesEl('try_again')} compact />
+                    </Button>
+                  )}
+                />
+              </div>
             ) : oppLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <Card key={i}><CardContent className="flex gap-4">
@@ -893,29 +898,29 @@ export default function OpportunitiesPage() {
                 </CardContent></Card>
               ))
             ) : opportunities.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-                <Handshake className="h-10 w-10 mb-3 opacity-30" />
-                <p className="font-medium">
-                  <BilingualText en={opportunitiesEn('none_found')} el={opportunitiesEl('none_found')} compact />
-                </p>
-                <p className="text-sm mt-1">
-                  <BilingualText en={opportunitiesEn('none_found_hint')} el={opportunitiesEl('none_found_hint')} compact />
-                </p>
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  {listingFilters > 0 && (
-                    <Button variant="secondary" onClick={() => openRailSection('filters')}>
-                      <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+              // The shared empty state; a rail-emptied list points at the
+              // rail's own section (rail anatomy rule).
+              <EmptyState
+                illustration="search"
+                title={<BilingualText en={opportunitiesEn('none_found')} el={opportunitiesEl('none_found')} compact />}
+                description={<BilingualText en={opportunitiesEn('none_found_hint')} el={opportunitiesEl('none_found_hint')} compact />}
+                action={(
+                  <>
+                    {listingFilters > 0 && (
+                      <Button variant="secondary" onClick={() => openRailSection('filters')}>
+                        <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                      </Button>
+                    )}
+                    <Button className="gap-2" onClick={() => setShowPostForm(true)}>
+                      <Plus className="icon-sm" />
+                      <BilingualText en={opportunitiesEn('post')} el={opportunitiesEl('post')} compact />
                     </Button>
-                  )}
-                  <Button className="gap-2" onClick={() => setShowPostForm(true)}>
-                    <Plus className="icon-sm" />
-                    <BilingualText en={opportunitiesEn('post')} el={opportunitiesEl('post')} compact />
-                  </Button>
-                </div>
-              </div>
+                  </>
+                )}
+              />
             ) : (
-              <div className="space-y-4">
-                <p className="text-xs text-muted-foreground">
+              <div className="card-grid card-grid-lg">
+                <p className="col-span-full text-xs text-muted-foreground">
                   <BilingualText
                     en={opportunities.length === 1 ? opportunitiesEn('count_one') : opportunitiesEn('count_many').replace('{n}', String(opportunities.length))}
                     el={opportunities.length === 1 ? opportunitiesEl('count_one') : opportunitiesEl('count_many').replace('{n}', String(opportunities.length))}
@@ -962,23 +967,21 @@ export default function OpportunitiesPage() {
                 </CardContent>
               </Card>
             ) : null}
-            <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-              <FileText className="h-10 w-10 mb-3 opacity-30" />
-              <p className="font-medium">
-                <BilingualText en={opportunitiesEn('applications_title')} el={opportunitiesEl('applications_title')} compact />
-              </p>
-              <p className="text-sm mt-1">
-                <BilingualText en={opportunitiesEn('applications_hint')} el={opportunitiesEl('applications_hint')} compact />
-              </p>
-              <div className="flex gap-3 mt-4">
-                <Button variant="outline" size="sm" onClick={() => setActiveTab('listings')}>
-                  <BilingualText en={opportunitiesEn('browse_opportunities')} el={opportunitiesEl('browse_opportunities')} compact />
-                </Button>
-                <Button size="sm" onClick={() => router.push('/jobs')}>
-                  <BilingualText en={opportunitiesEn('browse_jobs')} el={opportunitiesEl('browse_jobs')} compact />
-                </Button>
-              </div>
-            </div>
+            <EmptyState
+              illustration="default"
+              title={<BilingualText en={opportunitiesEn('applications_title')} el={opportunitiesEl('applications_title')} compact />}
+              description={<BilingualText en={opportunitiesEn('applications_hint')} el={opportunitiesEl('applications_hint')} compact />}
+              action={(
+                <>
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab('listings')}>
+                    <BilingualText en={opportunitiesEn('browse_opportunities')} el={opportunitiesEl('browse_opportunities')} compact />
+                  </Button>
+                  <Button size="sm" onClick={() => router.push('/jobs')}>
+                    <BilingualText en={opportunitiesEn('browse_jobs')} el={opportunitiesEl('browse_jobs')} compact />
+                  </Button>
+                </>
+              )}
+            />
           </div>
         )}
 
@@ -991,15 +994,11 @@ export default function OpportunitiesPage() {
               askAiPrompt={ASK.opportunitiesSample}
             />}
             {proposals.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-                <FileText className="h-10 w-10 mb-3 opacity-30" />
-                <p className="font-medium">
-                  <BilingualText en={opportunitiesEn('none_proposals')} el={opportunitiesEl('none_proposals')} compact />
-                </p>
-                <p className="text-sm mt-1">
-                  <BilingualText en={opportunitiesEn('none_proposals_hint')} el={opportunitiesEl('none_proposals_hint')} compact />
-                </p>
-              </div>
+              <EmptyState
+                illustration="default"
+                title={<BilingualText en={opportunitiesEn('none_proposals')} el={opportunitiesEl('none_proposals')} compact />}
+                description={<BilingualText en={opportunitiesEn('none_proposals_hint')} el={opportunitiesEl('none_proposals_hint')} compact />}
+              />
             ) : (
               proposals.map((proposal) => (
                 <ProposalCard

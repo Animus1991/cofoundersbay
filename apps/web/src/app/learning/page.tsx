@@ -9,6 +9,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/common/EmptyState';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -142,7 +143,7 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
   return (
     <Card className="flex flex-col overflow-hidden transition-all hover:border-primary/20">
       {resource.image && !cover.failed ? (
-        <img ref={cover.ref} onError={cover.onError} src={resource.image} alt="" referrerPolicy="no-referrer" className="aspect-video w-full object-cover" />
+        <img ref={cover.ref} onError={cover.onError} src={resource.image} alt="" referrerPolicy="no-referrer" className="aspect-video max-h-[240px] w-full object-cover" />
       ) : null}
       <CardContent className="flex flex-1 flex-col gap-3">
         {/* The kind of resource is the card's mark; its title, then type and
@@ -767,76 +768,65 @@ export default function LearningPage() {
 
           {/* Empty State */}
           {!learningLoading && !readFailed && filteredResources.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <BookOpen className="h-12 w-12 mb-4 text-muted-foreground/30" />
-              {activeTab === 'saved' && savedIds.length === 0 ? (
-                <>
-                  <p className="font-medium text-foreground">
-                    <BilingualText en="Nothing saved yet" el="Δεν έχετε αποθηκεύσει τίποτα ακόμα" compact />
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    <BilingualText en="Use the bookmark on a resource to keep it here. Bookmarks are kept on this device." el="Πατήστε τον σελιδοδείκτη σε έναν πόρο για να τον κρατήσετε εδώ. Οι σελιδοδείκτες μένουν σε αυτή τη συσκευή." wrap />
-                  </p>
-                  {allResources.length > 0 ? (
-                    <Button variant="outline" size="sm" className="mt-4" onClick={() => setActiveTab('all')}>
-                      <BilingualText en="See all resources" el="Δείτε όλους τους πόρους" compact />
-                    </Button>
-                  ) : null}
-                </>
+            <EmptyState
+              illustration={activeTab === 'saved' ? 'default' : !filtersOrSearch ? 'default' : 'search'}
+              title={activeTab === 'saved' && savedIds.length === 0 ? (
+                <BilingualText en="Nothing saved yet" el="Δεν έχετε αποθηκεύσει τίποτα ακόμα" compact />
               ) : !filtersOrSearch ? (
-                // An empty library has no filter to adjust.
-                <>
-                  <p className="font-medium text-foreground">
-                    <BilingualText en="The library is empty" el="Η βιβλιοθήκη είναι κενή" compact />
-                  </p>
-                  <p className="card-body mt-1 max-w-prose text-muted-foreground">
-                    <BilingualText
-                      en="Courses, guides and templates appear here as the platform team adds them. Until then, the paths above and your mentors are the way in."
-                      el="Μαθήματα, οδηγοί και πρότυπα εμφανίζονται εδώ καθώς τα προσθέτει η ομάδα της πλατφόρμας. Μέχρι τότε, τα μονοπάτια πιο πάνω και οι μέντορές σας είναι ο δρόμος."
-                      wrap
-                    />
-                  </p>
-                  <Button variant="outline" size="sm" className="mt-4" onClick={() => router.push('/mentoring')}>
-                    <BilingualText en="Find a mentor" el="Βρείτε μέντορα" compact />
+                <BilingualText en="The library is empty" el="Η βιβλιοθήκη είναι κενή" compact />
+              ) : (
+                <BilingualText en={learningEn('empty')} el={learningEl('empty')} compact />
+              )}
+              description={activeTab === 'saved' && savedIds.length === 0 ? (
+                <BilingualText en="Use the bookmark on a resource to keep it here. Bookmarks are kept on this device." el="Πατήστε τον σελιδοδείκτη σε έναν πόρο για να τον κρατήσετε εδώ. Οι σελιδοδείκτες μένουν σε αυτή τη συσκευή." wrap />
+              ) : !filtersOrSearch ? (
+                <BilingualText
+                  en="Courses, guides and templates appear here as the platform team adds them. Until then, the paths above and your mentors are the way in."
+                  el="Μαθήματα, οδηγοί και πρότυπα εμφανίζονται εδώ καθώς τα προσθέτει η ομάδα της πλατφόρμας. Μέχρι τότε, τα μονοπάτια πιο πάνω και οι μέντορές σας είναι ο δρόμος."
+                  wrap
+                />
+              ) : (
+                <BilingualText
+                  en={`Nothing matched ${[
+                    searchQuery.trim() ? `“${searchQuery.trim()}”` : null,
+                    typeFilter !== 'all' ? learningEn(typeFilters.find((tf) => tf.key === typeFilter)?.labelKey ?? 'type_all') : null,
+                    selectedCategory !== 'All' ? selectedCategory : null,
+                  ].filter(Boolean).join(', ')}. Clear them to see every resource.`}
+                  el={`Τίποτα δεν ταιριάζει με ${[
+                    searchQuery.trim() ? `«${searchQuery.trim()}»` : null,
+                    typeFilter !== 'all' ? learningEl(typeFilters.find((tf) => tf.key === typeFilter)?.labelKey ?? 'type_all') : null,
+                    selectedCategory !== 'All' ? learningCategoryEl(selectedCategory) : null,
+                  ].filter(Boolean).join(', ')}. Καθαρίστε τα για να δείτε όλους τους πόρους.`}
+                  wrap
+                />
+              )}
+              action={activeTab === 'saved' && savedIds.length === 0 ? (
+                allResources.length > 0 ? (
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab('all')}>
+                    <BilingualText en="See all resources" el="Δείτε όλους τους πόρους" compact />
                   </Button>
-                </>
+                ) : undefined
+              ) : !filtersOrSearch ? (
+                <Button variant="outline" size="sm" onClick={() => router.push('/mentoring')}>
+                  <BilingualText en="Find a mentor" el="Βρείτε μέντορα" compact />
+                </Button>
               ) : (
                 <>
-                  <p className="font-medium text-foreground">
-                    <BilingualText en={learningEn('empty')} el={learningEl('empty')} compact />
-                  </p>
-                  <p className="card-body mt-1 max-w-prose text-muted-foreground">
-                    <BilingualText
-                      en={`Nothing matched ${[
-                        searchQuery.trim() ? `“${searchQuery.trim()}”` : null,
-                        typeFilter !== 'all' ? learningEn(typeFilters.find((tf) => tf.key === typeFilter)?.labelKey ?? 'type_all') : null,
-                        selectedCategory !== 'All' ? selectedCategory : null,
-                      ].filter(Boolean).join(', ')}. Clear them to see every resource.`}
-                      el={`Τίποτα δεν ταιριάζει με ${[
-                        searchQuery.trim() ? `«${searchQuery.trim()}»` : null,
-                        typeFilter !== 'all' ? learningEl(typeFilters.find((tf) => tf.key === typeFilter)?.labelKey ?? 'type_all') : null,
-                        selectedCategory !== 'All' ? learningCategoryEl(selectedCategory) : null,
-                      ].filter(Boolean).join(', ')}. Καθαρίστε τα για να δείτε όλους τους πόρους.`}
-                      wrap
-                    />
-                  </p>
-                  <div className="mt-4 flex flex-wrap justify-center gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => { setSearchQuery(''); setTypeFilter('all'); setSelectedCategory('All'); }}
-                    >
-                      <BilingualText en="Show all resources" el="Εμφάνιση όλων των πόρων" compact />
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => { setSearchQuery(''); setTypeFilter('all'); setSelectedCategory('All'); }}
+                  >
+                    <BilingualText en="Show all resources" el="Εμφάνιση όλων των πόρων" compact />
+                  </Button>
+                  {(typeFilter !== 'all' || selectedCategory !== 'All') && (
+                    <Button variant="ghost" size="sm" onClick={() => openRailSection('filters')}>
+                      <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
                     </Button>
-                    {(typeFilter !== 'all' || selectedCategory !== 'All') && (
-                      <Button variant="ghost" size="sm" onClick={() => openRailSection('filters')}>
-                        <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
-                      </Button>
-                    )}
-                  </div>
+                  )}
                 </>
               )}
-            </div>
+            />
           )}
       </div>
         </TabsContent>

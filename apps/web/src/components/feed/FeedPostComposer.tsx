@@ -10,17 +10,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn, initialsOf } from '@/lib/utils';
+import { roleRing, roleTone } from '@/lib/role-tone';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { useStoredUser } from '@/hooks/useStoredUser';
 
 export type FeedPostType = 'update' | 'milestone' | 'question' | 'announcement' | 'achievement';
 
-const TYPES: { type: FeedPostType; icon: typeof Sparkles; color: string; en: string; el: string }[] = [
-  { type: 'update', icon: Sparkles, color: 'text-primary-accessible', en: 'Update', el: 'Ενημέρωση' },
-  { type: 'milestone', icon: Target, color: 'text-status-success', en: 'Milestone', el: 'Ορόσημο' },
-  { type: 'question', icon: MessageCircle, color: 'text-status-warning', en: 'Question', el: 'Ερώτηση' },
-  { type: 'announcement', icon: TrendingUp, color: 'text-status-accent', en: 'Announcement', el: 'Ανακοίνωση' },
-  { type: 'achievement', icon: Award, color: 'text-status-accent', en: 'Achievement', el: 'Επίτευγμα' },
+// Each type's icon sits in its own quiet tinted well (docs §137): news
+// info, a milestone success, a question warning, word-of-mouth accent.
+const TYPES: { type: FeedPostType; icon: typeof Sparkles; color: string; well: string; en: string; el: string }[] = [
+  { type: 'update', icon: Sparkles, color: 'text-status-info', well: 'bg-status-info-bg', en: 'Update', el: 'Ενημέρωση' },
+  { type: 'milestone', icon: Target, color: 'text-status-success', well: 'bg-status-success-bg', en: 'Milestone', el: 'Ορόσημο' },
+  { type: 'question', icon: MessageCircle, color: 'text-status-warning', well: 'bg-status-warning-bg', en: 'Question', el: 'Ερώτηση' },
+  { type: 'announcement', icon: TrendingUp, color: 'text-status-accent', well: 'bg-status-accent-bg', en: 'Announcement', el: 'Ανακοίνωση' },
+  { type: 'achievement', icon: Award, color: 'text-status-accent', well: 'bg-status-accent-bg', en: 'Achievement', el: 'Επίτευγμα' },
 ];
 
 type Props = {
@@ -61,9 +64,11 @@ export function FeedPostComposer({ onPost }: Props) {
     <Card>
       <CardContent className="space-y-3">
         <div className="flex gap-3">
-          <Avatar className="h-10 w-10 shrink-0">
+          {/* The writer's avatar wears their role's ring and tint, as on
+              every person card (B2.2). */}
+          <Avatar className={cn('h-10 w-10 shrink-0', roleRing(me?.role))}>
             <AvatarImage src={me?.avatarUrl ?? undefined} alt="" />
-            <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{me?.displayName ? initialsOf(me.displayName) : 'ME'}</AvatarFallback>
+            <AvatarFallback className={cn('font-semibold', roleTone(me?.role))}>{me?.displayName ? initialsOf(me.displayName) : 'ME'}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
             <Textarea
@@ -95,7 +100,7 @@ export function FeedPostComposer({ onPost }: Props) {
         {isExpanded && (
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
             <div className="flex min-w-0 flex-wrap gap-1" role="group" aria-label={bilingualAria('Post type', 'Τύπος δημοσίευσης')}>
-              {TYPES.map(({ type, icon: Icon, color, en, el }) => (
+              {TYPES.map(({ type, icon: Icon, color, well, en, el }) => (
                 <Button
                   key={type}
                   variant={postType === type ? 'secondary' : 'ghost'}
@@ -103,9 +108,11 @@ export function FeedPostComposer({ onPost }: Props) {
                   onClick={() => setPostType(type)}
                   aria-label={bilingualAria(en, el)}
                   aria-pressed={postType === type}
-                  className="gap-1"
+                  className="gap-1.5"
                 >
-                  <Icon className={cn('icon-sm', color)} aria-hidden="true" />
+                  <span className={cn('flex h-6 w-6 items-center justify-center rounded-md', well)}>
+                    <Icon className={cn('icon-sm', color)} aria-hidden="true" />
+                  </span>
                   <span className="hidden sm:inline"><BilingualText en={en} el={el} /></span>
                 </Button>
               ))}
@@ -121,7 +128,10 @@ export function FeedPostComposer({ onPost }: Props) {
                   aria-label={bilingualAria('Attach an image', 'Επισύναψη εικόνας')}
                   disabled
                 >
-                  <ImageIcon className="icon-sm" aria-hidden="true" />
+                  {/* Photos sit in the info well, like every media action. */}
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-status-info-bg">
+                    <ImageIcon className="icon-sm text-status-info" aria-hidden="true" />
+                  </span>
                 </Button>
               </WithDisabledReason>
               <WithDisabledReason reasonEn="Link attachments are not available yet" reasonEl="Η επισύναψη συνδέσμου δεν είναι ακόμη διαθέσιμη">
@@ -131,7 +141,9 @@ export function FeedPostComposer({ onPost }: Props) {
                   aria-label={bilingualAria('Attach a link', 'Επισύναψη συνδέσμου')}
                   disabled
                 >
-                  <Link2 className="icon-sm" aria-hidden="true" />
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-status-neutral-bg">
+                    <Link2 className="icon-sm text-status-neutral" aria-hidden="true" />
+                  </span>
                 </Button>
               </WithDisabledReason>
               <Button size="sm" onClick={handleSubmit} disabled={!content.trim() || busy} aria-busy={busy || undefined}>

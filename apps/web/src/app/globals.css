@@ -102,10 +102,13 @@ html {
     --secondary-foreground: 232 8% 24%;
 
     --muted:            232 7% 94.8%;
-    /* 42%, not 45%: helper text also sits on tinted surfaces (a highlighted
-       plan, a selected role card on bg-primary/10), where 45% measured
-       4.38-4.42:1 and 43% 4.49:1 under axe. ~5.8 on card, >=4.6 there. */
-    --muted-foreground: 232 6% 42%;
+    /* 39%, not 45%: helper text also sits on tinted surfaces (a highlighted
+       plan, a selected role card on bg-primary/10, and since B1.2 the
+       tinted page-header band on a status-*-bg), where 45% measured
+       4.38-4.42:1 and 43% 4.49:1 under axe. With the B1.1 chroma floor the
+       tints sit at 84-92% lightness, so the word goes a step deeper:
+       >=4.6 on every status tint, ~6.1 on card, >=4.9 on muted. */
+    --muted-foreground: 232 6% 39%;
 
     /* Accent is the hover surface (shadcn's meaning: every `hover:bg-accent`
        row, menu item and toolbar button). It followed primary, so hovering a
@@ -276,7 +279,7 @@ html {
     --secondary: 210 8% 94.6%;
     --secondary-foreground: 215 14% 22%;
     --muted: 210 8% 94.2%;
-    --muted-foreground: 210 5% 41%; /* 5.46 on card, 4.92 on muted */
+    --muted-foreground: 210 5% 39%; /* 5.85 on card, 5.26 on muted, >=4.6 on every status tint */
     --accent: 210 10% 94%;             /* hover surface */
     --accent-foreground: 215 14% 18%;
     --destructive: 2 30.5% 42.6%;
@@ -368,7 +371,7 @@ html {
     --secondary: 30 18% 93%;
     --secondary-foreground: 24 10% 22%;
     --muted: 30 18% 92.6%;
-    --muted-foreground: 26 8% 38%;
+    --muted-foreground: 26 8% 37%;
     --accent: 30 22% 92.6%;            /* hover surface */
     --accent-foreground: 24 10% 18%;
     --destructive: 350 30% 42.6%;
@@ -636,7 +639,7 @@ html {
     --secondary: 60 4.8% 95.9%;           /* stone-100 */
     --secondary-foreground: 24 9% 20%;
     --muted: 60 4.8% 95.9%;
-    --muted-foreground: 25 6% 41%;        /* 5.51 on card, 5.27 on page, 5.05 on muted */
+    --muted-foreground: 25 6% 38%;        /* 6.01 on card, 5.74 on page, 5.51 on muted, >=4.5 on every status tint */
     --accent: 60 4.8% 95.9%;              /* hover surface */
     --accent-foreground: 24 9% 20%;
     --destructive: 2 30.5% 42.6%;         /* white on it 6.31 */
@@ -666,29 +669,31 @@ html {
   :root,
   [data-theme="alliance"],
   [data-theme="minimal"] {
-    /* Two bands, and the gap between them is the hierarchy: the brand
-       carries ~30 chroma, every status tone ~21, the page itself ~5. A
-       chip tells you what a thing is; it is not competing to be read
-       first, which is why cursor.com's deltas never shout either. */
-    --status-success-fg: 158 30.4% 34.5%;   /* 5.04 on tint, 5.44 on card */
-    --status-success-bg: 158 45.5% 95.6%;
-    --status-success-border: 158 26.3% 88.6%;
+    /* Round 136 (B1.1) colour floor: a tint now reads as colour on every
+       theme — light -bg saturation >=55% at lightness 84-92, -border same
+       hue >=40% at 72-80, -fg same family >=40% solved to >=5:1 on its tint
+       and on the card. `neutral` stays quiet. A chip tells you what a
+       thing is; it is not competing to be read first, which is why
+       cursor.com's deltas never shout either. */
+    --status-success-fg: 160 45% 30%;   /* 5.00 on tint, 5.90 on card */
+    --status-success-bg: 158 60% 88%;
+    --status-success-border: 158 45% 76%;
     --status-success-mark: 158 46% 56.75%;   /* 2.07 on card, ink 8.44 */
-    --status-warning-fg: 36 27.8% 37.75%;   /* 5.01 on tint, 5.43 on card */
-    --status-warning-bg: 36 45.5% 95.6%;
-    --status-warning-border: 36 26.3% 88.6%;
+    --status-warning-fg: 33 55% 32.25%;   /* 5.05 on tint, 6.29 on card */
+    --status-warning-bg: 36 70% 87%;
+    --status-warning-border: 36 50% 74%;
     --status-warning-mark: 36 46% 64.25%;   /* 2.07 on card, ink 8.44 */
-    --status-danger-fg:  4 23.5% 44.5%;   /* 5.00 on tint, 5.55 on card */
-    --status-danger-bg:  4 45.5% 95.6%;
-    --status-danger-border: 4 26.3% 88.6%;
+    --status-danger-fg:  4 50% 41%;   /* 5.02 on tint, 6.66 on card */
+    --status-danger-bg:  4 65% 90.5%;
+    --status-danger-border: 4 45% 78%;
     --status-danger-mark: 4 46% 74.5%;   /* 2.06 on card, ink 8.48 */
-    --status-info-fg:    212 24.7% 42.25%;   /* 5.03 on tint, 5.51 on card */
-    --status-info-bg:    212 45.5% 95.6%;
-    --status-info-border: 212 26.3% 88.6%;
+    --status-info-fg:    214 50% 39%;   /* 5.01 on tint, 6.62 on card */
+    --status-info-bg:    212 62% 89.5%;
+    --status-info-border: 212 45% 78%;
     --status-info-mark:  212 46% 71.5%;   /* 2.07 on card, ink 8.43 */
-    --status-accent-fg:  250 21.6% 47.75%;   /* 5.01 on tint, 5.64 on card */
-    --status-accent-bg:  250 45.5% 95.6%;
-    --status-accent-border: 250 26.3% 88.6%;
+    --status-accent-fg:  252 45% 50.5%;   /* 5.02 on tint, 6.65 on card */
+    --status-accent-bg:  250 55% 91%;
+    --status-accent-border: 250 42% 79%;
     --status-accent-mark: 250 46% 77.5%;   /* 2.06 on card, ink 8.48 */
     --status-neutral-fg:     232 6% 40%;
     --status-neutral-bg:     232 6% 95.0%;
@@ -713,25 +718,25 @@ html {
      `status-accent` with its own hue. Same band: fg chroma 21, >=5:1 on
      its tint and on the card (.probes/status_solver.cjs). */
   html[data-theme="alliance"] {
-    --status-success-fg: 158 30.4% 34.5%;   /* 5.04 on tint, 5.45 on card */
-    --status-success-bg: 158 45.5% 95.6%;
-    --status-success-border: 158 26.3% 88.6%;
+    --status-success-fg: 160 45% 30%;   /* 5.00 on tint, 5.90 on card */
+    --status-success-bg: 158 60% 88%;
+    --status-success-border: 158 45% 76%;
     --status-success-mark: 158 46% 56.75%;   /* 2.07 on card, ink 8.44 */
-    --status-warning-fg: 36 27.8% 37.75%;   /* 5.01 on tint, 5.43 on card */
-    --status-warning-bg: 36 45.5% 95.6%;
-    --status-warning-border: 36 26.3% 88.6%;
+    --status-warning-fg: 33 55% 32.25%;   /* 5.05 on tint, 6.30 on card */
+    --status-warning-bg: 36 70% 87%;
+    --status-warning-border: 36 50% 74%;
     --status-warning-mark: 36 46% 64.25%;   /* 2.07 on card, ink 8.44 */
-    --status-danger-fg:  4 23.5% 44.5%;   /* 5.00 on tint, 5.56 on card */
-    --status-danger-bg:  4 45.5% 95.6%;
-    --status-danger-border: 4 26.3% 88.6%;
+    --status-danger-fg:  4 50% 41.75%;   /* 5.04 on tint, 6.49 on card */
+    --status-danger-bg:  4 65% 91%;
+    --status-danger-border: 4 45% 78%;
     --status-danger-mark: 4 46% 74.5%;   /* 2.06 on card, ink 8.48 */
-    --status-info-fg:    232 22.2% 46.75%;   /* 5.01 on tint, 5.61 on card */
-    --status-info-bg:    232 45.5% 95.6%;
-    --status-info-border: 232 26.3% 88.6%;
+    --status-info-fg:    233 45% 50.25%;   /* 5.03 on tint, 6.38 on card */
+    --status-info-bg:    232 58% 92%;
+    --status-info-border: 232 42% 80%;
     --status-info-mark:  232 46% 76.5%;   /* 2.06 on card, ink 8.46 */
-    --status-accent-fg:  198.05 24.7% 39%;   /* 5.04 on tint, 5.47 on card */
-    --status-accent-bg:  198.05 45.5% 95.6%;
-    --status-accent-border: 198.05 26.3% 88.6%;
+    --status-accent-fg:  199 50% 33.25%;   /* 5.02 on tint, 6.39 on card */
+    --status-accent-bg:  198.05 62% 87.5%;
+    --status-accent-border: 198.05 48% 74%;
     --status-accent-mark: 198.05 46% 71.5%; /* ink on the mark stays clear */
     --status-neutral-fg:     210 6% 40%;
     --status-neutral-bg:     210 6% 95.0%;
@@ -744,28 +749,32 @@ html {
     --chart-5: 255 39% 74%;   /* violet */
     --chart-6: 95 28% 55%;    /* olive */
   }
+  /* Mint's tints (B1.1, spec values): accent moved 165 -> 176 (aqua) so it
+     parts from success 135 -> 122 (leaf green) — "people" and "money" no
+     longer read as one hue. The fg lightness is solved only: >=4.6:1 on
+     the tint and on the cream card. */
   html[data-theme="minimal"] {
-    --status-success-fg: 135 32.6% 32.25%;   /* 5.03 on tint, 5.52 on card */
-    --status-success-bg: 135 21.3% 90.6%;
-    --status-success-border: 135 18.3% 83.6%;
-    --status-success-mark: 135 46% 58%;   /* 2.07 on card, ink 8.44 */
-    --status-warning-fg: 36 30.2% 34.75%;   /* 5.05 on tint, 5.58 on card */
-    --status-warning-bg: 36 21.3% 90.6%;
-    --status-warning-border: 36 18.3% 83.6%;
-    --status-warning-mark: 36 46% 64.25%;   /* 2.07 on card, ink 8.44 */
-    --status-danger-fg:  4 25.3% 41.25%;   /* 5.03 on tint, 5.76 on card */
-    --status-danger-bg:  4 21.3% 90.6%;
-    --status-danger-border: 4 18.3% 83.6%;
-    --status-danger-mark: 4 46% 74.5%;   /* 2.06 on card, ink 8.48 */
-    --status-info-fg:    212 26.8% 39.25%;   /* 5.04 on tint, 5.67 on card */
-    --status-info-bg:    212 21.3% 90.6%;
-    --status-info-border: 212 18.3% 83.6%;
-    --status-info-mark:  212 46% 71.5%;   /* 2.07 on card, ink 8.43 */
-    --status-accent-fg:  165 33.1% 31.75%;   /* 5.02 on tint, 5.50 on card */
-    --status-accent-bg:  165 21.3% 90.6%;
-    --status-accent-border: 165 18.3% 83.6%;
-    --status-accent-mark: 165 46% 56.25%;   /* 2.07 on card, ink 8.44 */
-    --status-neutral-fg:     38 6% 40%;
+    --status-success-fg: 128 45% 30.75%;   /* 4.62 on tint, 5.36 on card */
+    --status-success-bg: 122 46% 86%;
+    --status-success-border: 122 38% 76%;
+    --status-success-mark: 122 46% 58%;   /* ink 8.36 */
+    --status-warning-fg: 32 60% 33.75%;   /* 4.65 on tint, 5.36 on card */
+    --status-warning-bg: 38 82% 85%;
+    --status-warning-border: 38 62% 74%;
+    --status-warning-mark: 38 46% 64.25%;   /* ink 8.63 */
+    --status-danger-fg:  4 52% 43.25%;   /* 4.62 on tint, 5.64 on card */
+    --status-danger-bg:  6 78% 90%;
+    --status-danger-border: 6 60% 80%;
+    --status-danger-mark: 6 46% 74.5%;   /* ink 8.60 */
+    --status-info-fg:    214 50% 41.5%;   /* 4.62 on tint, 5.55 on card */
+    --status-info-bg:    212 72% 89%;
+    --status-info-border: 212 55% 78%;
+    --status-info-mark:  212 46% 71.5%;   /* ink 8.43 */
+    --status-accent-fg:  178 60% 27.25%;   /* 4.66 on tint, 5.36 on card */
+    --status-accent-bg:  176 56% 84%;
+    --status-accent-border: 176 44% 72%;
+    --status-accent-mark: 176 46% 56.25%;   /* ink 8.57 */
+    --status-neutral-fg:     38 6% 38%;   /* 4.82 on tint, 5.46 on card */
     --status-neutral-bg:     38 6% 90.0%;
     --status-neutral-border: 38 4.5% 86.0%;
     --status-neutral-mark:   38 8% 66%;
@@ -777,25 +786,25 @@ html {
     --chart-6: 55 31% 55%;    /* olive-gold */
   }
   html[data-theme="apricot"] {
-    --status-success-fg: 158 30.9% 34%;   /* 5.02 on tint, 5.44 on card */
-    --status-success-bg: 158 37% 94.6%;
-    --status-success-border: 158 24.2% 87.6%;
+    --status-success-fg: 160 45% 29.75%;   /* 5.05 on tint, 5.86 on card */
+    --status-success-bg: 158 58% 88%;
+    --status-success-border: 158 42% 76%;
     --status-success-mark: 158 46% 56.75%;   /* 2.07 on card, ink 8.44 */
-    --status-warning-fg: 46 30.2% 34.75%;   /* 5.01 on tint, 5.43 on card */
-    --status-warning-bg: 46 37% 94.6%;
-    --status-warning-border: 46 24.2% 87.6%;
+    --status-warning-fg: 42 55% 30.25%;   /* 5.06 on tint, 5.94 on card */
+    --status-warning-bg: 46 72% 86%;
+    --status-warning-border: 46 52% 74%;
     --status-warning-mark: 46 46% 59%;   /* 2.07 on card, ink 8.45 */
-    --status-danger-fg:  350 23.5% 44.25%;   /* 5.03 on tint, 5.62 on card */
-    --status-danger-bg:  350 37% 94.6%;
-    --status-danger-border: 350 24.2% 87.6%;
+    --status-danger-fg:  350 48% 41.75%;   /* 5.01 on tint, 6.57 on card */
+    --status-danger-bg:  350 62% 90%;
+    --status-danger-border: 350 45% 78%;
     --status-danger-mark: 350 46% 75%;   /* 2.07 on card, ink 8.44 */
-    --status-info-fg:    212 25.1% 41.75%;   /* 5.04 on tint, 5.51 on card */
-    --status-info-bg:    212 37% 94.6%;
-    --status-info-border: 212 24.2% 87.6%;
+    --status-info-fg:    214 50% 38.5%;   /* 5.04 on tint, 6.61 on card */
+    --status-info-bg:    212 62% 88%;
+    --status-info-border: 212 45% 78%;
     --status-info-mark:  212 46% 71.5%;   /* 2.07 on card, ink 8.43 */
-    --status-accent-fg:  23 26.3% 40%;   /* 5.04 on tint, 5.49 on card */
-    --status-accent-bg:  23 37% 94.6%;
-    --status-accent-border: 23 24.2% 87.6%;
+    --status-accent-fg:  24 52% 33.5%;   /* 5.02 on tint, 6.71 on card */
+    --status-accent-bg:  23 68% 86%;
+    --status-accent-border: 23 48% 75%;
     --status-accent-mark: 23 46% 69.25%;   /* 2.07 on card, ink 8.44 */
     --status-neutral-fg:     30 6% 40%;
     --status-neutral-bg:     30 6% 94.0%;
@@ -812,25 +821,25 @@ html {
      sits 26 deg away and reads clearly apart — warning stays ochre 46, and
      status-accent tints with the mauve hue. Same band as the other accents. */
   html[data-theme="terra"] {
-    --status-success-fg: 158 30.4% 34.5%;   /* 5.02 on tint, 5.34 on card */
-    --status-success-bg: 158 37% 94.6%;
-    --status-success-border: 158 24.2% 87.6%;
+    --status-success-fg: 160 45% 29.75%;   /* 5.05 on tint, 5.85 on card */
+    --status-success-bg: 158 58% 88%;
+    --status-success-border: 158 42% 76%;
     --status-success-mark: 158 46% 56.75%;   /* 2.07 on card, ink 8.44 */
-    --status-warning-fg: 46 29.8% 35.25%;   /* 5.01 on tint, 5.33 on card */
-    --status-warning-bg: 46 37% 94.6%;
-    --status-warning-border: 46 24.2% 87.6%;
+    --status-warning-fg: 42 55% 30.25%;   /* 5.06 on tint, 5.93 on card */
+    --status-warning-bg: 46 72% 86%;
+    --status-warning-border: 46 52% 74%;
     --status-warning-mark: 46 46% 59%;   /* 2.07 on card, ink 8.45 */
-    --status-danger-fg:  2 23.9% 44%;   /* 5.02 on tint, 5.61 on card */
-    --status-danger-bg:  2 37% 94.6%;
-    --status-danger-border: 2 24.2% 87.6%;
+    --status-danger-fg:  2 50% 40.5%;   /* 5.02 on tint, 6.79 on card */
+    --status-danger-bg:  2 65% 89%;
+    --status-danger-border: 2 45% 78%;
     --status-danger-mark: 2 46% 74.75%;   /* 2.06 on card, ink 8.47 */
-    --status-info-fg:    212 25.1% 41.75%;   /* 5.01 on tint, 5.51 on card */
-    --status-info-bg:    212 37% 94.6%;
-    --status-info-border: 212 24.2% 87.6%;
+    --status-info-fg:    214 50% 37.75%;   /* 5.04 on tint, 6.79 on card */
+    --status-info-bg:    212 62% 87%;
+    --status-info-border: 212 45% 78%;
     --status-info-mark:  212 46% 71.5%;   /* 2.07 on card, ink 8.43 */
-    --status-accent-fg:  336 24.3% 43.25%;   /* 5.02 on tint, 5.58 on card */
-    --status-accent-bg:  336 37% 94.6%;
-    --status-accent-border: 336 24.2% 87.6%;
+    --status-accent-fg:  336 42% 40%;   /* 5.02 on tint, 6.79 on card */
+    --status-accent-bg:  336 55% 88.5%;
+    --status-accent-border: 336 40% 78%;
     --status-accent-mark: 336 46% 73.75%;   /* 2.07 on card, ink 8.45 */
     --status-neutral-fg:     336 6% 40%;
     --status-neutral-bg:     336 6% 94.0%;
@@ -848,25 +857,25 @@ html {
      band. Info moves from 232 to 218 so it stays a blue step apart from
      the violet accent; the other hues keep their standard meaning. */
   html[data-theme="playful"] {
-    --status-success-fg: 158 30.4% 34.5%;   /* >=5:1 on tint and card */
-    --status-success-bg: 158 55% 94.8%;
-    --status-success-border: 158 32% 86.5%;
+    --status-success-fg: 160 48% 29.25%;   /* >=5:1 on tint and card */
+    --status-success-bg: 158 62% 87%;
+    --status-success-border: 158 48% 75%;
     --status-success-mark: 158 46% 56.75%;
-    --status-warning-fg: 40 29.8% 35.5%;
-    --status-warning-bg: 40 60% 94.8%;
-    --status-warning-border: 40 34% 86%;
+    --status-warning-fg: 36 58% 31%;
+    --status-warning-bg: 40 78% 85%;
+    --status-warning-border: 40 55% 73%;
     --status-warning-mark: 40 48% 60%;
-    --status-danger-fg:  2 23.9% 44%;
-    --status-danger-bg:  2 55% 95.2%;
-    --status-danger-border: 2 32% 87%;
+    --status-danger-fg:  2 52% 39.5%;
+    --status-danger-bg:  2 70% 88%;
+    --status-danger-border: 2 50% 78%;
     --status-danger-mark: 2 46% 74.75%;
-    --status-info-fg:    218 25.1% 41.75%;
-    --status-info-bg:    218 55% 95.2%;
-    --status-info-border: 218 32% 87%;
+    --status-info-fg:    219 52% 39.25%;
+    --status-info-bg:    218 66% 86.5%;
+    --status-info-border: 218 48% 77%;
     --status-info-mark:  218 46% 72%;
-    --status-accent-fg:  260 24.7% 40%;
-    --status-accent-bg:  262 52% 94.6%;
-    --status-accent-border: 262 30% 86%;
+    --status-accent-fg:  263 48% 45.5%;
+    --status-accent-bg:  262 58% 88%;
+    --status-accent-border: 262 44% 77%;
     --status-accent-mark: 262 48% 72%;
     --status-neutral-fg:     280 6% 40%;
     --status-neutral-bg:     280 8% 94%;
@@ -884,39 +893,41 @@ html {
   [data-theme="cofounder"],
   [data-theme="playful-dark"],
   [data-theme="system"] {
-    /* Dark text tones are already light pastels; they are the marks too. */
+    /* Dark text tones are already light pastels; they are the marks too.
+       B1.1 colour floor: -bg >=35% saturation at 16-20% lightness so the
+       wells read as colour, -fg >=4.6:1 on the tint and on the card. */
     --status-success-mark: var(--status-success-fg);
     --status-warning-mark: var(--status-warning-fg);
     --status-danger-mark:  var(--status-danger-fg);
     --status-info-mark:    var(--status-info-fg);
     --status-accent-mark:  var(--status-accent-fg);
     --status-neutral-mark: var(--status-neutral-fg);
-    --status-success-fg:     145 21.5% 62.8%;
-    --status-success-bg:     145 12.5% 12%;
-    --status-success-border: 145 5% 24%;
-    --status-warning-fg:     32 25% 68%;
-    --status-warning-bg:     32 12.5% 12%;
-    --status-warning-border: 32 5% 24%;
-    --status-danger-fg:      4 25% 68%;
-    --status-danger-bg:      4 12.5% 12%;
-    --status-danger-border:  4 5% 24%;
-    --status-info-fg:        217 25% 68%;
-    --status-info-bg:        217 12.5% 12%;
-    --status-info-border:    217 5% 24%;
-    --status-accent-fg:      248 32% 75%;
-    --status-accent-bg:      248 10% 15%;
-    --status-accent-border:  248 5.5% 21.8%;
-    --status-neutral-fg:     232 6% 64%;
-    --status-neutral-bg:     232 11% 13.2%;
-    --status-neutral-border: 232 6.5% 15.4%;
+    --status-success-fg:     145 55% 72%;   /* 8.24 on tint, >=8.5 on cards */
+    --status-success-bg:     145 35% 16%;
+    --status-success-border: 145 32% 30%;
+    --status-warning-fg:     32 60% 70%;   /* 7.05 on tint, >=7.1 on cards */
+    --status-warning-bg:     32 42% 17%;
+    --status-warning-border: 32 34% 30%;
+    --status-danger-fg:      4 62% 70%;   /* 5.93 on tint, >=5.2 on cards */
+    --status-danger-bg:      4 45% 17%;
+    --status-danger-border:  4 36% 31%;
+    --status-info-fg:        217 62% 74%;   /* 6.82 on tint, >=6.3 on cards */
+    --status-info-bg:        217 42% 18%;
+    --status-info-border:    217 34% 31%;
+    --status-accent-fg:      248 50% 76%;   /* 6.94 on tint, >=5.8 on cards */
+    --status-accent-bg:      248 38% 18%;
+    --status-accent-border:  248 30% 30%;
+    --status-neutral-fg:     232 10% 64%;   /* 5.89 on tint, >=5.0 on cards */
+    --status-neutral-bg:     232 18% 15%;
+    --status-neutral-border: 232 12% 24%;
   }
   /* Playful Night hue-shifts the accent status to its violet (262) and runs
      the tints a touch more chroma than the shared dark band, like its light
      twin does against the light band. */
   html[data-theme="playful-dark"] {
-    --status-accent-fg:      262 38% 78%;
-    --status-accent-bg:      262 20% 15%;
-    --status-accent-border:  262 12% 25%;
+    --status-accent-fg:      262 55% 76%;   /* 6.92 on tint, 7.67 on card */
+    --status-accent-bg:      262 40% 18%;
+    --status-accent-border:  262 30% 31%;
     --status-accent-mark:    var(--status-accent-fg);
   }
 
@@ -1182,10 +1193,29 @@ html {
 
   /* Interactive card */
   .card-interactive {
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   }
   .card-interactive:hover {
     border-color: hsl(var(--foreground) / 0.12);
+    transform: translateY(-0.125rem);
+    box-shadow: var(--shadow-md, 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1));
+  }
+
+  /* Search fields (a leading search glyph) are pills (B1.3). */
+  svg.lucide-search ~ :is(input, [role='searchbox'] input) {
+    border-radius: 9999px;
+  }
+
+  /* A count inside a tab strip is a small pill (B1.3): card fill at rest,
+     a quarter-strength wash on the solid active tab. The attention tone
+     (bg-primary) keeps its fill — it is a callout, not chrome. */
+  .tab-strip [data-counter]:not([class*='bg-primary']) {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+  .tab-strip [role='tab'][data-state='active'] [data-counter] {
+    background-color: hsl(var(--background) / 0.25);
+    color: hsl(var(--primary-foreground));
   }
 
   /* Backdrop blur levels */
@@ -2910,12 +2940,12 @@ img[data-img-failed] {
     min-width: var(--control-h);
   }
   /* A tab strip's outer edge is the control height; its tabs sit inside
-     its 0.125rem padding. */
+     its 0.25rem padding. */
   #main-content [role='tablist'].tab-strip {
     min-height: var(--control-h);
   }
   #main-content [role='tablist'].tab-strip > [role='tab'] {
-    min-height: calc(var(--control-h) - 0.25rem);
+    min-height: calc(var(--control-h) - 0.5rem);
     padding-top: 0;
     padding-bottom: 0;
   }
@@ -4300,7 +4330,7 @@ input[data-search-field][class~="border-input"]:focus-visible {
     max-width: 100%;
   }
   /* A row's cover thumbnail keeps the box it was given and crops into it
-     (object-cover, docs §136): with `height: auto` a 3:1 group band became
+     (object-cover, docs §140): with `height: auto` a 3:1 group band became
      a 64x21 sliver on a phone. `:where` keeps this rule's weight. */
   #main-content img:where(:not([data-cover-thumb])),
   #main-content video {
@@ -4866,6 +4896,12 @@ html[data-theme="minimal"] :is(button, a, [role='button'], [data-slot='button'])
   border-color: color-mix(in hsl, hsl(var(--mint-ring)) 86%, black);
 }
 html[data-theme="minimal"] [data-own-message] {
+  background-color: hsl(var(--mint-ring));
+  color: hsl(var(--primary-foreground));
+}
+/* The active tab's solid fill is the same green the theme repaints filled
+   buttons to; without this it would render in --primary's dark teal. */
+html[data-theme="minimal"] .tab-strip [role='tab'][data-state='active'] {
   background-color: hsl(var(--mint-ring));
   color: hsl(var(--primary-foreground));
 }
@@ -5448,7 +5484,7 @@ select:disabled {
   }
 }
 
-/* ── Accent variants (docs §135) ─────────────────────────────────────────
+/* ── Accent variants (docs §139) ─────────────────────────────────────────
    Another accent on a named theme: the base's data-theme stays, so its
    surfaces, status tones and component layer all apply, and data-variant
    swaps the accent tokens only (lib/themes THEME_ROOT). The originals keep
@@ -5507,4 +5543,18 @@ html[data-theme="studio"][data-variant="graphite"] {
   body:has([data-demo-exit-floating]):not(:has([data-mobile-tabs])):not(:has([data-topbar-exit])) {
     padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
   }
+
+/* ── Card grids (docs §135 A1.3) ──────────────────────────────────────────
+   One utility for every "column of full-width card rows" list: as many
+   --card-min columns as fit, equal gaps, cards top-aligned. `.card-grid-lg`
+   is for wide cards that want two across from ~1100px of content. Headings
+   between groups span the row with `col-span-full`. */
+.card-grid {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--card-min, 26rem)), 1fr));
+}
+.card-grid-lg {
+  --card-min: 40rem;
 }

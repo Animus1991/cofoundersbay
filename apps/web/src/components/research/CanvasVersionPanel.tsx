@@ -30,12 +30,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import {
-  History, Camera, Clock, Layers, ChevronRight, GitBranch,
-  Loader2, RefreshCw, Eye, RotateCcw, CheckCircle2, Zap,
-  Plus, Archive, ArchiveRestore, Trash2, GitCommit, ArrowRight, AlertTriangle,
-  Minus, Edit2, Move,
-} from 'lucide-react';
+import { History, Camera, Clock, Layers, ChevronRight, GitBranch, Loader2, RefreshCw, Eye, RotateCcw, CheckCircle2, Zap, Plus, Archive, ArchiveRestore, Trash2, GitCommit, ArrowRight, AlertTriangle, Minus, Edit2, Move, Info } from 'lucide-react';
 import { cn, initialsOf } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useToast } from '@/components/ui/toast';
@@ -170,9 +165,8 @@ function DiffDetailDialog({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
-        <DialogHeader>
+        <DialogHeader icon={Info} tone="neutral">
           <DialogTitle className="flex items-center gap-2 text-sm">
-            <GitCommit className="icon-sm text-muted-foreground" />
             Diff: {labelA} → {labelB}
           </DialogTitle>
           <DialogDescription className="text-xs">
@@ -294,9 +288,8 @@ function RestoreConfirmDialog({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-sm">
-        <DialogHeader>
+        <DialogHeader icon={Info} tone="neutral">
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="icon-sm text-status-warning" />
             Restore canvas?
           </DialogTitle>
           <DialogDescription className="text-sm">
@@ -475,9 +468,8 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
       {previewId && previewData && (
         <Dialog open={!!previewId} onOpenChange={() => { setPreviewId(null); setPreviewData(null); setPreviewDiff(null); }}>
           <DialogContent className="max-w-lg">
-            <DialogHeader>
+            <DialogHeader icon={Info} tone="neutral">
               <DialogTitle className="flex items-center gap-2 text-sm">
-                <History className="icon-sm text-muted-foreground" />
                 {snapshots.find((s) => s.id === previewId)?.label ?? 'Snapshot'}
               </DialogTitle>
               <DialogDescription className="sr-only">{bilingualInline('Preview of a saved canvas snapshot.', 'Προεπισκόπηση αποθηκευμένου στιγμιότυπου καμβά.')}</DialogDescription>
@@ -491,7 +483,8 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
               </div>
               {Array.isArray(previewData.nodeData) && previewData.nodeData.length > 0 && (
                 <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Nodes</p>
+                  <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />Nodes</p>
                   {(previewData.nodeData as Array<{ title?: string; type?: string }>).slice(0, 20).map((node, i) => (
                     <div key={i} className="flex items-center gap-2 text-xs">
                       <Badge variant="secondary" className="text-xs capitalize">{node.type ?? 'node'}</Badge>
@@ -863,9 +856,9 @@ function BranchesTab({ boardId }: { boardId: string }) {
 
       <Dialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
         <DialogContent className="max-w-sm">
-          <DialogHeader>
+          <DialogHeader icon={Trash2} tone="danger">
             <DialogTitle className="flex items-center gap-2 text-sm">
-              <AlertTriangle className="icon-sm text-destructive-accessible" />Delete branch?
+              Delete branch?
             </DialogTitle>
             <DialogDescription className="text-sm">
               All versions on this branch will be deleted. This cannot be undone.

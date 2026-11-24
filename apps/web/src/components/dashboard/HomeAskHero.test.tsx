@@ -20,7 +20,10 @@ vi.mock('@/contexts/PopupChatContext', () => ({
 }));
 vi.mock('@/hooks/useUnreadCounts', () => ({ useUnreadCounts: () => state.counts }));
 vi.mock('@/components/common/BilingualText', () => ({ BilingualText: ({ en }: { en: string }) => <span>{en}</span> }));
-vi.mock('@/components/icons/CfbGlyph', () => ({ CfbGlyph: () => <span aria-hidden="true" /> }));
+vi.mock('@/components/icons/CfbGlyph', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/components/icons/CfbGlyph')>()),
+  CfbGlyph: () => <span aria-hidden="true" />,
+}));
 
 /** Radix menus go through Popper and pointer capture, which jsdom lacks (see UserMenu.test). */
 beforeAll(() => {
@@ -219,5 +222,43 @@ describe('HomeAskHero hero card (docs §131.2, §133.4)', () => {
     const round = well.querySelector('.rounded-full')!;
     expect(round.className).toContain('h-28');
     expect(round.className).toContain('bg-white/15');
+  });
+});
+
+describe('HomeAskHero band (docs §135 A4)', () => {
+  it('names the page in the overline, greets, and keeps the box and tools slot', () => {
+    state.pathname = '/dashboard/founder';
+    const { container } = render(<HomeAskHero role="founder" name="Alex" band lead={{ en: 'Your week.', el: 'Η εβδομάδα σας.' }} />);
+    const band = container.querySelector('[data-band]')!;
+    expect(band).toBeTruthy();
+    expect(band.className).toContain('bg-primary/10');
+    // The overline repeats the page's title, aria-hidden under the sr-only h1.
+    const overline = band.querySelector('[aria-hidden="true"]')!;
+    expect(overline.textContent).toContain('Founder dashboard');
+    expect(screen.getByTestId('home-greeting').className).toContain('text-xl');
+    expect(screen.getByTestId('home-band-lead').textContent).toContain('Your week.');
+    expect(container.querySelector('[data-hero-actions]')).toBeTruthy();
+  });
+
+  it('keeps the scope picker as the quiet control at the pill’s right and sends', () => {
+    render(<HomeAskHero role="mentor" name="Alex" band />);
+    const form = screen.getByTestId('home-ask-form');
+    expect(within(form).getByTestId('home-ask-scope')).toBeTruthy();
+    expect(within(form).getByTestId('home-ask-submit')).toBeTruthy();
+    // No intent chips in the band — the shortcuts live in the rail.
+    expect(screen.queryByRole('group', { name: /Starting points/ })).toBeNull();
+    fireEvent.change(box(), { target: { value: 'Who replied?' } });
+    fireEvent.keyDown(box(), { key: 'Enter' });
+    expect(state.ask).toHaveBeenCalledWith('Who replied?');
+  });
+
+  it('shows the role’s glyph well in the band palette only from xl', () => {
+    const { container } = render(<HomeAskHero role="mentor" band />);
+    const well = container.querySelector('[data-hero-figure]')!;
+    expect(well.className).toContain('hidden');
+    expect(well.className).toContain('xl:block');
+    const round = well.querySelector('.rounded-full')!;
+    expect(round.className).toContain('h-20');
+    expect(round.className).toContain('bg-primary/15');
   });
 });

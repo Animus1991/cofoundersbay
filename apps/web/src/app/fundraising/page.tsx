@@ -857,17 +857,21 @@ function DataRoomView({
   const requiredReady = required.filter((d) => d.status === 'ready' || d.status === 'shared').length;
 
   if (docs.length === 0) {
+    // The shared empty state's disc + one call to action (B2.5).
     return (
-      <Card className="rounded-xl border-dashed">
-        <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-          <p className="page-section font-semibold"><BilingualText en={fundraisingEn('empty_room_title')} el={fundraisingEl('empty_room_title')} /></p>
-          <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_room_hint')} el={fundraisingEl('empty_room_hint')} /></p>
-          {actions ? <RoomUpload onUpload={actions.upload} /> : null}
-          <Button size="sm" variant="outline" className={BUILDER_BTN} asChild>
-            <Link href="/builder"><BilingualText en={fundraisingEn('open_builder')} el={fundraisingEl('open_builder')} compact /></Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <EmptyState
+        illustration="default"
+        title={<BilingualText en={fundraisingEn('empty_room_title')} el={fundraisingEl('empty_room_title')} />}
+        description={<BilingualText en={fundraisingEn('empty_room_hint')} el={fundraisingEl('empty_room_hint')} />}
+        action={(
+          <>
+            {actions ? <RoomUpload onUpload={actions.upload} /> : null}
+            <Button size="sm" variant="outline" className={BUILDER_BTN} asChild>
+              <Link href="/builder"><BilingualText en={fundraisingEn('open_builder')} el={fundraisingEl('open_builder')} compact /></Link>
+            </Button>
+          </>
+        )}
+      />
     );
   }
 
@@ -920,9 +924,11 @@ function DataRoomView({
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          <BilingualText en={fundraisingEn('empty_docs')} el={fundraisingEl('empty_docs')} />
-        </p>
+        <EmptyState
+          illustration={null}
+          size="sm"
+          title={<BilingualText en={fundraisingEn('empty_docs')} el={fundraisingEl('empty_docs')} />}
+        />
       ) : (
         // One card of rows, not a card per document: ten 97px tiles made the
         // room 970px tall for one line of facts each. The book glyph each row
@@ -1549,16 +1555,19 @@ export default function FundraisingPage() {
     >
       <div className="space-y-6">
         {unread ? (
-          <Card className="rounded-xl border-dashed" role="alert">
-            <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <CfbGlyph name="wallet" className="icon-lg text-muted-foreground/50" />
-              <p className="page-section font-semibold"><BilingualText en={fundraisingEn('unread_title')} el={fundraisingEl('unread_title')} /></p>
-              <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('unread_hint')} el={fundraisingEl('unread_hint')} /></p>
-              <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={() => readAgain()}>
-                <BilingualText en={fundraisingEn('unread_retry')} el={fundraisingEl('unread_retry')} compact />
-              </Button>
-            </CardContent>
-          </Card>
+          <div role="alert">
+            <EmptyState
+              illustration="default"
+              size="sm"
+              title={<BilingualText en={fundraisingEn('unread_title')} el={fundraisingEl('unread_title')} />}
+              description={<BilingualText en={fundraisingEn('unread_hint')} el={fundraisingEl('unread_hint')} />}
+              action={(
+                <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={() => readAgain()}>
+                  <BilingualText en={fundraisingEn('unread_retry')} el={fundraisingEl('unread_retry')} compact />
+                </Button>
+              )}
+            />
+          </div>
         ) : <>
         {dueLeads.length > 0 ? (
           <Card data-followups-due="">

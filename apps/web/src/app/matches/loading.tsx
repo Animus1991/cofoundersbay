@@ -1,8 +1,10 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
 export default function MatchesLoading() {
   return (
     <div className="min-h-screen pb-20 lg:pb-16">
+    <HeaderBandSkeleton />
       <div className="w-full px-4 pt-6">
         <div className="flex items-center justify-between py-3">
           <Skeleton className="h-8 w-32" />

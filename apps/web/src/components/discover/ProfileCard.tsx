@@ -31,7 +31,7 @@ import {
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { cn, initialsOf, relativeTimeLabel } from '@/lib/utils';
-import { roleTone } from '@/lib/role-tone';
+import { roleRing, roleTone } from '@/lib/role-tone';
 import { useToast } from '@/components/ui/toast';
 import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { FactLine } from '@/components/common/FactLine';
@@ -171,7 +171,7 @@ function ProfileCardInner({
 
   const profileLink = (avatarClass: string, fallbackClass: string, extra?: ReactNode) => (
     <Link href={`/profiles/${profile.userId}`} className="relative block" aria-label={bilingualAria(`Open ${profile.displayName}'s profile`, `Άνοιγμα προφίλ: ${profile.displayName}`)}>
-      <Avatar className={cn('h-10 w-10', avatarClass)}>
+      <Avatar className={cn('h-10 w-10', avatarClass, roleRing(profile.role))}>
         <AvatarImage src={profile.avatarUrl || undefined} alt="" />
         <AvatarFallback className={fallbackClass}>
           {initialsOf(profile.displayName)}
@@ -231,7 +231,7 @@ function ProfileCardInner({
             subtitle={profile.headline ? <span className="line-clamp-1">{profile.headline}</span> : undefined}
             asideStays
             aside={(
-              <span className="inline-flex items-center gap-2">
+              <span className="inline-flex max-w-full flex-wrap items-center justify-end gap-x-2 gap-y-1">
                 {badge}
                 {connected ? (
                   <Button aria-label={bilingualAria(`Message ${profile.displayName}`, `Μήνυμα προς ${profile.displayName}`)} size="sm" variant="ghost" onClick={onMessage}>
@@ -390,7 +390,7 @@ function ProfileCardInner({
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive-accessible" onSelect={() => setReporting(true)}>
+                <DropdownMenuItem className="text-status-danger" onSelect={() => setReporting(true)}>
                   <Flag className="icon-sm mr-2" aria-hidden="true" />
                   <BilingualText en="Report" el="Αναφορά" compact />
                 </DropdownMenuItem>
@@ -433,7 +433,7 @@ function ProfileCardInner({
           </span>
         ) : undefined}
         aside={badge || (profile.matchScore && profile.matchScore > 0) ? (
-          <span className="inline-flex items-center gap-2">
+          <span className="inline-flex max-w-full flex-wrap items-center justify-end gap-x-2 gap-y-1">
             {badge}
             {profile.matchScore && profile.matchScore > 0 ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary-accessible">

@@ -6,19 +6,7 @@ import { PageFacts } from '@/components/common/PageFacts';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Search,
-  Plus,
-  MoreVertical,
-  Edit,
-  Trash2,
-  Folder,
-  Hash,
-  Loader2,
-  AlertCircle,
-  RefreshCw,
-  X,
-} from 'lucide-react';
+import { Search, Plus, MoreVertical, Edit, Trash2, Folder, Hash, Loader2, AlertCircle, RefreshCw, X, Pencil } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -112,7 +100,7 @@ function SkillRow({
                     <Edit className="mr-2 icon-sm" aria-hidden="true" />
                     <BilingualText en="Edit" el="Επεξεργασία" compact />
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive-accessible" onClick={() => onDelete(skill)}>
+                  <DropdownMenuItem className="text-status-danger" onClick={() => onDelete(skill)}>
                     <Trash2 className="mr-2 icon-sm" />
                     <BilingualText en="Delete" el="Διαγραφή" compact />
                   </DropdownMenuItem>
@@ -160,7 +148,7 @@ function SkillDialog({
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={Pencil} tone="primary">
           <DialogTitle>{skill ? <BilingualText en="Edit skill" el="Επεξεργασία δεξιότητας" compact /> : <BilingualText en="Add a skill" el="Προσθήκη δεξιότητας" compact />}</DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="Add or rename a taxonomy skill and choose its category." el="Προσθήκη ή μετονομασία δεξιότητας ταξινόμησης και επιλογή κατηγορίας." /></DialogDescription>
         </DialogHeader>

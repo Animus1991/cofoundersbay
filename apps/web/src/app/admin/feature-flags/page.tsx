@@ -1,11 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Search, Plus, MoreVertical, Percent,
-  FlaskConical, CheckCircle2, XCircle, AlertTriangle,
-  Edit, Trash2, Copy, RefreshCw, Info,
-} from 'lucide-react';
+import { Search, Plus, MoreVertical, Percent, FlaskConical, CheckCircle2, XCircle, AlertTriangle, Edit, Trash2, Copy, RefreshCw, Info, Pencil } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { formatRelativeTime } from '@/lib/utils';
@@ -217,7 +213,7 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
                   <DropdownMenuItem onSelect={() => onEdit(flag, 'details')}><Edit className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Edit Flag" el="Επεξεργασία σημαίας" compact /></DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => onEdit(flag, 'rollout')}><Percent className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Set rollout %" el="Ορισμός ποσοστού διάθεσης" compact /></DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => onCopyKey(flag)}><Copy className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Copy Key" el="Αντιγραφή κλειδιού" compact /></DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(flag)}><Trash2 className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Delete" el="Διαγραφή" compact /></DropdownMenuItem>
+                  <DropdownMenuItem className="text-status-danger" onSelect={() => onDelete(flag)}><Trash2 className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Delete" el="Διαγραφή" compact /></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
@@ -531,9 +527,9 @@ export default function AdminFeatureFlagsPage() {
             <TabsTrigger value="disabled"><BilingualText en="Disabled" el="Ανενεργές" compact /></TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-4 space-y-3">
+          <TabsContent value={activeTab} className="card-grid card-grid-lg mt-4">
             {filtered.length === 0 ? (
-              <Card>
+              <Card className="col-span-full">
                 <CardContent>
                   <CardHead
                     title={<BilingualText en="No flags found" el="Δεν βρέθηκαν σημαίες" compact wrap />}
@@ -559,7 +555,7 @@ export default function AdminFeatureFlagsPage() {
 
       <Dialog open={editing !== null} onOpenChange={(open) => { if (!open) setEditing(null); }}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Pencil} tone="primary">
             <DialogTitle>{editing?.mode === 'rollout' ? 'Set rollout' : 'Edit flag'}</DialogTitle>
             <DialogDescription>
               {editing?.mode === 'rollout'
@@ -607,7 +603,7 @@ export default function AdminFeatureFlagsPage() {
       </Dialog>
       <Dialog open={creating} onOpenChange={setCreating}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Plus} tone="primary">
             <DialogTitle><BilingualText en="New flag" el="Νέα σημαία" compact /></DialogTitle>
             <DialogDescription><BilingualText en="Created inactive. The key is what code reads, so it cannot change later." el="Δημιουργείται ανενεργή. Το κλειδί είναι αυτό που διαβάζει ο κώδικας, οπότε δεν αλλάζει αργότερα." wrap /></DialogDescription>
           </DialogHeader>

@@ -281,14 +281,21 @@ export default function PricingPage() {
               <Card
                 key={plan.id}
                 className={cn(
-                  'relative flex flex-col border border-border transition-colors duration-300 hover:border-foreground/20',
+                  'relative flex flex-col overflow-hidden border border-border transition-colors duration-300 hover:border-foreground/20',
                   plan.popular && 'border-primary ring-1 ring-primary/20'
                 )}
               >
+                {/* The featured tier leads with an accent tint band, not a
+                    shadow alone (docs §137, B2.4); "Most popular" sits in it. */}
+                {plan.popular && (
+                  <div className="flex items-center justify-center gap-2 bg-status-accent-bg px-6 py-2">
+                    <Badge variant="outline" className="border-status-accent-border text-status-accent"><BilingualText en="Most popular" el="Πιο δημοφιλές" compact /></Badge>
+                  </div>
+                )}
                 {/* The Opportunities card: the plan's mark and name, the
                     price on the line under it (never louder than the name),
-                    "Most popular" as the one pill, the description as the
-                    body, the features on the same left axis. */}
+                    the description as the body, the features on the same
+                    left axis. */}
                 <CardContent className="flex flex-1 flex-col gap-3">
                   <CardHead
                     mark={
@@ -306,13 +313,10 @@ export default function PricingPage() {
                         </span>
                       )
                     }
-                    aside={plan.popular ? (
-                      <Badge><BilingualText en="Most popular" el="Πιο δημοφιλές" compact /></Badge>
-                    ) : undefined}
                   />
-                  {/* The saving reads under the head across the card's width: in
-                      a four-column row the title column beside "Most popular"
-                      is too narrow for it. */}
+                  {/* The saving reads under the head across the card's width:
+                      in a four-column row the title column is too narrow for
+                      it. */}
                   {!isEnterprise && !isFree && annual && savings > 0 ? (
                     <p className="text-xs font-medium text-status-success"><BilingualText en={`${savings}% off vs monthly`} el={`${savings}% φθηνότερα από το μηνιαίο`} compact /></p>
                   ) : !isEnterprise && !isFree && !annual ? (
@@ -394,17 +398,17 @@ export default function PricingPage() {
           >
             <table className="w-full min-w-[600px] border-collapse">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="py-4 text-left text-sm font-semibold text-foreground"><BilingualText en="Feature" el="Δυνατότητα" compact /></th>
-                  <th className="px-2 py-4 text-center text-sm font-semibold text-foreground"><BilingualText en="Free" el="Δωρεάν" compact /></th>
-                  <th className="px-2 py-4 text-center text-sm font-semibold text-primary-accessible">Pro</th>
-                  <th className="px-2 py-4 text-center text-sm font-semibold text-foreground"><BilingualText en="Team" el="Ομάδα" compact /></th>
-                  <th className="px-2 py-4 text-center text-sm font-semibold text-foreground">Enterprise</th>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-2 py-4 text-left text-2xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Feature" el="Δυνατότητα" compact /></th>
+                  <th className="px-2 py-4 text-center text-2xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Free" el="Δωρεάν" compact /></th>
+                  <th className="px-2 py-4 text-center text-2xs font-medium uppercase tracking-wide text-primary-accessible">Pro</th>
+                  <th className="px-2 py-4 text-center text-2xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Team" el="Ομάδα" compact /></th>
+                  <th className="px-2 py-4 text-center text-2xs font-medium uppercase tracking-wide text-muted-foreground">Enterprise</th>
                 </tr>
               </thead>
               <tbody>
                 {FEATURES.map((feature, i) => (
-                  <tr key={feature.name} className={cn('border-b border-border', i % 2 === 0 && 'bg-card/50')}>
+                  <tr key={feature.name} className={cn('border-b border-border motion-safe:hover:bg-muted/40', i % 2 === 0 && 'bg-card/50')}>
                     <td className="py-3 text-sm text-muted-foreground"><BilingualText en={feature.name} el={feature.nameEl} wrap /></td>
                     <td className="px-2 py-3 text-center">
                       <div className="flex justify-center">

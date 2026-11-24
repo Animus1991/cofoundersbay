@@ -629,3 +629,33 @@ export function getSectionsForMode(mode: SidebarMode, role?: string): NavSection
       return defaultWorkSections;
   }
 }
+
+/** Every link every role's nav can hold, for route-derived lookups (the
+    title sticker's icon path — docs §135 A1). */
+const ALL_NAV_LINKS: NavLink[] = [
+  ...founderWorkSections,
+  ...mentorWorkSections,
+  ...investorWorkSections,
+  ...providerWorkSections,
+  ...orgWorkSections,
+  ...adminWorkSections,
+  ...tenantWorkSections,
+  ...defaultWorkSections,
+  ...exploreSections,
+  ...accountSections,
+].flatMap((section) => section.links);
+
+/**
+ * The nav entry that owns this path — the entry whose href is the longest
+ * prefix of it, across every role's sidebar (mode and role do not matter
+ * for a mark; a page not in any list gets undefined).
+ */
+export function navLinkForPath(pathname: string | null): NavLink | undefined {
+  if (!pathname) return undefined;
+  let best: NavLink | undefined;
+  for (const link of ALL_NAV_LINKS) {
+    const matches = pathname === link.href || (link.href !== '/' && pathname.startsWith(`${link.href}/`));
+    if (matches && link.href.length > (best?.href.length ?? 0)) best = link;
+  }
+  return best;
+}

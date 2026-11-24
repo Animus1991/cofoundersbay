@@ -7,12 +7,22 @@ import { Card, CardContent } from '@/components/ui/card';
 import { LegalText } from '@/components/common/LegalText';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { cn } from '@/lib/utils';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { LegalDraftNotice, useLegalText } from '@/components/common/LegalDraftNotice';
 import { TERMS_EL } from '@/lib/legal/terms-el';
 
 const LAST_UPDATED = 'March 20, 2026';
 const LAST_UPDATED_EL = '20 Μαρτίου 2026';
+
+// Each h2's small tinted squircle marker (docs §137, B2.5) — the sections
+// rotate through the four quiet tints.
+const SECTION_TINTS = [
+  'bg-status-accent-bg border-status-accent-border',
+  'bg-status-info-bg border-status-info-border',
+  'bg-status-success-bg border-status-success-border',
+  'bg-status-warning-bg border-status-warning-border',
+] as const;
 
 const sections = [
   {
@@ -177,7 +187,7 @@ export default function TermsPage() {
       {/* Table of Contents */}
       <section className="border-b border-border">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4"><BilingualText en="Table of Contents" el="Περιεχόμενα" compact /></h2>
+          <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground"><span aria-hidden="true" className="h-3 w-3 rounded bg-status-info-bg" /><BilingualText en="Table of Contents" el="Περιεχόμενα" compact /></h2>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {legal.sections.map((section) => (
               <a
@@ -196,15 +206,13 @@ export default function TermsPage() {
       {/* Content */}
       <MainLandmark className="mx-auto max-w-4xl px-4 py-12">
         <div className="space-y-12">
-          {legal.sections.map((section) => (
+          {legal.sections.map((section, i) => (
             <Card key={section.id} id={section.id} className="scroll-mt-20 border-border">
               <CardContent className="space-y-4">
                 <CardHead
                   titleAs="h2"
                   mark={(
-                    <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
-                      <section.icon className="icon-md text-primary-accessible" aria-hidden="true" />
-                    </div>
+                    <span aria-hidden="true" className={cn('h-4 w-4 rounded-md border', SECTION_TINTS[i % SECTION_TINTS.length])} />
                   )}
                   title={section.title}
                   className="items-center"

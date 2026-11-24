@@ -320,12 +320,54 @@ export default function ProviderDashboard() {
   return (
     // "Manage services" in the header was the "Manage" of "Your services"
     // below, to the same page (docs §95).
-    <AppShell askAi={false} rail={rail}
+    <AppShell titleSrOnly askAi={false} rail={rail}
       description="Inquiries, active projects, services and reviews - in one view."
       descriptionEl="Αιτήματα, ενεργά έργα, υπηρεσίες και αξιολογήσεις — σε μία προβολή."
     >
       <div className="space-y-6">
-        <HomeAskHero role="provider" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
+        <HomeAskHero role="provider" showWaiting={false} band name={profile?.profile?.displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          <MetricTile
+            family="people"
+            icon={MessageSquare}
+            label="Open inquiries"
+            labelEl="Ανοιχτά αιτήματα"
+            value={summary?.openInquiries ?? (!inquiriesKnown || bookUnread ? EM_DASH : waiting.length)}
+            caption={!inquiriesKnown || bookUnread ? undefined : `${totalInquiries} in all`}
+            captionEl={!inquiriesKnown || bookUnread ? undefined : `${totalInquiries} συνολικά`}
+            href="/provider/inquiries"
+          />
+          <MetricTile
+            family="neutral"
+            icon={FolderKanban}
+            label="Active projects"
+            labelEl="Ενεργά έργα"
+            value={!projectsKnown || projectsFailed ? EM_DASH : activeProjects.length}
+            caption={!projectsKnown || projectsFailed ? undefined : agreedValue ? `${eur(agreedValue)} agreed in all` : 'Accepted inquiries'}
+            captionEl={!projectsKnown || projectsFailed ? undefined : agreedValue ? `${eur(agreedValue)} συμφωνημένα συνολικά` : 'Αποδεκτά αιτήματα'}
+            href="/provider/projects"
+          />
+          <MetricTile
+            family="neutral"
+            icon={Store}
+            label="Live services"
+            labelEl="Ενεργές υπηρεσίες"
+            value={summary?.offers.active ?? (!servicesKnown || servicesFailed ? EM_DASH : services.filter((s) => s.isActive !== false).length)}
+            caption={!servicesKnown || (!summary && servicesFailed) ? undefined : `${summary?.offers.total ?? services.length} listed`}
+            captionEl={!servicesKnown || (!summary && servicesFailed) ? undefined : `${summary?.offers.total ?? services.length} καταχωρημένες`}
+            href="/provider/services"
+          />
+          <MetricTile
+            family="neutral"
+            icon={Star}
+            label="Rating"
+            labelEl="Βαθμολογία"
+            value={avgRating == null ? EM_DASH : avgRating.toFixed(1)}
+            caption={reviewCount ? `From ${reviewCount} reviews` : !summary && reviewsFailed ? undefined : 'No reviews yet'}
+            captionEl={reviewCount ? `Από ${reviewCount} αξιολογήσεις` : !summary && reviewsFailed ? undefined : 'Καμία αξιολόγηση ακόμα'}
+            href="/provider/reviews"
+          />
+        </div>
         <HomeToday />
 
         {!inquiriesLoading && waiting[0] ? (
@@ -340,46 +382,6 @@ export default function ProviderDashboard() {
             actionEl="Απάντηση"
           />
         ) : null}
-
-        {/* Four figures, each linking to the page that lists what it counts. */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-          <MetricTile
-            icon={MessageSquare}
-            label="Open inquiries"
-            labelEl="Ανοιχτά αιτήματα"
-            value={summary?.openInquiries ?? (!inquiriesKnown || bookUnread ? EM_DASH : waiting.length)}
-            caption={!inquiriesKnown || bookUnread ? undefined : `${totalInquiries} in all`}
-            captionEl={!inquiriesKnown || bookUnread ? undefined : `${totalInquiries} συνολικά`}
-            href="/provider/inquiries"
-          />
-          <MetricTile
-            icon={FolderKanban}
-            label="Active projects"
-            labelEl="Ενεργά έργα"
-            value={!projectsKnown || projectsFailed ? EM_DASH : activeProjects.length}
-            caption={!projectsKnown || projectsFailed ? undefined : agreedValue ? `${eur(agreedValue)} agreed in all` : 'Accepted inquiries'}
-            captionEl={!projectsKnown || projectsFailed ? undefined : agreedValue ? `${eur(agreedValue)} συμφωνημένα συνολικά` : 'Αποδεκτά αιτήματα'}
-            href="/provider/projects"
-          />
-          <MetricTile
-            icon={Store}
-            label="Live services"
-            labelEl="Ενεργές υπηρεσίες"
-            value={summary?.offers?.active ?? (!servicesKnown || servicesFailed ? EM_DASH : services.filter((s) => s.isActive !== false).length)}
-            caption={!servicesKnown || (!summary && servicesFailed) ? undefined : `${summary?.offers?.total ?? services.length} listed`}
-            captionEl={!servicesKnown || (!summary && servicesFailed) ? undefined : `${summary?.offers?.total ?? services.length} καταχωρημένες`}
-            href="/provider/services"
-          />
-          <MetricTile
-            icon={Star}
-            label="Rating"
-            labelEl="Βαθμολογία"
-            value={avgRating == null ? EM_DASH : avgRating.toFixed(1)}
-            caption={reviewCount ? `From ${reviewCount} reviews` : !summary && reviewsFailed ? undefined : 'No reviews yet'}
-            captionEl={reviewCount ? `Από ${reviewCount} αξιολογήσεις` : !summary && reviewsFailed ? undefined : 'Καμία αξιολόγηση ακόμα'}
-            href="/provider/reviews"
-          />
-        </div>
 
         <HomeFold storageKey="cfb.dashboard.provider.full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -404,7 +406,7 @@ export default function ProviderDashboard() {
                     subtitle={inquiry.service}
                     aside={(
                       <>
-                        <Badge size="sm" className={INQUIRY_LABEL[inquiry.status].tone}><StatusText value={INQUIRY_LABEL[inquiry.status].en} /></Badge>
+                        <StatusText value={INQUIRY_LABEL[inquiry.status].en} />
                         <RelativeTime date={inquiry.receivedAt} format={formatRelativeTime} />
                       </>
                     )}

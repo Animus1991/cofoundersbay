@@ -2,33 +2,13 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import {
-  Users,
-  Search,
-  MoreHorizontal,
-  Shield,
-  Ban,
-  Mail,
-  CheckCircle2,
-  AlertTriangle,
-  UserX,
-  Download,
-  RefreshCw,
-  Eye,
-  User,
-  GraduationCap,
-  Rocket,
-  Award,
-  TrendingUp,
-  Building2,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
+import { Search, MoreHorizontal, Shield, Ban, Mail, CheckCircle2, AlertTriangle, UserX, Download, RefreshCw, Eye, GraduationCap, Rocket, Award, TrendingUp, Building2, ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailStats } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { formatRelativeTime } from '@/lib/utils';
@@ -74,6 +54,7 @@ import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControl, type PageControlRunResult } from '@/lib/page-controls';
 import { StatusText } from '@/components/common/StatusText';
+import type { StatusTone } from '@/lib/semantic-colors';
 import { FactLine } from '@/components/common/FactLine';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
@@ -190,11 +171,13 @@ const MOCK_USERS: ManagedUser[] = attachDemoPhotos([
   },
 ], { portraitKey: 'avatar' });
 
-const STATUS_STYLES: Record<UserStatus, string> = {
-  active: 'bg-status-success-bg text-status-success border-status-success-border',
-  suspended: 'bg-status-warning-bg text-status-warning border-status-warning-border',
-  pending: 'bg-status-warning-bg text-status-warning border-status-warning-border',
-  banned: 'bg-status-danger-bg text-status-danger border-status-danger-border',
+// The account-state words' tones — suspended was already warning — through
+// the shared tinted status pill (B2.3).
+const STATUS_TONES: Record<UserStatus, StatusTone> = {
+  active: 'success',
+  suspended: 'warning',
+  pending: 'warning',
+  banned: 'danger',
 };
 
 const ROLE_ICONS: Record<UserRole, React.ReactNode> = {
@@ -417,7 +400,8 @@ export default function AdminUserManagementPage() {
       content: (
         <div className="space-y-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></p>
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" /><BilingualText en="Role" el="Ρόλος" compact /></p>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger aria-label="Role" className="mt-2">
                 <SelectValue placeholder={sayOne("All roles", "Όλοι οι ρόλοι")} />
@@ -431,7 +415,8 @@ export default function AdminUserManagementPage() {
             </Select>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></p>
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" /><BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger aria-label="Status" className="mt-2">
                 <SelectValue placeholder={sayOne("All statuses", "Όλες οι καταστάσεις")} />
@@ -446,7 +431,8 @@ export default function AdminUserManagementPage() {
             </Select>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Sort by" el="Ταξινόμηση" compact /></p>
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" /><BilingualText en="Sort by" el="Ταξινόμηση" compact /></p>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
               <SelectTrigger aria-label="Sort by" className="mt-2">
                 <SelectValue />
@@ -719,9 +705,7 @@ export default function AdminUserManagementPage() {
                     )}
                     aside={(
                       <>
-                      <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[user.status])}>
-                        <StatusText value={user.status} />
-                      </Badge>
+                      <StatusText value={user.status} tone={STATUS_TONES[user.status]} />
                       {/* The row's actions in one menu (docs §115): Quick view was
                           a button of its own on every row. */}
                       <div className="flex items-center gap-1">
@@ -776,10 +760,13 @@ export default function AdminUserManagementPage() {
             })}
 
             {paginated.length === 0 && (
-              <CardContent className="py-12 text-center">
-                <Users className="mx-auto icon-xl text-muted-foreground/40" />
-                <p className="mt-3 font-medium"><BilingualText en="No users match your filters" el="Κανένας χρήστης δεν ταιριάζει με τα φίλτρα" compact /></p>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Clear search or change role/status filters." el="Καθαρίστε την αναζήτηση ή αλλάξτε τα φίλτρα ρόλου/κατάστασης." wrap /></p>
+              <CardContent className="p-0">
+                <EmptyState
+                  className="border-0 bg-transparent"
+                  illustration="search"
+                  title={<BilingualText en="No users match your filters" el="Κανένας χρήστης δεν ταιριάζει με τα φίλτρα" compact />}
+                  description={<BilingualText en="Clear search or change role/status filters." el="Καθαρίστε την αναζήτηση ή αλλάξτε τα φίλτρα ρόλου/κατάστασης." wrap />}
+                />
               </CardContent>
             )}
           </Card>
@@ -801,7 +788,7 @@ export default function AdminUserManagementPage() {
 
       <Dialog open={!!detailUser} onOpenChange={(open) => !open && setDetailUser(null)}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Info} tone="neutral">
             <DialogTitle>{detailUser?.name}</DialogTitle>
             <DialogDescription className="sr-only"><BilingualText en="Account details and admin actions for this member." el="Στοιχεία λογαριασμού και ενέργειες διαχείρισης για αυτό το μέλος." /></DialogDescription>
           </DialogHeader>
@@ -809,10 +796,8 @@ export default function AdminUserManagementPage() {
             <div className="space-y-3 text-sm">
               <p className="text-muted-foreground" translate="no">{detailUser.email}</p>
               <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="capitalize"><StatusText value={detailUser.role} /></Badge>
-                <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[detailUser.status])}>
-                  <StatusText value={detailUser.status} />
-                </Badge>
+                <StatusText value={detailUser.role} />
+                <StatusText value={detailUser.status} tone={STATUS_TONES[detailUser.status]} />
                 {detailUser.verified && <Badge><BilingualText en="Verified" el="Επαληθευμένος" compact /></Badge>}
               </div>
               <dl className="grid grid-cols-2 gap-2">

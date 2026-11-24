@@ -37,6 +37,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -688,25 +689,23 @@ export default function ResearchBoardsPage() {
 
           {/* The founder's own boards come first; templates are for starting something new. */}
           {boards.length === 0 && filter === 'all' && (
-            <div className="rounded-2xl border border-border bg-card/60 px-5 py-10 text-center">
-              <CfbGlyph name="research" className="mx-auto mb-4 icon-lg text-muted-foreground/50" />
-              <h2 className="page-section mb-2 font-semibold">
-                <BilingualText en={researchEn('empty_title')} el={researchEl('empty_title')} />
-              </h2>
-              <p className="mx-auto mb-5 max-w-md text-sm text-muted-foreground">
-                <BilingualText en={researchEn('empty_hint')} el={researchEl('empty_hint')} />
-              </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                <Button type="button" variant="outline" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => setTemplatesDialogOpen(true)}>
-                  <CfbGlyph name="spark" className="icon-sm" />
-                  <BilingualText en={researchEn('use_template')} el={researchEl('use_template')} compact />
-                </Button>
-                <Button type="button" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => setCreateDialogOpen(true)}>
-                  <Plus className="icon-sm" />
-                  <BilingualText en={researchEn('empty_cta')} el={researchEl('empty_cta')} compact />
-                </Button>
-              </div>
-            </div>
+            <EmptyState
+              illustration="default"
+              title={<BilingualText en={researchEn('empty_title')} el={researchEl('empty_title')} />}
+              description={<BilingualText en={researchEn('empty_hint')} el={researchEl('empty_hint')} />}
+              action={(
+                <>
+                  <Button type="button" variant="outline" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => setTemplatesDialogOpen(true)}>
+                    <CfbGlyph name="spark" className="icon-sm" />
+                    <BilingualText en={researchEn('use_template')} el={researchEl('use_template')} compact />
+                  </Button>
+                  <Button type="button" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => setCreateDialogOpen(true)}>
+                    <Plus className="icon-sm" />
+                    <BilingualText en={researchEn('empty_cta')} el={researchEl('empty_cta')} compact />
+                  </Button>
+                </>
+              )}
+            />
           )}
 
           {useSplit && pinnedBoards.length > 0 && (
@@ -789,18 +788,24 @@ export default function ResearchBoardsPage() {
           )}
 
           {filteredBoards.length === 0 && boards.length > 0 && !isLoading && (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              <BilingualText
-                en={searchQuery ? researchEn('no_match') : filter === 'archived' ? researchEn('archived_empty') : filter === 'empty' ? researchEn('empty_filter') : researchEn('pinned_empty')}
-                el={searchQuery ? researchEl('no_match') : filter === 'archived' ? researchEl('archived_empty') : filter === 'empty' ? researchEl('empty_filter') : researchEl('pinned_empty')}
-              />
-            </div>
+            <EmptyState
+              illustration="search"
+              size="sm"
+              title={(
+                <BilingualText
+                  en={searchQuery ? researchEn('no_match') : filter === 'archived' ? researchEn('archived_empty') : filter === 'empty' ? researchEn('empty_filter') : researchEn('pinned_empty')}
+                  el={searchQuery ? researchEl('no_match') : filter === 'archived' ? researchEl('archived_empty') : filter === 'empty' ? researchEl('empty_filter') : researchEl('pinned_empty')}
+                />
+              )}
+            />
           )}
 
           {boards.length === 0 && filter === 'archived' && !isLoading && (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              <BilingualText en={researchEn('archived_empty')} el={researchEl('archived_empty')} />
-            </div>
+            <EmptyState
+              illustration="default"
+              size="sm"
+              title={<BilingualText en={researchEn('archived_empty')} el={researchEl('archived_empty')} />}
+            />
           )}
 
           <section className="mt-10 border-t border-border pt-8" data-tour="research-templates">
@@ -826,7 +831,7 @@ export default function ResearchBoardsPage() {
 
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogContent className="rounded-2xl sm:max-w-md">
-              <DialogHeader>
+              <DialogHeader icon={Plus} tone="primary">
                 <DialogTitle>
                   <BilingualText en={researchEn('create_title')} el={researchEl('create_title')} />
                 </DialogTitle>
@@ -1028,7 +1033,7 @@ function BoardCard({
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
+        <DropdownMenuItem onClick={onDelete} className="text-status-danger">
           <Trash2 className="icon-sm mr-2" />
           <BilingualText en={commonEn('delete')} el={commonEl('delete')} compact />
         </DropdownMenuItem>

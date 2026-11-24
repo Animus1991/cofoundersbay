@@ -11,7 +11,6 @@ import { HelpCallout } from '@/components/common/HelpCallout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { qk } from '@/lib/query-keys';
@@ -213,7 +212,7 @@ export default function ContentModerationPage() {
                   <BilingualText en={`Reported by ${r.reporter}`} el={`Αναφορά από ${r.reporter}`} compact /> · <RelativeTime date={r.createdAt} format={formatRelativeTime} />
                 </>
               )}
-              aside={<Badge variant="outline"><StatusText value={r.status} /></Badge>}
+              aside={<StatusText value={r.status} />}
             />
             {r.reason ? <p className="text-sm text-muted-foreground first-letter:uppercase">{r.reason}</p> : null}
             {r.status === 'open' && (

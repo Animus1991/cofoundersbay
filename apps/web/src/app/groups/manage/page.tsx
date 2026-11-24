@@ -40,6 +40,7 @@ import { qk } from '@/lib/query-keys';
 import { CANCELLED, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
@@ -149,7 +150,7 @@ function GroupCard({ group, sample = false, onInvite, onDelete }: { group: Manag
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {group.role === 'owner' ? (
-                    <DropdownMenuItem className="text-destructive-accessible" onSelect={() => void onDelete(group)}>
+                    <DropdownMenuItem className="text-status-danger" onSelect={() => void onDelete(group)}>
                       <Trash2 className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Delete group" el="Διαγραφή κοινότητας" compact />
                     </DropdownMenuItem>
                   ) : (
@@ -333,16 +334,18 @@ export default function ManageGroupsPage() {
           />
         )}
         {failed && (
-          <Card>
-            <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-              <p role="alert" className="text-sm text-muted-foreground">
-                <BilingualText en="Your communities could not be read just now." el="Οι κοινότητές σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
-              </p>
-              <Button size="sm" variant="outline" onClick={() => void refetch()} disabled={isFetching}>
-                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-              </Button>
-            </CardContent>
-          </Card>
+          <div role="alert">
+            <EmptyState
+              illustration="default"
+              size="sm"
+              title={<BilingualText en="Your communities could not be read just now." el="Οι κοινότητές σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />}
+              action={(
+                <Button size="sm" variant="outline" onClick={() => void refetch()} disabled={isFetching}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+              )}
+            />
+          </div>
         )}
         {/* Stats and search: only over a list. Zeros over an empty state, or
             over a read that failed, said nothing the state did not. */}
@@ -367,7 +370,7 @@ export default function ManageGroupsPage() {
         )}
 
         {/* Groups */}
-        <div className="space-y-3">
+        <div className="card-grid">
           {filtered.map(group => (
             <GroupCard key={group.id} group={group} sample={showingSample} {...actions} />
           ))}

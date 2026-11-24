@@ -485,13 +485,13 @@ export default function OrgEventsPage() {
             <TabsTrigger value="completed"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /><Counter value={completedCount} /></TabsTrigger>
           </TabsList>
           )}
-          <TabsContent value={activeTab} className="mt-4 space-y-3">
-            {isLoading && events.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="h-36" />)}
+          <TabsContent value={activeTab} className="card-grid mt-4">
+            {isLoading && events.length === 0 && [0, 1].map((i) => <Skeleton key={i} className="col-span-full h-36" />)}
             {filtered.map(event => (
               <EventCard key={event.id} event={event} sample={isSample} onDuplicate={live.length > 0 ? (ev) => void duplicate(ev) : undefined} />
             ))}
             {!isLoading && filtered.length === 0 && (
-              <EmptyOrgEvents
+              <EmptyOrgEvents className="col-span-full"
                 filtersActive={filtersActive}
                 onClearFilters={clearFilters}
                 active={namedFilters(namedQuery(search), namedChoice(activeTab, 'all', {

@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { createPerk } from '@/lib/perks-api';
+import { Plus } from 'lucide-react';
 
 type Draft = {
   partner: string;
@@ -99,7 +100,7 @@ export function AddPerkDialog({ open, onClose, onCreated }: { open: boolean; onC
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+        <DialogHeader icon={Plus} tone="primary">
           <DialogTitle><BilingualText en="Add a perk" el="Προσθήκη προσφοράς" compact /></DialogTitle>
           <DialogDescription>
             <BilingualText en="Members see the code and the link only after they claim. Greek fields are optional." el="Τα μέλη βλέπουν κωδικό και σύνδεσμο μόνο μετά τη διεκδίκηση. Τα ελληνικά πεδία είναι προαιρετικά." wrap />

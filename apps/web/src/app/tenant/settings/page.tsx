@@ -117,7 +117,7 @@ export default function TenantSettingsPage() {
       showError('Could not save the settings', err instanceof Error ? err.message : undefined),
   });
 
-  // What the assistant can do here (docs §137): open a tab and set the form,
+  // What the assistant can do here (docs §141): open a tab and set the form,
   // which stays unsaved until "Save changes" - the one command that writes,
   // as with the button. The defaults are the ones the form starts from.
   const [tab, setTab] = useState('general');

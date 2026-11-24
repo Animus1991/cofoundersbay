@@ -328,7 +328,7 @@ export default function MentorAvailabilityPage() {
           </p>
         )}
         {/* Status Cards */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-3">
           <Card>
             <CardContent>
               <div className="flex items-center justify-between mb-2">

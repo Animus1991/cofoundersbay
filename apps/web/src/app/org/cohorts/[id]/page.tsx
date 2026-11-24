@@ -6,6 +6,7 @@ import { COHORT_MATCH_MIN_SCORE, cohortRunSummary, matchReasonCopy, type CohortR
 import { useToast } from '@/components/ui/toast';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { useHydrated } from '@/components/common/RelativeTime';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { StatusText } from '@/components/common/StatusText';
@@ -40,7 +41,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import type { StatusTone } from '@/lib/semantic-colors';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
@@ -355,36 +356,29 @@ export default function CohortDetailPage() {
     return fmtDate(dateString, { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  // The cell's word is the tinted status pill itself, not a badge around
+  // it (B2.3); the per-status tone stays the same.
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: 'default' | 'secondary' | 'outline' | 'success' | 'warning' | 'destructive' | 'info'; className: string }> = {
-      active: { variant: 'default', className: 'bg-status-success-bg text-status-success border-status-success-border' },
-      inactive: { variant: 'secondary', className: 'bg-muted text-foreground' },
-      pending: { variant: 'outline', className: 'bg-status-warning-bg text-status-warning border-status-warning-border' },
-      scheduled: { variant: 'outline', className: 'bg-status-info-bg text-status-info border-status-info-border' },
-      completed: { variant: 'default', className: 'bg-status-success-bg text-status-success border-status-success-border' },
-      cancelled: { variant: 'destructive', className: '' },
+    const tones: Record<string, StatusTone> = {
+      active: 'success',
+      inactive: 'neutral',
+      pending: 'warning',
+      scheduled: 'info',
+      completed: 'success',
+      cancelled: 'danger',
     };
 
-    const config = variants[status] || variants.pending;
-    return (
-      <Badge variant={config.variant} className={config.className}>
-        <StatusText value={status} />
-      </Badge>
-    );
+    return <StatusText value={status} tone={tones[status] ?? 'warning'} />;
   };
 
   const getRoleBadge = (role: string) => {
-    const colors: Record<string, string> = {
-      founder: 'bg-status-info-bg text-status-info border-status-info-border',
-      mentor: 'bg-status-accent-bg text-status-accent border-status-accent-border',
-      investor: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+    const tones: Record<string, StatusTone> = {
+      founder: 'info',
+      mentor: 'accent',
+      investor: 'warning',
     };
 
-    return (
-      <Badge variant="outline" className={colors[role] || colors.founder}>
-        <StatusText value={role} />
-      </Badge>
-    );
+    return <StatusText value={role} tone={tones[role] ?? 'info'} />;
   };
 
   // Tabs, export, share and opening a participant, offered to the assistant;
@@ -525,17 +519,23 @@ export default function CohortDetailPage() {
           </Card>
         ) : (
           <Card>
-            <CardContent className="py-12 text-center">
-              <p className="mx-auto max-w-md text-sm text-muted-foreground">
-                <BilingualText
-                  en="This cohort could not be loaded. It may belong to another organisation, or you may not be a member of its organisation."
-                  el="Ο κύκλος δεν φορτώθηκε. Μπορεί να ανήκει σε άλλον οργανισμό ή να μην είστε μέλος του οργανισμού του."
-                  wrap
-                />
-              </p>
-              <Button variant="outline" className="mt-4 gap-2" asChild>
-                <Link href="/org/cohorts"><ArrowLeft className="icon-sm" aria-hidden="true" /><BilingualText en="All cohorts" el="Όλοι οι κύκλοι" compact /></Link>
-              </Button>
+            <CardContent className="p-0">
+              <EmptyState
+                className="border-0 bg-transparent"
+                illustration="default"
+                title={(
+                  <BilingualText
+                    en="This cohort could not be loaded. It may belong to another organisation, or you may not be a member of its organisation."
+                    el="Ο κύκλος δεν φορτώθηκε. Μπορεί να ανήκει σε άλλον οργανισμό ή να μην είστε μέλος του οργανισμού του."
+                    wrap
+                  />
+                )}
+                action={(
+                  <Button variant="outline" className="gap-2" asChild>
+                    <Link href="/org/cohorts"><ArrowLeft className="icon-sm" aria-hidden="true" /><BilingualText en="All cohorts" el="Όλοι οι κύκλοι" compact /></Link>
+                  </Button>
+                )}
+              />
             </CardContent>
           </Card>
         )}

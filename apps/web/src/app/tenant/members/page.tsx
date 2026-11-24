@@ -1,21 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import {
-  Users,
-  Search,
-  Plus,
-  MoreVertical,
-  Mail,
-  Shield,
-  UserX,
-  CheckCircle2,
-  Clock,
-  TrendingUp,
-  Activity,
-  Send,
-  Copy,
-} from 'lucide-react';
+import { Users, Search, Plus, MoreVertical, Mail, Shield, UserX, CheckCircle2, Clock, TrendingUp, Activity, Send, Copy, UserPlus } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -26,7 +12,7 @@ import { getTenantMembers, updateTenantMember, removeTenantMember, type TenantMe
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import type { StatusTone } from '@/lib/semantic-colors';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -112,10 +98,11 @@ type Member = {
   sessionsAttended?: number;
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  active:    'bg-status-success-bg text-status-success border-status-success-border',
-  pending:   'bg-status-warning-bg text-status-warning border-status-warning-border',
-  suspended: 'bg-status-danger-bg text-status-danger border-status-danger-border',
+// The member-state words' tones, through the shared tinted pill (B2.3).
+const MEMBER_STATUS_TONE: Record<string, StatusTone> = {
+  active:    'success',
+  pending:   'warning',
+  suspended: 'danger',
 };
 
 function EngagementBar({ score }: { score: number }) {
@@ -177,7 +164,7 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive-accessible" disabled={!onRemove} onSelect={() => onRemove?.(member)}>
+        <DropdownMenuItem className="text-status-danger" disabled={!onRemove} onSelect={() => onRemove?.(member)}>
           <UserX className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Remove Member" el="Αφαίρεση μέλους" compact />
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -204,9 +191,7 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
           asideStays
           aside={(
             <>
-              <Badge variant="outline" className={cn('text-xs', STATUS_COLORS[member.status])}>
-                <StatusText value={member.status} />
-              </Badge>
+              <StatusText value={member.status} tone={MEMBER_STATUS_TONE[member.status]} />
               {menu}
             </>
           )}
@@ -238,9 +223,9 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={UserPlus} tone="accent">
           <DialogTitle className="flex items-center gap-2">
-            <Send className="icon-md text-muted-foreground" /> <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
+            <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
           </DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="Invite people to the workspace and assign each a role." el="Προσκαλέστε άτομα στον χώρο εργασίας και ορίστε ρόλο σε καθέναν." /></DialogDescription>
         </DialogHeader>
@@ -495,8 +480,8 @@ export default function TenantMembersPage() {
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-4">
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
+            <div className="card-grid card-grid-lg">
+              <p className="col-span-full text-sm text-muted-foreground">
                 <BilingualText
                   en={`${filteredMembers.length} member${filteredMembers.length !== 1 ? 's' : ''} found`}
                   el={`${filteredMembers.length} ${filteredMembers.length !== 1 ? 'μέλη' : 'μέλος'}`}
@@ -507,7 +492,7 @@ export default function TenantMembersPage() {
                 <MemberCard key={member.id} member={member} {...memberActions} />
               ))}
               {filteredMembers.length === 0 && (
-                <EmptyTenantMembers
+                <EmptyTenantMembers className="col-span-full"
                   filtersActive={!!search || roleFilter !== 'all' || statusFilter !== 'all'}
                   onClearFilters={() => { setSearch(''); setRoleFilter('all'); setStatusFilter('all'); }}
                   active={namedFilters(

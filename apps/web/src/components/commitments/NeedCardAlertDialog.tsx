@@ -12,6 +12,7 @@ import { useToast } from '@/components/ui/toast';
 import { createSavedSearch, type SavedSearch } from '@/lib/api';
 import { NO_CHIPS, chipSummary, chipsToSavedFilters, type CardChips } from '@/lib/need-card-wall';
 import { qk } from '@/lib/query-keys';
+import { Bell } from 'lucide-react';
 
 const FREQUENCIES: Array<{ value: SavedSearch['alertFrequency']; en: string; el: string }> = [
   { value: 'weekly', en: 'Once a week', el: 'Μία φορά την εβδομάδα' },
@@ -87,7 +88,7 @@ export function NeedCardAlertDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader icon={Bell} tone="warning">
           <DialogTitle><BilingualText en="Alert me about new need cards" el="Ειδοποίηση για νέες κάρτες ανάγκης" compact /></DialogTitle>
           <DialogDescription>
             <BilingualText

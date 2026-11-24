@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { getProfileImportStatus, startProfileImport } from '@/lib/linkedin-import/api';
 import { readLinkedInFiles } from '@/lib/linkedin-import/read-files';
 import { qk } from '@/lib/query-keys';
+import { Upload } from 'lucide-react';
 
 export interface ImportableProfile {
   displayName: string;
@@ -145,7 +146,7 @@ export function LinkedInImportDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
-        <DialogHeader>
+        <DialogHeader icon={Upload} tone="info">
           <DialogTitle><BilingualText en="Import from LinkedIn" el="Εισαγωγή από το LinkedIn" compact /></DialogTitle>
           <DialogDescription>
             <BilingualText en="Fills the form with what you choose. Nothing is saved until you press Save." el="Συμπληρώνει τη φόρμα με ό,τι επιλέξετε. Τίποτα δεν αποθηκεύεται πριν πατήσετε Αποθήκευση." wrap />

@@ -216,7 +216,7 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
             ? <Badge variant="outline" className="border-status-success-border bg-status-success-bg text-xs text-status-success"><BilingualText en="Active" el="Ενεργός" compact /></Badge>
             : rule.status === 'paused'
             ? <Badge variant="outline" className="border-status-warning-border bg-status-warning-bg text-xs text-status-warning"><BilingualText en="Paused" el="Σε παύση" compact /></Badge>
-            : <Badge variant="outline" className="text-xs"><StatusText value={rule.status} /></Badge>}
+            : <StatusText value={rule.status} />}
         />
         {rule.description && <p className="card-body text-muted-foreground first-letter:uppercase">{rule.description}</p>}
         <CardFoot

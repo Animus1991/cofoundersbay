@@ -30,6 +30,7 @@ import { RailAction, RailOptions, RailStats } from '@/components/layout/RailPart
 import { usePageRail } from '@/components/layout/PageRailContext';
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -561,25 +562,29 @@ export default function GroupsPage() {
           {/* Error — and only the error: "No communities yet" used to follow
               it, with its own Create button (docs §88). */}
           {listFailed && (
-            <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
-              <p role="alert" className="text-sm text-muted-foreground">
-                {activeTab === 'discover'
+            <div role="alert">
+              <EmptyState
+                illustration="default"
+                size="sm"
+                title={activeTab === 'discover'
                   ? <BilingualText en="Communities could not be read just now." el="Οι κοινότητες δεν διαβάστηκαν αυτή τη στιγμή." wrap />
                   : <BilingualText en="Your communities could not be read just now." el="Οι κοινότητές σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />}
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={() =>
-                  activeTab === 'discover'
-                    ? discoverQuery.refetch()
-                    : myGroupsQuery.refetch()
-                }
-              >
-                <RefreshCw className="icon-sm" />
-                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-              </Button>
+                action={(
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() =>
+                      activeTab === 'discover'
+                        ? discoverQuery.refetch()
+                        : myGroupsQuery.refetch()
+                    }
+                  >
+                    <RefreshCw className="icon-sm" />
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                )}
+              />
             </div>
           )}
 
@@ -599,7 +604,8 @@ export default function GroupsPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="icon-sm text-muted-foreground" />
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
                   {sort === 'trending'
                     ? <BilingualText en="Trending now" el="Σε άνοδο τώρα" compact />
                     : <BilingualText en="Top communities" el="Κορυφαίες κοινότητες" compact />}
@@ -624,7 +630,8 @@ export default function GroupsPage() {
           {!listLoading && restGroups.length > 0 && (
             <div className="space-y-3">
               {topGroups.length > 0 && (
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />
                   <BilingualText en="More communities" el="Περισσότερες κοινότητες" compact />
                 </h2>
               )}

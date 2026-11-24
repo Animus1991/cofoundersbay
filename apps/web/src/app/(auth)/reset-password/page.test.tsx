@@ -6,7 +6,7 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams('token=valid-token'),
   useRouter: () => ({ replace: vi.fn() }),
 }));
-vi.mock('@/components/brand/Logo', () => ({ Logo: () => <span>Logo</span> }));
+vi.mock('@/components/brand/Logo', () => ({ Logo: () => <span>Logo</span>, LogoIcon: () => <span>Logo</span> }));
 vi.mock('@/components/common/BilingualText', () => ({ BilingualText: ({ en }: { en: string }) => <>{en}</> }));
 vi.mock('@/lib/api', () => ({ resetPassword: vi.fn() }));
 

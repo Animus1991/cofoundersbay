@@ -19,6 +19,7 @@ import {
 } from '@/lib/api';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { NetworkTabs } from '@/components/network/NetworkTabs';
 import { MessageButton } from '@/components/common/PersonActions';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
@@ -637,9 +638,9 @@ export default function EndorsementsPage() {
             )}
           </div>
 
-          <TabsContent value="received" className="mt-4 space-y-3">
+          <TabsContent value="received" className="card-grid mt-4">
             {pendingCount > 0 && (
-              <div className="flex items-center gap-2 rounded-lg border border-border border-l-2 border-l-status-warning bg-card px-3 py-2 text-sm text-status-warning">
+              <div className="col-span-full flex items-center gap-2 rounded-lg border border-border border-l-2 border-l-status-warning bg-card px-3 py-2 text-sm text-status-warning">
                 <Clock className="icon-sm shrink-0" aria-hidden="true" />
                 <BilingualText
                   en={pendingCount === 1 ? '1 endorsement is waiting for your approval before it shows on your profile.' : `${pendingCount} endorsements are waiting for your approval before they show on your profile.`}
@@ -649,26 +650,29 @@ export default function EndorsementsPage() {
               </div>
             )}
             {loadingList ? (
-              <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">
+              <Card className="col-span-full"><CardContent className="py-10 text-center text-sm text-muted-foreground">
                 <BilingualText en="Loading endorsements…" el="Φόρτωση συστάσεων…" compact />
               </CardContent></Card>
             ) : receivedFailed && !showDemoData ? (
-              <Card><CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-                <p role="alert" className="text-sm text-muted-foreground">
-                  <BilingualText en="Your endorsements could not be read just now." el="Οι συστάσεις σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
-                </p>
-                <Button size="sm" variant="outline" onClick={() => void refetchReceived()}>
-                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-                </Button>
-              </CardContent></Card>
+              <div role="alert" className="col-span-full">
+                <EmptyState
+                  illustration="default"
+                  size="sm"
+                  title={<BilingualText en="Your endorsements could not be read just now." el="Οι συστάσεις σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />}
+                  action={(
+                    <Button size="sm" variant="outline" onClick={() => void refetchReceived()}>
+                      <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                    </Button>
+                  )}
+                />
+              </div>
             ) : received.length === 0 ? (
-              <Card><CardContent className="py-12 text-center">
-                <Star className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" aria-hidden="true" />
-                <p className="font-medium"><BilingualText en="No endorsements received yet" el="Δεν έχετε λάβει συστάσεις ακόμα" /></p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  <BilingualText en="Ask a connection who has worked with you; the side panel lists them." el="Ζητήστε από μια επαφή που έχει συνεργαστεί μαζί σας· το πλευρικό πάνελ τις δείχνει." wrap />
-                </p>
-              </CardContent></Card>
+              <EmptyState
+                className="col-span-full"
+                illustration="default"
+                title={<BilingualText en="No endorsements received yet" el="Δεν έχετε λάβει συστάσεις ακόμα" />}
+                description={<BilingualText en="Ask a connection who has worked with you; the side panel lists them." el="Ζητήστε από μια επαφή που έχει συνεργαστεί μαζί σας· το πλευρικό πάνελ τις δείχνει." wrap />}
+              />
             ) : (
               received.map((e) => (
                 <EndorsementCard key={e.id} endorsement={e} type="received" sample={showDemoData} onApprove={handleApprove} onDecline={handleDecline} />
@@ -676,29 +680,36 @@ export default function EndorsementsPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="given" className="mt-4 space-y-3">
+          <TabsContent value="given" className="card-grid mt-4">
             {loadingList ? (
-              <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">
+              <Card className="col-span-full"><CardContent className="py-10 text-center text-sm text-muted-foreground">
                 <BilingualText en="Loading endorsements…" el="Φόρτωση συστάσεων…" compact />
               </CardContent></Card>
             ) : givenFailed && !showDemoData ? (
-              <Card><CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-                <p role="alert" className="text-sm text-muted-foreground">
-                  <BilingualText en="The endorsements you gave could not be read just now." el="Οι συστάσεις που δώσατε δεν διαβάστηκαν αυτή τη στιγμή." wrap />
-                </p>
-                <Button size="sm" variant="outline" onClick={() => void refetchGiven()}>
-                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-                </Button>
-              </CardContent></Card>
+              <div role="alert" className="col-span-full">
+                <EmptyState
+                  illustration="default"
+                  size="sm"
+                  title={<BilingualText en="The endorsements you gave could not be read just now." el="Οι συστάσεις που δώσατε δεν διαβάστηκαν αυτή τη στιγμή." wrap />}
+                  action={(
+                    <Button size="sm" variant="outline" onClick={() => void refetchGiven()}>
+                      <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                    </Button>
+                  )}
+                />
+              </div>
             ) : given.length === 0 ? (
-              <Card><CardContent className="py-12 text-center">
-                <Handshake className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" aria-hidden="true" />
-                <p className="font-medium"><BilingualText en="No endorsements given yet" el="Δεν έχετε δώσει συστάσεις ακόμα" /></p>
-                <Button size="sm" className="mt-4 gap-1.5" onClick={() => setGiving(true)}>
-                  <Award className="icon-sm" aria-hidden="true" />
-                  <BilingualText en="Write your first endorsement" el="Γράψτε την πρώτη σας σύσταση" compact />
-                </Button>
-              </CardContent></Card>
+              <EmptyState
+                className="col-span-full"
+                illustration="default"
+                title={<BilingualText en="No endorsements given yet" el="Δεν έχετε δώσει συστάσεις ακόμα" />}
+                action={(
+                  <Button size="sm" className="gap-1.5" onClick={() => setGiving(true)}>
+                    <Award className="icon-sm" aria-hidden="true" />
+                    <BilingualText en="Write your first endorsement" el="Γράψτε την πρώτη σας σύσταση" compact />
+                  </Button>
+                )}
+              />
             ) : (
               given.map((e) => <EndorsementCard key={e.id} endorsement={e} type="given" sample={showDemoData} />)
             )}

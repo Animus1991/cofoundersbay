@@ -347,13 +347,17 @@ export default function EventsPage() {
         {(['upcoming', 'my-events', 'past'] as const).map((tab) => (
           <TabsContent key={tab} value={tab} className="mt-5">
             {isError ? (
-              <div className="flex flex-col items-center gap-3 py-16 text-center">
-                <p className="text-sm text-muted-foreground">
-                  <BilingualText en="Events could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των εκδηλώσεων." wrap />
-                </p>
-                <Button variant="outline" size="sm" onClick={() => refetch()}>
-                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-                </Button>
+              <div role="alert">
+                <EmptyState
+                  illustration="default"
+                  size="sm"
+                  title={<BilingualText en="Events could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των εκδηλώσεων." wrap />}
+                  action={(
+                    <Button variant="outline" size="sm" onClick={() => refetch()}>
+                      <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                    </Button>
+                  )}
+                />
               </div>
             ) : loading ? (
               // Three columns at most: at four, each card kept ~170px beside

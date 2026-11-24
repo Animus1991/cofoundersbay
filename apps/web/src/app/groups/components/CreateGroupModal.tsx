@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useId } from 'react';
-import { Loader2, Globe, Lock } from 'lucide-react';
+import { Loader2, Globe, Lock, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -66,7 +66,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={Plus} tone="primary">
           <DialogTitle><BilingualText en="Create Community" el="Δημιουργία κοινότητας" compact /></DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="Name the community, choose its URL slug and set who can join." el="Ονομάστε την κοινότητα, επιλέξτε το slug της και ορίστε ποιοι μπορούν να συμμετάσχουν." /></DialogDescription>
         </DialogHeader>

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import type { ElementType } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -17,7 +18,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      'fixed inset-0 z-50 bg-black/50',
+      'fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]',
       'data-[state=open]:animate-in data-[state=closed]:animate-out motion-reduce:animate-none',
       'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
       className,
@@ -45,7 +46,7 @@ const DialogContent = React.forwardRef<
         'top-[max(0.75rem,env(safe-area-inset-top))] translate-y-0',
         'md:top-[50%] md:translate-y-[-50%]',
         'max-h-[min(92dvh,720px)] overflow-y-auto overscroll-contain',
-        'rounded-2xl border border-border bg-card p-5 sm:p-6 text-card-foreground shadow-none',
+        'rounded-3xl border border-border/60 bg-card p-5 sm:p-6 text-card-foreground shadow-xl',
         'data-[state=open]:animate-in data-[state=closed]:animate-out motion-reduce:animate-none',
         'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
         'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
@@ -63,7 +64,7 @@ const DialogContent = React.forwardRef<
           // 44px tap target (WCAG 2.5.8) from the incoming branch, kept with our
           // colour-based hover and bilingual label — theirs had regressed the
           // accessible name to English-only.
-          className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary/70 focus-ring disabled:pointer-events-none"
+          className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary/70 focus-ring disabled:pointer-events-none"
           aria-label={bilingualAria('Close dialog', 'Κλείσιμο παραθύρου')}
         >
           <X className="icon-sm" aria-hidden="true" />
@@ -75,8 +76,42 @@ const DialogContent = React.forwardRef<
 });
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
-const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex min-w-0 flex-col gap-1.5 pr-12 sm:pr-10', className)} {...props} />
+/* The verb's tinted well left of the title (B1.5): every dialog names what
+   it does by icon and tone, the way the page header names its section. */
+export type DialogTone = 'primary' | 'accent' | 'info' | 'success' | 'warning' | 'danger' | 'neutral';
+
+const DIALOG_TONE: Record<DialogTone, string> = {
+  primary: 'bg-primary/10 text-primary-accessible',
+  accent: 'bg-status-accent-bg text-status-accent',
+  info: 'bg-status-info-bg text-status-info',
+  success: 'bg-status-success-bg text-status-success',
+  warning: 'bg-status-warning-bg text-status-warning',
+  danger: 'bg-status-danger-bg text-status-danger',
+  neutral: 'bg-status-neutral-bg text-status-neutral',
+};
+
+const DialogHeader = ({
+  className,
+  icon: Icon,
+  tone = 'neutral',
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {
+  icon?: ElementType;
+  tone?: DialogTone;
+}) => (
+  <div className={cn('flex min-w-0 items-start gap-3 pr-12 sm:pr-10', className)} {...props}>
+    {Icon ? (
+      <span
+        data-keep-icon=""
+        aria-hidden="true"
+        className={cn('mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl', DIALOG_TONE[tone])}
+      >
+        <Icon className="icon-md" />
+      </span>
+    ) : null}
+    <div className="flex min-w-0 flex-col gap-1.5">{children}</div>
+  </div>
 );
 DialogHeader.displayName = 'DialogHeader';
 

@@ -42,7 +42,7 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
     root.removeAttribute('data-variant');
     const entry = newTheme === 'system' ? null : THEME_ROOT[newTheme];
     if (entry?.variant) {
-      // Another accent on a named theme (docs §135).
+      // Another accent on a named theme (docs §139).
       root.classList.add(entry.mode);
       if (entry.dataTheme) root.setAttribute('data-theme', entry.dataTheme);
       root.setAttribute('data-variant', entry.variant);
