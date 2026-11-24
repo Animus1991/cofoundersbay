@@ -186,16 +186,35 @@ describe('HomeAskHero', () => {
   });
 });
 
-describe('HomeAskHero hero card (docs §131.2)', () => {
+describe('HomeAskHero hero card (docs §131.2, §133.4)', () => {
   it('keeps the same box and submit inside the brand card, with the figure and three intents', () => {
     render(<HomeAskHero role="founder" name="Alex" hero purposeEn="One line." figure={<span data-testid="hero-figure" />} />);
     expect(screen.getByTestId('hero-figure')).toBeTruthy();
     expect(screen.getByText(/, Alex\.$/)).toBeTruthy();
     expect(screen.getByText('One line.')).toBeTruthy();
     const intents = screen.getByRole('group', { name: /Starting points/ });
-    expect(within(intents).getAllByRole('button')).toHaveLength(3);
+    // Three intent chips plus the scope picker, which moved to the row's end.
+    expect(within(intents).getAllByRole('button')).toHaveLength(4);
+    expect(within(intents).getByTestId('home-ask-scope')).toBeTruthy();
     fireEvent.change(box(), { target: { value: 'Who should I talk to first?' } });
     fireEvent.keyDown(box(), { key: 'Enter' });
     expect(state.ask).toHaveBeenCalledWith('Who should I talk to first?');
+  });
+
+  it('sizes the greeting as the page heading and keeps the field one row', () => {
+    render(<HomeAskHero role="founder" hero purposeEn="One line." />);
+    expect(screen.getByTestId('home-greeting').className).toContain('sm:text-3xl');
+    const form = screen.getByTestId('home-ask-form');
+    // Scope left the field; only dictation and send sit in the single row.
+    expect(within(form).queryByTestId('home-ask-scope')).toBeNull();
+    expect(within(form).getByTestId('home-ask-submit')).toBeTruthy();
+  });
+
+  it('offers the corner slot for the header tools and hides the figure below xl', () => {
+    const { container } = render(<HomeAskHero role="founder" hero figure={<span data-testid="hero-figure" />} />);
+    expect(container.querySelector('[data-hero-actions]')).toBeTruthy();
+    const figureWell = screen.getByTestId('hero-figure').parentElement!;
+    expect(figureWell.className).toContain('hidden');
+    expect(figureWell.className).toContain('xl:block');
   });
 });
