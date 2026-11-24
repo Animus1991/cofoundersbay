@@ -9663,3 +9663,42 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
 - `check-theme-contrast.py`: 0 κάτω από 4.5:1 σε όλα τα θέματα — το ζεύγος `primary`/`primary-foreground` περνά παντού, άρα `bg-primary text-primary-foreground` δεν χρειάζεται εναλλακτική ανά θέμα.
 - Sweep σε `/home /dashboard/founder` στα **1024/1280/1440/390**: 2×200, 0 σφάλματα, 0 xScroll (οι rails σκρολάρουν εσωτερικά, η σελίδα όχι), 0 unnamed, 0 deadBands, 0 blankIcons.
 - Στιγμιότυπα `Temp\cfb-sweep\mockups\home-fix\`: `home-{1024,1280,1440,390}.png` + `dashboard_founder-*` στο θέμα `minimal` (το πράσινο primary του χρήστη, `#38863a`) και τα ίδια οκτώ με `-playful` — όλα 200/0 σφάλματα. Οπτικός έλεγχος: ☆ μέσα στη γωνία του card, μία γραμμή pill, scope στη σειρά chips, φιγούρα μόνο ≥xl.
+
+## 134. Κύμα 3 — κατάλογοι, επισκοπήσεις ρόλων και η σάρωση όλων των διαδρομών
+
+Το ίδιο φίλτρο «εικόνα/χρώμα/σχήμα πρώτα» πέρασε στις υπόλοιπες οικογένειες, και μια πλήρης σάρωση 118 διαδρομών × EL/EN × 390/1024/1440 μέτρησε το νέο κέλυφος πριν και μετά τις αλλαγές.
+
+### 134.A Πλήρης σάρωση διαδρομών και τα ελαττώματα που βρέθηκαν
+
+Η σάρωση (`wave3-sweep.mjs`, πελάτης demo με δύο νέους ελεγκτές: ορατά κείμενα που επικαλύπτονται >4px και στις δύο διαστάσεις, ζώνη κεφαλίδας >120px που κρατά μόνο τίτλο) βρήκε και διόρθωσε, διαδρομή → ελάττωμα → διόρθωση:
+
+- `/discover` — το aside της κεφαλίδας κάρτας (chip Προωθημένο + chip %) ξεχείλιζε αριστερά πάνω στο RoleBadge του τίτλου· ο εσωτερικός wrapper έγινε `flex flex-wrap … max-w-full` (`ProfileCard.tsx`, compact+default) και το ίδιο στο `CardAnatomy.tsx` `CardHead`.
+- `/calendar` — xScroll ~137px στα 1024· το `lg:grid-cols-[300px_1fr]` διογκωνόταν από το min-content της ατζέντας → `minmax(0,1fr)` και στις δύο θέσεις.
+- `/legal` — deadBand 124px στα 1024· η κάρτα «Υπογράψτε πρώτα αυτά» τεντωνόταν στο ύψος της διπλανής → `items-start` στο grid.
+- `/pitch/[id]` — deadBand 278px· το `flex-1 min-h-[520px]` άφηνε κενό κάτω από κοντές διαφάνειες → το στάδιο έγινε `grid` ώστε η διαφάνεια να γεμίζει.
+- `/research/board-gtm` — 13 επικαλύψεις στα 1024· το αδιαφανές πλαίσιο-επιθεωρητή άφηνε να φαίνεται το label του καμβά πάνω στους κόμβους → opaque φόντο στο `CanvasInspectorPanel` + ο ελεγκτής κόβει τα ορθογώνια κειμένου σε πρόγονους overflow-hidden (διορθώνει και τα ψευδώς θετικά closed-`<details>`).
+- `/matches` + `/mentor/availability` — deadBands 103/63px στα 1024 (κάρτες που τέντωναν στο ύψος της διπλανής) → `items-start` στα δύο grid.
+- `/pitch/preview-doc-pitch` — xScroll 4px στα 390· η σειρά πλοήγησης με «Προηγούμενη/Επόμενη» + μετρητή ξεχείλιζε → `flex-wrap`, ο μετρητής παίρνει δική του γραμμή κάτω από `sm`.
+- Ψευδώς θετικά που έκλεισαν: `/programs` και `/commitments/need-harbor` (ορθογώνια κλειστών `<details>`, union boxes τυλιγμένων spans).
+
+Πλήρης πίνακας: `Temp\cfb-sweep\wave3\matrix.md` — 768 κελιά διαδρομών, όλα μηδέν μετά τις διορθώσεις (ανα-μέτρηση των flagged μονοπατιών: καθαρά).
+
+### 134.B Μία ανατομία κάρτας για την οικογένεια καταλόγων
+
+`/opportunities`, `/jobs`, `/programs`, `/investors`: οπτικό κλειδί πρώτα — πλαϊνό εξώφυλλο `lg:w-56` ή πάνω banner `h-28`· όταν δεν υπάρχει εικόνα, αποχρωματισμένο `CoverWash` με το glyph της οντότητας (opportunities=accent, jobs=primary, programs/investors=success). `DateBadge` στη γωνία όπου υπάρχει ημερομηνία (deadline/cohort/posted — το ίδιο κοινό στοιχείο με το `EventCard`, sr-only πλήρης ημερομηνία)· τίτλος → μία `card-meta` γραμμή στοιχείων → γραμμή διοργανωτή με avatar 20px → ΕΝΑ πρωτεύον ρήμα + `CardMoreMenu` με τα υπόλοιπα· tag pills ≤3 + «+n». Skeletons αντικατοπτρίζουν. `DateBadge`/`CoverWash` εξήχθησαν σε `components/common/` και το `EventCard` τα ξαναχρησιμοποιεί (χωρίς οπτική αλλαγή εκεί). Φίλτρα, αναζήτηση, ταξινόμηση, saved, apply/propose ροές ανέγγιχτες — κάθε προηγούμενο ρήμα εξακολουθεί να αποδίδεται (test asserts ανά κάρτα).
+
+### 134.C Επισκοπήσεις ρόλων
+
+`MetricTile` πήρε αποχρωματισμένο icon-well ανά οικογένεια μετρικής (people=accent, money=success, time/events=warning, risk/moderation=destructive, neutral=muted)· η τιμή είναι το οπτικό κλειδί (`text-2xl tabular-nums`), το label `card-meta`. Οι ενότητες ανθρώπων στα `/dashboard/{founder,incubator,investor,mentor,provider}` ξαναχρησιμοποιούν το εξαγόμενο `PersonTile`/`PersonTileRail` (`components/common/PersonTile.tsx`) — το ίδιο πλακίδιο 200px με το `HomePeople`. Rails, quick actions, charts, tour ανέγγιχτα.
+
+### 134.D Builder + Settings
+
+`/builder`: τα πλακίδια εργαλείων πήραν icon wells με απόχρωση ανά οικογένεια εργαλείου και μία γραμμή σκοπού (υπάρχον κείμενο κομμένο σε μία γραμμή· το πλήρες μένει στη σελίδα του εργαλείου). `/settings`: η πλοήγηση ενοτήτων πήρε icon wells. Καμία αλλαγή συμπεριφοράς.
+
+### 134.Ε Επαλήθευση
+
+- `tsc --noEmit --incremental false`: καθαρό. eslint: 0 errors· warnings όλες προϋπάρχουσες (επαληθεύτηκαν έναντι baseline)· αφαιρέθηκαν orphaned imports στο `FounderDashboardContent` και το νέο `<img>` έγινε `Avatar`/`AvatarImage`.
+- Tests: νέα `DateBadge.test.tsx` (sr-only πλήρης ημερομηνία), `CoverWash.test.tsx` (απόχρωση ανά οικογένεια), `MetricTile.test.tsx` (χάρτης tint), `programsCardActions.test.tsx` (κάθε προηγούμενο ρήμα αποδίδεται κάπου στην κάρτα)· `HomePeople.test.tsx` ενημερώθηκε για το `PersonTileRail`. Πλήρες suite: **όλα πράσινα** μετά τις διορθώσεις (3 αρχικές αποτυχίες — layoutGuards, optionalChainCoverage, HomePeople — όλες διορθώθηκαν).
+- `check-theme-contrast.py`: 0 κάτω από 4.5:1 σε όλα τα θέματα.
+- Πλήρης μήτρα 118 διαδρομών × 2 γλώσσες × 3 πλάτη μετά τις αλλαγές: 0 σφάλματα, 0 xScroll, 0 unnamed, 0 overlaps, 0 bandWaste, 0 deadBands, 0 blankIcons (§134.A λίστα).
+- Composites δύο λωρίδων (τώρα | πρόταση, χωρίς αντίστοιχο Parea): `Temp\cfb-sweep\mockups\wave3\compare2-{opportunities,jobs,programs,investors,dashboard_founder,dashboard_investor,builder,settings}-{1440,390}.png` + `stack2-*-390.png` + `index.html` — 17/24 >150KB· τα μικρότερα (82–131KB στα 390) επαληθεύτηκαν οπτικά: αραιές λίστες, αληθινό περιεχόμενο.
