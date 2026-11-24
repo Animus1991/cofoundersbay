@@ -345,6 +345,7 @@ export default function IncubatorDashboard() {
         {/* Four figures, each the length of a list one click away. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <MetricTile
+            family="time"
             icon={LayoutGrid}
             label="Running programs"
             labelEl="Ενεργά προγράμματα"
@@ -354,6 +355,7 @@ export default function IncubatorDashboard() {
             href="/org/programs"
           />
           <MetricTile
+            family="people"
             icon={Rocket}
             label="Startups in programs"
             labelEl="Startups σε προγράμματα"
@@ -363,6 +365,7 @@ export default function IncubatorDashboard() {
             href="/org/startups"
           />
           <MetricTile
+            family="people"
             icon={GraduationCap}
             label="Mentors"
             labelEl="Μέντορες"
@@ -372,6 +375,7 @@ export default function IncubatorDashboard() {
             href="/org/mentors"
           />
           <MetricTile
+            family="time"
             icon={UserPlus}
             label="Applications waiting"
             labelEl="Αιτήσεις σε αναμονή"

@@ -317,9 +317,10 @@ export default function InvestorDashboard() {
 
         {/* The four figures, each linking to the page that holds its rows. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-          <MetricTile icon={Briefcase} label="Deal flow" labelEl="Ροή συμφωνιών" value={summary?.totalDeals ?? '—'} caption="Deals on your board" captionEl="Συμφωνίες στον πίνακά σας" href="/investor/pipeline" />
-          <MetricTile icon={Target} label="Active deals" labelEl="Ενεργές συμφωνίες" value={dealsPage ? active.length : '—'} caption="Reviewing to negotiating" captionEl="Από αξιολόγηση έως διαπραγμάτευση" href="/investor/pipeline" />
+          <MetricTile family="neutral" icon={Briefcase} label="Deal flow" labelEl="Ροή συμφωνιών" value={summary?.totalDeals ?? '—'} caption="Deals on your board" captionEl="Συμφωνίες στον πίνακά σας" href="/investor/pipeline" />
+          <MetricTile family="time" icon={Target} label="Active deals" labelEl="Ενεργές συμφωνίες" value={dealsPage ? active.length : '—'} caption="Reviewing to negotiating" captionEl="Από αξιολόγηση έως διαπραγμάτευση" href="/investor/pipeline" />
           <MetricTile
+            family="money"
             icon={Building2}
             label="Portfolio"
             labelEl="Χαρτοφυλάκιο"
@@ -329,6 +330,7 @@ export default function InvestorDashboard() {
             href="/investor/portfolio"
           />
           <MetricTile
+            family="money"
             icon={TrendingUp}
             label="Return"
             labelEl="Απόδοση"

@@ -292,6 +292,7 @@ export default function AdminDashboardPage() {
         {/* Four figures; the two that ask for work link to where it is done. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricTile
+            family="people"
             icon={Users}
             label="Users"
             labelEl="Χρήστες"
@@ -301,6 +302,7 @@ export default function AdminDashboardPage() {
             href="/admin/users"
           />
           <MetricTile
+            family="people"
             icon={UserCheck}
             label="Active users"
             labelEl="Ενεργοί χρήστες"
@@ -309,6 +311,7 @@ export default function AdminDashboardPage() {
             captionEl={activeShare != null ? `${activeShare}% του συνόλου · ${periodLabel.el.toLowerCase()}` : undefined}
           />
           <MetricTile
+            family="risk"
             icon={Flag}
             label="Reports to review"
             labelEl="Αναφορές προς έλεγχο"
@@ -318,6 +321,7 @@ export default function AdminDashboardPage() {
             href="/admin"
           />
           <MetricTile
+            family="risk"
             icon={ShieldAlert}
             label="Abuse flags"
             labelEl="Σημάνσεις κατάχρησης"

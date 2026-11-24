@@ -344,6 +344,7 @@ export default function ProviderDashboard() {
         {/* Four figures, each linking to the page that lists what it counts. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <MetricTile
+            family="people"
             icon={MessageSquare}
             label="Open inquiries"
             labelEl="Ανοιχτά αιτήματα"
@@ -353,6 +354,7 @@ export default function ProviderDashboard() {
             href="/provider/inquiries"
           />
           <MetricTile
+            family="neutral"
             icon={FolderKanban}
             label="Active projects"
             labelEl="Ενεργά έργα"
@@ -362,6 +364,7 @@ export default function ProviderDashboard() {
             href="/provider/projects"
           />
           <MetricTile
+            family="neutral"
             icon={Store}
             label="Live services"
             labelEl="Ενεργές υπηρεσίες"
@@ -371,6 +374,7 @@ export default function ProviderDashboard() {
             href="/provider/services"
           />
           <MetricTile
+            family="neutral"
             icon={Star}
             label="Rating"
             labelEl="Βαθμολογία"
