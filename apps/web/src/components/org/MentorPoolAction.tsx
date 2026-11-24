@@ -12,6 +12,7 @@ import { useToast } from '@/components/ui/toast';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { getMentorPoolStanding, requestToJoinMentorPool, withdrawMentorPoolRequest } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
+import { MessageSquare } from 'lucide-react';
 
 /**
  * A mentor asking to join an organisation's mentor pool, from its page
@@ -80,7 +81,7 @@ export function MentorPoolAction({ slug }: { slug: string }) {
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={MessageSquare} tone="accent">
             <DialogTitle><BilingualText en={`Mentor with ${data.name}`} el={`Καθοδήγηση με ${data.name}`} compact wrap /></DialogTitle>
             <DialogDescription>
               <BilingualText

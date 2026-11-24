@@ -4,28 +4,7 @@ import { useEffect, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Users,
-  Sparkles,
-  TrendingUp,
-  Target,
-  RefreshCw,
-  UserPlus,
-  Star,
-  ThumbsUp,
-  ThumbsDown,
-  Briefcase,
-  GraduationCap,
-  DollarSign,
-  ChevronDown,
-  EyeOff,
-  Clock,
-  Search,
-  ShieldCheck,
-  BookmarkPlus,
-  Filter,
-  X,
-} from 'lucide-react';
+import { Users, Sparkles, TrendingUp, Target, RefreshCw, UserPlus, Star, ThumbsUp, ThumbsDown, Briefcase, GraduationCap, DollarSign, ChevronDown, EyeOff, Clock, Search, ShieldCheck, BookmarkPlus, Filter, X, Info } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
@@ -122,9 +101,8 @@ function BreakdownModal({
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={Info} tone="neutral">
           <DialogTitle className="flex items-center gap-2">
-            <Star className="icon-sm text-muted-foreground" />
             <BilingualText en={`Score breakdown: ${displayName}`} el={`Ανάλυση βαθμολογίας: ${displayName}`} compact wrap />
           </DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="How the overall score breaks down by dimension." el="Πώς αναλύεται ο συνολικός βαθμός ανά διάσταση." /></DialogDescription>

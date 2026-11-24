@@ -8,20 +8,7 @@ import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  LayoutGrid,
-  List,
-  TrendingUp,
-  Users,
-  ArrowRight,
-  Rocket,
-  GraduationCap,
-  DollarSign,
-  Briefcase,
-  Star,
-  Bookmark,
-  Search,
-} from 'lucide-react';
+import { LayoutGrid, List, TrendingUp, Users, ArrowRight, Rocket, GraduationCap, DollarSign, Briefcase, Star, Bookmark, Search, Bell } from 'lucide-react';
 import {
   searchProfiles, getRecommendations, getDashboardStats, getMeProfile, recordMatchFeedback, restoreMatchFeedback, sendConnectionRequest, saveToShortlist, createSavedSearch, type SearchHit
 } from '@/lib/api';
@@ -959,7 +946,7 @@ export default function DiscoverPage() {
           it can re-run from /saved-searches and raise alerts. */}
       <Dialog open={saveSearchOpen} onOpenChange={setSaveSearchOpen}>
         <DialogContent>
-          <DialogHeader>
+          <DialogHeader icon={Bell} tone="warning">
             <DialogTitle><BilingualText en={discoverEn('save_search_title')} el={discoverEl('save_search_title')} compact /></DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">

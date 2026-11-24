@@ -8,20 +8,7 @@ import Link from 'next/link';
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Flag,
-  Search,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  MoreVertical,
-  MessageSquare,
-  User,
-  FileText,
-  RefreshCw,
-  Download,
-} from 'lucide-react';
+import { Flag, Search, AlertTriangle, CheckCircle2, XCircle, Clock, MoreVertical, MessageSquare, User, FileText, RefreshCw, Download, Info } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { usePageRail } from '@/components/layout/PageRailContext';
@@ -648,7 +635,7 @@ export default function AdminReportsPage() {
       </div>
       <Dialog open={viewing !== null} onOpenChange={(o) => { if (!o) setViewing(null); }}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
+          <DialogHeader icon={Info} tone="neutral">
             <DialogTitle>{viewing?.reason}</DialogTitle>
             <DialogDescription>
               {viewing ? `${viewing.reporterName} reported ${viewing.targetName}` : ''}

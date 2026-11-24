@@ -390,7 +390,7 @@ function ProfileCardInner({
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive-accessible" onSelect={() => setReporting(true)}>
+                <DropdownMenuItem className="text-status-danger" onSelect={() => setReporting(true)}>
                   <Flag className="icon-sm mr-2" aria-hidden="true" />
                   <BilingualText en="Report" el="Αναφορά" compact />
                 </DropdownMenuItem>

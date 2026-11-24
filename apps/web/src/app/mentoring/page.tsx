@@ -4,21 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQueries, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  GraduationCap,
-  Calendar,
-  Users,
-  Loader2,
-  BookOpen,
-  Star,
-  Search,
-  Award,
-  TrendingUp,
-  BadgeCheck,
-  X,
-  MessageCircle,
-  CalendarDays,
-} from 'lucide-react';
+import { GraduationCap, Calendar, Users, Loader2, BookOpen, Star, Search, Award, TrendingUp, BadgeCheck, X, MessageCircle, CalendarDays, CalendarClock } from 'lucide-react';
 import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, getMyMentorships, getMentorshipSessions, discoverMentors, listExperts, type MentorBookingItem, type MentorshipRelationshipItem, type MentorshipSessionItem } from '@/lib/api';
 import { BookingCard, MEETING_TYPE_LABEL } from '@/components/mentoring/BookingCard';
 import { SessionDateTile } from '@/components/mentoring/SessionDateTile';
@@ -330,7 +316,7 @@ function BookingModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+        <DialogHeader icon={CalendarClock} tone="warning">
           <DialogTitle>
             <BilingualText en={`Book a session with ${mentor.displayName}`} el={`Κράτηση συνεδρίας με ${mentor.displayName}`} />
           </DialogTitle>

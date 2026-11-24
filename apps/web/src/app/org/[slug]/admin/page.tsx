@@ -933,7 +933,7 @@ export default function OrgAdminPage() {
           way, which adds at once. */}
       <Dialog open={inviteOpen} onOpenChange={(o) => { setInviteOpen(o); if (!o) setSent(null); }}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={UserPlus} tone="accent">
             <DialogTitle><BilingualText en="Invite member" el="Πρόσκληση μέλους" compact /></DialogTitle>
             <DialogDescription>
               {inviteMode === 'email'

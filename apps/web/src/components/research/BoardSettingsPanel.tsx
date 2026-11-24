@@ -2,10 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Settings, Globe, Lock, Users, ChevronDown, Shield, UserMinus, Crown,
-  Copy, Check, Loader2, X, Eye, Edit3, UserPlus, Building2,
-} from 'lucide-react';
+import { Settings, Globe, Lock, Users, ChevronDown, Shield, UserMinus, Crown, Copy, Check, Loader2, X, Eye, Edit3, UserPlus, Building2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -314,9 +311,8 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col p-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6 pb-0">
+        <DialogHeader icon={Info} tone="neutral" className="px-6 pt-6 pb-0">
           <DialogTitle className="flex items-center gap-2">
-            <Settings className="icon-sm" />
             Board Settings
           </DialogTitle>
           <DialogDescription>Manage visibility and collaborators for &quot;{board.title}&quot;</DialogDescription>

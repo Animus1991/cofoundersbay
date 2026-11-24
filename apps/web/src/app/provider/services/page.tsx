@@ -137,7 +137,7 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
                       <BilingualText en="Preview" el="Προεπισκόπηση" compact />
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive-accessible" disabled={!onDelete} onSelect={() => onDelete?.(service)}>
+                  <DropdownMenuItem className="text-status-danger" disabled={!onDelete} onSelect={() => onDelete?.(service)}>
                     <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
                     <BilingualText en="Delete" el="Διαγραφή" compact />
                   </DropdownMenuItem>
@@ -496,7 +496,7 @@ export default function ProviderServicesPage() {
       </div>
       <Dialog open={editing !== null || creating} onOpenChange={(o) => { if (!o) { setEditing(null); setCreating(false); } }}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Plus} tone="primary">
             <DialogTitle>{creating ? <BilingualText en="New listing" el="Νέα καταχώριση" compact /> : <BilingualText en="Edit listing" el="Επεξεργασία καταχώρισης" compact />}</DialogTitle>
             <DialogDescription>{creating ? <BilingualText en="Published to the services marketplace." el="Δημοσιεύεται στον κατάλογο υπηρεσιών." wrap /> : <BilingualText en="Saved to your marketplace listing." el="Αποθηκεύεται στην καταχώρισή σας." wrap />}</DialogDescription>
           </DialogHeader>

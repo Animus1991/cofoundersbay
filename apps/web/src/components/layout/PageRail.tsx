@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { ChevronDown, ChevronLeft, ChevronRight, Maximize2, PanelRight, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Maximize2, PanelRight, SlidersHorizontal, Info } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
@@ -705,7 +705,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
         >
           {expanded && (
             <>
-              <DialogHeader>
+              <DialogHeader icon={Info} tone="neutral">
                 <DialogTitle>
                   <BilingualText en={expanded.labelEn} el={expanded.labelEl} />
                 </DialogTitle>

@@ -350,7 +350,7 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={Plus} tone="primary">
           <DialogTitle>
             <BilingualText en={opportunitiesEn('post')} el={opportunitiesEl('post')} compact />
           </DialogTitle>

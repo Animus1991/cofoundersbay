@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Share2 } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -161,7 +161,7 @@ export function ShareRoomDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[min(88dvh,720px)] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
+        <DialogHeader icon={Share2} tone="info">
           <DialogTitle><BilingualText en={fundraisingEn('share_title')} el={fundraisingEl('share_title')} compact /></DialogTitle>
           <DialogDescription><BilingualText en={fundraisingEn('share_intro')} el={fundraisingEl('share_intro')} wrap /></DialogDescription>
         </DialogHeader>

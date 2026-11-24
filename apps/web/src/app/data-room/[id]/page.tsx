@@ -1030,7 +1030,7 @@ export default function DataRoomPage() {
       {/* Upload Dialog */}
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Upload} tone="info">
             <DialogTitle><BilingualText en="Upload Documents" el="Μεταφόρτωση εγγράφων" compact /></DialogTitle>
             <DialogDescription>
               {/* "click to browse" over a box that opens nothing: the room has
@@ -1080,7 +1080,7 @@ export default function DataRoomPage() {
       {/* Share Dialog */}
       <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Share2} tone="info">
             <DialogTitle><BilingualText en="Share Data Room" el="Κοινοποίηση data room" compact /></DialogTitle>
             <DialogDescription>
               <BilingualText en="Invite investors to access this data room" el="Προσκαλέστε επενδυτές σε αυτό το data room" wrap />

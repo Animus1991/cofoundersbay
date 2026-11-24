@@ -277,7 +277,7 @@ function MilestoneCard({
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={() => onDelete(item.id)} className="gap-2 text-destructive-accessible focus:bg-destructive/10">
+                  <DropdownMenuItem onSelect={() => onDelete(item.id)} className="gap-2 text-status-danger focus:bg-destructive/10">
                     <Trash2 className="icon-sm" />
                     <BilingualText en={milestoneEn('delete')} el={milestoneEl('delete')} compact />
                   </DropdownMenuItem>

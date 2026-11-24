@@ -23,10 +23,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  History, RotateCcw, Loader2, ChevronRight,
-  GitCommitHorizontal, AlertCircle,
-} from 'lucide-react';
+import { History, RotateCcw, Loader2, ChevronRight, GitCommitHorizontal, AlertCircle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { qk } from '@/lib/query-keys';
@@ -233,7 +230,7 @@ export function VersionHistoryDrawer({
       {/* Restore Confirmation Dialog */}
       <Dialog open={!!confirmVersion} onOpenChange={() => setConfirmVersion(null)}>
         <DialogContent>
-          <DialogHeader>
+          <DialogHeader icon={Info} tone="neutral">
             <DialogTitle>
               <BilingualText en={builderEn('hist_restore_title')} el={builderEl('hist_restore_title')} compact />
             </DialogTitle>

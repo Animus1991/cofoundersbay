@@ -1,10 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Calendar, Clock, Video, Phone, ExternalLink, Check,
-  ChevronLeft, ChevronRight, Loader2,
-} from 'lucide-react';
+import { Calendar, Clock, Video, Phone, ExternalLink, Check, ChevronLeft, ChevronRight, Loader2, CalendarClock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
@@ -164,7 +161,7 @@ export function ScheduleCallModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+        <DialogHeader icon={CalendarClock} tone="warning">
           <DialogTitle className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={recipientAvatar} />

@@ -15,6 +15,7 @@ import { useStoredUser } from '@/hooks/useStoredUser';
 import { commitmentRefusal } from '@/lib/commitments-api';
 import { getIntroPaths, requestIntro } from '@/lib/intros-api';
 import { qk } from '@/lib/query-keys';
+import { MessageSquare } from 'lucide-react';
 
 const relations = (list: IntroRelation[]) => ({
   en: list.map((r) => INTRO_RELATION_COPY[r].en).join(', '),
@@ -78,7 +79,7 @@ export function AskIntroDialog({ open, onOpenChange, targetId, targetName }: { o
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
-        <DialogHeader>
+        <DialogHeader icon={MessageSquare} tone="accent">
           <DialogTitle><BilingualText en={`An introduction to ${targetName}`} el={`Γνωριμία προς ${targetName}`} compact /></DialogTitle>
           <DialogDescription>
             <BilingualText

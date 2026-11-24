@@ -4,24 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Share2,
-  Mail,
-  Users,
-  TrendingUp,
-  DollarSign,
-  Target,
-  Globe,
-  Lightbulb,
-  BarChart2,
-  CheckCircle2,
-  ArrowRight,
-  Twitter,
-  Linkedin,
-  Link2,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2, Mail, Users, TrendingUp, DollarSign, Target, Globe, Lightbulb, BarChart2, CheckCircle2, ArrowRight, Twitter, Linkedin, Link2, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CardHead } from '@/components/common/CardAnatomy';
@@ -793,7 +776,7 @@ export default function PitchDeckPage() {
       {/* Contact Dialog */}
       <Dialog open={showContact} onOpenChange={setShowContact}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={MessageSquare} tone="accent">
             <DialogTitle><BilingualText en={`Contact ${deck.author.name}`} el={`Επικοινωνία με ${deck.author.name}`} wrap /></DialogTitle>
             <DialogDescription className="sr-only"><BilingualText en="Send a message to this deck's author." el="Στείλτε μήνυμα στον δημιουργό αυτού του deck." /></DialogDescription>
           </DialogHeader>
@@ -847,7 +830,7 @@ export default function PitchDeckPage() {
       {/* Share Dialog */}
       <Dialog open={showShare} onOpenChange={setShowShare}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Share2} tone="info">
             <DialogTitle><BilingualText en="Share Pitch Deck" el="Κοινοποίηση pitch deck" compact /></DialogTitle>
             <DialogDescription className="sr-only"><BilingualText en="Copy or share the link to this pitch deck." el="Αντιγράψτε ή κοινοποιήστε τον σύνδεσμο αυτού του pitch deck." /></DialogDescription>
           </DialogHeader>

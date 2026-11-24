@@ -2,28 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import {
-  Users,
-  Search,
-  MoreHorizontal,
-  Shield,
-  Ban,
-  Mail,
-  CheckCircle2,
-  AlertTriangle,
-  UserX,
-  Download,
-  RefreshCw,
-  Eye,
-  User,
-  GraduationCap,
-  Rocket,
-  Award,
-  TrendingUp,
-  Building2,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
+import { Users, Search, MoreHorizontal, Shield, Ban, Mail, CheckCircle2, AlertTriangle, UserX, Download, RefreshCw, Eye, User, GraduationCap, Rocket, Award, TrendingUp, Building2, ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -801,7 +780,7 @@ export default function AdminUserManagementPage() {
 
       <Dialog open={!!detailUser} onOpenChange={(open) => !open && setDetailUser(null)}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Info} tone="neutral">
             <DialogTitle>{detailUser?.name}</DialogTitle>
             <DialogDescription className="sr-only"><BilingualText en="Account details and admin actions for this member." el="Στοιχεία λογαριασμού και ενέργειες διαχείρισης για αυτό το μέλος." /></DialogDescription>
           </DialogHeader>

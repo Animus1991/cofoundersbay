@@ -1,10 +1,7 @@
 'use client';
 
 import { useRef, useCallback, useEffect, useState } from 'react';
-import {
-  Bold, Italic, Underline, List, ListOrdered, Link2, AlignLeft,
-  AlignCenter, AlignRight, Strikethrough, Quote, Code2, Undo2, Redo2,
-} from 'lucide-react';
+import { Bold, Italic, Underline, List, ListOrdered, Link2, AlignLeft, AlignCenter, AlignRight, Strikethrough, Quote, Code2, Undo2, Redo2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -224,7 +221,7 @@ export function RichTextEditor({
       {/* Link dialog */}
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
         <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
+          <DialogHeader icon={Plus} tone="primary">
             <DialogTitle>Insert Link</DialogTitle>
             <DialogDescription className="sr-only">{bilingualInline('Insert a link into the text.', 'Εισαγωγή συνδέσμου στο κείμενο.')}</DialogDescription>
           </DialogHeader>

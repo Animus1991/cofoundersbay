@@ -216,7 +216,7 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
             </DropdownMenuItem>
           )}
           {user.status !== 'banned' && (
-            <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onModerate(user, 'banned')}>
+            <DropdownMenuItem className="text-status-danger" onSelect={() => onModerate(user, 'banned')}>
               <UserX className="mr-2 icon-sm" aria-hidden="true" />
               <BilingualText en="Ban User" el="Αποκλεισμός χρήστη" compact />
             </DropdownMenuItem>

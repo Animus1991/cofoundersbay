@@ -661,7 +661,7 @@ export default function AdminBillingPage() {
       {/* Override Dialog */}
       <Dialog open={Boolean(overrideTarget)} onOpenChange={open => !open && setOverrideTarget(null)}>
         <DialogContent>
-          <DialogHeader>
+          <DialogHeader icon={CreditCard} tone="success">
             <DialogTitle><BilingualText en="Override Subscription Plan" el="Παράκαμψη πλάνου συνδρομής" compact /></DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">

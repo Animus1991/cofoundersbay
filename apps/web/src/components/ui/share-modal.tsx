@@ -127,9 +127,8 @@ export function ShareModal({
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={Share2} tone="info">
           <DialogTitle className="flex items-center gap-2">
-            <Share2 className="icon-sm" aria-hidden="true" />
             <BilingualText en="Share" el="Κοινοποίηση" />
           </DialogTitle>
           <DialogDescription>

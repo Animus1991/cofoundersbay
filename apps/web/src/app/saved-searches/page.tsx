@@ -2,18 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Search,
-  Bell,
-  Trash2,
-  Play,
-  Plus,
-  Edit2,
-  MoreHorizontal,
-  Sparkles,
-  Users,
-  Target,
-} from 'lucide-react';
+import { Search, Bell, Trash2, Play, Plus, Edit2, MoreHorizontal, Sparkles, Users, Target, Pencil } from 'lucide-react';
 import {
   listSavedSearches,
   updateSavedSearch,
@@ -183,7 +172,7 @@ function SearchCard({
                 <BilingualText en={savedSearchesEn('edit')} el={savedSearchesEl('edit')} compact />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
+              <DropdownMenuItem onClick={onDelete} className="text-status-danger">
                 <Trash2 className="icon-sm mr-2 shrink-0" aria-hidden="true" />
                 <BilingualText en={savedSearchesEn('delete')} el={savedSearchesEl('delete')} compact />
               </DropdownMenuItem>
@@ -254,7 +243,7 @@ function EditSearchDialog({
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader icon={Pencil} tone="primary">
           <DialogTitle><BilingualText en={savedSearchesEn('edit_title')} el={savedSearchesEl('edit_title')} compact wrap /></DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="Rename the search or change how often it alerts you." el="Μετονομάστε την αναζήτηση ή αλλάξτε τη συχνότητα ειδοποιήσεων." /></DialogDescription>
         </DialogHeader>

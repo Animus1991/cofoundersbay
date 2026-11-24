@@ -69,9 +69,8 @@ export function ExportDialog({
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={Download} tone="info">
           <DialogTitle className="flex items-center gap-2">
-            <Download className="icon-sm" />
             {title}
           </DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}

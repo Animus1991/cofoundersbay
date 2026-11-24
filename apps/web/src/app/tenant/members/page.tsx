@@ -1,21 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import {
-  Users,
-  Search,
-  Plus,
-  MoreVertical,
-  Mail,
-  Shield,
-  UserX,
-  CheckCircle2,
-  Clock,
-  TrendingUp,
-  Activity,
-  Send,
-  Copy,
-} from 'lucide-react';
+import { Users, Search, Plus, MoreVertical, Mail, Shield, UserX, CheckCircle2, Clock, TrendingUp, Activity, Send, Copy, UserPlus } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -177,7 +163,7 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive-accessible" disabled={!onRemove} onSelect={() => onRemove?.(member)}>
+        <DropdownMenuItem className="text-status-danger" disabled={!onRemove} onSelect={() => onRemove?.(member)}>
           <UserX className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Remove Member" el="Αφαίρεση μέλους" compact />
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -238,9 +224,9 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={UserPlus} tone="accent">
           <DialogTitle className="flex items-center gap-2">
-            <Send className="icon-md text-muted-foreground" /> <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
+            <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
           </DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="Invite people to the workspace and assign each a role." el="Προσκαλέστε άτομα στον χώρο εργασίας και ορίστε ρόλο σε καθέναν." /></DialogDescription>
         </DialogHeader>

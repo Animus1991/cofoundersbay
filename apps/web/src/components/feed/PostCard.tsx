@@ -167,7 +167,7 @@ export function PostCard({
                       <Edit className="icon-sm mr-2" />
                       Edit post
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
+                    <DropdownMenuItem onClick={onDelete} className="text-status-danger">
                       <Trash2 className="icon-sm mr-2" />
                       Delete post
                     </DropdownMenuItem>

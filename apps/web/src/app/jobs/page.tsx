@@ -218,7 +218,7 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={Plus} tone="primary">
           <DialogTitle>
             <BilingualText en={jobsEn('dialog_title')} el={jobsEl('dialog_title')} compact />
           </DialogTitle>

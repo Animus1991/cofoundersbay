@@ -826,7 +826,7 @@ export default function ResearchBoardsPage() {
 
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogContent className="rounded-2xl sm:max-w-md">
-              <DialogHeader>
+              <DialogHeader icon={Plus} tone="primary">
                 <DialogTitle>
                   <BilingualText en={researchEn('create_title')} el={researchEl('create_title')} />
                 </DialogTitle>
@@ -1028,7 +1028,7 @@ function BoardCard({
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
+        <DropdownMenuItem onClick={onDelete} className="text-status-danger">
           <Trash2 className="icon-sm mr-2" />
           <BilingualText en={commonEn('delete')} el={commonEl('delete')} compact />
         </DropdownMenuItem>

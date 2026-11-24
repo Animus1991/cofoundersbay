@@ -4,25 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Search,
-  Award,
-  Users,
-  Building2,
-  Rocket,
-  GraduationCap,
-  Loader2,
-  RefreshCw,
-  CheckCircle2,
-  Globe,
-  BookmarkCheck,
-  ArrowRight,
-  Zap,
-  X,
-  Handshake,
-  Briefcase,
-  FileText,
-} from 'lucide-react';
+import { Search, Award, Users, Building2, Rocket, GraduationCap, Loader2, RefreshCw, CheckCircle2, Globe, BookmarkCheck, ArrowRight, Zap, X, Handshake, Briefcase, FileText, Send } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -143,7 +125,7 @@ function ApplyModal({
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg">
-        <DialogHeader>
+        <DialogHeader icon={Send} tone="success">
           <DialogTitle>
             <BilingualText
               en={`${programsEn('apply_to')} ${program.title}`}

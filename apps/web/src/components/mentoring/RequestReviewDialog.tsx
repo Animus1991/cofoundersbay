@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Send } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { requestExpertReview } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -103,7 +103,7 @@ export function RequestReviewDialog({
   return (
     <Dialog open onOpenChange={(open) => { if (!open && !sending) onClose(); }}>
       <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+        <DialogHeader icon={Send} tone="success">
           <DialogTitle>
             <BilingualText en={`Request a review from ${expert.displayName}`} el={`Αίτημα αξιολόγησης προς ${expert.displayName}`} />
           </DialogTitle>

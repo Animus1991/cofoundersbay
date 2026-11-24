@@ -16,16 +16,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  MessageCircle,
-  FolderPlus,
-  Target,
-  Calendar,
-  ChevronRight,
-  X,
-  Sparkles,
-  Handshake,
-} from 'lucide-react';
+import { MessageCircle, FolderPlus, Target, Calendar, ChevronRight, X, Sparkles, Handshake, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -159,7 +150,7 @@ export function CollaborationStarter({
     return (
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) onDismiss?.(); }}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={MessageSquare} tone="accent">
             <DialogTitle>
               <BilingualText
                 en={`You\u2019re connected with ${otherUser.displayName}!`}

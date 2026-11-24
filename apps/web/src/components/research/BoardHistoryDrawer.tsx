@@ -24,10 +24,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  History, Camera, Clock, Layers, ChevronRight,
-  Loader2, RefreshCw, Eye, Download, CheckCircle2, Zap,
-} from 'lucide-react';
+import { History, Camera, Clock, Layers, ChevronRight, Loader2, RefreshCw, Eye, Download, CheckCircle2, Zap, Info } from 'lucide-react';
 import { cn, initialsOf } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/api';
@@ -118,9 +115,8 @@ function SnapshotPreviewDialog({ open, onClose, boardId, snapshot }: SnapshotPre
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
-        <DialogHeader>
+        <DialogHeader icon={Info} tone="neutral">
           <DialogTitle className="flex items-center gap-2">
-            <History className="icon-sm text-muted-foreground" />
             {snapshot.label ?? `Snapshot — ${new Date(snapshot.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}`}
           </DialogTitle>
           <DialogDescription>

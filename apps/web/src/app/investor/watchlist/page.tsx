@@ -346,7 +346,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
                     reasonEn="Deal comparison is not built yet."
                     reasonEl="Η σύγκριση συμφωνιών δεν υπάρχει ακόμη."
                   />
-                  <DropdownMenuItem className="text-destructive-accessible" disabled={!live} onSelect={() => onRemove(startup)}>
+                  <DropdownMenuItem className="text-status-danger" disabled={!live} onSelect={() => onRemove(startup)}>
                     <Trash2 className="mr-2 icon-sm" aria-hidden="true" /> <BilingualText en="Remove from Watchlist" el="Αφαίρεση από τη λίστα παρακολούθησης" compact />
                   </DropdownMenuItem>
                 </DropdownMenuContent>

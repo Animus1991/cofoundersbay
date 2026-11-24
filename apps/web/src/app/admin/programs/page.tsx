@@ -17,25 +17,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import Link from 'next/link';
-import {
-  Award,
-  Search,
-  Filter,
-  Plus,
-  MoreVertical,
-  Users,
-  Calendar,
-  Building2,
-  Eye,
-  Edit,
-  Trash2,
-  RefreshCw,
-  Download,
-  CheckCircle2,
-  CalendarClock,
-  FileText,
-  Archive,
-} from 'lucide-react';
+import { Award, Search, Filter, Plus, MoreVertical, Users, Calendar, Building2, Eye, Edit, Trash2, RefreshCw, Download, CheckCircle2, CalendarClock, FileText, Archive, Info } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { usePageRail } from '@/components/layout/PageRailContext';
@@ -203,7 +185,7 @@ function ProgramCard({
                     />
                   )}
                   {program.status !== 'archived' && (
-                    <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onArchive(program)}>
+                    <DropdownMenuItem className="text-status-danger" onSelect={() => onArchive(program)}>
                       <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
                       <BilingualText en="Archive" el="Αρχειοθέτηση" compact />
                     </DropdownMenuItem>
@@ -557,7 +539,7 @@ export default function AdminProgramsPage() {
 
       <Dialog open={viewing !== null} onOpenChange={(open) => { if (!open) setViewing(null); }}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
+          <DialogHeader icon={Info} tone="neutral">
             <DialogTitle>{viewing?.name}</DialogTitle>
             <DialogDescription>{viewing?.organization} · {viewing?.type}</DialogDescription>
           </DialogHeader>

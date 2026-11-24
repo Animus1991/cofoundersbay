@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Send, Sparkles, AlertCircle } from 'lucide-react';
+import { Send, Sparkles, AlertCircle, UserPlus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -86,9 +86,8 @@ export function ConnectionRequestDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[min(90dvh,calc(100svh-2rem))] max-w-lg overflow-y-auto max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
-        <DialogHeader>
+        <DialogHeader icon={UserPlus} tone="accent">
           <DialogTitle className="flex items-center gap-2">
-            <Send className="icon-md text-muted-foreground" />
             Request Connection
           </DialogTitle>
           <DialogDescription>

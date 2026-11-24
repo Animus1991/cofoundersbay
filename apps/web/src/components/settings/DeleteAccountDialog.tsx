@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { deleteAccount, getAccountDeletion, type AccountDeletionPreview } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
+import { Trash2 } from 'lucide-react';
 
 /** The lines that have something to say; a count of nothing is not a warning. */
 function consequences(counts: AccountDeletionPreview['counts']) {
@@ -76,7 +77,7 @@ export function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onO
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[min(88dvh,720px)] overflow-y-auto sm:max-w-lg">
         <form onSubmit={submit} className="space-y-4">
-          <DialogHeader>
+          <DialogHeader icon={Trash2} tone="danger">
             <DialogTitle><BilingualText en="Delete your account" el="Διαγραφή του λογαριασμού σας" compact /></DialogTitle>
             <DialogDescription>
               <BilingualText

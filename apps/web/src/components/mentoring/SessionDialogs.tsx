@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CalendarClock, Pencil } from 'lucide-react';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
@@ -113,7 +113,7 @@ export function ScheduleSessionDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+        <DialogHeader icon={CalendarClock} tone="warning">
           <DialogTitle><BilingualText en="Schedule a session" el="Προγραμματισμός συνεδρίας" compact /></DialogTitle>
           <DialogDescription><BilingualText en="With one of your active mentees. They see it in their sessions straight away." el="Με έναν από τους ενεργούς καθοδηγούμενους σας. Τη βλέπουν αμέσως στις συνεδρίες τους." wrap /></DialogDescription>
         </DialogHeader>
@@ -227,7 +227,7 @@ export function RescheduleSessionDialog({
   return (
     <Dialog open={session !== null} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
+        <DialogHeader icon={CalendarClock} tone="warning">
           <DialogTitle><BilingualText en="Reschedule" el="Αλλαγή ώρας" compact /></DialogTitle>
           <DialogDescription>{session?.title ?? 'Mentorship session'}</DialogDescription>
         </DialogHeader>
@@ -288,7 +288,7 @@ export function SessionNotesDialog({
   return (
     <Dialog open={session !== null} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+        <DialogHeader icon={Pencil} tone="primary">
           <DialogTitle><BilingualText en="Session notes" el="Σημειώσεις συνεδρίας" compact /></DialogTitle>
           <DialogDescription>{session?.title ?? 'Mentorship session'}</DialogDescription>
         </DialogHeader>

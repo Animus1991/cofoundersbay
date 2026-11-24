@@ -32,20 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  ArrowRight,
-  AlertCircle,
-  ChevronRight,
-  MoreHorizontal,
-  Trash2,
-  Crown,
-  Eye,
-  Edit2,
-  MessageSquare,
-  Loader2,
-  RefreshCw,
-  X,
-} from 'lucide-react';
+import { ArrowRight, AlertCircle, ChevronRight, MoreHorizontal, Trash2, Crown, Eye, Edit2, MessageSquare, Loader2, RefreshCw, X, UserPlus, Plus } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
@@ -310,7 +297,7 @@ function InviteCollaboratorDialog({ open, onClose, onInvite }: InviteDialogProps
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className={MOBILE_DIALOG}>
-        <DialogHeader>
+        <DialogHeader icon={UserPlus} tone="accent">
           <DialogTitle>
             <BilingualText en={builderEn('invite_title')} el={builderEl('invite_title')} />
           </DialogTitle>
@@ -392,7 +379,7 @@ function CreateDocumentDialog({ open, onClose, onCreate }: CreateDocDialogProps)
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className={MOBILE_DIALOG}>
-        <DialogHeader>
+        <DialogHeader icon={Plus} tone="primary">
           <DialogTitle>
             <BilingualText en={builderEn('create_doc')} el={builderEl('create_doc')} />
           </DialogTitle>

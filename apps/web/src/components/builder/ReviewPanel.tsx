@@ -26,11 +26,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  ClipboardCheck, CheckCircle2, XCircle, AlertCircle, Clock,
-  Loader2, ThumbsUp, ThumbsDown,
-  RotateCcw, Star,
-} from 'lucide-react';
+import { ClipboardCheck, CheckCircle2, XCircle, AlertCircle, Clock, Loader2, ThumbsUp, ThumbsDown, RotateCcw, Star, Info } from 'lucide-react';
 import { cn, initialsOf } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import {
@@ -131,7 +127,7 @@ function ReviewDecisionDialog({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader icon={Info} tone="neutral">
           <DialogTitle>{decisionMeta.title}</DialogTitle>
           <DialogDescription>{decisionMeta.desc}</DialogDescription>
         </DialogHeader>

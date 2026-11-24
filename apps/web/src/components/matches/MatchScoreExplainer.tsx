@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, Info } from 'lucide-react';
 import { MATCH_SCORE_PARTIAL as PARTIAL, MATCH_SCORE_WEIGHTS as WEIGHT, TEAM_SKILLS_FIT as SKILLS } from '@cofounderbay/shared';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -81,7 +81,7 @@ export function MatchScoreExplainer({ className }: { className?: string }) {
       </button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[min(88dvh,760px)] overflow-y-auto sm:max-w-xl">
-          <DialogHeader>
+          <DialogHeader icon={Info} tone="neutral">
             <DialogTitle><BilingualText en="How the score works" el="Πώς βγαίνει το σκορ" /></DialogTitle>
             <DialogDescription>
               <BilingualText

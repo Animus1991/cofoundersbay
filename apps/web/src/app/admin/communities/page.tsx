@@ -2,14 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import {
-  Search,
-  Plus,
-  MoreVertical,
-  Globe,
-  Lock,
-  Shield,
-} from 'lucide-react';
+import { Search, Plus, MoreVertical, Globe, Lock, Shield, Pencil } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
@@ -207,7 +200,7 @@ function CommunityCard({
                   reasonEn="Groups have no archived state in the schema yet."
                   reasonEl="Οι ομάδες δεν έχουν ακόμη κατάσταση αρχειοθέτησης."
                 />
-                <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(community)}>
+                <DropdownMenuItem className="text-status-danger" onSelect={() => onDelete(community)}>
                   <BilingualText en="Delete" el="Διαγραφή" compact />
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -543,7 +536,7 @@ export default function AdminCommunitiesPage() {
         }}
       >
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Pencil} tone="primary">
             <DialogTitle>{editing ? `Edit ${editing.name}` : 'Create community'}</DialogTitle>
             <DialogDescription>
               {editing

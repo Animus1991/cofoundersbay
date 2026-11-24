@@ -218,7 +218,7 @@ export default function ProjectDetailPage() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive-accessible" onClick={() => void handleDelete()}>
+              <DropdownMenuItem className="text-status-danger" onClick={() => void handleDelete()}>
                 <Trash2 className="icon-sm mr-2" />
                 <BilingualText en={projectEn('delete')} el={projectEl('delete')} compact />
               </DropdownMenuItem>

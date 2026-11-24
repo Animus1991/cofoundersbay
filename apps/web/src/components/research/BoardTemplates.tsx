@@ -1,9 +1,6 @@
 'use client';
 
-import {
-  Lightbulb, Users, TrendingUp, Target,
-  GraduationCap, FileSearch,
-} from 'lucide-react';
+import { Lightbulb, Users, TrendingUp, Target, GraduationCap, FileSearch, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -457,7 +454,7 @@ export function BoardTemplatesDialog({
   return (
     <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
       <DialogContent className="max-h-[80vh] overflow-y-auto rounded-2xl sm:max-w-2xl">
-        <DialogHeader>
+        <DialogHeader icon={Info} tone="neutral">
           <DialogTitle>
             <BilingualText en={researchEn('tpl_dialog_title')} el={researchEl('tpl_dialog_title')} />
           </DialogTitle>

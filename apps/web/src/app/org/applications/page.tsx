@@ -1,13 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Search,
-  MoreVertical,
-  CheckCircle2,
-  XCircle,
-  Clock,
-} from 'lucide-react';
+import { Search, MoreVertical, CheckCircle2, XCircle, Clock, Info } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { FailedLine } from '@/components/dashboard/SectionCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -561,7 +555,7 @@ export default function OrgApplicationsPage() {
       </div>
       <Dialog open={reviewing !== null} onOpenChange={(o) => { if (!o) setReviewing(null); }}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Info} tone="neutral">
             <DialogTitle>{reviewing?.startupName}</DialogTitle>
             <DialogDescription>
               {reviewing ? (

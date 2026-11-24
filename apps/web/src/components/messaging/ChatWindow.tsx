@@ -762,7 +762,7 @@ export function ChatWindow({
                   <Flag className="icon-sm mr-2" />
                   <BilingualText en={messagesEn('report')} el={messagesEl('report')} compact />
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={onBlock} className="text-destructive-accessible">
+                <DropdownMenuItem onClick={onBlock} className="text-status-danger">
                   <Ban className="icon-sm mr-2" />
                   <BilingualText en={messagesEn('block')} el={messagesEl('block')} compact />
                 </DropdownMenuItem>

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Search } from 'lucide-react';
+import { Search, MessageSquare } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -100,7 +100,7 @@ export function ComposeMessageDialog({
       }}
     >
       <DialogContent className="rounded-xl sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={MessageSquare} tone="accent">
           <DialogTitle>
             <BilingualText en={messagesEn('new_message')} el={messagesEl('new_message')} />
           </DialogTitle>

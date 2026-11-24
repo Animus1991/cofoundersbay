@@ -147,7 +147,7 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
-        <DialogHeader>
+        <DialogHeader icon={Share2} tone="info">
           <DialogTitle>
             <BilingualText en={builderEn('collab_share_title')} el={builderEl('collab_share_title')} compact />
           </DialogTitle>

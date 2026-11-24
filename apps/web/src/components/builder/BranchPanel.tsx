@@ -27,11 +27,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  GitBranch, Plus, X, Clock, CheckCircle2, XCircle,
-  AlertCircle, Loader2, ChevronRight, GitPullRequest,
-  MoreHorizontal, Merge,
-} from 'lucide-react';
+import { GitBranch, Plus, X, Clock, CheckCircle2, XCircle, AlertCircle, Loader2, ChevronRight, GitPullRequest, MoreHorizontal, Merge, Send } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -106,7 +102,7 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader icon={Plus} tone="primary">
           <DialogTitle><BilingualText en="New Draft Variant" el="Νέα πρόχειρη εκδοχή" compact /></DialogTitle>
           <DialogDescription>
             <BilingualText en="Create an isolated copy of this document to experiment with changes before proposing them." el="Δημιουργήστε ανεξάρτητο αντίγραφο του εγγράφου για να δοκιμάσετε αλλαγές πριν τις προτείνετε." wrap />
@@ -185,7 +181,7 @@ function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProp
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader icon={Send} tone="success">
           <DialogTitle><BilingualText en="Submit Change Proposal" el="Υποβολή πρότασης αλλαγής" compact /></DialogTitle>
           <DialogDescription>
             Propose the changes from &ldquo;{branch.name}&rdquo; to be merged into the main document.

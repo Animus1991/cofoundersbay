@@ -2,10 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  User, Users, Briefcase, Target, Building2, GraduationCap,
-  Search, Loader2, Check, X,
-} from 'lucide-react';
+import { User, Users, Briefcase, Target, Building2, GraduationCap, Search, Loader2, Check, X, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -101,7 +98,7 @@ export function EntityReferenceSelector({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader icon={Info} tone="neutral">
           <DialogTitle>
             {selectedType ? (
               <div className="flex items-center gap-2">

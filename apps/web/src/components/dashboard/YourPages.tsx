@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowDown, ArrowUp, EyeOff, Pin, PinOff, Plus, Settings2, Sparkles, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, EyeOff, Pin, PinOff, Plus, Settings2, Sparkles, X, Info } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -81,7 +81,7 @@ export function YourPagesDialog({ open, onOpenChange }: { open: boolean; onOpenC
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[min(88dvh,720px)] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
+        <DialogHeader icon={Info} tone="neutral">
           <DialogTitle>
             <BilingualText en="Your pages" el="Οι σελίδες σας" />
           </DialogTitle>

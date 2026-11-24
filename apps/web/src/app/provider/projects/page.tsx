@@ -3,15 +3,7 @@
 import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import Link from 'next/link';
-import {
-  FolderKanban,
-  Search,
-  MoreVertical,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  MessageSquare,
-} from 'lucide-react';
+import { FolderKanban, Search, MoreVertical, Clock, CheckCircle, AlertCircle, MessageSquare, Info, Pencil } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -482,7 +474,7 @@ export default function ProviderProjectsPage() {
       </div>
       <Dialog open={viewing !== null} onOpenChange={(o) => { if (!o) setViewing(null); }}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+          <DialogHeader icon={Info} tone="neutral">
             <DialogTitle>{viewing?.service}</DialogTitle>
             <DialogDescription>{viewing?.clientName}{viewing?.clientCompany ? ` · ${viewing.clientCompany}` : ''}</DialogDescription>
           </DialogHeader>
@@ -506,7 +498,7 @@ export default function ProviderProjectsPage() {
       </Dialog>
       <Dialog open={editing !== null} onOpenChange={(o) => { if (!o && !saving) setEditing(null); }}>
         <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
+          <DialogHeader icon={Pencil} tone="primary">
             <DialogTitle><BilingualText en="Update progress" el="Ενημέρωση προόδου" compact /></DialogTitle>
             <DialogDescription>{editing ? `${editing.clientName} · ${editing.service}` : ''}</DialogDescription>
           </DialogHeader>

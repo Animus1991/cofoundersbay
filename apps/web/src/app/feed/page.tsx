@@ -285,7 +285,7 @@ function PostCard({
             <DropdownMenuContent align="end">
               {/* "Bookmark" and "Copy Link" were here too: the same Save and
                   Share as the buttons at the foot of this card (docs §88). */}
-              <DropdownMenuItem className="text-destructive-accessible" onSelect={onReport}>
+              <DropdownMenuItem className="text-status-danger" onSelect={onReport}>
                 <Flag className="icon-sm mr-2" aria-hidden="true" />
                 <BilingualText en="Report" el="Αναφορά" compact />
               </DropdownMenuItem>

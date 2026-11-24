@@ -149,7 +149,7 @@ function GroupCard({ group, sample = false, onInvite, onDelete }: { group: Manag
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {group.role === 'owner' ? (
-                    <DropdownMenuItem className="text-destructive-accessible" onSelect={() => void onDelete(group)}>
+                    <DropdownMenuItem className="text-status-danger" onSelect={() => void onDelete(group)}>
                       <Trash2 className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Delete group" el="Διαγραφή κοινότητας" compact />
                     </DropdownMenuItem>
                   ) : (
