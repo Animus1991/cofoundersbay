@@ -9,9 +9,10 @@ import { TOO_MANY_ATTEMPTS, isRateLimited } from '@/lib/rate-limit-message';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
-import { Logo, LogoIcon } from '@/components/brand/Logo';
+import { LogoIcon } from '@/components/brand/Logo';
 import { useTenant } from '@/components/providers/TenantContext';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { loginEmailError, loginPasswordError } from '@/lib/auth-fields';
@@ -126,14 +127,18 @@ function LoginPageContent() {
   return (
     <div className="flex min-h-screen">
       {/* Left — form */}
-      <MainLandmark className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 lg:px-16 xl:px-24">
-        <div className="mx-auto w-full max-w-xl animate-fade-in">
-          <Link href="/" className="mb-10 inline-block hover:opacity-80 transition-opacity">
-            {activeTenant?.logoUrl ? (
-              <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-8 object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
-            ) : (
-              <Logo size="sm" />
-            )}
+      {/* The form column on the theme's flat primary wash; the card is the
+          rounded, shadowed panel the mark's squircle opens (docs §137, B2.4). */}
+      <MainLandmark className="flex w-full flex-col justify-center bg-primary-subtle px-8 py-12 lg:w-1/2 lg:px-16 xl:px-24">
+        <div className="mx-auto w-full max-w-xl animate-fade-in rounded-3xl border border-border/60 bg-card p-6 shadow-md sm:p-10">
+          <Link href="/" className="mb-8 inline-flex hover:opacity-80 transition-opacity" aria-label={bilingualAria('Back to the CoFounderBay home page', 'Επιστροφή στην αρχική του CoFounderBay')}>
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-status-accent-bg text-status-accent">
+              {activeTenant?.logoUrl ? (
+                <img src={activeTenant.logoUrl} alt={activeTenant.name} className="max-h-9 max-w-10 object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+              ) : (
+                <LogoIcon size={34} />
+              )}
+            </span>
           </Link>
 
           <h1 className="font-display text-3xl font-semibold text-foreground">

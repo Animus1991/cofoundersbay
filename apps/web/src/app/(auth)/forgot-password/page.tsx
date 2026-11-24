@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { MailCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Logo } from '@/components/brand/Logo';
+import { LogoIcon } from '@/components/brand/Logo';
+import { bilingualAria } from '@/lib/i18n/format';
 import { forgotPassword } from '@/lib/api';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -35,11 +36,15 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <MainLandmark className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md space-y-8 animate-fade-in">
+    // The centred card on the theme's flat primary wash, opening on the
+    // mark's tinted squircle (docs §137, B2.4).
+    <MainLandmark className="flex min-h-screen items-center justify-center bg-primary-subtle px-4">
+      <div className="w-full max-w-md space-y-8 animate-fade-in rounded-3xl border border-border/60 bg-card p-6 shadow-md sm:p-10">
         <div className="space-y-2">
-          <Link href="/" className="inline-block mb-6 hover:opacity-80 transition-opacity">
-            <Logo size="sm" />
+          <Link href="/" className="mb-8 inline-flex hover:opacity-80 transition-opacity" aria-label={bilingualAria('Back to the CoFounderBay home page', 'Επιστροφή στην αρχική του CoFounderBay')}>
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-status-accent-bg text-status-accent">
+              <LogoIcon size={34} />
+            </span>
           </Link>
           <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
             <BilingualText en="Reset your password" el="Επαναφορά κωδικού" compact />
