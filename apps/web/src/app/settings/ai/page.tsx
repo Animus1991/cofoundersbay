@@ -254,7 +254,7 @@ export default function AISettingsPage() {
     },
   ]);
   return (
-    <AppShell measure="form">
+    <AppShell>
       <div className="w-full min-w-0">
         {/* Header. The page title lives in the shell header; a second, larger
             "AI Assistant Settings" here made the page open with its own name

@@ -297,25 +297,7 @@ export default function InvestorDashboard() {
       descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
     >
       <div className="space-y-6">
-        <HomeAskHero role="investor" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
-        <HomeToday />
-
-        {!dealsLoading && active[0] ? (
-          <HomeNextStep
-            kickerEn="Active deal"
-            kickerEl="Ενεργή συμφωνία"
-            title={active[0].name}
-            reasonEn={STAGE_LABEL[active[0].pipelineStage]?.en}
-            reasonEl={STAGE_LABEL[active[0].pipelineStage]?.el}
-            // "Open" over one named deal opened the whole board; it opens
-            // the deal.
-            href={`/startups/${active[0].id}`}
-            actionEn="Open"
-            actionEl="Άνοιγμα"
-          />
-        ) : null}
-
-        {/* The four figures, each linking to the page that holds its rows. */}
+        <HomeAskHero role="investor" showWaiting={false} band name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <MetricTile family="neutral" icon={Briefcase} label="Deal flow" labelEl="Ροή συμφωνιών" value={summary?.totalDeals ?? '—'} caption="Deals on your board" captionEl="Συμφωνίες στον πίνακά σας" href="/investor/pipeline" />
           <MetricTile family="time" icon={Target} label="Active deals" labelEl="Ενεργές συμφωνίες" value={dealsPage ? active.length : '—'} caption="Reviewing to negotiating" captionEl="Από αξιολόγηση έως διαπραγμάτευση" href="/investor/pipeline" />
@@ -340,6 +322,24 @@ export default function InvestorDashboard() {
             href="/investor/analytics"
           />
         </div>
+        <HomeToday />
+
+        {!dealsLoading && active[0] ? (
+          <HomeNextStep
+            kickerEn="Active deal"
+            kickerEl="Ενεργή συμφωνία"
+            title={active[0].name}
+            reasonEn={STAGE_LABEL[active[0].pipelineStage]?.en}
+            reasonEl={STAGE_LABEL[active[0].pipelineStage]?.el}
+            // "Open" over one named deal opened the whole board; it opens
+            // the deal.
+            href={`/startups/${active[0].id}`}
+            actionEn="Open"
+            actionEl="Άνοιγμα"
+          />
+        ) : null}
+
+        {/* The four figures, each linking to the page that holds its rows. */}
 
         <HomeFold storageKey="cfb.dashboard.investor.full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

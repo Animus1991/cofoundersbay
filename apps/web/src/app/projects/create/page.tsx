@@ -210,7 +210,7 @@ export default function CreateProjectPage() {
   ];
 
   return (
-    <AppShell measure="form"
+    <AppShell
       showHelp
       askAi={ASK.projectNew}
       contentClassName="builder-copy overflow-x-clip"

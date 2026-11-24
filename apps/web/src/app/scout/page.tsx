@@ -332,7 +332,7 @@ function ScoutContent() {
   const busy = act.isPending;
 
   return (
-    <AppShell measure="form" rail={rail}>
+    <AppShell rail={rail}>
       <div className="space-y-6">
         <div className="empty:hidden"><FormDraftNotice filled={formDraft.filled} prompt={formDraft.prompt} onDismiss={formDraft.dismiss} /></div>
         <Card>

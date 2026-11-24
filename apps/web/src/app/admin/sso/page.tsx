@@ -75,7 +75,7 @@ export default function SSOAdminPage() {
   });
 
   return (
-    <AppShell measure="form"
+    <AppShell
       title="SSO Configuration"
       titleEl="Ρύθμιση SSO"
       description="Configure Single Sign-On for organization tenants"

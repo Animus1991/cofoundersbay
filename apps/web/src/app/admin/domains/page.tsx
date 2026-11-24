@@ -377,7 +377,7 @@ export default function DomainsAdminPage() {
   ]);
 
   return (
-    <AppShell measure="form"
+    <AppShell
       title="Domain Management"
       titleEl="Διαχείριση τομέων"
       description="Configure subdomains and custom domains for each tenant organization."

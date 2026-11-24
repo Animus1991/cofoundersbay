@@ -134,7 +134,7 @@ export default function LegalHubPage() {
   ]);
 
   return (
-    <AppShell measure="form" showHelp askAi={ASK_LEGAL}>
+    <AppShell showHelp askAi={ASK_LEGAL}>
       <div className="space-y-6">
         {/* What to sort out, in the order it comes up: the reader's own list
             first (docs §115), the two documents to sign under it. */}
@@ -180,7 +180,7 @@ export default function LegalHubPage() {
               </PhoneFold>
             ))}
             {nextStep ? null : (
-              <p className="max-w-[72ch] text-sm text-muted-foreground"><BilingualText en="Every step is ticked. Revisit the list when the company changes." el="Όλα τα βήματα είναι σημειωμένα. Ξαναδείτε τη λίστα όταν αλλάξει η εταιρεία." wrap /></p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Every step is ticked. Revisit the list when the company changes." el="Όλα τα βήματα είναι σημειωμένα. Ξαναδείτε τη λίστα όταν αλλάξει η εταιρεία." wrap /></p>
             )}
           </CardContent>
         </Card>
@@ -219,7 +219,7 @@ export default function LegalHubPage() {
                 <CalendarClock className="icon-sm" aria-hidden="true" />
                 <BilingualText en="Set aside 15 min" el="Κρατήστε 15′" compact />
               </Button>
-              <p className="max-w-[72ch] text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 <BilingualText
                   en="Not legal advice. Templates are starting points to review with counsel in your jurisdiction."
                   el="Δεν αποτελεί νομική συμβουλή. Τα πρότυπα είναι αφετηρία για έλεγχο με δικηγόρο στη δικαιοδοσία σας."
@@ -241,7 +241,7 @@ export default function LegalHubPage() {
           </TabsList>
 
           {filter !== 'all' && (
-            <p className="max-w-[72ch] text-sm text-muted-foreground" data-testid="legal-category-when">
+            <p className="text-sm text-muted-foreground" data-testid="legal-category-when">
               <span className="font-medium text-foreground"><BilingualText en="When:" el="Πότε:" compact /></span>{' '}
               {say(LEGAL_CATEGORIES.find((c) => c.id === filter)!.when)}
             </p>
@@ -262,8 +262,8 @@ export default function LegalHubPage() {
                     }
                     asideStays
                   />
-                  <p className="card-body max-w-[72ch] text-muted-foreground">{say(t.description)}</p>
-                  <p className="max-w-[72ch] rounded-xl bg-secondary/60 px-3 py-2 text-xs leading-snug">
+                  <p className="card-body text-muted-foreground">{say(t.description)}</p>
+                  <p className="rounded-xl bg-secondary/60 px-3 py-2 text-xs leading-snug">
                     <span className="font-medium"><BilingualText en="Decide first:" el="Αποφασίστε πρώτα:" compact /></span>{' '}
                     {say(t.decide)}
                   </p>
@@ -279,7 +279,7 @@ export default function LegalHubPage() {
           </div>
         </Tabs>
 
-        <p className="flex max-w-[72ch] flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+        <p className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
           <Scale className="icon-sm" aria-hidden="true" />
           <BilingualText en="Raising soon? The SAFE and term sheet pair with your investor pipeline." el="Αντλείτε κεφάλαια σύντομα; Το SAFE και το term sheet συνδυάζονται με το pipeline επενδυτών σας." compact />
           <Link href="/fundraising" className="inline-flex items-center gap-1 font-medium text-foreground underline-offset-2 hover:underline" data-testid="legal-fundraising-link">

@@ -400,7 +400,7 @@ export default function TenantSSOPage() {
 
   if (!tenantId) {
     return (
-      <AppShell measure="form">
+      <AppShell>
         <div className="py-12 text-center text-muted-foreground">
           <Shield className="h-10 w-10 mx-auto mb-3" aria-hidden="true" />
           <p><BilingualText en="No organisation is selected. Open this page from your organisation." el="Δεν έχει επιλεγεί οργανισμός. Ανοίξτε αυτή τη σελίδα από τον οργανισμό σας." wrap /></p>
@@ -413,7 +413,7 @@ export default function TenantSSOPage() {
   const activeProviderCount = providers?.filter(p => p.isActive).length ?? 0;
 
   return (
-    <AppShell measure="form"
+    <AppShell
       title="SSO / Authentication"
       titleEl="SSO / Αυθεντικοποίηση"
       description="Configure SAML, OIDC, or Google Workspace SSO for your members. Optional rules map IdP claims to roles."

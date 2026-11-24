@@ -235,14 +235,14 @@ export default function OrgSettingsPage() {
   // organisation had nothing in it (docs §96).
   if (orgFailed || (mainError && !profileData)) {
     return (
-      <AppShell measure="form" showHelp>
+      <AppShell showHelp>
         <OrgReadFailed en={orgFailed ? undefined : "Your organisation's details could not be read just now."} el={orgFailed ? undefined : 'Τα στοιχεία του οργανισμού σας δεν διαβάστηκαν αυτή τη στιγμή.'} busy={orgFetching || mainFetching} onRetry={() => { refetchOrg(); void refetchMain(); }} />
       </AppShell>
     );
   }
 
   return (
-    <AppShell measure="form" showHelp
+    <AppShell showHelp
       title="Organization Settings"
       description="Profile, branding, team, permissions, and billing for your organization."
     >

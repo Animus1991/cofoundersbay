@@ -227,7 +227,7 @@ export default function TenantBrandingPage() {
 
   if (!tenantId) {
     return (
-      <AppShell measure="form">
+      <AppShell>
         <div className="flex items-center justify-center py-24">
           <div className="text-center space-y-2">
             <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto" aria-hidden="true" />
@@ -240,7 +240,7 @@ export default function TenantBrandingPage() {
   }
 
   return (
-    <AppShell measure="form"
+    <AppShell
       title="Branding"
       description="Customize colors, logos, fonts, and landing page copy. Work in draft, then publish to apply across your tenant."
       showHelp

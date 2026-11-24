@@ -307,42 +307,7 @@ export default function IncubatorDashboard() {
       }
     >
       <div className="space-y-6">
-        <HomeAskHero role="incubator" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
-        <HomeToday />
-
-        {!loading && nextApplication ? (
-          <HomeNextStep
-            tone="waiting"
-            kickerEn="Application waiting"
-            kickerEl="Αίτηση σε αναμονή"
-            title={nextApplicationTitle}
-            href={`/org/applications?review=${nextApplication.row.id}`}
-            actionEn="Review"
-            actionEl="Αξιολόγηση"
-          />
-        ) : null}
-
-        {isNone && (
-          <SectionCard title="No organisation yet" titleEl="Δεν υπάρχει οργανισμός ακόμα">
-            <EmptyLine
-              en="Programs, applications and cohorts appear here once your account belongs to an organisation."
-              el="Προγράμματα, αιτήσεις και κύκλοι εμφανίζονται εδώ όταν ο λογαριασμός σας ανήκει σε οργανισμό."
-            />
-          </SectionCard>
-        )}
-
-        {programsFailed && (
-          <SectionCard title="Programs" titleEl="Προγράμματα" icon={FolderKanban} iconTint="success">
-            <FailedLine
-              en={orgFailed ? 'Your organisation could not be read just now.' : 'Your programmes could not be read just now.'}
-              el={orgFailed ? 'Ο οργανισμός σας δεν διαβάστηκε αυτή τη στιγμή.' : 'Τα προγράμματά σας δεν διαβάστηκαν αυτή τη στιγμή.'}
-              busy={orgFetching || programsFetching}
-              onRetry={retryPrograms}
-            />
-          </SectionCard>
-        )}
-
-        {/* Four figures, each the length of a list one click away. */}
+        <HomeAskHero role="incubator" showWaiting={false} band name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <MetricTile
             family="time"
@@ -385,6 +350,41 @@ export default function IncubatorDashboard() {
             href="/org/applications"
           />
         </div>
+        <HomeToday />
+
+        {!loading && nextApplication ? (
+          <HomeNextStep
+            tone="waiting"
+            kickerEn="Application waiting"
+            kickerEl="Αίτηση σε αναμονή"
+            title={nextApplicationTitle}
+            href={`/org/applications?review=${nextApplication.row.id}`}
+            actionEn="Review"
+            actionEl="Αξιολόγηση"
+          />
+        ) : null}
+
+        {isNone && (
+          <SectionCard title="No organisation yet" titleEl="Δεν υπάρχει οργανισμός ακόμα">
+            <EmptyLine
+              en="Programs, applications and cohorts appear here once your account belongs to an organisation."
+              el="Προγράμματα, αιτήσεις και κύκλοι εμφανίζονται εδώ όταν ο λογαριασμός σας ανήκει σε οργανισμό."
+            />
+          </SectionCard>
+        )}
+
+        {programsFailed && (
+          <SectionCard title="Programs" titleEl="Προγράμματα" icon={FolderKanban} iconTint="success">
+            <FailedLine
+              en={orgFailed ? 'Your organisation could not be read just now.' : 'Your programmes could not be read just now.'}
+              el={orgFailed ? 'Ο οργανισμός σας δεν διαβάστηκε αυτή τη στιγμή.' : 'Τα προγράμματά σας δεν διαβάστηκαν αυτή τη στιγμή.'}
+              busy={orgFetching || programsFetching}
+              onRetry={retryPrograms}
+            />
+          </SectionCard>
+        )}
+
+        {/* Four figures, each the length of a list one click away. */}
 
         <HomeFold storageKey="cfb.dashboard.incubator.full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

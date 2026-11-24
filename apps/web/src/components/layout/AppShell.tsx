@@ -210,7 +210,7 @@ export function AppShellFrame({
               // No width cap. The column is already offset by the sidebar's own
               // width, so "full width" here means exactly the space the sidebar
               // leaves, never over it.
-              className={cn(appShellMainClasses, 'mx-auto max-w-[1440px]', contentClassName)}
+              className={cn(appShellMainClasses, contentClassName)}
             >
               {children}
             </main>
@@ -281,11 +281,6 @@ type AppShellProps = {
    * A1); an explicit object wins; `false` keeps the title bare.
    */
   titleSticker?: TitleSticker | false;
-  /**
-   * A narrower reading measure for text-first pages, centred like the
-   * frame's 1440px cap (docs §135 A1.2). `reading` → 760px, `form` → 1040px.
-   */
-  measure?: 'reading' | 'form';
 };
 
 /**
@@ -313,7 +308,6 @@ export function AppShell({
   rail,
   leadAsHint = false,
   titleSticker,
-  measure,
 }: AppShellProps) {
   const insideFrame = useContext(InAppShellFrame);
   const pathname = usePathname() ?? '/';
@@ -375,7 +369,6 @@ export function AppShell({
     // /matches, pitch-deck) lands on this wrapper instead — same clipping.
     <div className={cn(
       'w-full space-y-5',
-      measure === 'reading' ? 'mx-auto max-w-[760px]' : measure === 'form' ? 'mx-auto max-w-[1040px]' : '',
       insideFrame && contentClassName,
     )}>
       {headerShown && (

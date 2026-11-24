@@ -930,7 +930,7 @@ export default function FeedPage() {
   ];
 
   return (
-    <AppShell measure="reading"
+    <AppShell
       showHelp
       rail={rail}
       actions={

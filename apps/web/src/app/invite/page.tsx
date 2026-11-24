@@ -165,7 +165,7 @@ export default function InvitePage() {
   };
 
   return (
-    <AppShell measure="form">
+    <AppShell>
       <div className="w-full space-y-6 pb-10">
         {/* The figures, one line (docs §64.5, PageFacts): four tiles stood
             above the form. Each keeps what its tile's second line said. */}

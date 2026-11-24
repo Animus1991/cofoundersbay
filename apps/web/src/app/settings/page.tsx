@@ -958,7 +958,7 @@ export default function SettingsPage() {
   ];
 
   return (
-    <AppShell measure="form"
+    <AppShell
       title="Settings"
       description="Language, appearance, billing, notifications, security and privacy."
       descriptionEl="Γλώσσα, εμφάνιση, χρεώσεις, ειδοποιήσεις, ασφάλεια και ιδιωτικότητα."

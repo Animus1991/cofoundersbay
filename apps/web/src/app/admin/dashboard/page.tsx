@@ -275,21 +275,7 @@ export default function AdminDashboardPage() {
       <div className="space-y-6">
         {/* What waits on the reader comes in Today below, as on every role's home
             (docs §115): the hero's own waiting chips would say it twice. */}
-        <HomeAskHero role="admin" showWaiting={false} plain name={me?.displayName} lead={{ en: 'What is waiting on you, and how the platform is doing.', el: 'Τι εκκρεμεί για εσάς και πώς πάει η πλατφόρμα.' }} />
-        <HomeToday />
-        {attention[0] ? (
-          <HomeNextStep
-            tone="waiting"
-            kickerEn="Needs attention"
-            kickerEl="Χρειάζεται προσοχή"
-            titleEn={attention[0].en}
-            titleEl={attention[0].el}
-            href={attention[0].href}
-            actionEn="Open"
-            actionEl="Άνοιγμα"
-          />
-        ) : null}
-        {/* Four figures; the two that ask for work link to where it is done. */}
+        <HomeAskHero role="admin" showWaiting={false} band name={me?.displayName} lead={{ en: 'What is waiting on you, and how the platform is doing.', el: 'Τι εκκρεμεί για εσάς και πώς πάει η πλατφόρμα.' }} />
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricTile
             family="people"
@@ -331,6 +317,20 @@ export default function AdminDashboardPage() {
             href="/admin/security-monitoring"
           />
         </div>
+        <HomeToday />
+        {attention[0] ? (
+          <HomeNextStep
+            tone="waiting"
+            kickerEn="Needs attention"
+            kickerEl="Χρειάζεται προσοχή"
+            titleEn={attention[0].en}
+            titleEl={attention[0].el}
+            href={attention[0].href}
+            actionEn="Open"
+            actionEl="Άνοιγμα"
+          />
+        ) : null}
+        {/* Four figures; the two that ask for work link to where it is done. */}
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="min-w-0 space-y-6 lg:col-span-2">

@@ -466,7 +466,7 @@ export default function ActivityPage() {
   ];
 
   return (
-    <AppShell measure="reading"
+    <AppShell
       rail={rail}
       showHelp
       askAi={ASK.activity}

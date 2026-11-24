@@ -325,23 +325,7 @@ export default function ProviderDashboard() {
       descriptionEl="Αιτήματα, ενεργά έργα, υπηρεσίες και αξιολογήσεις — σε μία προβολή."
     >
       <div className="space-y-6">
-        <HomeAskHero role="provider" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
-        <HomeToday />
-
-        {!inquiriesLoading && waiting[0] ? (
-          <HomeNextStep
-            tone="waiting"
-            kickerEn="Waiting on you"
-            kickerEl="Σας περιμένει"
-            title={waiting[0].service !== EM_DASH ? `${waiting[0].clientName} · ${waiting[0].service}` : waiting[0].clientName}
-            // Opens that inquiry, not the top of the list.
-            href={`/provider/inquiries#inquiry-${waiting[0].id}`}
-            actionEn="Reply"
-            actionEl="Απάντηση"
-          />
-        ) : null}
-
-        {/* Four figures, each linking to the page that lists what it counts. */}
+        <HomeAskHero role="provider" showWaiting={false} band name={profile?.profile?.displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <MetricTile
             family="people"
@@ -384,6 +368,22 @@ export default function ProviderDashboard() {
             href="/provider/reviews"
           />
         </div>
+        <HomeToday />
+
+        {!inquiriesLoading && waiting[0] ? (
+          <HomeNextStep
+            tone="waiting"
+            kickerEn="Waiting on you"
+            kickerEl="Σας περιμένει"
+            title={waiting[0].service !== EM_DASH ? `${waiting[0].clientName} · ${waiting[0].service}` : waiting[0].clientName}
+            // Opens that inquiry, not the top of the list.
+            href={`/provider/inquiries#inquiry-${waiting[0].id}`}
+            actionEn="Reply"
+            actionEl="Απάντηση"
+          />
+        ) : null}
+
+        {/* Four figures, each linking to the page that lists what it counts. */}
 
         <HomeFold storageKey="cfb.dashboard.provider.full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

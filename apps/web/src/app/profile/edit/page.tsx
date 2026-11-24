@@ -686,7 +686,7 @@ export default function ProfileEditPage() {
 
   if (profileError) {
     return (
-      <AppShell measure="form" title="Edit Profile" titleEl="Επεξεργασία προφίλ">
+      <AppShell title="Edit Profile" titleEl="Επεξεργασία προφίλ">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-center">
           <p role="alert" className="text-sm text-muted-foreground"><BilingualText en="Your profile could not be read just now." el="Το προφίλ σας δεν διαβάστηκε αυτή τη στιγμή." compact wrap /></p>
           <Button variant="secondary" size="sm" onClick={() => void refetchProfile()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
@@ -697,7 +697,7 @@ export default function ProfileEditPage() {
 
   if (loading) {
     return (
-      <AppShell measure="form" title="Edit Profile" titleEl="Επεξεργασία προφίλ">
+      <AppShell title="Edit Profile" titleEl="Επεξεργασία προφίλ">
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="icon-xl animate-spin text-primary-accessible" />
         </div>
@@ -716,7 +716,7 @@ export default function ProfileEditPage() {
   const missingCompletionFields = completionFields.filter((field) => !field.completed);
 
   return (
-    <AppShell measure="form"
+    <AppShell
       title="Edit Profile"
       titleEl="Επεξεργασία προφίλ"
       description="Update your personal details and how you appear to others"

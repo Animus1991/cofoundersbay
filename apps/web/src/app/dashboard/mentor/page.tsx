@@ -394,48 +394,7 @@ export default function MentorDashboard() {
       descriptionEl="Συνεδρίες, αιτήματα καθοδηγούμενων, αξιολογήσεις και έσοδα με μια ματιά."
     >
       <div className="space-y-6">
-        <HomeAskHero role="mentor" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
-        <HomeToday />
-
-        {/* One next step, before everything else. Within the hour it stays the
-            status line; otherwise the next session, or the first request. */}
-        {priority === 'booking' ? bookingWaiting : priority === 'soon' && nextSession ? (
-          <HomeNextStep
-            kickerEn={`Starts in ${nextSessionMinsAway} min`}
-            kickerEl={`Ξεκινά σε ${nextSessionMinsAway} λεπ.`}
-            title={nextSession.menteeName}
-            href={nextSession.meetingUrl || '/mentor/sessions'}
-            external={Boolean(nextSession.meetingUrl)}
-            glyph="calendar"
-            actionEn={nextSession.meetingUrl ? 'Join now' : 'Open session'}
-            actionEl={nextSession.meetingUrl ? 'Συμμετοχή τώρα' : 'Άνοιγμα συνεδρίας'}
-          />
-        ) : priority === 'session' && nextSession ? (
-          <HomeNextStep
-            kickerEn="Next session"
-            kickerEl="Επόμενη συνεδρία"
-            title={nextSession.menteeName}
-            reasonEn={sessionWhen(nextSession.scheduledAt, 'en-GB')}
-            reasonEl={sessionWhen(nextSession.scheduledAt, 'el-GR')}
-            href={nextSession.meetingUrl || '/mentor/sessions'}
-            external={Boolean(nextSession.meetingUrl)}
-            actionEn={nextSession.meetingUrl ? 'Join' : 'Open'}
-            actionEl={nextSession.meetingUrl ? 'Συμμετοχή' : 'Άνοιγμα'}
-          />
-        ) : priority === 'request' && pendingRequests[0] ? (
-          <HomeNextStep
-            tone="waiting"
-            kickerEn="Mentorship request"
-            kickerEl="Αίτημα καθοδήγησης"
-            title={pendingRequests[0].name}
-            href="/mentor/requests"
-            actionEn="Review"
-            actionEl="Εξέταση"
-          />
-        ) : null}
-
-        {/* Four figures, each a different fact and each linking to its rows.
-            Rating and hours were drawn twice (a tile and a tinted banner). */}
+        <HomeAskHero role="mentor" showWaiting={false} band name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <MetricTile
             family="people"
@@ -478,6 +437,47 @@ export default function MentorDashboard() {
             href="/mentor/reviews"
           />
         </div>
+        <HomeToday />
+
+        {/* One next step, before everything else. Within the hour it stays the
+            status line; otherwise the next session, or the first request. */}
+        {priority === 'booking' ? bookingWaiting : priority === 'soon' && nextSession ? (
+          <HomeNextStep
+            kickerEn={`Starts in ${nextSessionMinsAway} min`}
+            kickerEl={`Ξεκινά σε ${nextSessionMinsAway} λεπ.`}
+            title={nextSession.menteeName}
+            href={nextSession.meetingUrl || '/mentor/sessions'}
+            external={Boolean(nextSession.meetingUrl)}
+            glyph="calendar"
+            actionEn={nextSession.meetingUrl ? 'Join now' : 'Open session'}
+            actionEl={nextSession.meetingUrl ? 'Συμμετοχή τώρα' : 'Άνοιγμα συνεδρίας'}
+          />
+        ) : priority === 'session' && nextSession ? (
+          <HomeNextStep
+            kickerEn="Next session"
+            kickerEl="Επόμενη συνεδρία"
+            title={nextSession.menteeName}
+            reasonEn={sessionWhen(nextSession.scheduledAt, 'en-GB')}
+            reasonEl={sessionWhen(nextSession.scheduledAt, 'el-GR')}
+            href={nextSession.meetingUrl || '/mentor/sessions'}
+            external={Boolean(nextSession.meetingUrl)}
+            actionEn={nextSession.meetingUrl ? 'Join' : 'Open'}
+            actionEl={nextSession.meetingUrl ? 'Συμμετοχή' : 'Άνοιγμα'}
+          />
+        ) : priority === 'request' && pendingRequests[0] ? (
+          <HomeNextStep
+            tone="waiting"
+            kickerEn="Mentorship request"
+            kickerEl="Αίτημα καθοδήγησης"
+            title={pendingRequests[0].name}
+            href="/mentor/requests"
+            actionEn="Review"
+            actionEl="Εξέταση"
+          />
+        ) : null}
+
+        {/* Four figures, each a different fact and each linking to its rows.
+            Rating and hours were drawn twice (a tile and a tinted banner). */}
 
         <HomeFold storageKey="cfb.dashboard.mentor.full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
