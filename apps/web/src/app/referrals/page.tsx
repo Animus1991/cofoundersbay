@@ -38,6 +38,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { REFERRALS_STRINGS, referralsEn, referralsEl } from '@/lib/i18n/strings-referrals';
 import { attachDemoPhotos } from '@/lib/demo/photos';
@@ -517,30 +518,29 @@ export default function ReferralsPage() {
             ) : filteredReferrals.length === 0 ? (
               // Each view says why it is empty and what fills it; one line,
               // "No referrals in this category", said none of that.
-              <div className="py-8 text-center text-muted-foreground">
-                <Users className="mx-auto mb-3 h-12 w-12 opacity-50" aria-hidden="true" />
-                <p className="text-sm">
-                  {referrals.length === 0 ? (
-                    <BilingualText
-                      en="You have not invited anyone yet. Invite someone by email above and the invitation is tracked here."
-                      el="Δεν έχετε προσκαλέσει ακόμη κανέναν. Προσκαλέστε κάποιον με email πιο πάνω και η πρόσκληση θα φαίνεται εδώ."
-                      compact
-                      wrap
-                    />
-                  ) : activeTab === 'pending' ? (
-                    <BilingualText en="No invitation is waiting for an answer." el="Καμία πρόσκληση δεν περιμένει απάντηση." compact wrap />
-                  ) : activeTab === 'rewarded' ? (
-                    <BilingualText
-                      en="Nothing is rewarded yet: rewards are planned, not live."
-                      el="Τίποτα δεν έχει ανταμειφθεί ακόμη: οι ανταμοιβές είναι σχεδιασμένες, όχι ενεργές."
-                      compact
-                      wrap
-                    />
-                  ) : (
-                    <BilingualText en={referralsEn('empty_list')} el={referralsEl('empty_list')} compact wrap />
-                  )}
-                </p>
-              </div>
+              <EmptyState
+                illustration="connection"
+                size="sm"
+                title={referrals.length === 0 ? (
+                  <BilingualText
+                    en="You have not invited anyone yet. Invite someone by email above and the invitation is tracked here."
+                    el="Δεν έχετε προσκαλέσει ακόμη κανέναν. Προσκαλέστε κάποιον με email πιο πάνω και η πρόσκληση θα φαίνεται εδώ."
+                    compact
+                    wrap
+                  />
+                ) : activeTab === 'pending' ? (
+                  <BilingualText en="No invitation is waiting for an answer." el="Καμία πρόσκληση δεν περιμένει απάντηση." compact wrap />
+                ) : activeTab === 'rewarded' ? (
+                  <BilingualText
+                    en="Nothing is rewarded yet: rewards are planned, not live."
+                    el="Τίποτα δεν έχει ανταμειφθεί ακόμη: οι ανταμοιβές είναι σχεδιασμένες, όχι ενεργές."
+                    compact
+                    wrap
+                  />
+                ) : (
+                  <BilingualText en={referralsEn('empty_list')} el={referralsEl('empty_list')} compact wrap />
+                )}
+              />
             ) : (
               <div className="card-rows">
                 {filteredReferrals.map((referral) => (

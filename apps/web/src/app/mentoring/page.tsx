@@ -1037,18 +1037,22 @@ export default function MentoringPage() {
           </div>
 
           {mentorsError || reviewersFailed ? (
-            <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-sm text-muted-foreground">
-                {mentorsError ? (
+            <div role="alert">
+              <EmptyState
+                illustration="default"
+                size="sm"
+                title={mentorsError ? (
                   <BilingualText en="Mentors could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των μεντόρων." wrap />
                 ) : (
                   <BilingualText en="The reviewers could not be read just now." el="Οι αξιολογητές δεν διαβάστηκαν αυτή τη στιγμή." wrap />
                 )}
-              </p>
-              <Button variant="outline" size="sm" onClick={() => { void queryClient.invalidateQueries({ queryKey: qk('mentors') }); if (reviewersFailed) void refetchExperts(); }}>
-                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-              </Button>
-            </CardContent></Card>
+                action={(
+                  <Button variant="outline" size="sm" onClick={() => { void queryClient.invalidateQueries({ queryKey: qk('mentors') }); if (reviewersFailed) void refetchExperts(); }}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                )}
+              />
+            </div>
           ) : directoryLoading ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {Array.from({ length: 4 }).map((_, i) => <MentorSkeleton key={i} />)}

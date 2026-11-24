@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
+import { EmptyState } from '@/components/common/EmptyState';
 import { CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -209,14 +210,12 @@ export function NotificationsBell({ className }: { className?: string }) {
 
         <div className="flex-1 overflow-y-auto">
           {items.length === 0 && (
-            <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/60">
-                <CfbGlyph name="bell" className="icon-md text-muted-foreground" />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {loading ? 'Loading...' : "You're all caught up!"}
-              </p>
-            </div>
+            <EmptyState
+              className="border-0 bg-transparent"
+              illustration="default"
+              size="sm"
+              title={loading ? 'Loading...' : "You're all caught up!"}
+            />
           )}
 
           {items.map((notification) => (

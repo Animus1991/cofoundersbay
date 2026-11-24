@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/common/EmptyState';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -198,10 +199,12 @@ export function NotificationCenter({
               />
             ))
           ) : (
-            <div className="py-12 text-center">
-              <Bell className="mx-auto icon-xl text-muted-foreground/40 mb-3" />
-              <p className="text-sm text-muted-foreground">No notifications yet</p>
-            </div>
+            <EmptyState
+              className="border-0 bg-transparent"
+              illustration="default"
+              size="sm"
+              title="No notifications yet"
+            />
           )}
         </div>
 

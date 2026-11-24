@@ -50,6 +50,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { formatCompactMoney } from '@/lib/i18n/format';
@@ -641,30 +642,27 @@ export default function InvestorWatchlistPage() {
                 <WatchlistCard key={startup.id} startup={startup} live={watchLive} {...watchActions} />
               ))}
               {filtered.length === 0 && !watchedLoading && (
-                <Card className="col-span-full">
-                  <CardContent className="py-12 text-center">
-                    <Eye className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                    {/* "No results · Add startups from the scouting feed",
-                        English only, for an empty list and a search alike. */}
-                    {watched.length === 0 ? (
-                      <>
-                        <h3 className="card-title text-foreground"><BilingualText en="Your watchlist is empty" el="Η λίστα παρακολούθησής σας είναι άδεια" compact /></h3>
-                        <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Press Watch on a startup in Scouting and it is listed here." el="Πατήστε «Παρακολούθηση» σε μια startup στην Ανίχνευση και θα εμφανιστεί εδώ." wrap /></p>
-                        <Button size="sm" className="mt-4" asChild>
-                          <Link href="/investor/scouting"><BilingualText en="Scout Startups" el="Αναζήτηση startups" compact /></Link>
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <h3 className="card-title text-foreground"><BilingualText en="No results" el="Κανένα αποτέλεσμα" compact /></h3>
-                        <p className="text-sm text-muted-foreground mt-1"><BilingualText en="No watched startup matches the search or the filter." el="Καμία startup της λίστας δεν ταιριάζει με την αναζήτηση ή το φίλτρο." wrap /></p>
-                        <Button size="sm" variant="outline" className="mt-4" onClick={() => { setSearch(''); setAlertsOnly(false); }}>
-                          <BilingualText en="Clear search and filter" el="Καθαρισμός αναζήτησης και φίλτρου" compact />
-                        </Button>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
+                // An empty list says where deals come from; a filtered one
+                // offers the clear (B2.5).
+                <EmptyState
+                  className="col-span-full"
+                  illustration={watched.length === 0 ? 'default' : 'search'}
+                  title={watched.length === 0
+                    ? <BilingualText en="Your watchlist is empty" el="Η λίστα παρακολούθησής σας είναι άδεια" compact />
+                    : <BilingualText en="No results" el="Κανένα αποτέλεσμα" compact />}
+                  description={watched.length === 0
+                    ? <BilingualText en="Press Watch on a startup in Scouting and it is listed here." el="Πατήστε «Παρακολούθηση» σε μια startup στην Ανίχνευση και θα εμφανιστεί εδώ." wrap />
+                    : <BilingualText en="No watched startup matches the search or the filter." el="Καμία startup της λίστας δεν ταιριάζει με την αναζήτηση ή το φίλτρο." wrap />}
+                  action={watched.length === 0 ? (
+                    <Button size="sm" asChild>
+                      <Link href="/investor/scouting"><BilingualText en="Scout Startups" el="Αναζήτηση startups" compact /></Link>
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="outline" onClick={() => { setSearch(''); setAlertsOnly(false); }}>
+                      <BilingualText en="Clear search and filter" el="Καθαρισμός αναζήτησης και φίλτρου" compact />
+                    </Button>
+                  )}
+                />
               )}
             </div>
             </>

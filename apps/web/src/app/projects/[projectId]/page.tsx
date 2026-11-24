@@ -25,6 +25,7 @@ import { RoleBadge } from '@/components/common/RoleBadge';
 import { ProjectNeedCard } from '@/components/commitments/ProjectNeedCard';
 import { NonGuaranteeNote } from '@/components/commitments/NonGuaranteeNote';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useToast } from '@/components/ui/toast';
@@ -131,22 +132,18 @@ export default function ProjectDetailPage() {
   if (!project) {
     return (
       <AppShell showHelp contentClassName="builder-copy overflow-x-clip">
-        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border bg-card/50 py-16 text-center">
-          <CfbGlyph name="briefcase" className="icon-lg text-muted-foreground/50" />
-          <div>
-            <p className="page-section font-medium text-foreground">
-              <BilingualText en={projectEn('missing_title')} el={projectEl('missing_title')} />
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              <BilingualText en={projectEn('missing_hint')} el={projectEl('missing_hint')} />
-            </p>
-          </div>
-          <Button className={BUILDER_BTN} asChild>
-            <Link href="/projects">
-              <BilingualText en={projectEn('back_projects')} el={projectEl('back_projects')} compact />
-            </Link>
-          </Button>
-        </div>
+        <EmptyState
+          illustration="search"
+          title={<BilingualText en={projectEn('missing_title')} el={projectEl('missing_title')} />}
+          description={<BilingualText en={projectEn('missing_hint')} el={projectEl('missing_hint')} />}
+          action={(
+            <Button className={BUILDER_BTN} asChild>
+              <Link href="/projects">
+                <BilingualText en={projectEn('back_projects')} el={projectEl('back_projects')} compact />
+              </Link>
+            </Button>
+          )}
+        />
       </AppShell>
     );
   }

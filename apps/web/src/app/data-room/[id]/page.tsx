@@ -28,6 +28,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
@@ -507,15 +508,19 @@ export default function DataRoomPage() {
     return (
       <AppShell showHelp>
         <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-            <p className="page-section font-semibold"><BilingualText en="Your data room is on your round" el="Το data room σας είναι στον γύρο σας" compact /></p>
-            <p className="max-w-sm text-sm text-muted-foreground">
-              <BilingualText en="Upload and share files from Fundraising. What founders opened to you is under Shared data rooms." el="Ανεβάστε και μοιραστείτε αρχεία από τη Χρηματοδότηση. Ό,τι άνοιξαν ιδρυτές σε εσάς είναι στα Κοινόχρηστα data rooms." wrap />
-            </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              <Button size="sm" asChild><Link href="/fundraising"><BilingualText en="Open Fundraising" el="Άνοιγμα Χρηματοδότησης" compact /></Link></Button>
-              <Button size="sm" variant="outline" asChild><Link href="/data-room"><BilingualText en="Shared data rooms" el="Κοινόχρηστα data rooms" compact /></Link></Button>
-            </div>
+          <CardContent className="p-0">
+            <EmptyState
+              className="border-0 bg-transparent"
+              illustration="default"
+              title={<BilingualText en="Your data room is on your round" el="Το data room σας είναι στον γύρο σας" compact />}
+              description={<BilingualText en="Upload and share files from Fundraising. What founders opened to you is under Shared data rooms." el="Ανεβάστε και μοιραστείτε αρχεία από τη Χρηματοδότηση. Ό,τι άνοιξαν ιδρυτές σε εσάς είναι στα Κοινόχρηστα data rooms." wrap />}
+              action={(
+                <>
+                  <Button size="sm" asChild><Link href="/fundraising"><BilingualText en="Open Fundraising" el="Άνοιγμα Χρηματοδότησης" compact /></Link></Button>
+                  <Button size="sm" variant="outline" asChild><Link href="/data-room"><BilingualText en="Shared data rooms" el="Κοινόχρηστα data rooms" compact /></Link></Button>
+                </>
+              )}
+            />
           </CardContent>
         </Card>
       </AppShell>

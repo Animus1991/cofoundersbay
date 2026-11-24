@@ -4,7 +4,7 @@ import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/p
 import { useState, useCallback, useMemo, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Bell, BellOff, Check, CheckCheck, Trash2,
+  Bell, Check, CheckCheck, Trash2,
   MessageCircle, UserPlus, Calendar, TrendingUp, Award,
   Briefcase, Users, RefreshCw,
   Settings, Square, SquareCheck, X, Bookmark, BookmarkCheck,
@@ -15,6 +15,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { StatusText } from '@/components/common/StatusText';
@@ -719,71 +720,71 @@ export default function NotificationsPage() {
             ) : null}
           </div>
           {isError ? (
-            <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <BellOff className="icon-xl text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground">
-                <BilingualText en={notificationsEn('error_load')} el={notificationsEl('error_load')} />
-              </p>
-              <Button variant="secondary" size="sm" onClick={() => refetch()}>
-                <RefreshCw className="mr-1.5 icon-sm" /> <BilingualText en={notificationsEn('retry')} el={notificationsEl('retry')} compact />
-              </Button>
+            <div role="alert">
+              <EmptyState
+                className="border-0 bg-transparent"
+                illustration="default"
+                size="sm"
+                title={<BilingualText en={notificationsEn('error_load')} el={notificationsEl('error_load')} />}
+                action={(
+                  <Button variant="secondary" size="sm" onClick={() => refetch()}>
+                    <RefreshCw className="mr-1.5 icon-sm" /> <BilingualText en={notificationsEn('retry')} el={notificationsEl('retry')} compact />
+                  </Button>
+                )}
+              />
             </div>
           ) : isLoading ? (
             <>{Array.from({ length: 6 }).map((_, i) => <NotificationSkeleton key={i} />)}</>
           ) : notifications.length === 0 && showSaved ? (
-            <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                <Bookmark className="icon-lg text-muted-foreground" />
-              </div>
-              <div>
-                <p className="card-title text-foreground">
-                  <BilingualText en="Nothing saved yet" el="Δεν έχετε αποθηκεύσει τίποτα ακόμη" />
-                </p>
-                <p className="card-body mt-1 text-muted-foreground">
-                  <BilingualText
-                    en="Save a notification to keep it here for later, read or not."
-                    el="Αποθηκεύστε μια ειδοποίηση για να τη βρίσκετε εδώ αργότερα, διαβασμένη ή όχι."
-                  />
-                </p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => setView('all')}>
-                <BilingualText en={notificationsEn('show_all_notifications')} el={notificationsEl('show_all_notifications')} compact />
-              </Button>
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                <Bell className="icon-lg text-muted-foreground" />
-              </div>
-              <div>
-                <p className="card-title text-foreground">
-                  <BilingualText
-                    en={showUnreadOnly ? notificationsEn('empty_no_unread_title') : notificationsEn('empty_all_caught_up')}
-                    el={showUnreadOnly ? notificationsEl('empty_no_unread_title') : notificationsEl('empty_all_caught_up')}
-                  />
-                </p>
-                <p className="card-body mt-1 text-muted-foreground">
-                  <BilingualText
-                    en={showUnreadOnly ? notificationsEn('empty_no_unread_desc') : notificationsEn('empty_desc')}
-                    el={showUnreadOnly ? notificationsEl('empty_no_unread_desc') : notificationsEl('empty_desc')}
-                  />
-                </p>
-              </div>
-              {/* Their wrapper and the caught-up Ask AI prompt (a real addition to
-                  an otherwise dead-end empty state), with our bilingual label. */}
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                {showUnreadOnly && (
-                  <Button variant="outline" size="sm" onClick={() => setView('all')}>
-                    <BilingualText en={notificationsEn('show_all_notifications')} el={notificationsEl('show_all_notifications')} compact />
-                  </Button>
-                )}
-                <AIInsightButton
-                  prompt={ASK.notificationsDone}
-                  variant="outline"
-                  size="sm"
+            <EmptyState
+              className="border-0 bg-transparent"
+              illustration="default"
+              title={<BilingualText en="Nothing saved yet" el="Δεν έχετε αποθηκεύσει τίποτα ακόμη" />}
+              description={(
+                <BilingualText
+                  en="Save a notification to keep it here for later, read or not."
+                  el="Αποθηκεύστε μια ειδοποίηση για να τη βρίσκετε εδώ αργότερα, διαβασμένη ή όχι."
                 />
-              </div>
-            </div>
+              )}
+              action={(
+                <Button variant="outline" size="sm" onClick={() => setView('all')}>
+                  <BilingualText en={notificationsEn('show_all_notifications')} el={notificationsEl('show_all_notifications')} compact />
+                </Button>
+              )}
+            />
+          ) : notifications.length === 0 ? (
+            // The shared empty state's tinted disc; the caught-up Ask AI
+            // prompt stays as a real way on (B2.5).
+            <EmptyState
+              className="border-0 bg-transparent"
+              illustration="default"
+              title={(
+                <BilingualText
+                  en={showUnreadOnly ? notificationsEn('empty_no_unread_title') : notificationsEn('empty_all_caught_up')}
+                  el={showUnreadOnly ? notificationsEl('empty_no_unread_title') : notificationsEl('empty_all_caught_up')}
+                />
+              )}
+              description={(
+                <BilingualText
+                  en={showUnreadOnly ? notificationsEn('empty_no_unread_desc') : notificationsEn('empty_desc')}
+                  el={showUnreadOnly ? notificationsEl('empty_no_unread_desc') : notificationsEl('empty_desc')}
+                />
+              )}
+              action={(
+                <>
+                  {showUnreadOnly && (
+                    <Button variant="outline" size="sm" onClick={() => setView('all')}>
+                      <BilingualText en={notificationsEn('show_all_notifications')} el={notificationsEl('show_all_notifications')} compact />
+                    </Button>
+                  )}
+                  <AIInsightButton
+                    prompt={ASK.notificationsDone}
+                    variant="outline"
+                    size="sm"
+                  />
+                </>
+              )}
+            />
           ) : (
             <>
             {actionable.length > 0 && (

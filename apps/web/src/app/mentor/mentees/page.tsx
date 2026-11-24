@@ -4,7 +4,6 @@ import { StatusText } from '@/components/common/StatusText';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Users,
   MessageCircle,
   Calendar,
   Loader2,
@@ -27,6 +26,7 @@ import {
 } from '@/lib/api';
 import { isUpcoming, fromBooking } from '@/lib/mentoring/sessions';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
@@ -266,15 +266,18 @@ export default function MenteesPage() {
             ))
           ) : (
             <Card className="col-span-full">
-              <CardContent className="py-12 text-center">
-                <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium"><BilingualText en="No active mentees" el="Δεν υπάρχουν ενεργοί καθοδηγούμενοι" compact /></h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  <BilingualText en="Accept mentorship requests to start mentoring" el="Αποδεχτείτε αιτήματα καθοδήγησης για να ξεκινήσετε" wrap />
-                </p>
-                <Button className="mt-4" asChild>
-                  <Link href="/mentor/requests"><BilingualText en="View Requests" el="Προβολή αιτημάτων" compact /></Link>
-                </Button>
+              <CardContent className="p-0">
+                <EmptyState
+                  className="border-0 bg-transparent"
+                  illustration="connection"
+                  title={<BilingualText en="No active mentees" el="Δεν υπάρχουν ενεργοί καθοδηγούμενοι" compact />}
+                  description={<BilingualText en="Accept mentorship requests to start mentoring" el="Αποδεχτείτε αιτήματα καθοδήγησης για να ξεκινήσετε" wrap />}
+                  action={(
+                    <Button asChild>
+                      <Link href="/mentor/requests"><BilingualText en="View Requests" el="Προβολή αιτημάτων" compact /></Link>
+                    </Button>
+                  )}
+                />
               </CardContent>
             </Card>
           )}

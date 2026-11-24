@@ -27,6 +27,7 @@ import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /*
@@ -287,19 +288,23 @@ export default function AdminAuditLogPage() {
                 ))}
               </div>
             ) : isError && logs.length === 0 ? (
-              <div className="py-16 text-center">
-                <AlertTriangle className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                <p className="text-sm font-medium">The audit log could not be loaded</p>
-                <p className="text-xs text-muted-foreground mt-1">Refresh to try again.</p>
+              <div role="alert">
+                <EmptyState
+                  className="border-0 bg-transparent"
+                  illustration="default"
+                  size="sm"
+                  title="The audit log could not be loaded"
+                  description="Refresh to try again."
+                />
               </div>
             ) : filtered.length === 0 ? (
-              <div className="py-16 text-center">
-                <Shield className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                <p className="text-sm font-medium">No audit log entries</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {entityType !== 'all' || action !== 'all' || search ? 'Try adjusting filters' : 'Administrative actions appear here as they happen.'}
-                </p>
-              </div>
+              <EmptyState
+                className="border-0 bg-transparent"
+                illustration="search"
+                size="sm"
+                title="No audit log entries"
+                description={entityType !== 'all' || action !== 'all' || search ? 'Try adjusting filters' : 'Administrative actions appear here as they happen.'}
+              />
             ) : (
               <div className="divide-y divide-border">
                 {filtered.map((log) => (

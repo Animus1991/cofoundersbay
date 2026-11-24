@@ -5,8 +5,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   TrendingUp, Users, Sparkles, Bell, Calendar, MessageCircle,
   Award, Briefcase, RefreshCw, CheckCheck, ExternalLink,
-  Flag, Star, Gift, Activity, Zap, ArrowRight,
-  UserCheck, Target, BarChart3, CheckCircle2, X,
+  Flag, Star, Gift, Zap, ArrowRight,
+  UserCheck, Target, BarChart3, X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { getDashboardActivity, listNotifications, markAllNotificationsRead, type DashboardActivityItem, type NotificationItem, type DashboardActivityPage } from '@/lib/api';
@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { FactLine } from '@/components/common/FactLine';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -240,7 +241,8 @@ function NotificationRow({ item }: { item: NotificationItem }) {
 function DateGroupHeader({ groupKey }: { groupKey: keyof typeof ACTIVITY_STRINGS }) {
   return (
     <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-2">
-      <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <span className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
         <BilingualText en={activityEn(groupKey)} el={activityEl(groupKey)} compact />
       </span>
     </div>
@@ -519,37 +521,38 @@ export default function ActivityPage() {
               <TabsContent value="network" className="mt-0 space-y-3" data-tour="activity-stream">
                 <div className="overflow-hidden rounded-2xl border border-border bg-card">
                   {activityError ? (
-                    <div className="flex flex-col items-center gap-3 py-12 text-center">
-                      <p role="alert" className="text-sm text-muted-foreground">
-                        <BilingualText en={activityEn('activity_failed')} el={activityEl('activity_failed')} compact />
-                      </p>
-                      <Button variant="secondary" size="sm" onClick={() => refetchActivity()}>
-                        <BilingualText en={activityEn('retry')} el={activityEl('retry')} compact />
-                      </Button>
+                    <div role="alert">
+                      <EmptyState
+                        className="border-0 bg-transparent"
+                        illustration="default"
+                        size="sm"
+                        title={<BilingualText en={activityEn('activity_failed')} el={activityEl('activity_failed')} compact />}
+                        action={(
+                          <Button variant="secondary" size="sm" onClick={() => refetchActivity()}>
+                            <BilingualText en={activityEn('retry')} el={activityEl('retry')} compact />
+                          </Button>
+                        )}
+                      />
                     </div>
                   ) : activityLoading ? (
                     Array.from({ length: 5 }).map((_, i) => <ItemSkeleton key={i} />)
                   ) : filteredActivity.length === 0 ? (
-                    <div className="flex flex-col items-center gap-3 py-12 text-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                        <Activity className="icon-md text-muted-foreground" />
-                      </div>
-                      {/* The filtered case used to interpolate the raw type
-                          into the sentence — `No milestone activity` — which
-                          cannot be said in Greek without declining the noun.
-                          One neutral sentence says the same thing in both. */}
-                      <p className="text-sm font-medium text-foreground">
-                        {typeFilter === 'all' ? <BilingualText en={activityEn('empty_activity')} el={activityEl('empty_activity')} compact /> : <BilingualText en={activityEn('empty_activity_filtered')} el={activityEl('empty_activity_filtered')} compact />}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {typeFilter === 'all' ? <BilingualText en={activityEn('empty_activity_hint')} el={activityEl('empty_activity_hint')} compact /> : <BilingualText en={activityEn('empty_filter_hint')} el={activityEl('empty_filter_hint')} compact />}
-                      </p>
-                      {typeFilter === 'all' && (
+                    // The filtered case used to interpolate the raw type
+                    // into the sentence — `No milestone activity` — which
+                    // cannot be said in Greek without declining the noun.
+                    // One neutral sentence says the same thing in both.
+                    <EmptyState
+                      className="border-0 bg-transparent"
+                      illustration="default"
+                      size="sm"
+                      title={typeFilter === 'all' ? <BilingualText en={activityEn('empty_activity')} el={activityEl('empty_activity')} compact /> : <BilingualText en={activityEn('empty_activity_filtered')} el={activityEl('empty_activity_filtered')} compact />}
+                      description={typeFilter === 'all' ? <BilingualText en={activityEn('empty_activity_hint')} el={activityEl('empty_activity_hint')} compact /> : <BilingualText en={activityEn('empty_filter_hint')} el={activityEl('empty_filter_hint')} compact />}
+                      action={typeFilter === 'all' ? (
                         <Button variant="outline" size="sm" asChild>
                           <Link href="/discover"><BilingualText en={activityEn('discover_people')} el={activityEl('discover_people')} compact /></Link>
                         </Button>
-                      )}
-                    </div>
+                      ) : undefined}
+                    />
                   ) : (
                     <>
                       {Object.entries(groupedActivity).map(([group, items]) => (
@@ -585,24 +588,29 @@ export default function ActivityPage() {
               <TabsContent value="notifications" className="mt-0">
                 <div className="overflow-hidden rounded-2xl border border-border bg-card">
                   {notifError ? (
-                    <div className="flex flex-col items-center gap-3 py-12 text-center">
-                      <p role="alert" className="text-sm text-muted-foreground">
-                        <BilingualText en={activityEn('notifications_failed')} el={activityEl('notifications_failed')} compact />
-                      </p>
-                      <Button variant="secondary" size="sm" onClick={() => refetchNotif()}>
-                        <BilingualText en={activityEn('retry')} el={activityEl('retry')} compact />
-                      </Button>
+                    <div role="alert">
+                      <EmptyState
+                        className="border-0 bg-transparent"
+                        illustration="default"
+                        size="sm"
+                        title={<BilingualText en={activityEn('notifications_failed')} el={activityEl('notifications_failed')} compact />}
+                        action={(
+                          <Button variant="secondary" size="sm" onClick={() => refetchNotif()}>
+                            <BilingualText en={activityEn('retry')} el={activityEl('retry')} compact />
+                          </Button>
+                        )}
+                      />
                     </div>
                   ) : notifLoading ? (
                     Array.from({ length: 5 }).map((_, i) => <ItemSkeleton key={i} />)
                   ) : notifications.length === 0 ? (
-                    <div className="flex flex-col items-center gap-3 py-12 text-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                        <CheckCircle2 className="icon-md text-status-success" />
-                      </div>
-                      <p className="text-sm font-medium text-foreground"><BilingualText en={activityEn('all_caught_up')} el={activityEl('all_caught_up')} compact /></p>
-                      <p className="text-xs text-muted-foreground"><BilingualText en={activityEn('no_notifications')} el={activityEl('no_notifications')} compact /></p>
-                    </div>
+                    <EmptyState
+                      className="border-0 bg-transparent"
+                      illustration="default"
+                      size="sm"
+                      title={<BilingualText en={activityEn('all_caught_up')} el={activityEl('all_caught_up')} compact />}
+                      description={<BilingualText en={activityEn('no_notifications')} el={activityEl('no_notifications')} compact />}
+                    />
                   ) : (
                     notifications.map((n) => <NotificationRow key={n.id} item={n} />)
                   )}
@@ -629,27 +637,34 @@ export default function ActivityPage() {
                   {activityError ? (
                     // The events come from the same read; a failed one is not
                     // "No upcoming events".
-                    <div className="flex flex-col items-center gap-3 py-12 text-center">
-                      <p role="alert" className="text-sm text-muted-foreground">
-                        <BilingualText en={activityEn('activity_failed')} el={activityEl('activity_failed')} compact />
-                      </p>
-                      <Button variant="secondary" size="sm" onClick={() => refetchActivity()}>
-                        <BilingualText en={activityEn('retry')} el={activityEl('retry')} compact />
-                      </Button>
+                    <div role="alert">
+                      <EmptyState
+                        className="border-0 bg-transparent"
+                        illustration="default"
+                        size="sm"
+                        title={<BilingualText en={activityEn('activity_failed')} el={activityEl('activity_failed')} compact />}
+                        action={(
+                          <Button variant="secondary" size="sm" onClick={() => refetchActivity()}>
+                            <BilingualText en={activityEn('retry')} el={activityEl('retry')} compact />
+                          </Button>
+                        )}
+                      />
                     </div>
                   ) : activityLoading ? (
                     Array.from({ length: 3 }).map((_, i) => <ItemSkeleton key={i} />)
                   ) : eventItems.length === 0 ? (
-                    <div className="flex flex-col items-center gap-3 py-12 text-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                        <Calendar className="icon-md text-muted-foreground" />
-                      </div>
-                      <p className="text-sm font-medium text-foreground"><BilingualText en={activityEn('no_events')} el={activityEl('no_events')} compact /></p>
-                      <p className="text-xs text-muted-foreground"><BilingualText en={activityEn('no_events_hint')} el={activityEl('no_events_hint')} compact /></p>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href="/events"><BilingualText en={activityEn('browse_events')} el={activityEl('browse_events')} compact /></Link>
-                      </Button>
-                    </div>
+                    <EmptyState
+                      className="border-0 bg-transparent"
+                      illustration="calendar"
+                      size="sm"
+                      title={<BilingualText en={activityEn('no_events')} el={activityEl('no_events')} compact />}
+                      description={<BilingualText en={activityEn('no_events_hint')} el={activityEl('no_events_hint')} compact />}
+                      action={(
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/events"><BilingualText en={activityEn('browse_events')} el={activityEl('browse_events')} compact /></Link>
+                        </Button>
+                      )}
+                    />
                   ) : (
                     eventItems.map((item) => <NetworkActivityRow key={item.id} item={item} />)
                   )}

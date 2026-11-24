@@ -34,6 +34,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
@@ -550,13 +551,16 @@ export function MembersPageClient() {
 
         {/* Members Grid/List */}
         {isError ? (
-          <Card>
-            <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-              <Users className="icon-xl text-muted-foreground/40" />
-              <p role="alert" className="text-sm text-muted-foreground"><BilingualText en="The member directory could not be read just now." el="Ο κατάλογος μελών δεν διαβάστηκε αυτή τη στιγμή." wrap /></p>
-              <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
-            </CardContent>
-          </Card>
+          <div role="alert">
+            <EmptyState
+              illustration="default"
+              size="sm"
+              title={<BilingualText en="The member directory could not be read just now." el="Ο κατάλογος μελών δεν διαβάστηκε αυτή τη στιγμή." wrap />}
+              action={(
+                <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
+              )}
+            />
+          </div>
         ) : isLoading ? (
           <div className={cn(
             'grid grid-cols-1 gap-4',
@@ -567,20 +571,16 @@ export function MembersPageClient() {
             ))}
           </div>
         ) : members.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Users className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
-              <h3 className="text-lg font-semibold mb-2"><BilingualText en="No members found" el="Δεν βρέθηκαν μέλη" compact /></h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                <BilingualText en="Try adjusting your search or filters" el="Δοκιμάστε άλλη αναζήτηση ή φίλτρα" wrap />
-              </p>
-              {activeFiltersCount > 0 && (
-                <Button variant="secondary" onClick={clearFilters}>
-                  <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          <EmptyState
+            illustration="search"
+            title={<BilingualText en="No members found" el="Δεν βρέθηκαν μέλη" compact />}
+            description={<BilingualText en="Try adjusting your search or filters" el="Δοκιμάστε άλλη αναζήτηση ή φίλτρα" wrap />}
+            action={activeFiltersCount > 0 ? (
+              <Button variant="secondary" onClick={clearFilters}>
+                <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
+              </Button>
+            ) : undefined}
+          />
         ) : (
           <div className={cn(
             'grid grid-cols-1 gap-4',

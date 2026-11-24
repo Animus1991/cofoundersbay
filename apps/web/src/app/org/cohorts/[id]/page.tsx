@@ -6,6 +6,7 @@ import { COHORT_MATCH_MIN_SCORE, cohortRunSummary, matchReasonCopy, type CohortR
 import { useToast } from '@/components/ui/toast';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { useHydrated } from '@/components/common/RelativeTime';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { StatusText } from '@/components/common/StatusText';
@@ -518,17 +519,23 @@ export default function CohortDetailPage() {
           </Card>
         ) : (
           <Card>
-            <CardContent className="py-12 text-center">
-              <p className="mx-auto max-w-md text-sm text-muted-foreground">
-                <BilingualText
-                  en="This cohort could not be loaded. It may belong to another organisation, or you may not be a member of its organisation."
-                  el="Ο κύκλος δεν φορτώθηκε. Μπορεί να ανήκει σε άλλον οργανισμό ή να μην είστε μέλος του οργανισμού του."
-                  wrap
-                />
-              </p>
-              <Button variant="outline" className="mt-4 gap-2" asChild>
-                <Link href="/org/cohorts"><ArrowLeft className="icon-sm" aria-hidden="true" /><BilingualText en="All cohorts" el="Όλοι οι κύκλοι" compact /></Link>
-              </Button>
+            <CardContent className="p-0">
+              <EmptyState
+                className="border-0 bg-transparent"
+                illustration="default"
+                title={(
+                  <BilingualText
+                    en="This cohort could not be loaded. It may belong to another organisation, or you may not be a member of its organisation."
+                    el="Ο κύκλος δεν φορτώθηκε. Μπορεί να ανήκει σε άλλον οργανισμό ή να μην είστε μέλος του οργανισμού του."
+                    wrap
+                  />
+                )}
+                action={(
+                  <Button variant="outline" className="gap-2" asChild>
+                    <Link href="/org/cohorts"><ArrowLeft className="icon-sm" aria-hidden="true" /><BilingualText en="All cohorts" el="Όλοι οι κύκλοι" compact /></Link>
+                  </Button>
+                )}
+              />
             </CardContent>
           </Card>
         )}

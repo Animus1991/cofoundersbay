@@ -5,8 +5,8 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { CopilotWorkspace } from '@/components/ai/CopilotWorkspace';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { useSession } from '@/hooks/useSession';
 import { Button } from '@/components/ui/button';
@@ -30,20 +30,22 @@ function AIPageInner() {
   if (!hasSession) {
     return (
       <AppShell askAi={false} showHelp>
-        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border bg-card px-6 py-16 text-center">
-          <CfbGlyph name="spark" className="icon-lg text-muted-foreground" />
-          <p className="max-w-md text-sm text-muted-foreground">
+        <EmptyState
+          illustration="rocket"
+          title={(
             <BilingualText
               en="Sign in to let the assistant read this workspace and act on it."
               el="Συνδεθείτε για να διαβάσει ο βοηθός αυτόν τον χώρο εργασίας και να δράσει πάνω του."
             />
-          </p>
-          <Button asChild className={BUILDER_BTN}>
-            <Link href="/login?redirect=/ai">
-              <BilingualText en="Sign in" el="Σύνδεση" compact />
-            </Link>
-          </Button>
-        </div>
+          )}
+          action={(
+            <Button asChild className={BUILDER_BTN}>
+              <Link href="/login?redirect=/ai">
+                <BilingualText en="Sign in" el="Σύνδεση" compact />
+              </Link>
+            </Button>
+          )}
+        />
       </AppShell>
     );
   }

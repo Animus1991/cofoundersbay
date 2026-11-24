@@ -23,7 +23,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { History, RotateCcw, Loader2, ChevronRight, GitCommitHorizontal, AlertCircle, Info } from 'lucide-react';
+import { History, RotateCcw, Loader2, ChevronRight, GitCommitHorizontal, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { qk } from '@/lib/query-keys';
@@ -33,6 +33,7 @@ import {
   type BuilderDocumentVersion,
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualAria } from '@/lib/i18n/format';
 
@@ -190,20 +191,22 @@ export function VersionHistoryDrawer({
                 ))}
               </div>
             ) : error ? (
-              <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
-                <AlertCircle className="icon-xl text-destructive/50" />
-                <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load version history" el="Δεν ήταν δυνατή η φόρτωση του ιστορικού" compact /></p>
+              <div role="alert">
+                <EmptyState
+                  className="border-0 bg-transparent"
+                  illustration="default"
+                  size="sm"
+                  title={<BilingualText en="Failed to load version history" el="Δεν ήταν δυνατή η φόρτωση του ιστορικού" compact />}
+                />
               </div>
             ) : versions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
-                <GitCommitHorizontal className="h-10 w-10 text-muted-foreground/30" aria-hidden="true" />
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground"><BilingualText en="No saved versions yet" el="Δεν υπάρχουν αποθηκευμένες εκδόσεις ακόμα" compact /></p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    <BilingualText en="Versions are saved automatically when you create draft variants or request reviews." el="Οι εκδόσεις αποθηκεύονται αυτόματα όταν δημιουργείτε εκδοχές ή ζητάτε αξιολόγηση." wrap />
-                  </p>
-                </div>
-              </div>
+              <EmptyState
+                className="border-0 bg-transparent"
+                illustration="default"
+                size="sm"
+                title={<BilingualText en="No saved versions yet" el="Δεν υπάρχουν αποθηκευμένες εκδόσεις ακόμα" compact />}
+                description={<BilingualText en="Versions are saved automatically when you create draft variants or request reviews." el="Οι εκδόσεις αποθηκεύονται αυτόματα όταν δημιουργείτε εκδοχές ή ζητάτε αξιολόγηση." wrap />}
+              />
             ) : (
               versions.map((v) => (
                 <VersionCard

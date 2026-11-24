@@ -41,6 +41,7 @@ import { ActivityTimeline } from './ActivityTimeline';
 import { useToast } from '@/components/ui/toast';
 import type { BuilderDocument, BuilderDocumentType } from '@/lib/builder-api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { PageRail, type PageRailSection } from '@/components/layout/PageRail';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, BuilderAskAiButton } from './BuilderStageChrome';
@@ -1136,13 +1137,11 @@ export function BuilderWorkspace({
           ))}
         </div>
       ) : documents.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <CfbGlyph name="book" className="mx-auto mb-3 icon-lg text-muted-foreground/50" />
-            <p className="mb-4 text-sm text-muted-foreground">
-              <BilingualText en={builderEn('no_docs')} el={builderEl('no_docs')} />
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-2">
+        <EmptyState
+          illustration="default"
+          title={<BilingualText en={builderEn('no_docs')} el={builderEl('no_docs')} />}
+          action={(
+            <>
               <Button size="sm" className={BUILDER_BTN} onClick={() => setShowCreateDocDialog(true)}>
                 <BilingualText en={builderEn('create_first')} el={builderEl('create_first')} compact />
               </Button>
@@ -1151,9 +1150,9 @@ export function BuilderWorkspace({
                 labelEl={builderEl('ask_ai_plan')}
                 prompt={`Startup Builder is ${overallCompletion}% complete and ${overallReadiness}% ready. Recommend the next artifact and draft the first section.`}
               />
-            </div>
-          </CardContent>
-        </Card>
+            </>
+          )}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {documents.map((doc) => {

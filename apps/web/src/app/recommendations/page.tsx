@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -11,6 +10,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,18 +37,15 @@ import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
-import { FactLine } from '@/components/common/FactLine';
 import { matchReasonCopy } from '@/lib/match-reason';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { PersonCard } from '@/components/common/PersonCard';
 import { bilingualAria } from '@/lib/i18n/format';
-import { RoleBadge } from '@/components/common/RoleBadge';
 import { useConnectionActions } from '@/hooks/useConnectionWith';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import type { MatchConnection } from '@/components/common/MatchCard';
 import { elWord } from '@/lib/rows-el';
-
 function MatchScoreBadge({ score }: { score: number }) {
   // Semantic chips, not white on a mid-tone fill: white on emerald-500 is
   // 2.5:1, under the 4.5:1 small text needs (axe color-contrast on every card).
@@ -61,7 +58,6 @@ function MatchScoreBadge({ score }: { score: number }) {
     </div>
   );
 }
-
 // Dimension score bar for explanation
 function ExplanationBar({ items, maxItems = 3 }: { items: MatchExplanationItem[]; maxItems?: number }) {
   if (!items || items.length === 0) return null;
@@ -85,7 +81,6 @@ function ExplanationBar({ items, maxItems = 3 }: { items: MatchExplanationItem[]
     </div>
   );
 }
-
 // Full match score breakdown modal
 function BreakdownModal({
   open, onClose, displayName, score, explanation, reasons,
@@ -147,7 +142,6 @@ function BreakdownModal({
     </Dialog>
   );
 }
-
 // Rich feedback dropdown
 const FEEDBACK_OPTIONS: { label: string; labelEl: string; value: MatchFeedbackType; icon: LucideIcon }[] = [
   { label: 'Great match!', labelEl: 'Πολύ καλό ταίριασμα', value: 'accepted', icon: ThumbsUp },
@@ -156,15 +150,12 @@ const FEEDBACK_OPTIONS: { label: string; labelEl: string; value: MatchFeedbackTy
   { label: 'Better fit wanted', labelEl: 'Θέλω καλύτερο ταίριασμα', value: 'better_fit_wanted', icon: Search },
   { label: 'Decline', labelEl: 'Απόρριψη', value: 'declined', icon: ThumbsDown },
 ];
-
 /** Either payload the recommendations endpoint can return. */
 type RecommendationHit = (SearchHit & { matchScore?: number; matchReasons?: string[] }) | MatchSuggestion;
-
 /** The MatchSuggestion branch is the one that carries a nested `profile`. */
 function isMatchSuggestion(hit: RecommendationHit): hit is MatchSuggestion {
   return 'profile' in hit;
 }
-
 /**
  * Flattens the two shapes into one view model. Previously each field was read
  * through a separate `as any`, so a rename on either side of the API would have
@@ -200,7 +191,6 @@ function normaliseHit(hit: RecommendationHit) {
     explanation: [] as MatchExplanationItem[],
   };
 }
-
 function RecommendationCard({ hit, onConnect, onFeedback, onSave, connection = 'none', onAccept }: {
   hit: RecommendationHit;
   onConnect: (userId: string) => void;
@@ -223,10 +213,8 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave, connection = '
     reasons,
     explanation,
   } = normaliseHit(hit);
-
   const [breakdownOpen, setBreakdownOpen] = useState(false);
   const firstReason = reasons.length > 0 ? matchReasonCopy(reasons[0]) : null;
-
   return (
     <>
     <BreakdownModal
@@ -295,7 +283,6 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave, connection = '
     </>
   );
 }
-
 function Skeleton3() {
   return (
     <div className="space-y-3">
@@ -320,7 +307,6 @@ function Skeleton3() {
     </div>
   );
 }
-
 export default function RecommendationsPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'founders' | 'mentors' | 'investors' | 'saved'>('all');
   const [refreshKey, setRefreshKey] = useState(0);
@@ -330,36 +316,30 @@ export default function RecommendationsPage() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { success: toastSuccess, error: toastError } = useToast();
-
   const role = (activeTab === 'all' || activeTab === 'saved') ? undefined : activeTab.replace(/s$/, '');
   const authed = useIsAuthenticated();
   const me = useStoredUser();
   const { connectionOf, accept } = useConnectionActions(authed, me?.id);
-
   const { data: recsData, isLoading: recsLoading, isError: recsError, refetch: refetchRecs } = useQuery({
     queryKey: qk('recommendations', role, refreshKey),
     queryFn: () => getRecommendations({ role, limit: 20 }),
     staleTime: 5 * 60_000,
   });
-
   const { data: digestData, isLoading: digestLoading } = useQuery({
     queryKey: qk('weekly-digest'),
     queryFn: getWeeklyDigest,
     staleTime: 10 * 60_000,
   });
-
   const { data: statsData } = useQuery({
     queryKey: qk('matching', 'stats'),
     queryFn: getMatchingStats,
     staleTime: 5 * 60_000,
   });
-
   const connectMutation = useMutation({
     mutationFn: (userId: string) => sendConnectionRequest({ receiverId: userId }),
     onSuccess: () => toastSuccess('Connection request sent!'),
     onError: () => toastError('Could not send request', 'Please try again'),
   });
-
   const feedbackMutation = useMutation({
     mutationFn: ({ userId, fb }: { userId: string; fb: MatchFeedbackType }) =>
       recordMatchFeedback({ targetUserId: userId, feedback: fb }),
@@ -373,19 +353,16 @@ export default function RecommendationsPage() {
       queryClient.invalidateQueries({ queryKey: qk('recommendations') });
     },
   });
-
   const allRecommendations = recsData?.suggestions ?? [];
   const recommendations = activeTab === 'saved'
     ? allRecommendations.filter((h) => savedIds.has(h.userId))
     : allRecommendations.filter((h) => normaliseHit(h).score >= minScore);
   const weeklyRecs = digestData?.recommendations ?? [];
   const stats = digestData?.stats ?? statsData;
-
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
     queryClient.invalidateQueries({ queryKey: qk('weekly-digest') });
   };
-
   /*
    * Save was a set in component state: "Saved to your list" over a list that
    * lived until the tab closed, beside a /shortlist that never heard of it.
@@ -401,7 +378,6 @@ export default function RecommendationsPage() {
   useEffect(() => {
     if (shortlistIds?.ids) setSavedIds(new Set(shortlistIds.ids));
   }, [shortlistIds]);
-
   // Optimistic, and settled: the promise ends when the server has the save,
   // so the assistant reports it only then; a failure flips the card back.
   const handleSave = async (userId: string): Promise<PageControlRunResult> => {
@@ -417,7 +393,6 @@ export default function RecommendationsPage() {
       return { error: err instanceof Error && err.message ? err.message : 'Your saved profiles did not change.' };
     }
   };
-
   // Offered to the assistant: the tab, the minimum score, Refresh, and each
   // card's Connect, Save and "not relevant" - the same handlers.
   const people = recommendations.map(normaliseHit);
@@ -449,7 +424,6 @@ export default function RecommendationsPage() {
     { id: 'unsave_person', labelEn: 'Remove from shortlist', labelEl: 'Αφαίρεση από τα αποθηκευμένα', writes: true, options: byName(people.filter((p) => savedIds.has(p.userId))), run: (v) => (v ? handleSave(v) : undefined) },
     { id: 'not_relevant', labelEn: 'Mark recommendation not relevant', labelEl: 'Σήμανση πρότασης ως μη σχετικής', writes: true, options: byName(people), run: async (v) => { if (v) await feedbackMutation.mutateAsync({ userId: v, fb: 'not_relevant' }); } },
   ]);
-
   /*
    * The four counts describe the list rather than being the list, so they
    * live in the rail. Linked pages sit beside this feed in Discover. Refresh
@@ -486,7 +460,6 @@ export default function RecommendationsPage() {
       ),
     },
   ];
-
   return (
     <AppShell
       showHelp
@@ -542,7 +515,6 @@ export default function RecommendationsPage() {
             </CardContent>
           </Card>
         )}
-
         {/* Score filter bar */}
         <div className="flex items-center gap-2">
           <Button
@@ -584,7 +556,6 @@ export default function RecommendationsPage() {
             />
           </span>
         </div>
-
         {/* Tab list */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList>
@@ -614,21 +585,27 @@ export default function RecommendationsPage() {
               )}
             </TabsTrigger>
           </TabsList>
-
           <TabsContent value={activeTab} className="card-grid mt-4">
             {recsLoading ? (
               <Skeleton3 />
             ) : recsError ? (
-              <Card className="col-span-full"><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p role="alert" className="text-sm text-muted-foreground"><BilingualText en="Your picks could not be read just now." el="Οι προτάσεις σας δεν διαβάστηκαν αυτή τη στιγμή." /></p>
-                <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
-              </CardContent></Card>
+              <div role="alert" className="col-span-full">
+                <EmptyState
+                  illustration="default"
+                  size="sm"
+                  title={<BilingualText en="Your picks could not be read just now." el="Οι προτάσεις σας δεν διαβάστηκαν αυτή τη στιγμή." />}
+                  action={(
+                    <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
+                  )}
+                />
+              </div>
             ) : activeTab === 'saved' && savedIds.size === 0 ? (
-              <Card className="col-span-full"><CardContent className="py-14 text-center">
-                <BookmarkPlus className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
-                <h3 className="font-semibold mb-1"><BilingualText en="No saved matches yet" el="Δεν υπάρχουν αποθηκευμένες αντιστοιχίσεις" /></h3>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Bookmark matches you want to revisit later." el="Αποθηκεύστε αντιστοιχίσεις που θέλετε να επαναξεταστούν αργότερα." /></p>
-              </CardContent></Card>
+              <EmptyState
+                className="col-span-full"
+                illustration="default"
+                title={<BilingualText en="No saved matches yet" el="Δεν υπάρχουν αποθηκευμένες αντιστοιχίσεις" />}
+                description={<BilingualText en="Bookmark matches you want to revisit later." el="Αποθηκεύστε αντιστοιχίσεις που θέλετε να επαναξεταστούν αργότερα." />}
+              />
             ) : recommendations.length > 0 ? (
               recommendations.map((hit) => (
                 <RecommendationCard
@@ -642,25 +619,21 @@ export default function RecommendationsPage() {
                 />
               ))
             ) : (
-              <Card className="col-span-full">
-                <CardContent className="py-14 text-center">
-                  <Sparkles className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
-                  <h3 className="font-semibold mb-1"><BilingualText en="No recommendations yet" el="Δεν υπάρχουν ακόμη προτάσεις" /></h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {/* It was English on a Greek page. */}
-                    {minScore > 0
-                      ? <BilingualText en={`No matches score ${minScore}% or more. Lower the minimum to see more.`} el={`Καμία αντιστοίχιση δεν φτάνει το ${minScore}%. Χαμηλώστε το ελάχιστο για να δείτε περισσότερες.`} wrap />
-                      : <BilingualText en="Complete your profile to unlock personalised matches." el="Συμπληρώστε το προφίλ σας για εξατομικευμένες αντιστοιχίσεις." wrap />}
-                  </p>
-                  {minScore > 0 ? (
-                    <Button size="sm" variant="outline" onClick={() => setMinScore(0)}><BilingualText en="Clear Filter" el="Εκκαθάριση φίλτρου" compact /></Button>
-                  ) : (
-                    <Button size="sm" asChild>
-                      <Link href="/profile/edit"><BilingualText en="Complete Profile" el="Ολοκλήρωση προφίλ" compact /></Link>
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
+              <EmptyState
+                className="col-span-full"
+                illustration={minScore > 0 ? 'search' : 'default'}
+                title={<BilingualText en="No recommendations yet" el="Δεν υπάρχουν ακόμη προτάσεις" />}
+                description={minScore > 0
+                  ? <BilingualText en={`No matches score ${minScore}% or more. Lower the minimum to see more.`} el={`Καμία αντιστοίχιση δεν φτάνει το ${minScore}%. Χαμηλώστε το ελάχιστο για να δείτε περισσότερες.`} wrap />
+                  : <BilingualText en="Complete your profile to unlock personalised matches." el="Συμπληρώστε το προφίλ σας για εξατομικευμένες αντιστοιχίσεις." wrap />}
+                action={minScore > 0 ? (
+                  <Button size="sm" variant="outline" onClick={() => setMinScore(0)}><BilingualText en="Clear Filter" el="Εκκαθάριση φίλτρου" compact /></Button>
+                ) : (
+                  <Button size="sm" asChild>
+                    <Link href="/profile/edit"><BilingualText en="Complete Profile" el="Ολοκλήρωση προφίλ" compact /></Link>
+                  </Button>
+                )}
+              />
             )}
           </TabsContent>
         </Tabs>

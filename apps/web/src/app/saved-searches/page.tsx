@@ -488,16 +488,18 @@ export default function SavedSearchesPage() {
             {[0, 1, 2].map((i) => <Skeleton key={i} className="h-36 w-full rounded-2xl" />)}
           </div>
         ) : isError && !data ? (
-          <Card>
-            <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-              <p role="alert" className="text-sm text-muted-foreground">
-                <BilingualText en={savedSearchesEn('load_failed')} el={savedSearchesEl('load_failed')} wrap />
-              </p>
-              <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
-                <BilingualText en={savedSearchesEn('try_again')} el={savedSearchesEl('try_again')} compact />
-              </Button>
-            </CardContent>
-          </Card>
+          <div role="alert">
+            <EmptyState
+              illustration="default"
+              size="sm"
+              title={<BilingualText en={savedSearchesEn('load_failed')} el={savedSearchesEl('load_failed')} wrap />}
+              action={(
+                <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
+                  <BilingualText en={savedSearchesEn('try_again')} el={savedSearchesEl('try_again')} compact />
+                </Button>
+              )}
+            />
+          </div>
         ) : searches.length === 0 ? (
           <EmptyState
             illustration="search"

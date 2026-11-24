@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   ArrowUpDown,
-  Compass,
   Eye,
   Flame,
   GanttChart,
@@ -54,6 +53,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -620,16 +620,15 @@ export default function InvestorScoutingPage() {
             <StartupCard key={startup.id} startup={startup} compact={viewMode === 'grid'} />
           ))}
           {filtered.length === 0 && (
-            <Card className="col-span-2">
-              <CardContent className="py-12 text-center">
-                <Compass className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                <h3 className="card-title text-foreground"><BilingualText en="No startups found" el="Δεν βρέθηκαν startups" compact /></h3>
-                <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Try adjusting your filters or search term" el="Δοκιμάστε να αλλάξετε φίλτρα ή αναζήτηση" wrap /></p>
-                {narrowed ? (
-                  <Button variant="outline" size="sm" className="mt-4" onClick={() => { setIndustry('all'); setStage('all'); setModel('all'); setSearch(''); }}><BilingualText en="Clear Filters" el="Καθαρισμός φίλτρων" compact /></Button>
-                ) : null}
-              </CardContent>
-            </Card>
+            <EmptyState
+              className="col-span-2"
+              illustration="search"
+              title={<BilingualText en="No startups found" el="Δεν βρέθηκαν startups" compact />}
+              description={<BilingualText en="Try adjusting your filters or search term" el="Δοκιμάστε να αλλάξετε φίλτρα ή αναζήτηση" wrap />}
+              action={narrowed ? (
+                <Button variant="outline" size="sm" onClick={() => { setIndustry('all'); setStage('all'); setModel('all'); setSearch(''); }}><BilingualText en="Clear Filters" el="Καθαρισμός φίλτρων" compact /></Button>
+              ) : undefined}
+            />
           )}
         </div>
         </>

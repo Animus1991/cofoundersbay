@@ -10,6 +10,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailStats } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { NetworkTabs } from '@/components/network/NetworkTabs';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Badge } from '@/components/ui/badge';
@@ -334,16 +335,18 @@ function IntrosContent() {
             <Skeleton className="h-40 w-full rounded-2xl" />
           ) : intros.isError && !intros.data ? (
             // A failed read is not "Nobody has asked you" (docs §87).
-            <Card>
-              <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-                <p role="alert" className="text-sm text-muted-foreground">
-                  <BilingualText en="Your introductions could not be read just now." el="Οι γνωριμίες σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />
-                </p>
-                <Button size="sm" variant="outline" onClick={() => void intros.refetch()} disabled={intros.isFetching}>
-                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-                </Button>
-              </CardContent>
-            </Card>
+            <div role="alert">
+              <EmptyState
+                illustration="default"
+                size="sm"
+                title={<BilingualText en="Your introductions could not be read just now." el="Οι γνωριμίες σας δεν διαβάστηκαν αυτή τη στιγμή." wrap />}
+                action={(
+                  <Button size="sm" variant="outline" onClick={() => void intros.refetch()} disabled={intros.isFetching}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                )}
+              />
+            </div>
           ) : (
             <>
               <TabsContent value="forward" className="card-grid">

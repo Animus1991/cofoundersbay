@@ -4,7 +4,6 @@ import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   AlarmClock,
-  AlertTriangle,
   ArrowUpDown,
   Ban,
   Bookmark,
@@ -620,10 +619,15 @@ export default function ShortlistPage() {
 
         {/* Content */}
         {isError ? (
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
-            <AlertTriangle className="icon-xl text-muted-foreground/50" />
-            <p role="alert" className="text-sm text-muted-foreground"><BilingualText en={shortlistEn('load_failed')} el={shortlistEl('load_failed')} compact wrap /></p>
-            <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en={shortlistEn('retry')} el={shortlistEl('retry')} compact /></Button>
+          <div role="alert">
+            <EmptyState
+              illustration="default"
+              size="sm"
+              title={<BilingualText en={shortlistEn('load_failed')} el={shortlistEl('load_failed')} compact wrap />}
+              action={(
+                <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en={shortlistEn('retry')} el={shortlistEl('retry')} compact /></Button>
+              )}
+            />
           </div>
         ) : isLoading ? (
           <div className={cn('gap-3', viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2' : 'space-y-3')}>

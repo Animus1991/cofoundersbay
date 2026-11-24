@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, ExternalLink, MessageCircle, Star, XCircle } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { StatusText } from '@/components/common/StatusText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Button } from '@/components/ui/button';
@@ -159,24 +160,25 @@ export default function StartupDealPage() {
   if (isError && !isNotFound(readError)) {
     return (
       <AppShell title="Startup" titleEl="Startup">
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-            <p role="alert" className="text-sm text-muted-foreground">
-              <BilingualText en="This deal could not be read just now." el="Η συμφωνία δεν διαβάστηκε αυτή τη στιγμή." wrap />
-            </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}>
-                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-              </Button>
-              <Button variant="ghost" className="gap-2" asChild>
-                <Link href="/investor/pipeline">
-                  <ArrowLeft className="icon-sm" aria-hidden="true" />
-                  <BilingualText en="Pipeline" el="Pipeline" compact />
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div role="alert">
+          <EmptyState
+            illustration="default"
+            title={<BilingualText en="This deal could not be read just now." el="Η συμφωνία δεν διαβάστηκε αυτή τη στιγμή." wrap />}
+            action={(
+              <>
+                <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+                <Button variant="ghost" className="gap-2" asChild>
+                  <Link href="/investor/pipeline">
+                    <ArrowLeft className="icon-sm" aria-hidden="true" />
+                    <BilingualText en="Pipeline" el="Pipeline" compact />
+                  </Link>
+                </Button>
+              </>
+            )}
+          />
+        </div>
       </AppShell>
     );
   }
@@ -184,17 +186,18 @@ export default function StartupDealPage() {
   if (isError || !deal) {
     return (
       <AppShell title="Not on your board" titleEl="Δεν είναι στον πίνακά σας">
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="mx-auto max-w-md text-sm text-muted-foreground">
-              <BilingualText
-                en="This startup is not on your deal board. Add it from Scouting or the watchlist, then it opens here with its stage, notes and history."
-                el="Αυτή η startup δεν είναι στον πίνακα συμφωνιών σας. Προσθέστε τη από την Αναζήτηση ή τη λίστα παρακολούθησης· τότε ανοίγει εδώ με το στάδιο, τις σημειώσεις και το ιστορικό της."
-                compact
-                wrap
-              />
-            </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
+        <EmptyState
+          illustration="search"
+          title={(
+            <BilingualText
+              en="This startup is not on your deal board. Add it from Scouting or the watchlist, then it opens here with its stage, notes and history."
+              el="Αυτή η startup δεν είναι στον πίνακα συμφωνιών σας. Προσθέστε τη από την Αναζήτηση ή τη λίστα παρακολούθησης· τότε ανοίγει εδώ με το στάδιο, τις σημειώσεις και το ιστορικό της."
+              compact
+              wrap
+            />
+          )}
+          action={(
+            <>
               <Button variant="outline" className="gap-2" asChild>
                 <Link href="/investor/pipeline">
                   <ArrowLeft className="icon-sm" aria-hidden="true" />
@@ -204,9 +207,9 @@ export default function StartupDealPage() {
               <Button variant="outline" asChild>
                 <Link href="/investor/scouting"><BilingualText en="Scouting" el="Αναζήτηση" compact /></Link>
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </>
+          )}
+        />
       </AppShell>
     );
   }

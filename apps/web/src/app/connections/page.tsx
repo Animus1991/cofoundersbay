@@ -500,10 +500,16 @@ export default function ConnectionsPage() {
         {/* Requests waiting on the reader */}
         <TabsContent value="received" className="mt-6 card-grid">
           {isError ? (
-            <Card className="col-span-full"><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <p role="alert" className="text-sm text-muted-foreground"><BilingualText en={connectionsEn('requests_failed')} el={connectionsEl('requests_failed')} wrap /></p>
-              <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
-            </CardContent></Card>
+            <div role="alert" className="col-span-full">
+              <EmptyState
+                illustration="default"
+                size="sm"
+                title={<BilingualText en={connectionsEn('requests_failed')} el={connectionsEl('requests_failed')} wrap />}
+                action={(
+                  <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
+                )}
+              />
+            </div>
           ) : isLoading ? (
             Array.from({ length: 3 }).map((_, i) => <ConnectionSkeleton key={i} />)
           ) : connections.length === 0 ? (
@@ -538,10 +544,16 @@ export default function ConnectionsPage() {
         {(['sent', 'accepted'] as const).map((t) => (
           <TabsContent key={t} value={t} className="mt-6 card-grid">
             {isError && tab === t ? (
-              <Card className="col-span-full"><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p role="alert" className="text-sm text-muted-foreground"><BilingualText en={t === 'sent' ? connectionsEn('requests_failed') : connectionsEn('connections_failed')} el={t === 'sent' ? connectionsEl('requests_failed') : connectionsEl('connections_failed')} wrap /></p>
-                <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
-              </CardContent></Card>
+              <div role="alert" className="col-span-full">
+                <EmptyState
+                  illustration="default"
+                  size="sm"
+                  title={<BilingualText en={t === 'sent' ? connectionsEn('requests_failed') : connectionsEn('connections_failed')} el={t === 'sent' ? connectionsEl('requests_failed') : connectionsEl('connections_failed')} wrap />}
+                  action={(
+                    <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
+                  )}
+                />
+              </div>
             ) : isLoading && tab === t ? (
               Array.from({ length: 3 }).map((_, i) => <ConnectionSkeleton key={i} />)
             ) : connections.length === 0 ? (

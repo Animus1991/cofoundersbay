@@ -1035,16 +1035,18 @@ export default function FeedPage() {
                 ))
               ) : feedFailed && !feedPages && posts.length === 0 ? (
                 // A failed read showed the composer and nothing under it.
-                <Card>
-                  <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-                    <p role="alert" className="text-sm text-muted-foreground">
-                      <BilingualText en="Posts could not be read just now." el="Οι αναρτήσεις δεν διαβάστηκαν αυτή τη στιγμή." wrap />
-                    </p>
-                    <Button size="sm" variant="outline" onClick={() => void refetchFeed()} disabled={feedFetching}>
-                      <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-                    </Button>
-                  </CardContent>
-                </Card>
+                <div role="alert">
+                  <EmptyState
+                    illustration="default"
+                    size="sm"
+                    title={<BilingualText en="Posts could not be read just now." el="Οι αναρτήσεις δεν διαβάστηκαν αυτή τη στιγμή." wrap />}
+                    action={(
+                      <Button size="sm" variant="outline" onClick={() => void refetchFeed()} disabled={feedFetching}>
+                        <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                      </Button>
+                    )}
+                  />
+                </div>
               ) : posts.length === 0 ? (
                 tag ? (
                   <EmptyState

@@ -3,7 +3,7 @@
 import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import Link from 'next/link';
-import { FolderKanban, Search, MoreVertical, Clock, CheckCircle, AlertCircle, MessageSquare, Info, Pencil } from 'lucide-react';
+import { Search, MoreVertical, Clock, CheckCircle, AlertCircle, MessageSquare, Info, Pencil } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -34,6 +34,7 @@ import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { bilingualInline } from '@/lib/i18n/format';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
@@ -449,23 +450,19 @@ export default function ProviderProjectsPage() {
               <ProjectCard key={project.id} project={project} onView={setViewing} onComplete={live.length > 0 ? (pr) => void complete(pr) : undefined} onUpdateProgress={live.length > 0 ? openProgress : undefined} />
             ))}
             {filteredProjects.length === 0 && (
-              <Card className="col-span-full">
-                <CardContent className="py-12 text-center">
-                  <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  {projects.length === 0 ? (
-                    <>
-                      <h3 className="card-title text-foreground"><BilingualText en="No projects yet" el="Δεν υπάρχουν ακόμη έργα" compact /></h3>
-                      <p className="text-sm text-muted-foreground mt-1"><BilingualText en="An inquiry you accept becomes a project here." el="Ένα αίτημα που αποδέχεστε γίνεται έργο εδώ." wrap /></p>
-                      <Button size="sm" variant="outline" className="mt-4" asChild><Link href="/provider/inquiries"><BilingualText en="Your inquiries" el="Τα αιτήματά σας" compact /></Link></Button>
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="card-title text-foreground"><BilingualText en="No projects found" el="Δεν βρέθηκαν έργα" compact /></h3>
-                      <p className="text-sm text-muted-foreground mt-1"><BilingualText en="None in this tab matches the search." el="Κανένα σε αυτή την καρτέλα δεν ταιριάζει με την αναζήτηση." wrap /></p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+              <EmptyState
+                className="col-span-full"
+                illustration={projects.length === 0 ? 'default' : 'search'}
+                title={projects.length === 0
+                  ? <BilingualText en="No projects yet" el="Δεν υπάρχουν ακόμη έργα" compact />
+                  : <BilingualText en="No projects found" el="Δεν βρέθηκαν έργα" compact />}
+                description={projects.length === 0
+                  ? <BilingualText en="An inquiry you accept becomes a project here." el="Ένα αίτημα που αποδέχεστε γίνεται έργο εδώ." wrap />
+                  : <BilingualText en="None in this tab matches the search." el="Κανένα σε αυτή την καρτέλα δεν ταιριάζει με την αναζήτηση." wrap />}
+                action={projects.length === 0 ? (
+                  <Button size="sm" variant="outline" asChild><Link href="/provider/inquiries"><BilingualText en="Your inquiries" el="Τα αιτήματά σας" compact /></Link></Button>
+                ) : undefined}
+              />
             )}
           </TabsContent>
         </Tabs>

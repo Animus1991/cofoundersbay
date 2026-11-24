@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, CalendarPlus, Clock, ExternalLink, MapPin, Share2, Users, Video } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CardHead } from '@/components/common/CardAnatomy';
@@ -19,7 +20,6 @@ import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
-import { EmptyIllustration } from '@/components/common/EmptyIllustration';
 import { buildIcs, downloadIcs, icsFileName } from '@/lib/ics';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -178,17 +178,20 @@ export default function EventDetailPage() {
     return (
       <AppShell title="Event not found" titleEl="Η εκδήλωση δεν βρέθηκε">
         <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
-            {/* A mark, not a reason: the page cannot say why it is missing. */}
-            <div data-keep-icon="" className="h-20 w-20 text-muted-foreground">
-              <EmptyIllustration type="calendar" />
-            </div>
-            <Button variant="outline" className="gap-2" asChild>
-              <Link href="/events">
-                <ArrowLeft className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Back to events" el="Πίσω στις εκδηλώσεις" compact />
-              </Link>
-            </Button>
+          <CardContent className="p-0">
+            <EmptyState
+              className="border-0 bg-transparent"
+              illustration="calendar"
+              title={<BilingualText en="Event not found" el="Η εκδήλωση δεν βρέθηκε" />}
+              action={(
+                <Button variant="outline" className="gap-2" asChild>
+                  <Link href="/events">
+                    <ArrowLeft className="icon-sm" aria-hidden="true" />
+                    <BilingualText en="Back to events" el="Πίσω στις εκδηλώσεις" compact />
+                  </Link>
+                </Button>
+              )}
+            />
           </CardContent>
         </Card>
       </AppShell>

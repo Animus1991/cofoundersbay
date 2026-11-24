@@ -12,7 +12,6 @@ import {
   Plus,
   ExternalLink,
   Loader2,
-  AlertCircle,
   Star,
   Code2,
   Megaphone,
@@ -545,15 +544,18 @@ export default function JobsPage() {
       </div>
 
       {isError ? (
-        <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-          <AlertCircle className="icon-xl text-muted-foreground" />
-          <p role="alert" className="text-sm text-muted-foreground">
-            <BilingualText en={jobsEn('load_failed')} el={jobsEl('load_failed')} compact />
-          </p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            <BilingualText en={jobsEn('try_again')} el={jobsEl('try_again')} compact />
-          </Button>
-        </CardContent></Card>
+        <div role="alert">
+          <EmptyState
+            illustration="default"
+            size="sm"
+            title={<BilingualText en={jobsEn('load_failed')} el={jobsEl('load_failed')} compact />}
+            action={(
+              <Button variant="secondary" size="sm" onClick={() => refetch()}>
+                <BilingualText en={jobsEn('try_again')} el={jobsEl('try_again')} compact />
+              </Button>
+            )}
+          />
+        </div>
       ) : isLoading ? (
         <div className="card-grid">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -622,7 +624,8 @@ export default function JobsPage() {
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <SectionSticker icon={Sparkles} tint="accent" />
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
                   <BilingualText en={jobsEn('featured')} el={jobsEl('featured')} compact />
                 </h2>
               </div>
@@ -635,7 +638,8 @@ export default function JobsPage() {
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <SectionSticker icon={Wifi} tint="success" />
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />
                   <BilingualText en={jobsEn('remote_section')} el={jobsEl('remote_section')} compact />
                 </h2>
               </div>
@@ -647,7 +651,8 @@ export default function JobsPage() {
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <SectionSticker icon={MapPin} tint="info" />
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" />
                   <BilingualText en={jobsEn('onsite_section')} el={jobsEl('onsite_section')} compact />
                 </h2>
               </div>

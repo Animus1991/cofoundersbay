@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Mail,
-  Users,
   Check,
   X,
   Clock,
@@ -31,6 +30,7 @@ import {
 } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { INVITE_STRINGS, inviteEn, inviteEl } from '@/lib/i18n/strings-invite';
@@ -303,15 +303,15 @@ export default function InvitePage() {
                 </Button>
               </div>
             ) : invites.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 py-10 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-                  <Users className="icon-lg text-muted-foreground" />
-                </div>
-                <p className="text-sm font-medium text-foreground"><BilingualText en={inviteEn('empty_title')} el={inviteEl('empty_title')} compact /></p>
-                <p className="max-w-sm text-xs leading-snug text-muted-foreground">
-                  <BilingualText en={inviteEn('empty_hint')} el={inviteEl('empty_hint')} />
-                </p>
-              </div>
+              // The shared empty state's tinted disc; inside the history
+              // card the frame comes off (B2.5).
+              <EmptyState
+                className="border-0 bg-transparent"
+                illustration="connection"
+                size="sm"
+                title={<BilingualText en={inviteEn('empty_title')} el={inviteEl('empty_title')} compact />}
+                description={<BilingualText en={inviteEn('empty_hint')} el={inviteEl('empty_hint')} />}
+              />
             ) : (
               <ul className="card-rows">
                 {invites.map((inv) => (

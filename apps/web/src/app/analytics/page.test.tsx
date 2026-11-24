@@ -24,6 +24,7 @@ vi.mock('@/contexts/PopupChatContext', () => ({
     isOpen: false, isMinimized: false, initialUserId: null,
     minimize: vi.fn(), restore: vi.fn(),
   }),
+  usePopupChatOptional: () => null,
 }));
 vi.mock('next/dynamic', () => ({ default: () => () => <div /> }));
 vi.mock('@/hooks/useGamification', () => ({
@@ -37,6 +38,7 @@ vi.mock('@/hooks/useGamification', () => ({
  */
 const url = { search: '', replaced: [] as string[] };
 vi.mock('next/navigation', () => ({
+  usePathname: () => '/analytics',
   useSearchParams: () => new URLSearchParams(url.search),
   useRouter: () => ({
     replace: (href: string) => {
@@ -165,7 +167,7 @@ describe('analytics clarity and controls', () => {
     vi.mocked(getAnalyticsOverview).mockRejectedValue(new Error('offline'));
     mount();
     const alert = await screen.findByRole('alert', {}, { timeout: 4000 });
-    expect(alert.textContent).toBe('Your analytics could not be read just now.');
+    expect(alert.textContent).toContain('Your analytics could not be read just now.');
     expect(screen.getByRole('button', { name: 'Try again' })).toBeTruthy();
   });
 

@@ -477,18 +477,17 @@ export default function ProviderServicesPage() {
             <ServiceCard key={service.id} service={service} {...serviceActions} />
           ))}
           {filteredServices.length === 0 && (
-            <Card className="col-span-full">
-              <CardContent className="py-12 text-center">
-                <Store className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="card-title text-foreground"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  <BilingualText en="No listing matches the search." el="Καμία καταχώριση δεν ταιριάζει με την αναζήτηση." wrap />
-                </p>
-                <Button variant="outline" size="sm" className="mt-4" onClick={() => setSearch('')}>
+            <EmptyState
+              className="col-span-full"
+              illustration="search"
+              title={<BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact />}
+              description={<BilingualText en="No listing matches the search." el="Καμία καταχώριση δεν ταιριάζει με την αναζήτηση." wrap />}
+              action={(
+                <Button variant="outline" size="sm" onClick={() => setSearch('')}>
                   <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
                 </Button>
-              </CardContent>
-            </Card>
+              )}
+            />
           )}
         </div>
         </>

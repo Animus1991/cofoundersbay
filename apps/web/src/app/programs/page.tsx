@@ -4,9 +4,8 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Award, Users, Building2, Rocket, GraduationCap, Loader2, RefreshCw, CheckCircle2, Globe, BookmarkCheck, ArrowRight, Zap, X, Handshake, Briefcase, FileText, Send } from 'lucide-react';
+import { Search, Award, Users, Building2, Rocket, GraduationCap, Loader2, RefreshCw, CheckCircle2, Globe, ArrowRight, Zap, X, Handshake, Briefcase, FileText, Send } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
-import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
@@ -23,6 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { PROGRAMS_STRINGS, programsEn, programsEl } from '@/lib/i18n/strings-programs';
 import type { BilingualPair } from '@/lib/i18n/types';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -755,13 +755,11 @@ export default function ProgramsPage() {
           {/* Open Programs */}
           <TabsContent value="open" className="mt-4">
             {openPrograms.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Zap className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                  <p className="font-medium"><BilingualText en={programsEn('none_open')} el={programsEl('none_open')} compact /></p>
-                  <p className="text-sm text-muted-foreground mt-1"><BilingualText en={programsEn('none_open_hint')} el={programsEl('none_open_hint')} wrap /></p>
-                </CardContent>
-              </Card>
+              <EmptyState
+                illustration="default"
+                title={<BilingualText en={programsEn('none_open')} el={programsEl('none_open')} compact />}
+                description={<BilingualText en={programsEn('none_open_hint')} el={programsEl('none_open_hint')} wrap />}
+              />
             ) : (
               <div className="card-grid card-grid-lg">
                 {openPrograms.map((p) => (
@@ -774,13 +772,11 @@ export default function ProgramsPage() {
           {/* My Applications */}
           <TabsContent value="mine" className="mt-4">
             {myPrograms.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <BookmarkCheck className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                  <p className="font-medium"><BilingualText en={programsEn('none_applied')} el={programsEl('none_applied')} compact /></p>
-                  <p className="text-sm text-muted-foreground mt-1"><BilingualText en={programsEn('none_applied_hint')} el={programsEl('none_applied_hint')} wrap /></p>
-                </CardContent>
-              </Card>
+              <EmptyState
+                illustration="default"
+                title={<BilingualText en={programsEn('none_applied')} el={programsEl('none_applied')} compact />}
+                description={<BilingualText en={programsEn('none_applied_hint')} el={programsEl('none_applied_hint')} wrap />}
+              />
             ) : (
               <div className="card-grid card-grid-lg">
                 {myPrograms.map((p) => (

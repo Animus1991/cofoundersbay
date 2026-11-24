@@ -7,8 +7,6 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useToast } from '@/components/ui/toast';
 import { ScheduleSessionDialog, RescheduleSessionDialog, SessionNotesDialog } from '@/components/mentoring/SessionDialogs';
 import {
-  Calendar,
-  Clock,
   Video,
   Plus,
   Loader2,
@@ -41,6 +39,7 @@ import {
   type MentorshipSessionItem,
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { Counter } from '@/components/ui/counter';
 import { FailedLine } from '@/components/dashboard/SectionCard';
 import { elWord } from '@/lib/rows-el';
@@ -446,16 +445,19 @@ export default function MentorSessionsPage() {
               upcomingRows.map(renderRow)
             ) : (
               <Card className="col-span-full">
-                <CardContent className="py-12 text-center">
-                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium"><BilingualText en="No upcoming sessions" el="Δεν υπάρχουν επερχόμενες συνεδρίες" compact /></h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    <BilingualText en="Mentorship sessions and session bookings both appear here — schedule one, or answer a founder's booking." el="Οι συνεδρίες καθοδήγησης και οι κρατήσεις εμφανίζονται εδώ — προγραμματίστε μία ή απαντήστε σε κράτηση ιδρυτή." wrap />
-                  </p>
-                  <Button className="mt-4" onClick={() => setScheduleOpen(true)}>
-                    <Plus className="mr-2 icon-sm" aria-hidden="true" />
-                    <BilingualText en="Schedule Session" el="Προγραμματισμός συνεδρίας" compact />
-                  </Button>
+                <CardContent className="p-0">
+                  <EmptyState
+                    className="border-0 bg-transparent"
+                    illustration="calendar"
+                    title={<BilingualText en="No upcoming sessions" el="Δεν υπάρχουν επερχόμενες συνεδρίες" compact />}
+                    description={<BilingualText en="Mentorship sessions and session bookings both appear here — schedule one, or answer a founder's booking." el="Οι συνεδρίες καθοδήγησης και οι κρατήσεις εμφανίζονται εδώ — προγραμματίστε μία ή απαντήστε σε κράτηση ιδρυτή." wrap />}
+                    action={(
+                      <Button onClick={() => setScheduleOpen(true)}>
+                        <Plus className="mr-2 icon-sm" aria-hidden="true" />
+                        <BilingualText en="Schedule Session" el="Προγραμματισμός συνεδρίας" compact />
+                      </Button>
+                    )}
+                  />
                 </CardContent>
               </Card>
             )}
@@ -470,12 +472,13 @@ export default function MentorSessionsPage() {
               pastRows.map(renderRow)
             ) : (
               <Card className="col-span-full">
-                <CardContent className="py-12 text-center">
-                  <Clock className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium"><BilingualText en="No past sessions" el="Δεν υπάρχουν παρελθούσες συνεδρίες" compact /></h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    <BilingualText en="Completed sessions will appear here" el="Οι ολοκληρωμένες συνεδρίες θα εμφανίζονται εδώ" wrap />
-                  </p>
+                <CardContent className="p-0">
+                  <EmptyState
+                    className="border-0 bg-transparent"
+                    illustration="calendar"
+                    title={<BilingualText en="No past sessions" el="Δεν υπάρχουν παρελθούσες συνεδρίες" compact />}
+                    description={<BilingualText en="Completed sessions will appear here" el="Οι ολοκληρωμένες συνεδρίες θα εμφανίζονται εδώ" wrap />}
+                  />
                 </CardContent>
               </Card>
             )}

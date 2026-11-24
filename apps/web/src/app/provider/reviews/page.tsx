@@ -379,18 +379,17 @@ export default function ProviderReviewsPage() {
             <ReviewCard key={review.id} review={review} />
           ))}
           {filteredReviews.length === 0 && (
-            <Card className="col-span-full">
-              <CardContent className="py-12 text-center">
-                <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="card-title text-foreground"><BilingualText en="No reviews found" el="Δεν βρέθηκαν αξιολογήσεις" compact /></h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  <BilingualText en="No review matches the search." el="Καμία αξιολόγηση δεν ταιριάζει με την αναζήτηση." wrap />
-                </p>
-                <Button variant="outline" size="sm" className="mt-4" onClick={() => setSearch('')}>
+            <EmptyState
+              className="col-span-full"
+              illustration="search"
+              title={<BilingualText en="No reviews found" el="Δεν βρέθηκαν αξιολογήσεις" compact />}
+              description={<BilingualText en="No review matches the search." el="Καμία αξιολόγηση δεν ταιριάζει με την αναζήτηση." wrap />}
+              action={(
+                <Button variant="outline" size="sm" onClick={() => setSearch('')}>
                   <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
                 </Button>
-              </CardContent>
-            </Card>
+              )}
+            />
           )}
         </div>
       </div>

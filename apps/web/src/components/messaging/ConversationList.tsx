@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { Counter } from '@/components/ui/counter';
 import { RoleName } from '@/components/common/RoleName';
@@ -328,18 +329,18 @@ export function ConversationList({
         {/* From md the pane beside the list says this, larger, with the way
             on; the list said the same words next to it (docs §73). */}
         {state === 'failed' && (
-          <div className="flex flex-col items-center justify-center gap-3 px-4 py-14 text-center md:hidden">
-            <CfbGlyph name="messages" className="icon-lg text-muted-foreground/50" />
-            {/* The alert is the words: inside an alert the page keeps a
-                decorative glyph it hides everywhere else. */}
-            <p role="alert" className="max-w-[16rem] text-sm font-medium text-foreground">
-              <BilingualText en={messagesEn('inbox_failed')} el={messagesEl('inbox_failed')} wrap />
-            </p>
-            {onRetry && (
-              <Button type="button" size="sm" variant="outline" onClick={onRetry}>
-                <BilingualText en={messagesEn('retry')} el={messagesEl('retry')} compact />
-              </Button>
-            )}
+          <div role="alert" className="md:hidden">
+            <EmptyState
+              className="border-0 bg-transparent"
+              illustration="message"
+              size="sm"
+              title={<BilingualText en={messagesEn('inbox_failed')} el={messagesEl('inbox_failed')} wrap />}
+              action={onRetry ? (
+                <Button type="button" size="sm" variant="outline" onClick={onRetry}>
+                  <BilingualText en={messagesEn('retry')} el={messagesEl('retry')} compact />
+                </Button>
+              ) : undefined}
+            />
           </div>
         )}
 
@@ -386,17 +387,17 @@ export function ConversationList({
         )}
 
         {state === 'ready' && filteredConversations.length === 0 && (
-          <div className={cn('flex flex-col items-center justify-center gap-3 px-4 py-14 text-center', !searchQuery && 'md:hidden')}>
-            <CfbGlyph name="messages" className="icon-lg text-muted-foreground/50" />
-            <p className="text-sm font-medium text-foreground">
-              {searchQuery ? (
+          <div className={cn(!searchQuery && 'md:hidden')}>
+            <EmptyState
+              className="border-0 bg-transparent"
+              illustration="message"
+              size="sm"
+              title={searchQuery ? (
                 <BilingualText en={messagesEn('no_conversations_found')} el={messagesEl('no_conversations_found')} />
               ) : (
                 <BilingualText en={messagesEn('no_conversations')} el={messagesEl('no_conversations')} />
               )}
-            </p>
-            <p className="max-w-[16rem] text-xs text-muted-foreground">
-              {searchQuery ? (
+              description={searchQuery ? (
                 <>
                   <BilingualText en={messagesEn('no_results_for')} el={messagesEl('no_results_for')} compact />
                   {` “${searchQuery}”`}
@@ -404,25 +405,25 @@ export function ConversationList({
               ) : (
                 <BilingualText en={messagesEn('connect_to_chat')} el={messagesEl('connect_to_chat')} />
               )}
-            </p>
-            {!searchQuery && (
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <Link
-                  href="/matches"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/20"
-                >
-                  <CfbGlyph name="matches" className="icon-sm" />
-                  <BilingualText en={messagesEn('browse_matches')} el={messagesEl('browse_matches')} compact />
-                </Link>
-                <Link
-                  href="/discover"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/20"
-                >
-                  <CfbGlyph name="people" className="icon-sm" />
-                  <BilingualText en={messagesEn('find_people_message')} el={messagesEl('find_people_message')} compact />
-                </Link>
-              </div>
-            )}
+              action={!searchQuery ? (
+                <>
+                  <Link
+                    href="/matches"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/20"
+                  >
+                    <CfbGlyph name="matches" className="icon-sm" />
+                    <BilingualText en={messagesEn('browse_matches')} el={messagesEl('browse_matches')} compact />
+                  </Link>
+                  <Link
+                    href="/discover"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/20"
+                  >
+                    <CfbGlyph name="people" className="icon-sm" />
+                    <BilingualText en={messagesEn('find_people_message')} el={messagesEl('find_people_message')} compact />
+                  </Link>
+                </>
+              ) : undefined}
+            />
           </div>
         )}
       </div>

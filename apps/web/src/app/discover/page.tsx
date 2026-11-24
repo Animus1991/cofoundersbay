@@ -22,7 +22,6 @@ import { RailAction, RailOptions, RailStats } from '@/components/layout/RailPart
 import { bilingualInline } from '@/lib/i18n/format';
 import { RailPeople } from '@/components/layout/RailPeople';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -692,29 +691,37 @@ export default function DiscoverPage() {
           )}
 
           {!loading && searchFailed && (
-            <Card>
-              <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-                <p role="alert" className="text-sm text-muted-foreground">
-                  <BilingualText en="Profiles could not be searched just now." el="Η αναζήτηση προφίλ δεν έγινε αυτή τη στιγμή." wrap />
-                </p>
-                <Button variant="outline" size="sm" onClick={() => void runSearch()}>
-                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-                </Button>
-              </CardContent>
-            </Card>
+            <div role="alert">
+              <EmptyState
+                illustration="default"
+                size="sm"
+                title={<BilingualText en="Profiles could not be searched just now." el="Η αναζήτηση προφίλ δεν έγινε αυτή τη στιγμή." wrap />}
+                action={(
+                  <Button variant="outline" size="sm" onClick={() => void runSearch()}>
+                    <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                  </Button>
+                )}
+              />
+            </div>
           )}
 
           {!loading && roleHits.length === 0 && hits.length > 0 && roleFilter !== 'all' && (
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <p className="text-sm text-muted-foreground">
+            <EmptyState
+              illustration="search"
+              size="sm"
+              title={(
                 <BilingualText
                   en={`No ${roleFilter.replace('_', ' ')}s in these results.`}
                   el="Κανένα αποτέλεσμα με αυτόν τον ρόλο."
                   wrap
                 />
-              </p>
-              <button onClick={() => setRoleFilter('all')} className="text-xs text-primary-accessible hover:underline"><BilingualText en="Show all roles" el="Όλοι οι ρόλοι" compact /></button>
-            </div>
+              )}
+              action={(
+                <Button variant="ghost" size="sm" onClick={() => setRoleFilter('all')}>
+                  <BilingualText en="Show all roles" el="Όλοι οι ρόλοι" compact />
+                </Button>
+              )}
+            />
           )}
 
           {!loading && !searchFailed && hits.length === 0 && (

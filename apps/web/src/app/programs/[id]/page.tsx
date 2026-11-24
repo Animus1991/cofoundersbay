@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, CheckCircle2, Loader2, Zap } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -126,24 +127,25 @@ export default function ProgramDetailPage() {
   if (isError && !(readError instanceof ApiError && (readError.status === 404 || readError.status === 403))) {
     return (
       <AppShell title="Program" titleEl="Πρόγραμμα">
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p role="alert" className="text-sm text-muted-foreground">
-              <BilingualText en="This programme could not be read just now." el="Το πρόγραμμα δεν διαβάστηκε αυτή τη στιγμή." compact wrap />
-            </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
-              <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}>
-                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
-              </Button>
-              <Button variant="ghost" className="gap-2" asChild>
-                <Link href="/programs">
-                  <ArrowLeft className="icon-sm" aria-hidden="true" />
-                  <BilingualText en="All programs" el="Όλα τα προγράμματα" compact />
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div role="alert">
+          <EmptyState
+            illustration="default"
+            title={<BilingualText en="This programme could not be read just now." el="Το πρόγραμμα δεν διαβάστηκε αυτή τη στιγμή." compact wrap />}
+            action={(
+              <>
+                <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
+                <Button variant="ghost" className="gap-2" asChild>
+                  <Link href="/programs">
+                    <ArrowLeft className="icon-sm" aria-hidden="true" />
+                    <BilingualText en="All programs" el="Όλα τα προγράμματα" compact />
+                  </Link>
+                </Button>
+              </>
+            )}
+          />
+        </div>
       </AppShell>
     );
   }
@@ -151,24 +153,25 @@ export default function ProgramDetailPage() {
   if (isError || !program) {
     return (
       <AppShell title="Program not found" titleEl="Το πρόγραμμα δεν βρέθηκε">
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-sm text-muted-foreground">
-              <BilingualText
-                en="This programme does not exist or is no longer public."
-                el="Το πρόγραμμα δεν υπάρχει ή δεν είναι πλέον δημόσιο."
-                compact
-                wrap
-              />
-            </p>
-            <Button variant="outline" className="mt-4 gap-2" asChild>
+        <EmptyState
+          illustration="search"
+          title={(
+            <BilingualText
+              en="This programme does not exist or is no longer public."
+              el="Το πρόγραμμα δεν υπάρχει ή δεν είναι πλέον δημόσιο."
+              compact
+              wrap
+            />
+          )}
+          action={(
+            <Button variant="outline" className="gap-2" asChild>
               <Link href="/programs">
                 <ArrowLeft className="icon-sm" aria-hidden="true" />
                 <BilingualText en="All programs" el="Όλα τα προγράμματα" compact />
               </Link>
             </Button>
-          </CardContent>
-        </Card>
+          )}
+        />
       </AppShell>
     );
   }

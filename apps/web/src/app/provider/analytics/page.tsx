@@ -18,6 +18,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { bilingualAria } from '@/lib/i18n/format';
 import { downloadCsv } from '@/lib/csv';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
@@ -562,7 +563,7 @@ export default function ProviderAnalyticsPage() {
                 </CardHeader>
                 <CardContent>
                   {weeklyViews.length === 0 && (
-                    <p className="py-16 text-center text-sm text-muted-foreground"><BilingualText en="No profile views recorded in this period." el="Δεν καταγράφηκαν προβολές προφίλ σε αυτή την περίοδο." wrap /></p>
+                    <EmptyState className="border-0 bg-transparent" illustration={null} size="sm" title={<BilingualText en="No profile views recorded in this period." el="Δεν καταγράφηκαν προβολές προφίλ σε αυτή την περίοδο." wrap />} />
                   )}
                   {/* Bars are proportions of a fixed plot area. They were pixel
                       heights (views up to 140px plus inquiries) in a 176px box
@@ -598,7 +599,7 @@ export default function ProviderAnalyticsPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {trafficSources.length === 0 && (
-                    <p className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="Traffic sources are not tracked yet." el="Οι πηγές κίνησης δεν καταγράφονται ακόμα." wrap /></p>
+                    <EmptyState className="border-0 bg-transparent" illustration={null} size="sm" title={<BilingualText en="Traffic sources are not tracked yet." el="Οι πηγές κίνησης δεν καταγράφονται ακόμα." wrap />} />
                   )}
                   {trafficSources.map(src => (
                     <div key={src.source}>

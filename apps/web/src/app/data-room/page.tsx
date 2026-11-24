@@ -112,10 +112,14 @@ export default function SharedRoomsPage() {
     <AppShell showHelp>
       <div className="space-y-6 pb-10">
         {isError ? (
-          <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-            <p role="alert" className="text-sm text-muted-foreground"><BilingualText en={fundraisingEn('shared_failed')} el={fundraisingEl('shared_failed')} compact /></p>
-            <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
-          </CardContent></Card>
+          <div role="alert">
+            <EmptyState
+              illustration="search"
+              size="sm"
+              title={<BilingualText en={fundraisingEn('shared_failed')} el={fundraisingEl('shared_failed')} compact />}
+              action={<Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>}
+            />
+          </div>
         ) : isLoading ? (
           <Card><CardContent className="space-y-3"><Skeleton className="h-10 w-48" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-2/3" /></CardContent></Card>
         ) : rooms.length === 0 ? (

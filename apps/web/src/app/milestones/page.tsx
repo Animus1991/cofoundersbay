@@ -23,7 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { useAuthenticatedSession } from '@/hooks/useAuthenticatedSession';
-import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import type { CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { useToast } from '@/components/ui/toast';
@@ -896,24 +896,29 @@ export default function MilestonesPage() {
 
         {/* List */}
         {isError || unread ? (
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
-            <CfbGlyph name="target" className="icon-lg text-muted-foreground/50" />
+          // The shared empty state tells "sign in" and "read failed" apart by
+          // which button it draws (B2.5).
+          <div role="alert">
             {unread && apiAvailable ? (
-              <>
-                <p className="text-sm text-muted-foreground">
-                  <BilingualText en="Sign in to see your milestones." el="Συνδεθείτε για να δείτε τα ορόσημά σας." />
-                </p>
-                <Button asChild variant="secondary" size="sm" className={BUILDER_BTN}>
-                  <Link href="/login?redirect=/milestones"><BilingualText en="Sign in" el="Σύνδεση" compact /></Link>
-                </Button>
-              </>
+              <EmptyState
+                illustration="profile"
+                title={<BilingualText en="Sign in to see your milestones." el="Συνδεθείτε για να δείτε τα ορόσημά σας." />}
+                action={(
+                  <Button asChild variant="secondary" size="sm" className={BUILDER_BTN}>
+                    <Link href="/login?redirect=/milestones"><BilingualText en="Sign in" el="Σύνδεση" compact /></Link>
+                  </Button>
+                )}
+              />
             ) : (
-              <>
-                <p className="text-sm text-muted-foreground"><BilingualText en={milestoneEn('load_fail')} el={milestoneEl('load_fail')} /></p>
-                <Button variant="secondary" size="sm" className={BUILDER_BTN} type="button" onClick={() => refetch()}>
-                  <BilingualText en={milestoneEn('retry')} el={milestoneEl('retry')} compact />
-                </Button>
-              </>
+              <EmptyState
+                illustration="default"
+                title={<BilingualText en={milestoneEn('load_fail')} el={milestoneEl('load_fail')} />}
+                action={(
+                  <Button variant="secondary" size="sm" className={BUILDER_BTN} type="button" onClick={() => refetch()}>
+                    <BilingualText en={milestoneEn('retry')} el={milestoneEl('retry')} compact />
+                  </Button>
+                )}
+              />
             )}
           </div>
         ) : waiting ? (

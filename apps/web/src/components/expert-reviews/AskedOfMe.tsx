@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { EmptyState } from '@/components/common/EmptyState';
 import { Check, Loader2, MessageCircle, PenLine, Star, X } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
@@ -322,13 +323,17 @@ export function AskedOfMe({ reviews, draft, onDraftUsed, focusId }: {
   const sorted = [...reviews].sort((a, b) => (order[a.status] ?? 4) - (order[b.status] ?? 4));
   if (sorted.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-        <BilingualText
-          en="Nobody has asked you for a review yet. Members find reviewers in the mentor directory, under “An expert review”."
-          el="Δεν σας έχει ζητηθεί ακόμη αξιολόγηση. Τα μέλη βρίσκουν αξιολογητές στον κατάλογο μεντόρων, στο «Αξιολόγηση ειδικού»."
-          wrap
-        />
-      </div>
+      <EmptyState
+        illustration="message"
+        size="sm"
+        title={(
+          <BilingualText
+            en="Nobody has asked you for a review yet. Members find reviewers in the mentor directory, under “An expert review”."
+            el="Δεν σας έχει ζητηθεί ακόμη αξιολόγηση. Τα μέλη βρίσκουν αξιολογητές στον κατάλογο μεντόρων, στο «Αξιολόγηση ειδικού»."
+            wrap
+          />
+        )}
+      />
     );
   }
   return (
