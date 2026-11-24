@@ -47,7 +47,7 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { PROGRAMS_QUESTION } from '@/lib/page-questions';
 import { bilingualAria } from '@/lib/i18n/format';
-import { cn, initialsOf } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
@@ -64,7 +64,6 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { CardMoreMenu } from '@/components/common/CardMoreMenu';
-import { CoverWash } from '@/components/common/CoverWash';
 import { DateBadge } from '@/components/common/DateBadge';
 import { Counter } from '@/components/ui/counter';
 import { calendarDaysUntil } from '@/lib/calendar-days';
@@ -254,28 +253,44 @@ function ProgramCard({
   const accepting = acceptsApplications(program);
   const badgeDate = program.applicationDeadline ?? program.startDate;
 
-  /* The catalogue anatomy (docs §134): the cover — or the success wash with
-     the programme's glyph when there is none — at the card's left from lg
-     (a top banner below), the closing/starting date's badge on it; then the
-     title, one facts line, the organiser, and the one verb with the rest in
-     the menu. */
+  /* The catalogue anatomy (docs §135 A0): the cover at the card's left from
+     lg (a top banner below) only when a cover actually loads — a cover that
+     fails leaves no column (docs §77) — with the closing/starting date's
+     badge on it; then the title, the organiser's name with its logo and the
+     kind in one facts line, and the one verb with the rest in the menu. */
   return (
-    <Card className={cn('card-interactive overflow-hidden transition-all hover:border-primary/30 group lg:flex', isEnrolled && 'border-primary/40')}>
-      <div className="relative h-28 w-full overflow-hidden lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch">
-        {showCover ? (
+    <Card className={cn('card-interactive overflow-hidden transition-all hover:border-primary/30 group', showCover && 'lg:flex', isEnrolled && 'border-primary/40')}>
+      {showCover ? (
+        <div className="relative h-28 w-full overflow-hidden lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch">
           <img ref={cover.ref} onError={cover.onError} src={program.coverImageUrl ?? undefined} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
-        ) : (
-          <CoverWash tone="success" icon={TypeIcon} />
-        )}
-        {badgeDate ? <DateBadge date={badgeDate} /> : null}
-      </div>
+          {badgeDate ? <DateBadge date={badgeDate} /> : null}
+        </div>
+      ) : null}
       <CardContent className="min-w-0 space-y-3 lg:flex-1">
         <CardHead
+          mark={(
+            <Avatar className="h-10 w-10 rounded-xl">
+              <AvatarImage src={program.organization?.logoUrl ?? undefined} />
+              {/* Stands in for the organisation's logo: an avatar, not decoration. */}
+              <AvatarFallback data-keep-icon className="rounded-xl bg-status-success-bg text-primary-accessible">
+                <TypeIcon className="icon-md" aria-hidden="true" />
+              </AvatarFallback>
+            </Avatar>
+          )}
           title={program.title}
           subtitle={(
             <FactLine
               className="text-sm"
               items={[
+                program.organization?.name ? (
+                  <span key="org" className="inline-flex min-w-0 items-center gap-1.5">
+                    <Avatar className="h-4 w-4 rounded">
+                      <AvatarImage src={program.organization?.logoUrl ?? undefined} alt="" />
+                      <AvatarFallback className="rounded bg-status-success-bg text-primary-accessible"><TypeIcon className="h-2.5 w-2.5" aria-hidden="true" /></AvatarFallback>
+                    </Avatar>
+                    <span className="min-w-0 truncate">{program.organization.name}</span>
+                  </span>
+                ) : null,
                 <BilingualText key="type" en={type.en} el={type.el} compact />,
               ]}
             />
@@ -294,17 +309,6 @@ function ProgramCard({
         {program.description && (
           <p className="card-body line-clamp-2 text-muted-foreground">{program.description}</p>
         )}
-
-        {/* Who runs it: the organisation's mark small on the card's axis. */}
-        {program.organization?.name ? (
-          <div className="flex min-w-0 items-center gap-2">
-            <Avatar className="h-5 w-5 rounded-md">
-              <AvatarImage src={program.organization?.logoUrl ?? undefined} alt="" />
-              <AvatarFallback className="rounded-md bg-status-success-bg text-[0.625rem] text-primary-accessible">{initialsOf(program.organization.name)}</AvatarFallback>
-            </Avatar>
-            <span className="card-meta min-w-0 truncate text-muted-foreground">{program.organization.name}</span>
-          </div>
-        ) : null}
 
         {/* Industries as pills, three at a glance — the rest on the detail.
             "Any" stood alone on its line: any what (docs §77). */}

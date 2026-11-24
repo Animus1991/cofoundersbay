@@ -8,12 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { CardMoreMenu } from '@/components/common/CardMoreMenu';
-import { CoverWash } from '@/components/common/CoverWash';
 import { FactLine } from '@/components/common/FactLine';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AskIntroDialog } from '@/components/intros/AskIntroDialog';
 import { bilingualInline } from '@/lib/i18n/format';
 import { cn, initialsOf } from '@/lib/utils';
+import { roleTone } from '@/lib/role-tone';
 import { STATUS } from '@/lib/semantic-colors';
 import { useHydrated } from '@/components/common/RelativeTime';
 import { isPreviewDemo } from '@/lib/preview-demo';
@@ -127,25 +127,20 @@ export function InvestorCard({
   // like two different components. Tokens share one frame; the cheque and
   // the record's numbers are the only heavier ink.
   return (
-    <Card className="group overflow-hidden transition-all hover:border-primary/30 lg:flex">
-      {/* The catalogue anatomy (docs §134): the investor's face on the role's
-          success wash leads — a person's listing has no cover, the face is
-          the visual key. */}
-      <div className="relative h-28 w-full overflow-hidden lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch">
-        <CoverWash tone="success">
-          <Avatar className="h-16 w-16 border-2 border-card shadow-sm">
-            <AvatarImage src={investor.avatarUrl} alt="" />
-            <AvatarFallback className="bg-card text-sm font-semibold text-status-success">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-        </CoverWash>
-      </div>
-      <CardContent className="min-w-0 space-y-3 lg:flex-1">
+    <Card className="group overflow-hidden transition-all hover:border-primary/30">
+      <CardContent className="space-y-3">
         {/* One anatomy at every width (docs §115/§125): the full head with
             Save in its corner; the thesis is under More on a phone. */}
         <div>
           <CardHead
+            mark={(
+              <Avatar className="h-16 w-16 ring-4 ring-status-success-bg">
+                <AvatarImage src={investor.avatarUrl} alt="" />
+                <AvatarFallback className={cn('text-sm font-semibold', roleTone('investor'))}>
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            )}
             title={(
               <span className="inline-flex max-w-full items-center gap-1.5">
                 <span className="min-w-0 break-words">{investor.displayName}</span>

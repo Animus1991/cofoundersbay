@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { CardMoreMenu } from '@/components/common/CardMoreMenu';
-import { CoverWash } from '@/components/common/CoverWash';
-import { DateBadge } from '@/components/common/DateBadge';
 import { FactLine } from '@/components/common/FactLine';
 import { SaveItemButton } from '@/components/common/SaveItemButton';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
@@ -136,34 +134,15 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
     );
   }
 
-  /* The catalogue anatomy (docs §134): the visual key first — the company's
-     mark when there is one, the accent wash with the type's glyph otherwise —
-     with the closing date's badge on it; then the title, one facts line, who
-     posted it, the tags and the one verb with the rest in the menu. */
-  const badgeDate = opportunity.deadline ?? opportunity.createdAt;
-  const TypeIcon = cfg.icon;
   return (
-    <Card id={`opportunity-${opportunity.id}`} className={cn(cardClass, 'overflow-hidden lg:flex')}>
-      <div className="relative h-28 w-full overflow-hidden lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch">
-        <CoverWash tone="accent">
-          {opportunity.companyLogo ? (
-            <Avatar className="h-16 w-16 rounded-xl border-2 border-card bg-card shadow-sm">
-              <AvatarImage src={opportunity.companyLogo} alt="" className="object-contain p-2" />
-              <AvatarFallback className="rounded-xl bg-card font-semibold text-status-accent">{initialsOf(opportunity.company ?? opportunity.title)}</AvatarFallback>
-            </Avatar>
-          ) : opportunity.company ? (
-            <TypeIcon className="icon-lg text-status-accent" aria-hidden="true" />
-          ) : (
-            mark('h-16 w-16')
-          )}
-        </CoverWash>
-        <DateBadge date={badgeDate} />
-      </div>
-      <CardContent className="min-w-0 space-y-3 lg:flex-1">
+    <Card id={`opportunity-${opportunity.id}`} className={cardClass}>
+      <CardContent className="space-y-3">
         <CardHead
+          mark={mark('h-12 w-12')}
           title={opportunity.title}
           /* Company, type and remote are facts about the listing: one line,
-             where the type and remote were two tinted pills. */
+             where the type and remote were two tinted pills. Place, the
+             closing date and when it was posted join them here. */
           subtitle={(
             <FactLine
               className="text-sm"
@@ -183,8 +162,9 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
           <p className="card-body line-clamp-2 text-muted-foreground">{opportunity.description}</p>
         )}
 
-        {/* Who posted it: the poster's face small on the card's axis. */}
-        {opportunity.createdBy.displayName ? (
+        {/* Who posted it — only when the card's mark is not already that
+            person (a company's logo or type glyph sits there instead). */}
+        {opportunity.company && opportunity.createdBy.displayName ? (
           <div className="flex min-w-0 items-center gap-2">
             <Avatar className="h-5 w-5">
               <AvatarImage src={opportunity.createdBy?.avatarUrl ?? undefined} alt="" />
@@ -196,7 +176,8 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
           </div>
         ) : null}
 
-        {/* Tags as pills, three at a glance — the rest are on the detail. */}
+        {/* Tags as tinted pills, three at a glance — the rest are on the
+            detail. */}
         {(opportunity.tags?.length ?? 0) > 0 ? (
           <div className="flex flex-wrap items-center gap-1">
             {opportunity.tags.slice(0, 3).map((tag) => (

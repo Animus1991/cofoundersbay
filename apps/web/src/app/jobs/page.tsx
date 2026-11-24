@@ -52,7 +52,6 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
-import { CoverWash } from '@/components/common/CoverWash';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK, type AskText } from '@/lib/page-questions';
@@ -92,39 +91,30 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
   const { ask } = useAskAssistant();
   const notMine = !job.creator?.id || job.creator.id !== myId;
   const canAsk = Boolean(job.creator?.id && job.creator.id !== myId);
-  // The catalogue anatomy (docs §134): the visual key first — the poster's
-  // logo on the primary wash, the briefcase glyph otherwise — then the title,
-  // one facts line, who posted it, and the one verb with the rest in the menu.
+  // The Opportunities card: the poster's mark, the role's title with the
+  // poster and the kind of work under it, then the facts and the actions,
+  // all on the mark's left edge.
   return (
     <Card className={cn(
-      'card-interactive group overflow-hidden transition-all hover:border-primary/20 lg:flex',
+      'card-interactive group transition-all hover:border-primary/20',
       featured && 'border-primary-muted bg-primary-subtle'
     )}>
-      <div className="relative h-28 w-full overflow-hidden lg:h-auto lg:w-56 lg:shrink-0 lg:self-stretch">
-        <CoverWash tone="primary">
-          {job.logoUrl ? (
-            <Avatar className="h-16 w-16 rounded-xl border-2 border-card bg-card shadow-sm">
-              <AvatarImage src={job.logoUrl} alt="" className="object-contain p-2" />
-              <AvatarFallback className="rounded-xl bg-card font-semibold text-primary-accessible">{initialsOf(job.title)}</AvatarFallback>
-            </Avatar>
-          ) : job.creator?.avatarUrl ? (
-            <Avatar className="h-16 w-16 border-2 border-card shadow-sm">
-              <AvatarImage src={job.creator.avatarUrl} alt="" />
-              <AvatarFallback className="bg-card font-semibold text-primary-accessible">{initialsOf(job.creator.displayName)}</AvatarFallback>
-            </Avatar>
-          ) : (
-            <Briefcase className="icon-lg text-primary-accessible" aria-hidden="true" />
-          )}
-        </CoverWash>
-      </div>
-      <CardContent className="min-w-0 space-y-3 lg:flex-1">
+      <CardContent className="space-y-3">
         <CardHead
+          mark={(
+            <Avatar className={cn('h-14 w-14 ring-4 ring-status-accent-bg', job.logoUrl && 'rounded-xl')}>
+              <AvatarImage src={job.logoUrl ?? job.creator?.avatarUrl ?? undefined} alt="" />
+              <AvatarFallback className="bg-status-accent-bg font-semibold text-primary-accessible">
+                {initialsOf(job.creator?.displayName ?? '')}
+              </AvatarFallback>
+            </Avatar>
+          )}
           title={<span className="transition-colors group-hover:text-primary-accessible">{job.title}</span>}
           subtitle={(
             <FactLine
               className="text-sm"
               items={[
-                job.role ? <StatusText key="role" value={job.role} /> : null,
+                job.creator?.displayName,
                 job.type ? <StatusText key="type" value={job.type} /> : null,
               ]}
             />
@@ -140,6 +130,7 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
 
         <FactLine
           items={[
+            job.role ? <StatusText key="role" value={job.role} /> : null,
             // "Remote — EU time zones" already says remote; the word is added
             // only when the place does not.
             job.isRemote && !/remote/i.test(job.location ?? '') ? <BilingualText key="remote" en={jobsEn('remote')} el={jobsEl('remote')} compact /> : null,
@@ -149,19 +140,6 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
               : null,
           ]}
         />
-
-        {/* Who posted it: the poster's face small on the card's axis. */}
-        {job.creator?.displayName ? (
-          <div className="flex min-w-0 items-center gap-2">
-            <Avatar className="h-5 w-5">
-              <AvatarImage src={job.creator?.avatarUrl ?? undefined} alt="" />
-              <AvatarFallback className="bg-primary/10 text-[0.625rem] text-primary-accessible">{initialsOf(job.creator.displayName)}</AvatarFallback>
-            </Avatar>
-            <span className="card-meta min-w-0 truncate text-muted-foreground">
-              <BilingualText en={`Posted by ${job.creator.displayName}`} el={`Από ${job.creator.displayName}`} compact />
-            </span>
-          </div>
-        ) : null}
 
         {/* One button (docs §115): asking the poster about the role, or the
             assistant's draft where there is no poster to ask. Saving stays a
@@ -201,12 +179,14 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
 
 function JobSkeleton() {
   return (
-    <Card className="overflow-hidden lg:flex">
-      <Skeleton className="h-28 w-full lg:h-auto lg:w-56 lg:self-stretch" />
-      <CardContent className="flex-1 space-y-2">
-        <Skeleton className="h-4 w-48" />
-        <Skeleton className="h-3 w-32" />
-        <Skeleton className="h-3 w-24" />
+    <Card>
+      <CardContent className="flex items-start gap-4">
+        <Skeleton className="h-11 w-11 rounded-lg shrink-0" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-3 w-32" />
+          <Skeleton className="h-3 w-24" />
+        </div>
       </CardContent>
     </Card>
   );

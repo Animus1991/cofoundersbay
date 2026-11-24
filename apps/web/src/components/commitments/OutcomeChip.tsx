@@ -3,9 +3,9 @@ import { Badge } from '@/components/ui/badge';
 import { StatusText } from '@/components/common/StatusText';
 import { cn } from '@/lib/utils';
 
-const OUTCOME_VARIANT: Record<CommitmentOutcome, 'info' | 'default' | 'success' | 'secondary'> = {
-  open: 'info',
-  in_discussion: 'default',
+const OUTCOME_VARIANT: Record<CommitmentOutcome, 'info' | 'default' | 'success' | 'secondary' | 'warning'> = {
+  open: 'success',
+  in_discussion: 'warning',
   agreed: 'success',
   closed: 'secondary',
 };
