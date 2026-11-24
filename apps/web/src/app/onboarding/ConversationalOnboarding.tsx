@@ -156,12 +156,11 @@ function TypingIndicator() {
   );
 }
 
-function BotBubble({ children }: { children: React.ReactNode }) {
+function BotBubble({ children, figure }: { children: React.ReactNode; figure?: CfbFigureId }) {
   return (
     <div className="flex items-end gap-2 animate-fade-in">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-        <Bot className="icon-sm text-muted-foreground" />
-      </div>
+      {/* The role's character answers each question (docs §132.5). */}
+      <CfbFigure id={figure ?? 'builder'} className="h-10 w-9 shrink-0" />
       <div className="max-w-[80%] rounded-2xl rounded-bl-sm bg-card border border-border px-4 py-3">
         <p className="text-sm text-foreground leading-relaxed">{children}</p>
       </div>
@@ -513,7 +512,7 @@ export function ConversationalOnboarding() {
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 max-w-2xl mx-auto w-full">
         {messages.map((msg) =>
           msg.from === 'bot'
-            ? <BotBubble key={msg.id}>{msg.content}</BotBubble>
+            ? <BotBubble key={msg.id} figure={ROLE_FIGURE[form.current.role ?? 'founder'] ?? 'founder'}>{msg.content}</BotBubble>
             : <UserBubble key={msg.id}>{msg.content as string}</UserBubble>
         )}
         {showTyping && <TypingIndicator />}
@@ -523,6 +522,27 @@ export function ConversationalOnboarding() {
       {/* Input area */}
       <div className="border-t border-border bg-card px-4 py-4">
         <div className="max-w-2xl mx-auto space-y-3">
+
+          {/* «Το προφίλ σας»: the tiny live preview filling in as answers
+              arrive — only fields already asked (docs §132.5). */}
+          {(form.current.displayName || selectedRole || form.current.headline || form.current.location) && (
+            <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/40 px-3 py-2" data-testid="onboarding-preview">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary-accessible" aria-hidden="true">
+                {(form.current.displayName || '·').slice(0, 1).toUpperCase()}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="card-meta"><BilingualText en="Your profile" el="Το προφίλ σας" compact /></p>
+                <p className="truncate text-xs font-medium text-foreground">
+                  {[
+                    form.current.displayName || null,
+                    selectedRole ? (primary === 'el' ? ROLE_OPTIONS.find((r) => r.value === selectedRole)?.labelEl : ROLE_OPTIONS.find((r) => r.value === selectedRole)?.label) : null,
+                    form.current.headline || null,
+                    form.current.location || null,
+                  ].filter(Boolean).join(' · ') || '…'}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Why we ask — one line per step, so no field feels arbitrary. */}
           {meta && !showTyping && (

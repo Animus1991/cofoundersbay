@@ -207,9 +207,20 @@ const NotificationRow = memo(function NotificationRow({
           ) : (
             <span className={cn('block first-letter:uppercase', !isUnread && 'text-foreground/80')}><BilingualText en={item.title} el={notificationEl(item.title)} compact wrap /></span>
           )}
-          subtitle={typeLabel
-            ? <BilingualText en={typeLabel.en} el={typeLabel.el} compact />
-            : <StatusText value={item.type} />}
+          subtitle={
+            <span className="inline-flex items-center gap-1.5">
+              {typeLabel
+                ? <BilingualText en={typeLabel.en} el={typeLabel.el} compact />
+                : <StatusText value={item.type} />}
+              {isUnread && (
+                // Never colour alone for unread: the accent dot on the well
+                // gets a word chip (docs §132.3).
+                <span className="rounded-full bg-primary/10 px-1.5 py-px text-2xs font-semibold text-primary-accessible">
+                  <BilingualText en="New" el="Νέο" compact />
+                </span>
+              )}
+            </span>
+          }
           aside={<RelativeTime date={item.createdAt} absoluteAfterDays={7} />}
         />
         {item.body && (
@@ -542,7 +553,14 @@ export default function NotificationsPage() {
     return acc;
   }, {});
 
-  const grouped = groupByDate(notifications);
+  // «Χρειάζεται ενέργεια»: the unread rows that ask for a decision (connection
+  // requests) lead the inbox, out of the date groups; the rest keep the date
+  // grouping below (docs §132.3).
+  const ACTIONABLE_TYPES = new Set(['connection']);
+  const actionable = view === 'saved' ? [] : notifications.filter((n) => !n.readAt && ACTIONABLE_TYPES.has(n.type));
+  const grouped = groupByDate(actionable.length
+    ? notifications.filter((n) => !actionable.includes(n))
+    : notifications);
   const activeFilter = FILTER_TABS.find((f) => f.value === activeTab);
 
   const rail: PageRailSection[] = [
@@ -768,7 +786,29 @@ export default function NotificationsPage() {
               </div>
             </div>
           ) : (
-            grouped.map(({ label, items }) => (
+            <>
+            {actionable.length > 0 && (
+              <div>
+                <div className="border-b border-border bg-status-accent-bg/50 px-4 py-2 sm:px-6">
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    <BilingualText en="Needs action" el="Χρειάζεται ενέργεια" compact />
+                  </p>
+                </div>
+                {actionable.map((item) => (
+                  <NotificationRow
+                    key={item.id}
+                    item={item}
+                    onRead={handleRead}
+                    onDelete={handleDelete}
+                    onToggleSave={handleToggleSave}
+                    selectable={bulkMode}
+                    selected={selectedIds.has(item.id)}
+                    onSelect={toggleSelect}
+                  />
+                ))}
+              </div>
+            )}
+            {grouped.map(({ label, items }) => (
               <div key={label}>
                 <div className="border-b border-border bg-muted/30 px-4 py-2 sm:px-6">
                   <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -788,7 +828,8 @@ export default function NotificationsPage() {
                   />
                 ))}
               </div>
-            ))
+            ))}
+            </>
           )}
         </Card>
 

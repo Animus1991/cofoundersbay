@@ -17,6 +17,8 @@ import {
 } from '@/lib/copilot-starters';
 import { cn } from '@/lib/utils';
 import { useUsageProfile } from '@/hooks/useUsageProfile';
+import { useStoredUser } from '@/hooks/useStoredUser';
+import { CfbFigure, type CfbFigureId } from '@/components/illustrations/CfbCast';
 
 const INTRO: Record<StarterAudience, { en: string; el: string }> = {
   founder: {
@@ -77,6 +79,13 @@ export function CopilotEmptyState({
   const writesShown = folded ? writes.slice(0, 1) : writes;
   const hiddenStarters = reads.length + writes.length - readsShown.length - writesShown.length;
   const intro = INTRO[audience];
+  // The warm hello: the role's character and the reader's first name lead the
+  // page's empty conversation (docs §132.7).
+  const firstName = useStoredUser()?.displayName?.split(' ')[0] ?? null;
+  const FIGURE: Record<StarterAudience, CfbFigureId> = {
+    founder: 'founder', mentor: 'mentor', investor: 'investor',
+    provider: 'builder', org: 'builder', admin: 'builder',
+  };
   // The platform's best suggestion from how the reader moves around (docs
   // §107), when it has one; the question it asks is get_usage_insights'.
   const tip = useUsageProfile().suggestions[0];
@@ -89,11 +98,19 @@ export function CopilotEmptyState({
       )}
     >
       {isPage ? (
-        <p className="type-ui mb-4 max-w-prose text-muted-foreground">
-          {/* Every user reads this on /ai, so it names their workspace, not the
-              showcase's company and its round. */}
-          {sayOne(intro.en, intro.el)}
-        </p>
+        <div className="mb-4 flex items-start gap-3">
+          <CfbFigure id={FIGURE[audience]} className="h-16 w-14 shrink-0" />
+          <div className="min-w-0">
+            <p className="text-lg font-semibold text-foreground">
+              {firstName ? sayOne(`Hello, ${firstName}`, `Γεια σας, ${firstName}`) : sayOne('Hello', 'Γεια σας')}
+            </p>
+            <p className="type-ui max-w-prose text-muted-foreground">
+              {/* Every user reads this on /ai, so it names their workspace, not the
+                  showcase's company and its round. */}
+              {sayOne(intro.en, intro.el)}
+            </p>
+          </div>
+        </div>
       ) : (
         <p className="type-caption text-muted-foreground">
           {sayOne('Look up, or change after you confirm.', 'Αναζήτηση, ή αλλαγή μετά από επιβεβαίωση.')}

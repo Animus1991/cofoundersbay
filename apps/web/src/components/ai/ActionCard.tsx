@@ -127,6 +127,9 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
     <Card
       className={cn(
         'shadow-sm',
+        // A proposal awaiting the reader carries a tinted left rule, so a
+        // change card never looks like a plain answer (docs §132.7).
+        !(done || dismissed || undone || cancelled || failed) && 'border-l-4 border-l-status-warning',
         done && `border-status-success-border/40 ${STATUS.success.bg}`,
         (dismissed || undone || cancelled) && 'surface-inactive',
         failed && 'border-destructive/40',
