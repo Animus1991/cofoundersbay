@@ -37,10 +37,11 @@ afterEach(cleanup);
 describe('HomePeople rail (docs §131.2, §133.2)', () => {
   it('renders fixed-width tiles in a snap-scrolling rail, never crushed', () => {
     const { container } = render(<HomePeople matches={[person('u1', 'Marcus Chen'), person('u2', 'Eleni Papadopoulou')]} viewer={null} myId="me" />);
-    const rail = container.querySelector('[data-home-people]')!;
+    // The rail itself is the shared PersonTileRail inside the section.
+    const rail = container.querySelector('[data-home-people] [aria-label]')!;
     expect(rail.className).toContain('overflow-x-auto');
     expect(rail.className).toContain('snap-x');
-    expect(rail.getAttribute('aria-label')).toBe('People who fit');
+    expect(rail.getAttribute('aria-label')).toContain('People who fit');
     const tiles = container.querySelectorAll('[data-home-people] [class*="w-[200px]"]');
     expect(tiles).toHaveLength(2);
     for (const tile of tiles) {
