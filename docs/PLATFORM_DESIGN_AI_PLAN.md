@@ -9702,3 +9702,42 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
 - `check-theme-contrast.py`: 0 κάτω από 4.5:1 σε όλα τα θέματα.
 - Πλήρης μήτρα 118 διαδρομών × 2 γλώσσες × 3 πλάτη μετά τις αλλαγές: 0 σφάλματα, 0 xScroll, 0 unnamed, 0 overlaps, 0 bandWaste, 0 deadBands, 0 blankIcons (§134.A λίστα).
 - Composites δύο λωρίδων (τώρα | πρόταση, χωρίς αντίστοιχο Parea): `Temp\cfb-sweep\mockups\wave3\compare2-{opportunities,jobs,programs,investors,dashboard_founder,dashboard_investor,builder,settings}-{1440,390}.png` + `stack2-*-390.png` + `index.html` — 17/24 >150KB· τα μικρότερα (82–131KB στα 390) επαληθεύτηκαν οπτικά: αραιές λίστες, αληθινό περιεχόμενο.
+
+## 135. Κύμα 4 (Spec A) — πλήρες πλάτος, αυτόματα title stickers, band-επισκοπήσεις και τηλέφωνο
+
+Το κύμα 4 εφάρμοσε το `WAVE4_SPEC_A` πάνω στο `devin/parea-wave3`: η μέτρηση του ιδιοκτήτη στα 1920×900 έδειξε ότι main και κύμα 3 είχαν τα ίδια δομικά μεγέθη, οπότε αυτό το πέρασμα έπρεπε να τα κινήσει.
+
+### 135.A0 Αναδίπλωση του catalogue panel
+
+Η ανατομία του κύματος 3 αποδείχθηκε άδεια τεχνική στην πράξη: αποχρωματισμένο block με μικρό glyph αντί για αληθινό σήμα, και κενό banner 112px ανά κάρτα στο τηλέφωνο. Το A0 επανέφερε τα αληθινά marks (Avatar/logo, DateBadge όπου υπάρχει ημερομηνία) και καθάρισε τα κενά wash panels — χωρίς blank στήλη όταν το cover αποτυγχάνει (§77). Skeletons αντικατοπτρίζουν την κάρτα.
+
+### 135.A1 Shell — αυτόματα stickers, card-grid, ask σε εικονίδιο (το cap αποσύρθηκε)
+
+- `deriveTitleSticker(pathname)` (`lib/title-sticker.ts`): κάθε σελίδα AppShell με ορατό h1 δείχνει sticker — το glyph της διαδρομής πρώτα (tint από το είδος του), αλλιώς το εικονίδιο του nav entry που κατέχει το path, αποχρωματισμένο από το section του registry. `titleSticker={{...}}` κερδίζει, `false` κρύβει. 11 σελίδες δηλώνουν ρητό sticker· καμία δεν περνά `false`. Οι `titleSrOnly` σελίδες (7: `/home` + 6 dashboards) έχουν h1 στο hero/band αντί για header, οπότε το κριτήριο δεν ισχύει εκεί.
+- `.card-grid` / `.card-grid-lg` στο `globals.css`: `auto-fill minmax(min(100%, 26rem/40rem), 1fr)` με `align-items: start`.
+- Στο τηλέφωνο το `#page-ask-ai` κρύβεται πίσω από pill-εικονίδιο `aria-controls` δίπλα στον τίτλο (`max-sm:hidden` μέχρι το άνοιγμα· `aria-expanded`)· το πεδίο μένει mounted. Σελίδες `titleSrOnly` δεν έχουν shell ask — το δικό τους είναι μέσα στο hero/band.
+- **Πλάτος περιεχομένου:** το A1.2 δοκίμασε `max-w-[1440px]` + `measure` prop· ο ιδιοκτήτης το απέρριψε («δεν ζήτησα ποτέ την μείωση του πλάτους») και αφαιρέθηκε ολοκληρωτικά (`1236ef67`, συμπ. των ~45 call sites και των `max-w-[72ch]` στο `/legal`). Το περιεχόμενο είναι πλήρες πλάτος σε κάθε σελίδα — το `card-grid` χρησιμοποιεί όλο το πλάτος (4 στη σειρά στα 1920). Κανένα page-level max-width/centring/measure δεν επανέρχεται.
+
+### 135.A2 Λίστες → card-grid στα φαρδιά πλάτη
+
+38 σελίδες-λίστες πέρασαν σε `card-grid`/`card-grid-lg` με `col-span-full` στα μη-καρτέλα siblings (`6148333a`). Στα 1920 καμία δεν είναι πλέον στήλη πλήρους-πλάτους καρτών: 3–4 στήλες (534px/397px). Σελίδες που έμειναν σειρές επίτηδες: `/admin/mentorship-management` (roster μέσα σε SectionCard — πίνακας ρόστερ, όχι κάρτες)· `/shortlist` είχε toggle list/grid με default list — το default έγινε grid (`7da20527`). `/investor/scouting` κρατά `card-grid-lg` + fold φίλτρου (A5).
+
+### 135.A3 Covers ποτέ δεν παίρνουν την πρώτη οθόνη
+
+`CoverImage` `sm:max-h-[240px]`, εξώφυλλα detail προγραμμάτων/events `max-h-[320px]`, `/learning` ίδιο (`39b46092`). Ο πλαϊνός cover του `/programs` τέντωνε στο ύψος της κάρτας (406px) → `lg:max-h-[320px] lg:self-start` (`7da20527`). Αποτέλεσμα: 0 first-screen εικόνα >340px στις 162 διαδρομές· εξαίρεση `/themes/alliance` (διαφημιστική showcase με δικό της chrome — ο ήρωας 506/896px είναι το περιεχόμενό της, όχι σελίδα εργαλείου).
+
+### 135.A4 Band-επισκοπήσεις
+
+Τρίτη μορφή `band` στο `HomeAskHero` δίπλα σε `hero`/`plain`: `bg-primary/10` block με overline = τίτλος σελίδας (`getPageMeta` + `deriveTitleSticker`, aria-hidden), χαιρετισμός `data-testid="home-greeting"`, μία-γραμμή ask pill με `scopeMenu` ως ήσυχο εσωτερικό control, role-glyph well `hidden xl:block`, `HeroActionsSlot` πάνω δεξιά. MetricTile grid ακριβώς κάτω από το band στα 6 role dashboards + admin· `/tenant/dashboard` (χωρίς hero) πήρε figures-first + families. Figures πρώτα, όπως στο spec.
+
+### 135.A5 Τηλέφωνο
+
+`/discover`: τα intent tiles «Ποιον ψάχνετε;» (αποχρωματισμένα, count) γίνονται role chips μόλις επιλεγεί ρόλος ή γραφτεί αναζήτηση· pill rows scroll στο κινητό· `/investor/scouting` fold φίλτρου· `/investor/portfolio` 2×2 tiles.
+
+### 135.Ε Επαλήθευση
+
+- `tsc --noEmit --incremental false`: καθαρό. eslint: 0 errors, warnings όλες προϋπάρχουσες (baseline). `check-theme-contrast.py`: 0 κάτω από 4.5:1. Πλήρες suite: **305 αρχεία / 2000 τεστ — όλα πράσινα**.
+- Μήτρα **162 διαδρομές (public/member/admin contexts) × {EL,EN} × {390,1024,1440,1920}** (`wave4-sweep.mjs`, `cfb-sweep\wave3\matrix-{lang}-{w}.txt`): 0 errors, 0 xScroll, 0 unnamed, 0 overlaps, 0 deadBands, 0 blankIcons παντού — `/this-does-not-exist` απαντά 404 όπως σχεδιάστηκε.
+  - Flags που βρέθηκαν και διορθώθηκαν: `/admin/users` επικάλυψη header «Τελευταία δραστηριότητα»∩«Κατάσταση» στα 1024 EL (compact nowrap → wrap)· dead bands από grid-stretch σε `/` (personas), `/tenant/dashboard`, `/admin/analytics`, `/tenant/domains` (items-start / mt-auto CTA)· `/programs` πλαϊνό cover 406px (>340)· `/shortlist` default list→grid· `/profiles/[userId]` έλλειπε sticker.
+  - Artifacts μέτρησης, όχι ελαττώματα: 4 redirect shims (`/{investor,mentor,org,provider}/dashboard`, `/research/canvas`) κατέστρεφαν το eval context mid-probe — το sweep περιμένει τον προορισμό και μετρά εκεί· skeleton shimmer bars μετρούνταν ως dead bands κατά το loading — το sweep περιμένει να σταματήσει το `.animate-pulse`.
+- Στόχοι του spec: `/discover` πρώτο οργανικό αποτέλεσμα top=**588px <700** στα 390· ask-field collapsed παντού (hero-mode σελίδες το κρατούν στο band)· 38 A2 σελίδες με πολλαπλές στήλες στα 1920.
