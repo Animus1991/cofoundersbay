@@ -244,6 +244,12 @@ type AppShellProps = {
   /** Extra class on the page H1 — founder overview scales the title locally. */
   titleClassName?: string;
   /**
+   * The h1 stays for the accessibility tree but is not painted — for a page
+   * whose hero card already carries the greeting as its visible heading
+   * (/home in hero mode, docs §132.0).
+   */
+  titleSrOnly?: boolean;
+  /**
    * Contextual Ask AI prompt, sent when the field is empty: a pair from
    * `lib/page-questions` (sent in the reader's language) or a string built
    * from the page's data. Defaults to a question about the page title.
@@ -292,6 +298,7 @@ export function AppShell({
   fullHeight = false,
   contentClassName,
   titleClassName,
+  titleSrOnly = false,
   askAi,
   rail,
   leadAsHint = false,
@@ -372,7 +379,7 @@ export function AppShell({
                     ),
               )}
             >
-              <div className="min-w-0 [grid-area:title]" data-page-header="">
+              <div className={cn('min-w-0 [grid-area:title]', titleSrOnly && 'sr-only')} data-page-header="">
                 {pageTitle && (
                   <div className="flex items-center gap-2.5">
                     {titleSticker ? <SectionSticker {...titleSticker} className="h-8 w-8" /> : null}

@@ -226,6 +226,7 @@ function Home() {
       titleEl={copy.title.el}
       description={copy.description.en}
       descriptionEl={copy.description.el}
+      titleSrOnly
       askAi={false}
     >
       {/* At lg the page is two columns (docs §131.2): the hero, the event
