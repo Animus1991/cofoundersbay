@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, KeyboardEvent, useEffect, useId, useState, type ReactNode } from 'react';
+import { FormEvent, KeyboardEvent, useContext, useEffect, useId, useState, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { ArrowUp, Check, ChevronDown } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { YourPagesRow } from '@/components/dashboard/YourPages';
 import { HomeActionShelf } from '@/components/dashboard/HomeActionShelf';
 import { DictationButton } from '@/components/ai/DictationButton';
+import { HeroActionsSlot } from '@/components/layout/PageHeaderSlot';
 
 type Part = { en: string; el: string };
 
@@ -92,6 +93,9 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
   const run = useHomeAskRun();
+  // Where the page header's tools land in hero mode (docs §133): the AppShell
+  // portals them into this corner slot of the card.
+  const heroActionsSlot = useContext(HeroActionsSlot);
   const boxId = useId();
   const config = HOME_ASK[role];
   const now = nowStartingPoints({ ...useUnreadCounts(), followUps: followUpsDue });
@@ -147,8 +151,40 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
     run(action);
   }
 
+  // The scope picker. Inside the field's footer in the plain box; on the hero
+  // card it sits at the right end of the intent-chip row as a quiet pill, so
+  // the field itself stays a single row (docs §133.4).
+  const scopeMenu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className={hero
+            ? 'h-9 gap-1.5 rounded-full bg-white/15 px-3.5 text-sm font-medium text-primary-foreground hover:bg-white/25 hover:text-primary-foreground'
+            : 'h-8 gap-1.5 px-2 text-xs text-muted-foreground'}
+          aria-label={bilingualAria(`About: ${scope?.en ?? ''}`, `Πλαίσιο: ${scope?.el ?? ''}`)}
+          data-testid="home-ask-scope"
+        >
+          <CfbGlyph name="discover" className="icon-sm" />
+          <BilingualText en={scope?.en ?? ''} el={scope?.el ?? ''} compact />
+          <ChevronDown className="icon-sm" aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align={hero ? 'end' : 'start'} data-testid="home-scope-menu">
+        {config.scopes.map((s) => (
+          <DropdownMenuItem key={s.id} data-testid={`home-scope-${s.id}`} onSelect={() => setScopeId(s.id)} className="gap-2">
+            <Check className={cn('icon-sm', s.id === scopeId ? 'opacity-100' : 'opacity-0')} aria-hidden="true" />
+            <BilingualText en={s.en} el={s.el} compact />
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   const intentChips = hero ? (
-    <div className="flex flex-wrap gap-2" role="group" aria-label={bilingualAria('Starting points', 'Αφετηρίες')}>
+    <div className="flex flex-wrap items-center gap-2" role="group" aria-label={bilingualAria('Starting points', 'Αφετηρίες')}>
       {config.actions.slice(0, 3).map((action) => (
         <button
           key={action.id}
@@ -159,6 +195,7 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
           <BilingualText en={action.en} el={action.el} compact />
         </button>
       ))}
+      <span className="ms-auto">{scopeMenu}</span>
     </div>
   ) : null;
 
@@ -166,7 +203,7 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
     <>
       {/* The greeting leads the card as the page's one visible heading — the
           AppShell h1 above it is sr-only in hero mode (docs §132.0). */}
-      <h2 id={`${boxId}-title`} hidden={!greeting} className="break-words text-2xl font-semibold text-primary-foreground sm:text-[1.75rem]" data-testid="home-greeting">
+      <h2 id={`${boxId}-title`} hidden={!greeting} className="break-words text-2xl font-semibold text-primary-foreground sm:text-3xl" data-testid="home-greeting">
         <BilingualText
           en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.`}
           el={`${hello.el}${name?.trim() ? `, ${name.trim()}` : ''}.`}
@@ -176,7 +213,7 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
         />
       </h2>
       {purposeEn ? (
-        <p className="break-words text-sm text-primary-foreground/85" data-testid="home-hero-purpose">
+        <p className="break-words text-sm text-primary-foreground/90" data-testid="home-hero-purpose">
           <BilingualText en={purposeEn} el={purposeEl ?? purposeEn} compact wrap />
         </p>
       ) : null}
@@ -187,13 +224,15 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
     <section
       aria-labelledby={greeting ? `${boxId}-title` : undefined}
       aria-label={greeting ? undefined : bilingualAria('Ask the assistant', 'Ρωτήστε τον βοηθό')}
-      className={hero ? 'rounded-3xl bg-primary p-4 text-primary-foreground sm:p-7' : 'space-y-3'}
+      className={hero ? 'relative rounded-3xl bg-primary p-4 text-primary-foreground sm:p-7' : 'space-y-3'}
       data-home-ask={greeting ? 'greeting' : 'box'}
       data-hero={hero || undefined}
       data-testid={`home-${role}-assistant`}
     >
-      <div className={hero ? 'grid items-center gap-5 sm:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
-        <div className={hero ? 'min-w-0 space-y-3 max-sm:order-2' : 'space-y-3'}>
+      {/* The figure joins only from xl (docs §133.4): below it the card is one
+          column, no cut-off figure beside or above the greeting. */}
+      <div className={hero ? 'grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
+        <div className={hero ? 'min-w-0 space-y-3 pe-10' : 'space-y-3'}>
           {hero ? heroBody : (
             <p id={`${boxId}-title`} hidden={!greeting} className="break-words text-sm text-muted-foreground" data-testid="home-greeting">
               {/* Without a name the greeting is just the greeting: the homes used
@@ -211,7 +250,11 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
       <form
         data-testid="home-ask-form"
         onSubmit={submit}
-        className="rounded-xl border border-input bg-card shadow-sm transition-colors focus-within:border-primary-muted"
+        className={hero
+          /* The hero field is one row — the pill, the placeholder, send at the
+             right end; the scope picker lives with the intent chips (§133.4). */
+          ? 'relative flex items-center gap-1 rounded-full border border-input bg-card py-1.5 pe-1.5 ps-4 shadow-sm transition-colors focus-within:border-primary-muted'
+          : 'rounded-xl border border-input bg-card shadow-sm transition-colors focus-within:border-primary-muted'}
       >
         <label htmlFor={`${boxId}-box`} className="sr-only">
           <BilingualText en="Ask the assistant" el="Ρωτήστε τον βοηθό" compact />
@@ -227,13 +270,15 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
           aria-controls={listOpen ? `${boxId}-commands` : undefined}
           aria-autocomplete="list"
           aria-activedescendant={listOpen ? `${boxId}-command-${active}` : undefined}
-          rows={2}
+          rows={hero ? 1 : 2}
           maxLength={2000}
           placeholder={sayOne('Ask anything, or ask for something to be done', 'Ρωτήστε οτιδήποτε ή ζητήστε να γίνει κάτι')}
-          className="block max-h-48 min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          className={hero
+            ? 'block h-9 w-full min-w-0 resize-none bg-transparent py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground'
+            : 'block max-h-48 min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3 text-sm text-foreground outline-none placeholder:text-muted-foreground'}
         />
         {listOpen && commands ? (
-          <ul id={`${boxId}-commands`} data-testid="home-command-list" role="listbox" aria-label={bilingualAria('Commands', 'Εντολές')} className="mx-2 mb-2 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1">
+          <ul id={`${boxId}-commands`} data-testid="home-command-list" role="listbox" aria-label={bilingualAria('Commands', 'Εντολές')} className={hero ? 'absolute inset-x-2 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1' : 'mx-2 mb-2 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1'}>
             {commands.map((command, index) => (
               <li
                 key={command.id}
@@ -254,52 +299,46 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
             ))}
           </ul>
         ) : null}
-        <div className="flex items-center gap-2 px-2 pb-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-               
-                className="h-8 gap-1.5 px-2 text-xs text-muted-foreground"
-                aria-label={bilingualAria(`About: ${scope?.en ?? ''}`, `Πλαίσιο: ${scope?.el ?? ''}`)}
-                data-testid="home-ask-scope"
-              >
-                <CfbGlyph name="discover" className="icon-sm" />
-                <BilingualText en={scope?.en ?? ''} el={scope?.el ?? ''} compact />
-                <ChevronDown className="icon-sm" aria-hidden="true" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" data-testid="home-scope-menu">
-              {config.scopes.map((s) => (
-                <DropdownMenuItem key={s.id} data-testid={`home-scope-${s.id}`} onSelect={() => setScopeId(s.id)} className="gap-2">
-                  <Check className={cn('icon-sm', s.id === scopeId ? 'opacity-100' : 'opacity-0')} aria-hidden="true" />
-                  <BilingualText en={s.en} el={s.el} compact />
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {plain ? null : (
-            <span className="ml-auto hidden text-2xs text-muted-foreground sm:inline">
-              <BilingualText en="Enter to send · Shift+Enter for a new line · / for commands" el="Enter για αποστολή · Shift+Enter για νέα γραμμή · / για εντολές" compact />
-            </span>
-          )}
-          {/* Dictation on phones sits beside Send (docs §107.7-7, §111). */}
-          <span className={cn('ml-auto flex shrink-0 items-center gap-1', !plain && 'sm:ml-0')}>
+        {hero ? (
+          /* One row in hero mode: dictation beside send at the right end
+             (docs §107.7-7, §133.4); the scope picker is up with the chips. */
+          <span className="flex shrink-0 items-center gap-1">
             <DictationButton value={value} onChange={setValue} size="small" />
             <Button
               type="submit"
               data-testid="home-ask-submit"
               size="icon"
               disabled={!value.trim()}
-              className="h-8 w-8 shrink-0 rounded-lg"
+              className="h-9 w-9 shrink-0 rounded-full"
               aria-label={bilingualAria('Send', 'Αποστολή')}
             >
               <ArrowUp className="icon-sm" aria-hidden="true" />
             </Button>
           </span>
-        </div>
+        ) : (
+          <div className="flex items-center gap-2 px-2 pb-2">
+            {scopeMenu}
+            {plain ? null : (
+              <span className="ml-auto hidden text-2xs text-muted-foreground sm:inline">
+                <BilingualText en="Enter to send · Shift+Enter for a new line · / for commands" el="Enter για αποστολή · Shift+Enter για νέα γραμμή · / για εντολές" compact />
+              </span>
+            )}
+            {/* Dictation on phones sits beside Send (docs §107.7-7, §111). */}
+            <span className={cn('ml-auto flex shrink-0 items-center gap-1', !plain && 'sm:ml-0')}>
+              <DictationButton value={value} onChange={setValue} size="small" />
+              <Button
+                type="submit"
+                data-testid="home-ask-submit"
+                size="icon"
+                disabled={!value.trim()}
+                className="h-8 w-8 shrink-0 rounded-lg"
+                aria-label={bilingualAria('Send', 'Αποστολή')}
+              >
+                <ArrowUp className="icon-sm" aria-hidden="true" />
+              </Button>
+            </span>
+          </div>
+        )}
       </form>
 
       {hero ? intentChips : (
@@ -312,9 +351,20 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
       )}
         </div>
         {hero && figure ? (
-          <div data-keep-icon="" className="max-sm:order-1 max-sm:flex max-sm:justify-center" aria-hidden="true">{figure}</div>
+          // Drawn in the card's own ink: fills/strokes are currentColor, so
+          // primary-foreground at 0.9; the accent spark inherits on bg-primary.
+          <div data-keep-icon="" className="hidden text-primary-foreground opacity-90 xl:block" aria-hidden="true">{figure}</div>
         ) : null}
       </div>
+      {hero ? (
+        /* The header's tools (pin, help) land here while the title stays
+           sr-only (docs §133.5); restyled for the solid card. */
+        <div
+          ref={heroActionsSlot}
+          data-hero-actions=""
+          className="absolute end-4 top-4 z-10 flex items-center gap-2 empty:hidden [&_button]:border-white/40 [&_button]:bg-white/15 [&_button]:text-primary-foreground [&_button:hover]:border-white/60 [&_button:hover]:bg-white/25 [&_button:hover]:text-primary-foreground"
+        />
+      ) : null}
     </section>
   );
 }

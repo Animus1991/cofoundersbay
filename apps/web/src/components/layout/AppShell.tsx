@@ -2,6 +2,7 @@
 
 import { type CSSProperties, type ElementType, ReactNode, createContext, useContext, memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
@@ -18,7 +19,7 @@ import { CommandPaletteHost } from './CommandPaletteHost';
 import { TOP_BANNER_STACK } from './useTopBannerHeight';
 import { PageRail, type PageRailSection } from './PageRail';
 import { usePageRail } from './PageRailContext';
-import { PageHeaderSlot } from './PageHeaderSlot';
+import { PageHeaderSlot, HeroActionsSlot } from './PageHeaderSlot';
 import { recordInAppView } from '@/lib/in-app-history';
 import { PageLead } from './PageLead';
 import { InfoHint } from '@/components/common/InfoHint';
@@ -330,6 +331,10 @@ export function AppShell({
     return () => clearTimeout(timer);
   }, [descIntoHelp, descSeenKey]);
   const [metaSlot, setMetaSlot] = useState<HTMLDivElement | null>(null);
+  // When the title is visually off (hero mode, docs §133) the header's tools
+  // would float alone in an empty band; a hero card registers a corner slot
+  // for them instead.
+  const [heroActions, setHeroActions] = useState<HTMLElement | null>(null);
   const askAiPrompt: AskPrompt = askAi
     ? askAi
     : {
@@ -401,10 +406,12 @@ export function AppShell({
                   </div>
                 ) : <PageLead en={pageDescription} el={pageDescriptionEl} />)}
               </div>
-              {(actions || showHelp || pinnable) && (
+              {!titleSrOnly && (actions || showHelp || pinnable) && (
                 // One group from `sm`. On a phone its two halves take their own
                 // grid places: a row for the star and help alone cost 48px on
-                // every page, so they stand beside the ask field instead.
+                // every page, so they stand beside the ask field instead. In
+                // hero mode (titleSrOnly) they portal into the hero card's
+                // corner instead — see below.
                 <div className="contents sm:flex sm:shrink-0 sm:flex-wrap sm:items-center sm:justify-end sm:gap-2 sm:[grid-area:actions]" data-page-actions="">
                   {actions ? <div className="flex min-w-0 flex-wrap items-center gap-2 [grid-area:actions] sm:contents">{actions}</div> : null}
                   {pinnable || showHelp ? (
@@ -428,7 +435,22 @@ export function AppShell({
           <div ref={setMetaSlot} className="flex flex-wrap items-center gap-2 empty:hidden" />
         </header>
       )}
-      <PageHeaderSlot.Provider value={{ inHeader: headerShown, slot: metaSlot }}>{children}</PageHeaderSlot.Provider>
+      {/* In hero mode the header's tools portal into the hero card's corner
+          slot (docs §133); with no slot registered they stay off rather than
+          floating in an empty band. */}
+      {titleSrOnly && heroActions && (actions || showHelp || pinnable)
+        ? createPortal(
+            <div className="flex items-center gap-2" data-page-actions="">
+              {actions}
+              {pinnable ? <PinPageButton /> : null}
+              {showHelp ? <PageContextualHelp compact defaultOpen={false} /> : null}
+            </div>,
+            heroActions,
+          )
+        : null}
+      <PageHeaderSlot.Provider value={{ inHeader: headerShown, slot: metaSlot }}>
+        <HeroActionsSlot.Provider value={setHeroActions}>{children}</HeroActionsSlot.Provider>
+      </PageHeaderSlot.Provider>
     </div>
   );
 
