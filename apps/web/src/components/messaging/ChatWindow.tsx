@@ -648,8 +648,8 @@ export function ChatWindow({
     }
   });
 
+  // A calm flat wash for the thread pane — no gradients (docs §132.2).
   return (
-    {/* A calm flat wash for the thread pane — no gradients (docs §132.2). */}
     <div className={cn('relative flex h-full min-h-0 flex-col bg-muted/30', className)}>
       {/* Header */}
       <div className="relative z-10 flex flex-col border-b border-border bg-background/75 backdrop-blur-xl">
