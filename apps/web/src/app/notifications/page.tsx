@@ -18,6 +18,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { StatusText } from '@/components/common/StatusText';
+import { needsActionSplit } from '@/lib/notifications-inbox';
 import { notificationsEn, notificationsEl } from '@/lib/i18n/strings-notifications';
 import { bilingualAria } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
@@ -556,11 +557,9 @@ export default function NotificationsPage() {
   // «Χρειάζεται ενέργεια»: the unread rows that ask for a decision (connection
   // requests) lead the inbox, out of the date groups; the rest keep the date
   // grouping below (docs §132.3).
-  const ACTIONABLE_TYPES = new Set(['connection']);
-  const actionable = view === 'saved' ? [] : notifications.filter((n) => !n.readAt && ACTIONABLE_TYPES.has(n.type));
-  const grouped = groupByDate(actionable.length
-    ? notifications.filter((n) => !actionable.includes(n))
-    : notifications);
+  const { actionable: splitActionable, rest } = needsActionSplit(notifications);
+  const actionable = view === 'saved' ? [] : splitActionable;
+  const grouped = groupByDate(actionable.length ? rest : notifications);
   const activeFilter = FILTER_TABS.find((f) => f.value === activeTab);
 
   const rail: PageRailSection[] = [

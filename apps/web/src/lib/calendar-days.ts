@@ -24,3 +24,23 @@ export function calendarDaysUntil(date: string | number | Date | null | undefine
   const b = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
   return Math.round((a - b) / 86_400_000);
 }
+
+/**
+ * The event kinds sitting on each day of a UTC month — the month cell's dots
+ * take their colour (and their sr-only word) from this (docs §132.4).
+ */
+export function eventTypesForDay<T extends string>(
+  events: { date: string; type: T }[],
+  year: number,
+  month: number,
+): Map<number, Set<T>> {
+  const map = new Map<number, Set<T>>();
+  for (const e of events) {
+    const ed = new Date(e.date);
+    if (ed.getUTCFullYear() !== year || ed.getUTCMonth() !== month) continue;
+    const day = ed.getUTCDate();
+    if (!map.has(day)) map.set(day, new Set());
+    map.get(day)!.add(e.type);
+  }
+  return map;
+}

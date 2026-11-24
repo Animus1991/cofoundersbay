@@ -60,6 +60,15 @@ describe('the conversation list before and after it is read', () => {
     expect(screen.getByText('Founder')).toBeTruthy();
     expect(screen.queryByText('Cofounder')).toBeNull();
   });
+
+  it('says an unread row is unread: the word, the count, and the line for a screen reader', () => {
+    const { container } = wrap(<ConversationList conversations={[{ ...marcus, unreadCount: 2 }]} onSelect={vi.fn()} state="ready" />);
+    // Never colour alone: «Νέο»/New as a word chip, the count pill, and
+    // "{n} αδιάβαστα" for a screen reader (docs §132.2).
+    expect(screen.getByText('New')).toBeTruthy();
+    const srTexts = [...container.querySelectorAll('.sr-only')].map((el) => el.textContent);
+    expect(srTexts).toContain('2 unread messages. 2 αδιάβαστα μηνύματα');
+  });
 });
 
 describe('the pane beside the inbox', () => {

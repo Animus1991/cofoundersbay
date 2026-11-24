@@ -41,6 +41,8 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { getUpcomingMentorshipSessions, listEvents, listMilestones, type EventItem, type Milestone, type MentorshipSessionItem } from '@/lib/api';
 import { buildIcs, downloadIcs, type IcsEntry } from '@/lib/ics';
 import { qk } from '@/lib/query-keys';
+import { eventTypesForDay } from '@/lib/calendar-days';
+import { TYPE_CONFIG } from './type-config';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -51,7 +53,7 @@ import { useInvestorFollowUps, type FollowUpLead } from '@/lib/follow-ups';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type EventType = 'milestone' | 'session' | 'event' | 'deadline' | 'meeting';
+type EventType = import('./type-config').EventType;
 
 interface CalendarEvent {
   id: string;
@@ -71,14 +73,6 @@ interface CalendarEvent {
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
-
-const TYPE_CONFIG: Record<EventType, { labelEn: string; labelEl: string; color: string; icon: React.ElementType; bg: string }> = {
-  milestone:  { labelEn: 'Milestone', labelEl: 'Ορόσημο', color: 'text-status-warning',   icon: Flag,           bg: 'bg-status-warning-bg border-status-warning-border' },
-  session:    { labelEn: 'Session',   labelEl: 'Συνεδρία', color: 'text-status-info',    icon: Video,          bg: 'bg-status-info-bg border-status-info-border' },
-  event:      { labelEn: 'Event',     labelEl: 'Εκδήλωση', color: 'text-status-accent',  icon: CalendarDays,   bg: 'bg-status-accent-bg border-status-accent-border' },
-  deadline:   { labelEn: 'Deadline',  labelEl: 'Προθεσμία', color: 'text-status-danger',     icon: Clock,          bg: 'bg-status-danger-bg border-status-danger-border' },
-  meeting:    { labelEn: 'Meeting',   labelEl: 'Συνάντηση', color: 'text-status-success', icon: Users,          bg: 'bg-status-success-bg border-status-success-border' },
-};
 
 const DAYS = [
   { en: 'Sun', el: 'Κυ' },
@@ -436,18 +430,7 @@ function MiniCalendar({
 
   // Per-day event kinds, so a cell's dots carry the kind's colour and word
   // (never colour alone — the aria-label and the sr-only line say it).
-  const eventTypesByDay = useMemo(() => {
-    const map = new Map<number, Set<EventType>>();
-    events.forEach((e) => {
-      const ed = new Date(e.date);
-      if (ed.getUTCFullYear() === year && ed.getUTCMonth() === month) {
-        const day = ed.getUTCDate();
-        if (!map.has(day)) map.set(day, new Set());
-        map.get(day)!.add(e.type);
-      }
-    });
-    return map;
-  }, [events, year, month]);
+  const eventTypesByDay = useMemo(() => eventTypesForDay(events, year, month), [events, year, month]);
 
   const cells: (number | null)[] = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
