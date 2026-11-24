@@ -1400,7 +1400,7 @@ export default function MatchesPage() {
 
               {/* Matches grid */}
               {filtered.length > 0 && viewMode !== 'list' && (
-                <div className={cn('grid grid-cols-1 gap-4',
+                <div className={cn('grid grid-cols-1 items-start gap-4',
                   viewMode === 'grid3' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2')}
                   data-tour="matches-grid">
                   {filtered.map((hit) => {

@@ -716,7 +716,7 @@ export default function PitchDeckPage() {
           </div>
 
           {/* Navigation controls */}
-          <div className="flex items-center justify-between mt-4">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mt-4">
             <Button
               variant="outline"
               onClick={() => setCurrentSlide((s) => Math.max(s - 1, 0))}
@@ -729,7 +729,7 @@ export default function PitchDeckPage() {
                 (or above) does: the touch-target floor drew them as one
                 black blob. The place in the deck says it in words, where the
                 counter below the controls said it again (docs §92). */}
-            <p className="text-sm text-muted-foreground tabular-nums" aria-live="polite">
+            <p className="order-first basis-full text-center sm:order-none sm:basis-auto text-sm text-muted-foreground tabular-nums" aria-live="polite">
               <BilingualText
                 en={`Slide ${currentSlide + 1} of ${slides.length}`}
                 el={`Διαφάνεια ${currentSlide + 1} από ${slides.length}`}
