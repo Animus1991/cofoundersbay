@@ -228,7 +228,8 @@ export function ShapeLibraryPanel({ onClose, onAddShape }: ShapeLibraryPanelProp
                 onClick={() => toggleCat(cat.name)}
               >
                 {open ? <ChevronDown className="icon-sm text-muted-foreground/60" /> : <ChevronRight className="icon-sm text-muted-foreground/60" />}
-                <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">{cat.name}</span>
+                <span className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />{cat.name}</span>
                 <span className="ml-auto text-2xs text-muted-foreground/40">{cat.templates.length}</span>
               </button>
 

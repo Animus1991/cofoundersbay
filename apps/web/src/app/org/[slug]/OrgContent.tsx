@@ -391,25 +391,29 @@ export function OrgContent({ org, slug }: OrgContentProps) {
               <CardContent className="space-y-5">
                 {org.mission && (
                   <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Mission" el="Αποστολή" compact /></h3>
+                    <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" /><BilingualText en="Mission" el="Αποστολή" compact /></h3>
                     <p className="card-body text-foreground/80 first-letter:uppercase">{org.mission}</p>
                   </div>
                 )}
                 {org.industry && (
                   <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Industry" el="Κλάδος" compact /></h3>
+                    <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" /><BilingualText en="Industry" el="Κλάδος" compact /></h3>
                     <FactLine className="text-sm text-foreground" items={org.industry.split(',').map((ind: string) => ind.trim())} />
                   </div>
                 )}
                 {org.focus && (
                   <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Focus Areas" el="Πεδία εστίασης" compact /></h3>
+                    <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" /><BilingualText en="Focus Areas" el="Πεδία εστίασης" compact /></h3>
                     <FactLine className="text-sm text-foreground" items={org.focus.split(',').map((f: string) => f.trim())} />
                   </div>
                 )}
                 {org.size && (
                   <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Size" el="Μέγεθος" compact /></h3>
+                    <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-warning-bg border-status-warning-border" /><BilingualText en="Size" el="Μέγεθος" compact /></h3>
                     <p className="text-sm text-foreground/80">{org.size}</p>
                   </div>
                 )}

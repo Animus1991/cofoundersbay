@@ -482,7 +482,8 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
               </div>
               {Array.isArray(previewData.nodeData) && previewData.nodeData.length > 0 && (
                 <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Nodes</p>
+                  <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />Nodes</p>
                   {(previewData.nodeData as Array<{ title?: string; type?: string }>).slice(0, 20).map((node, i) => (
                     <div key={i} className="flex items-center gap-2 text-xs">
                       <Badge variant="secondary" className="text-xs capitalize">{node.type ?? 'node'}</Badge>

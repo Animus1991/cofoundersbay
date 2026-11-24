@@ -201,7 +201,8 @@ export function ProfileCompleteness({
             )}
 
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
                 {showMissingOnly ? 'Missing Fields' : 'Complete these to improve visibility'}
               </p>
               <div className="space-y-1.5">

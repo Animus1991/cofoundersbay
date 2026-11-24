@@ -581,7 +581,7 @@ function Board() {
                   <BilingualText en="No responses yet. Share the public card to reach people outside the platform." el="Δεν υπάρχουν απαντήσεις ακόμη. Μοιραστείτε τη δημόσια κάρτα για να φτάσει και εκτός πλατφόρμας." wrap />
                 </p>
               ) : (
-                <div role="tablist" aria-label={bilingualAria(CMT.responses.en, CMT.responses.el)} className="inline-flex max-w-full flex-wrap items-center gap-1 rounded-full bg-muted/70 p-1">
+                <div role="tablist" aria-label={bilingualAria(CMT.responses.en, CMT.responses.el)} className="tab-strip inline-flex max-w-full items-center gap-1 overflow-x-auto scrollbar-hide rounded-full bg-muted/70 p-1">
                   {responses.map((t) => (
                     <button
                       key={t.id}
@@ -590,7 +590,7 @@ function Board() {
                       aria-selected={t.id === ownerThread?.id}
                       onClick={() => router.replace(`/commitments/${encodeURIComponent(cardId)}?thread=${encodeURIComponent(t.id)}`)}
                       className={cn(
-                        'flex min-h-10 items-center gap-2 rounded-full px-3.5 py-1.5 text-sm transition-colors',
+                        'flex min-h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm transition-colors',
                         t.id === ownerThread?.id ? 'bg-primary text-primary-foreground font-medium shadow-sm' : 'text-muted-foreground hover:text-foreground',
                       )}
                     >

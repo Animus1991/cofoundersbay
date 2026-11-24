@@ -17,6 +17,7 @@ import { ProfileViewersCard } from '@/components/analytics/ProfileViewersCard';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -376,16 +377,18 @@ function AnalyticsSkeleton() {
 
 function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
-    <Card>
-      <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-        <p role="alert" className="text-sm text-muted-foreground">
-          <BilingualText en={analyticsEn('load_failed')} el={analyticsEl('load_failed')} />
-        </p>
-        <Button variant="secondary" size="sm" onClick={onRetry}>
-          <BilingualText en={analyticsEn('try_again')} el={analyticsEl('try_again')} compact />
-        </Button>
-      </CardContent>
-    </Card>
+    <div role="alert">
+      <EmptyState
+        illustration="default"
+        size="sm"
+        title={<BilingualText en={analyticsEn('load_failed')} el={analyticsEl('load_failed')} />}
+        action={(
+          <Button variant="secondary" size="sm" onClick={onRetry}>
+            <BilingualText en={analyticsEn('try_again')} el={analyticsEl('try_again')} compact />
+          </Button>
+        )}
+      />
+    </div>
   );
 }
 
@@ -556,7 +559,7 @@ export default function AnalyticsPage() {
             />
           </p>
           <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-            <div className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-1 rounded-full bg-muted/70 p-1">
+            <div className="tab-strip inline-flex min-w-0 max-w-full items-center gap-1 overflow-x-auto scrollbar-hide rounded-full bg-muted/70 p-1">
               {PERIODS.map((p) => (
                 <button
                   key={p}
@@ -564,7 +567,7 @@ export default function AnalyticsPage() {
                   aria-pressed={period === p}
                   onClick={() => setPeriod(p)}
                   className={cn(
-                    'min-h-10 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors focus-ring',
+                    'min-h-10 shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors focus-ring',
                     period === p
                       ? 'bg-primary text-primary-foreground shadow-sm'
                       : 'text-muted-foreground hover:text-foreground',
@@ -804,14 +807,17 @@ export default function AnalyticsPage() {
               {topContent && topContent.length > 0 ? (
                 <TopContentList content={topContent} />
               ) : (
-                <Card className="min-w-0">
-                  <CardContent className="flex flex-col items-center gap-3 py-12 text-center text-sm text-muted-foreground">
-                    <p><BilingualText en={analyticsEn('no_engagement')} el={analyticsEl('no_engagement')} /></p>
+                <EmptyState
+                  className="min-w-0"
+                  illustration="default"
+                  size="sm"
+                  title={<BilingualText en={analyticsEn('no_engagement')} el={analyticsEl('no_engagement')} />}
+                  action={(
                     <Button asChild variant="outline" size="sm">
                       <Link href="/feed"><BilingualText en={analyticsEn('open_feed')} el={analyticsEl('open_feed')} compact /></Link>
                     </Button>
-                  </CardContent>
-                </Card>
+                  )}
+                />
               )}
             </div>
           )}
@@ -827,14 +833,16 @@ export default function AnalyticsPage() {
               {profileViews && profileViews.length > 0 ? (
                 <ProfileViewsChart data={profileViews} />
               ) : (
-                <Card>
-                  <CardContent className="flex flex-col items-center gap-3 py-16 text-center text-sm text-muted-foreground">
-                    <p><BilingualText en={analyticsEn('no_views')} el={analyticsEl('no_views')} /></p>
+                <EmptyState
+                  illustration="default"
+                  size="sm"
+                  title={<BilingualText en={analyticsEn('no_views')} el={analyticsEl('no_views')} />}
+                  action={(
                     <Button asChild variant="outline" size="sm">
                       <Link href="/profile"><BilingualText en={analyticsEn('open_profile')} el={analyticsEl('open_profile')} compact /></Link>
                     </Button>
-                  </CardContent>
-                </Card>
+                  )}
+                />
               )}
               <ProfileViewersCard />
               {/* The Overview's six tiles were repeated here; they stay on the

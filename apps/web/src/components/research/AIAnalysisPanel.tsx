@@ -388,7 +388,8 @@ export function AIAnalysisPanel({
               </div>
 
               <div className="rounded-xl border border-border p-2.5">
-                <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Selected nodes</p>
+                <p className="flex items-center gap-2 text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />Selected nodes</p>
                 {selectedNodes.length === 0 ? (
                   <p className="text-2xs text-muted-foreground italic">Click nodes on the canvas to select them</p>
                 ) : (
@@ -477,7 +478,8 @@ export function AIAnalysisPanel({
               </div>
 
               <div className="rounded-xl border border-border p-2.5">
-                <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Nodes to synthesize</p>
+                <p className="flex items-center gap-2 text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />Nodes to synthesize</p>
                 {selectedNodes.length < 2 ? (
                   <p className="text-2xs text-muted-foreground italic">Select at least 2 nodes on the canvas</p>
                 ) : (

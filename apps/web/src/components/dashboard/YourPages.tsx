@@ -101,7 +101,8 @@ export function YourPagesDialog({ open, onOpenChange }: { open: boolean; onOpenC
 
 function SectionTitle({ en, el }: { en: string; el: string }) {
   return (
-    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+    <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
       <BilingualText en={en} el={el} compact />
     </p>
   );

@@ -217,7 +217,8 @@ export default function UserBillingPage() {
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
           <Card className="border-border shadow-none">
             <CardHeader className="pb-2">
-              <p className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
+              <p className="flex items-center gap-2 text-2xs font-medium uppercase tracking-widest text-muted-foreground">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
                 <BilingualText en="Current plan" el="Τρέχον πλάνο" />
               </p>
             </CardHeader>
@@ -280,7 +281,8 @@ export default function UserBillingPage() {
           {!subLoading && !planUnknown && (sub?.plan?.name === 'free' || !sub) && (
             <Card className="border-primary-muted bg-primary-subtle">
               <CardHeader className="pb-2">
-                <p className="text-2xs font-medium uppercase tracking-widest text-primary-accessible">
+                <p className="flex items-center gap-2 text-2xs font-medium uppercase tracking-widest text-primary-accessible">
+  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />
                   <BilingualText en="Upgrade available" el="Διαθέσιμη αναβάθμιση" />
                 </p>
               </CardHeader>
