@@ -10,6 +10,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { CANCELLED, choiceControl, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { Button } from '@/components/ui/button';
@@ -920,21 +921,15 @@ export default function MilestonesPage() {
             {Array.from({ length: 4 }).map((_, i) => <MilestoneSkeleton key={i} />)}
           </div>
         ) : milestones.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border bg-card/50 py-16 text-center">
-            <CfbGlyph name="flag" className="icon-lg text-muted-foreground/50" />
-            <div>
-              <p className="page-section font-medium text-foreground">
-                {showFilteredEmpty
-                  ? <BilingualText en={milestoneEn('empty_filter_title')} el={milestoneEl('empty_filter_title')} />
-                  : <BilingualText en={milestoneEn('empty_title')} el={milestoneEl('empty_title')} />}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {showFilteredEmpty
-                  ? <BilingualText en={milestoneEn('empty_filter_hint')} el={milestoneEl('empty_filter_hint')} />
-                  : <BilingualText en={milestoneEn('empty_hint')} el={milestoneEl('empty_hint')} />}
-              </p>
-            </div>
-            {showFilteredEmpty ? (
+          <EmptyState
+            illustration={showFilteredEmpty ? 'search' : 'calendar'}
+            title={showFilteredEmpty
+              ? <BilingualText en={milestoneEn('empty_filter_title')} el={milestoneEl('empty_filter_title')} />
+              : <BilingualText en={milestoneEn('empty_title')} el={milestoneEl('empty_title')} />}
+            description={showFilteredEmpty
+              ? <BilingualText en={milestoneEn('empty_filter_hint')} el={milestoneEl('empty_filter_hint')} />
+              : <BilingualText en={milestoneEn('empty_hint')} el={milestoneEl('empty_hint')} />}
+            action={showFilteredEmpty ? (
               <Button
                 type="button"
                 variant="outline"
@@ -954,7 +949,7 @@ export default function MilestonesPage() {
                 <Plus className="icon-sm" /> <BilingualText en={milestoneEn('empty_cta')} el={milestoneEl('empty_cta')} compact />
               </Button>
             )}
-          </div>
+          />
         ) : (
           viewMode === 'board' ? (
             <MilestoneBoard

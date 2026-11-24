@@ -36,7 +36,10 @@ import { qk } from '@/lib/query-keys';
 import { cn, formatRelativeTime } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
-import { roleShortcutsSection } from '@/components/dashboard/RoleShortcuts';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { YourPagesRow } from '@/components/dashboard/YourPages';
+import { HomeShortcuts } from '@/components/dashboard/HomeShortcuts';
+
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { useStoredUser } from '@/hooks/useStoredUser';
 
@@ -217,10 +220,29 @@ export default function AdminDashboardPage() {
   const memory = health?.services?.memory;
   const database = health?.services?.database;
 
+  /* The shortcuts and the reader's pages live in the page's tools, one
+     gesture away — the question box is alone on the page, as on the
+     founder's home (docs §116/§125). */
+  const rail: PageRailSection[] = [
+    {
+      id: 'pages',
+      glyph: 'bookmark',
+      labelEn: 'Your pages',
+      labelEl: 'Οι σελίδες σας',
+      content: <YourPagesRow />,
+    },
+    {
+      id: 'shortcuts',
+      glyph: 'spark',
+      labelEn: 'Quick actions',
+      labelEl: 'Γρήγορες ενέργειες',
+      content: <HomeShortcuts role="admin" pages={false} />,
+    },
+  ];
   return (
     <AppShell
       askAi={false}
-      rail={[roleShortcutsSection('admin')]}
+      rail={rail}
       title="Platform overview"
       titleEl="Επισκόπηση πλατφόρμας"
       description="Who uses the platform, what waits on an admin, and how the API is running."
@@ -253,7 +275,7 @@ export default function AdminDashboardPage() {
       <div className="space-y-6">
         {/* What waits on the reader comes in Today below, as on every role's home
             (docs §115): the hero's own waiting chips would say it twice. */}
-        <HomeAskHero role="admin" plain showWaiting={false} name={me?.displayName} lead={{ en: 'What is waiting on you, and how the platform is doing.', el: 'Τι εκκρεμεί για εσάς και πώς πάει η πλατφόρμα.' }} />
+        <HomeAskHero role="admin" showWaiting={false} plain name={me?.displayName} lead={{ en: 'What is waiting on you, and how the platform is doing.', el: 'Τι εκκρεμεί για εσάς και πώς πάει η πλατφόρμα.' }} />
         <HomeToday />
         {attention[0] ? (
           <HomeNextStep

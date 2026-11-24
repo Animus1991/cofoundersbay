@@ -43,7 +43,10 @@ import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
-import { roleShortcutsSection } from '@/components/dashboard/RoleShortcuts';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { YourPagesRow } from '@/components/dashboard/YourPages';
+import { HomeShortcuts } from '@/components/dashboard/HomeShortcuts';
+
 import { HomeFold } from '@/components/dashboard/HomeFold';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { formatFee } from '@/lib/mentor-fee';
@@ -377,13 +380,33 @@ export default function MentorDashboard() {
     />
   ) : null;
 
+
+  /* The shortcuts and the reader's pages live in the page's tools, one
+     gesture away — the question box is alone on the page, as on the
+     founder's home (docs §116/§125). */
+  const rail: PageRailSection[] = [
+    {
+      id: 'pages',
+      glyph: 'bookmark',
+      labelEn: 'Your pages',
+      labelEl: 'Οι σελίδες σας',
+      content: <YourPagesRow />,
+    },
+    {
+      id: 'shortcuts',
+      glyph: 'spark',
+      labelEn: 'Quick actions',
+      labelEl: 'Γρήγορες ενέργειες',
+      content: <HomeShortcuts role="mentor" pages={false} />,
+    },
+  ];
   return (
-    <AppShell askAi={false} showHelp rail={[roleShortcutsSection('mentor')]}
+    <AppShell askAi={false} showHelp rail={rail}
       description="Sessions, mentee requests, reviews, and earnings at a glance."
       descriptionEl="Συνεδρίες, αιτήματα καθοδηγούμενων, αξιολογήσεις και έσοδα με μια ματιά."
     >
       <div className="space-y-6">
-        <HomeAskHero role="mentor" plain showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
+        <HomeAskHero role="mentor" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
         <HomeToday />
 
         {/* One next step, before everything else. Within the hour it stays the
@@ -473,7 +496,7 @@ export default function MentorDashboard() {
                 title="Mentorship requests"
                 titleEl="Αιτήματα καθοδήγησης"
                 count={requestData ? pendingRequests.length : undefined}
-                icon={Zap}
+                icon={Zap} iconTint="warning"
                 action={{ href: '/mentor/requests', label: 'View all', labelEl: 'Όλα' }}
                 contentClassName="card-rows"
               >
@@ -485,7 +508,7 @@ export default function MentorDashboard() {
               </SectionCard>
             )}
 
-            <SectionCard title="Upcoming sessions" titleEl="Επόμενες συνεδρίες" icon={Calendar} action={{ href: '/mentor/sessions', label: 'View all', labelEl: 'Όλες' }} contentClassName="card-rows">
+            <SectionCard title="Upcoming sessions" titleEl="Επόμενες συνεδρίες" icon={Calendar} iconTint="warning" action={{ href: '/mentor/sessions', label: 'View all', labelEl: 'Όλες' }} contentClassName="card-rows">
               {upcomingAll.map((session, i) => (
                 <SessionRowItem key={session.id} session={session} next={i === 0} />
               ))}
@@ -494,7 +517,7 @@ export default function MentorDashboard() {
               ) : sessionsKnown && upcomingAll.length === 0 && <EmptyLine en="No upcoming sessions scheduled." el="Δεν υπάρχουν προγραμματισμένες συνεδρίες." />}
             </SectionCard>
 
-            <SectionCard title="Your mentees" titleEl="Οι καθοδηγούμενοί σας" icon={UserCheck} action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }} contentClassName="card-rows">
+            <SectionCard title="Your mentees" titleEl="Οι καθοδηγούμενοί σας" icon={UserCheck} iconTint="accent" action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }} contentClassName="card-rows">
               {mentees.map((mentee) => (
                 <MenteeRowItem key={mentee.id} mentee={mentee} />
               ))}

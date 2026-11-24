@@ -43,7 +43,10 @@ import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { priceEl } from '@/lib/i18n/units';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
-import { roleShortcutsSection } from '@/components/dashboard/RoleShortcuts';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { YourPagesRow } from '@/components/dashboard/YourPages';
+import { HomeShortcuts } from '@/components/dashboard/HomeShortcuts';
+
 import { HomeFold } from '@/components/dashboard/HomeFold';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { FactLine } from '@/components/common/FactLine';
@@ -294,15 +297,35 @@ export default function ProviderDashboard() {
     );
   }
 
+
+  /* The shortcuts and the reader's pages live in the page's tools, one
+     gesture away — the question box is alone on the page, as on the
+     founder's home (docs §116/§125). */
+  const rail: PageRailSection[] = [
+    {
+      id: 'pages',
+      glyph: 'bookmark',
+      labelEn: 'Your pages',
+      labelEl: 'Οι σελίδες σας',
+      content: <YourPagesRow />,
+    },
+    {
+      id: 'shortcuts',
+      glyph: 'spark',
+      labelEn: 'Quick actions',
+      labelEl: 'Γρήγορες ενέργειες',
+      content: <HomeShortcuts role="provider" pages={false} />,
+    },
+  ];
   return (
     // "Manage services" in the header was the "Manage" of "Your services"
     // below, to the same page (docs §95).
-    <AppShell askAi={false} rail={[roleShortcutsSection('provider')]}
+    <AppShell askAi={false} rail={rail}
       description="Inquiries, active projects, services and reviews - in one view."
       descriptionEl="Αιτήματα, ενεργά έργα, υπηρεσίες και αξιολογήσεις — σε μία προβολή."
     >
       <div className="space-y-6">
-        <HomeAskHero role="provider" plain showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
+        <HomeAskHero role="provider" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
         <HomeToday />
 
         {!inquiriesLoading && waiting[0] ? (
@@ -363,7 +386,7 @@ export default function ProviderDashboard() {
           <div className="space-y-6 lg:col-span-2">
             {/* Only what waits on the provider: settled inquiries are projects
                 below, or closed, and a Reply beside them offered nothing. */}
-            <SectionCard title="Waiting on you" titleEl="Σας περιμένουν" icon={MessageSquare} action={{ href: '/provider/inquiries', label: 'All inquiries', labelEl: 'Όλα τα αιτήματα' }} contentClassName="card-rows">
+            <SectionCard title="Waiting on you" titleEl="Σας περιμένουν" icon={MessageSquare} iconTint="warning" action={{ href: '/provider/inquiries', label: 'All inquiries', labelEl: 'Όλα τα αιτήματα' }} contentClassName="card-rows">
               {inquiriesLoading && [0, 1].map((i) => <Skeleton key={i} className="h-16" />)}
               {/* The client's circle, name over the service, the state and
                   when at the right; the message and Reply start on the
@@ -402,7 +425,7 @@ export default function ProviderDashboard() {
               )}
             </SectionCard>
 
-            <SectionCard title="Projects" titleEl="Έργα" icon={FolderKanban} action={{ href: '/provider/projects', label: 'All projects', labelEl: 'Όλα τα έργα' }} contentClassName="card-rows">
+            <SectionCard title="Projects" titleEl="Έργα" icon={FolderKanban} iconTint="success" action={{ href: '/provider/projects', label: 'All projects', labelEl: 'Όλα τα έργα' }} contentClassName="card-rows">
               {projects.slice(0, 5).map((project) => (
                 <RowHead
                   key={project.id}
@@ -484,7 +507,7 @@ export default function ProviderDashboard() {
               ]}
             />
 
-            <SectionCard title="Recent reviews" titleEl="Πρόσφατες αξιολογήσεις" icon={Star} action={{ href: '/provider/reviews', label: 'All', labelEl: 'Όλες' }} contentClassName="card-rows">
+            <SectionCard title="Recent reviews" titleEl="Πρόσφατες αξιολογήσεις" icon={Star} iconTint="accent" action={{ href: '/provider/reviews', label: 'All', labelEl: 'Όλες' }} contentClassName="card-rows">
               {reviews.map((review) => (
                 <figure key={review.id} className="space-y-1.5">
                   <figcaption>

@@ -19,6 +19,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { EmptyIllustration } from '@/components/common/EmptyIllustration';
 import { buildIcs, downloadIcs, icsFileName } from '@/lib/ics';
 import { onRadioGroupKeyDown, radioTabIndex } from '@/lib/radio-keys';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -177,19 +178,15 @@ export default function EventDetailPage() {
     return (
       <AppShell title="Event not found" titleEl="Η εκδήλωση δεν βρέθηκε">
         <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-sm text-muted-foreground">
-              <BilingualText
-                en="This event does not exist, was removed, or is not visible to you."
-                el="Η εκδήλωση δεν υπάρχει, αφαιρέθηκε ή δεν είναι ορατή σε εσάς."
-                compact
-                wrap
-              />
-            </p>
-            <Button variant="outline" className="mt-4 gap-2" asChild>
+          <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
+            {/* A mark, not a reason: the page cannot say why it is missing. */}
+            <div data-keep-icon="" className="h-20 w-20 text-muted-foreground">
+              <EmptyIllustration type="calendar" />
+            </div>
+            <Button variant="outline" className="gap-2" asChild>
               <Link href="/events">
                 <ArrowLeft className="icon-sm" aria-hidden="true" />
-                <BilingualText en="All events" el="Όλες οι εκδηλώσεις" compact />
+                <BilingualText en="Back to events" el="Πίσω στις εκδηλώσεις" compact />
               </Link>
             </Button>
           </CardContent>
@@ -247,8 +244,10 @@ export default function EventDetailPage() {
               className="aspect-[3/1] w-full rounded-2xl object-cover"
             />
           )}
-          <Card>
-            <CardContent className="space-y-3">
+          {/* The facts as one flat tinted strip, not a card to be read: same
+              content, the event's warning wash (docs §130.4). */}
+          <div className="space-y-3 rounded-2xl bg-status-warning-bg px-4 py-3" aria-label={bilingualAria('At a glance', 'Σύντομα')}>
+            <h2 className="card-meta font-medium text-primary-accessible"><BilingualText en="At a glance" el="Σύντομα" compact /></h2>
               <p className="flex items-start gap-2 text-sm">
                 <Clock className="mt-0.5 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                 <span>
@@ -282,8 +281,7 @@ export default function EventDetailPage() {
                 {event.capacity != null && ` / ${event.capacity}`}
                 <BilingualText en="attending" el="συμμετέχουν" compact />
               </p>
-            </CardContent>
-          </Card>
+          </div>
           {event.description && (
             <Card>
               <CardContent>

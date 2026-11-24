@@ -1,7 +1,8 @@
 'use client';
 
-import { type CSSProperties, ReactNode, createContext, useContext, memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type CSSProperties, type ElementType, ReactNode, createContext, useContext, memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
@@ -18,10 +19,12 @@ import { CommandPaletteHost } from './CommandPaletteHost';
 import { TOP_BANNER_STACK } from './useTopBannerHeight';
 import { PageRail, type PageRailSection } from './PageRail';
 import { usePageRail } from './PageRailContext';
-import { PageHeaderSlot } from './PageHeaderSlot';
+import { PageHeaderSlot, HeroActionsSlot } from './PageHeaderSlot';
 import { recordInAppView } from '@/lib/in-app-history';
 import { PageLead } from './PageLead';
 import { InfoHint } from '@/components/common/InfoHint';
+import { SectionSticker, type StickerTint } from '@/components/dashboard/SectionSticker';
+import type { CfbGlyphName } from '@/components/icons/CfbGlyph';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -242,6 +245,12 @@ type AppShellProps = {
   /** Extra class on the page H1 — founder overview scales the title locally. */
   titleClassName?: string;
   /**
+   * The h1 stays for the accessibility tree but is not painted — for a page
+   * whose hero card already carries the greeting as its visible heading
+   * (/home in hero mode, docs §132.0).
+   */
+  titleSrOnly?: boolean;
+  /**
    * Contextual Ask AI prompt, sent when the field is empty: a pair from
    * `lib/page-questions` (sent in the reader's language) or a string built
    * from the page's data. Defaults to a question about the page title.
@@ -263,6 +272,11 @@ type AppShellProps = {
    * list is what people come back for, read once and then in the way.
    */
   leadAsHint?: boolean;
+  /**
+   * A tinted round sticker before the h1 — the SectionSticker idiom lifted
+   * from the section heads to the page itself.
+   */
+  titleSticker?: { glyph?: CfbGlyphName; icon?: ElementType; tint: StickerTint };
 };
 
 /**
@@ -285,9 +299,11 @@ export function AppShell({
   fullHeight = false,
   contentClassName,
   titleClassName,
+  titleSrOnly = false,
   askAi,
   rail,
   leadAsHint = false,
+  titleSticker,
 }: AppShellProps) {
   const insideFrame = useContext(InAppShellFrame);
   const pathname = usePathname() ?? '/';
@@ -297,7 +313,28 @@ export function AppShell({
   const pageDescription = resolved.description;
   const pageDescriptionEl = resolved.descriptionEl;
   const showAskAi = Boolean(pageTitle) && askAi !== false;
+  // When the page's "?" affordance exists, the lead lives in the help sheet
+  // (its first paragraph) and under the title only the first time this route
+  // is read — the sentence is one tap away, not on every visit. It stays
+  // collapsed through hydration; a macrotask after mount opens it once on the
+  // first visit and stamps the route seen — deferred so the stamp belongs to
+  // the visit that settled, not the StrictMode mount that unmounts again.
+  const descIntoHelp = Boolean(showHelp && resolved.meta?.helpId);
+  const descSeenKey = `cfb:seen-desc:${pathname}`;
+  const [descSeen, setDescSeen] = useState(true);
+  useEffect(() => {
+    if (!descIntoHelp) return;
+    const timer = window.setTimeout(() => {
+      setDescSeen(localStorage.getItem(descSeenKey) === '1');
+      localStorage.setItem(descSeenKey, '1');
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [descIntoHelp, descSeenKey]);
   const [metaSlot, setMetaSlot] = useState<HTMLDivElement | null>(null);
+  // When the title is visually off (hero mode, docs §133) the header's tools
+  // would float alone in an empty band; a hero card registers a corner slot
+  // for them instead.
+  const [heroActions, setHeroActions] = useState<HTMLElement | null>(null);
   const askAiPrompt: AskPrompt = askAi
     ? askAi
     : {
@@ -347,22 +384,34 @@ export function AppShell({
                     ),
               )}
             >
-              <div className="min-w-0 [grid-area:title]" data-page-header="">
+              <div className={cn('min-w-0 [grid-area:title]', titleSrOnly && 'sr-only')} data-page-header="">
                 {pageTitle && (
-                  <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
-                    <BilingualText en={pageTitle} el={pageTitleEl} />
-                  </h1>
+                  <div className="flex items-center gap-2.5">
+                    {titleSticker ? <SectionSticker {...titleSticker} className="h-8 w-8" /> : null}
+                    <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
+                      <BilingualText en={pageTitle} el={pageTitleEl} />
+                    </h1>
+                  </div>
                 )}
                 {pageDescription && (leadAsHint ? (
                   <InfoHint title={{ en: 'About this page', el: 'Σχετικά με τη σελίδα' }} className="mt-1">
                     <BilingualText en={pageDescription} el={pageDescriptionEl} wrap />
                   </InfoHint>
+                ) : descIntoHelp ? (
+                  /* Collapsed on the server and on repeat visits; it opens
+                     after mount on the first read only, so there is no
+                     hydration mismatch. */
+                  <div hidden={descSeen}>
+                    <PageLead en={pageDescription} el={pageDescriptionEl} />
+                  </div>
                 ) : <PageLead en={pageDescription} el={pageDescriptionEl} />)}
               </div>
-              {(actions || showHelp || pinnable) && (
+              {!titleSrOnly && (actions || showHelp || pinnable) && (
                 // One group from `sm`. On a phone its two halves take their own
                 // grid places: a row for the star and help alone cost 48px on
-                // every page, so they stand beside the ask field instead.
+                // every page, so they stand beside the ask field instead. In
+                // hero mode (titleSrOnly) they portal into the hero card's
+                // corner instead — see below.
                 <div className="contents sm:flex sm:shrink-0 sm:flex-wrap sm:items-center sm:justify-end sm:gap-2 sm:[grid-area:actions]" data-page-actions="">
                   {actions ? <div className="flex min-w-0 flex-wrap items-center gap-2 [grid-area:actions] sm:contents">{actions}</div> : null}
                   {pinnable || showHelp ? (
@@ -386,7 +435,22 @@ export function AppShell({
           <div ref={setMetaSlot} className="flex flex-wrap items-center gap-2 empty:hidden" />
         </header>
       )}
-      <PageHeaderSlot.Provider value={{ inHeader: headerShown, slot: metaSlot }}>{children}</PageHeaderSlot.Provider>
+      {/* In hero mode the header's tools portal into the hero card's corner
+          slot (docs §133); with no slot registered they stay off rather than
+          floating in an empty band. */}
+      {titleSrOnly && heroActions && (actions || showHelp || pinnable)
+        ? createPortal(
+            <div className="flex items-center gap-2" data-page-actions="">
+              {actions}
+              {pinnable ? <PinPageButton /> : null}
+              {showHelp ? <PageContextualHelp compact defaultOpen={false} /> : null}
+            </div>,
+            heroActions,
+          )
+        : null}
+      <PageHeaderSlot.Provider value={{ inHeader: headerShown, slot: metaSlot }}>
+        <HeroActionsSlot.Provider value={setHeroActions}>{children}</HeroActionsSlot.Provider>
+      </PageHeaderSlot.Provider>
     </div>
   );
 

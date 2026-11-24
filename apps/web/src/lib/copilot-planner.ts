@@ -459,7 +459,7 @@ function wordsOf(text: string): string[] {
 /**
  * Greek inflects: «ανεσταλμένους» (the reader's word) and «Σε αναστολή» (the
  * option's) share no five-letter stem, so the status filter never matched a
- * Greek request (docs §126). Families name one root for the forms a reader
+ * Greek request (docs §136). Families name one root for the forms a reader
  * types; a word that belongs to none keeps the five-letter stem.
  */
 const GREEK_ROOTS: Array<[RegExp, string]> = [
@@ -482,7 +482,7 @@ function stem(word: string): string {
 /**
  * A switch is turned by verbs, not by its option's word: «κλείσε τις
  * αιτήσεις», «απενεργοποίησε το δημόσιο προφίλ», "turn off quiet hours"
- * (docs §127). Folded, so the accents do not matter. "open" and "close" stay
+ * (docs §137). Folded, so the accents do not matter. "open" and "close" stay
  * out in English, where they mean a page or a panel. When both kinds appear
  * («κλείσε τις ανοιχτές αιτήσεις», «απενεργοποίησε» holds «ενεργοποίησε»)
  * the first one said is the command.
@@ -824,12 +824,16 @@ export function messageSearchQuery(rawMessage: string): string | null {
  * Returns 1–3 tools; never proposes destructive admin actions.
  */
 const THEME_WORDS: Array<[string[], string]> = [
+  // The compound before "dark": "playful dark"/"σκοτεινό παιχνιδιάρικο" must
+  // not land on plain Dark.
+  [['playful dark', 'playful night', 'παιχνιδιαρικο σκοτ'], 'playful-dark'],
   [['dark', 'σκοτειν'], 'dark'],
   [['lilac', 'λιλα'], 'lilac'],
   [['terracotta', 'τερακοτα'], 'terra'],
+  [['playful', 'παιχνιδι'], 'playful'],
   [['apricot', 'βερικοκ'], 'apricot'],
   [['mint', 'μεντα'], 'minimal'],
-  // The three variants (docs §125), before "light": "φωτεινό ουρανί" is Sky.
+  // The three variants (docs §135), before "light": "φωτεινό ουρανί" is Sky.
   [['bordeaux', 'burgundy', 'μπορντο'], 'wine'],
   [['sky', 'ουρανι'], 'sky'],
   [['graphite', 'γραφιτ'], 'graphite'],

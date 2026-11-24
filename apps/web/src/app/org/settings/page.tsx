@@ -62,7 +62,7 @@ const ORG_ROLES = [
 const roleCopy = (role: string) =>
   role === 'owner' ? { en: 'Owner', el: 'Κάτοχος' } : ORG_ROLES.find((r) => r.value === role) ?? { en: role, el: role };
 
-/** The assistant's names for the four switches (docs §127). */
+/** The assistant's names for the four switches (docs §137). */
 const POLICY_CONTROL_ID: Record<OrgPolicyKey, string> = {
   publicProfile: 'policy_public_profile',
   openApplications: 'policy_open_applications',
@@ -251,7 +251,7 @@ export default function OrgSettingsPage() {
     m.user?.email ||
     'Member';
 
-  // What the assistant can do here (docs §127): open a tab, turn each access
+  // What the assistant can do here (docs §137): open a tab, turn each access
   // switch (each one saves on its own, as the switch does, and its undo is the
   // switch as it was), and give a member another role. The details and
   // branding forms stay the person's to fill and save.

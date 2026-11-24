@@ -2058,7 +2058,10 @@ export function PageContextualHelp({ id, title, titleEl, children, defaultOpen, 
   // explanation in the wrong language still explains more than a one-line subtitle.
   const curated = copy ? (primary === 'el' ? copy.el ?? copy.en : copy.en) : null;
   const fallbackDescription = primary === 'el' && meta?.descriptionEl ? meta.descriptionEl : meta?.description;
-  const body = children ?? curated ?? (fallbackDescription ? <p>{fallbackDescription}</p> : null);
+  // The page description leads the sheet: pages with the "?" affordance stop
+  // printing it under the title after the first visit, and it always lives here.
+  const descriptionPara = fallbackDescription ? <p>{fallbackDescription}</p> : null;
+  const body = children ?? (curated ? <>{descriptionPara}{curated}</> : descriptionPara);
 
   if (!body) return null;
 

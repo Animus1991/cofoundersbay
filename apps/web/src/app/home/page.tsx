@@ -6,9 +6,16 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Check, Circle } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { CfbFigure, type CfbFigureId } from '@/components/illustrations/CfbCast';
+import { SectionSticker, glyphStickerTint } from '@/components/dashboard/SectionSticker';
+import { EmptyIllustration } from '@/components/common/EmptyIllustration';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
+import { HomeContinue } from '@/components/home/HomeContinue';
+import { HomeEventStrip } from '@/components/home/HomeEventStrip';
 import { useTodayRows } from '@/components/dashboard/HomeToday';
+import { listMilestones } from '@/lib/api';
+import { dedupeWaitingRows } from '@/lib/home-waiting';
+import { orderMilestones } from '@/lib/milestone-order';
 import { HomeFeedSection } from '@/components/home/HomeFeedSection';
 import { HomePeople } from '@/components/home/HomePeople';
 import { AppShell } from '@/components/layout/AppShell';
@@ -22,8 +29,18 @@ import { getMeProfile, getRecommendations } from '@/lib/api';
 import { viewerFacts } from '@/lib/match-explain';
 import { usePageControls, usePageList } from '@/lib/page-controls';
 import { qk, queryKeys } from '@/lib/query-keys';
-import { HOME_COPY, homeAudience, memberRole, overviewPathFor, saysWhatTheyWant } from '@/lib/role-home';
+import { HOME_COPY, homeAudience, homeOrder, memberRole, overviewPathFor, saysWhatTheyWant } from '@/lib/role-home';
 import { cn } from '@/lib/utils';
+
+/* The cast's own member for each audience — provider and org read as the
+   builder. */
+const AUDIENCE_FIGURE: Record<string, CfbFigureId> = {
+  founder: 'founder',
+  mentor: 'mentor',
+  provider: 'mentor',
+  investor: 'investor',
+  org: 'builder',
+};
 
 const PEOPLE_ON_TOP = 3;
 const WAITING_ON_TOP = 3;
@@ -53,6 +70,16 @@ function Home() {
     retry: 0,
   });
   const { connectionWith, connectionOf, settled } = useConnectionWith(Boolean(myId), myId);
+
+  // The same read HomeContinue makes: when the next open milestone is its row,
+  // the waiting list must not repeat it (dedupe by what the row is about).
+  const { data: milestonesData } = useQuery({
+    queryKey: qk('milestones', 'all', 'all'),
+    queryFn: () => listMilestones({ limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const nextMilestone = orderMilestones(milestonesData?.milestones ?? []).find((m) => m.status !== 'completed' && m.status !== 'cancelled');
 
   const me = profile?.profile;
   const steps = [
@@ -98,6 +125,7 @@ function Home() {
   );
   const viewer = viewerFacts(profile?.profile ?? null);
   const loading = profileLoading || peopleLoading;
+  const { stepsFirst, peopleEmptyButton } = homeOrder({ loading, peopleCount: people.length, showSteps });
   const peopleBlock = loading ? (
     <div className="space-y-4">
       {[0, 1, 2].map((i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
@@ -106,16 +134,80 @@ function Home() {
     <HomePeople matches={people} viewer={viewer} myId={myId} limit={PEOPLE_ON_TOP} />
   ) : (
     <Card>
-      <CardContent className="space-y-3">
-        <p className="card-body text-muted-foreground">
-          <BilingualText en={`${copy.want.en}, and the people who fit will appear here.`} el={`${copy.want.el} και εδώ θα εμφανιστούν οι άνθρωποι που ταιριάζουν.`} wrap />
-        </p>
-        <Button size="sm" asChild>
-          <Link href="/profile/edit"><BilingualText en={copy.want.en} el={copy.want.el} compact /></Link>
-        </Button>
+      <CardContent>
+        <div className="flex items-start gap-4">
+          {/* The same mark the empty states carry — this card is one. */}
+          <div data-keep-icon="" className="h-14 w-14 shrink-0 text-muted-foreground">
+            <EmptyIllustration type="connection" />
+          </div>
+          <div className="min-w-0 flex-1 space-y-3">
+            <p className="card-body text-muted-foreground">
+              <BilingualText en={`${copy.want.en}, and the people who fit will appear here.`} el={`${copy.want.el} και εδώ θα εμφανιστούν οι άνθρωποι που ταιριάζουν.`} wrap />
+            </p>
+            {peopleEmptyButton ? (
+              <Button size="sm" asChild>
+                <Link href="/profile/edit"><BilingualText en={copy.want.en} el={copy.want.el} compact /></Link>
+              </Button>
+            ) : null}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
+
+  const peopleSection = (
+    <section className="space-y-3" aria-labelledby="home-people">
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <SectionSticker glyph="people" tint="accent" />
+          <h2 id="home-people" className="card-title"><BilingualText en="People who fit" el="Άνθρωποι που ταιριάζουν" compact /></h2>
+        </div>
+        <Link href="/matches" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
+          <BilingualText en="See everyone" el="Δείτε όλους" compact />
+        </Link>
+      </div>
+      {/* Many names on one page: medium weight, so the section titles lead. */}
+      <div data-home-quiet="">{peopleBlock}</div>
+    </section>
+  );
+
+  const stepsSection = showSteps ? (
+    <section aria-labelledby="home-steps">
+      <Card>
+        <CardContent className="space-y-3">
+          <div className="flex items-baseline justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <SectionSticker glyph="flag" tint="success" />
+              <h2 id="home-steps" className="card-title"><BilingualText en="To begin" el="Για να ξεκινήσετε" compact /></h2>
+            </div>
+            <div className="flex shrink-0 items-center gap-3">
+              <span className="text-xs tabular-nums text-muted-foreground">
+                <BilingualText en={`${doneCount} of ${steps.length}`} el={`${doneCount} από ${steps.length}`} compact />
+              </span>
+              {/* The member's own figure — an org reads as the builder. */}
+              <span data-keep-icon="" className="self-center text-muted-foreground">
+                <CfbFigure id={AUDIENCE_FIGURE[audience] ?? 'builder'} className="h-16 w-14" />
+              </span>
+            </div>
+          </div>
+          <ol className="divide-y divide-border">
+            {steps.map((step) => (
+              <li key={step.key}>
+                <Link href={step.href} className="flex items-center gap-3 py-2.5 text-sm transition-colors hover:text-primary-accessible" data-home-step={step.done ? 'done' : 'open'}>
+                  <span data-keep-icon="" className={cn('shrink-0', step.done ? 'text-status-success' : 'text-muted-foreground')}>
+                    {step.done ? <Check className="h-4 w-4" aria-hidden="true" /> : <Circle className="h-4 w-4" aria-hidden="true" />}
+                  </span>
+                  <span className={cn('min-w-0', step.done && 'text-muted-foreground')}>
+                    <BilingualText en={step.en} el={step.el} compact wrap />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </CardContent>
+      </Card>
+    </section>
+  ) : null;
 
   // The sentence is the role's: wait for it rather than show a founder's to a mentor.
   if (roleContext?.isLoading) {
@@ -134,26 +226,50 @@ function Home() {
       titleEl={copy.title.el}
       description={copy.description.en}
       descriptionEl={copy.description.el}
+      titleSrOnly
       askAi={false}
     >
-      <div className="space-y-6">
-        {/* The assistant is the first thing on the first page: the box alone,
-            its shortcuts stay on Overview. */}
-        <HomeAskHero role={audience === 'org' ? 'incubator' : audience} plain greeting={false} />
+      {/* At lg the page is two columns (docs §131.2): the hero, the event
+          strip, the people rail and the feed on the left; what waits, the
+          continue row and the steps on the right. The order utilities keep
+          the phone's priority order in one DOM. */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        {/* The greeting leads the brand card: one «Καλημέρα, …», the one-line
+            purpose, the question field and three starting points (docs §131.2). */}
+        <div className="min-w-0 xl:order-1 xl:col-span-2">
+          <HomeAskHero
+            role={audience === 'org' ? 'incubator' : audience}
+            hero
+            plain
+            name={me?.displayName?.split(' ')[0] ?? null}
+            purposeEn={copy.description.en}
+            purposeEl={copy.description.el}
+
+          />
+        </div>
+        {/* The one thing in progress, straight under the hero on a phone —
+            in the right column from lg. One row, one verb. */}
+        <div className="min-w-0 xl:order-2 xl:self-start">
+          <HomeContinue />
+        </div>
         {/* What waits, here and not one page away: the first three in Today's
             order (a person first), each row its own way in; the rest on Overview. */}
         {showWaiting ? (
-          <section aria-labelledby="home-waiting" data-home-waiting="">
+          <section aria-labelledby="home-waiting" data-home-waiting="" className="min-w-0 xl:order-4 xl:self-start">
             <Card>
               <CardContent className="space-y-1">
                 <div className="flex items-baseline justify-between gap-3">
-                  <h2 id="home-waiting" className="card-title">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <SectionSticker glyph="bell" tint="warning" />
+                    <h2 id="home-waiting" className="card-title">
                     <BilingualText
                       en={`${waiting} ${waiting === 1 ? 'thing is' : 'things are'} waiting on you`}
                       el={waiting === 1 ? 'Σας περιμένει 1 πράγμα' : `Σας περιμένουν ${waiting} πράγματα`}
                       compact
+                      wrap
                     />
-                  </h2>
+                    </h2>
+                  </div>
                   {waiting > WAITING_ON_TOP ? (
                     <Link href={overviewPathFor(role)} className="tap-extend-y shrink-0 text-sm font-medium text-primary-accessible hover:underline" data-home-waiting-all="">
                       <BilingualText en={`All ${waiting}`} el={`Όλα (${waiting})`} compact />
@@ -161,10 +277,10 @@ function Home() {
                   ) : null}
                 </div>
                 <ul className="divide-y divide-border">
-                  {waitingRows.slice(0, WAITING_ON_TOP).map((row) => (
+                  {dedupeWaitingRows(waitingRows, nextMilestone).slice(0, WAITING_ON_TOP).map((row) => (
                     <li key={row.key}>
                       <Link href={row.href} className="group flex items-center gap-3 py-2.5 text-sm text-foreground transition-colors hover:text-primary-accessible" data-home-waiting-row={row.key}>
-                        <span data-keep-icon="" className="shrink-0 text-muted-foreground" aria-hidden="true"><CfbGlyph name={row.glyph} className="icon-sm" /></span>
+                        <SectionSticker glyph={row.glyph} tint={glyphStickerTint(row.glyph)} />
                         <span className="min-w-0 flex-1">
                           <BilingualText en={row.en} el={row.el} compact wrap />
                           {row.count ? <span className="ml-1.5 tabular-nums text-muted-foreground">{row.count}</span> : null}
@@ -178,45 +294,25 @@ function Home() {
             </Card>
           </section>
         ) : null}
-        <section className="space-y-3" aria-labelledby="home-people">
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 id="home-people" className="card-title"><BilingualText en="People who fit" el="Άνθρωποι που ταιριάζουν" compact /></h2>
-            <Link href="/matches" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
-              <BilingualText en="See everyone" el="Δείτε όλους" compact />
-            </Link>
-          </div>
-          {/* Many names on one page: medium weight, so the section titles lead. */}
-          <div data-home-quiet="">{peopleBlock}</div>
-        </section>
-        {showSteps ? (
-          <section aria-labelledby="home-steps">
-            <Card>
-              <CardContent className="space-y-3">
-                <div className="flex items-baseline justify-between gap-3">
-                  <h2 id="home-steps" className="card-title"><BilingualText en="To begin" el="Για να ξεκινήσετε" compact /></h2>
-                  <span className="text-xs tabular-nums text-muted-foreground">
-                    <BilingualText en={`${doneCount} of ${steps.length}`} el={`${doneCount} από ${steps.length}`} compact />
-                  </span>
-                </div>
-                <ol className="divide-y divide-border">
-                  {steps.map((step) => (
-                    <li key={step.key}>
-                      <Link href={step.href} className="flex items-center gap-3 py-2.5 text-sm transition-colors hover:text-primary-accessible" data-home-step={step.done ? 'done' : 'open'}>
-                        <span data-keep-icon="" className={cn('shrink-0', step.done ? 'text-status-success' : 'text-muted-foreground')}>
-                          {step.done ? <Check className="h-4 w-4" aria-hidden="true" /> : <Circle className="h-4 w-4" aria-hidden="true" />}
-                        </span>
-                        <span className={cn('min-w-0', step.done && 'text-muted-foreground')}>
-                          <BilingualText en={step.en} el={step.el} compact wrap />
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ol>
-              </CardContent>
-            </Card>
-          </section>
-        ) : null}
-        <HomeFeedSection people={people} shownAbove={shownAbove} connectionOf={connectionOf} />
+        {/* The photo strip: small covers with the date badge, before the
+            people rail (docs §131.2). */}
+        <div className="min-w-0 xl:order-3 xl:col-span-2">
+          <HomeEventStrip />
+        </div>
+        {stepsFirst ? (
+          <>
+            {stepsSection ? <div className="min-w-0 xl:order-6 xl:self-start">{stepsSection}</div> : null}
+            <div className="min-w-0 xl:order-5 xl:col-span-2">{peopleSection}</div>
+          </>
+        ) : (
+          <>
+            <div className="min-w-0 xl:order-5 xl:col-span-2">{peopleSection}</div>
+            {stepsSection ? <div className="min-w-0 xl:order-6 xl:self-start">{stepsSection}</div> : null}
+          </>
+        )}
+        <div className="min-w-0 xl:order-7 xl:col-span-2">
+          <HomeFeedSection people={people} shownAbove={shownAbove} connectionOf={connectionOf} />
+        </div>
       </div>
     </AppShell>
   );

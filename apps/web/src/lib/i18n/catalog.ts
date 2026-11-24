@@ -159,13 +159,17 @@ const el: Record<string, string> = {
   'Warm neutral with a soft apricot': 'Ζεστό ουδέτερο με απαλό βερικοκί',
   'Soft mauve with a dusty rose': 'Απαλό μοβ με σκονισμένο ροζ',
   Terracotta: 'Τερακότα',
-  // The three accents added beside their originals (docs §125).
+  // The three accents added beside their originals (docs §135).
   Bordeaux: 'Μπορντό',
   'Deep wine on a soft blush': 'Βαθύ μπορντό σε απαλό ρόδινο',
   Sky: 'Ουρανί',
   'Bright sky blue with deep letters': 'Φωτεινό ουρανί με σκούρα γράμματα',
   Graphite: 'Γραφίτης',
   'Warm stone with soft graphite': 'Ζεστό γκρι με απαλό γραφίτη',
+  Playful: 'Παιχνιδιάρικο',
+  'Warm lilac, rounder corners': 'Ζεστό λιλά, πιο στρογγυλές γωνίες',
+  'Playful Night': 'Παιχνιδιάρικο βράδυ',
+  'The same violet on deep warm dark': 'Το ίδιο βιολετί σε βαθύ ζεστό σκοτάδι',
   'Command palette': 'Παλέτα εντολών',
   'Command palette (Ctrl+K)': 'Παλέτα εντολών (Ctrl+K)',
   'Hide sample data': 'Απόκρυψη δειγμάτων',

@@ -39,6 +39,7 @@ export function HomeNextStep({
   askEn,
   askEl,
   onAsk,
+  stacked = false,
 }: {
   kickerEn: string;
   kickerEl: string;
@@ -66,6 +67,13 @@ export function HomeNextStep({
   askEn?: string;
   askEl?: string;
   onAsk?: () => void;
+  /**
+   * Stack the anatomy for a narrow column (docs §133.9): the icon and label
+   * on one row, the title full width under them (clamped to two lines), the
+   * two buttons on a row of their own — the inline layout squeezed the title
+   * to three lines beside the buttons at ~300px.
+   */
+  stacked?: boolean;
 }) {
   const id = useId().replace(/:/g, '');
   const { ask } = useAskAssistant();
@@ -75,55 +83,78 @@ export function HomeNextStep({
   }));
   const label = <BilingualText en={actionEn} el={actionEl} compact />;
   const waiting = tone === 'waiting';
+  const iconWell = (
+    <span
+      data-keep-icon=""
+      className={cn(
+        'flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-card',
+        waiting ? 'text-status-warning' : 'text-primary-accessible',
+      )}
+      aria-hidden="true"
+    >
+      <CfbGlyph name={glyph ?? (external ? 'calendar' : glyphForHref(href))} className="icon-md" />
+    </span>
+  );
+  const kicker = (
+    <p className={cn('text-xs font-medium', waiting ? 'text-status-warning' : 'text-primary-accessible')}>
+      <BilingualText en={kickerEn} el={kickerEl} compact />
+    </p>
+  );
+  const titleBlock = (
+    <p className={cn('break-words text-sm font-medium text-foreground', stacked && 'line-clamp-2')} data-testid={`home-next-title-${id}`}>
+      {titleEn != null ? <BilingualText en={titleEn} el={titleEl ?? titleEn} compact wrap /> : title}
+    </p>
+  );
+  const reasonBlock = reasonEn ? (
+    <p className="break-words text-xs text-muted-foreground" data-testid={`home-next-reason-${id}`}>
+      <BilingualText en={reasonEn} el={reasonEl ?? reasonEn} compact wrap />
+    </p>
+  ) : null;
+  const buttons = (
+    <>
+      <Button type="button" size="sm" variant="ghost" className="max-sm:flex-1" data-next-ask="" data-testid={`home-next-ask-${id}`} onClick={askNext}>
+        <BilingualText en={askEn ?? 'Ask'} el={askEl ?? 'Ρωτήστε'} compact />
+      </Button>
+      <Button asChild size="sm" variant={actionVariant} className="shrink-0 max-sm:flex-1" data-next-open="">
+        {external ? (
+          <a href={href} target="_blank" rel="noopener noreferrer" data-testid={`home-next-open-${id}`}>
+            {label}
+          </a>
+        ) : (
+          <Link href={href} data-testid={`home-next-open-${id}`}>{label}</Link>
+        )}
+      </Button>
+    </>
+  );
   return (
     <section
       data-next-step={tone}
       data-testid={`home-next-step-${id}`}
       aria-label={`${kickerEn} · ${kickerEl}`}
       className={cn(
-        'flex flex-wrap items-center gap-x-4 gap-y-3 rounded-lg border px-4 py-3',
+        'flex rounded-lg border px-4 py-3',
+        stacked ? 'flex-col gap-1.5' : 'flex-wrap items-center gap-x-4 gap-y-3',
         waiting ? 'border-status-warning-border bg-status-warning-bg' : 'border-primary-muted bg-primary-subtle',
       )}
     >
-      <span
-        data-keep-icon=""
-        className={cn(
-          'flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-card',
-          waiting ? 'text-status-warning' : 'text-primary-accessible',
-        )}
-        aria-hidden="true"
-      >
-        <CfbGlyph name={glyph ?? (external ? 'calendar' : glyphForHref(href))} className="icon-md" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className={cn('text-xs font-medium', waiting ? 'text-status-warning' : 'text-primary-accessible')}>
-          <BilingualText en={kickerEn} el={kickerEl} compact />
-        </p>
-        <p className="break-words text-sm font-medium text-foreground" data-testid={`home-next-title-${id}`}>
-          {titleEn != null ? <BilingualText en={titleEn} el={titleEl ?? titleEn} compact wrap /> : title}
-        </p>
-        {reasonEn ? (
-          <p className="break-words text-xs text-muted-foreground" data-testid={`home-next-reason-${id}`}>
-            <BilingualText en={reasonEn} el={reasonEl ?? reasonEn} compact wrap />
-          </p>
-        ) : null}
-      </div>
-      <div className="flex shrink-0 items-center gap-1.5 max-sm:w-full">
-          {/* The ask's one form (docs §124): the spark beside the verb, as on every card. */}
-          <Button type="button" size="sm" variant="ghost" className="gap-1.5 max-sm:flex-1" data-next-ask="" data-testid={`home-next-ask-${id}`} onClick={askNext}>
-            <span data-keep-icon="" className="inline-flex shrink-0" aria-hidden="true"><CfbGlyph name="spark" className="icon-sm" /></span>
-            <BilingualText en={askEn ?? 'Ask'} el={askEl ?? 'Ρωτήστε'} compact />
-          </Button>
-        <Button asChild size="sm" variant={actionVariant} className="shrink-0 max-sm:flex-1" data-next-open="">
-          {external ? (
-            <a href={href} target="_blank" rel="noopener noreferrer" data-testid={`home-next-open-${id}`}>
-              {label}
-            </a>
-          ) : (
-            <Link href={href} data-testid={`home-next-open-${id}`}>{label}</Link>
-          )}
-        </Button>
-      </div>
+      {stacked ? (
+        <>
+          <div className="flex items-center gap-2">{iconWell}{kicker}</div>
+          {titleBlock}
+          {reasonBlock}
+          <div className="mt-1 flex items-center gap-1.5">{buttons}</div>
+        </>
+      ) : (
+        <>
+          {iconWell}
+          <div className="min-w-0 flex-1">
+            {kicker}
+            {titleBlock}
+            {reasonBlock}
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5 max-sm:w-full">{buttons}</div>
+        </>
+      )}
     </section>
   );
 }

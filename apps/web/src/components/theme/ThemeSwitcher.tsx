@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise, Flower2, Flame, Wine, Cloud, PenLine } from 'lucide-react';
+import { Moon, MoonStar, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise, Flower2, Flame, PartyPopper, Wine, Cloud, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -33,7 +33,7 @@ export const THEME_OPTIONS = [
     swatch: ['#fafaf9', '#292524', '#765fe7'],
   },
   {
-    // Light with a soft graphite ink instead of near-black (docs §125).
+    // Light with a soft graphite ink instead of near-black (docs §135).
     name: 'graphite' as ThemeName,
     label: 'Graphite',
     description: 'Warm stone with soft graphite',
@@ -63,7 +63,7 @@ export const THEME_OPTIONS = [
     swatch: ['#f2f6f7', '#207da5', '#3c6e83'],
   },
   {
-    // Cyan with the bright sky fill and deep letters (docs §125).
+    // Cyan with the bright sky fill and deep letters (docs §135).
     name: 'sky' as ThemeName,
     label: 'Sky',
     description: 'Bright sky blue with deep letters',
@@ -99,12 +99,27 @@ export const THEME_OPTIONS = [
     swatch: ['#f5eff2', '#985d75', '#7b475b'],
   },
   {
-    // Terracotta with a deep wine (docs §125).
+    // Terracotta with a deep wine (docs §135).
     name: 'wine' as ThemeName,
     label: 'Bordeaux',
     description: 'Deep wine on a soft blush',
     icon: Wine,
     swatch: ['#f5eff2', '#8a2358', '#a93d74'],
+  },
+  {
+    // The default for a visitor with no stored choice (lib/themes).
+    name: 'playful' as ThemeName,
+    label: 'Playful',
+    description: 'Warm lilac, rounder corners',
+    icon: PartyPopper,
+    swatch: ['#f4f1f6', '#6a3fd4', '#efeafa'],
+  },
+  {
+    name: 'playful-dark' as ThemeName,
+    label: 'Playful Night',
+    description: 'The same violet on deep warm dark',
+    icon: MoonStar,
+    swatch: ['#1a1622', '#9b7bf5', '#2a2433'],
   },
 ];
 

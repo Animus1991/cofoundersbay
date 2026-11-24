@@ -127,3 +127,14 @@ describe('conversational onboarding', () => {
     await waitFor(() => expect(push).toHaveBeenCalledWith('/commitments/card-1'), { timeout: 4000 });
   });
 });
+
+describe('the stepper’s progress bar', () => {
+  it('exposes how far the setup is as aria-valuenow', async () => {
+    render(<ConversationalOnboarding />);
+    // The welcome step sits before the first answer: some of the bar filled.
+    const bar = await screen.findByRole('progressbar', {}, { timeout: 4000 });
+    expect(bar.getAttribute('aria-valuenow')).not.toBeNull();
+    expect(Number(bar.getAttribute('aria-valuenow'))).toBeGreaterThanOrEqual(0);
+    expect(bar.getAttribute('aria-label')).toMatch(/progress|Πρόοδος/i);
+  });
+});

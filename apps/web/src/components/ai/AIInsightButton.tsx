@@ -1,8 +1,8 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { Button } from '@/components/ui/button';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
@@ -15,7 +15,7 @@ interface AIInsightButtonProps {
   cacheKey?: string;
   context?: Record<string, unknown>;
   className?: string;
-  variant?: 'default' | 'outline' | 'ghost' | 'icon';
+  variant?: 'default' | 'outline' | 'ghost' | 'icon' | 'card';
   size?: 'sm' | 'lg' | 'icon';
   label?: string;
   labelEl?: string;
@@ -82,6 +82,28 @@ export function AIInsightButton({
       <CfbGlyph name="spark" className="icon-sm" />
     </span>
   );
+
+  /* The one form on a card (docs §125): spark and a short verb in the head,
+     the specific question in the name. The visible word stays inside the
+     accessible name (SC 2.5.3). */
+  if (variant === 'card') {
+    const full = aboutEn ? `${iconLabel}: ${bilingualAria(aboutEn, aboutEl ?? aboutEn)}` : iconLabel;
+    return (
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className={cn('h-7 shrink-0 gap-1 px-2 text-xs text-muted-foreground', className)}
+        aria-label={full}
+        title={full}
+        data-ask-card=""
+        onClick={openAssistant}
+      >
+        {spark}
+        <span>{primary === 'el' ? 'Ρωτήστε' : 'Ask'}</span>
+      </Button>
+    );
+  }
 
   if (variant === 'icon') {
     return (

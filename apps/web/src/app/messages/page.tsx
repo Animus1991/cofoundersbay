@@ -1118,7 +1118,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <AppShell fullHeight contentClassName="min-h-0" rail={rail}>
+    <AppShell fullHeight contentClassName="min-h-0" rail={rail} titleSticker={{ glyph: 'messages', tint: 'info' }}>
       <div className="flex h-full min-h-0 flex-col p-0 sm:p-3 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:p-4 lg:pb-4">
         <div className="flex min-h-0 flex-1 overflow-hidden bg-background sm:rounded-2xl sm:border sm:border-border sm:bg-card sm:shadow-[0_24px_64px_-28px_hsl(var(--foreground)/0.35)]">
           {/* One column that may shrink: an implicit `auto` column took the

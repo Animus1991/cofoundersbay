@@ -227,7 +227,7 @@ function MatchPair({ match }: { match: Match }) {
   return (
     <div className="flex shrink-0 -space-x-2">
       <Avatar className="h-10 w-10 border-2 border-card">
-        <AvatarFallback className="bg-muted font-semibold">
+        <AvatarFallback className="bg-status-accent-bg font-semibold">
           {initialsOf(match.participant1.name)}
         </AvatarFallback>
       </Avatar>

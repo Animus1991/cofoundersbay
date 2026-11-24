@@ -3,22 +3,23 @@
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { BilingualText } from '@/components/common/BilingualText';
 import { usePathname } from 'next/navigation';
-import { Home, Compass, MessageCircle, Sparkles } from 'lucide-react';
+import { Home, Compass, MessageCircle, Sparkles, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CfbGlyph, NavIcon } from '@/components/icons/CfbGlyph';
+import { NavIcon } from '@/components/icons/CfbGlyph';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
-import { useSidebar } from './SidebarContext';
 import { useI18n } from '@/components/common/I18nProvider';
 import { bilingualAria } from '@/lib/i18n/format';
 
 const PRIMARY_TABS = [
   { icon: Home, label: 'Home', labelEl: 'Αρχική', path: '/dashboard', match: ['/dashboard', '/home'] },
-  { icon: Compass, label: 'Discover', labelEl: 'Εξερεύνηση', path: '/discover', match: ['/discover'] },
-  // The assistant is the product's centre, and a phone had no way to it but a
-  // page's ask field. The profile moved off this bar for it: the avatar above
-  // has always opened it (docs §112).
-  { icon: Sparkles, label: 'Assistant', labelEl: 'Βοηθός', path: '/ai', match: ['/ai'] },
+  { icon: Compass, label: 'Discover', labelEl: 'Ανακάλυψη', path: '/discover', match: ['/discover'] },
+  // The assistant is the product's centre: the raised button in the middle,
+  // as Parea draws its primary action (docs §131.1).
+  { icon: Sparkles, label: 'Assistant', labelEl: 'Βοηθός', path: '/ai', match: ['/ai'], raised: true },
   { icon: MessageCircle, label: 'Messages', labelEl: 'Μηνύματα', path: '/messages', match: ['/messages'], badgeKey: 'messages' as const },
+  // Εγώ took the menu's slot; the drawer's handle is the top bar's menu
+  // button, which has always opened the same sheet.
+  { icon: User, label: 'Profile', labelEl: 'Εγώ', path: '/profile', match: ['/profile'] },
 ] as const;
 
 const tabClasses = 'relative flex min-h-[3.75rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1 text-[12.485px] font-medium leading-[1.25] tracking-tight focus-ring';
@@ -54,7 +55,6 @@ export function MobileBottomNav() {
   const pathname = usePathname();
   const { t } = useI18n();
   const { messages: unreadMessages } = useUnreadCounts();
-  const { mobileNavOpen, mobileNavId, setMobileNavOpen } = useSidebar();
 
   const isAuthPage =
     pathname?.startsWith('/login') ||
@@ -73,6 +73,7 @@ export function MobileBottomNav() {
     const isActive = isTabActive(tab.match);
     const Icon = tab.icon;
     const badge = 'badgeKey' in tab ? unreadMessages : 0;
+    const raised = 'raised' in tab && tab.raised;
     return (
       <OptimizedLink
         key={tab.path}
@@ -80,11 +81,11 @@ export function MobileBottomNav() {
         aria-current={isActive ? 'page' : undefined}
         className={cn(
           tabClasses,
-          isActive ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
+          raised ? 'text-muted-foreground' : isActive ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
         )}
       >
-        <span className="relative">
-          <NavIcon href={tab.path} fallback={Icon} className="icon-md" />
+        <span className={cn('relative', raised && '-mt-7 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md ring-4 ring-background')}>
+          <NavIcon href={tab.path} fallback={Icon} className={raised ? 'icon-md text-primary-foreground' : 'icon-md'} />
           {badge > 0 && (
             <span
               aria-hidden="true"
@@ -114,21 +115,6 @@ export function MobileBottomNav() {
       aria-label={t('Primary mobile navigation')}
     >
       {PRIMARY_TABS.map(renderTab)}
-      <button
-        type="button"
-        onClick={() => setMobileNavOpen(true)}
-        // Its glyph is the tab, like the four links beside it; without this
-        // the labelled-button rule hid it and "Μενού" stood alone as text.
-        data-keep-icon=""
-        aria-label={t('More destinations')}
-        aria-haspopup="dialog"
-        aria-expanded={mobileNavOpen}
-        aria-controls={mobileNavOpen ? mobileNavId : undefined}
-        className={cn(tabClasses, mobileNavOpen ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground')}
-      >
-        <CfbGlyph name="more" className="icon-md" />
-        <TabLabel en="More" el="Μενού" />
-      </button>
     </nav>
   );
 }

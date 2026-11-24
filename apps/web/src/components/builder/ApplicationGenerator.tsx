@@ -458,7 +458,7 @@ export function ApplicationGenerator({
               const overLimit = question.maxLength != null && question.answer.length > question.maxLength;
               const describedBy = [tip && `${fieldId}-tip`, question.maxLength && `${fieldId}-count`].filter(Boolean).join(' ') || undefined;
               return (
-                // A row (docs §123, §126): with a mouse the question's ask shows
+                // A row (docs §123, §136): with a mouse the question's ask shows
                 // on the question under the pointer or holding focus; twelve
                 // sparks in a column said nothing. Touch keeps them in view.
                 <div key={question.id} data-row="" className="space-y-2">

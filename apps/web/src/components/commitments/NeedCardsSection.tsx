@@ -41,6 +41,7 @@ export function NeedCardsSection({
   onChipsChange,
   alertOpen,
   onAlertOpenChange,
+  guaranteeNote = true,
 }: {
   type: string;
   remoteOnly: boolean;
@@ -51,6 +52,8 @@ export function NeedCardsSection({
   /** The "alert me" dialog, owned by the page so its assistant command can open it. */
   alertOpen?: boolean;
   onAlertOpenChange?: (open: boolean) => void;
+  /** The non-guarantee sentence under the list; off when the page says it once itself. */
+  guaranteeNote?: boolean;
 }) {
   const [ownAlertOpen, setOwnAlertOpen] = useState(false);
   const isAlertOpen = alertOpen ?? ownAlertOpen;
@@ -165,7 +168,7 @@ export function NeedCardsSection({
               </li>
             ))}
           </ul>
-          {anyMoney ? <NonGuaranteeNote /> : null}
+          {anyMoney && guaranteeNote ? <NonGuaranteeNote /> : null}
         </>
       )}
     </section>

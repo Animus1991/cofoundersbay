@@ -92,9 +92,9 @@ import { THEME_ROOT } from '@/lib/themes';
  * The theme on <html> before the first paint. Without it the page painted
  * :root (the Lilac palette) and switched once React mounted, so every load
  * of the Light theme flashed lilac first. Same table as applyTheme and
- * RoleTheme (lib/themes THEME_ROOT); no saved choice follows the OS.
+ * RoleTheme (lib/themes THEME_ROOT); no saved choice paints Playful.
  */
-const THEME_BOOT = `(function(){try{var m=${JSON.stringify(THEME_ROOT)};var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var r=document.documentElement;if(t==='system'){r.classList.add(d?'dark':'light');r.setAttribute('data-theme','system');return;}var e=m[t]||m[d?'dark':'light'];r.classList.add(e.mode);if(e.dataTheme)r.setAttribute('data-theme',e.dataTheme);if(e.variant)r.setAttribute('data-variant',e.variant);}catch(_){}})();`;
+const THEME_BOOT = `(function(){try{var m=${JSON.stringify(THEME_ROOT)};var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var r=document.documentElement;if(t==='system'){r.classList.add(d?'dark':'light');r.setAttribute('data-theme','system');return;}var e=m[t]||m.playful;r.classList.add(e.mode);if(e.dataTheme)r.setAttribute('data-theme',e.dataTheme);if(e.variant)r.setAttribute('data-variant',e.variant);}catch(_){}})();`;
 
 /*
  * A picture that fails to load (an image host a network blocks, a photo

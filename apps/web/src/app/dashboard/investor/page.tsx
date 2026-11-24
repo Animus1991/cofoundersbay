@@ -42,7 +42,10 @@ import { formatCompactMoney } from '@/lib/i18n/format';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { dealEventTitleEl } from '@/lib/i18n/deal-events';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
-import { roleShortcutsSection } from '@/components/dashboard/RoleShortcuts';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { YourPagesRow } from '@/components/dashboard/YourPages';
+import { HomeShortcuts } from '@/components/dashboard/HomeShortcuts';
+
 import { HomeFold } from '@/components/dashboard/HomeFold';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
@@ -268,13 +271,33 @@ export default function InvestorDashboard() {
     );
   }
 
+
+  /* The shortcuts and the reader's pages live in the page's tools, one
+     gesture away — the question box is alone on the page, as on the
+     founder's home (docs §116/§125). */
+  const rail: PageRailSection[] = [
+    {
+      id: 'pages',
+      glyph: 'bookmark',
+      labelEn: 'Your pages',
+      labelEl: 'Οι σελίδες σας',
+      content: <YourPagesRow />,
+    },
+    {
+      id: 'shortcuts',
+      glyph: 'spark',
+      labelEn: 'Quick actions',
+      labelEl: 'Γρήγορες ενέργειες',
+      content: <HomeShortcuts role="investor" pages={false} />,
+    },
+  ];
   return (
-    <AppShell askAi={false} showHelp rail={[roleShortcutsSection('investor')]}
+    <AppShell askAi={false} showHelp rail={rail}
       description="Pipeline health, deal flow, and portfolio performance — in one view."
       descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
     >
       <div className="space-y-6">
-        <HomeAskHero role="investor" plain showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
+        <HomeAskHero role="investor" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
         <HomeToday />
 
         {!dealsLoading && active[0] ? (
@@ -320,7 +343,7 @@ export default function InvestorDashboard() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             {/* Active deals first: they are what needs a decision. */}
-            <SectionCard title="Active deals" titleEl="Ενεργές συμφωνίες" icon={BarChart3} action={{ href: '/investor/pipeline', label: 'Pipeline', labelEl: 'Pipeline' }} contentClassName="card-rows">
+            <SectionCard title="Active deals" titleEl="Ενεργές συμφωνίες" icon={BarChart3} iconTint="success" action={{ href: '/investor/pipeline', label: 'Pipeline', labelEl: 'Pipeline' }} contentClassName="card-rows">
               {dealsLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-16" />)}
               {!dealsLoading && active.map((deal) => (
                 <DealRow
@@ -356,7 +379,7 @@ export default function InvestorDashboard() {
             </SectionCard>
 
             {dealsFailed ? null : (
-            <SectionCard title="Portfolio" titleEl="Χαρτοφυλάκιο" icon={PieChart} action={{ href: '/investor/portfolio', label: 'All companies', labelEl: 'Όλες οι εταιρείες' }} contentClassName="card-rows">
+            <SectionCard title="Portfolio" titleEl="Χαρτοφυλάκιο" icon={PieChart} iconTint="success" action={{ href: '/investor/portfolio', label: 'All companies', labelEl: 'Όλες οι εταιρείες' }} contentClassName="card-rows">
               {invested.map((deal) => {
                 const x = multiple(deal);
                 return (
@@ -381,7 +404,7 @@ export default function InvestorDashboard() {
             )}
 
             {dealsFailed ? null : (
-            <SectionCard title="Recently discovered" titleEl="Πρόσφατες ανακαλύψεις" icon={Rocket} action={{ href: '/investor/scouting', label: 'Scout more', labelEl: 'Περισσότερα' }} contentClassName="card-rows">
+            <SectionCard title="Recently discovered" titleEl="Πρόσφατες ανακαλύψεις" icon={Rocket} iconTint="primary" action={{ href: '/investor/scouting', label: 'Scout more', labelEl: 'Περισσότερα' }} contentClassName="card-rows">
               {discovered.map((deal) => (
                 <DealRow
                   key={deal.id}
@@ -416,7 +439,7 @@ export default function InvestorDashboard() {
               ]}
             />
 
-            <SectionCard title="Recent activity" titleEl="Πρόσφατη δραστηριότητα" icon={Eye} contentClassName="card-rows">
+            <SectionCard title="Recent activity" titleEl="Πρόσφατη δραστηριότητα" icon={Eye} iconTint="info" contentClassName="card-rows">
               {/* Activity rows on the section's axis: the move, then the
                   company and when, without a bullet column in front. */}
               {activity.map((a) => (

@@ -838,6 +838,8 @@ export class MatchingService {
       id: { not: criteria.userId },
       moderationStatus: 'active',
       emailVerified: true,
+      // An account that never finished onboarding (a one-letter name, no profile) is not someone's first match (docs §124).
+      hasCompletedOnboarding: true,
     };
     if (criteria.role) where.role = criteria.role;
     if (criteria.location && !criteria.remote) {

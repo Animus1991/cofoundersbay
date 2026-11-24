@@ -671,7 +671,7 @@ export default function ProfileEditPage() {
           }));
         } catch { /* silent */ }
       }
-      success(sayOne('Profile saved', 'Το προφίλ αποθηκεύτηκε'), sayOne('Your changes are saved.', 'Οι αλλαγές σας αποθηκεύτηκαν.'));
+      success(sayOne('Profile saved', 'Το προφίλ αποθηκεύτηκε'), sayOne('Your changes are saved.', 'Οι αλλαγές σας αποθηκεύτηκαν.'), { figure: 'builder' });
       
       // Analytics
       void analytics.track('profile_updated', {

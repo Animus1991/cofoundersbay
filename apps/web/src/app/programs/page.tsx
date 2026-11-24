@@ -24,6 +24,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
@@ -163,7 +164,7 @@ function ApplyModal({
               mark={(
                 <Avatar className="h-10 w-10 rounded-xl">
                   <AvatarImage src={program.organization?.logoUrl ?? undefined} />
-                  <AvatarFallback data-keep-icon className="rounded-xl bg-primary/10 text-primary-accessible">
+                  <AvatarFallback data-keep-icon className="rounded-xl bg-status-success-bg text-primary-accessible">
                     <TypeIcon className="icon-md" aria-hidden="true" />
                   </AvatarFallback>
                 </Avatar>
@@ -268,7 +269,7 @@ function ProgramCard({
             <Avatar className="h-10 w-10 rounded-xl">
               <AvatarImage src={program.organization?.logoUrl ?? undefined} />
               {/* Stands in for the organisation's logo: an avatar, not decoration. */}
-              <AvatarFallback data-keep-icon className="rounded-xl bg-primary/10 text-primary-accessible">
+              <AvatarFallback data-keep-icon className="rounded-xl bg-status-success-bg text-primary-accessible">
                 <TypeIcon className="icon-md" aria-hidden="true" />
               </AvatarFallback>
             </Avatar>
@@ -599,6 +600,7 @@ export default function ProgramsPage() {
     <AppShell
       showHelp
       rail={rail}
+      titleSticker={{ icon: Rocket, tint: 'success' }}
       actions={
         <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
           {isRefetching ? <Loader2 className="icon-sm animate-spin mr-1.5" /> : <RefreshCw className="icon-sm mr-1.5" />}

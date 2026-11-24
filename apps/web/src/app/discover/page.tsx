@@ -26,12 +26,14 @@ import {
   searchProfiles, getRecommendations, getDashboardStats, getMeProfile, recordMatchFeedback, restoreMatchFeedback, sendConnectionRequest, saveToShortlist, createSavedSearch, type SearchHit
 } from '@/lib/api';
 import { createPassLedger } from '@/lib/match-pass';
+import { promotedLayout } from '@/lib/discover-promoted';
 import { explainMatch, viewerFacts } from '@/lib/match-explain';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { bilingualInline } from '@/lib/i18n/format';
+import { CfbFigure } from '@/components/illustrations/CfbCast';
 import { RailPeople } from '@/components/layout/RailPeople';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -70,6 +72,15 @@ type ViewMode = 'grid' | 'list' | 'match';
  */
 const PEOPLE_GRID = 'grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))]';
 type RoleFilter = 'all' | 'founder' | 'cofounder' | 'mentor' | 'investor' | 'service_provider';
+
+/* The four doors onto the role filter (docs §131.3): the same value the
+   chips set, on the role's own tint. */
+const INTENT_TILES: { role: RoleFilter; en: string; el: string; tint: string; figure: () => React.ReactNode }[] = [
+  { role: 'founder',          en: 'Founder',           el: 'Συνιδρυτής',       tint: 'bg-status-accent-bg text-status-accent',  figure: () => <CfbFigure id="founder" className="h-14 w-auto" /> },
+  { role: 'mentor',           en: 'Mentor',            el: 'Μέντορας',         tint: 'bg-status-warning-bg text-status-warning', figure: () => <CfbFigure id="mentor" className="h-14 w-auto" /> },
+  { role: 'investor',         en: 'Investor',          el: 'Επενδυτής',        tint: 'bg-status-success-bg text-status-success', figure: () => <CfbFigure id="investor" className="h-14 w-auto" /> },
+  { role: 'service_provider', en: 'Team/Organisation', el: 'Ομάδα/Οργανισμός', tint: 'bg-status-info-bg text-status-info',        figure: () => <CfbFigure id="builder" className="h-14 w-auto" /> },
+];
 
 const ROLE_FILTERS: { value: RoleFilter; labelEn: string; labelEl: string; icon: React.ElementType }[] = [
   { value: 'all',              labelEn: discoverEn('all'),              labelEl: discoverEl('all'),              icon: Users         },
@@ -592,6 +603,7 @@ export default function DiscoverPage() {
     <AppShell
       title={discoverEn('page_title')}
       titleEl={discoverEl('page_title')}
+      titleSticker={{ glyph: 'people', tint: 'accent' }}
       description={discoverEn('page_description')}
       descriptionEl={discoverEl('page_description')}
       showHelp
@@ -650,6 +662,28 @@ export default function DiscoverPage() {
                   >
                     <BilingualText en={r.labelEn} el={r.labelEl} compact />
                     <span className="tabular-nums opacity-70">{r.count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {/* The intent tiles lead when nothing is asked yet (docs §131.3):
+              four tinted doors into the same role filter the chips set. */}
+          {!loading && roleFilter === 'all' && discoverFilterNames(filters).length === 0 ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" role="group" aria-label={bilingualInline('Who are you looking for?', 'Ποιον ψάχνετε;')} data-intent-tiles="">
+              {INTENT_TILES.map((tile) => {
+                const TileFigure = tile.figure;
+                return (
+                  <button
+                    key={tile.role}
+                    type="button"
+                    onClick={() => setRoleFilter(tile.role)}
+                    aria-pressed="false"
+                    className={cn('focus-ring group flex flex-col items-center gap-2 rounded-2xl p-4 text-center transition-colors hover:brightness-[0.97]', tile.tint)}
+                  >
+                    <span data-keep-icon="" className="text-current"><TileFigure /></span>
+                    <span className="text-sm font-medium"><BilingualText en={tile.en} el={tile.el} compact /></span>
                   </button>
                 );
               })}
@@ -717,7 +751,10 @@ export default function DiscoverPage() {
             />
           )}
 
-          {!loading && promotedHits.length > 0 && (
+          {/* One or two paid cards lead the results grid (below, marked);
+              more than two stay their own section so the stripe stays
+              honest (docs §130.5). */}
+          {!loading && promotedLayout(promotedHits.length) === 'section' && (
             <section aria-label="Promoted · Προώθηση" className="space-y-3 border-b border-border pb-4">
               <div className="flex flex-wrap items-baseline gap-2">
                 <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground">
@@ -749,12 +786,32 @@ export default function DiscoverPage() {
             </section>
           )}
 
-          {!loading && filteredHits.length > 0 && (
+          {!loading && (filteredHits.length > 0 || (promotedHits.length > 0 && promotedHits.length <= 2)) && (
             <AnimatedList
               animation="fade-in-up"
               staggerDelay={50}
               className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' && PEOPLE_GRID)}
             >
+              {promotedLayout(promotedHits.length) === 'inline' ? promotedHits.map((hit) => {
+                const profile = hitToProfile(hit);
+                return (
+                  <div key={hit.id} data-promoted="" aria-label={`Promoted · ${PROMOTED_COPY.label.el}`}>
+                    <ProfileCard
+                      profile={profile}
+                      variant={viewMode === 'list' ? 'compact' : 'default'}
+                      badge={(
+                        <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground">
+                          <BilingualText en={PROMOTED_COPY.label.en} el={PROMOTED_COPY.label.el} compact />
+                        </span>
+                      )}
+                      onConnect={() => handleConnect(profile)}
+                      onMessage={() => handleMessage(profile)}
+                      onBookmark={() => handleBookmark(profile)}
+                      {...personActions(profile.userId)}
+                    />
+                  </div>
+                );
+              }) : null}
               {filteredHits.map((hit) => {
                 const profile = hitToProfile(hit);
                 return (

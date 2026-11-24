@@ -28,7 +28,6 @@ const ALLOWED: Record<string, string> = {
   'components/research/CanvasCopilotPanel.tsx': 'scatters imported nodes so they do not stack',
   'components/research/FlowDiagramNode.tsx': 'scatters new diagram nodes',
   'components/ui/toast.tsx': 'id for a transient toast',
-  'hooks/useRealtimeMessages.ts': 'optimistic message id',
   'lib/copilot-engine.ts': 'id for an assistant card',
   'lib/copilot-reads.ts': 'id for an assistant card',
   'lib/demo/commitments-world.ts': 'token for a demo public card link',

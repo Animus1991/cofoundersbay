@@ -34,6 +34,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { CookieChoicesButton } from '@/components/common/CookieChoicesButton';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { NeedCard, type NeedCardView } from '@/components/commitments/NeedCard';
+import { CfbCast } from '@/components/illustrations/CfbCast';
 import { LiveStatsSection } from '@/components/landing/LiveStats';
 import { PLAN_HIGHLIGHTS } from '@/lib/billing';
 import { ORG_FOUNDERS } from '@/lib/demo/org-world';
@@ -281,14 +282,9 @@ export function LandingHome() {
                   secondaryClassName="landing-display-secondary"
                 />
               </h1>
-              <p className="landing-lead mx-auto mt-3 max-w-xl text-muted-foreground lg:mx-0">
-                <BilingualText
-                  en="One need card: what exists, the outcome, who is missing. The right people answer in a protected conversation, and terms are agreed in versions."
-                  el="Μία κάρτα ανάγκης: τι υπάρχει, το αποτέλεσμα, ποιος λείπει. Οι κατάλληλοι άνθρωποι απαντούν σε προστατευμένη συζήτηση και οι όροι συμφωνούνται σε εκδόσεις."
-                  stacked
-                  wrap
-                />
-              </p>
+              {/* The lead once restated the three moves in one paragraph;
+                  they already stand under the headline and again in "How it
+                  works" — the sentence lives there, not twice more. */}
 
               <div className="mx-auto mt-6 flex w-full max-w-sm flex-col items-stretch gap-2 sm:max-w-none sm:flex-row sm:items-center sm:justify-center lg:justify-start">
                 <Button className="w-full gap-2 sm:w-auto" asChild>
@@ -309,30 +305,46 @@ export function LandingHome() {
                   <BilingualText en="or browse profiles first" el="ή δείτε πρώτα προφίλ" compact />
                 </Link>
               </p>
-
-              <ol className="mx-auto mt-8 flex w-fit flex-col gap-1.5 text-left lg:mx-0" aria-label="Three moves · Τρεις κινήσεις">
-                {MOVES.map(({ title }, index) => (
-                  <li key={title.en} className="flex min-w-0 items-center gap-2.5 py-1">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-input text-2xs font-semibold tabular-nums text-muted-foreground">{index + 1}</span>
-                    <span className="min-w-0 text-sm text-foreground"><T p={title} wrap /></span>
-                  </li>
-                ))}
-              </ol>
             </div>
 
-            <div className="min-w-0 animate-fade-in" style={{ animationDelay: '120ms' }}>
-              <Card className="mx-auto w-full max-w-xl">
-                <CardContent className="space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <Badge variant="secondary" className="text-2xs"><BilingualText en="Example card" el="Ενδεικτική κάρτα" compact /></Badge>
-                    <span className="text-2xs text-muted-foreground"><BilingualText en="From the demo, not a real company" el="Από το demo, όχι πραγματική εταιρεία" compact /></span>
-                  </div>
-                  <NeedCard card={SAMPLE_NEED_CARD} />
-                </CardContent>
-              </Card>
+            {/* The cast on its own stage — second in the grid so a phone
+                reads headline, buttons, figures, steps; the desktop paints
+                it as the right column beside the words. */}
+            <div
+              data-keep-icon=""
+              className="animate-fade-in flex items-end justify-center rounded-[2rem] bg-status-accent-bg px-6 pb-8 pt-10 sm:pt-14"
+              style={{ animationDelay: '120ms' }}
+            >
+              <div className="relative">
+                <span aria-hidden="true" className="absolute inset-x-6 bottom-0 h-10 rounded-[100%] bg-primary/10" />
+                <CfbCast className="relative" />
+              </div>
             </div>
+
+            <ol className="mx-auto flex w-fit flex-col gap-1.5 text-left lg:col-start-1 lg:mx-0" aria-label="Three moves · Τρεις κινήσεις">
+              {MOVES.map(({ title }, index) => (
+                <li key={title.en} className="flex min-w-0 items-center gap-2.5 py-1">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-input text-2xs font-semibold tabular-nums text-muted-foreground">{index + 1}</span>
+                  <span className="min-w-0 text-sm text-foreground"><T p={title} wrap /></span>
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
+      </section>
+
+      {/* ── One example card, in its own band: the hero stays the headline
+          and the figures; the card reads right under it. ── */}
+      <section aria-label="Example card · Ενδεικτική κάρτα" className="border-t border-border px-4 py-10 sm:px-8 sm:py-14 lg:px-12 xl:px-16">
+        <Card className="mx-auto w-full max-w-xl">
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Badge variant="secondary" className="text-2xs"><BilingualText en="Example card" el="Ενδεικτική κάρτα" compact /></Badge>
+              <span className="text-2xs text-muted-foreground"><BilingualText en="From the demo, not a real company" el="Από το demo, όχι πραγματική εταιρεία" compact /></span>
+            </div>
+            <NeedCard card={SAMPLE_NEED_CARD} />
+          </CardContent>
+        </Card>
       </section>
 
       {/* ── What protects you ───────────────────────────────────────────── */}

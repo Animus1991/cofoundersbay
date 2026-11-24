@@ -11,7 +11,6 @@ import { REVIEW_AREAS, areaKeys, directoryHref } from '@/lib/mentoring/services'
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   AlertTriangle,
-  Award,
   BarChart3,
   CheckCircle2,
   ChevronRight,
@@ -46,6 +45,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, scoreTenPointClass, type StatusTone } from '@/lib/semantic-colors';
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
@@ -676,18 +676,16 @@ export default function ExpertReviewsPage() {
               </div>
             )}
             {reviewsEmpty && (
-              <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                  <Award className="h-7 w-7 text-primary-accessible" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground"><BilingualText en="No reviews yet" el="Δεν υπάρχουν κριτικές ακόμα" compact /></p>
-                  <p className="mt-1 text-sm text-muted-foreground"><BilingualText en="Request expert feedback on your pitch, financials, or strategy." el="Ζητήστε γνώμη ειδικού για το pitch, τα οικονομικά ή τη στρατηγική σας." wrap /></p>
-                </div>
-                <Button size="sm" asChild>
-                  <Link href={directoryHref('review')}><BilingualText en="Find an expert" el="Βρείτε ειδικό" compact /></Link>
-                </Button>
-              </div>
+              <EmptyState
+                illustration="default"
+                title={<BilingualText en="No reviews yet" el="Δεν υπάρχουν κριτικές ακόμα" compact />}
+                description={<BilingualText en="Request expert feedback on your pitch, financials, or strategy." el="Ζητήστε γνώμη ειδικού για το pitch, τα οικονομικά ή τη στρατηγική σας." wrap />}
+                action={(
+                  <Button size="sm" asChild>
+                    <Link href={directoryHref('review')}><BilingualText en="Find an expert" el="Βρείτε ειδικό" compact /></Link>
+                  </Button>
+                )}
+              />
             )}
           </TabsContent>
 

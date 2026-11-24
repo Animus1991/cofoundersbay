@@ -27,6 +27,7 @@ import { qk } from '@/lib/query-keys';
 import { hasInAppPrevious } from '@/lib/in-app-history';
 import { settle, usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import { cn, initialsOf } from '@/lib/utils';
+import { roleTone } from '@/lib/role-tone';
 import { Badge } from '@/components/ui/badge';
 import { SectionCard } from '@/components/dashboard/SectionCard';
 import { CompatibilityList } from '@/components/matches/CompatibilityList';
@@ -104,7 +105,7 @@ function PersonBlock({ name, role, avatarUrl, href, accent }: { name: string; ro
   const avatar = (
     <Avatar className={cn('h-16 w-16 rounded-2xl ring-2', accent ? 'ring-primary/60' : 'ring-border')}>
       <AvatarImage src={avatarUrl ?? undefined} alt={name} />
-      <AvatarFallback className={cn('rounded-2xl text-base font-semibold', accent ? 'bg-primary/10 text-primary-accessible' : 'bg-muted')}>
+      <AvatarFallback className={cn('rounded-2xl text-base font-semibold', roleTone(role))}>
         {initialsOf(name)}
       </AvatarFallback>
     </Avatar>

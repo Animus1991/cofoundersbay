@@ -3,10 +3,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { UserPlus } from 'lucide-react';
+import { ArrowRight, MessageCircle, UserPlus } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
-import { PersonCard } from '@/components/common/PersonCard';
+import { CardMoreMenu, type CardMoreItem } from '@/components/common/CardMoreMenu';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { RoleBadge } from '@/components/common/RoleBadge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { roleTone } from '@/lib/role-tone';
+import { cn, initialsOf } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { useConnectionActions } from '@/hooks/useConnectionWith';
 import { sendConnectionRequest, type SearchHit } from '@/lib/api';
@@ -70,51 +76,81 @@ export function HomePeople({ matches, viewer, myId, limit = 3 }: {
     },
   ]);
 
+  const actionOf = (person: SearchHit, state: string, name: string) => (
+    state === 'received' ? (
+      <Button size="sm" className="w-full" onClick={() => void accept(person.userId)} aria-label={bilingualAria(`Accept ${name}'s request`, `Αποδοχή αιτήματος: ${name}`)}>
+        <BilingualText en="Accept" el="Αποδοχή" compact />
+      </Button>
+    ) : state === 'sent' ? (
+      <Button size="sm" variant="ghost" className="w-full" disabled>
+        <BilingualText en="Request sent" el="Το αίτημα στάλθηκε" compact />
+      </Button>
+    ) : state === 'connected' ? (
+      <Button size="sm" className="w-full" asChild>
+        <Link href={`/messages?to=${encodeURIComponent(person.userId)}`}>
+          <BilingualText en="Message" el="Μήνυμα" compact />
+        </Link>
+      </Button>
+    ) : (
+      <Button
+        size="sm"
+        className="w-full gap-1.5"
+        disabled={connect.isPending}
+        onClick={() => connect.mutate(person.userId)}
+        aria-label={bilingualAria(`Connect with ${name}`, `Σύνδεση με ${name}`)}
+      >
+        <UserPlus className="icon-sm" aria-hidden="true" />
+        <BilingualText en="Connect" el="Σύνδεση" compact />
+      </Button>
+    )
+  );
+
+  const moreOf = (person: SearchHit, state: string): CardMoreItem[] => [
+    ...(state === 'connected' ? [{ key: 'message', en: 'Message', el: 'Μήνυμα', icon: MessageCircle, href: `/messages?to=${encodeURIComponent(person.userId)}` } as CardMoreItem] : []),
+    { key: 'profile', en: 'Full profile', el: 'Πλήρες προφίλ', icon: ArrowRight, href: `/profiles/${person.userId}` },
+  ];
+
+  // A rail of portrait tiles on the accent wash (docs §131.2): the face
+  // leads, the name and role sit under it, one reason, one verb.
   return (
-    <div className="space-y-4" data-home-people="">
-      {people.map((person) => {
-        const reason = explainMatch(person, viewer, { nowMs: Date.now() })[0] ?? null;
-        const state = stateOf(person.userId);
-        const name = person.displayName ?? '';
-        return (
-          <PersonCard
-            key={person.userId}
-            userId={person.userId}
-            name={name}
-            avatarUrl={person.avatarUrl}
-            role={person.role}
-            headline={person.headline}
-            photo="xl"
-            meta={reason ? <span className="line-clamp-2"><BilingualText en={reason.en} el={reason.el} compact wrap /></span> : undefined}
-            aside={state === 'received' ? (
-              <Button size="sm" onClick={() => void accept(person.userId)} aria-label={bilingualAria(`Accept ${name}'s request`, `Αποδοχή αιτήματος: ${name}`)}>
-                <BilingualText en="Accept" el="Αποδοχή" compact />
-              </Button>
-            ) : state === 'sent' ? (
-              <Button size="sm" variant="ghost" disabled>
-                <BilingualText en="Request sent" el="Το αίτημα στάλθηκε" compact />
-              </Button>
-            ) : state === 'connected' ? (
-              <Button size="sm" asChild>
-                <Link href={`/messages?to=${encodeURIComponent(person.userId)}`}>
-                  <BilingualText en="Message" el="Μήνυμα" compact />
+    <div className="-mx-1 snap-x snap-mandatory overflow-x-auto px-1 pb-1 [scrollbar-gutter:stable]" data-home-people="" aria-label="People who fit">
+      <div className="flex w-max min-w-full gap-3 rounded-2xl bg-status-accent-bg/50 p-3">
+        {people.map((person) => {
+          const reason = explainMatch(person, viewer, { nowMs: Date.now() })[0] ?? null;
+          const state = stateOf(person.userId);
+          const name = person.displayName ?? '';
+          return (
+            <Card key={person.userId} className="flex w-[200px] shrink-0 snap-start flex-col overflow-hidden">
+              <CardContent className="flex flex-1 flex-col gap-2 p-3">
+                <Link href={`/profiles/${person.userId}`} tabIndex={-1} aria-hidden="true" className="block self-center rounded-full">
+                  <Avatar className="h-[4.5rem] w-[4.5rem] border border-border">
+                    <AvatarImage src={person.avatarUrl || undefined} alt="" />
+                    <AvatarFallback className={cn('text-sm font-semibold', roleTone(person.role))}>{initialsOf(name)}</AvatarFallback>
+                  </Avatar>
                 </Link>
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                className="gap-1.5"
-                disabled={connect.isPending}
-                onClick={() => connect.mutate(person.userId)}
-                aria-label={bilingualAria(`Connect with ${name}`, `Σύνδεση με ${name}`)}
-              >
-                <UserPlus className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Connect" el="Σύνδεση" compact />
-              </Button>
-            )}
-          />
-        );
-      })}
+                <div className="min-w-0 space-y-1 text-center">
+                  <p className="truncate">
+                    <PersonHovercard userId={person.userId}>
+                      <Link href={`/profiles/${person.userId}`} className="person-name transition-colors hover:text-primary-accessible">{name}</Link>
+                    </PersonHovercard>
+                  </p>
+                  {person.role ? <RoleBadge role={person.role} size="sm" /> : null}
+                  {person.headline ? <p className="truncate text-xs text-muted-foreground">{person.headline}</p> : null}
+                  {reason ? (
+                    <p className="line-clamp-2 text-xs text-muted-foreground">
+                      <BilingualText en={reason.en} el={reason.el} compact wrap />
+                    </p>
+                  ) : null}
+                </div>
+                <div className="mt-auto flex items-center gap-1">
+                  <div className="min-w-0 flex-1 [&_button]:whitespace-nowrap">{actionOf(person, state, name)}</div>
+                  <CardMoreMenu name={name} items={moreOf(person, state)} />
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }

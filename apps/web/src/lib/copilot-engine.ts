@@ -239,7 +239,7 @@ function describeGraph(graph: CopilotGraph, t: Translator, message = ''): string
   // Connections", which this fixes on the way past.
   //
   // The name opens the briefing only when the reader asked who they are or
-  // how they stand (docs §126): on a page question it led every answer with
+  // how they stand (docs §136): on a page question it led every answer with
   // "You are Alex Demo (founder, Athens)", which the reader knows.
   const readinessLine = graph.readiness
     ? graph.readiness.lowestLabel
@@ -646,7 +646,7 @@ export async function runCopilotTurn(
   // A control named by the message is the answer, even when the answer is
   // "already set" or "not available": the Greek sentence starts «Το «…»», so
   // reading it for the label at its start missed it and the general briefing
-  // followed (docs §127).
+  // followed (docs §137).
   let controlAnswered = false;
   if (pageControls.length > 0) {
     const usable = pageControls.filter((c) => !c.unavailable);
@@ -716,7 +716,7 @@ export async function runCopilotTurn(
   if (answeredByPage && !options?.tools) {
     // Nor a shortlist save that names nobody: «αποθήκευσε τις ρυθμίσεις» is
     // the page's Save, and "name someone and I will save them" above its card
-    // read as the answer (docs §127).
+    // read as the answer (docs §137).
     const namesNobody = (t: (typeof planned)[number]) => (t.name === 'shortlist_add' || t.name === 'shortlist_remove') && !t.args?.name;
     planned = planned.filter((t) => t.name !== 'get_graph' && !namesNobody(t));
     usedTools = planned.map((t) => t.name);
@@ -1257,7 +1257,7 @@ export async function runCopilotTurn(
   if (!message && !options?.tools && uniqueActions.length > 0) {
     // A proposal speaks for itself: its card says what runs and what changes.
     // The tour of everything the assistant can do, above "Open applications:
-    // Closed", answered a question nobody asked (docs §127).
+    // Closed", answered a question nobody asked (docs §137).
     message = uniqueActions.length === 1
       ? t('Here it is: {action}.', { action: uniqueActions[0].title })
       : t('Here is what I can do for that.');

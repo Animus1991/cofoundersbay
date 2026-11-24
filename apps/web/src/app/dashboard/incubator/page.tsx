@@ -47,7 +47,10 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { bilingualAria } from '@/lib/i18n/format';
 import { demoMark } from '@/lib/demo/photos';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
-import { roleShortcutsSection } from '@/components/dashboard/RoleShortcuts';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { YourPagesRow } from '@/components/dashboard/YourPages';
+import { HomeShortcuts } from '@/components/dashboard/HomeShortcuts';
+
 import { HomeFold } from '@/components/dashboard/HomeFold';
 import { HomeToday } from '@/components/dashboard/HomeToday';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
@@ -251,7 +254,7 @@ export default function IncubatorDashboard() {
     { id: 'open_applications', labelEn: 'Review program applications', labelEl: 'Έλεγχος αιτήσεων προγραμμάτων', writes: false, run: () => router.push('/org/applications') },
     { id: 'open_programs', labelEn: 'Manage programs', labelEl: 'Διαχείριση προγραμμάτων', writes: false, run: () => router.push('/org/programs') },
     { id: 'open_startups', labelEn: 'Open portfolio startups', labelEl: 'Άνοιγμα startups οργανισμού', writes: false, run: () => router.push('/org/startups') },
-    // Opens the form the "No organisation yet" card opens (docs §128): the
+    // Opens the form the "No organisation yet" card opens (docs §138): the
     // person fills it and presses Create, so nothing is written from here.
     {
       id: 'create_organisation',
@@ -279,8 +282,28 @@ export default function IncubatorDashboard() {
     );
   }
 
+
+  /* The shortcuts and the reader's pages live in the page's tools, one
+     gesture away — the question box is alone on the page, as on the
+     founder's home (docs §116/§125). */
+  const rail: PageRailSection[] = [
+    {
+      id: 'pages',
+      glyph: 'bookmark',
+      labelEn: 'Your pages',
+      labelEl: 'Οι σελίδες σας',
+      content: <YourPagesRow />,
+    },
+    {
+      id: 'shortcuts',
+      glyph: 'spark',
+      labelEn: 'Quick actions',
+      labelEl: 'Γρήγορες ενέργειες',
+      content: <HomeShortcuts role="incubator" pages={false} />,
+    },
+  ];
   return (
-    <AppShell askAi={false} showHelp rail={[roleShortcutsSection('incubator')]}
+    <AppShell askAi={false} showHelp rail={rail}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1.5">
@@ -297,7 +320,7 @@ export default function IncubatorDashboard() {
       }
     >
       <div className="space-y-6">
-        <HomeAskHero role="incubator" plain showWaiting={false} name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
+        <HomeAskHero role="incubator" showWaiting={false} plain name={profile?.profile?.displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
         <HomeToday />
 
         {!loading && nextApplication ? (
@@ -328,7 +351,7 @@ export default function IncubatorDashboard() {
         )}
 
         {programsFailed && (
-          <SectionCard title="Programs" titleEl="Προγράμματα" icon={FolderKanban}>
+          <SectionCard title="Programs" titleEl="Προγράμματα" icon={FolderKanban} iconTint="success">
             <FailedLine
               en={orgFailed ? 'Your organisation could not be read just now.' : 'Your programmes could not be read just now.'}
               el={orgFailed ? 'Ο οργανισμός σας δεν διαβάστηκε αυτή τη στιγμή.' : 'Τα προγράμματά σας δεν διαβάστηκαν αυτή τη στιγμή.'}
@@ -450,7 +473,7 @@ export default function IncubatorDashboard() {
               )}
             </SectionCard>
 
-            <SectionCard title="Programs" titleEl="Προγράμματα" icon={FolderKanban} action={{ href: '/org/programs', label: 'Manage', labelEl: 'Διαχείριση' }} contentClassName="card-rows">
+            <SectionCard title="Programs" titleEl="Προγράμματα" icon={FolderKanban} iconTint="success" action={{ href: '/org/programs', label: 'Manage', labelEl: 'Διαχείριση' }} contentClassName="card-rows">
               {loading && [0, 1].map((i) => <Skeleton key={i} className="h-20" />)}
               {programs.map((program) => {
                 const badge = STATUS_BADGE[program.status] ?? STATUS_BADGE.draft;
@@ -485,7 +508,7 @@ export default function IncubatorDashboard() {
             </SectionCard>
 
             {!participantsFailed && (
-            <SectionCard title="Startups in programs" titleEl="Startups σε προγράμματα" icon={Rocket} action={{ href: '/org/startups', label: 'All startups', labelEl: 'Όλες οι startups' }} contentClassName="card-rows">
+            <SectionCard title="Startups in programs" titleEl="Startups σε προγράμματα" icon={Rocket} iconTint="accent" action={{ href: '/org/startups', label: 'All startups', labelEl: 'Όλες οι startups' }} contentClassName="card-rows">
               {/* Startups are rounded squares, the founder and the program
                   under the name: two columns of rows, no frame per row. */}
               {inPrograms.length > 0 && (
@@ -530,7 +553,7 @@ export default function IncubatorDashboard() {
             />
 
             {!programsFailed && (<>
-            <SectionCard title="Coming up" titleEl="Επόμενα" icon={CalendarClock} contentClassName="card-rows">
+            <SectionCard title="Coming up" titleEl="Επόμενα" icon={CalendarClock} iconTint="warning" contentClassName="card-rows">
               {comingUp.map((item) => (
                 <RowHead
                   key={item.id}

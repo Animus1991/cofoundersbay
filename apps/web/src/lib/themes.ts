@@ -1,4 +1,4 @@
-export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot' | 'terra' | 'wine' | 'sky' | 'graphite';
+export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot' | 'terra' | 'playful' | 'playful-dark' | 'wine' | 'sky' | 'graphite';
 
 /**
  * Which class and `data-theme` each theme puts on <html>. One table for the
@@ -7,7 +7,7 @@ export type ThemeName = 'dark' | 'light' | 'lilac' | 'system' | 'alliance' | 'co
  * prototype's look (`data-theme="studio"`, docs §63); `lilac` is the Light
  * theme before it, kept as a choice.
  *
- * A theme with a `variant` is another accent on a named theme (docs §125):
+ * A theme with a `variant` is another accent on a named theme (docs §135):
  * it carries the base's `data-theme`, so every rule of that theme (surfaces,
  * status tones, its component layer) applies, and `data-variant` swaps only
  * the accent tokens. Bordeaux is Terracotta's, Sky is Cyan's, Graphite is
@@ -22,6 +22,8 @@ export const THEME_ROOT: Record<Exclude<ThemeName, 'system'>, { mode: 'light' | 
   minimal: { mode: 'light', dataTheme: 'minimal' },
   apricot: { mode: 'light', dataTheme: 'apricot' },
   terra: { mode: 'light', dataTheme: 'terra' },
+  playful: { mode: 'light', dataTheme: 'playful' },
+  'playful-dark': { mode: 'dark', dataTheme: 'playful-dark' },
   wine: { mode: 'light', dataTheme: 'terra', variant: 'wine' },
   sky: { mode: 'light', dataTheme: 'alliance', variant: 'sky' },
   graphite: { mode: 'light', dataTheme: 'studio', variant: 'graphite' },
@@ -225,6 +227,50 @@ export const themes: Record<ThemeName, ThemeColors> = {
     input: '30 10% 92%',
     ring: '24 24.7% 42.5%',
   },
+  playful: {
+    // "Playful" — legacy inline fallback only; globals.css owns the live tokens.
+    background: '285 14% 96.4%',
+    foreground: '280 12% 18%',
+    card: '285 20% 98.8%',
+    cardForeground: '280 12% 18%',
+    popover: '0 0% 100%',
+    popoverForeground: '280 12% 18%',
+    primary: '260 60% 46%',
+    primaryForeground: '0 0% 100%',
+    secondary: '285 14% 93%',
+    secondaryForeground: '280 10% 20%',
+    muted: '285 14% 93%',
+    mutedForeground: '282 8% 37%',
+    accent: '285 16% 92.5%',
+    accentForeground: '280 10% 16%',
+    destructive: '350 40% 41.5%',
+    destructiveForeground: '0 0% 100%',
+    border: '285 14% 89%',
+    input: '285 14% 84%',
+    ring: '260 50% 48%',
+  },
+  'playful-dark': {
+    // "Playful Dark" — legacy inline fallback only; globals.css owns the live tokens.
+    background: '285 22% 8.2%',
+    foreground: '280 10% 93%',
+    card: '285 18% 11%',
+    cardForeground: '280 10% 93%',
+    popover: '285 16% 12.5%',
+    popoverForeground: '280 10% 93%',
+    primary: '260 55% 59%',
+    primaryForeground: '0 0% 100%',
+    secondary: '285 14% 15%',
+    secondaryForeground: '280 10% 92%',
+    muted: '285 14% 14%',
+    mutedForeground: '282 9% 70%',
+    accent: '285 16% 16%',
+    accentForeground: '280 10% 93%',
+    destructive: '4 40% 50%',
+    destructiveForeground: '0 0% 100%',
+    border: '285 12% 18.5%',
+    input: '285 12% 22%',
+    ring: '260 50% 72%',
+  },
   terra: {
     // "Terracotta" — legacy inline fallback only; globals.css owns the live tokens.
     background: '336 18% 95.8%',
@@ -248,7 +294,7 @@ export const themes: Record<ThemeName, ThemeColors> = {
     ring: '336 27% 42%',
   },
   wine: {
-    // "Bordeaux", Terracotta with the owner's wine (docs §125) — legacy inline fallback only.
+    // "Bordeaux", Terracotta with the owner's wine (docs §135) — legacy inline fallback only.
     background: '336 18% 95.8%',
     foreground: '336 12% 12%',
     card: '336 26% 98.6%',
@@ -270,7 +316,7 @@ export const themes: Record<ThemeName, ThemeColors> = {
     ring: '329.17 59.02% 38%',
   },
   sky: {
-    // "Sky", Cyan with the owner's sky (docs §125) — legacy inline fallback only.
+    // "Sky", Cyan with the owner's sky (docs §135) — legacy inline fallback only.
     background: '195 26% 96%', // #eef6f7
     foreground: '220 100% 3%', // #000724
     card: '0 0% 100%', // #ffffff
@@ -292,7 +338,7 @@ export const themes: Record<ThemeName, ThemeColors> = {
     ring: '193.7 71.75% 41%',
   },
   graphite: {
-    // "Graphite", Light with the owner's soft ink (docs §125) — legacy inline fallback only.
+    // "Graphite", Light with the owner's soft ink (docs §135) — legacy inline fallback only.
     background: '0 0% 100%',
     foreground: '222.2 84% 4.9%',
     card: '0 0% 100%',
@@ -364,6 +410,14 @@ export function applyTheme(themeName: ThemeName) {
       root.classList.add('light');
       root.setAttribute('data-theme', 'terra');
       break;
+    case 'playful':
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'playful');
+      break;
+    case 'playful-dark':
+      root.classList.add('dark');
+      root.setAttribute('data-theme', 'playful-dark');
+      break;
     case 'minimal':
       // Light-first: the `light` class supplies the base, and data-theme
       // carries both the palette and the component layer.
@@ -373,7 +427,7 @@ export function applyTheme(themeName: ThemeName) {
     case 'wine':
     case 'sky':
     case 'graphite': {
-      // Another accent on a named theme (THEME_ROOT, docs §125).
+      // Another accent on a named theme (THEME_ROOT, docs §135).
       const entry = THEME_ROOT[themeName];
       root.classList.add(entry.mode);
       if (entry.dataTheme) root.setAttribute('data-theme', entry.dataTheme);
@@ -392,8 +446,10 @@ export function getStoredTheme(): ThemeName {
   const stored = localStorage.getItem('theme') as ThemeName;
   if (stored && themes[stored]) return stored;
 
-  // No saved choice: resolve to what the OS asks for, matching RoleTheme.
-  return getSystemTheme();
+  // No saved choice: the playful theme is the first impression (owner
+  // decision, 2026-11-23), matching THEME_BOOT in app/layout.tsx and
+  // RoleTheme's mount read.
+  return 'playful';
 }
 
 export function getSystemTheme(): 'dark' | 'light' {

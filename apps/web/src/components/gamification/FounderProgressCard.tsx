@@ -7,7 +7,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { Button } from '@/components/ui/button';
 import { useRoleOptional } from '@/contexts/RoleContext';
-import { useAskAssistant } from '@/hooks/useAskAssistant';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { getVentureReadiness } from '@/lib/api';
 import { starterAudience } from '@/lib/copilot-starters';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
@@ -21,7 +21,6 @@ import { qk } from '@/lib/query-keys';
  * is the company's readiness for investors.
  */
 export function FounderProgressCard() {
-  const { ask } = useAskAssistant();
   const isFounder = starterAudience(useRoleOptional()?.primaryRole) === 'founder';
   const { data } = useQuery({ queryKey: qk('readiness', 'venture'), queryFn: () => getVentureReadiness(), enabled: isFounder, staleTime: 60_000, retry: 0 });
   if (!isFounder || !data) return null;
@@ -29,6 +28,14 @@ export function FounderProgressCard() {
     <div id="founder-progress" className="scroll-mt-24">
       <VentureReadinessCard
         data={data}
+        aside={(
+          <AIInsightButton
+            variant="card"
+            prompt={ASK.dashReadiness}
+            label={dashboardEn('ask_ai_readiness')}
+            labelEl={dashboardEl('ask_ai_readiness')}
+          />
+        )}
         footer={(
           <div className="space-y-2.5">
             {/* One next action: what would move the score most is the lowest
@@ -59,10 +66,6 @@ export function FounderProgressCard() {
                 </Link>
               </Button>
             </div>
-            <Button type="button" variant="ghost" size="sm" className="h-auto min-h-9 w-full gap-1.5 py-1.5 leading-snug" onClick={() => ask(ASK.dashReadiness)}>
-              <CfbGlyph name="spark" className="icon-sm shrink-0" aria-hidden="true" />
-              <BilingualText en={dashboardEn('ask_ai_readiness')} el={dashboardEl('ask_ai_readiness')} compact wrap />
-            </Button>
           </div>
         )}
       />

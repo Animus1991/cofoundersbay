@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { Download, FileText } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
+import { EmptyState } from '@/components/common/EmptyState';
 import { AppShell } from '@/components/layout/AppShell';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -118,11 +119,12 @@ export default function SharedRoomsPage() {
         ) : isLoading ? (
           <Card><CardContent className="space-y-3"><Skeleton className="h-10 w-48" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-2/3" /></CardContent></Card>
         ) : rooms.length === 0 ? (
-          <Card className="border-dashed"><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-            <p className="page-section font-semibold"><BilingualText en={fundraisingEn('shared_empty_title')} el={fundraisingEl('shared_empty_title')} compact /></p>
-            <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('shared_empty_hint')} el={fundraisingEl('shared_empty_hint')} wrap /></p>
-            <Button size="sm" variant="outline" asChild><Link href="/fundraising"><BilingualText en={fundraisingEn('shared_own_room')} el={fundraisingEl('shared_own_room')} compact /></Link></Button>
-          </CardContent></Card>
+          <EmptyState
+            illustration="default"
+            title={<BilingualText en={fundraisingEn('shared_empty_title')} el={fundraisingEl('shared_empty_title')} compact />}
+            description={<BilingualText en={fundraisingEn('shared_empty_hint')} el={fundraisingEl('shared_empty_hint')} wrap />}
+            action={<Button size="sm" variant="outline" asChild><Link href="/fundraising"><BilingualText en={fundraisingEn('shared_own_room')} el={fundraisingEl('shared_own_room')} compact /></Link></Button>}
+          />
         ) : (
           rooms.map((room) => <RoomCard key={room.roundId} room={room} />)
         )}

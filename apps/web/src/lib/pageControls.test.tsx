@@ -165,7 +165,7 @@ describe('matching a request to a page control', () => {
     expect(pageControlFor('δείξε μόνο όσους είναι σε αναστολη', greek)).toMatchObject({ option: { value: 'suspended' } });
   });
 
-  it('meets an inflected Greek word with the option it names (docs §126)', () => {
+  it('meets an inflected Greek word with the option it names (docs §136)', () => {
     const greek = [{ id: 'status_filter', label: 'Φίλτρο κατάστασης', writes: false, options: [
       { value: 'active', label: 'Ενεργός' }, { value: 'suspended', label: 'Σε αναστολή' }, { value: 'banned', label: 'Αποκλεισμένος' },
     ] }];
@@ -174,7 +174,7 @@ describe('matching a request to a page control', () => {
     expect(pageControlFor('φίλτρο: ενεργοί', greek)).toMatchObject({ option: { value: 'active' } });
   });
 
-  it('turns a switch by its verbs, and the first one said wins (docs §127)', () => {
+  it('turns a switch by its verbs, and the first one said wins (docs §137)', () => {
     const policies = [
       { id: 'policy_open_applications', label: 'Ανοιχτές αιτήσεις', writes: true, options: [{ value: 'on', label: 'Ανοιχτό' }, { value: 'off', label: 'Κλειστό' }] },
       { id: 'policy_public_profile', label: 'Δημόσιο προφίλ', writes: true, options: [{ value: 'on', label: 'Ανοιχτό' }, { value: 'off', label: 'Κλειστό' }] },
@@ -239,13 +239,13 @@ describe('an assistant turn on a page with controls', () => {
     expect(turn.usedTools).not.toContain('get_graph');
   });
 
-  it('introduces a proposal in one line, not with the tour of everything (docs §127)', async () => {
+  it('introduces a proposal in one line, not with the tour of everything (docs §137)', async () => {
     const turn = await runCopilotTurn('show only suspended users', context);
     expect(turn.message).toContain('Here it is: Status filter: Suspended.');
     expect(turn.message).not.toContain('I can search');
   });
 
-  it('says a switch is already set with no briefing under it (docs §127)', async () => {
+  it('says a switch is already set with no briefing under it (docs §137)', async () => {
     // The Greek sentence starts «Το «…»», not with the control's label.
     const greek = {
       route: '/org/settings',
@@ -258,7 +258,7 @@ describe('an assistant turn on a page with controls', () => {
     expect(turn.message).toMatch(/ήδη/);
   });
 
-  it('reads «αποθήκευσε» as the page\'s Save, not a shortlist save, when nobody is named (docs §127)', async () => {
+  it('reads «αποθήκευσε» as the page\'s Save, not a shortlist save, when nobody is named (docs §137)', async () => {
     const greek = {
       route: '/tenant/settings',
       locale: 'el',

@@ -226,7 +226,7 @@ export default function TenantBrandingPage() {
     setField('roleLabels', { ...roleLabels, [role]: label });
   };
 
-  // What the assistant can do here (docs §127): save the draft and publish or
+  // What the assistant can do here (docs §137): save the draft and publish or
   // withdraw it, as the Save button and the status switch do. The colours and
   // the copy stay the person's to set.
   const published = branding?.isBrandingActive ?? false;

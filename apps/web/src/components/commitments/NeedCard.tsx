@@ -45,7 +45,7 @@ function Field({
   return (
     <div data-card-field={tone}>
       <dt className={cn(
-        'text-xs font-medium text-muted-foreground',
+        'text-xs card-meta font-medium text-muted-foreground',
         tone === 'offer' && 'text-primary-accessible',
       )}>
         <BilingualText en={label.en} el={label.el} compact wrap />
@@ -53,7 +53,7 @@ function Field({
       <dd
         className={cn(
           'mt-0.5',
-          tone === 'meta' ? 'text-xs text-muted-foreground' : 'card-body',
+          tone === 'meta' ? 'text-xs card-meta text-muted-foreground' : 'card-body',
           tone === 'aside' && 'text-foreground',
           tone === 'lead' && 'font-medium text-foreground',
           tone === 'offer' && 'font-medium text-primary-accessible',
@@ -128,7 +128,7 @@ export function NeedCard({
     <article data-need-card="" className={cn('space-y-4', className)}>
       <header className="space-y-1.5">
         <div className="flex items-start justify-between gap-3">
-          <p className="min-w-0 pt-0.5 text-xs text-muted-foreground">
+          <p className="min-w-0 pt-0.5 text-xs card-meta text-muted-foreground">
             <BilingualText
               en={version ? `${kind.en} · ${CMT.version.en} ${version}` : kind.en}
               el={version ? `${kind.el} · ${CMT.version.el} ${version}` : kind.el}
@@ -143,14 +143,14 @@ export function NeedCard({
           <div className="flex min-w-0 items-center gap-2.5 pt-1.5">
             <Avatar className="h-10 w-10" data-keep-icon="">
               <AvatarImage src={owner.avatarUrl ?? undefined} alt="" />
-              <AvatarFallback className="bg-primary/15 text-2xs text-foreground">{initialsOf(owner.displayName)}</AvatarFallback>
+              <AvatarFallback className="bg-status-accent-bg text-2xs text-foreground">{initialsOf(owner.displayName)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
               <p className="card-subtitle card-byline flex min-w-0 items-center gap-1">
                 <span className="min-w-0 truncate">{owner.displayName}</span>
                 <VerifiedBadge methods={owner.verifiedMethods ?? []} variant="mark" />
               </p>
-              {owner.headline ? <p className="text-xs text-muted-foreground">{owner.headline}</p> : null}
+              {owner.headline ? <p className="text-xs card-meta text-muted-foreground">{owner.headline}</p> : null}
             </div>
           </div>
         ) : null}
@@ -189,7 +189,7 @@ export function NeedCard({
         ) : null}
       </dl>
 
-      <ul aria-label={`${CMT.filters.en} · ${CMT.filters.el}`} className="facts-dotted flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+      <ul aria-label={`${CMT.filters.en} · ${CMT.filters.el}`} className="facts-dotted flex flex-wrap gap-x-2 gap-y-0.5 text-xs card-meta text-muted-foreground">
         {card.category ? <li>{card.category}</li> : null}
         {card.isRemote ? <li><BilingualText en={CMT.remote.en} el={CMT.remote.el} compact /></li> : null}
         {card.place ? <li>{card.place}</li> : null}

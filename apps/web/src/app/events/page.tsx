@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Calendar, Grid, List, MapPin, Plus, Search, Video, CheckCircle2, Layers, X, GraduationCap, MessageCircle } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
@@ -175,6 +176,7 @@ export default function EventsPage() {
         nextStatus === 'going'
           ? bilingualInline('You are going to this event', 'Θα παρευρεθείτε σε αυτή την εκδήλωση')
           : bilingualInline('RSVP removed', 'Η δήλωση αφαιρέθηκε'),
+        nextStatus === 'going' ? { figure: 'mentor' } : undefined,
       );
     } catch (e) {
       showError(bilingualInline('RSVP failed', 'Η δήλωση απέτυχε'), e instanceof Error ? e.message : bilingualInline('Please try again', 'Δοκιμάστε ξανά'));
@@ -278,6 +280,7 @@ export default function EventsPage() {
     <AppShell
       rail={rail}
       showHelp
+      titleSticker={{ glyph: 'calendar', tint: 'warning' }}
       askAi={ASK.events}
       actions={
         <Button className="gap-2" asChild>
@@ -406,18 +409,35 @@ export default function EventsPage() {
               <>
                 {featured && (
                   <div className="mb-6">
-                    <h2 className="mb-4 text-base font-semibold text-foreground">
+                    <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground">
+                      <SectionSticker glyph="calendar" tint="warning" />
                       <BilingualText en={firstLabel.en} el={firstLabel.el} compact />
                     </h2>
-                    <EventCard
-                      event={featured}
-                      variant="featured"
-                      onRsvp={() => {
-                        const raw = eventsRaw.find((x) => x.id === featured.id);
-                        if (raw) void handleRsvp(raw);
-                      }}
-                      onShare={() => handleShare(featured)}
-                    />
+                    {/* The photo hero from md; the wave-1 compact row on a
+                        phone so the next card still shows under it (docs
+                        §132.1). */}
+                    <div className="md:hidden">
+                      <EventCard
+                        event={featured}
+                        variant="compact"
+                        onRsvp={() => {
+                          const raw = eventsRaw.find((x) => x.id === featured.id);
+                          if (raw) void handleRsvp(raw);
+                        }}
+                        onShare={() => handleShare(featured)}
+                      />
+                    </div>
+                    <div className="hidden md:block">
+                      <EventCard
+                        event={featured}
+                        variant="featured"
+                        onRsvp={() => {
+                          const raw = eventsRaw.find((x) => x.id === featured.id);
+                          if (raw) void handleRsvp(raw);
+                        }}
+                        onShare={() => handleShare(featured)}
+                      />
+                    </div>
                   </div>
                 )}
 

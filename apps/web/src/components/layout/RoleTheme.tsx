@@ -42,12 +42,12 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
     root.removeAttribute('data-variant');
     const entry = newTheme === 'system' ? null : THEME_ROOT[newTheme];
     if (entry?.variant) {
-      // Another accent on a named theme (docs §125).
+      // Another accent on a named theme (docs §135).
       root.classList.add(entry.mode);
       if (entry.dataTheme) root.setAttribute('data-theme', entry.dataTheme);
       root.setAttribute('data-variant', entry.variant);
-    } else if (newTheme === 'minimal' || newTheme === 'apricot' || newTheme === 'terra') {
-      root.classList.add('light');
+    } else if (newTheme === 'minimal' || newTheme === 'apricot' || newTheme === 'terra' || newTheme === 'playful' || newTheme === 'playful-dark') {
+      root.classList.add(THEME_ROOT[newTheme].mode);
       root.setAttribute('data-theme', newTheme);
     } else if (newTheme === 'alliance') {
       root.classList.add('light');
@@ -93,11 +93,10 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Get stored theme. No saved choice: follow the OS instead of forcing
-    // dark on every new user.
+    // Get stored theme. No saved choice: the playful theme is the first
+    // impression (owner decision, 2026-11-23), same default as THEME_BOOT.
     const storedTheme = localStorage.getItem('theme') as Theme | null;
-    const initialTheme = storedTheme
-      || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const initialTheme = storedTheme || 'playful';
     setThemeState(initialTheme);
 
     // Get stored user role
@@ -124,9 +123,9 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
       if (initialTheme === 'system') {
         applyTheme('system', initialRole);
       } else if (!localStorage.getItem('theme')) {
-        const next: Theme = mediaQuery.matches ? 'dark' : 'light';
-        setThemeState(next);
-        applyTheme(next, initialRole);
+        // No saved choice means Playful, which is light at every OS setting.
+        setThemeState('playful');
+        applyTheme('playful', initialRole);
       }
     };
     mediaQuery.addEventListener('change', handleChange);
@@ -149,10 +148,7 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
         }
       }
       if (e.key === 'theme') {
-        setTheme(
-          (e.newValue as Theme)
-          || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
-        );
+        setTheme((e.newValue as Theme) || 'playful');
       }
     };
 

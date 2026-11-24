@@ -19,6 +19,7 @@ import { getMatchBreakdown, getRecommendations, type MatchBreakdown, type Search
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { cn, initialsOf } from '@/lib/utils';
+import { roleTone } from '@/lib/role-tone';
 import { axisCopy, frictionCopy, strengthTerms } from '@/lib/match-vs-copy';
 import { bilingualAria } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
@@ -175,7 +176,7 @@ export default function MatchComparePage() {
       mark={(
         <Avatar className="h-10 w-10">
           <AvatarImage src={person.avatarUrl ?? undefined} alt="" />
-          <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(person.displayName)}</AvatarFallback>
+          <AvatarFallback className={cn('font-semibold', roleTone(person.role))}>{initialsOf(person.displayName)}</AvatarFallback>
         </Avatar>
       )}
       title={(
