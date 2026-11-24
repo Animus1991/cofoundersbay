@@ -244,7 +244,7 @@ function Home() {
             name={me?.displayName?.split(' ')[0] ?? null}
             purposeEn={copy.description.en}
             purposeEl={copy.description.el}
-            figure={<CfbFigure id={AUDIENCE_FIGURE[audience] ?? 'builder'} className="h-40 w-auto" />}
+
           />
         </div>
         {/* The one thing in progress, straight under the hero on a phone —

@@ -41,6 +41,7 @@ export function HomeContinue() {
         actionEl="Συνέχεια"
         askEn="Ask"
         askEl="Ρωτήστε"
+        stacked
         onAsk={() => ask({
           en: `What should I do next on the board “${board.title}”?`,
           el: `Τι να κάνω στη συνέχεια στον πίνακα «${board.title}»;`,
@@ -64,6 +65,7 @@ export function HomeContinue() {
       actionEl="Συνέχεια"
       askEn="Ask"
       askEl="Ρωτήστε"
+      stacked
       onAsk={() => ask({
         en: `What is left on the milestone “${next.title}”?`,
         el: `Τι απομένει στο ορόσημο «${titleEl}»;`,

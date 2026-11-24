@@ -53,4 +53,21 @@ describe('HomeNextStep, the one anatomy of a home screen’s next move', () => {
       el: 'Τι κάνω εδώ; Επόμενη συνεδρία: Sofia Alexiou. Ξεκινά σε 20 λεπτά',
     });
   });
+
+  it('stacks the anatomy in a narrow column: label row, full-width title, buttons row (docs §133.9)', () => {
+    const { container } = render(
+      <HomeNextStep stacked kickerEn="Continue" kickerEl="Συνεχίστε" title="A very long board title that used to wrap three lines" href="/research/b1" actionEn="Continue" actionEl="Συνέχεια" />,
+    );
+    const box = container.querySelector('[data-next-step]') as HTMLElement;
+    expect(box.className).toContain('flex-col');
+    // The title sits full width and clamps to two lines…
+    const title = box.querySelector('[data-testid^="home-next-title-"]') as HTMLElement;
+    expect(title.className).toContain('line-clamp-2');
+    // …and the buttons keep their own row below it, with the same handlers.
+    const buttonsRow = title.nextElementSibling as HTMLElement;
+    expect(buttonsRow.className).toContain('flex');
+    expect(buttonsRow.querySelector('[data-next-ask]')).toBeTruthy();
+    expect(buttonsRow.querySelector('[data-next-open]')).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Continue/ }).getAttribute('href')).toBe('/research/b1');
+  });
 });

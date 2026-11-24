@@ -1,10 +1,10 @@
 'use client';
 
-import { FormEvent, KeyboardEvent, useContext, useEffect, useId, useState, type ReactNode } from 'react';
+import { FormEvent, KeyboardEvent, useContext, useEffect, useId, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { ArrowUp, Check, ChevronDown } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -55,6 +55,16 @@ export function useHomeAskRun() {
   };
 }
 
+/** The role's glyph in the hero card's round well (docs §133.8). */
+const ROLE_GLYPH: Record<HomeRole, CfbGlyphName> = {
+  founder: 'builder',
+  mentor: 'mentor',
+  investor: 'growth',
+  provider: 'briefcase',
+  incubator: 'building',
+  admin: 'shield',
+};
+
 export function partOfDay(hour: number): Part {
   if (hour >= 5 && hour < 12) return { en: dashboardEn('good_morning'), el: dashboardEl('good_morning') };
   if (hour >= 12 && hour < 17) return { en: dashboardEn('good_afternoon'), el: dashboardEl('good_afternoon') };
@@ -89,7 +99,7 @@ export function partOfDay(hour: number): Part {
  * - Under them, "Your pages": what the reader pinned and opens most, each
  *   with its `G` number (`YourPagesRow`, docs §107).
  */
-export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true, plain = false, greeting = true, hero = false, figure, purposeEn, purposeEl }: { /** Off where the page's own title already greets the reader (/home). */ greeting?: boolean; role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean; /** Only the question box: the shortcuts live in the page's tools (docs §116). */ plain?: boolean; /** The Parea method: a solid brand card — greeting, one line, the box, three intents, the figure (docs §131.2). */ hero?: boolean; /** The role's figure at the card's right (above the text on a phone). */ figure?: ReactNode; /** One short purpose line under the greeting in the hero card. */ purposeEn?: string; purposeEl?: string }) {
+export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true, plain = false, greeting = true, hero = false, purposeEn, purposeEl }: { /** Off where the page's own title already greets the reader (/home). */ greeting?: boolean; role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean; /** Only the question box: the shortcuts live in the page's tools (docs §116). */ plain?: boolean; /** The Parea method: a solid brand card — greeting, one line, the box, three intents, the role's glyph well (docs §131.2, §133.8). */ hero?: boolean; /** One short purpose line under the greeting in the hero card. */ purposeEn?: string; purposeEl?: string }) {
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
   const run = useHomeAskRun();
@@ -352,10 +362,16 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
         </>
       )}
         </div>
-        {hero && figure ? (
-          // Drawn in the card's own ink: fills/strokes are currentColor, so
-          // primary-foreground at 0.9; the accent spark inherits on bg-primary.
-          <div data-keep-icon="" className="hidden text-primary-foreground opacity-90 xl:block" aria-hidden="true">{figure}</div>
+        {hero ? (
+          /* The role's mark on the card: a crisp round well with the glyph and
+             a small spark at its top-right (docs §133.8). Only from xl, where
+             the figure used to stand. */
+          <div data-keep-icon="" data-hero-figure="" className="relative hidden xl:block" aria-hidden="true">
+            <span className="flex h-28 w-28 items-center justify-center rounded-full bg-white/15 text-primary-foreground">
+              <CfbGlyph name={ROLE_GLYPH[role] ?? 'spark'} className="h-14 w-14" />
+            </span>
+            <CfbGlyph name="spark" className="absolute -right-1 -top-1 h-6 w-6 text-primary-foreground" />
+          </div>
         ) : null}
       </div>
       {hero ? (
