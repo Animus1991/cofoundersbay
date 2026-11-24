@@ -9780,3 +9780,39 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
 - Μήτρα **162 διαδρομές × {EL,EN} × {390,1024,1440,1920} σε Mint** (`wave4-sweep.mjs`): 0 errors, 0 xScroll, 0 unnamed, 0 overlaps, 0 bandWaste, 0 deadBands, 0 blankIcons και στις 8 πάσες — `/this-does-not-exist` 404 όπως σχεδιάστηκε. Member group (121 διαδρομές) στα 1920 σε `playful` **και** `playful-dark`: καθαρές (`CFB_SWEEP_THEME` στο `wave4-sweep-theme.mjs`, details σε `matrix-det-1920-en-{theme}.txt`).
 - 12 dialogs σε Mint στα 1440+390 → `cfb-sweep\mockups\wave4\dialog-*.png` (24): new-message, intro, propose, apply, invite, share-room, delete-account, report, schedule, need-card alert, shortcuts, image-cropper — wells με τόνο, `rounded-3xl`, blur overlay, pill κουμπιά. Το «create post» δεν υπάρχει ως dialog (ο συντάκτης του feed ανοίγει inline· το `CreatePost` component είναι αχρησιμοποίητο) — στη θέση του ο image cropper· το `ConfirmDialog` του data room είναι live-only στο demo, ο danger τόνος φαίνεται στο delete-account.
 - Ανοικτές αποφάσεις: το `muted-foreground` βαθύνθηκε ελάχιστα στο B1.1 για τα νέα tint pairs· fallback `foreground/80` στο band δεν χρειάστηκε (muted ≥4.5 παντού).
+
+## 137. Κύμα 4 (Spec B2) — η εμφάνιση ανά οικογένεια: kind pills, streams, πίνακες, auth/legal, EmptyState
+
+Το B1 ζωγράφισε το κέλυφος· το B2 ζωγραφίζει τις επιφάνειες περιεχομένου — κεφαλές καρτών καταλόγου, ροές, πίνακες, τείχη auth/legal — πάντα μέσα από κοινά primitives ώστε κάθε αλλαγή να πέφτει σε πολλές σελίδες μαζί. Ίδιοι σκληροί κανόνες: τίποτα δεν αφαιρείται, πλήρες πλάτος, επίπεδο χρώμα, ≥4.5:1, δίγλωσσο. Review σε Mint 1920×900 και 390×844.
+
+### 137.B2.1 Kind pill σε κάθε κάρτα καταλόγου
+
+Κάθε κάρτα καταλόγου πήρε `KindPill` στην κορυφή του περιεχομένου — μικρό chip στο `status-*-bg`/`fg` της οικογένειας με το glyph της και μία δίγλωσση λέξη («Ανάγκη», «Θέση», «Πρόγραμμα», «Επενδυτής», «Εκδήλωση» …). Ο τόνος ακολουθεί τη χαρτογράφηση του nav: άτομα/δουλειά→accent, χρήμα→success, γνώση→info, εκδηλώσεις/χρόνος→warning. Renderers που το πήραν: `NeedCard`, `OpportunityCard`, `ProgramCard`, `JobCard`, `InvestorCard`, `EventCard`, `PersonCard`/`ProfileCard`. Στο `NeedCard` το pill μοιράζεται μία σειρά με το kind-meta ώστε το `<header>` να μένει κάτω από το όριο 120px του sweep στα 390 (122→93px).
+
+### 137.B2.2 Ροές (feed / updates / groups wall)
+
+Οι συντάκτες (`FeedPostComposer` και ο twin των updates): avatar με `roleRing`, το κουμπί ανάρτησης pill, και τα media/action εικονίδια σε αποχρωματισμένα wells (φωτογραφίες info, εκδήλωση warning, poll accent). `PostCard` (κοινή + η τοπική δίδυμη του `/feed`): `card-interactive` lift στο hover, η σειρά like/comment/share είναι icon+word pills που χρωματίζονται στο hover (`hover:bg-status-x-bg` με το αντίστοιχο `fg`), το «…» μένου είναι το γυαλισμένο dropdown του B1. Pinned/featured κράτησε το υπάρχον σήμα.
+
+### 137.B2.3 Πίνακες διαβάζονται όπως τα υπόλοιπα
+
+Στο κοινό `Table` primitive: header row `bg-muted/50` με `text-2xs` uppercase `text-muted-foreground` ετικέτες, body rows `hover:bg-muted/40` (hover off σε reduced motion), cells `py-3`. Όλες οι στήλες-κατάσταση (active/invited/suspended/draft/published/pending) έγιναν tinted status pills — στο κοινό cell όπου υπήρχε, αλλιώς ανά πίνακα.
+
+### 137.B2.4 Auth και δημόσιες σελίδες
+
+`/login`, `/register`, `/forgot-password`, `/reset-password`: αμυδρό αποχρωματισμένο wash σελίδας (επίπεδο), form card `rounded-3xl shadow-md`, το λογότυπο σε tinted squircle πάνω από τον τίτλο, primary action pill. Landing `/`: οι persona cards πήραν pill CTA. `/pricing`: η featured tier έχει accent tint band στην κορυφή της (όχι μόνο shadow).
+
+### 137.B2.5 Οι τοίχοι λέξεων και τα κενά
+
+`/privacy`, `/terms` (member copies): πλήρες πλάτος κρατήθηκε — κάθε h2 πήρε `h-4 w-4` squircle marker στον τόνο της ενότητας (`SECTION_TINTS`: accent/info/success/warning εναλλάξ). `/unauthorized`, το not-found fallback και τα κενά του `/invite` δρομολογήθηκαν μέσω `EmptyState`. Grep βρήκε ~85 χειροποίητα empty/error states που παρακάμπταν το shared component — ~80 μετατράπηκαν σε ~40 αρχεία (feed, discover, notifications ×3, events, intros, recommendations, opportunities, milestones, achievements ×3, activity, jobs, groups, mentoring, admin/user-management, admin/audit-log, connections, members, endorsements, investor/*, programs, projects, startups, data-room, referrals, research, saved-searches, shortlist, search, mentor/*, provider/*, tenant/sso, matches, ai, analytics, messaging, builder, profile CustomFieldsEditor, ComposeMessageDialog, NotificationCenter, NotificationsBell, CommandPalette, CommentsPanel, AskedOfMe). Σκόπιμα εξαιρέθηκαν: pricing hero/CTA, t/[slug] hero, `RouteError` (πλήρες layout), thread-empty του ChatWindow με avatar, loading spinners.
+
+### 137.B2.6 Μικρά που έμειναν
+
+- Ετικέτες-κλειδιά μέσα στις σελίδες: τα επαναλαμβανόμενα `text-2xs`/`text-xs` `uppercase tracking-*` section labels (όχι το h1 της σελίδας) πήραν τον ίδιο μικρό αποχρωματισμένο marker — `h-4 w-4 rounded-md border` με `bg-status-*-bg`/`border-status-*-border` εναλλάξ, η γραμμή έγινε `flex items-center gap-2` (`justify-center` όπου centred) — 57 labels σε 31 αρχεία, table cells/chips/dialogs εξαιρέθηκαν.
+- Οι 4 χειροποίητες σειρές tabs του B1 στα 390: admin/dashboard period picker, analytics period (μέσα στο rail), builder/calculators, commitments/[id] responses — όλες τώρα `tab-strip` + `overflow-x-auto scrollbar-hide` με `shrink-0 whitespace-nowrap` items· ελεγμένο στον browser: calculators scrollWidth 594 > clientWidth 358 σε μία γραμμή, admin χωρά (265=265), κανένα wrap σε στήλη, 0 xScroll.
+
+### 137.Ε Επαλήθευση
+
+- `tsc --noEmit --incremental false`: καθαρό. eslint στα 102 touched αρχεία: **0 errors, 0 νέα warnings** (204 baseline· τα icons που ξέμειναν από τις EmptyState μετατροπές — Users, User, Activity, List, LayoutGrid, Calendar, Clock, UserPlus, SectionSticker, FactLine, RoleBadge, CfbGlyph — αφαιρέθηκαν· prop destructures ήταν ήδη baseline). Πλήρες suite: **309 αρχεία / 2016 τεστ — όλα πράσινα**. `check-theme-contrast.py`: **0 κάτω από 4.5:1** σε όλα τα θέματα.
+- Μήτρα **162 διαδρομές × {EL,EN} × {390,1024,1440,1920} σε Mint** (`wave4-sweep-theme.mjs`): 0 errors, 0 xScroll, 0 unnamed, 0 overlaps, 0 deadBands, 0 blankIcons και στις 8 πάσες. Μοναδικό flag: `bandWaste /:122–124px` στις 4 πρώτες πάσες — το `<header>` του `NeedCard` πέρασε το 120px από το B2.1 kind pill· έγινε μία σειρά (93px) και η `/` ξαναμετρήθηκε καθαρή στα {390,1024}×{EL,EN} μέσα από το ίδιο script. Member group (121 διαδρομές) στα 1920 σε `playful` **και** `playful-dark`: καθαρές.
+- 14 στιγμιότυπα σε Mint στα {1440,390} → `cfb-sweep\mockups\wave4b2\` (28 αρχεία): feed, updates, discover, opportunities, jobs, programs + detail, investors, members, admin/users, login, register, pricing, legal.
+- Ανοικτές αποφάσεις: ο marker των B2.6 labels εναλλάσσει τους 4 τόνους ανά αρχείο (ίδιος κανόνας με τα legal h2s)· οι `aria-pressed` filter groups έμειναν χωρίς `tab-strip` (είναι φίλτρα, όχι tabs).
