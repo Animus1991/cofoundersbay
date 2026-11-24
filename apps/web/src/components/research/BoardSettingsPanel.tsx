@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings, Globe, Lock, Users, ChevronDown, Shield, UserMinus, Crown, Copy, Check, Loader2, X, Eye, Edit3, UserPlus, Building2, Info } from 'lucide-react';
+import { Globe, Lock, Users, ChevronDown, Shield, UserMinus, Crown, Copy, Check, Loader2, X, Eye, Edit3, UserPlus, Building2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {

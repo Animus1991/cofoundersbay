@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BilingualText } from '@/components/common/BilingualText';
-import { Keyboard, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useUsageProfile } from '@/hooks/useUsageProfile';
 
 type ShortcutRow = { keys: string[]; en: string; el: string; seq?: boolean };

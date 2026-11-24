@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Send, Sparkles, AlertCircle, UserPlus } from 'lucide-react';
+import { Sparkles, AlertCircle, UserPlus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,

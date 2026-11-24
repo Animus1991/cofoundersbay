@@ -124,13 +124,6 @@ function SubRow({
 }
 
 function InvRow({ inv }: { inv: BillingInvoice }) {
-  const statusColors: Record<string, string> = {
-    paid: 'bg-status-success-bg text-status-success border-status-success-border',
-    open: 'bg-status-info-bg text-status-info border-status-info-border',
-    draft: 'bg-muted text-muted-foreground border-border',
-    void: 'bg-muted text-muted-foreground border-border',
-    uncollectible: 'bg-status-danger-bg text-status-danger border-status-danger-border',
-  };
   const sub = (inv as Record<string, unknown>).subscription as { user?: { email?: string }; tenant?: { name?: string } } | null;
   const ownerLabel = sub?.user?.email ?? sub?.tenant?.name ?? inv.subscriptionId.slice(0, 8);
 
