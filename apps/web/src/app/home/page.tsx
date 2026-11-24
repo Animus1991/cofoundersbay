@@ -266,6 +266,7 @@ function Home() {
                       en={`${waiting} ${waiting === 1 ? 'thing is' : 'things are'} waiting on you`}
                       el={waiting === 1 ? 'Σας περιμένει 1 πράγμα' : `Σας περιμένουν ${waiting} πράγματα`}
                       compact
+                      wrap
                     />
                     </h2>
                   </div>

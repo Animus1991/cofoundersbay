@@ -274,7 +274,9 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
           maxLength={2000}
           placeholder={sayOne('Ask anything, or ask for something to be done', 'Ρωτήστε οτιδήποτε ή ζητήστε να γίνει κάτι')}
           className={hero
-            ? 'block h-9 w-full min-w-0 resize-none bg-transparent py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground'
+            // nowrap: the one-row pill never shows a sliver of a wrapped
+            // placeholder line; Shift+Enter still inserts a newline.
+            ? 'block h-9 w-full min-w-0 resize-none whitespace-nowrap bg-transparent py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground'
             : 'block max-h-48 min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3 text-sm text-foreground outline-none placeholder:text-muted-foreground'}
         />
         {listOpen && commands ? (
