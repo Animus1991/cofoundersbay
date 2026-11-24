@@ -51,27 +51,47 @@ def hexs(rgb):
     return '#' + ''.join(f'{round(v * 255):02x}' for v in rgb)
 
 blocks = {}
-for m in re.finditer(
-    # `html.dark.role-*` is how globals.css writes the dark role overrides
-    # (the extra type selector outranks `.role-*`); read it as `.dark.role-*`.
-    r'(?m)^\s*(?:html)?(:root|\.dark|\.dark\.role-[a-z]+|\.role-[a-z]+|\[data-theme="[a-z-]+"\])\s*\{',
-    css,
-):
-    name = m.group(1)
+block_aliases = {}
+# Strip comments so a `{` inside one cannot split a rule header.
+css_noc = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
+ALLOWED = re.compile(r'(:root|\.dark|\.dark\.role-[a-z]+|\.role-[a-z]+|\[data-theme="[a-z-]+"\])')
+for m in re.finditer(r'(?m)^\s*([^{}]+?)\s*\{', css_noc):
+    # A rule header may list several selectors over several lines
+    # (`:root,\n [data-theme="alliance"],\n [data-theme="minimal"] {`): every
+    # selector in the list owns the same declarations.
+    header = m.group(1)
     i = m.end()
     depth = 1
-    while i < len(css) and depth:
-        if css[i] == '{':
+    while i < len(css_noc) and depth:
+        if css_noc[i] == '{':
             depth += 1
-        elif css[i] == '}':
+        elif css_noc[i] == '}':
             depth -= 1
         i += 1
-    body = css[m.end():i - 1]
+    body = css_noc[m.end():i - 1]
     vars_ = {}
+    aliases = []
+    for vm in re.finditer(r'--([\w-]+)\s*:\s*var\(--([\w-]+)\)', body):
+        aliases.append((vm.group(1), vm.group(2)))
     for vm in re.finditer(r'--([\w-]+)\s*:\s*([\d.]+)\s+([\d.]+)%\s+([\d.]+)%', body):
         vars_[vm.group(1)] = hsl_to_rgb(float(vm.group(2)), float(vm.group(3)), float(vm.group(4)))
-    if vars_:
-        blocks.setdefault(name, {}).update(vars_)
+    if not vars_ and not aliases:
+        continue
+    for sel in header.split(','):
+        sel = sel.strip()
+        if sel.startswith('html'):
+            sel = sel[4:]
+        if ALLOWED.fullmatch(sel):
+            blocks.setdefault(sel, {}).update(vars_)
+            block_aliases.setdefault(sel, []).extend(aliases)
+
+# Token aliases (`--status-success-mark: var(--status-success-fg)` in the dark
+# band) resolve to the value the alias points at within the same block, so
+# pairs see through them.
+for name, aliases in block_aliases.items():
+    for alias, target in aliases:
+        if target in blocks[name]:
+            blocks[name][alias] = blocks[name][target]
 
 PAIRS = [
     ('foreground', 'background', 'body text on page'),
@@ -93,6 +113,17 @@ PAIRS = [
     ('primary-accessible', 'card', 'primary link on card'),
     ('destructive-accessible', 'card', 'error text on card'),
 ]
+
+# Round 136 / Spec B1.1: the page-header band puts a title, body and helper
+# text on a status tint, and the tinted pills/wells carry the status word.
+# `status-*-fg` must clear the floor on its own tint AND on the card;
+# `foreground`/`muted-foreground` must clear on each tint (when muted fails
+# on a tint the band uses text-foreground/80 there instead).
+for _status in ('success', 'warning', 'danger', 'info', 'accent', 'neutral'):
+    PAIRS.append((f'status-{_status}-fg', f'status-{_status}-bg', f'{_status} word on its tint'))
+    PAIRS.append((f'status-{_status}-fg', 'card', f'{_status} word on card'))
+    PAIRS.append(('foreground', f'status-{_status}-bg', f'body text on {_status} tint'))
+    PAIRS.append(('muted-foreground', f'status-{_status}-bg', f'muted text on {_status} tint'))
 
 AA_TEXT = 4.5
 AA_LARGE = 3.0
