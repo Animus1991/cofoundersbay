@@ -9741,3 +9741,42 @@ Web σε ήσυχη μηχανή: 277 αρχεία, 1.900 tests, 0 αποτυχ�
   - Flags που βρέθηκαν και διορθώθηκαν: `/admin/users` επικάλυψη header «Τελευταία δραστηριότητα»∩«Κατάσταση» στα 1024 EL (compact nowrap → wrap)· dead bands από grid-stretch σε `/` (personas), `/tenant/dashboard`, `/admin/analytics`, `/tenant/domains` (items-start / mt-auto CTA)· `/programs` πλαϊνό cover 406px (>340)· `/shortlist` default list→grid· `/profiles/[userId]` έλλειπε sticker.
   - Artifacts μέτρησης, όχι ελαττώματα: 4 redirect shims (`/{investor,mentor,org,provider}/dashboard`, `/research/canvas`) κατέστρεφαν το eval context mid-probe — το sweep περιμένει τον προορισμό και μετρά εκεί· skeleton shimmer bars μετρούνταν ως dead bands κατά το loading — το sweep περιμένει να σταματήσει το `.animate-pulse`.
 - Στόχοι του spec: `/discover` πρώτο οργανικό αποτέλεσμα top=**588px <700** στα 390· ask-field collapsed παντού (hero-mode σελίδες το κρατούν στο band)· 38 A2 σελίδες με πολλαπλές στήλες στα 1920.
+
+## 136. Κύμα 4 (Spec B1) — το look: πάτωμα χρώματος, band κεφαλίδας, pills, καταστάσεις και overlays
+
+Ο ιδιοκτήτης ρώτησε γιατί δεν φαίνεται καμία αισθητική αλλαγή — και είχε δίκιο: το αποθηκευμένο θέμα του είναι Mint, όπου τα πέντε σημασιολογικά tints ήταν `H 21% 91%` πάνω σε κρεμ σελίδα (σχεδόν άχρωμα), και στα σκοτεινά `H 12% 12%`. Το B1 δούλεψε σε επίπεδο shell/primitive ώστε να φτάσει σε κάθε σελίδα χωρίς επεξεργασία ανά σελίδα. Review σε Mint 1920×900 και 390×844.
+
+### 136.B1.1 Πάτωμα χρώματος για τα σημασιολογικά tints
+
+Στο `globals.css`, κάθε theme block με `--status-*-bg` πήρε: light themes bg S≥55%·L 84–92%, border S≥40%·L 72–80%, fg ίδιας οικογένειας χρώματος με L ρυθμισμένο ώστε ≥4.6:1 **και** πάνω στο tint **και** πάνω στο `--card`· dark themes bg S≥35%·L 16–20%· το `neutral` έμεινε ήσυχο. Στο Mint το accent μετακινήθηκε 165→176 και το success 135→122 ώστε το «άτομα» aqua να ξεχωρίζει από το «χρήμα» leaf-green. Το `check-theme-contrast.py` μετρά πλέον `foreground`/`muted-foreground` πάνω σε κάθε `status-*-bg` (το band του B1.2 βάζει σώμα και helper text πάνω σε tint)· το muted περνά ≥4.5 παντού, οπότε δεν χρειάστηκε το `foreground/80` fallback. Νέος φύλακας `lib/tintChroma.test.ts`: διαβάζει το `globals.css` και επιβάλλει το πάτωμα ανά theme block — κανένα tint δεν μπορεί να ξαναγκριάσει.
+
+### 136.B1.2 Η κεφαλίδα της σελίδας είναι ένα αποχρωματισμένο band
+
+Στο `AppShell`, όταν ο header δείχνει και ο τίτλος δεν είναι `titleSrOnly` (`headerBanded = headerShown && !titleSrOnly`· το `fullHeight` δεν έχει header): το block γίνεται band `rounded-2xl px-3 py-3 sm:rounded-3xl sm:px-6 sm:py-5` με φόντο από το resolved sticker tint (`STICKER_BAND_BG`: accent/info/success/warning → `bg-status-*-bg`, primary → `bg-primary/10`, neutral/none → `bg-muted`). Το sticker μέσα στο band: `h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-card shadow-sm` με glyph στο `STICKER_BAND_GLYPH` fg· description, `PageFacts` και page-ask (σε `bg-card`) κάθονται στο band. Νέο `HeaderBandSkeleton` (route-derived tint μέσω `deriveTitleSticker`): 43 loading.tsx το καλούν, 18 routes μέσω `AppRouteLoading` variants, 55 AppShell-framed `error.tsx` shells, 4 centered-layout error pages χειροκίνητα — οι public/unframed έμειναν όπως ήταν. Verified: `/members` band `rgb(191,237,234)`, `/settings` `bg-primary/10`, `/dashboard` unbanded (hero).
+
+### 136.B1.3 Σχήματα: κουμπιά, tabs, badges, καταστάσεις
+
+- `Button`: `rounded-full` στο base (το `link` κρατά `rounded-none`)· τα icon sizes είναι κύκλοι. Search fields με leading Search icon → `rounded-full` σε ~30 αρχεία.
+- `Tabs`: list `rounded-full bg-muted/70 p-1 gap-1`, trigger `rounded-full px-3.5`, **active solid** `bg-primary text-primary-foreground shadow-sm`· count μέσω `Counter` pill. Τα `.tab-strip` rules (~2914) συμφιλιώθηκαν, δεν σβήστηκαν. Hand-rolled tab rows στο ίδιο solid style: admin/dashboard period picker, builder/calculators tool switcher, analytics period, commitments/[id] response tabs (`role="tab"` row) — τα `aria-pressed` filter groups έμειναν (είναι φίλτρα, όχι tabs).
+- `Badge`: default `bg-primary/15 text-primary-accessible`, secondary `bg-muted text-foreground`, νέα variants `success|warning|info|accent|danger` στα status tokens· outline ίδιο.
+- `StatusText`: αποχρωματισμένο pill με 6px dot + ίδια δίγλωσση λέξη (value→tone map + `tone` override)· ~10 call sites ξετυλίχτηκαν από περιττά `<Badge>` (2 αχρείαστα imports αφαιρέθηκαν).
+- `SectionSticker` default `h-8 w-8 rounded-xl` (squircle — κύκλοι μόνο για πρόσωπα). `card-interactive`: `hover:-translate-y-0.5 hover:shadow-md` (το reduced-motion reset υπήρχε).
+
+### 136.B1.4 Marks με παρουσία
+
+`EmptyState`: illustration `h-28 w-28` σε `h-40 w-40 rounded-full` αποχρωματισμένο δίσκο + ένα pill CTA (ίδια κείμενα/ενέργειες). `MetricTile` με `family`: well `h-11 w-11 rounded-2xl`, tile σε `bg-status-x-bg/50` (neutral μένει `bg-card`) — το figures strip διαβάζεται ως έγχρωμα blocks. `roleRing(role)` δίπλα στο `roleTone`: 3px `ring-status-x-border` στα avatars των `PersonTile`/`PersonCard`/`ProfileCard`/`InvestorCard`/`JobCard`/`NeedCard`.
+
+### 136.B1.5 Dialogs και menus μέσα από τα primitives
+
+`DialogContent`: `rounded-3xl shadow-xl border-border/60`· overlay `bg-black/40 backdrop-blur-[2px]`· close button κύκλος. `DialogHeader` πήρε `icon?: ElementType` + `tone?` → `h-11 w-11 rounded-2xl` αποχρωματισμένο well αριστερά του τίτλου. `ConfirmDialog`: `Trash2`·danger για destructive, `Check`·primary αλλιώς· `share-modal` `Share2`·info, `export-dialog` `Download`·info. `DropdownMenuContent`: `rounded-2xl p-1.5 shadow-lg border-border/60`, items `rounded-lg gap-2`, destructive items σε `text-status-danger` (18 call-site αρχεία από `text-destructive-accessible`). Codemod πέρασε `icon`+`tone` στους **79 `<DialogHeader>` σε 67 αρχεία** κατά τον verb map του spec και ξεφόρτωσε τα inline εικονίδια από τους τίτλους — εκτός map (έπεσαν σε `Info`·neutral): admin/programs, admin/reports, admin/user-management, matches, org/applications, provider/projects, recommendations, builder ReviewPanel, VersionHistoryDrawer, KeyboardShortcutsDialog, YourPages, PageRail expanded, MatchScoreExplainer, BoardHistoryDrawer, BoardSettingsPanel, BoardTemplates, CanvasVersionPanel ×3, EntityReferenceSelector. Νέο `ui/dialog.test.tsx` (4 τεστ: well per tone, χωρίς icon κανένα well, ConfirmDialog wells).
+
+### 136.B1.6 `/milestones/new` διπλό primary
+
+Το selected category chip ήταν `bg-primary` — το δεύτερο primary της σελίδας. Έγινε outline-selection (`border-primary` + tint/text)· και τα δύο controls έμειναν.
+
+### 136.Ε Επαλήθευση
+
+- `tsc --noEmit --incremental false`: καθαρό. eslint στα 209 αρχεία που άλλαξε το B1: 0 errors· 6 νέα unused warnings από τα codemods (Send/Keyboard/Settings imports, statusColors/REPORT_STATUS maps, screen/Trash2 στο νέο τεστ) αφαιρέθηκαν στο `df39adf8` — τα υπόλοιπα είναι baseline. Πλήρες suite: **309 αρχεία / 2016 τεστ — όλα πράσινα**. `check-theme-contrast.py`: **0 κάτω από 4.5:1** σε όλα τα θέματα με τα νέα tint pairs.
+- Μήτρα **162 διαδρομές × {EL,EN} × {390,1024,1440,1920} σε Mint** (`wave4-sweep.mjs`): 0 errors, 0 xScroll, 0 unnamed, 0 overlaps, 0 bandWaste, 0 deadBands, 0 blankIcons και στις 8 πάσες — `/this-does-not-exist` 404 όπως σχεδιάστηκε. Member group (121 διαδρομές) στα 1920 σε `playful` **και** `playful-dark`: καθαρές (`CFB_SWEEP_THEME` στο `wave4-sweep-theme.mjs`, details σε `matrix-det-1920-en-{theme}.txt`).
+- 12 dialogs σε Mint στα 1440+390 → `cfb-sweep\mockups\wave4\dialog-*.png` (24): new-message, intro, propose, apply, invite, share-room, delete-account, report, schedule, need-card alert, shortcuts, image-cropper — wells με τόνο, `rounded-3xl`, blur overlay, pill κουμπιά. Το «create post» δεν υπάρχει ως dialog (ο συντάκτης του feed ανοίγει inline· το `CreatePost` component είναι αχρησιμοποίητο) — στη θέση του ο image cropper· το `ConfirmDialog` του data room είναι live-only στο demo, ο danger τόνος φαίνεται στο delete-account.
+- Ανοικτές αποφάσεις: το `muted-foreground` βαθύνθηκε ελάχιστα στο B1.1 για τα νέα tint pairs· fallback `foreground/80` στο band δεν χρειάστηκε (muted ≥4.5 παντού).
