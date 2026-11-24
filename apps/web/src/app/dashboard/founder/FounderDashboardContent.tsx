@@ -1238,7 +1238,7 @@ export default function FounderDashboardContent() {
     },
   ];
   return (
-    <AppShell
+    <AppShell titleSrOnly
       rail={rail}
       showHelp
       // One question box on this page: the home's own (HomeAskHero, below the
@@ -1257,7 +1257,57 @@ export default function FounderDashboardContent() {
         {/* GitHub's home: a greeting over one question box and the jobs to
             start from. The weekly brief the header's field used to send is
             the "My week" chip. */}
-        <HomeAskHero role="founder" followUpsDue={dueFollowUps.length} showWaiting={false} plain name={own?.displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
+        <HomeAskHero role="founder" followUpsDue={dueFollowUps.length} showWaiting={false} band name={own?.displayName} lead={{ en: dashboardEn('greeting_lead'), el: dashboardEl('greeting_lead') }} />
+        <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" data-tour="founder-stats">
+          <MetricTile
+            glyph="profile"
+            family="people"
+            label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
+            value={userMetrics?.profileViews ?? '—'}
+            trend={profileViewsTrend}
+            trendVisual={profileViewPoints.length > 1 ? <Sparkline points={profileViewPoints} /> : undefined}
+            caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
+            captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
+            href="/analytics"
+          />
+          <MetricTile
+            glyph="matches"
+            family="people"
+            label="Recommended matches" labelEl="Προτεινόμενες αντιστοιχίσεις"
+            value={matchCount ?? recommendations?.suggestions?.length ?? '—'}
+            caption="People who fit your criteria"
+            captionEl="Άτομα που ταιριάζουν στα κριτήριά σας"
+            href="/matches"
+          />
+          <MetricTile
+            glyph="messages"
+            family="neutral"
+            label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
+            value={unreadMessages}
+            href="/messages"
+            caption={unreadMessages > 0 ? `${unreadMessages} waiting in Messages` : 'Inbox caught up'}
+            captionEl={unreadMessages > 0 ? `${unreadMessages} σε αναμονή στα Μηνύματα` : 'Όλα διαβασμένα'}
+          />
+          <MetricTile
+            glyph="flag"
+            family="time"
+            label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
+            value={milestonesFailed && milestones.length === 0 ? '—' : `${completedMilestoneCount}/${milestones.length}`}
+            href="/milestones"
+            edge={milestones.length > 0 ? (
+              <ProgressSegments
+                total={milestones.length}
+                segments={[
+                  { key: 'done', value: completedMilestoneCount, tone: 'done' },
+                  { key: 'active', value: activeMilestoneCount, tone: 'active' },
+                  { key: 'late', value: overdueMilestoneCount, tone: 'late' },
+                ]}
+              />
+            ) : undefined}
+            caption={milestonesFailed && milestones.length === 0 ? 'Not read: the server is unavailable. Opens milestones' : milestoneCaption.en}
+            captionEl={milestonesFailed && milestones.length === 0 ? 'Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα ορόσημα' : milestoneCaption.el}
+          />
+        </div>
 
         {showFirstMove && (
           <FounderFirstMove
@@ -1278,60 +1328,6 @@ export default function FounderDashboardContent() {
             shortcuts in the page's tools. */}
         <div data-tour="founder-today"><HomeToday /></div>
 
-        <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" data-tour="founder-stats">
-          <MetricTile
-            align="center"
-            glyph="profile"
-            family="people"
-            label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
-            value={userMetrics?.profileViews ?? '—'}
-            trend={profileViewsTrend}
-            trendVisual={profileViewPoints.length > 1 ? <Sparkline points={profileViewPoints} /> : undefined}
-            caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
-            captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
-            href="/analytics"
-          />
-          <MetricTile
-            align="center"
-            glyph="matches"
-            family="people"
-            label="Recommended matches" labelEl="Προτεινόμενες αντιστοιχίσεις"
-            value={matchCount ?? recommendations?.suggestions?.length ?? '—'}
-            caption="People who fit your criteria"
-            captionEl="Άτομα που ταιριάζουν στα κριτήριά σας"
-            href="/matches"
-          />
-          <MetricTile
-            align="center"
-            glyph="messages"
-            family="neutral"
-            label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
-            value={unreadMessages}
-            href="/messages"
-            caption={unreadMessages > 0 ? `${unreadMessages} waiting in Messages` : 'Inbox caught up'}
-            captionEl={unreadMessages > 0 ? `${unreadMessages} σε αναμονή στα Μηνύματα` : 'Όλα διαβασμένα'}
-          />
-          <MetricTile
-            align="center"
-            glyph="flag"
-            family="time"
-            label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
-            value={milestonesFailed && milestones.length === 0 ? '—' : `${completedMilestoneCount}/${milestones.length}`}
-            href="/milestones"
-            edge={milestones.length > 0 ? (
-              <ProgressSegments
-                total={milestones.length}
-                segments={[
-                  { key: 'done', value: completedMilestoneCount, tone: 'done' },
-                  { key: 'active', value: activeMilestoneCount, tone: 'active' },
-                  { key: 'late', value: overdueMilestoneCount, tone: 'late' },
-                ]}
-              />
-            ) : undefined}
-            caption={milestonesFailed && milestones.length === 0 ? 'Not read: the server is unavailable. Opens milestones' : milestoneCaption.en}
-            captionEl={milestonesFailed && milestones.length === 0 ? 'Δεν διαβάστηκαν: ο διακομιστής δεν είναι διαθέσιμος. Ανοίγει τα ορόσημα' : milestoneCaption.el}
-          />
-        </div>
 
         <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-2">
           <div className="min-w-0 space-y-5">

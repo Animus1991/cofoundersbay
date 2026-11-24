@@ -292,7 +292,7 @@ export default function InvestorDashboard() {
     },
   ];
   return (
-    <AppShell askAi={false} showHelp rail={rail}
+    <AppShell titleSrOnly askAi={false} showHelp rail={rail}
       description="Pipeline health, deal flow, and portfolio performance — in one view."
       descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
     >

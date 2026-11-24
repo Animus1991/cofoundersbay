@@ -418,7 +418,7 @@ export default function InvestorPortfolioPage() {
     return (
       <AppShell showHelp title="Portfolio" titleEl="Χαρτοφυλάκιο" description="Track your investments and returns" descriptionEl="Παρακολουθήστε τις επενδύσεις και τις αποδόσεις σας">
         <div className="space-y-6" aria-busy="true">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-20" />)}
           </div>
           <Skeleton className="h-64" />
@@ -470,7 +470,7 @@ export default function InvestorPortfolioPage() {
           />
         ) : null}
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
             /*
              * "$275K" and "$535K" were string constants sitting beside a real

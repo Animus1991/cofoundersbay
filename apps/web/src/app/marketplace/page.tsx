@@ -479,7 +479,7 @@ export default function MarketplacePage() {
 
         {/* Category Tabs */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-          <TabsList className={cn('flex flex-wrap h-auto gap-1 bg-muted/50 p-1', toolbarHidden && 'hidden')}>
+          <TabsList className={cn('flex h-auto gap-1 bg-muted/50 p-1 max-sm:flex-nowrap sm:flex-wrap', toolbarHidden && 'hidden')}>
             {CATEGORIES.map(cat => {
               const cfg = CAT_CONFIG[cat];
               const CatIcon = cfg.icon;

@@ -290,7 +290,7 @@ export default function IncubatorDashboard() {
     },
   ];
   return (
-    <AppShell askAi={false} showHelp rail={rail}
+    <AppShell titleSrOnly askAi={false} showHelp rail={rail}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1.5">

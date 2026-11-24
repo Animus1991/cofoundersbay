@@ -17,6 +17,7 @@ import {
   MessageCircle,
   MoreVertical,
   Search,
+  SlidersHorizontal,
   X,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -30,6 +31,7 @@ import {
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Counter } from '@/components/ui/counter';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -327,6 +329,9 @@ export default function InvestorScoutingPage() {
   const [stage, setStage] = useState('all');
   const [model, setModel] = useState('all');
   const [sortBy, setSortBy] = useState('match');
+  // The three filter selects fold behind «Φίλτρα» on the phone (docs §135
+  // A5); an active filter keeps the group open, as it reads today.
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   const startups = showDemoData ? ALL_STARTUPS : [];
@@ -541,6 +546,19 @@ export default function InvestorScoutingPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <Input aria-label={bilingualAria("Search startups", "Αναζήτηση startups")} placeholder={sayOne("Search by name, industry, or keyword…", "Αναζήτηση με όνομα, κλάδο ή λέξη-κλειδί…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
+            <Button
+              type="button"
+              variant="outline"
+              aria-expanded={filtersOpen}
+              aria-controls="scouting-filters"
+              onClick={() => setFiltersOpen((v) => !v)}
+              className="w-full gap-1.5 sm:hidden"
+            >
+              <SlidersHorizontal className="icon-sm" aria-hidden="true" />
+              <BilingualText en="Filters" el="Φίλτρα" compact />
+              {activeFilters.length > 0 && <Counter value={activeFilters.length} />}
+            </Button>
+            <div id="scouting-filters" className={cn('flex flex-col gap-3 sm:contents', !(filtersOpen || activeFilters.length > 0) && 'max-sm:hidden')}>
             <Select value={industry} onValueChange={setIndustry}>
               <SelectTrigger aria-label={bilingualAria('Industry', 'Κλάδος')} className="w-full sm:w-[140px]"><SelectValue placeholder={sayOne("Industry", "Κλάδος")} /></SelectTrigger>
               <SelectContent>
@@ -560,6 +578,7 @@ export default function InvestorScoutingPage() {
                 {['B2B', 'B2C', 'B2B2C', 'Marketplace'].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
               </SelectContent>
             </Select>
+            </div>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger aria-label={bilingualAria('Sort by', 'Ταξινόμηση')} className="w-full sm:w-[130px]"><ArrowUpDown className="mr-1.5 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" /><SelectValue /></SelectTrigger>
               <SelectContent>

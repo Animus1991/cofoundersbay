@@ -389,7 +389,7 @@ export default function MentorDashboard() {
     },
   ];
   return (
-    <AppShell askAi={false} showHelp rail={rail}
+    <AppShell titleSrOnly askAi={false} showHelp rail={rail}
       description="Sessions, mentee requests, reviews, and earnings at a glance."
       descriptionEl="Συνεδρίες, αιτήματα καθοδηγούμενων, αξιολογήσεις και έσοδα με μια ματιά."
     >

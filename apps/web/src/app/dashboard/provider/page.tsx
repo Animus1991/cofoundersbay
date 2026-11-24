@@ -320,7 +320,7 @@ export default function ProviderDashboard() {
   return (
     // "Manage services" in the header was the "Manage" of "Your services"
     // below, to the same page (docs §95).
-    <AppShell askAi={false} rail={rail}
+    <AppShell titleSrOnly askAi={false} rail={rail}
       description="Inquiries, active projects, services and reviews - in one view."
       descriptionEl="Αιτήματα, ενεργά έργα, υπηρεσίες και αξιολογήσεις — σε μία προβολή."
     >

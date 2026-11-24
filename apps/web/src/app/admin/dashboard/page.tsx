@@ -240,7 +240,7 @@ export default function AdminDashboardPage() {
     },
   ];
   return (
-    <AppShell
+    <AppShell titleSrOnly
       askAi={false}
       rail={rail}
       title="Platform overview"

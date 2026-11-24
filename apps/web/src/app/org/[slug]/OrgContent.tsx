@@ -168,7 +168,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
 
         {/* Tabs */}
         <Tabs value={tab} onValueChange={setTab} className="space-y-6">
-          <TabsList className="h-9">
+          <TabsList className="h-9 max-sm:w-full max-sm:justify-start">
             <TabsTrigger value="opportunities" className="text-sm gap-1.5">
               <Briefcase className="icon-sm" aria-hidden="true" />
               <BilingualText en="Opportunities" el="Ευκαιρίες" compact />
