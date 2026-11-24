@@ -408,7 +408,7 @@ export default function ProviderDashboard() {
                     subtitle={inquiry.service}
                     aside={(
                       <>
-                        <Badge size="sm" className={INQUIRY_LABEL[inquiry.status].tone}><StatusText value={INQUIRY_LABEL[inquiry.status].en} /></Badge>
+                        <StatusText value={INQUIRY_LABEL[inquiry.status].en} />
                         <RelativeTime date={inquiry.receivedAt} format={formatRelativeTime} />
                       </>
                     )}

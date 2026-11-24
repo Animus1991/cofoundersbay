@@ -170,7 +170,7 @@ export default function TenantsAdminPage() {
       case 'suspended':
         return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border"><BilingualText en="Suspended" el="Σε αναστολή" compact /></Badge>;
       default:
-        return <Badge variant="secondary"><StatusText value={status} /></Badge>;
+        return <StatusText value={status} />;
     }
   };
 

@@ -1,6 +1,8 @@
 'use client';
 
 import { BilingualText } from '@/components/common/BilingualText';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { cn } from '@/lib/utils';
 
 /**
  * Greek for the status and role words that API rows carry as plain enum values
@@ -178,6 +180,42 @@ export function statusEn(value: string | null | undefined): string {
   return value ? sentenceCase(value) : '';
 }
 
+/**
+ * The status word's tone (B1.3): the same six washes everything else draws
+ * from. Values not listed — categories, roles, types — sit on neutral, the
+ * quiet tint a word that is not a state should carry.
+ */
+const STATUS_TONE: Record<string, StatusTone> = {
+  // Going well / done.
+  active: 'success', accepted: 'success', approved: 'success', agreed: 'success',
+  completed: 'success', complete: 'success', confirmed: 'success', verified: 'success',
+  published: 'success', resolved: 'success', filled: 'success', graduated: 'success',
+  converted: 'success', recruiting: 'success', online: 'success', enabled: 'success',
+  live: 'success', launched: 'success', won: 'success', paid: 'success', success: 'success',
+  'full time': 'success', advanced: 'success', expert: 'success',
+  // Waiting, in motion, asking for attention.
+  pending: 'warning', upcoming: 'warning', scheduled: 'warning', requested: 'warning',
+  'in progress': 'warning', running: 'warning', 'in discussion': 'warning',
+  interest: 'warning', conversation: 'warning', terms: 'warning', trialing: 'warning',
+  paused: 'warning', flagged: 'warning', unverified: 'warning', reviewing: 'warning',
+  review: 'warning', high: 'warning', 'needs work': 'warning', intermediate: 'warning',
+  // Stopped badly / destructive.
+  rejected: 'danger', declined: 'danger', banned: 'danger', suspended: 'danger',
+  cancelled: 'danger', canceled: 'danger', expired: 'danger', 'past due': 'danger',
+  'no show': 'danger', overdue: 'danger', blocked: 'danger', urgent: 'danger',
+  critical: 'danger', failed: 'danger', uncollectible: 'danger',
+  // Fresh, incoming, informational.
+  new: 'info', invited: 'info', replied: 'info', open: 'info', medium: 'info',
+  reviewed: 'info', public: 'info', 'part time': 'info', beginner: 'info', sent: 'info',
+};
+
+/** The tone a status/role/category value paints on its pill. */
+export function statusTone(value: string | null | undefined): StatusTone {
+  if (!value) return 'neutral';
+  const key = value.toLowerCase().replace(/[_-]/g, ' ').trim();
+  return STATUS_TONE[key] ?? 'neutral';
+}
+
 export function statusEl(value: string | null | undefined): string | undefined {
   if (!value) return undefined;
   const lower = value.toLowerCase();
@@ -193,7 +231,23 @@ export function statusEl(value: string | null | undefined): string | undefined {
  * token on a chip read as a leaked enum. Unknown values render as given, so
  * a new enum member shows in English rather than disappearing.
  */
-export function StatusText({ value, className }: { value: string | null | undefined; className?: string }) {
+export function StatusText({
+  value,
+  className,
+  tone,
+}: {
+  value: string | null | undefined;
+  className?: string;
+  /** Overrides the derived tone when the caller knows better. */
+  tone?: StatusTone;
+}) {
   if (!value) return null;
-  return <BilingualText en={sentenceCase(value)} el={statusEl(value)} compact className={className} />;
+  const t = tone ?? statusTone(value);
+  return (
+    // The tinted pill with its 6px dot (B1.3) — same word, now a mark.
+    <span data-status-pill={t} className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium', STATUS[t].chip, className)}>
+      <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" />
+      <BilingualText en={sentenceCase(value)} el={statusEl(value)} compact />
+    </span>
+  );
 }

@@ -1193,10 +1193,29 @@ html {
 
   /* Interactive card */
   .card-interactive {
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   }
   .card-interactive:hover {
     border-color: hsl(var(--foreground) / 0.12);
+    transform: translateY(-0.125rem);
+    box-shadow: var(--shadow-md, 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1));
+  }
+
+  /* Search fields (a leading search glyph) are pills (B1.3). */
+  svg.lucide-search ~ :is(input, [role='searchbox'] input) {
+    border-radius: 9999px;
+  }
+
+  /* A count inside a tab strip is a small pill (B1.3): card fill at rest,
+     a quarter-strength wash on the solid active tab. The attention tone
+     (bg-primary) keeps its fill — it is a callout, not chrome. */
+  .tab-strip [data-counter]:not([class*='bg-primary']) {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+  .tab-strip [role='tab'][data-state='active'] [data-counter] {
+    background-color: hsl(var(--background) / 0.25);
+    color: hsl(var(--primary-foreground));
   }
 
   /* Backdrop blur levels */
@@ -2921,12 +2940,12 @@ img[data-img-failed] {
     min-width: var(--control-h);
   }
   /* A tab strip's outer edge is the control height; its tabs sit inside
-     its 0.125rem padding. */
+     its 0.25rem padding. */
   #main-content [role='tablist'].tab-strip {
     min-height: var(--control-h);
   }
   #main-content [role='tablist'].tab-strip > [role='tab'] {
-    min-height: calc(var(--control-h) - 0.25rem);
+    min-height: calc(var(--control-h) - 0.5rem);
     padding-top: 0;
     padding-bottom: 0;
   }
@@ -4862,6 +4881,12 @@ html[data-theme="minimal"] :is(button, a, [role='button'], [data-slot='button'])
   border-color: color-mix(in hsl, hsl(var(--mint-ring)) 86%, black);
 }
 html[data-theme="minimal"] [data-own-message] {
+  background-color: hsl(var(--mint-ring));
+  color: hsl(var(--primary-foreground));
+}
+/* The active tab's solid fill is the same green the theme repaints filled
+   buttons to; without this it would render in --primary's dark teal. */
+html[data-theme="minimal"] .tab-strip [role='tab'][data-state='active'] {
   background-color: hsl(var(--mint-ring));
   color: hsl(var(--primary-foreground));
 }

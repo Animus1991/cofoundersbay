@@ -213,8 +213,8 @@ export default function ProgramDetailPage() {
                 </Fact>
                 <Fact en="Type and status" el="Τύπος και κατάσταση">
                   <span className="flex flex-wrap items-center gap-1.5">
-                    <Badge variant="secondary"><StatusText value={program.programType} /></Badge>
-                    <Badge variant="outline"><StatusText value={program.status} /></Badge>
+                    <StatusText value={program.programType} />
+                    <StatusText value={program.status} />
                   </span>
                 </Fact>
                 <Fact en="Dates" el="Ημερομηνίες">

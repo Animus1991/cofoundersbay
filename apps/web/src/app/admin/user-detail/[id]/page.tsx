@@ -363,7 +363,7 @@ export default function AdminUserDetailPage() {
                         ]}
                       />
                     )}
-                    aside={<Badge variant={REPORT_STATUS[r.status] ?? 'secondary'} size="sm"><StatusText value={r.status} /></Badge>}
+                    aside={<StatusText value={r.status} />}
                   />
                   {r.reason ? <p className="text-sm text-muted-foreground first-letter:uppercase">{r.reason}</p> : null}
                 </div>

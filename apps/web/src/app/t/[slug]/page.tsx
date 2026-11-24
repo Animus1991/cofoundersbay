@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { getTenantBySlug, discoverSSOByTenant, getSSOLoginUrl, type TenantItem, type SSODiscoveryResult } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Users,
@@ -217,7 +216,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
           <div className="flex items-center gap-3">
             {tenant.logoUrl
               ? <img src={tenant.logoUrl} alt="" className="h-6 w-auto" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
-              : <Badge variant="secondary" className="text-xs"><StatusText value={tenant.status} /></Badge>}
+              : <StatusText value={tenant.status} />}
             <span className="text-sm font-medium">{tenantName}</span>
           </div>
           <div className="flex flex-wrap items-center gap-4">

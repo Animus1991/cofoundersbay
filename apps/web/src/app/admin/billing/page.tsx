@@ -143,7 +143,7 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
         subtitle={<FactLine items={[<span key="owner" translate="no">{ownerLabel}</span>, fmtDate(inv.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })]} />}
         aside={(
           <>
-            <Badge variant="outline" className={cn('text-xs', statusColors[inv.status] ?? '')}><StatusText value={inv.status} /></Badge>
+            <StatusText value={inv.status} />
             <span className="font-medium tabular-nums text-foreground">{formatCents(inv.total, inv.currency)}</span>
             {inv.hostedInvoiceUrl && (
               // A <button> inside an <a> is two interactive elements nested - one

@@ -556,7 +556,7 @@ export default function AnalyticsPage() {
             />
           </p>
           <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-wrap gap-2.5">
+            <div className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-1 rounded-full bg-muted/70 p-1">
               {PERIODS.map((p) => (
                 <button
                   key={p}
@@ -564,10 +564,10 @@ export default function AnalyticsPage() {
                   aria-pressed={period === p}
                   onClick={() => setPeriod(p)}
                   className={cn(
-                    'min-h-10 rounded-full px-3.5 py-1.5 text-xs font-medium border transition-colors focus-ring',
+                    'min-h-10 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors focus-ring',
                     period === p
-                      ? 'border-primary bg-primary/20 text-primary-accessible'
-                      : 'border-border text-muted-foreground hover:border-primary/40',
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
                   <BilingualText en={PERIOD_LABEL[p].en} el={PERIOD_LABEL[p].el} wrap />

@@ -86,7 +86,7 @@ export function SectionSticker({
     <span
       data-keep-icon=""
       aria-hidden="true"
-      className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-full', STICKER_TINT[tint], className)}
+      className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-xl', STICKER_TINT[tint], className)}
     >
       {Icon ? <Icon className="icon-sm" /> : <CfbGlyph name={glyph ?? 'default'} className="icon-sm" />}
     </span>

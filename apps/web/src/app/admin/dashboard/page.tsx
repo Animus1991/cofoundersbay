@@ -249,7 +249,7 @@ export default function AdminDashboardPage() {
       descriptionEl="Ποιοι χρησιμοποιούν την πλατφόρμα, τι περιμένει διαχειριστή και πώς λειτουργεί το API."
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          <div role="group" aria-label={bilingualAria('Period', 'Περίοδος')} className="inline-flex items-center gap-0.5 rounded-xl border border-border bg-muted/40 p-0.5">
+          <div role="group" aria-label={bilingualAria('Period', 'Περίοδος')} className="inline-flex items-center gap-1 rounded-full bg-muted/70 p-1">
             {PERIODS.map((p) => (
               <button
                 key={p.value}
@@ -257,8 +257,8 @@ export default function AdminDashboardPage() {
                 aria-pressed={period === p.value}
                 onClick={() => setPeriod(p.value)}
                 className={cn(
-                  'min-h-9 rounded-lg px-3 text-sm font-medium transition-colors focus-ring',
-                  period === p.value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+                  'min-h-9 rounded-full px-3.5 text-sm font-medium transition-colors focus-ring',
+                  period === p.value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 <BilingualText en={p.short} el={p.shortEl} compact />
