@@ -109,8 +109,42 @@ const DEFAULT_DOC_TYPES = [
   'mvp_plan', 'financial_plan',
 ] as const;
 
+/** The tool family's tint for its icon well (docs §134): strategy and market
+    work in info, building in warning, money in success, story in accent. */
+const DOC_TONE: Record<string, StatusTone> = {
+  idea_core: 'accent',
+  pitch_deck: 'accent',
+  branding_kit: 'accent',
+  business_model_canvas: 'info',
+  lean_canvas: 'info',
+  market_analysis: 'info',
+  competitive_analysis: 'info',
+  swot_analysis: 'info',
+  go_to_market: 'info',
+  application: 'info',
+  mvp_plan: 'warning',
+  product_roadmap: 'warning',
+  technical_architecture: 'warning',
+  prd: 'warning',
+  financial_plan: 'success',
+  fundraising_memo: 'success',
+};
+
 function docGlyph(type: string): CfbGlyphName {
   return DOC_GLYPH[type] ?? 'book';
+}
+
+function docTone(type: string): StatusTone {
+  return DOC_TONE[type] ?? 'neutral';
+}
+
+/** The tile's icon well: the family's tint behind its glyph. */
+function DocMark({ type, className }: { type: string; className?: string }) {
+  return (
+    <div data-card-mark="" className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', STATUS[docTone(type)].chip, className)}>
+      <CfbGlyph name={docGlyph(type)} className="icon-md" aria-hidden="true" />
+    </div>
+  );
 }
 
 function docLabelEn(type: string) {
@@ -900,9 +934,7 @@ export function BuilderWorkspace({
       {leftOff ? (
         <Card className="min-w-0" data-builder-left-off="">
           <CardContent className="flex flex-wrap items-center gap-3">
-            <div data-card-mark="" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-              <CfbGlyph name={docGlyph(leftOff.type)} className="icon-md" aria-hidden="true" />
-            </div>
+            <DocMark type={leftOff.type} />
             <div className="min-w-0 flex-1 space-y-1">
               <p className="type-caption text-muted-foreground">
                 <BilingualText en={builderEn('left_off')} el={builderEl('left_off')} compact />
@@ -974,7 +1006,9 @@ export function BuilderWorkspace({
                 }}
               >
                 <span className="flex min-w-0 items-start gap-2 text-left leading-snug">
-                  <CfbGlyph name={docGlyph(type)} className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
+                  <span className={cn('mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md', STATUS[docTone(type)].chip)}>
+                    <CfbGlyph name={docGlyph(type)} className="icon-sm" aria-hidden="true" />
+                  </span>
                   <BilingualText
                     en={`${existing ? builderEn('edit') : builderEn('start')} ${labelEn}`}
                     el={`${existing ? builderEl('edit') : builderEl('start')} ${labelEl}`}
@@ -1154,11 +1188,7 @@ export function BuilderWorkspace({
               >
                 <CardContent className="space-y-3">
                   <CardHead
-                    mark={(
-                      <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                        <CfbGlyph name={docGlyph(doc.type)} className="icon-md" aria-hidden="true" />
-                      </div>
-                    )}
+                    mark={<DocMark type={doc.type} />}
                     title={<DocTitle title={doc.title} wrap />}
                     subtitle={(
                       <span className="tabular-nums">
@@ -1173,13 +1203,16 @@ export function BuilderWorkspace({
                       </Badge>
                     )}
                   />
+                  {/* One line of purpose on the tile (docs §134); the tool
+                      page carries the full text. */}
                   {doc.description ? (
-                    <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase"><PreviewHint text={doc.description} /></p>
+                    <p className="card-body truncate text-muted-foreground first-letter:uppercase"><PreviewHint text={doc.description} /></p>
                   ) : builderDocDescription(doc.type, 'en') ? (
-                    <p className="card-body line-clamp-2 text-muted-foreground">
+                    <p className="card-body truncate text-muted-foreground">
                       <BilingualText
                         en={builderDocDescription(doc.type, 'en')}
                         el={builderDocDescription(doc.type, 'el')}
+                        compact
                       />
                     </p>
                   ) : null}
