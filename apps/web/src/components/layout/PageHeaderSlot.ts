@@ -14,3 +14,13 @@ import { createContext } from 'react';
  * no header to join (a page without a title), so it stays where it was put.
  */
 export const PageHeaderSlot = createContext<{ inHeader: boolean; slot: HTMLElement | null }>({ inHeader: false, slot: null });
+
+/**
+ * Where the page header's tools (the pin star, the help "?") land when the
+ * header itself is visually off — a hero card whose greeting is the page's
+ * one visible heading (`titleSrOnly`, docs §133). Without it those tools
+ * floated alone in an otherwise empty header band. The AppShell owns the
+ * buttons and portals them into the div a hero registers through this
+ * setter; a page with no hero registers nothing and keeps the band off.
+ */
+export const HeroActionsSlot = createContext<(slot: HTMLElement | null) => void>(() => {});

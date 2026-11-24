@@ -61,4 +61,17 @@ describe('HomeEventStrip (docs §131.2)', () => {
     expect(links.some((a) => a.getAttribute('href') === '/events/ev-2')).toBe(true);
     expect(links.some((a) => a.getAttribute('href') === '/events')).toBe(true);
   });
+
+  it('keeps the covers a fixed size in a snap-scrolling rail (docs §133.3)', () => {
+    state.events = { events: [event('ev-1')] };
+    const { container } = render(<Strip />);
+    const rail = container.querySelector('[data-home-events]')!;
+    expect(rail.className).toContain('overflow-x-auto');
+    expect(rail.className).toContain('snap-x');
+    expect(rail.getAttribute('aria-label')).toBe('Events for you');
+    const card = screen.getByRole('link', { name: /Demo day ev-1/ });
+    expect(card.className).toContain('w-40');
+    expect(card.className).toContain('shrink-0');
+    expect(card.querySelector('p')!.className).toContain('line-clamp-2');
+  });
 });

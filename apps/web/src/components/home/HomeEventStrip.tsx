@@ -67,7 +67,7 @@ export function HomeEventStrip() {
           <BilingualText en="All" el="Όλες" compact />
         </Link>
       </div>
-      <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1" data-home-events="">
+      <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1 [scrollbar-gutter:stable]" data-home-events="" aria-label="Events for you">
         {events.map((event) => <StripCard key={event.id} event={event} />)}
       </div>
     </section>

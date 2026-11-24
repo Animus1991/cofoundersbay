@@ -233,10 +233,10 @@ function Home() {
           strip, the people rail and the feed on the left; what waits, the
           continue row and the steps on the right. The order utilities keep
           the phone's priority order in one DOM. */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* The greeting leads the brand card: one «Καλημέρα, …», the one-line
             purpose, the question field and three starting points (docs §131.2). */}
-        <div className="min-w-0 lg:order-1 lg:col-span-2">
+        <div className="min-w-0 xl:order-1 xl:col-span-2">
           <HomeAskHero
             role={audience === 'org' ? 'incubator' : audience}
             hero
@@ -244,18 +244,18 @@ function Home() {
             name={me?.displayName?.split(' ')[0] ?? null}
             purposeEn={copy.description.en}
             purposeEl={copy.description.el}
-            figure={<CfbFigure id={AUDIENCE_FIGURE[audience] ?? 'builder'} className="h-[8.75rem] w-auto" />}
+
           />
         </div>
         {/* The one thing in progress, straight under the hero on a phone —
             in the right column from lg. One row, one verb. */}
-        <div className="min-w-0 lg:order-2 lg:self-start">
+        <div className="min-w-0 xl:order-2 xl:self-start">
           <HomeContinue />
         </div>
         {/* What waits, here and not one page away: the first three in Today's
             order (a person first), each row its own way in; the rest on Overview. */}
         {showWaiting ? (
-          <section aria-labelledby="home-waiting" data-home-waiting="" className="min-w-0 lg:order-4 lg:self-start">
+          <section aria-labelledby="home-waiting" data-home-waiting="" className="min-w-0 xl:order-4 xl:self-start">
             <Card>
               <CardContent className="space-y-1">
                 <div className="flex items-baseline justify-between gap-3">
@@ -266,6 +266,7 @@ function Home() {
                       en={`${waiting} ${waiting === 1 ? 'thing is' : 'things are'} waiting on you`}
                       el={waiting === 1 ? 'Σας περιμένει 1 πράγμα' : `Σας περιμένουν ${waiting} πράγματα`}
                       compact
+                      wrap
                     />
                     </h2>
                   </div>
@@ -295,21 +296,21 @@ function Home() {
         ) : null}
         {/* The photo strip: small covers with the date badge, before the
             people rail (docs §131.2). */}
-        <div className="min-w-0 lg:order-3 lg:col-span-2">
+        <div className="min-w-0 xl:order-3 xl:col-span-2">
           <HomeEventStrip />
         </div>
         {stepsFirst ? (
           <>
-            {stepsSection ? <div className="min-w-0 lg:order-6 lg:self-start">{stepsSection}</div> : null}
-            <div className="min-w-0 lg:order-5 lg:col-span-2">{peopleSection}</div>
+            {stepsSection ? <div className="min-w-0 xl:order-6 xl:self-start">{stepsSection}</div> : null}
+            <div className="min-w-0 xl:order-5 xl:col-span-2">{peopleSection}</div>
           </>
         ) : (
           <>
-            <div className="min-w-0 lg:order-5 lg:col-span-2">{peopleSection}</div>
-            {stepsSection ? <div className="min-w-0 lg:order-6 lg:self-start">{stepsSection}</div> : null}
+            <div className="min-w-0 xl:order-5 xl:col-span-2">{peopleSection}</div>
+            {stepsSection ? <div className="min-w-0 xl:order-6 xl:self-start">{stepsSection}</div> : null}
           </>
         )}
-        <div className="min-w-0 lg:order-7 lg:col-span-2">
+        <div className="min-w-0 xl:order-7 xl:col-span-2">
           <HomeFeedSection people={people} shownAbove={shownAbove} connectionOf={connectionOf} />
         </div>
       </div>

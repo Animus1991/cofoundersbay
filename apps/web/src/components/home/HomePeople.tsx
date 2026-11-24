@@ -113,14 +113,14 @@ export function HomePeople({ matches, viewer, myId, limit = 3 }: {
   // A rail of portrait tiles on the accent wash (docs §131.2): the face
   // leads, the name and role sit under it, one reason, one verb.
   return (
-    <div className="-mx-1 overflow-x-auto px-1 pb-1" data-home-people="">
+    <div className="-mx-1 snap-x snap-mandatory overflow-x-auto px-1 pb-1 [scrollbar-gutter:stable]" data-home-people="" aria-label="People who fit">
       <div className="flex w-max min-w-full gap-3 rounded-2xl bg-status-accent-bg/50 p-3">
         {people.map((person) => {
           const reason = explainMatch(person, viewer, { nowMs: Date.now() })[0] ?? null;
           const state = stateOf(person.userId);
           const name = person.displayName ?? '';
           return (
-            <Card key={person.userId} className="flex w-44 shrink-0 flex-col overflow-hidden">
+            <Card key={person.userId} className="flex w-[200px] shrink-0 snap-start flex-col overflow-hidden">
               <CardContent className="flex flex-1 flex-col gap-2 p-3">
                 <Link href={`/profiles/${person.userId}`} tabIndex={-1} aria-hidden="true" className="block self-center rounded-full">
                   <Avatar className="h-[4.5rem] w-[4.5rem] border border-border">
@@ -143,7 +143,7 @@ export function HomePeople({ matches, viewer, myId, limit = 3 }: {
                   ) : null}
                 </div>
                 <div className="mt-auto flex items-center gap-1">
-                  <div className="min-w-0 flex-1">{actionOf(person, state, name)}</div>
+                  <div className="min-w-0 flex-1 [&_button]:whitespace-nowrap">{actionOf(person, state, name)}</div>
                   <CardMoreMenu name={name} items={moreOf(person, state)} />
                 </div>
               </CardContent>
