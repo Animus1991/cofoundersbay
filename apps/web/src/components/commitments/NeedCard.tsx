@@ -142,17 +142,19 @@ export function NeedCard({
   return (
     <article data-need-card="" className={cn('space-y-4', className)}>
       <header className="space-y-1.5">
-        {/* The family's chip first, the need's own kind under it. */}
-        <KindPill glyph="pact" tone="accent" en="Need" el="Ανάγκη" />
-        <div className="flex items-start justify-between gap-3">
-          <p className="min-w-0 pt-0.5 text-xs card-meta text-muted-foreground">
-            <BilingualText
-              en={version ? `${kind.en} · ${CMT.version.en} ${version}` : kind.en}
-              el={version ? `${kind.el} · ${CMT.version.el} ${version}` : kind.el}
-              compact
-              wrap
-            />
-          </p>
+        {/* The family's chip first, the need's own kind on the same row. */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <KindPill glyph="pact" tone="accent" en="Need" el="Ανάγκη" />
+            <p className="min-w-0 text-xs card-meta text-muted-foreground">
+              <BilingualText
+                en={version ? `${kind.en} · ${CMT.version.en} ${version}` : kind.en}
+                el={version ? `${kind.el} · ${CMT.version.el} ${version}` : kind.el}
+                compact
+                wrap
+              />
+            </p>
+          </div>
           {card.outcome ? <OutcomeChip outcome={card.outcome} reason={card.closedReason} /> : null}
         </div>
         {owner ? (
