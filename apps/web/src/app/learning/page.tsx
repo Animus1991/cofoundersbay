@@ -142,7 +142,7 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
   return (
     <Card className="flex flex-col overflow-hidden transition-all hover:border-primary/20">
       {resource.image && !cover.failed ? (
-        <img ref={cover.ref} onError={cover.onError} src={resource.image} alt="" referrerPolicy="no-referrer" className="aspect-video w-full object-cover" />
+        <img ref={cover.ref} onError={cover.onError} src={resource.image} alt="" referrerPolicy="no-referrer" className="aspect-video max-h-[240px] w-full object-cover" />
       ) : null}
       <CardContent className="flex flex-1 flex-col gap-3">
         {/* The kind of resource is the card's mark; its title, then type and

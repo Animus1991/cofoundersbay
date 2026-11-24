@@ -198,7 +198,7 @@ export default function ProgramDetailPage() {
             {/* A cover that fails to load leaves no band: it was a blank
                 16:9 area, 480px at 1440, over the facts (docs §77). */}
             {program.coverImageUrl && !cover.failed ? (
-              <img ref={cover.ref} onError={cover.onError} src={program.coverImageUrl} alt="" referrerPolicy="no-referrer" className="aspect-video w-full object-cover" />
+              <img ref={cover.ref} onError={cover.onError} src={program.coverImageUrl} alt="" referrerPolicy="no-referrer" className="aspect-video max-h-[320px] w-full object-cover" />
             ) : null}
             <CardContent>
               <dl className="grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2">

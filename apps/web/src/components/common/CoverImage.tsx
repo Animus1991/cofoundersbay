@@ -23,7 +23,7 @@ export function CoverImage({ src, eager = false, className }: { src: string | nu
       loading={eager ? 'eager' : 'lazy'}
       referrerPolicy="no-referrer"
       data-cover=""
-      className={cn('aspect-[3/1] w-full object-cover max-sm:h-28 max-sm:aspect-auto', className)}
+      className={cn('aspect-[3/1] w-full object-cover max-sm:h-28 max-sm:aspect-auto sm:max-h-[240px]', className)}
     />
   );
 }

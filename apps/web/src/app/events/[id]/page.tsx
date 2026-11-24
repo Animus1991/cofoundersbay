@@ -241,7 +241,7 @@ export default function EventDetailPage() {
               onError={() => setCoverFailed(true)}
               src={event.coverImageUrl}
               alt=""
-              className="aspect-[3/1] w-full rounded-2xl object-cover"
+              className="aspect-[3/1] max-h-[320px] w-full rounded-2xl object-cover"
             />
           )}
           {/* The facts as one flat tinted strip, not a card to be read: same
