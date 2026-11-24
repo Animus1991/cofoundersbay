@@ -413,15 +413,31 @@ export default function EventsPage() {
                       <SectionSticker glyph="calendar" tint="warning" />
                       <BilingualText en={firstLabel.en} el={firstLabel.el} compact />
                     </h2>
-                    <EventCard
-                      event={featured}
-                      variant="featured"
-                      onRsvp={() => {
-                        const raw = eventsRaw.find((x) => x.id === featured.id);
-                        if (raw) void handleRsvp(raw);
-                      }}
-                      onShare={() => handleShare(featured)}
-                    />
+                    {/* The photo hero from md; the wave-1 compact row on a
+                        phone so the next card still shows under it (docs
+                        §132.1). */}
+                    <div className="md:hidden">
+                      <EventCard
+                        event={featured}
+                        variant="compact"
+                        onRsvp={() => {
+                          const raw = eventsRaw.find((x) => x.id === featured.id);
+                          if (raw) void handleRsvp(raw);
+                        }}
+                        onShare={() => handleShare(featured)}
+                      />
+                    </div>
+                    <div className="hidden md:block">
+                      <EventCard
+                        event={featured}
+                        variant="featured"
+                        onRsvp={() => {
+                          const raw = eventsRaw.find((x) => x.id === featured.id);
+                          if (raw) void handleRsvp(raw);
+                        }}
+                        onShare={() => handleShare(featured)}
+                      />
+                    </div>
                   </div>
                 )}
 

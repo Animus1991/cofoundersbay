@@ -743,14 +743,46 @@ export default function AchievementsPage() {
           </Card>
         ) : (
           <>
-              {nextBadge ? (
+              {nextBadge ? (() => {
+                const NextIcon = nextBadge.icon;
+                const pct = Math.min(100, Math.round((nextBadge.progress / nextBadge.total) * 100));
+                return (
+                /* «Επόμενο σήμα» as the page's one big card: the badge art at
+                    hero size in its tier tint, the name and the criterion, the
+                    progress as text and bar (docs §132.6). */
                 <section className="space-y-2" data-next-badge="">
                   <h2 className="text-xs font-medium text-muted-foreground">
                     <BilingualText en={achievementsEn('next_badge')} el={achievementsEl('next_badge')} compact />
                   </h2>
-                  <AchievementCard achievement={nextBadge} />
+                  <Card className="overflow-hidden">
+                    <CardContent className="flex items-center gap-4 p-4 sm:gap-6 sm:p-6">
+                      <div
+                        data-keep-icon=""
+                        className={cn('flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl sm:h-24 sm:w-24', TIER_BG[nextBadge.tier])}
+                      >
+                        <NextIcon className={cn('h-10 w-10 sm:h-12 sm:w-12', TIER_COLORS[nextBadge.tier])} aria-hidden="true" />
+                      </div>
+                      <div className="min-w-0 flex-1 space-y-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-lg font-semibold leading-tight sm:text-xl">{nextBadge.title}</h3>
+                          <span className={cn('card-meta', TIER_COLORS[nextBadge.tier])}>
+                            <BilingualText en={cap(achievementsEn(`tier_${nextBadge.tier}`))} el={cap(achievementsEl(`tier_${nextBadge.tier}`))} compact />
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground first-letter:uppercase">{nextBadge.description}</p>
+                        <div className="flex items-center gap-3">
+                          <Progress value={pct} className="h-2 flex-1" />
+                          <span className="shrink-0 text-sm font-semibold tabular-nums">{nextBadge.progress}/{nextBadge.total}</span>
+                          <Badge variant="secondary" className="shrink-0">
+                            <BilingualText en={`${nextBadge.points} pts`} el={`${nextBadge.points} πόντοι`} compact />
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </section>
-              ) : null}
+                );
+              })() : null}
               <div data-tour="achievements-stats">
                 <UserStatsCard stats={stats} rank={board?.me.rank ?? null} />
               </div>

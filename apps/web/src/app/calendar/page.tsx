@@ -8,6 +8,7 @@ import Link from 'next/link';
 import {
   Calendar as CalendarIcon,
   Download,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -40,6 +41,8 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { getUpcomingMentorshipSessions, listEvents, listMilestones, type EventItem, type Milestone, type MentorshipSessionItem } from '@/lib/api';
 import { buildIcs, downloadIcs, type IcsEntry } from '@/lib/ics';
 import { qk } from '@/lib/query-keys';
+import { eventTypesForDay } from '@/lib/calendar-days';
+import { TYPE_CONFIG } from './type-config';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -50,7 +53,7 @@ import { useInvestorFollowUps, type FollowUpLead } from '@/lib/follow-ups';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type EventType = 'milestone' | 'session' | 'event' | 'deadline' | 'meeting';
+type EventType = import('./type-config').EventType;
 
 interface CalendarEvent {
   id: string;
@@ -70,14 +73,6 @@ interface CalendarEvent {
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
-
-const TYPE_CONFIG: Record<EventType, { labelEn: string; labelEl: string; color: string; icon: React.ElementType; bg: string }> = {
-  milestone:  { labelEn: 'Milestone', labelEl: 'Ορόσημο', color: 'text-status-warning',   icon: Flag,           bg: 'bg-status-warning-bg border-status-warning-border' },
-  session:    { labelEn: 'Session',   labelEl: 'Συνεδρία', color: 'text-status-info',    icon: Video,          bg: 'bg-status-info-bg border-status-info-border' },
-  event:      { labelEn: 'Event',     labelEl: 'Εκδήλωση', color: 'text-status-accent',  icon: CalendarDays,   bg: 'bg-status-accent-bg border-status-accent-border' },
-  deadline:   { labelEn: 'Deadline',  labelEl: 'Προθεσμία', color: 'text-status-danger',     icon: Clock,          bg: 'bg-status-danger-bg border-status-danger-border' },
-  meeting:    { labelEn: 'Meeting',   labelEl: 'Συνάντηση', color: 'text-status-success', icon: Users,          bg: 'bg-status-success-bg border-status-success-border' },
-};
 
 const DAYS = [
   { en: 'Sun', el: 'Κυ' },
@@ -433,14 +428,9 @@ function MiniCalendar({
     );
   };
 
-  const eventDates = useMemo(() => {
-    const set = new Set<number>();
-    events.forEach((e) => {
-      const ed = new Date(e.date);
-      if (ed.getUTCFullYear() === year && ed.getUTCMonth() === month) set.add(ed.getUTCDate());
-    });
-    return set;
-  }, [events, year, month]);
+  // Per-day event kinds, so a cell's dots carry the kind's colour and word
+  // (never colour alone — the aria-label and the sr-only line say it).
+  const eventTypesByDay = useMemo(() => eventTypesForDay(events, year, month), [events, year, month]);
 
   const cells: (number | null)[] = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
@@ -465,7 +455,8 @@ function MiniCalendar({
           const date = new Date(Date.UTC(year, month, day));
           const isToday = isSameDay(date, today);
           const isSelected = isSameDay(date, selectedDate);
-          const hasEvents = eventDates.has(day);
+          const dayTypes = eventTypesByDay.get(day);
+          const hasEvents = Boolean(dayTypes?.size);
           return (
             <button
               key={day}
@@ -479,12 +470,19 @@ function MiniCalendar({
               className={cn(
                 'relative h-8 w-full rounded-md text-xs transition-all hover:bg-secondary',
                 isSelected && 'bg-primary text-primary-foreground hover:bg-primary/90',
-                isToday && !isSelected && 'border border-primary/50 font-bold',
+                isToday && !isSelected && 'ring-2 ring-primary/40 font-bold',
               )}
             >
               {day}
               {hasEvents && !isSelected && (
-                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-primary" aria-hidden="true" />
+                <span className="absolute bottom-0.5 left-1/2 flex -translate-x-1/2 gap-0.5">
+                  {[...(dayTypes ?? [])].slice(0, 3).map((t) => (
+                    <span key={t} className={cn('h-1 w-1 rounded-full', TYPE_CONFIG[t].color.replace('text-', 'bg-'))} aria-hidden="true" />
+                  ))}
+                  <span className="sr-only">
+                    {[...(dayTypes ?? [])].map((t) => TYPE_CONFIG[t].labelEn).join(', ')}
+                  </span>
+                </span>
               )}
             </button>
           );
@@ -507,6 +505,15 @@ export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(now.getUTCMonth());
   const [currentYear, setCurrentYear] = useState(now.getUTCFullYear());
   const [selectedDate, setSelectedDate] = useState(now);
+  // The phone folds the month behind a toggle (the agenda leads); the choice
+  // is remembered (docs §132.4). Read lazily so the prerendered page agrees.
+  const [miniOpen, setMiniOpen] = useState<boolean>(() =>
+    typeof window === 'undefined' ? true : window.localStorage.getItem('cfb:calendar-mini') !== '0');
+  const toggleMini = () => setMiniOpen((v) => {
+    const n = !v;
+    try { window.localStorage.setItem('cfb:calendar-mini', n ? '1' : '0'); } catch { /* private mode */ }
+    return n;
+  });
   // The month sits under the day on a phone, so choosing a date goes back up to it.
   const selectDay = (date: Date) => {
     setSelectedDate(date);
@@ -754,22 +761,53 @@ export default function CalendarPage() {
 
         {view === 'calendar' ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
-            {/* Left: Mini calendar. On a phone it follows the day and what is
-                coming: the month filled the first screen, and nobody opens a
-                calendar to look at a grid. */}
+            {/* Left: the «Σήμερα» tile first (the day's number, its weekday and
+                how much sits on it), then the month — on a phone it follows the
+                day and what is coming, folded behind a remembered toggle, and
+                nobody opens a calendar to look at a grid (docs §132.4). */}
             <div className="space-y-4 max-sm:order-2">
+              <div className="flex items-end gap-3 rounded-2xl bg-status-info-bg px-4 py-3">
+                <span className="text-[40px] font-semibold leading-none tabular-nums">{now.getUTCDate()}</span>
+                <div className="min-w-0 pb-0.5">
+                  <p className="card-meta">
+                    <BilingualText
+                      en={now.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long' })}
+                      el={now.toLocaleDateString('el-GR', { timeZone: 'UTC', weekday: 'long' })}
+                      compact
+                    />{' '}
+                    · <BilingualText en={MONTHS[now.getUTCMonth()].en} el={MONTHS[now.getUTCMonth()].el} compact secondaryClassName="hidden" />
+                  </p>
+                  <p className="text-sm font-medium">
+                    {filteredEvents.filter((e) => isSameDay(new Date(e.date), now)).length > 0 ? (
+                      <BilingualText
+                        en={`${filteredEvents.filter((e) => isSameDay(new Date(e.date), now)).length} today`}
+                        el={`${filteredEvents.filter((e) => isSameDay(new Date(e.date), now)).length} σήμερα`}
+                        compact
+                      />
+                    ) : (
+                      <BilingualText en="Nothing on today" el="Τίποτα σήμερα" compact />
+                    )}
+                  </p>
+                </div>
+              </div>
               <Card>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <Button variant="ghost" size="icon" onClick={prevMonth} aria-label={bilingualAria('Previous month', 'Προηγούμενος μήνας')}><ChevronLeft className="icon-sm" /></Button>
-                    <span className="text-sm font-semibold">
+                    <button
+                      type="button"
+                      onClick={toggleMini}
+                      aria-expanded={miniOpen}
+                      className="tap-target-y text-sm font-semibold sm:pointer-events-none"
+                    >
                       <BilingualText en={MONTHS[currentMonth].en} el={MONTHS[currentMonth].el} compact secondaryClassName="hidden" />{' '}
                       {currentYear}
-                    </span>
+                      <ChevronDown className={cn('icon-sm ml-1 inline transition-transform sm:hidden', !miniOpen && '-rotate-90')} aria-hidden="true" />
+                    </button>
                     <Button variant="ghost" size="icon" onClick={nextMonth} aria-label={bilingualAria('Next month', 'Επόμενος μήνας')}><ChevronRight className="icon-sm" /></Button>
                   </div>
                 </CardHeader>
-                <CardContent className="pb-4">
+                <CardContent className={cn('pb-4', !miniOpen && 'max-sm:hidden')}>
                   <MiniCalendar
                     year={currentYear}
                     month={currentMonth}
@@ -865,7 +903,9 @@ export default function CalendarPage() {
                     </p>
                   ) : null}
                   <div className="space-y-2">
-                    {upcomingEvents.map((e) => (
+                    {upcomingEvents.map((e) => {
+                      const TypeIcon = TYPE_CONFIG[e.type].icon;
+                      return (
                       <div key={e.id} className="flex min-w-0 items-center gap-3 overflow-hidden text-sm">
                         <span className="w-[4.5rem] shrink-0 tabular-nums text-xs text-muted-foreground">
                           {formatUpcomingDate(e.date, primary)}
@@ -874,11 +914,13 @@ export default function CalendarPage() {
                         <span className="min-w-0 flex-1 truncate">
                           <BilingualText en={e.title} el={e.titleEl} compact />
                         </span>
-                        <Badge variant="secondary" className="h-4 shrink-0 text-2xs">
+                        <Badge variant="secondary" className="h-4 shrink-0 gap-0.5 text-2xs">
+                          <TypeIcon className="h-3 w-3" aria-hidden="true" />
                           <BilingualText en={TYPE_CONFIG[e.type].labelEn} el={TYPE_CONFIG[e.type].labelEl} compact secondaryClassName="hidden" />
                         </Badge>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>

@@ -164,8 +164,9 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
 
   const heroBody = (
     <>
-      {/* The greeting leads the card as a real heading now. */}
-      <p id={`${boxId}-title`} hidden={!greeting} className="break-words text-2xl font-semibold text-primary-foreground sm:text-[1.75rem]" data-testid="home-greeting">
+      {/* The greeting leads the card as the page's one visible heading — the
+          AppShell h1 above it is sr-only in hero mode (docs §132.0). */}
+      <h2 id={`${boxId}-title`} hidden={!greeting} className="break-words text-2xl font-semibold text-primary-foreground sm:text-[1.75rem]" data-testid="home-greeting">
         <BilingualText
           en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.`}
           el={`${hello.el}${name?.trim() ? `, ${name.trim()}` : ''}.`}
@@ -173,7 +174,7 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
           wrap
           secondaryFrom="lg"
         />
-      </p>
+      </h2>
       {purposeEn ? (
         <p className="break-words text-sm text-primary-foreground/85" data-testid="home-hero-purpose">
           <BilingualText en={purposeEn} el={purposeEl ?? purposeEn} compact wrap />

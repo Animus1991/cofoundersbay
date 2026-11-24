@@ -156,12 +156,11 @@ function TypingIndicator() {
   );
 }
 
-function BotBubble({ children }: { children: React.ReactNode }) {
+function BotBubble({ children, figure }: { children: React.ReactNode; figure?: CfbFigureId }) {
   return (
     <div className="flex items-end gap-2 animate-fade-in">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-        <Bot className="icon-sm text-muted-foreground" />
-      </div>
+      {/* The role's character answers each question (docs §132.5). */}
+      <CfbFigure id={figure ?? 'builder'} className="h-10 w-9 shrink-0" />
       <div className="max-w-[80%] rounded-2xl rounded-bl-sm bg-card border border-border px-4 py-3">
         <p className="text-sm text-foreground leading-relaxed">{children}</p>
       </div>
@@ -436,6 +435,8 @@ export function ConversationalOnboarding() {
   const completedCount = step === 'submitting' || step === 'done' ? steps.length : Math.max(stepIndex, 0);
   const progress = (completedCount / steps.length) * 100;
   const meta = isInputStep ? STEP_META[steps[stepIndex]] : null;
+  // One alias: the optional-chain sweep flags a fallback on a ref leaf.
+  const formData = form.current;
 
   return (
     // Under a top banner ("API server is unavailable") the header's first row
@@ -513,7 +514,7 @@ export function ConversationalOnboarding() {
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 max-w-2xl mx-auto w-full">
         {messages.map((msg) =>
           msg.from === 'bot'
-            ? <BotBubble key={msg.id}>{msg.content}</BotBubble>
+            ? <BotBubble key={msg.id} figure={ROLE_FIGURE[formData.role]}>{msg.content}</BotBubble>
             : <UserBubble key={msg.id}>{msg.content as string}</UserBubble>
         )}
         {showTyping && <TypingIndicator />}
@@ -523,6 +524,27 @@ export function ConversationalOnboarding() {
       {/* Input area */}
       <div className="border-t border-border bg-card px-4 py-4">
         <div className="max-w-2xl mx-auto space-y-3">
+
+          {/* «Το προφίλ σας»: the tiny live preview filling in as answers
+              arrive — only fields already asked (docs §132.5). */}
+          {(formData.displayName || selectedRole || formData.headline || formData.location) && (
+            <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/40 px-3 py-2" data-testid="onboarding-preview">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary-accessible" aria-hidden="true">
+                {(formData.displayName || '·').slice(0, 1).toUpperCase()}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="card-meta"><BilingualText en="Your profile" el="Το προφίλ σας" compact /></p>
+                <p className="truncate text-xs font-medium text-foreground">
+                  {[
+                    formData.displayName || null,
+                    selectedRole ? (primary === 'el' ? ROLE_OPTIONS.find((r) => r.value === selectedRole)?.labelEl : ROLE_OPTIONS.find((r) => r.value === selectedRole)?.label) : null,
+                    formData.headline || null,
+                    formData.location || null,
+                  ].filter(Boolean).join(' · ') || '…'}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Why we ask — one line per step, so no field feels arbitrary. */}
           {meta && !showTyping && (
