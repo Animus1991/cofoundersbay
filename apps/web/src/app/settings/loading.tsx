@@ -1,10 +1,12 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
 /** Matches the settings page: full width of the column, no second sidebar. */
 export default function SettingsLoading() {
   return (
     <div className="w-full space-y-6 pb-10">
+    <HeaderBandSkeleton />
       <Skeleton className="h-10 w-48" />
       <Card>
         <CardHeader>

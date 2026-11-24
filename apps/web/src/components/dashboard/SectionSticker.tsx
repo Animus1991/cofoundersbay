@@ -19,6 +19,29 @@ export const STICKER_TINT: Record<StickerTint, string> = {
   primary: 'bg-primary/10 text-primary-accessible',
 };
 
+/** The page-header band behind the title sticker (B1.2): the tint's own
+   wash, so the band and its mark read as one family. `neutral` and no
+   sticker fall back to the page's quiet fill. */
+export const STICKER_BAND_BG: Record<StickerTint, string> = {
+  accent: 'bg-status-accent-bg',
+  success: 'bg-status-success-bg',
+  warning: 'bg-status-warning-bg',
+  info: 'bg-status-info-bg',
+  neutral: 'bg-muted',
+  primary: 'bg-primary/10',
+};
+
+/** The glyph's ink on the band's card well — the tint's own text tone, which
+   the contrast script verifies on the tint and on the card. */
+export const STICKER_BAND_GLYPH: Record<StickerTint, string> = {
+  accent: 'text-status-accent',
+  success: 'text-status-success',
+  warning: 'text-status-warning',
+  info: 'text-status-info',
+  neutral: 'text-status-neutral',
+  primary: 'text-primary-accessible',
+};
+
 /** The row kind its glyph already names: a pact waits, a milestone is a step. */
 const GLYPH_TINT: Partial<Record<CfbGlyphName, StickerTint>> = {
   pact: 'warning',

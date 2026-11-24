@@ -1,8 +1,10 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
 export default function NotificationsLoading() {
   return (
     <div className="min-h-screen pb-20 lg:pb-16">
+    <HeaderBandSkeleton />
       <div className="mx-auto w-full max-w-2xl px-4 pt-6 space-y-4">
         <div className="flex items-center justify-between py-3">
           <Skeleton className="h-8 w-36" />

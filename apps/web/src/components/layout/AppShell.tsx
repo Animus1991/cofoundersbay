@@ -23,7 +23,8 @@ import { PageHeaderSlot, HeroActionsSlot } from './PageHeaderSlot';
 import { recordInAppView } from '@/lib/in-app-history';
 import { PageLead } from './PageLead';
 import { InfoHint } from '@/components/common/InfoHint';
-import { SectionSticker } from '@/components/dashboard/SectionSticker';
+import { STICKER_BAND_BG, STICKER_BAND_GLYPH } from '@/components/dashboard/SectionSticker';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { deriveTitleSticker, type TitleSticker } from '@/lib/title-sticker';
 import { bilingualAria } from '@/lib/i18n/format';
 import { Sparkles } from 'lucide-react';
@@ -357,6 +358,12 @@ export function AppShell({
       };
 
   const headerShown = Boolean(pageTitle || pageDescription || actions || showAskAi || showHelp);
+  // The header is one tinted band (B1.2): the sticker's own wash behind the
+  // title row, the description, the page facts and the ask field, so every
+  // page opens on colour. Off only where the title itself is not painted
+  // (hero mode) or the page is full-height (the header never renders there).
+  const headerBanded = headerShown && !titleSrOnly;
+  const bandBg = STICKER_BAND_BG[sticker?.tint ?? 'neutral'];
   // The star that pins this page to the reader's own pages (docs §110):
   // every page with a header that can be one of them; never a home.
   const pinnable = isPinnablePath(pathname);
@@ -372,7 +379,12 @@ export function AppShell({
       insideFrame && contentClassName,
     )}>
       {headerShown && (
-        <header className="space-y-3 [container-type:inline-size]">
+        <header
+          className={cn(
+            'space-y-3 [container-type:inline-size]',
+            headerBanded && cn('rounded-2xl px-3 py-3 sm:rounded-3xl sm:px-6 sm:py-5', bandBg),
+          )}
+        >
           {/* One header row, as in the AI Studio prototype (docs §64): the
               title on the left; the page's actions, the ask field and help on
               the right, in the same place on every page (GitHub's PageHeader,
@@ -404,7 +416,20 @@ export function AppShell({
               <div className={cn('min-w-0 [grid-area:title]', titleSrOnly && 'sr-only')} data-page-header="">
                 {pageTitle && (
                   <div className="flex items-center gap-2.5">
-                    {sticker ? <SectionSticker {...sticker} className="h-8 w-8" /> : null}
+                    {sticker ? (
+                      /* The band's own mark (B1.2): a card squircle carrying
+                         the route glyph in the band's ink. */
+                      <span
+                        data-keep-icon=""
+                        aria-hidden="true"
+                        className={cn(
+                          'flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-card shadow-sm sm:h-11 sm:w-11',
+                          STICKER_BAND_GLYPH[sticker.tint],
+                        )}
+                      >
+                        {sticker.icon ? <sticker.icon className="icon-md" /> : <CfbGlyph name={sticker.glyph ?? 'default'} className="icon-md" />}
+                      </span>
+                    ) : null}
                     <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
                       <BilingualText en={pageTitle} el={pageTitleEl} />
                     </h1>

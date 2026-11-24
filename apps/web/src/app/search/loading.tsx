@@ -1,8 +1,10 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
 export default function SearchLoading() {
   return (
     <div className="min-h-screen pb-20 lg:pb-16">
+    <HeaderBandSkeleton />
       <div className="mx-auto w-full min-w-0 px-4 pt-6 space-y-6">
         <Skeleton className="h-12 w-full rounded-xl" />
         <div className="flex gap-2">

@@ -1,9 +1,11 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
 export default function AchievementsLoading() {
   return (
     <div className="space-y-4">
+    <HeaderBandSkeleton />
       <Skeleton className="h-40 w-full" />
       <Skeleton className="h-10 w-full max-w-md" />
       <div className="grid grid-cols-1 gap-4">
