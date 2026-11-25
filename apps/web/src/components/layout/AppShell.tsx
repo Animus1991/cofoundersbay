@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
+import { FloatingGlobalTools, GLOBAL_TOOLS_PLACEMENT, GlobalTools } from './GlobalTools';
 import { MobileBottomNav } from './MobileBottomNav';
 import { useSidebar } from './SidebarContext';
 import { resolvePageHeader } from '@/lib/page-registry';
@@ -183,7 +184,10 @@ export function AppShellFrame({
             hasRail && railPinned ? 'lg:mr-[calc(var(--page-rail-width)+3.25rem)]' : (hasRail || !fullHeight) && 'lg:mr-[3.25rem]',
           )}
         >
-          <MemoTopBar />
+          {/* The page's first block holds Create, language, notifications and
+              account (docs §146); a full-height page has none, so it keeps
+              the bar. */}
+          <MemoTopBar desktopBar={GLOBAL_TOOLS_PLACEMENT === 'bar' || fullHeight} />
 
           {fullHeight ? (
             <main
@@ -213,6 +217,7 @@ export function AppShellFrame({
               // leaves, never over it.
               className={cn(appShellMainClasses, contentClassName)}
             >
+              {GLOBAL_TOOLS_PLACEMENT === 'page' ? <FloatingGlobalTools /> : null}
               {children}
             </main>
           )}
@@ -402,7 +407,11 @@ export function AppShell({
               what stops the mid-phrase heading breaks the field once caused
               beside the title, when it asked for 57.5rem. Below sm the actions
               wrap under the title, full width. */}
-          <section>
+          {/* From xl the four global tools stand beside the header's grid; below
+              it they take their own line above it, so the title, the page's
+              actions and its field keep the full width (docs §146). */}
+          <section className="flex flex-col-reverse gap-3 xl:flex-row xl:items-start">
+            <div className="min-w-0 flex-1 [container-type:inline-size]">
             {/* Without the field (the homes, which ask in their own box) the
                 row has no third column: an empty 18rem track took that much
                 width from the title on every wide home header. */}
@@ -496,6 +505,10 @@ export function AppShell({
                 </div>
               )}
             </div>
+            </div>
+            {/* Create, language, notifications, account: at the right of the
+                page's first block (docs §146). From `sm`; phones have their bar. */}
+            {GLOBAL_TOOLS_PLACEMENT === 'page' && !titleSrOnly ? <GlobalTools inline className="hidden self-end sm:flex xl:self-start" /> : null}
           </section>
           {/* Always present, hidden while empty: the slot page-level notes
               portal into (PageHeaderSlot: sample-data pill, drafts). */}
@@ -505,12 +518,13 @@ export function AppShell({
       {/* In hero mode the header's tools portal into the hero card's corner
           slot (docs §133); with no slot registered they stay off rather than
           floating in an empty band. */}
-      {titleSrOnly && heroActions && (actions || showHelp || pinnable)
+      {titleSrOnly && heroActions && (actions || showHelp || pinnable || GLOBAL_TOOLS_PLACEMENT === 'page')
         ? createPortal(
-            <div className="flex items-center gap-2" data-page-actions="">
+            <div className="flex flex-wrap items-center justify-end gap-2" data-page-actions="">
               {actions}
               {pinnable ? <PinPageButton /> : null}
               {showHelp ? <PageContextualHelp compact defaultOpen={false} /> : null}
+              {GLOBAL_TOOLS_PLACEMENT === 'page' ? <GlobalTools inline className="hidden sm:flex" /> : null}
             </div>,
             heroActions,
           )

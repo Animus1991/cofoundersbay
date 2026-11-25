@@ -18,25 +18,29 @@ vi.mock('@/components/common/LanguageSwitcher', () => ({ LanguageSwitcher: () =>
 vi.mock('@/components/common/OfflineIndicator', () => ({ DemoExitInTopBar: () => null }));
 
 /**
- * One way to ask on /home (docs §145): the top bar's pill opens the same
- * assistant the hero's field asks, so there it goes. Every other page keeps
- * it, and the create menu, language, bell and account stay on every page.
+ * The desktop top bar (docs §145, §146). Its "Ask or search…" pill opened
+ * the same assistant every page's own field asks, so it is gone everywhere.
+ * Create, language, notifications and account live in each page's first
+ * block now; the bar remains only where a page has none (/messages, /ai,
+ * the canvas), and there it holds those four.
  */
 afterEach(cleanup);
 
-describe('the top bar ask pill', () => {
-  it('is on an ordinary page', () => {
-    nav.pathname = '/matches';
+describe('the desktop top bar', () => {
+  it('is not drawn by default: the page holds the tools', () => {
     render(<TopBar />);
-    expect(screen.getByRole('button', { name: /Ask or search/ })).toBeTruthy();
+    expect(document.querySelector('[data-desktop-topbar]')).toBeNull();
+    expect(screen.queryByRole('button', { name: /Ask or search/ })).toBeNull();
   });
 
-  it('is not on /home, where the hero field asks; the account controls stay', () => {
-    nav.pathname = '/home';
-    render(<TopBar />);
+  it('holds Create, language, notifications and account where asked for, with no ask pill', () => {
+    render(<TopBar desktopBar />);
+    const bar = document.querySelector('[data-desktop-topbar]')!;
+    expect(bar).toBeTruthy();
+    expect(bar.querySelector('[data-global-create]')).toBeTruthy();
+    expect(bar.textContent).toContain('language');
+    expect(bar.textContent).toContain('bell');
+    expect(bar.textContent).toContain('account');
     expect(screen.queryByRole('button', { name: /Ask or search/ })).toBeNull();
-    expect(screen.getByRole('button', { name: /Create/ })).toBeTruthy();
-    expect(screen.getAllByText('bell').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('account').length).toBeGreaterThan(0);
   });
 });

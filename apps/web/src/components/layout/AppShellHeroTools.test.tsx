@@ -17,6 +17,8 @@ vi.mock('next/navigation', () => ({
 }));
 vi.mock('./SideNav', () => ({ SideNav: () => <nav aria-label="Primary" /> }));
 vi.mock('./TopBar', () => ({ TopBar: () => <header /> }));
+// Create, language, notifications and account (docs §146): their own providers are not this test's subject.
+vi.mock('./GlobalTools', () => ({ GLOBAL_TOOLS_PLACEMENT: 'page', GlobalTools: ({ inline }: { inline?: boolean }) => <div data-global-tools={inline ? 'inline' : 'floating'} />, FloatingGlobalTools: () => null }));
 vi.mock('./MobileBottomNav', () => ({ MobileBottomNav: () => <nav aria-label="Sections" /> }));
 vi.mock('./CommandPaletteHost', () => ({ CommandPaletteHost: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock('./PageRail', () => ({ PageRail: () => null }));
@@ -50,6 +52,9 @@ describe('header tools in hero mode (docs §133.5)', () => {
     // The header keeps no actions band: the title is sr-only and the tools moved.
     expect(container.querySelector('header [data-page-actions]')).toBeNull();
     expect(container.querySelector('header [data-page-header]')!.className).toContain('sr-only');
+    // Create, language, notifications and account join them there (docs §146), once.
+    expect(screen.getByTestId('hero-actions').querySelectorAll('[data-global-tools="inline"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-global-tools="inline"]')).toHaveLength(1);
   });
 
   it('keeps the tools in the header on an ordinary page', () => {
@@ -62,6 +67,8 @@ describe('header tools in hero mode (docs §133.5)', () => {
     expect(container.querySelector('header [data-page-actions]')).toBeTruthy();
     expect(screen.queryByTestId('pin-current-page')).toBeTruthy();
     expect(within(screen.getByTestId('hero-card')).queryByTestId('pin-current-page')).toBeNull();
+    // The four global tools stand at the right of the page header (docs §146).
+    expect(container.querySelectorAll('header [data-global-tools="inline"]')).toHaveLength(1);
     pathname = '/home';
   });
 });

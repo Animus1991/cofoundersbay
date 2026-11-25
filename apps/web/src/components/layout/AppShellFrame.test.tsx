@@ -14,6 +14,8 @@ import { AppShellFrame } from './AppShell';
 // rule this guards lives on the frame's <main>, so the chrome is a stand-in.
 vi.mock('./SideNav', () => ({ SideNav: () => <nav aria-label="Primary" /> }));
 vi.mock('./TopBar', () => ({ TopBar: () => <header /> }));
+// Create, language, notifications and account (docs §146): their own providers are not this test's subject.
+vi.mock('./GlobalTools', () => ({ GLOBAL_TOOLS_PLACEMENT: 'page', GlobalTools: ({ inline }: { inline?: boolean }) => <div data-global-tools={inline ? 'inline' : 'floating'} />, FloatingGlobalTools: () => null }));
 vi.mock('./MobileBottomNav', () => ({ MobileBottomNav: () => <nav aria-label="Sections" /> }));
 vi.mock('./CommandPaletteHost', () => ({ CommandPaletteHost: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock('./PageRail', () => ({ PageRail: () => null }));

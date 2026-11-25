@@ -2322,7 +2322,7 @@ export default function ResearchBoardPage() {
           hasRail && (railPinned ? 'lg:mr-[21.752rem]' : 'lg:mr-[3.25rem]'),
         )}
       >
-        <TopBar />
+        <TopBar desktopBar />
         <MobileBottomNav />
         {/* Loading state — also rendered during SSR for consistent HTML */}
         {showLoading && (

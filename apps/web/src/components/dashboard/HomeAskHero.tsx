@@ -220,16 +220,25 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
   const heroBody = (
     <>
       {/* The greeting leads the card as the page's one visible heading — the
-          AppShell h1 above it is sr-only in hero mode (docs §132.0). */}
-      <h2 id={`${boxId}-title`} hidden={!greeting} className="break-words text-2xl font-semibold text-primary-foreground sm:text-3xl" data-testid="home-greeting">
-        <BilingualText
-          en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.`}
-          el={`${hello.el}${name?.trim() ? `, ${name.trim()}` : ''}.`}
-          stacked
-          wrap
-          secondaryFrom="lg"
+          AppShell h1 above it is sr-only in hero mode (docs §132.0). Its line
+          also holds the page's tools and Create, language, notifications and
+          account (docs §146), and they wrap under it when the card is narrow. */}
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <h2 id={`${boxId}-title`} hidden={!greeting} className="min-w-0 break-words text-2xl font-semibold text-primary-foreground sm:text-3xl" data-testid="home-greeting">
+          <BilingualText
+            en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.`}
+            el={`${hello.el}${name?.trim() ? `, ${name.trim()}` : ''}.`}
+            stacked
+            wrap
+            secondaryFrom="lg"
+          />
+        </h2>
+        <div
+          ref={heroActionsSlot}
+          data-hero-actions=""
+          className="flex flex-wrap items-center justify-end gap-2 empty:hidden [&_button]:border-white/40 [&_button]:bg-white/15 [&_button]:text-primary-foreground [&_button:hover]:border-white/60 [&_button:hover]:bg-white/25 [&_button:hover]:text-primary-foreground [&_button_.text-foreground]:text-primary-foreground [&_button_.text-muted-foreground]:text-primary-foreground/80"
         />
-      </h2>
+      </div>
       {purposeEn ? (
         <p className="break-words text-sm text-primary-foreground/90" data-testid="home-hero-purpose">
           <BilingualText en={purposeEn} el={purposeEl ?? purposeEn} compact wrap />
@@ -245,12 +254,17 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
   const bandSticker = band && pathname ? deriveTitleSticker(pathname) : undefined;
   const bandBody = (
     <>
-      {bandMeta ? (
-        <p aria-hidden="true" className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-widest text-primary-accessible">
-          {bandSticker ? <SectionSticker {...bandSticker} className="h-5 w-5" /> : null}
-          <BilingualText en={bandMeta.title} el={bandMeta.titleEl ?? bandMeta.title} compact />
-        </p>
-      ) : null}
+      {/* The overline's line also holds the page's tools and the four global
+          ones (docs §146). */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        {bandMeta ? (
+          <p aria-hidden="true" className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-widest text-primary-accessible">
+            {bandSticker ? <SectionSticker {...bandSticker} className="h-5 w-5" /> : null}
+            <BilingualText en={bandMeta.title} el={bandMeta.titleEl ?? bandMeta.title} compact />
+          </p>
+        ) : <span />}
+        <div ref={heroActionsSlot} data-hero-actions="" className="flex flex-wrap items-center justify-end gap-2 empty:hidden" />
+      </div>
       <h2 id={`${boxId}-title`} hidden={!greeting} className="break-words text-xl font-semibold text-foreground sm:text-2xl" data-testid="home-greeting">
         <BilingualText
           en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.`}
@@ -387,7 +401,7 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
       {/* The figure joins only from xl (docs §133.4): below it the card is one
           column, no cut-off figure beside or above the greeting. */}
       <div className={band ? 'grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
-        <div className={hero ? 'min-w-0 space-y-3' : band ? 'min-w-0 space-y-3 pe-10' : 'space-y-3'}>
+        <div className={hero || band ? 'min-w-0 space-y-3' : 'space-y-3'}>
           {hero ? heroBody : band ? bandBody : (
             <p id={`${boxId}-title`} hidden={!greeting} className="break-words text-sm text-muted-foreground" data-testid="home-greeting">
               {/* Without a name the greeting is just the greeting: the homes used
@@ -434,21 +448,6 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
           </div>
         ) : null}
       </div>
-      {hero ? (
-        /* The header's tools (pin, help) land here while the title stays
-           sr-only (docs §133.5); restyled for the solid card. */
-        <div
-          ref={heroActionsSlot}
-          data-hero-actions=""
-          className="absolute end-4 top-4 z-10 flex items-center gap-2 empty:hidden [&_button]:border-white/40 [&_button]:bg-white/15 [&_button]:text-primary-foreground [&_button:hover]:border-white/60 [&_button:hover]:bg-white/25 [&_button:hover]:text-primary-foreground"
-        />
-      ) : band ? (
-        <div
-          ref={heroActionsSlot}
-          data-hero-actions=""
-          className="absolute end-4 top-4 z-10 flex items-center gap-2 empty:hidden"
-        />
-      ) : null}
     </section>
   );
 }
