@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SectionSticker } from '@/components/dashboard/SectionSticker';
+import { SectionLink } from '@/components/home/SectionLink';
 import type { MatchConnection } from '@/components/common/MatchCard';
 import { getMeProfile, getPersonalizedFeed, listEvents, listPrograms, searchProfiles, type SearchHit } from '@/lib/api';
 import { listCommitmentCards } from '@/lib/commitments-api';
@@ -36,8 +37,11 @@ const NEW_MEMBER_DAYS = 30;
 function FeedCard({ item }: { item: FeedItem }) {
   return (
     <article data-feed-item={item.kind}>
-      <Card className="overflow-hidden">
-        <CardContent className="space-y-3">
+      {/* From sm the cover stands beside the words, the height of the card:
+          a 220px band across 1070px made a picture card three text cards
+          tall (docs §143). A cover that fails leaves no column (§77). */}
+      <Card className="overflow-hidden sm:flex sm:items-stretch">
+        <CardContent className="min-w-0 flex-1 space-y-3">
           <CardHead
             mark={(
               <Avatar className={cn('h-11 w-11 shrink-0', item.mark.square && 'rounded-xl')} data-keep-icon="">
@@ -59,7 +63,7 @@ function FeedCard({ item }: { item: FeedItem }) {
           />
           {item.body ? <p className="card-body line-clamp-3 max-w-[80ch] text-muted-foreground first-letter:uppercase">{item.body}</p> : null}
         </CardContent>
-        <CoverImage src={item.image} className="sm:max-h-[220px]" />
+        <CoverImage src={item.image} className="sm:aspect-auto sm:max-h-none sm:min-h-[132px] sm:w-56 sm:shrink-0 sm:self-stretch lg:w-64" />
       </Card>
     </article>
   );
@@ -94,6 +98,8 @@ export function HomeFeedSection({ people, shownAbove, connectionOf }: { people: 
   const updates = useQuery({ queryKey: qk('founder-updates', 'feed'), queryFn: getUpdatesFeed, ...opts });
   const needs = useQuery({ queryKey: qk('commitments', 'cards', 'home-feed'), queryFn: () => listCommitmentCards({}), ...opts });
   const events = useQuery({ queryKey: qk('events', 'upcoming', '', 'all'), queryFn: () => listEvents({ scope: 'upcoming', limit: 4 }), ...opts });
+  // The strip above, under its own key: an event it shows is not told again here.
+  const strip = useQuery({ queryKey: qk('events', 'home-strip'), queryFn: () => listEvents({ scope: 'upcoming', limit: 6 }), staleTime: 60_000, retry: 0 });
   const programs = useQuery({ queryKey: qk('programs', 'home-feed'), queryFn: () => listPrograms({ limit: 6 }), ...opts });
   const posts = useQuery({ queryKey: qk('feed', 'home-feed'), queryFn: () => getPersonalizedFeed({ limit: 6 }), ...opts });
 
@@ -175,7 +181,8 @@ export function HomeFeedSection({ people, shownAbove, connectionOf }: { people: 
       });
     });
 
-    (events.data?.events ?? []).slice(0, 3).forEach((e, i) => {
+    const inStrip = new Set((strip.data?.events ?? []).map((e) => e.id));
+    (events.data?.events ?? []).filter((e) => !inStrip.has(e.id)).slice(0, 3).forEach((e, i) => {
       list.push({
         id: `event-${e.id}`,
         kind: 'event',
@@ -230,7 +237,7 @@ export function HomeFeedSection({ people, shownAbove, connectionOf }: { people: 
     });
 
     return list;
-  }, [profile.data, people, shownAbove, members.data, updates.data, needs.data, events.data, programs.data, posts.data, fmtDate, connectionOf]);
+  }, [profile.data, people, shownAbove, members.data, updates.data, needs.data, events.data, programs.data, posts.data, fmtDate, connectionOf, strip.data]);
 
   const curated = useMemo(() => curateFeed(items, all ? items.length : FIRST), [items, all]);
   const more = items.length - curated.length;
@@ -278,9 +285,7 @@ export function HomeFeedSection({ people, shownAbove, connectionOf }: { people: 
           <SectionSticker glyph="feed" tint="primary" />
           <h2 id="home-around-you" className="card-title"><BilingualText en="Around you" el="Γύρω σας" compact /></h2>
         </div>
-        <Link href="/feed" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
-          <BilingualText en="The whole feed" el="Όλη η ροή" compact />
-        </Link>
+        <SectionLink href="/feed" en="The whole feed" el="Όλη η ροή" />
       </div>
       <div className="space-y-4" data-home-quiet="">
         {loading && curated.length === 0

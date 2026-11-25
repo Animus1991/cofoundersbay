@@ -36,6 +36,7 @@ const fromNotice = (notice: LiveNotice, ask?: HomeAskNow): TodayRow => ({
   glyph: NOTICE_GLYPH[notice.key] ?? 'bell',
   en: notice.en,
   el: notice.el,
+  count: notice.count,
   ask: ask?.prompt ?? { en: `What should I do next here: ${notice.en}`, el: `Τι να κάνω στη συνέχεια εδώ: ${notice.el}` },
 });
 

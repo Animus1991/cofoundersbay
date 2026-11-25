@@ -304,7 +304,7 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
             className={hero || band
               // nowrap: the one-row pill never shows a sliver of a wrapped
               // placeholder line; Shift+Enter still inserts a newline.
-              ? 'block h-9 w-full min-w-0 resize-none whitespace-nowrap bg-transparent py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground'
+              ? 'block h-9 w-full min-w-0 resize-none overflow-hidden whitespace-nowrap bg-transparent py-2 text-sm text-foreground outline-none [scrollbar-width:none] placeholder:text-muted-foreground lg:h-[37px]'
               : 'block max-h-48 min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3 text-sm text-foreground outline-none placeholder:text-muted-foreground'}
           />
           {listOpen && commands ? (

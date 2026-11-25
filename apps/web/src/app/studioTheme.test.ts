@@ -73,7 +73,8 @@ describe('the Light theme (studio)', () => {
 
   it('draws the selected destination and the next step in ink', () => {
     expect(block(`html[data-theme="studio"] [data-sidenav] a[aria-current='page']`)).toMatch(/background-color:\s*hsl\(var\(--primary\)\)/);
-    expect(block(`html[data-theme="studio"] [data-next-step='next']`)).toMatch(/background-color:\s*hsl\(var\(--primary\)\)/);
+    // Everywhere but the home's side column, where the hero is the ink surface (docs §143).
+    expect(block(`html[data-theme="studio"] [data-next-step='next']:not([data-home-side] *)`)).toMatch(/background-color:\s*hsl\(var\(--primary\)\)/);
     expect(block(`html[data-theme="studio"] aside[data-sidenav]`)).toMatch(/background-color:\s*hsl\(var\(--card\)\)/);
     expect(block(`html[data-theme="studio"] .cfb-glyph [data-accent]`)).toMatch(/hsl\(var\(--brand\)\)/);
   });

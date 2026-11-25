@@ -11,7 +11,7 @@ import { isMilestoneOverdue } from '@/lib/milestone-order';
 import { PREVIEW_MILESTONE_EL } from '@/lib/i18n/strings-milestones';
 import { qk } from '@/lib/query-keys';
 
-export type LiveNotice = { key: string; href: string; en: string; el: string };
+export type LiveNotice = { key: string; href: string; en: string; el: string; /** Shown after the words, as every waiting row shows its count. */ count?: number };
 
 /**
  * What is due now, worked out from the data rather than sent: finishing the
@@ -33,7 +33,7 @@ export function liveNotices({ followUps, milestones, threads }: {
     // waiting on you", which said it once already (docs §124Α).
     notices.push(waiting.length === 1
       ? { key: 'commitment', href: `/commitments/${encodeURIComponent(first.cardId)}?thread=${encodeURIComponent(first.id)}`, en: step.en, el: step.el }
-      : { key: 'commitment', href: '/commitments', en: `${waiting.length} commitments need your answer`, el: `Δεσμεύσεις που θέλουν απάντησή σας: ${waiting.length}` });
+      : { key: 'commitment', href: '/commitments', en: 'Commitments that need your answer', el: 'Δεσμεύσεις που θέλουν απάντησή σας', count: waiting.length });
   }
   if (followUps.length > 0) {
     notices.push({

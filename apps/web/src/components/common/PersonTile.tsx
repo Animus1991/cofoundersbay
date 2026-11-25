@@ -77,7 +77,9 @@ export function PersonTile({ userId, name, avatarUrl, role, headline, reason, me
           ) : null}
           {headline ? <p className="truncate text-xs text-muted-foreground">{headline}</p> : null}
           {reason ? (
-            <p className="line-clamp-2 text-xs text-muted-foreground">
+            // Three lines: at 200px two cut «Ταιριάζει με την αναζήτησή σας:»
+            // right before what it matches (docs §143).
+            <p className="line-clamp-3 text-xs text-muted-foreground">
               <BilingualText en={reason.en} el={reason.el} compact wrap />
             </p>
           ) : null}
@@ -103,9 +105,9 @@ export function PersonTileRail({ labelEn, labelEl, children }: {
   return (
     <div className="-mx-1 snap-x snap-mandatory overflow-x-auto px-1 pb-1 [scrollbar-gutter:stable]" aria-label={bilingualAria(labelEn, labelEl)}>
       {/* Each tile starts at 200px and grows to fill the row (capped at
-          300px), so three people do not leave an empty third of the wash at
-          1024-1440; more than fit still scroll (docs §142). */}
-      <div className="flex w-max min-w-full gap-3 rounded-2xl bg-status-accent-bg/50 p-3 [&>*]:max-w-[300px] [&>*]:grow">
+          360px), so three people do not leave an empty part of the wash from
+          1024 to 1920; more than fit still scroll (docs §142, §143). */}
+      <div className="flex w-max min-w-full gap-3 rounded-2xl bg-status-accent-bg/50 p-3 [&>*]:max-w-[360px] [&>*]:grow">
         {children}
       </div>
     </div>

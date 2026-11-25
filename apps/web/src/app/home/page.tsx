@@ -13,6 +13,7 @@ import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { HomeContinue } from '@/components/home/HomeContinue';
 import { HomeEventStrip } from '@/components/home/HomeEventStrip';
 import { HomeAssistantSuggestion } from '@/components/home/HomeAssistantSuggestion';
+import { SectionLink } from '@/components/home/SectionLink';
 import { useTodayRows } from '@/components/dashboard/HomeToday';
 import { listMilestones } from '@/lib/api';
 import { dedupeWaitingRows } from '@/lib/home-waiting';
@@ -163,9 +164,7 @@ function Home() {
           <SectionSticker glyph="people" tint="accent" />
           <h2 id="home-people" className="card-title"><BilingualText en="People who fit" el="Άνθρωποι που ταιριάζουν" compact /></h2>
         </div>
-        <Link href="/matches" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
-          <BilingualText en="See everyone" el="Δείτε όλους" compact />
-        </Link>
+        <SectionLink href="/matches" en="See everyone" el="Δείτε όλους" />
       </div>
       {/* Many names on one page: medium weight, so the section titles lead. */}
       <div data-home-quiet="">{peopleBlock}</div>
@@ -250,7 +249,10 @@ function Home() {
             purposeEl={copy.description.el}
           />
         </div>
-        <div className="contents xl:col-start-3 xl:row-span-4 xl:row-start-1 xl:flex xl:flex-col xl:gap-6 xl:self-start" data-home-side="">
+        {/* Sticky from xl (docs §143): the column ended at ~640px and left the
+            right third empty beside the whole feed. Taller than the window
+            (the first steps of a new account), it scrolls on its own. */}
+        <div className="contents xl:sticky xl:top-20 xl:col-start-3 xl:row-span-4 xl:row-start-1 xl:-mx-1 xl:flex xl:max-h-[calc(100dvh-6rem)] xl:flex-col xl:gap-6 xl:self-start xl:overflow-y-auto xl:px-1 xl:pb-1" data-home-side="">
           {/* The one thing in progress, straight under the hero on a phone.
               One row, one verb. */}
           <div className="order-2 min-w-0">
@@ -275,9 +277,8 @@ function Home() {
                       </h2>
                     </div>
                     {waiting > WAITING_ON_TOP ? (
-                      <Link href={overviewPathFor(role)} className="tap-extend-y shrink-0 text-sm font-medium text-primary-accessible hover:underline" data-home-waiting-all="">
-                        <BilingualText en={`All ${waiting}`} el={`Όλα (${waiting})`} compact />
-                      </Link>
+                      // The title already says how many: the link only says where.
+                      <SectionLink href={overviewPathFor(role)} en="All" el="Όλα" data-home-waiting-all="" />
                     ) : null}
                   </div>
                   <ul className="divide-y divide-border">

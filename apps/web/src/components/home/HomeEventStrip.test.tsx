@@ -62,16 +62,25 @@ describe('HomeEventStrip (docs §131.2)', () => {
     expect(links.some((a) => a.getAttribute('href') === '/events')).toBe(true);
   });
 
-  it('keeps the covers a fixed size in a snap-scrolling rail (docs §133.3)', () => {
+  it('keeps the covers in a snap-scrolling rail, 160px that may grow to 220px (docs §133.3, §143)', () => {
     state.events = { events: [event('ev-1')] };
     const { container } = render(<Strip />);
     const rail = container.querySelector('[data-home-events]')!;
     expect(rail.className).toContain('overflow-x-auto');
     expect(rail.className).toContain('snap-x');
-    expect(rail.getAttribute('aria-label')).toBe('Events for you');
+    // The next six for everyone, so not "for you".
+    expect(rail.getAttribute('aria-label')).toBe('Coming up');
     const card = screen.getByRole('link', { name: /Demo day ev-1/ });
-    expect(card.className).toContain('w-40');
+    expect(card.className).toContain('basis-[160px]');
+    expect(card.className).toContain('max-w-[220px]');
     expect(card.className).toContain('shrink-0');
     expect(card.querySelector('p')!.className).toContain('line-clamp-2');
+  });
+
+  it('marks on the cover an event the reader is going to (docs §143)', () => {
+    state.events = { events: [{ ...event('ev-1'), viewerRsvp: 'going' }, event('ev-2')] };
+    render(<Strip />);
+    expect(screen.getByRole('link', { name: /Demo day ev-1 .*Going/ })).toBeTruthy();
+    expect(screen.getAllByText('Going')).toHaveLength(1);
   });
 });

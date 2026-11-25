@@ -4331,8 +4331,10 @@ input[data-search-field][class~="border-input"]:focus-visible {
   }
   /* A row's cover thumbnail keeps the box it was given and crops into it
      (object-cover, docs §140): with `height: auto` a 3:1 group band became
-     a 64x21 sliver on a phone. `:where` keeps this rule's weight. */
-  #main-content img:where(:not([data-cover-thumb])),
+     a 64x21 sliver on a phone. So does a photo that fills a framed box
+     (`data-fill`, the home strip's 16:10 covers, §143). `:where` keeps this
+     rule's weight. */
+  #main-content img:where(:not([data-cover-thumb], [data-fill])),
   #main-content video {
     height: auto;
   }
@@ -5306,37 +5308,39 @@ html[data-theme="studio"] [data-sidenav] a[aria-current='page'] [class~='bg-prim
 
 /* What comes next is the one inverted surface on a home: an ink card with
    white words and a white action, as the prototype's "Επόμενο". What waits
-   on you stays amber. Secondary words on the ink: stone-300, 10.2:1. */
-html[data-theme="studio"] [data-next-step='next'] {
+   on you stays amber. Secondary words on the ink: stone-300, 10.2:1. On
+   /home the hero is that surface, so "Continue" beside it stays light
+   (docs §143). */
+html[data-theme="studio"] [data-next-step='next']:not([data-home-side] *) {
   background-color: hsl(var(--primary));
   border-color: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
 }
-html[data-theme="studio"] [data-next-step='next'] :is(.text-foreground, .text-primary-accessible) {
+html[data-theme="studio"] [data-next-step='next']:not([data-home-side] *) :is(.text-foreground, .text-primary-accessible) {
   color: hsl(var(--primary-foreground));
 }
-html[data-theme="studio"] [data-next-step='next'] :is(.text-muted-foreground, .bilingual-secondary) {
+html[data-theme="studio"] [data-next-step='next']:not([data-home-side] *) :is(.text-muted-foreground, .bilingual-secondary) {
   color: hsl(24 5.7% 82.9%);
 }
-html[data-theme="studio"] [data-next-step='next'] > [data-keep-icon] {
+html[data-theme="studio"] [data-next-step='next']:not([data-home-side] *) > [data-keep-icon] {
   background-color: hsl(0 0% 100% / 0.1);
   color: hsl(var(--primary-foreground));
 }
-html[data-theme="studio"] [data-next-step='next'] [data-next-open] {
+html[data-theme="studio"] [data-next-step='next']:not([data-home-side] *) [data-next-open] {
   background-color: hsl(var(--primary-foreground));
   border-color: hsl(var(--primary-foreground));
   color: hsl(var(--primary));
 }
-html[data-theme="studio"] [data-next-step='next'] [data-next-open]:hover {
+html[data-theme="studio"] [data-next-step='next']:not([data-home-side] *) [data-next-open]:hover {
   background-color: hsl(var(--secondary));
 }
-html[data-theme="studio"] [data-next-step='next'] [data-next-open] .cfb-glyph [data-accent] {
+html[data-theme="studio"] [data-next-step='next']:not([data-home-side] *) [data-next-open] .cfb-glyph [data-accent] {
   color: inherit;
 }
-html[data-theme="studio"] [data-next-step='next'] [data-next-ask] {
+html[data-theme="studio"] [data-next-step='next']:not([data-home-side] *) [data-next-ask] {
   color: hsl(var(--primary-foreground));
 }
-html[data-theme="studio"] [data-next-step='next'] [data-next-ask]:hover {
+html[data-theme="studio"] [data-next-step='next']:not([data-home-side] *) [data-next-ask]:hover {
   background-color: hsl(0 0% 100% / 0.1);
   color: hsl(var(--primary-foreground));
 }

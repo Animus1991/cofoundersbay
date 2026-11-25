@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { BilingualText } from '@/components/common/BilingualText';
 import { DateBadge } from '@/components/common/DateBadge';
+import { SectionLink } from '@/components/home/SectionLink';
 import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import { useCoverFailed } from '@/hooks/useCoverFailed';
 import { listEvents, type EventItem } from '@/lib/api';
@@ -18,19 +19,31 @@ function StripCard({ event }: { event: EventItem }) {
   const cover = useCoverFailed(event.coverImageUrl);
   const start = new Date(event.startAt);
   const fullDate = fmtDate(start, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const going = event.viewerRsvp === 'going'
+    ? { en: 'Going', el: 'Θα πάτε' }
+    : event.viewerRsvp === 'interested' ? { en: 'Interested', el: 'Σας ενδιαφέρει' } : null;
   return (
     <Link
       href={`/events/${event.id}`}
-      aria-label={bilingualAria(`${event.title} — ${fullDate}`, `${event.title} — ${fullDate}`)}
-      className="focus-ring group w-40 shrink-0 snap-start rounded-xl"
+      aria-label={bilingualAria(`${event.title} — ${fullDate}${going ? ` — ${going.en}` : ''}`, `${event.title} — ${fullDate}${going ? ` — ${going.el}` : ''}`)}
+      className="focus-ring group w-[160px] max-w-[220px] shrink-0 grow basis-[160px] snap-start rounded-xl"
     >
-      <div className="relative h-[100px] w-full overflow-hidden rounded-xl">
+      {/* The photo is placed, not flowed: the phone rule `#main-content img
+          { height: auto }` left it shorter than its 16:10 frame, and the
+          "Going" mark fell under it (docs §143). */}
+      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl">
         {event.coverImageUrl && !cover.failed ? (
-          <img ref={cover.ref} onError={cover.onError} src={event.coverImageUrl} alt="" referrerPolicy="no-referrer" loading="lazy" className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" />
+          <img ref={cover.ref} onError={cover.onError} src={event.coverImageUrl} alt="" referrerPolicy="no-referrer" loading="lazy" data-fill="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" />
         ) : (
-          <div className="h-full w-full bg-status-warning-bg" aria-hidden="true" />
+          <div className="absolute inset-0 bg-status-warning-bg" aria-hidden="true" />
         )}
         <DateBadge date={start} size="sm" />
+        {/* What the reader already said yes to, on the cover itself (docs §143). */}
+        {going ? (
+          <span className="absolute bottom-2 left-2 rounded-full bg-card/95 px-2 py-0.5 text-xs font-medium text-foreground shadow-sm">
+            <BilingualText en={going.en} el={going.el} compact />
+          </span>
+        ) : null}
       </div>
       <p className="mt-1.5 line-clamp-2 text-sm font-medium text-foreground transition-colors group-hover:text-primary-accessible">{event.title}</p>
     </Link>
@@ -57,13 +70,13 @@ export function HomeEventStrip() {
       <div className="flex items-baseline justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <SectionSticker glyph="calendar" tint="warning" />
-          <h2 id="home-events" className="card-title"><BilingualText en="Events for you" el="Εκδηλώσεις για εσάς" compact /></h2>
+          {/* "Coming up", not "for you": the strip is the next six, in date
+              order, for everyone (docs §143). */}
+          <h2 id="home-events" className="card-title"><BilingualText en="Coming up" el="Επόμενες εκδηλώσεις" compact /></h2>
         </div>
-        <Link href="/events" className="tap-extend-y text-sm font-medium text-primary-accessible hover:underline">
-          <BilingualText en="All" el="Όλες" compact />
-        </Link>
+        <SectionLink href="/events" en="All" el="Όλες" />
       </div>
-      <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1 [scrollbar-gutter:stable]" data-home-events="" aria-label="Events for you">
+      <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1 [scrollbar-gutter:stable]" data-home-events="" aria-label="Coming up">
         {events.map((event) => <StripCard key={event.id} event={event} />)}
       </div>
     </section>

@@ -38,7 +38,8 @@ describe('what is due now, worked out from the data', () => {
 
   it('goes to the list when there is more than one', () => {
     const notices = liveNotices({ followUps: [], milestones: [milestone({}), milestone({ id: 'm2' })], threads: [thread('t1'), thread('t2')] });
-    expect(notices[0]).toMatchObject({ href: '/commitments', el: 'Δεσμεύσεις που θέλουν απάντησή σας: 2' });
+    // The count travels apart from the words, as every waiting row shows it (docs §143).
+    expect(notices[0]).toMatchObject({ href: '/commitments', el: 'Δεσμεύσεις που θέλουν απάντησή σας', count: 2 });
     expect(notices[1]).toMatchObject({ href: '/milestones', en: '2 milestones are overdue' });
   });
 });
