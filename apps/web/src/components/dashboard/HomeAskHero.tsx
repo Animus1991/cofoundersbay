@@ -386,8 +386,8 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
     >
       {/* The figure joins only from xl (docs §133.4): below it the card is one
           column, no cut-off figure beside or above the greeting. */}
-      <div className={hero || band ? 'grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
-        <div className={hero ? 'min-w-0 space-y-3 pe-10' : band ? 'min-w-0 space-y-3 pe-10' : 'space-y-3'}>
+      <div className={band ? 'grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
+        <div className={hero ? 'min-w-0 space-y-3' : band ? 'min-w-0 space-y-3 pe-10' : 'space-y-3'}>
           {hero ? heroBody : band ? bandBody : (
             <p id={`${boxId}-title`} hidden={!greeting} className="break-words text-sm text-muted-foreground" data-testid="home-greeting">
               {/* Without a name the greeting is just the greeting: the homes used
@@ -422,17 +422,9 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
         </>
       )}
         </div>
-        {hero ? (
-          /* The role's mark on the card: a crisp round well with the glyph and
-             a small spark at its top-right (docs §133.8). Only from xl, where
-             the figure used to stand; the hero spans the page there (§144). */
-          <div data-keep-icon="" data-hero-figure="" className="relative hidden xl:block" aria-hidden="true">
-            <span className="flex h-28 w-28 items-center justify-center rounded-full bg-white/15 text-primary-foreground">
-              <CfbGlyph name={ROLE_GLYPH[role] ?? 'spark'} className="h-14 w-14" />
-            </span>
-            <CfbGlyph name="spark" className="absolute -right-1 -top-1 h-6 w-6 text-primary-foreground" />
-          </div>
-        ) : band ? (
+        {/* The hero carries no figure: its round well and spark (§133.8)
+            added nothing to read or do and crowded the card (docs §145). */}
+        {band ? (
           /* The same idea in the band's palette: a smaller tinted well with
              the role glyph, from xl (docs §135 A4). */
           <div data-keep-icon="" data-hero-figure="" className="relative hidden xl:block" aria-hidden="true">

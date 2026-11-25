@@ -376,6 +376,10 @@ export function AppShell({
     // /matches, pitch-deck) lands on this wrapper instead — same clipping.
     <div className={cn(
       'w-full space-y-5',
+      // A header that shows nothing (its title for screen readers only, no
+      // field) still counted for `space-y`: the hero or band began 20px
+      // lower than on any other page (docs §145).
+      titleSrOnly && !showAskAi && '[&>header+*]:!mt-0',
       insideFrame && contentClassName,
     )}>
       {headerShown && (
@@ -383,6 +387,9 @@ export function AppShell({
           className={cn(
             'space-y-3 [container-type:inline-size]',
             headerBanded && cn('rounded-2xl px-3 py-3 sm:rounded-3xl sm:px-6 sm:py-5', bandBg),
+            // With the title for screen readers only and no field beside it,
+            // the header shows nothing: out of the flow (docs §145).
+            titleSrOnly && !showAskAi && 'sr-only',
           )}
         >
           {/* One header row, as in the AI Studio prototype (docs §64): the

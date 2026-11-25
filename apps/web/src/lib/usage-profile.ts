@@ -155,8 +155,8 @@ function update(change: (store: UsageStore) => UsageStore): UsageStore {
 
 /* ── What counts as a page ───────────────────────────────────────────── */
 
-/** Pages nobody needs a shortcut to: the homes, sign-in, onboarding, the demo door. */
-const NOT_A_SHORTCUT = /^\/($|dashboard(\/|$)|login|register|forgot-password|reset-password|verify|auth|onboarding|demo|unauthorized|offline|privacy|terms|landing|pricing|p\/|invite\/|share\/)/;
+/** Pages nobody needs a shortcut to: the homes (/home first in every menu, docs §145), sign-in, onboarding, the demo door. */
+const NOT_A_SHORTCUT = /^\/($|home($|\/)|dashboard(\/|$)|login|register|forgot-password|reset-password|verify|auth|onboarding|demo|unauthorized|offline|privacy|terms|landing|pricing|p\/|invite\/|share\/)/;
 
 /**
  * The registry path a pathname belongs to: `/profiles/user-elena` counts as

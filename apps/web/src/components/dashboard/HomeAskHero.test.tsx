@@ -190,9 +190,9 @@ describe('HomeAskHero', () => {
 });
 
 describe('HomeAskHero hero card (docs §131.2, §133.4)', () => {
-  it('keeps the same box and submit inside the brand card, with the figure and three intents', () => {
+  it('keeps the same box and submit inside the brand card, with three intents and no figure (docs §145)', () => {
     render(<HomeAskHero role="founder" name="Alex" hero purposeEn="One line." />);
-    expect(document.querySelector('[data-hero-figure]')).toBeTruthy();
+    expect(document.querySelector('[data-hero-figure]')).toBeNull();
     expect(screen.getByText(/, Alex\.$/)).toBeTruthy();
     expect(screen.getByText('One line.')).toBeTruthy();
     const intents = screen.getByRole('group', { name: /Starting points/ });
@@ -214,16 +214,10 @@ describe('HomeAskHero hero card (docs §131.2, §133.4)', () => {
     expect(within(form).getByTestId('home-ask-submit')).toBeTruthy();
   });
 
-  it('offers the corner slot for the header tools and shows the role’s glyph well only from xl', () => {
+  it('offers the corner slot for the header tools and draws no role well (docs §145)', () => {
     const { container } = render(<HomeAskHero role="founder" hero />);
     expect(container.querySelector('[data-hero-actions]')).toBeTruthy();
-    const well = container.querySelector('[data-hero-figure]')!;
-    expect(well.className).toContain('hidden');
-    expect(well.className).toContain('xl:block');
-    expect(well.className).not.toContain('2xl:');
-    const round = well.querySelector('.rounded-full')!;
-    expect(round.className).toContain('h-28');
-    expect(round.className).toContain('bg-white/15');
+    expect(container.querySelector('[data-hero-figure]')).toBeNull();
   });
 });
 

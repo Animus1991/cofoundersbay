@@ -89,7 +89,10 @@ function DesktopTopBar() {
       className="sticky z-30 hidden h-14 items-center gap-3 border-b border-border/60 bg-background/90 px-4 backdrop-blur-md safe-x sm:flex"
     >
       <div className="min-w-0 flex-1" />
-      {/* The ask surface, not a second input: the pill opens the assistant. */}
+      {/* The ask surface, not a second input: the pill opens the assistant.
+          Not on /home, whose hero field asks the same assistant a few pixels
+          lower (docs §145). */}
+      {pathname === '/home' ? null : (
       <button
         type="button"
         onClick={openAsk}
@@ -101,6 +104,7 @@ function DesktopTopBar() {
           <BilingualText en="Ask or search…" el="Ρωτήστε ή αναζητήστε…" compact />
         </span>
       </button>
+      )}
       <div className="flex min-w-0 flex-1 items-center justify-end gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -74,6 +74,7 @@ describe('the star beside a page title (docs §110)', () => {
     expect(isPinnablePath('/matches')).toBe(true);
     expect(isPinnablePath('/messages')).toBe(true);
     expect(isPinnablePath('/dashboard/founder')).toBe(false);
+    expect(isPinnablePath('/home')).toBe(false);
     expect(isPinnablePath('/profiles/user-elena')).toBe(false);
     expect(isPinnablePath('/no-such-page')).toBe(false);
   });
