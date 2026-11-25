@@ -4569,8 +4569,10 @@ input[data-search-field][class~="border-input"]:focus-visible {
 }
 
 /* A fact is a value, and a value that starts a line starts with a capital
-   ("Cofounder", not "cofounder"): tags arrive as typed. */
-.facts-dotted > li::first-letter {
+   ("Cofounder", not "cofounder"): tags arrive as typed. A time is read on
+   from the fact before it, «6 στοιχεία · πριν 5 ημ.», and kept its small
+   letter everywhere else it is shown (docs §152). */
+.facts-dotted > li:not(:has(time))::first-letter {
   text-transform: uppercase;
 }
 

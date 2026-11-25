@@ -818,9 +818,12 @@ export default function ResearchBoardsPage() {
                   <BilingualText en={researchEn('templates_hint')} el={researchEl('templates_hint')} wrap />
                 </p>
               </div>
-              <Button type="button" variant="ghost" size="sm" className={BUILDER_BTN} onClick={() => setTemplatesDialogOpen(true)}>
+              {/* The section's way on, as the home's "All →" (docs §143): a
+                  grey ghost button read as a label (docs §152). */}
+              <button type="button" className="tap-extend-y group inline-flex shrink-0 items-center gap-1 text-sm font-medium text-primary-accessible hover:underline focus-ring" onClick={() => setTemplatesDialogOpen(true)}>
                 <BilingualText en={researchEn('templates_see_all')} el={researchEl('templates_see_all')} compact />
-              </Button>
+                <span data-keep-icon="" className="inline-flex" aria-hidden="true"><ArrowRight className="icon-sm transition-transform group-hover:translate-x-0.5" /></span>
+              </button>
             </div>
             <div className={cn(BOARD_GRID, 'gap-3')}>
               {BOARD_TEMPLATES.slice(0, 3).map((template) => (
