@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo, useId } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   CheckCircle2,
   AlertCircle,
+  Circle,
   ChevronRight,
   RefreshCw,
   Loader2,
@@ -188,13 +189,6 @@ function scoreColors(level: ScoreLevel): StatusChipClasses {
   return STATUS[SCORE_TONE[level]];
 }
 
-const SCORE_STROKE: Record<ScoreLevel, string> = {
-  excellent: 'hsl(var(--status-success-mark))',
-  good: 'hsl(var(--status-info-mark))',
-  'needs-work': 'hsl(var(--status-warning-mark))',
-  critical: 'hsl(var(--status-danger-mark))',
-};
-
 function readinessSignalText(pct: number): string {
   if (pct >= 70) return STATUS.success.text;
   if (pct >= 50) return STATUS.warning.text;
@@ -294,21 +288,16 @@ const NEXT_TIER: Record<ScoreLevel, { score: number; en: string; el: string } | 
 
 function ScoreEmblem({
   score,
-  dimensions,
   compact = false,
 }: {
   score: number;
-  dimensions: { key: string; pct: number; labelEn: string; labelEl: string }[];
   /**
-   * The phone's emblem (docs §115): a smaller ring with the same figure, the
-   * tier under it and no pips, so the weakest dimensions fit beside it. The
-   * dimensions stay links in that list and in the cards below.
+   * The phone's emblem (docs §115): a smaller ring with the same figure and
+   * the tier under it, so the weakest dimensions fit beside it.
    */
   compact?: boolean;
 }) {
-  const glowId = `cfb-score-glow-${useId().replace(/:/g, '')}`;
   const size = compact ? 128 : 184;
-  const pad = compact ? 0 : 24;
   const cx = size / 2;
   const cy = size / 2;
   const r = compact ? 54 : 78;
@@ -317,47 +306,47 @@ function ScoreEmblem({
   const colors = scoreColors(status);
   const next = NEXT_TIER[status];
   const ptsToNext = next ? next.score - score : 0;
-  const pipR = r + 16;
-  const wrap = size + pad * 2;
+
+  const tierChip = (
+    <span className={cn('page-stat-label rounded-full px-2.5 py-0.5 font-semibold leading-none', colors.bg, colors.text)}>
+      <BilingualText en={STATUS_LABEL[status].en} el={STATUS_LABEL[status].el} compact />
+    </span>
+  );
+  const toNext = next && ptsToNext > 0 ? (
+    <p className="text-xs tabular-nums text-muted-foreground">
+      <BilingualText
+        en={`${ptsToNext} ${readinessEn('pts_to')} ${next.en}`}
+        el={`${ptsToNext} ${readinessEl('pts_to')} ${next.el}`}
+        wrap
+      />
+    </p>
+  ) : null;
 
   return (
-    <div data-chart="" className="flex flex-col items-center gap-3">
-      <div className="relative" style={{ width: wrap, height: wrap }}>
-        {/* The image is the ring and the number; the dimension pips below are
-            links, and a link inside role="img" is flattened away for a screen
-            reader (axe nested-interactive). So the role wraps the picture and
-            the pips sit beside it. */}
-        <div
-          className="absolute inset-0"
-          role="img"
-          aria-label={bilingualAria(
-            `Overall readiness ${score} out of 100 — ${STATUS_LABEL[status].en}`,
-            `Συνολική ετοιμότητα ${score} στα 100 — ${STATUS_LABEL[status].el}`,
-          )}
-        >
-        {/* Separation is a 1px tint outline, not a haze: no blurred disc, no
-            glow filter, no inset shadow — they read as a stain on the card
-            seam beside this emblem. */}
-        <div
-          style={{ width: size, height: size }}
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/15 bg-primary/[0.04]"
-          aria-hidden="true"
-        />
+    /* On a phone the tier and the points to the next sit beside the ring, and
+       what to do next runs under them at the card's width: beside the ring
+       it was a 130px column of seven lines (docs §148). */
+    <div data-chart="" className={compact ? 'flex items-center gap-4' : 'flex flex-col items-center gap-3'}>
+      {/* The ring and the figure, nothing around them (docs §148). Two thin
+          rings, a tinted disc and six unlabelled dots had grown around the
+          gauge; the dots were links to the six cards right below, coloured
+          as the radar beside it already shows them. */}
+      <div
+        className="relative"
+        style={{ width: size, height: size }}
+        role="img"
+        aria-label={bilingualAria(
+          `Overall readiness ${score} out of 100 — ${STATUS_LABEL[status].en}`,
+          `Συνολική ετοιμότητα ${score} στα 100 — ${STATUS_LABEL[status].el}`,
+        )}
+      >
         <svg
           width={size}
           height={size}
           viewBox={`0 0 ${size} ${size}`}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-90"
+          className="-rotate-90"
           aria-hidden="true"
         >
-          <defs>
-            <radialGradient id={`${glowId}-fill`} cx="38%" cy="32%" r="70%">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="hsl(var(--card))" stopOpacity="0.9" />
-            </radialGradient>
-          </defs>
-          <circle cx={cx} cy={cy} r={r - 14} fill={`url(#${glowId}-fill)`} />
-          <circle cx={cx} cy={cy} r={r + 6} fill="none" stroke="hsl(var(--mint-ring, var(--mint-mark, var(--primary))))" strokeWidth={2} />
           <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--ring-gold-track))" strokeWidth={10} />
           <circle
             cx={cx}
@@ -369,58 +358,16 @@ function ScoreEmblem({
             strokeLinecap="round"
             strokeDasharray={`${(score / 100) * circ} ${circ}`}
           />
-          <circle cx={cx} cy={cy} r={r - 18} fill="none" stroke="hsl(var(--mint-ring, var(--mint-mark, var(--primary))))" strokeWidth={1.5} />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2" aria-hidden="true">
           <span className="score-emblem-figure font-bold leading-none tabular-nums tracking-tight">
             {score}
             <span className="text-sm font-medium text-muted-foreground">/100</span>
           </span>
-          {compact ? null : (
-            <span className={cn('page-stat-label rounded-full px-2.5 py-0.5 font-semibold leading-none', colors.bg, colors.text)}>
-              <BilingualText en={STATUS_LABEL[status].en} el={STATUS_LABEL[status].el} compact />
-            </span>
-          )}
+          {compact ? null : tierChip}
         </div>
-        </div>
-        {compact ? null : dimensions.map((dim, index) => {
-          const angle = (-90 + (index * 360) / dimensions.length) * (Math.PI / 180);
-          const x = pad + cx + pipR * Math.cos(angle);
-          const y = pad + cy + pipR * Math.sin(angle);
-          const pipStatus = scoreToStatus(dim.pct);
-          return (
-            <a
-              key={dim.key}
-              href={`#dim-${dim.key}`}
-              title={bilingualAria(`${dim.labelEn} ${dim.pct}%`, `${dim.labelEl} ${dim.pct}%`)}
-              aria-label={bilingualAria(
-                `${dim.labelEn} ${dim.pct}%`,
-                `${dim.labelEl} ${dim.pct}%`,
-              )}
-              className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-background transition-transform hover:scale-125"
-              style={{
-                left: x,
-                top: y,
-                backgroundColor: SCORE_STROKE[pipStatus],
-              }}
-            />
-          );
-        })}
       </div>
-      {compact ? (
-        <span className={cn('page-stat-label rounded-full px-2.5 py-0.5 font-semibold leading-none', colors.bg, colors.text)}>
-          <BilingualText en={STATUS_LABEL[status].en} el={STATUS_LABEL[status].el} compact />
-        </span>
-      ) : null}
-      {next && ptsToNext > 0 && (
-        <p className="text-xs tabular-nums text-muted-foreground">
-          <BilingualText
-            en={`${ptsToNext} ${readinessEn('pts_to')} ${next.en}`}
-            el={`${ptsToNext} ${readinessEl('pts_to')} ${next.el}`}
-            wrap
-          />
-        </p>
-      )}
+      {compact ? <div className="flex flex-col items-start gap-1.5">{tierChip}{toNext}</div> : toNext}
     </div>
   );
 }
@@ -499,6 +446,9 @@ function DimensionCard({
                   <BilingualText en={statusCopy.en} el={statusCopy.el} compact />
                 </Badge>
               )}
+              /* The Ask is its spark on a phone (docs §147), so it keeps the
+                 title's row there instead of a line of its own (docs §148). */
+              asideStays
               aside={(
                 <AIInsightButton
                   variant="card"
@@ -551,7 +501,7 @@ function DimensionCard({
                 >
                   {c.completed
                     ? <CheckCircle2 className={cn('mt-0.5 icon-sm shrink-0', STATUS.success.icon)} />
-                    : <AlertCircle className="mt-0.5 icon-sm shrink-0 text-muted-foreground/50" />}
+                    : <Circle className="mt-0.5 icon-sm shrink-0 text-muted-foreground/60" />}
                   <span className={cn('min-w-0 flex-1 leading-snug', c.completed && 'text-muted-foreground')}>
                     <BilingualText en={c.name} el={c.nameEl} compact wrap />
                   </span>
@@ -577,8 +527,11 @@ function DimensionCard({
 
             {status === 'excellent' && (
               <div className="mt-auto space-y-2.5 border-t border-border pt-3">
-                <p className="mb-1.5 flex items-center gap-2 text-xs font-semibold">
-                  <CheckCircle2 className={cn('icon-sm shrink-0', STATUS.success.icon)} />
+                <p className={cn('mb-1.5 flex items-center gap-2 text-xs', remaining.length ? 'text-muted-foreground' : 'font-semibold')}>
+                  {/* A tick beside "What is left" said done about what is not
+                      (docs §148); it stays for "Fully covered". The label
+                      reads like the other cards' "Advice". */}
+                  {remaining.length ? null : <CheckCircle2 className={cn('icon-sm shrink-0', STATUS.success.icon)} />}
                   <BilingualText
                     en={remaining.length ? 'What is left' : 'Fully covered'}
                     el={remaining.length ? 'Τι απομένει' : 'Πλήρως καλυμμένη'}
@@ -984,14 +937,21 @@ export default function ReadinessPage() {
       <BilingualText en={readinessEn('reassess')} el={readinessEl('reassess')} compact />
     </Button>
   );
-  const reassessAction = (
+  const modeSwitch = (className?: string) => (
+    <Button variant="outline" size="sm" className={className} disabled={!mode || toggleMutation.isPending} onClick={() => setMode(isDemo ? 'live' : 'demo')}>
+      <BilingualText en={isDemo ? 'View live readiness' : 'View demo showcase'} el={isDemo ? readinessEl('view_live_readiness') : readinessEl('view_demo_showcase')} compact />
+    </Button>
+  );
+  /* The showcase's header carries nothing: its Reassess could never run (the
+     demo recalculates as you tick) and its way out belongs with the banner
+     that says it is a demo, which now holds it. Seven controls shared the
+     header's row at 1910 (docs §148). */
+  const reassessAction = isDemo ? undefined : (
     <div className="flex flex-wrap gap-2.5">
       {/* No Ask AI here: AppShell renders one from `askAi`, and that one carries
           this page's readiness prompt. This was a second, promptless copy of
           the same button sitting immediately beside it. */}
-      <Button variant="outline" size="sm" disabled={!mode || toggleMutation.isPending} onClick={() => setMode(isDemo ? 'live' : 'demo')}>
-        <BilingualText en={isDemo ? 'View live readiness' : 'View demo showcase'} el={isDemo ? readinessEl('view_live_readiness') : readinessEl('view_demo_showcase')} compact />
-      </Button>
+      {modeSwitch()}
       {reassessButton}
     </div>
   );
@@ -1334,11 +1294,16 @@ export default function ReadinessPage() {
                 el="Επίδειξη — σημειώστε ελεύθερα κριτήρια· οι βαθμολογίες επανυπολογίζονται και τίποτα δεν αποθηκεύεται."
               />
             </span>
-            {!overlayIsEmpty(demoOverlay) && (
-              <Button variant="outline" size="sm" onClick={() => setDemoOverlay(resetReadinessOverlay())}>
-                <BilingualText en="Reset the demo" el="Επαναφορά επίδειξης" compact />
-              </Button>
-            )}
+            <span className="flex flex-wrap items-center gap-2">
+              {!overlayIsEmpty(demoOverlay) && (
+                <Button variant="outline" size="sm" className="bg-card" onClick={() => setDemoOverlay(resetReadinessOverlay())}>
+                  <BilingualText en="Reset the demo" el="Επαναφορά επίδειξης" compact />
+                </Button>
+              )}
+              {/* The card's fill: on the blue banner the outline's 1px edge
+                  all but vanished and the button read as a sentence. */}
+              {modeSwitch('bg-card')}
+            </span>
           </div>
         )}
 
@@ -1346,7 +1311,9 @@ export default function ReadinessPage() {
         {/* One card now: the two audience readouts moved to the rail, so the
             gauge no longer shares a row with two restatements of itself. */}
         <div className="grid min-w-0 flex-[1_1_36rem] grid-cols-1 gap-5">
-          <Card className="min-w-0 overflow-hidden border-0 bg-primary/[0.03] lg:col-span-1">
+          {/* The page's own card, as the radar beside it and the six below: a
+              borderless tinted block read as another kind of thing (docs §148). */}
+          <Card className="min-w-0 overflow-hidden lg:col-span-1">
             {/* The card's head first, on the card's axis; the emblem and what
                 to do next under it. Beside the emblem the title started 310px
                 in from the card's edge at 1440. */}
@@ -1374,19 +1341,10 @@ export default function ReadinessPage() {
               </div>
               {/* On a phone the smaller emblem, with what to do next and the
                   weakest dimensions beside it (docs §115); from sm as before. */}
-              <div className="flex flex-row items-start gap-4 sm:flex-col sm:gap-5 lg:flex-row lg:items-center lg:gap-8">
+              <div className="flex flex-col items-start gap-4 sm:gap-5 lg:flex-row lg:items-center lg:gap-8">
               {([true, false] as const).map((compact) => (
                 <div key={String(compact)} className={compact ? 'shrink-0 sm:hidden' : 'max-sm:hidden'}>
-                  <ScoreEmblem
-                    compact={compact}
-                    score={overallScore}
-                    dimensions={dimensions.map((d) => ({
-                      key: d.key,
-                      pct: Math.round((d.score / d.maxScore) * 100),
-                      labelEn: d.labelEn,
-                      labelEl: d.labelEl,
-                    }))}
-                  />
+                  <ScoreEmblem compact={compact} score={overallScore} />
                 </div>
               ))}
               <div className="flex min-w-0 w-full flex-1 flex-col items-start gap-4">

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ReadinessPage from './page';
 import { assessReadiness, updateReadinessCriterion } from '@/lib/api';
@@ -148,7 +148,8 @@ describe('live readiness and explicit showcase isolation', () => {
     fireEvent.click(criterion);
     await waitFor(() => expect(screen.getAllByText('2/5').length).toBeGreaterThan(0));
 
-    expect((screen.getByRole('button', { name: /Reassess/i }) as HTMLButtonElement).disabled).toBe(true);
+    // The showcase has nothing to reassess: it recalculates as you tick (docs §148).
+    expect(screen.queryByRole('button', { name: /Reassess/i })).toBeNull();
     expect(assessReadiness).not.toHaveBeenCalled();
     expect(updateReadinessCriterion).not.toHaveBeenCalled();
   });
@@ -201,10 +202,17 @@ describe('live readiness and explicit showcase isolation', () => {
     expect(screen.getByText('Dimensions under 60%')).toBeTruthy();
     expect(screen.getByRole('button', { name: /Ask AI\. Ρωτήστε το AI: Team readiness/ })).toBeTruthy();
     expect(screen.getByText('In the side panel:')).toBeTruthy();
-    const reassess = screen.getByRole('button', { name: /Reassess/i });
-    expect(reassess.getAttribute('title')).toMatch(/The demo recalculates as you tick/);
-    // Described by the banner already on screen, not by a second printed line.
-    expect(document.getElementById(reassess.getAttribute('aria-describedby') ?? '')?.textContent).toMatch(/Demo showcase/);
+    // The way out of the showcase sits in the banner that names it (docs §148).
+    const banner = document.getElementById('readiness-demo-note')!.closest('[role="status"]')!;
+    expect(within(banner as HTMLElement).getByRole('button', { name: 'View live readiness' })).toBeTruthy();
+  });
+
+  it('draws the overall score as the ring and its figure, with no unlabelled dots (docs §148)', async () => {
+    localStorage.setItem('cfb_demo_data', '1');
+    mount();
+    const ring = (await screen.findAllByRole('img', { name: /Overall readiness \d+ out of 100/ }))[0];
+    expect(ring.querySelectorAll('circle')).toHaveLength(2);
+    expect(document.querySelector('a[href^="#dim-"].h-3')).toBeNull();
   });
 
   it('lets a live account explicitly view sample readiness without a workspace mutation', async () => {

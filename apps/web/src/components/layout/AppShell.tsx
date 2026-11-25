@@ -449,18 +449,6 @@ export function AppShell({
                     <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
                       <BilingualText en={pageTitle} el={pageTitleEl} />
                     </h1>
-                    {showAskAi && !titleSrOnly ? (
-                      <button
-                        type="button"
-                        aria-expanded={askOpen}
-                        aria-controls="page-ask-ai"
-                        aria-label={bilingualAria('Ask about this page', 'Ρωτήστε για αυτή τη σελίδα')}
-                        onClick={openAsk}
-                        className="ml-auto inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:hidden"
-                      >
-                        <Sparkles className="icon-md" aria-hidden="true" />
-                      </button>
-                    ) : null}
                   </div>
                 )}
                 {pageDescription && (leadAsHint ? (
@@ -476,7 +464,7 @@ export function AppShell({
                   </div>
                 ) : <PageLead en={pageDescription} el={pageDescriptionEl} />)}
               </div>
-              {!titleSrOnly && (actions || showHelp || pinnable) && (
+              {!titleSrOnly && (actions || showHelp || pinnable || showAskAi) && (
                 // One group from `sm`. On a phone its two halves take their own
                 // grid places: a row for the star and help alone cost 48px on
                 // every page, so they stand beside the ask field instead. In
@@ -484,8 +472,26 @@ export function AppShell({
                 // corner instead — see below.
                 <div className="contents sm:flex sm:shrink-0 sm:flex-wrap sm:items-center sm:justify-end sm:gap-2 sm:[grid-area:actions]" data-page-actions="">
                   {actions ? <div className="flex min-w-0 flex-wrap items-center gap-2 [grid-area:actions] sm:contents">{actions}</div> : null}
-                  {pinnable || showHelp ? (
+                  {pinnable || showHelp || showAskAi ? (
                     <div className="flex items-center gap-2 self-center [grid-area:tools] sm:contents">
+                      {/* A phone's "Ask about this page" opens the field; it
+                          stands with the star and help, the header's other
+                          two tools. At the title's end it met the page-tools
+                          icon in the corner (docs §148). */}
+                      {showAskAi ? (
+                        <button
+                          type="button"
+                          aria-expanded={askOpen}
+                          aria-controls="page-ask-ai"
+                          aria-label={bilingualAria('Ask about this page', 'Ρωτήστε για αυτή τη σελίδα')}
+                          onClick={openAsk}
+                          data-keep-icon=""
+                          data-phone-ask=""
+                          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground focus-ring sm:hidden"
+                        >
+                          <Sparkles className="icon-sm" aria-hidden="true" />
+                        </button>
+                      ) : null}
                       {pinnable && <PinPageButton />}
                       {showHelp && <PageContextualHelp compact defaultOpen={false} />}
                     </div>

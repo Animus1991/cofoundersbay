@@ -198,7 +198,7 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
   accelerators_cohorts: { en: 'Accelerators & cohorts', el: 'Επιταχυντές & ομάδες' },
 
   // ── Mode / AI / explainability ──
-  view_live_readiness: { en: 'View live readiness', el: 'Πραγματική ετοιμότητα' },
+  view_live_readiness: { en: 'View live readiness', el: 'Δείτε την πραγματική ετοιμότητα' },
   view_demo_showcase: { en: 'View demo showcase', el: 'Προβολή επίδειξης' },
   ask_ai: { en: 'Ask AI', el: 'Ρωτήστε το AI' },
   ask_ai_plan: {
@@ -206,7 +206,7 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
     el: 'Ρωτήστε το AI για πλάνο ετοιμότητας',
   },
   next_open: { en: 'Next to tick', el: 'Επόμενο προς ολοκλήρωση' },
-  pts_to: { en: 'pts to', el: 'μον. έως' },
+  pts_to: { en: 'points to', el: 'μονάδες ως το' },
   jump_to: { en: 'Jump to dimension', el: 'Μετάβαση στη διάσταση' },
   expert_review: { en: 'Expert review', el: 'Αξιολόγηση ειδικού' },
   expert_review_hint: { en: 'Get a specialist to score this', el: 'Αξιολόγηση από ειδικό' },

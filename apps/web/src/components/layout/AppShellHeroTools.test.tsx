@@ -71,4 +71,19 @@ describe('header tools in hero mode (docs §133.5)', () => {
     expect(container.querySelectorAll('header [data-global-tools="inline"]')).toHaveLength(1);
     pathname = '/home';
   });
+
+  it('puts a phone’s "Ask about this page" with the star and help, not at the title’s end (docs §148)', () => {
+    pathname = '/jobs';
+    const { container } = render(
+      <AppShell title="Jobs" titleEl="Θέσεις">
+        <HeroCard />
+      </AppShell>,
+    );
+    const ask = container.querySelector('[data-phone-ask]')!;
+    expect(ask).toBeTruthy();
+    expect(ask.closest('[data-page-header]')).toBeNull();
+    expect(ask.parentElement!.querySelector('[data-testid="pin-current-page"]')).toBeTruthy();
+    expect(ask.className).toContain('sm:hidden');
+    pathname = '/home';
+  });
 });
