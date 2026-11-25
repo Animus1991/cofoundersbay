@@ -10,7 +10,7 @@ import {
   getAnalyticsAchievements,
   getAnalyticsOverview,
 } from '@/lib/api';
-import { ArrowUp, ArrowDown, ArrowRight, RefreshCw } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowRight, ChevronDown, RefreshCw } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { ProfileViewersCard } from '@/components/analytics/ProfileViewersCard';
@@ -220,9 +220,10 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
           </Link>
         ))}
         {conversion !== null && (
-          <p className="page-stat-label pt-1 font-semibold tabular-nums text-foreground">
-            {conversion}%{' '}
-            <span className="font-normal text-muted-foreground">
+          <p className="page-stat-label pt-1 tabular-nums text-foreground">
+            {/* The reader's decimal mark: «6,9%» in Greek, where it read «6.9%» (docs §149). */}
+            <span className="font-semibold"><BilingualText en={`${conversion.toLocaleString('en-GB')}%`} el={`${conversion.toLocaleString('el-GR')}%`} compact /></span>{' '}
+            <span className="text-muted-foreground">
               <BilingualText en={analyticsEn('view_to_connect')} el={analyticsEl('view_to_connect')} wrap />
             </span>
           </p>
@@ -680,12 +681,21 @@ export default function AnalyticsPage() {
             <AnalyticsSkeleton />
           ) : (
             <>
-              {/* The window is chosen in the rail; the column says which one every figure below is for. */}
+              {/* The window is chosen in the rail; the column says which one every
+                  figure below is for. The pill looked like a button and did
+                  nothing: it now opens the rail's Period, the one place the
+                  window is changed (docs §149). */}
               <p className="page-stat-label flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-muted-foreground">
-                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 font-medium text-foreground">
-                  <CfbGlyph name="calendar" className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                <button
+                  type="button"
+                  onClick={() => openRailSection('period')}
+                  aria-label={bilingualAria(`Period: ${PERIOD_LABEL[period].en}. Change it`, `Περίοδος: ${PERIOD_LABEL[period].el}. Αλλαγή`)}
+                  data-period-chip=""
+                  className="inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 font-medium text-foreground transition-colors hover:border-primary/30 focus-ring"
+                >
                   <BilingualText en={PERIOD_LABEL[period].en} el={PERIOD_LABEL[period].el} compact />
-                </span>
+                  <span data-keep-icon="" className="inline-flex" aria-hidden="true"><ChevronDown className="icon-sm text-muted-foreground" /></span>
+                </button>
                 {/* The signed figure on each tile is a change; the first sentence says
                     against what (docs §79). One text, so it runs on as one line. */}
                 <span className="min-w-0"><BilingualText
@@ -742,14 +752,14 @@ export default function AnalyticsPage() {
                 ))}
               </div>
 
-              {profileViews && profileViews.length > 0 ? (
-                <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-2">
-                  <ProfileViewsChart data={profileViews} />
-                  {metrics.length > 0 && <ProfileFunnel metrics={metrics} />}
-                </div>
-              ) : (
-                metrics.length > 0 && <ProfileFunnel metrics={metrics} />
-              )}
+              {/* The views trend is the Growth tab's chart, where the Profile
+                  views tile opens; it was drawn here too, the same chart with
+                  the same exports. Beside the funnel now: who those views
+                  were, which sat alone on Growth (docs §149). */}
+              <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-2">
+                {metrics.length > 0 && <ProfileFunnel metrics={metrics} />}
+                <ProfileViewersCard />
+              </div>
 
               {weeklySummary && [weeklySummary.mostActiveDay, weeklySummary.peakHour, weeklySummary.avgResponseTime, weeklySummary.totalInteractions].some((value) => value !== null && value !== undefined && value !== '') && (
                 <Card className="min-w-0">
@@ -843,9 +853,9 @@ export default function AnalyticsPage() {
                   )}
                 />
               )}
-              <ProfileViewersCard />
               {/* The Overview's six tiles were repeated here; they stay on the
-                  Overview (owner, 2026-10-28; docs §80.2, §111). */}
+                  Overview (owner, 2026-10-28; docs §80.2, §111). Who viewed
+                  the profile moved to the Summary, beside the funnel (§149). */}
             </>
           )}
         </TabsContent>

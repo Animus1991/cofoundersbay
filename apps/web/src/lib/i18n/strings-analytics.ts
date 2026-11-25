@@ -52,7 +52,7 @@ export const ANALYTICS_STRINGS: Record<string, BilingualPair> = {
   // A failed read is said as one (docs §73): not read just now, with Try again.
   load_failed: { en: 'Your analytics could not be read just now.', el: 'Τα αναλυτικά σας δεν διαβάστηκαν αυτή τη στιγμή.' },
   try_again: { en: 'Try again', el: 'Δοκιμάστε ξανά' },
-  tab_overview: { en: 'Overview', el: 'Επισκόπηση' },
+  tab_overview: { en: 'Summary', el: 'Σύνοψη' },
   tab_engagement: { en: 'Engagement', el: 'Αφοσίωση' },
   tab_growth: { en: 'Growth', el: 'Ανάπτυξη' },
   metric_views: { en: 'Profile Views', el: 'Προβολές προφίλ' },
