@@ -10519,3 +10519,49 @@ Rendered sweep (`platform-sweep.mjs`, `platform_admin`, demo), 149 στατικ�
 - Τα στάδια του βοηθού φαίνονται μόνο με πραγματικό μοντέλο· το demo απαντά πριν ζωγραφιστούν. Μετρήθηκαν σε jsdom.
 - Η συγχώνευση στο main.
 - Έξι σελίδες έχουν ξενάγηση (achievements, activity, builder, founder-dashboard, matches, research)· οι υπόλοιπες αρχικές ρόλων όχι.
+
+## 153. Γύρος 2026-11-25 — Spec C: η ασυμφωνία hydration, η κάρτα της ροής, και οι υπόλοιπες επισκοπήσεις ρόλων
+
+### 153.1 C1 — η ασυμφωνία hydration
+
+Ένα probe του Playwright είχε πιάσει μία φορά `A tree hydrated but some attributes of the server rendered HTML didn't match` στο `/settings` (1920, ΕΛ, Mint), χωρίς να ξαναπιαστεί. Με επαναλήψεις φόρτωσης (`hydra-repeat.mjs`, console κανάλι καταγεγραμμένο) το ίδιο ξαναβγήκε 9/10 στα Ελληνικά και 0/6 στα Αγγλικά. Το διάχωρο γνώρισμα: το `aria-label` του placeholder κουμπιού του `LanguageSwitcher` (στο `GlobalTools inline` της κεφαλίδας) — ο server έγραφε «Language», το hydration render «Γλώσσα».
+
+Ο μηχανισμός: το `useI18n` κρατούσε το `locale` σε `useState` που γύριζε στο αποθηκευμένο `'el'` από mount effect. Το `/settings` (όπως και τα `/messages`, `/search`, το auth shell — ό,τι page καλεί `useSearchParams`) τυλίγεται σε `<Suspense>`· οι υποοθήκες του Next ενυδατώνονται αργότερα, μετά που το effect είχε ήδη γυρίσει το locale, οπότε η καθυστερημένη hydration render υπολόγιζε `t()` στα ελληνικά πάνω στο αγγλικό server markup — React #418. Ο ίδιος κίνδυνος ήταν ήδη σημειωμένος στον §89 («the page hydrates after the language applies»).
+
+Η λύση δεν είναι `useSyncExternalStore` στον provider: το React τιμά το server snapshot μόνο στον fiber που ενυδατώνει εκείνη τη στιγμή, άρα ένας provider που έχει ήδη κάνει mount δίνει στο αργοπορημένο boundary τη νέα τιμή — το μέτρησε και το αποτυχημένο test. Το snapshot διαβάζεται πια **ανά καταναλωτή, μέσα στο `useI18n`**: κάθε hydration render, όσο αργά κι αν φτάσει η υποοθήκη, αποτιμά `t()` στα αγγλικά όπως ο server, και το αποθηκευμένο locale εφαρμόζεται αμέσως μετά. Παράπλευρο κέρδος: στις πελατειακές πλοηγήσεις οι καταναλωτές βλέπουν το σωστό locale από το πρώτο render, χωρίς το αγγλικό flash που έκανε το `useState`+effect.
+
+Test (`I18nProvider.test.tsx`): αναπαράγει πραγματική ροή SSR (`renderToPipeableStream`) με εκκρεμή Suspense υποοθήκη, ενυδατώνει το shell και — αφού το αποθηκευμένο `'el'` έχει διαβαστεί — εκτελεί το `$RC` script που το ίδιο το React stream εξέδωσε, όπως κάνει ο browser. Χωρίς τη διόρθωση αποτυγχάνει με ακριβώς το ίδιο diff (`aria-label="Γλώσσα"` έναντι `"Language"`)· με τη διόρθωση περνά και η ετικέτα καταλήγει «Γλώσσα». Στον browser: `/settings` 0/12, `/settings/ai` 0/6, `/search` 0/6 προειδοποιήσεις σε ΕΛ (πριν 9/10).
+
+### 153.2 C2 — νεκρός κώδικας και η κάρτα της ροής
+
+`CreatePost` (composer με Dialog) εισαγόταν μόνο από το δικό του test — νεκρός, όχι λειτουργία. Διαγράφηκε με το test, την εξαγωγή του barrel και την εγγραφή του στο `factPills`. Η τοπική `PostCard` του `/feed` ήταν η ζωντανή (το shared `components/feed/PostCard` δεν στεκόταν πουθενά)· πέρασε στο shared path ως η μία κάρτα, με όλα της (CardHead/CardFoot, view tracking, % match, report menu, το κουτί σχολίων που εξηγεί ότι δεν αποθηκεύει ακόμα). Commit `7f5de5d1`.
+
+Στις σελίδες του C3 τα «τοπικά twins»: οι περισσότερες είναι ξαδέρφια με διαφορετικά δεδομένα, όχι διπλότυπα. Η πέντε-αστέρων σειρά όμως ήταν ίδια σε `/mentor/reviews` και `/provider/reviews` — έγινε ένα `components/common/StarRating` (data-keep-icon, `role="img"` με δίγλωσσο aria-label· η έκδοση του provider τα απέκτησε τώρα). Τα τοπικά `StatCard` (`org/[slug]/admin`) και `MetricCard` (`/provider/analytics`) έχουν άλλη ανατομία από το `MetricTile` (νόμισμα/ποσοστό/«vs last period»)· δεν ενοποιήθηκαν — σημειώνονται.
+
+### 153.3 C3 — οι επισκοπήσεις των υπόλοιπων ρόλων
+
+Μέτρηση πρώτα στα 1910/1280/820/390 (`sweep.mjs`, 37 διαδρομές). Οι τέσσερις επισκοπήσεις (`/dashboard/{mentor,investor,incubator,provider}`) είχαν ήδη τον §147 σκελετό: `HomeAskHero band`, `HomeToday`, `HomeNextStep`, `HomeFold`, `SectionCard` με `SectionLink`, `MetricTile` με οικογένειες, δείγματα με ηλικίες και όχι ημερομηνίες. Ό,τι έμενε ήταν ακριβώς το ανοιχτό του §147.3:
+
+- **Τα λευκά `neutral` πλακίδια** ανάμεσα στα χρωματιστά πήραν οικογένεια: μέντορας «Μέση βαθμολογία» → `time` (ο αστέρης στο κεχριμπαρένιο)· επενδυτής «Ροή συμφωνιών» → `people`· πάροχος «Ενεργά έργα» → `time`, «Ενεργές υπηρεσίες» → `money`, «Βαθμολογία» → `time`.
+- **Οι κεφαλίδες καρτών**: «View all»/«Manage» → «All»/«Όλα·Όλες·Όλοι», όπως τα `SectionLink` της Αρχικής (§143).
+
+Οι ~28 υποσελίδες (`/mentor/*`, `/investor/*`, `/org/*`, `/provider/*`) ήταν ήδη στο επίπεδο — `CardHead`/`CardFoot` ανατομία, `FailedLine`/`EmptyLine`, δείγματα gated και χωρίς νεκρά controls — δεν γύρισαν χωρίς λόγο.
+
+### 153.4 C4 — τα interiors των οικογενειών εργασίας
+
+`/commitments` (+`/new`), `/projects` (+`/create`), `/milestones` (+`/new`): ίδια μέθοδος, ελαφρύ χέρι. Και τα έξι φέρνουν ήδη `CardHead`/`CardFoot`, pin, ask και κανένα σφάλμα στα 1910 και 390 — αμετάβλητα, όπως λέει ο κανόνας «αν είναι στο επίπεδο, πες το και προχώρα».
+
+### 153.5 C5 — ο έλεγχος συνοχής
+
+- **Εργαλεία στη ζώνη:** 6 σελίδες με band (`/home`, οι 4 επισκοπήσεις, `/dashboard/founder`) στα 1280 και 1024 — 0 επικαλύψεις εργαλείων/τίτλου, 0 οριζόντια κύλιση.
+- **Το αστέρι:** `/home` και τα `/dashboard/*` δεν είναι pinnable εκ σχεδίου (`NOT_A_SHORTCUT` — οι αρχικές είναι σημεία εκκίνησης, όχι συντομεύσεις)· κάθε άλλη σελίδα του sweep δείχνει το αστέρι (pin=1 σε 33/37).
+- **Το ask:** παρούσα σε κάθε σελίδα (ask=1 σε όλες, εκτός auth/legal/public όπως πάντα).
+- **Καμία υποχώρηση:** κανένα πρώτο πλαίσιο >340px (cov≤203 στα 390, ≤150 στα 1910) και καμία στοιβαγμένη γραμμή κειμένου ≥140ch — τα ~196ch που δείχνει ο μετρητής είναι πλαίσια `li`/τίτλων πλήρους πλάτους (flex rows), όχι γραμμές ανάγνωσης· ισχύει και στο ήδη-γραμμένο `/home` (198ch).
+
+### 153.6 PARITY και επαλήθευση
+
+**PARITY:** τίποτα λειτουργικό δεν αφαιρέθηκε — `CreatePost` ήταν unreachable code, οι κάρτες/σύνδεσμοι/φίλτρα/ενέργειες όλων των σελίδων μένουν.
+
+- Web `tsc --noEmit`: 0. Vitest web: 329 αρχεία, 2087/2087. `check-theme-contrast.py`: 0 κάτω από 4.5:1 σε όλα τα θέματα. ESLint στα αρχεία που άλλαξαν: κανένα νέο warning (το `Date.now()` του incubator και το `setNow` του reviews προϋπήρχαν· το `catalogTick` στο `useI18n` φέρει σχόλιο ότι είναι επίτηδες — αλλιώς οι καταναλωτές κρατούν τον παλιό κατάλογο).
+- Sweeps (154 διαδρομές, console κανάλι καταγεγραμμένο): @1920 ΕΛ και ΑΓΓ, @390 ΕΛ και ΑΓΓ, @1440 ΕΛ, @1024 ΕΛ — **0 hydration warnings παντού**, 0 σφάλματα σελίδας, 0 xScroll, 0 ανώνυμα, 0 επικαλύψεις. Τα μόνα σημειωθέντα: οι redirect stubs (`/{mentor,org,provider}/dashboard` → `/dashboard/*`) βγάζουν -1 γιατί το `main` δεν στέκεται μέσα στην ανακατεύθυνση, 3 navigation timeouts από compile του dev server σε παράλληλα sweeps (`/investor/scouting`, `/mentor/mentees`, `/pricing` — καθαρά σε ξαναμέτρηση), και ένα transient `xs=1` στο `/discover` @1024 — ξαναμετρήθηκε καθαρό στα 1024/1280/1440.
+- Στιγμιότυπα των 37 σελίδων C3/C4 στα 1920 και 390 (Mint, ΕΛ) → `Temp\cfb-sweep\mockups\wave5\`.
