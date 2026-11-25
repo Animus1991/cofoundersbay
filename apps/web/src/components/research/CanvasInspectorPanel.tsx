@@ -255,7 +255,7 @@ export function CanvasInspectorPanel({
           </label>
         </div>
 
-        <div className={cn('mt-2 border-t border-border pt-2', idle && 'opacity-50')}>
+        <div className={cn('mt-2 border-t border-border pt-2', idle && 'hidden')}>
           <p className="mb-1.5 text-2xs font-medium text-muted-foreground">
             <BilingualText en={researchEn('note_text')} el={researchEl('note_text')} compact />
           </p>
@@ -299,7 +299,8 @@ export function CanvasInspectorPanel({
           </div>
         </div>
 
-        <div className={cn('mt-2 border-t border-border pt-2', idle && 'opacity-50')}>
+        {/* Arrange stays while a frame is isolated: its Reveal is the way back. */}
+        <div className={cn('mt-2 border-t border-border pt-2', idle && !isolated && 'hidden', idle && isolated && 'opacity-50')}>
           <p className="mb-1.5 text-2xs font-medium text-muted-foreground">
             <BilingualText en={researchEn('arrange')} el={researchEl('arrange')} compact />
           </p>
