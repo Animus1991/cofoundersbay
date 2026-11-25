@@ -89,7 +89,8 @@ function ProposalCard({ p, actions }: { p: ScoutProposal; actions: React.ReactNo
             // "90" alone said nothing; the word says what it measures (docs §84).
             <span className="rounded-md border border-primary-muted bg-primary-subtle px-2 py-0.5 text-xs tabular-nums text-foreground" title="Fit with your brief · Ταίριασμα με το σημείωμα">
               <span className="text-muted-foreground"><BilingualText en="Fit" el="Ταίριασμα" compact /></span>{' '}
-              <span className="font-bold">{p.score}</span>
+              {/* Points out of 100, not a percentage of anything (docs §154). */}
+              <span className="font-bold">{p.score}</span><span className="text-muted-foreground">/100</span>
             </span>
           )}
         />
@@ -353,7 +354,10 @@ function ScoutContent() {
             ) : null}
             <DraftOffer offer={unsaved.offer} onRestore={unsaved.restore} onDiscard={unsaved.discard} />
             <form
-              className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+              /* Four columns from xl: role and skills, then where, remote,
+                 commitment and stage on one row. Each short value had a
+                 1,560px field of its own at 1910 (docs §154). */
+              className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
               onSubmit={(e) => {
                 e.preventDefault();
                 saveBrief.mutate();
@@ -393,12 +397,12 @@ function ScoutContent() {
                   ))}
                 </select>
               </div>
-              <div className="space-y-1.5 sm:col-span-2">
+              <div className="space-y-1.5 sm:col-span-2 xl:col-span-4">
                 <Label htmlFor="scout-note"><BilingualText en="Anything else (optional)" el="Κάτι ακόμη (προαιρετικά)" compact /></Label>
                 <Textarea id="scout-note" rows={2} maxLength={SCOUT_LIMITS.note} value={draft.note} onChange={set('note')} />
               </div>
-              {problem ? <p role="alert" className="text-sm text-destructive-accessible sm:col-span-2"><BilingualText en={problem.en} el={problem.el} wrap /></p> : null}
-              <div className="flex flex-wrap gap-2 sm:col-span-2">
+              {problem ? <p role="alert" className="text-sm text-destructive-accessible sm:col-span-2 xl:col-span-4"><BilingualText en={problem.en} el={problem.el} wrap /></p> : null}
+              <div className="flex flex-wrap gap-2 sm:col-span-2 xl:col-span-4">
                 <Button type="submit" disabled={!draft.role.trim() || saveBrief.isPending}><BilingualText en="Save brief" el="Αποθήκευση σημειώματος" compact /></Button>
                 <Button type="button" variant="outline" disabled={!brief || run.isPending} title={brief ? undefined : 'Write a brief first · Γράψτε πρώτα ένα σημείωμα'} onClick={() => void runNow()}>
                   <BilingualText en="Run now" el="Εκτέλεση τώρα" compact />
