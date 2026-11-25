@@ -320,7 +320,7 @@ export function CanvasInspectorPanel({
           </div>
         </div>
 
-        <div className="mt-2 border-t border-border pt-2">
+        <div className={cn('mt-2 border-t border-border pt-2', idle && 'hidden')}>
           <p className="mb-1.5 flex items-center gap-1.5 text-2xs font-medium text-muted-foreground">
             <LinkIcon className="icon-sm" />
             <BilingualText en={researchEn('link_to')} el={researchEl('link_to')} compact />
