@@ -10,6 +10,8 @@ import { useInvestorFollowUps, type FollowUpLead } from '@/lib/follow-ups';
 import { isMilestoneOverdue } from '@/lib/milestone-order';
 import { PREVIEW_MILESTONE_EL } from '@/lib/i18n/strings-milestones';
 import { qk } from '@/lib/query-keys';
+import { useRoleOptional } from '@/contexts/RoleContext';
+import { starterAudience } from '@/lib/copilot-starters';
 
 export type LiveNotice = { key: string; href: string; en: string; el: string; /** Shown after the words, as every waiting row shows its count. */ count?: number };
 
@@ -57,11 +59,18 @@ export function liveNotices({ followUps, milestones, threads }: {
 
 /** What is due now and who reads it: the notifications page and the home, from the same answers. */
 export function useLiveNotices(): { notices: LiveNotice[]; followUps: FollowUpLead[] } {
-  const { due } = useInvestorFollowUps();
+  // Investor follow-ups (the fundraising tracker) and milestones (the
+  // workspace's) are a founder's. A mentor, investor, provider or organiser
+  // was shown the demo founder's «follow-up with Irini Kosta» and overdue
+  // trademark in Today and on Home (docs §154).
+  const founder = starterAudience(useRoleOptional()?.primaryRole) === 'founder';
+  const { due: dueAll } = useInvestorFollowUps();
+  const due = founder ? dueAll : [];
   // The keys the milestones page and the home read, so they share one answer.
   const { data: milestones } = useQuery({
     queryKey: qk('milestones', 'all', 'all'),
     queryFn: () => listMilestones({ limit: 100 }),
+    enabled: founder,
     staleTime: 30_000,
     retry: 0,
   });
@@ -71,7 +80,7 @@ export function useLiveNotices(): { notices: LiveNotice[]; followUps: FollowUpLe
     staleTime: 30_000,
     retry: 0,
   });
-  return { notices: liveNotices({ followUps: due, milestones: milestones?.milestones ?? [], threads: threads ?? [] }), followUps: due };
+  return { notices: liveNotices({ followUps: due, milestones: founder ? milestones?.milestones ?? [] : [], threads: threads ?? [] }), followUps: due };
 }
 
 export function LiveNotices() {
