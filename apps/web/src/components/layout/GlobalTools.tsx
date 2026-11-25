@@ -83,24 +83,42 @@ export function GlobalTools({ inline = false, compact = false, className }: { in
 
 /**
  * The same tools, floating at the top right of the page column once the
- * copy in the page has scrolled out of view (or on a page that has none).
+ * copy in the page has scrolled out of view and the reader scrolls back up
+ * (or on a page that has none).
  * Hidden (not just transparent) while the page's own copy is visible, so the
  * keyboard never reaches it twice. From `sm`: phones keep their own bar.
  */
 export function FloatingGlobalTools() {
   const inline = useSyncExternalStore(subscribe, () => inlineTools, () => null);
-  const [show, setShow] = useState(false);
+  const [away, setAway] = useState(false);
+  /* Only while the reader scrolls back up (docs §151). Shown for as long as
+     the first block was off screen, it sat on whatever reached the top right:
+     a card's "All →", and the pitch deck's Export and Save. Scrolling up is
+     the reach for the page's top; scrolling down is reading or working. */
+  const [rising, setRising] = useState(false);
   useEffect(() => {
     if (!inline) {
       // A page without a first block: show once it has had a moment to mount one.
-      const timer = setTimeout(() => setShow(!inlineTools), 400);
+      const timer = setTimeout(() => setAway(!inlineTools), 400);
       return () => clearTimeout(timer);
     }
-    if (typeof IntersectionObserver === 'undefined') { setShow(false); return undefined; }
-    const observer = new IntersectionObserver(([entry]) => setShow(!entry.isIntersecting), { threshold: 0 });
+    if (typeof IntersectionObserver === 'undefined') { setAway(false); return undefined; }
+    const observer = new IntersectionObserver(([entry]) => setAway(!entry.isIntersecting), { threshold: 0 });
     observer.observe(inline);
     return () => observer.disconnect();
   }, [inline]);
+  useEffect(() => {
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - last) < 8) return;
+      setRising(y < last);
+      last = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  const show = away && (rising || !inline);
   return (
     <div className="pointer-events-none sticky top-3 z-40 hidden h-0 sm:block" data-floating-tools={show ? 'shown' : 'hidden'}>
       <div

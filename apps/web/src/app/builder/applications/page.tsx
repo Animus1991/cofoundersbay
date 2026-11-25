@@ -11,10 +11,7 @@ import { CollabToolbar } from '@/components/builder/CollabToolbar';
 import { VersionHistoryDrawer } from '@/components/builder/VersionHistoryDrawer';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
-import { bilingualAria } from '@/lib/i18n/format';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
-import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { ArrowLeft, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 import type { ApplicationTemplate } from '@/components/builder/application-model';
 
@@ -155,19 +152,13 @@ function ApplicationsPageContent() {
         )}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`h-8 gap-1.5 ${BUILDER_BTN} text-muted-foreground`}
-            aria-label={bilingualAria(builderEn('app_back'), builderEl('app_back'))}
-            asChild
-          >
-            <Link href="/builder">
-              <ArrowLeft className="icon-sm" />
-              <CfbGlyph name="builder" className="icon-sm" />
-              <BilingualText en={builderEn('app_back')} el={builderEl('app_back')} compact />
-            </Link>
-          </Button>
+          {/* The way back reads as a link: its arrow kept and the link's
+              colour. As a grey ghost button whose arrow and glyph the icon
+              rule hid, it read as a caption (docs §151). */}
+          <Link href="/builder" className="tap-extend-y group inline-flex items-center gap-1 text-sm font-medium text-primary-accessible hover:underline">
+            <span data-keep-icon="" className="inline-flex" aria-hidden="true"><ArrowLeft className="icon-sm transition-transform group-hover:-translate-x-0.5" /></span>
+            <BilingualText en={builderEn('app_back')} el={builderEl('app_back')} compact />
+          </Link>
           {applicationDocument && workspace && (
             <CollabToolbar
               documentId={applicationDocument.id}
