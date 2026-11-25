@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,8 +44,17 @@ function Result({ en, el, value, tone }: { en: string; el: string; value: string
   );
 }
 
-const euros = (value: number) => `€${Math.round(value).toLocaleString('el-GR')}`;
-const percent = (fraction: number) => `${(fraction * 100).toFixed(1)}%`;
+/* Every figure in the reader's own number format (docs §154): the euros were
+   always Greek («€3.750.000») and the decimals always English («20.0%»,
+   «€0.292»), so a Greek page mixed the two marks in one column. */
+const formats = (locale: 'el-GR' | 'en-GB') => ({
+  euros: (value: number) => `€${Math.round(value).toLocaleString(locale)}`,
+  percent: (fraction: number) => `${(fraction * 100).toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`,
+  decimal: (value: number, digits = 1) => value.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }),
+  count: (value: number) => value.toLocaleString(locale),
+});
+const EN = formats('en-GB');
+const EL = formats('el-GR');
 
 type Tool = 'round' | 'grant' | 'economics' | 'runway';
 const TOOLS: Array<{ value: Tool; en: string; el: string }> = [
@@ -61,6 +71,8 @@ const TOOLS: Array<{ value: Tool; en: string; el: string }> = [
  * option pool created in the pre-money, gross-margin LTV, month-by-month runway.
  */
 export default function CalculatorsPage() {
+  const { primary } = useLanguagePreference();
+  const { euros, percent, decimal, count } = primary === 'el' ? EL : EN;
   const [tool, setTool] = useState<Tool>('round');
 
   const [preMoney, setPreMoney] = useState(3_000_000);
@@ -106,15 +118,15 @@ export default function CalculatorsPage() {
       labelEn: 'Calculator results',
       labelEl: 'Αποτελέσματα υπολογιστών',
       rows: [
-        `Priced round: post-money ${euros(round.postMoney)}, new investor ${percent(investorRow?.pctAfter ?? 0)}, founders ${percent(founderRow?.pctAfter ?? 0)}, pool ${percent(poolRow?.pctAfter ?? 0)}`,
-        `Employee grant: ${grant.shares.toLocaleString('en-GB')} shares, spread ${euros(grant.spread)}`,
-        `Unit economics: LTV ${economics.ltv === null ? '—' : euros(economics.ltv)}, LTV:CAC ${economics.ltvToCac?.toFixed(1) ?? '—'}, payback ${economics.paybackMonths?.toFixed(1) ?? '—'} months`,
+        `Priced round: post-money ${EN.euros(round.postMoney)}, new investor ${EN.percent(investorRow?.pctAfter ?? 0)}, founders ${EN.percent(founderRow?.pctAfter ?? 0)}, pool ${EN.percent(poolRow?.pctAfter ?? 0)}`,
+        `Employee grant: ${EN.count(grant.shares)} shares, spread ${EN.euros(grant.spread)}`,
+        `Unit economics: LTV ${economics.ltv === null ? '—' : EN.euros(economics.ltv)}, LTV:CAC ${(economics.ltvToCac == null ? '—' : EN.decimal(economics.ltvToCac))}, payback ${(economics.paybackMonths == null ? '—' : EN.decimal(economics.paybackMonths))} months`,
         `Runway: ${runway.runwayMonths ?? 'beyond the horizon'} months, default ${runway.defaultAlive ? 'alive' : 'dead'}`,
       ],
       rowsEl: [
-        `Τιμολογημένος γύρος: post-money ${euros(round.postMoney)}, νέος επενδυτής ${percent(investorRow?.pctAfter ?? 0)}, ιδρυτές ${percent(founderRow?.pctAfter ?? 0)}, pool ${percent(poolRow?.pctAfter ?? 0)}`,
-        `Παροχή μετοχών: ${grant.shares.toLocaleString('el-GR')} μετοχές, διαφορά ${euros(grant.spread)}`,
-        `Μοναδιαία οικονομικά: LTV ${economics.ltv === null ? '—' : euros(economics.ltv)}, LTV:CAC ${economics.ltvToCac?.toFixed(1) ?? '—'}, απόσβεση ${economics.paybackMonths?.toFixed(1) ?? '—'} μήνες`,
+        `Τιμολογημένος γύρος: post-money ${EL.euros(round.postMoney)}, νέος επενδυτής ${EL.percent(investorRow?.pctAfter ?? 0)}, ιδρυτές ${EL.percent(founderRow?.pctAfter ?? 0)}, pool ${EL.percent(poolRow?.pctAfter ?? 0)}`,
+        `Παροχή μετοχών: ${EL.count(grant.shares)} μετοχές, διαφορά ${EL.euros(grant.spread)}`,
+        `Μοναδιαία οικονομικά: LTV ${economics.ltv === null ? '—' : EL.euros(economics.ltv)}, LTV:CAC ${(economics.ltvToCac == null ? '—' : EL.decimal(economics.ltvToCac))}, απόσβεση ${(economics.paybackMonths == null ? '—' : EL.decimal(economics.paybackMonths))} μήνες`,
         `Runway: ${runway.runwayMonths ?? 'πέρα από τον ορίζοντα'} μήνες, ${runway.defaultAlive ? 'default alive' : 'default dead'}`,
       ],
     },
@@ -156,7 +168,7 @@ export default function CalculatorsPage() {
                 <Result en="New investor" el="Νέος επενδυτής" value={percent(investorRow?.pctAfter ?? 0)} />
                 <Result en="Founders after" el="Ιδρυτές μετά" value={percent(founderRow?.pctAfter ?? 0)} />
                 <Result en="Pool after" el="Pool μετά" value={percent(poolRow?.pctAfter ?? 0)} />
-                <Result en="Price per share" el="Τιμή μετοχής" value={`€${round.pricePerShare.toFixed(3)}`} />
+                <Result en="Price per share" el="Τιμή μετοχής" value={`€${decimal(round.pricePerShare, 3)}`} />
               </dl>
               <p className="mt-3 text-xs text-muted-foreground">
                 <BilingualText en="The pool is created in the pre-money, as in most term sheets, so it dilutes the founders and not the new investor." el="Το pool δημιουργείται στο pre-money, όπως στα περισσότερα term sheets, οπότε αραιώνει τους ιδρυτές και όχι τον νέο επενδυτή." wrap />
@@ -175,14 +187,14 @@ export default function CalculatorsPage() {
             </CardContent></Card>
             <Card><CardContent>
               <dl className="divide-y divide-border">
-                <Result en="Shares" el="Μετοχές" value={grant.shares.toLocaleString('el-GR')} />
+                <Result en="Shares" el="Μετοχές" value={count(grant.shares)} />
                 <Result en="Paper value" el="Χάρτινη αξία" value={euros(grant.value)} />
                 <Result en="Spread over strike" el="Διαφορά από την τιμή άσκησης" value={euros(grant.spread)} />
               </dl>
               <h2 className="mt-4 text-sm font-semibold text-foreground"><BilingualText en="Four-year vesting, one-year cliff" el="Vesting τεσσάρων ετών, cliff ενός έτους" compact /></h2>
               <dl className="mt-1 divide-y divide-border">
                 {grant.schedule.map((row) => (
-                  <Result key={row.month} en={`Month ${row.month}`} el={`Μήνας ${row.month}`} value={`${row.vested.toLocaleString('el-GR')} · ${Math.round(row.pct * 100)}%`} />
+                  <Result key={row.month} en={`Month ${row.month}`} el={`Μήνας ${row.month}`} value={`${count(row.vested)} · ${Math.round(row.pct * 100)}%`} />
                 ))}
               </dl>
             </CardContent></Card>
@@ -200,9 +212,9 @@ export default function CalculatorsPage() {
             <Card><CardContent>
               <dl className="divide-y divide-border">
                 <Result en="Lifetime value" el="Αξία ζωής (LTV)" value={economics.ltv === null ? '—' : euros(economics.ltv)} />
-                <Result en="LTV to CAC" el="LTV προς CAC" value={economics.ltvToCac === null ? '—' : `${economics.ltvToCac.toFixed(1)}×`} tone={economics.ltvToCac !== null && economics.ltvToCac < 3 ? 'warning' : undefined} />
-                <Result en="Payback" el="Απόσβεση" value={economics.paybackMonths === null ? '—' : `${economics.paybackMonths.toFixed(1)}`} />
-                <Result en="Customer lifetime, months" el="Διάρκεια πελάτη, μήνες" value={economics.lifetimeMonths === null ? '—' : economics.lifetimeMonths.toFixed(1)} />
+                <Result en="LTV to CAC" el="LTV προς CAC" value={economics.ltvToCac === null ? '—' : `${decimal(economics.ltvToCac)}×`} tone={economics.ltvToCac !== null && economics.ltvToCac < 3 ? 'warning' : undefined} />
+                <Result en="Payback" el="Απόσβεση" value={economics.paybackMonths === null ? '—' : decimal(economics.paybackMonths)} />
+                <Result en="Customer lifetime, months" el="Διάρκεια πελάτη, μήνες" value={economics.lifetimeMonths === null ? '—' : decimal(economics.lifetimeMonths)} />
               </dl>
               <p className="mt-3 text-xs text-muted-foreground">
                 <BilingualText en="A common benchmark: LTV to CAC of 3 or more, payback under 12 months." el="Συνηθισμένο μέτρο: LTV προς CAC 3 ή περισσότερο, απόσβεση κάτω από 12 μήνες." wrap />
