@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { SectionLink } from '@/components/home/SectionLink';
+import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { STATUS } from '@/lib/semantic-colors';
 import { cn } from '@/lib/utils';
 import { getVentureReadiness, type VentureReadiness } from '@/lib/api';
@@ -38,9 +37,7 @@ function scoreTier(score: number): {
 /* ── Sub-component: Radial gauge ─────────────────────────────────────────── */
 
 function RadialGauge({ score }: { score: number }) {
-  const { labelEn, labelEl, color, ring } = scoreTier(score);
-  const { primary } = useLanguagePreference();
-  const tierLabel = primary === 'el' ? labelEl : labelEn;
+  const { labelEn, labelEl, ring } = scoreTier(score);
 
   const circumference = 2 * Math.PI * 15.5;
   const dash = (score / 100) * circumference;
@@ -84,15 +81,9 @@ function RadialGauge({ score }: { score: number }) {
           {score}
           <span className="text-xs text-muted-foreground">/100</span>
         </span>
-        {/* The tier label is a single Greek or English word inside the ring;
-            centred and clipped rather than allowed to spill, so a longer tier
-            name shortens instead of crossing the stroke. The 1.64px `mt-0.5`
-            it used to carry is now a 3.3px `gap` on the column, so the figure
-            and the label are separated by the container rather than by a margin
-            that the first line's own leading was already eating. */}
-        <span className={cn('max-w-full truncate px-1 text-center text-xs font-semibold', color)}>
-          {tierLabel}
-        </span>
+        {/* No tier word in the ring: the line beside it opens with the same
+            word («Πρώιμη» over «Πρώιμη πρόοδος», docs §147). The ring's
+            name still says it. */}
       </div>
     </div>
   );
@@ -162,21 +153,20 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
   };
 
   return (
-    <Card className={cn('min-w-0 overflow-hidden border-0 bg-primary/[0.03]', className)}>
+    /* The page's own card and sticker, like Milestones and Fundraising beside
+       it: a borderless tinted block with a grey mark read as another kind of
+       thing (docs §147). */
+    <Card className={cn('min-w-0 overflow-hidden', className)}>
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className={cn('flex min-w-0 items-center gap-2', compact && 'page-section--compact', titleClassName)}>
-            <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
+            <SectionSticker glyph="chart" tint="accent" />
             <BilingualText en="Founder progress score" el="Βαθμός προόδου ιδρυτή" />
           </CardTitle>
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-2">
             {aside}
-            <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs gap-1" asChild>
-              <Link href="/achievements" className="shrink-0">
-                <BilingualText en="History" el="Ιστορικό" compact />
-                <ArrowRight className="icon-sm" aria-hidden="true" />
-              </Link>
-            </Button>
+            {/* The cards' one way out, as on Milestones and Fundraising (docs §147). */}
+            <SectionLink href="/achievements" en="History" el="Ιστορικό" />
           </span>
         </div>
       </CardHeader>
@@ -228,7 +218,9 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
             />
           </Button>
         ) : null}
-        <ul className={cn('space-y-2.5', compact && 'hidden', !dimensionsOpen && 'max-sm:hidden')}>
+        {/* Two columns from lg, row by row: one column drew six bars 1,560px
+            long at 1910 (docs §147). */}
+        <ul className={cn('grid grid-cols-1 gap-y-2.5 lg:grid-cols-2 lg:gap-x-10', compact && 'hidden', !dimensionsOpen && 'max-sm:hidden')}>
           {vrs.dimensions.filter((dim) => dim?.href).map((dim) => {
             const { color, bar } = scoreTier(dim.score);
             const isLowest = vrs.lowestDimension?.key === dim.key;

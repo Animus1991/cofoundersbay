@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -54,6 +54,7 @@ import { Sparkline } from '@/components/charts/Sparkline';
 import { FounderProgressCard } from '@/components/gamification/FounderProgressCard';
 import { YourPagesRow } from '@/components/dashboard/YourPages';
 import { HomeContinue } from '@/components/home/HomeContinue';
+import { SectionLink } from '@/components/home/SectionLink';
 import {
   FIRST_MOVE_LATER_KEY,
   FounderFirstMove,
@@ -295,9 +296,12 @@ function MatchPreviewTile({ match, viewer }: { match: SearchHit; viewer: ViewerF
           : match.headline)
         : null}
       reason={reason}
+      // The word with the figure: the spark beside it was hidden by the
+      // labelled-card icon rule, so a bare "75%" next to the role read as
+      // part of it ("Ιδρυτής 75%", docs §147).
       meta={(
-        <span className={cn('inline-flex items-center gap-0.5 text-xs font-semibold tabular-nums', scoreColor)}>
-          <CfbGlyph name="spark" className="icon-sm" aria-hidden="true" />{score}%
+        <span className={cn('text-xs font-semibold tabular-nums', scoreColor)}>
+          <BilingualText en={`${score}% match`} el={`${score}% ταίριασμα`} compact />
         </span>
       )}
       action={(
@@ -325,21 +329,14 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
   return (
     <Link
       href="/milestones"
-      className="axis-row flex items-start gap-3 rounded-md py-1.5 transition-colors hover:bg-accent"
+      className="axis-row block rounded-md py-1.5 transition-colors hover:bg-accent"
     >
-      <div
-        className="mt-0.5 shrink-0 text-muted-foreground"
-        role="img"
-        aria-label={stateLabel}
-        title={stateLabel}
-      >
-        {isComplete
-          ? <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} aria-hidden="true" />
-          : isOverdue
-          ? <AlertCircle className={cn('icon-sm', STATUS.danger.icon)} aria-hidden="true" />
-          : <Circle className="icon-sm text-muted-foreground" aria-hidden="true" />}
-      </div>
-      <div className="flex-1 min-w-0">
+      {/* The state in words for a screen reader. The row's state icons were
+          hidden by the labelled-link icon rule and left an empty 12px column,
+          so the rows sat off the card's axis; on screen the date line says
+          "Overdue since …" in red (docs §147). */}
+      <span className="sr-only">{stateLabel}: </span>
+      <div className="min-w-0">
         {/* The priority wraps under the title when both do not fit: in
             the rail it squeezed the title to one letter. */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -447,15 +444,11 @@ export default function FounderDashboardContent() {
     .filter((day) => typeof day?.date === 'string' && typeof day?.views === 'number')
     .map((day) => ({ label: formatShortDate(day.date, primary === 'el' ? 'el' : 'en'), value: day.views }));
 
-  const profileViewsTrend = (() => {
-    const trend = trendOf(userMetrics?.profileViewsChange);
-    if (!trend) return undefined;
-    return {
-      ...trend,
-      en: `${trend.en}. Opens analytics`,
-      el: `${trend.el}. Ανοίγει τα αναλυτικά`,
-    };
-  })();
+  // "This week" alone: the whole tile is the link, and its tooltip names
+  // where it goes. "Opens analytics" on the face was the one tile of four
+  // that said so (docs §147).
+  const profileViewsTrend = trendOf(userMetrics?.profileViewsChange);
+  const newConnectionsTrend = trendOf(userMetrics?.newConnectionsChange);
 
   const { data: recommendations } = useQuery({
     queryKey: queryKeys.recommendations,
@@ -632,6 +625,7 @@ export default function FounderDashboardContent() {
       'Founder progress': `${founderProgress}%`,
       'Pending intros': pendingRequests,
       'Unread messages': unreadMessages,
+      'New connections this week': userMetrics?.newConnections ?? 'unknown',
       'Recommended matches': matchCount ?? recommendations?.suggestions?.length ?? 0,
       'Milestones complete': `${completedMilestoneCount}/${milestones.length}`,
       'Next milestone': nextOpenMilestone?.titleEn ?? 'none',
@@ -763,12 +757,10 @@ export default function FounderDashboardContent() {
                     labelEl={dashboardEl('ask_ai_milestones')}
                   />
                 ) : null}
-                <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
-                  <Link href="/milestones">
-                    <BilingualText en={dashboardEn('manage')} el={dashboardEl('manage')} compact />
-                    <ArrowRight className="icon-sm" />
-                  </Link>
-                </Button>
+                {/* The way to the page, as the home's sections say it: one
+                    word and an arrow ("Manage", "View all" and "Open tracker"
+                    left the fundraising title one letter at 390px, docs §147). */}
+                <SectionLink href="/milestones" en="All" el="Όλα" />
               </div>
             </CardHeader>
             {/* The done/late bar and its caption are on the Milestones tile a
@@ -791,8 +783,10 @@ export default function FounderDashboardContent() {
               )}
               {upcomingMilestones.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
               {milestones.length > 0 && (moreOpenMilestoneCount > 0 || completedMilestoneCount > 0) && (
-                <p className="border-t border-border pt-3 text-xs text-muted-foreground">
-                  {/* Stacked: each language already joins its parts with "·". */}
+                <p className="max-w-none border-t border-border pt-3 text-xs text-muted-foreground">
+                  {/* Stacked: each language already joins its parts with "·".
+                      `max-w-none`: the paragraph measure stopped the rule
+                      above it 140px short of the card's edge (docs §147). */}
                   <BilingualText
                     en={openMilestones.length === 0
                       ? dashboardEn('milestones_all_complete')
@@ -852,12 +846,7 @@ export default function FounderDashboardContent() {
             label={dashboardEn('ask_ai_fundraising')}
             labelEl={dashboardEl('ask_ai_fundraising')}
           />
-          <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
-            <Link href="/fundraising">
-              <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
-              <ArrowRight className="icon-sm" />
-            </Link>
-          </Button>
+          <SectionLink href="/fundraising" en="Open" el="Άνοιγμα" />
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -941,12 +930,7 @@ export default function FounderDashboardContent() {
             label={dashboardEn('ask_ai_matches')}
             labelEl={dashboardEl('ask_ai_matches')}
           />
-          <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
-            <Link href="/matches">
-              <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
-              <ArrowRight className="icon-sm" />
-            </Link>
-          </Button>
+          <SectionLink href="/matches" en="All" el="Όλες" />
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -954,7 +938,7 @@ export default function FounderDashboardContent() {
           /* The people rail the home draws (docs §134): the same 200px
              portrait tiles — face, name, role, reason, the score beside the
              badge — where a flat row of names used to sit. */
-          <PersonTileRail labelEn={dashboardEn('top_matches')} labelEl={dashboardEl('top_matches')}>
+          <PersonTileRail bare labelEn={dashboardEn('top_matches')} labelEl={dashboardEl('top_matches')}>
             {recommendations?.suggestions?.slice(0, 3).map((match: SearchHit) => (
               <MatchPreviewTile key={match.userId} match={match} viewer={viewer} />
             ))}
@@ -1224,7 +1208,7 @@ export default function FounderDashboardContent() {
       // Where the need cards stand. It left the column (docs §116); what
       // waits on the founder is in Today.
       id: 'commitments',
-      glyph: 'people',
+      glyph: 'pact',
       labelEn: 'Commitments',
       labelEl: 'Δεσμεύσεις',
       content: <CommitmentOutcomes waitingShownAbove={waitingThreads.length > 0} />,
@@ -1232,7 +1216,7 @@ export default function FounderDashboardContent() {
     {
       // GitHub keeps its changelog in the dashboard's right column.
       id: 'whats-new',
-      glyph: 'spark',
+      glyph: 'update',
       labelEn: 'What’s new',
       labelEl: 'Τι νέο',
       content: <WhatsNewRail audience="founder" />,
@@ -1267,8 +1251,8 @@ export default function FounderDashboardContent() {
             value={userMetrics?.profileViews ?? '—'}
             trend={profileViewsTrend}
             trendVisual={profileViewPoints.length > 1 ? <Sparkline points={profileViewPoints} /> : undefined}
-            caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
-            captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
+            caption="People who opened your profile"
+            captionEl="Άτομα που άνοιξαν το προφίλ σας"
             href="/analytics"
           />
           <MetricTile
@@ -1280,14 +1264,18 @@ export default function FounderDashboardContent() {
             captionEl="Άτομα που ταιριάζουν στα κριτήριά σας"
             href="/matches"
           />
+          {/* New connections, where "Unread messages" stood: Today, right
+              under this row, lists the unread messages with what else waits,
+              so the same count and link sat twice on one screen (docs §147). */}
           <MetricTile
-            glyph="messages"
-            family="neutral"
-            label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
-            value={unreadMessages}
-            href="/messages"
-            caption={unreadMessages > 0 ? `${unreadMessages} waiting in Messages` : 'Inbox caught up'}
-            captionEl={unreadMessages > 0 ? `${unreadMessages} σε αναμονή στα Μηνύματα` : 'Όλα διαβασμένα'}
+            glyph="people"
+            family="people"
+            label="New connections" labelEl="Νέες συνδέσεις"
+            value={userMetrics?.newConnections ?? '—'}
+            trend={newConnectionsTrend}
+            caption="People you connected with this week"
+            captionEl="Άτομα με τα οποία συνδεθήκατε αυτή την εβδομάδα"
+            href="/connections"
           />
           <MetricTile
             glyph="flag"

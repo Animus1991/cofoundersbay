@@ -85,7 +85,9 @@ export function AIInsightButton({
 
   /* The one form on a card (docs §125): spark and a short verb in the head,
      the specific question in the name. The visible word stays inside the
-     accessible name (SC 2.5.3). */
+     accessible name (SC 2.5.3). On a phone the spark alone, as on Today's
+     rows: the word squeezed «Κορυφαίες αντιστοιχίσεις» out of its own card's
+     head at 390px (docs §147). */
   if (variant === 'card') {
     const full = aboutEn ? `${iconLabel}: ${bilingualAria(aboutEn, aboutEl ?? aboutEn)}` : iconLabel;
     return (
@@ -93,14 +95,14 @@ export function AIInsightButton({
         type="button"
         variant="ghost"
         size="sm"
-        className={cn('h-7 shrink-0 gap-1 px-2 text-xs text-muted-foreground', className)}
+        className={cn('h-7 shrink-0 gap-1 px-2 text-xs text-muted-foreground max-sm:h-8 max-sm:w-8 max-sm:px-0', className)}
         aria-label={full}
         title={full}
         data-ask-card=""
         onClick={openAssistant}
       >
         {spark}
-        <span>{primary === 'el' ? 'Ρωτήστε' : 'Ask'}</span>
+        <span className="max-sm:sr-only">{primary === 'el' ? 'Ρωτήστε' : 'Ask'}</span>
       </Button>
     );
   }

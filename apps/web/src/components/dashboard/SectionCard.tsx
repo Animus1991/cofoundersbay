@@ -1,6 +1,6 @@
 import type { ElementType, ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { Counter } from '@/components/ui/counter';
 import { SectionSticker, type StickerTint } from '@/components/dashboard/SectionSticker';
+import { SectionLink } from '@/components/home/SectionLink';
 
 /**
  * A home-screen section: a bilingual title, at most one way out to the page
@@ -63,13 +64,10 @@ export function SectionCard({
           </CardTitle>
           {action ? (
             // At most half the row: a long pair drops its second language
-            // (compact) rather than squeezing the title.
-            <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%]" asChild>
-              <Link href={action.href}>
-                <BilingualText en={action.label} el={action.labelEl} compact />
-                <ArrowRight className="ml-1 icon-sm shrink-0" aria-hidden="true" />
-              </Link>
-            </Button>
+            // (compact) rather than squeezing the title. The home's own link
+            // (docs §143): the word in the link colour and its arrow, where a
+            // ghost button's grey word read as a label (docs §147).
+            <SectionLink href={action.href} en={action.label} el={action.labelEl ?? action.label} className="min-w-0 max-w-[50%]" />
           ) : null}
         </div>
       </CardHeader>

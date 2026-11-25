@@ -181,7 +181,7 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
     progress: 30,
     milestones: [
       { id: 'g1', title: 'GTM canvas on Research', titleEl: 'Καμβάς GTM στους πίνακες έρευνας', status: 'completed', date: '2026-08-29T00:00:00.000Z' },
-      { id: 'g2', title: 'Shareable Idea Core and GTM board', titleEl: 'Πυρήνας ιδέας και πίνακας GTM που μοιράζονται', status: 'in_progress', date: '2026-10-01T17:00:00.000Z' },
+      { id: 'g2', title: 'Shareable Idea Core and GTM board', titleEl: 'Πυρήνας ιδέας και πίνακας GTM για κοινοποίηση', status: 'in_progress', date: '2026-10-01T17:00:00.000Z' },
     ],
     updates: [
       {

@@ -513,7 +513,7 @@ export default function MentorDashboard() {
               {/* The people rail the home draws (docs §134): the same 200px
                   portrait tiles where plain rows used to sit; Message stays
                   the verb, the profile joins the tile's menu. */}
-              <PersonTileRail labelEn="Your mentees" labelEl="Οι καθοδηγούμενοί σας">
+              <PersonTileRail bare labelEn="Your mentees" labelEl="Οι καθοδηγούμενοί σας">
                 {mentees.map((mentee) => (
                   <MenteeTile key={mentee.id} mentee={mentee} />
                 ))}

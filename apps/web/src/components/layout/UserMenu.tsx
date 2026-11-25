@@ -51,8 +51,9 @@ export function UserMenu({
   /** Icon-only square when the sidebar is a 68px rail. */
   rail?: boolean;
   /** Toolbar: from which width the name shows beside the avatar. In a page's
-   *  first block it waits for 2xl, so the page title keeps its line (docs §146). */
-  nameFrom?: 'md' | '2xl';
+   *  first block it waits for 2xl, so the page title keeps its line (docs §146);
+   *  the floating copy never shows it (docs §147). */
+  nameFrom?: 'md' | '2xl' | 'never';
 }) {
   const router = useRouter();
   const user = useStoredUser();
@@ -124,7 +125,7 @@ export function UserMenu({
               ? rail
                 ? 'hidden'
                 : 'hidden min-w-0 flex-1 text-left lg:inline'
-              : nameFrom === '2xl' ? 'hidden max-w-[140px] 2xl:inline' : 'hidden max-w-[140px] md:inline',
+              : nameFrom === 'never' ? 'hidden' : nameFrom === '2xl' ? 'hidden max-w-[140px] 2xl:inline' : 'hidden max-w-[140px] md:inline',
           )}
         >
           {user?.displayName ?? sayOne('Account', 'Λογαριασμός')}
@@ -136,7 +137,7 @@ export function UserMenu({
               ? rail
                 ? 'hidden'
                 : 'hidden lg:block'
-              : nameFrom === '2xl' ? 'hidden 2xl:block' : 'hidden md:block',
+              : nameFrom === 'never' ? 'hidden' : nameFrom === '2xl' ? 'hidden 2xl:block' : 'hidden md:block',
           )}
           aria-hidden="true"
         />

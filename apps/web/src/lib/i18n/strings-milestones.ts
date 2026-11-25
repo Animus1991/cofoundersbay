@@ -202,8 +202,8 @@ export const PREVIEW_MILESTONE_EL: Record<string, { title: string; description?:
     description: '€375K δεσμευμένα από στόχο €750K. Lead: Athens Tech Angels.',
   },
   'Shareable Idea Core and GTM board': {
-    title: 'Πυρήνας ιδέας και πίνακας GTM που μοιράζονται',
-    description: 'Πρώτη μετατροπή από το GTM: συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας που μοιράζεται.',
+    title: 'Πυρήνας ιδέας και πίνακας GTM για κοινοποίηση',
+    description: 'Πρώτη μετατροπή από το GTM: συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας για κοινοποίηση.',
   },
   'Warm intro from Athens founder networks': {
     title: 'Ζεστή γνωριμία μέσω δικτύων ιδρυτών στην Αθήνα',

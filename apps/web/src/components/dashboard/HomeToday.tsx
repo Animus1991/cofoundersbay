@@ -16,6 +16,7 @@ import { nowStartingPoints, type HomeAskNow } from '@/lib/home-ask';
 import { qk } from '@/lib/query-keys';
 import { readLastVisit, sinceLastVisit } from '@/lib/since-last-visit';
 import { bilingualAria } from '@/lib/i18n/format';
+import { cn } from '@/lib/utils';
 
 export type TodayRow = {
   key: string;
@@ -27,7 +28,9 @@ export type TodayRow = {
   ask: { en: string; el: string };
 };
 
-const NOTICE_GLYPH: Record<string, CfbGlyphName> = { commitment: 'pact', 'follow-up': 'chart', milestone: 'flag' };
+// An investor follow-up belongs to the round: the wallet of the Fundraising
+// card, where a bar chart said "analytics" (docs §147).
+const NOTICE_GLYPH: Record<string, CfbGlyphName> = { commitment: 'pact', 'follow-up': 'wallet', milestone: 'flag' };
 const NOW_HREF: Record<string, string> = { 'now-intros': '/connections', 'now-messages': '/messages', 'now-notifications': '/notifications' };
 
 const fromNotice = (notice: LiveNotice, ask?: HomeAskNow): TodayRow => ({
@@ -101,13 +104,18 @@ export function HomeToday() {
           <h2 className="card-title"><BilingualText en="Today" el="Σήμερα" compact /></h2>
         </div>
         {since ? <p className="text-xs text-muted-foreground" data-home-since=""><BilingualText en={since.en} el={since.el} compact wrap /></p> : null}
-        <ul className="divide-y divide-border">
-          {rows.map((row) => (
-            <li key={row.key} data-row="" className="flex items-center gap-3 py-2">
+        {/* Two columns from lg, read row by row in the same order: one column
+            ran each short line across 1,560px at 1910 and left the rest of
+            the row empty (docs §147). */}
+        <ul className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8" data-today-list="">
+          {rows.map((row, index) => (
+            <li key={row.key} data-row="" className={cn('flex items-center gap-3 border-border py-2', index > 0 && 'border-t', index === 1 && 'lg:border-t-0')}>
               <SectionSticker glyph={row.glyph} tint={glyphStickerTint(row.glyph)} />
               <Link href={row.href} className="tap-extend-y min-w-0 flex-1 text-sm text-foreground hover:text-primary-accessible">
                 <BilingualText en={row.en} el={row.el} compact wrap />
-                {row.count ? <span className="ml-1.5 tabular-nums text-muted-foreground">{row.count}</span> : null}
+                {/* The count as a small pill, the way the menu shows one, so
+                    the eye finds it at the end of the words. */}
+                {row.count ? <span className="ms-1.5 inline-flex min-w-5 justify-center rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-muted-foreground" data-today-count="">{row.count}</span> : null}
               </Link>
               <Button
                 type="button"

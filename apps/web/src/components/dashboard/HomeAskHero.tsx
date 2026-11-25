@@ -4,7 +4,7 @@ import { FormEvent, KeyboardEvent, useContext, useEffect, useId, useState } from
 import { usePathname, useRouter } from 'next/navigation';
 import { ArrowUp, Check, ChevronDown } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -57,16 +57,6 @@ export function useHomeAskRun() {
     else if (action.href) router.push(action.href);
   };
 }
-
-/** The role's glyph in the hero card's round well (docs §133.8). */
-const ROLE_GLYPH: Record<HomeRole, CfbGlyphName> = {
-  founder: 'builder',
-  mentor: 'mentor',
-  investor: 'growth',
-  provider: 'briefcase',
-  incubator: 'building',
-  admin: 'shield',
-};
 
 export function partOfDay(hour: number): Part {
   if (hour >= 5 && hour < 12) return { en: dashboardEn('good_morning'), el: dashboardEl('good_morning') };
@@ -182,10 +172,12 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
           data-testid="home-ask-scope"
         >
           {/* Kept through the labelled-button icon rule in the hero: on a phone
-              the glyph is what the pill shows (docs §142). */}
-          {hero ? <span data-keep-icon="" className="inline-flex"><CfbGlyph name="discover" className="icon-sm" /></span> : <CfbGlyph name="discover" className="icon-sm" />}
-          <span className={hero ? 'max-sm:sr-only' : undefined}><BilingualText en={scope?.en ?? ''} el={scope?.el ?? ''} compact /></span>
-          <ChevronDown className={cn('icon-sm', hero && 'max-sm:hidden')} aria-hidden="true" />
+              the glyph is what the pill shows (docs §142). The band does the
+              same on a phone, where "Όλη η πλατφόρμα" inside its pill cut the
+              placeholder to «Ρωτήστε ή ζη» (docs §147). */}
+          {hero ? <span data-keep-icon="" className="inline-flex"><CfbGlyph name="discover" className="icon-sm" /></span> : band ? <span data-keep-icon="" className="inline-flex sm:hidden"><CfbGlyph name="discover" className="icon-sm" /></span> : <CfbGlyph name="discover" className="icon-sm" />}
+          <span className={hero || band ? 'max-sm:sr-only' : undefined}><BilingualText en={scope?.en ?? ''} el={scope?.el ?? ''} compact /></span>
+          <ChevronDown className={cn('icon-sm', (hero || band) && 'max-sm:hidden')} aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align={hero ? 'end' : 'start'} data-testid="home-scope-menu">
@@ -398,9 +390,7 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
       data-band={band || undefined}
       data-testid={`home-${role}-assistant`}
     >
-      {/* The figure joins only from xl (docs §133.4): below it the card is one
-          column, no cut-off figure beside or above the greeting. */}
-      <div className={band ? 'grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
+      <div>
         <div className={hero || band ? 'min-w-0 space-y-3' : 'space-y-3'}>
           {hero ? heroBody : band ? bandBody : (
             <p id={`${boxId}-title`} hidden={!greeting} className="break-words text-sm text-muted-foreground" data-testid="home-greeting">
@@ -436,17 +426,9 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
         </>
       )}
         </div>
-        {/* The hero carries no figure: its round well and spark (§133.8)
-            added nothing to read or do and crowded the card (docs §145). */}
-        {band ? (
-          /* The same idea in the band's palette: a smaller tinted well with
-             the role glyph, from xl (docs §135 A4). */
-          <div data-keep-icon="" data-hero-figure="" className="relative hidden xl:block" aria-hidden="true">
-            <span className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/15 text-primary-accessible">
-              <CfbGlyph name={ROLE_GLYPH[role] ?? 'spark'} className="h-10 w-10" />
-            </span>
-          </div>
-        ) : null}
+        {/* Neither the hero nor the band carries a figure: the role glyph in
+            its round well (§133.8, §135 A4) added nothing to read or do and
+            crowded the card (docs §145, §147). */}
       </div>
     </section>
   );

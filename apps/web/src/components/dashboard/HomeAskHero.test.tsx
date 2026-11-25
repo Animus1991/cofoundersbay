@@ -248,13 +248,15 @@ describe('HomeAskHero band (docs §135 A4)', () => {
     expect(state.ask).toHaveBeenCalledWith('Who replied?');
   });
 
-  it('shows the role’s glyph well in the band palette only from xl', () => {
+  it('draws no role well, as the hero does not (docs §147)', () => {
     const { container } = render(<HomeAskHero role="mentor" band />);
-    const well = container.querySelector('[data-hero-figure]')!;
-    expect(well.className).toContain('hidden');
-    expect(well.className).toContain('xl:block');
-    const round = well.querySelector('.rounded-full')!;
-    expect(round.className).toContain('h-20');
-    expect(round.className).toContain('bg-primary/15');
+    expect(container.querySelector('[data-hero-figure]')).toBeNull();
+  });
+
+  it('shows the scope as its glyph on a phone, so the placeholder keeps its room (docs §147)', () => {
+    render(<HomeAskHero role="founder" band />);
+    const scope = screen.getByTestId('home-ask-scope');
+    expect(scope.querySelector('[data-keep-icon]')!.className).toContain('sm:hidden');
+    expect(scope.querySelector('.max-sm\\:sr-only')).toBeTruthy();
   });
 });

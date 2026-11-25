@@ -37,11 +37,13 @@ export function FounderProgressCard() {
           />
         )}
         footer={(
-          <div className="space-y-2.5">
+          /* One row from sm, each button as wide as its words: three bars
+             across the whole card read as three banners (docs §147). */
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center" data-progress-actions="">
             {/* One next action: what would move the score most is the lowest
                 dimension, so its own page is the card's one filled button. */}
             {data.lowestDimension?.href ? (
-              <Button size="md" className="w-full gap-1.5" asChild>
+              <Button size="md" className="w-full gap-1.5 sm:w-auto" asChild>
                 <Link href={data.lowestDimension.href} data-progress-next="">
                   <BilingualText
                     en={`Raise your lowest: ${data.lowestDimension.label} (${data.lowestDimension.score}%)`}
@@ -52,20 +54,18 @@ export function FounderProgressCard() {
                 </Link>
               </Button>
             ) : null}
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-              <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
-                <Link href="/builder" className="w-full">
-                  <CfbGlyph name="builder" className="icon-sm" />
-                  <BilingualText en="Open Builder" el="Άνοιγμα Builder" compact wrap />
-                </Link>
-              </Button>
-              <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
-                <Link href="/expert-reviews" className="w-full">
-                  <CfbGlyph name="award" className="icon-sm" />
-                  <BilingualText en="Get Expert Review" el="Αξιολόγηση ειδικού" compact wrap />
-                </Link>
-              </Button>
-            </div>
+            <Button variant="outline" size="md" className="w-full gap-1.5 sm:w-auto" asChild>
+              <Link href="/builder">
+                <CfbGlyph name="builder" className="icon-sm" />
+                <BilingualText en="Open Builder" el="Άνοιγμα Builder" compact wrap />
+              </Link>
+            </Button>
+            <Button variant="outline" size="md" className="w-full gap-1.5 sm:w-auto" asChild>
+              <Link href="/expert-reviews">
+                <CfbGlyph name="award" className="icon-sm" />
+                <BilingualText en="Get Expert Review" el="Αξιολόγηση ειδικού" compact wrap />
+              </Link>
+            </Button>
           </div>
         )}
       />

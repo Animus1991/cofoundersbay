@@ -48,8 +48,11 @@ function subscribe(listener: () => void) {
  * The four tools, in one row. `inline` is the copy in the page's first block.
  * Below 2xl, Create and the account show their icon and avatar only: at 1280
  * their words took ~160px from the page title, which broke onto two lines.
+ * The floating copy is icons only at every width (`compact`): with the words
+ * it was 330px at 1910 and covered the corner of the card under it, where
+ * each card keeps its "All →" (docs §147).
  */
-export function GlobalTools({ inline = false, className }: { inline?: boolean; className?: string }) {
+export function GlobalTools({ inline = false, compact = false, className }: { inline?: boolean; compact?: boolean; className?: string }) {
   return (
     <div
       ref={inline ? setInlineTools : undefined}
@@ -58,9 +61,9 @@ export function GlobalTools({ inline = false, className }: { inline?: boolean; c
     >
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="sm" className="gap-1.5 rounded-full px-2.5 2xl:px-3.5" aria-label={bilingualAria('Create', 'Δημιουργία')} title={bilingualAria('Create', 'Δημιουργία')} data-global-create="">
+          <Button size="sm" className={cn('gap-1.5 rounded-full px-2.5', !compact && '2xl:px-3.5')} aria-label={bilingualAria('Create', 'Δημιουργία')} title={bilingualAria('Create', 'Δημιουργία')} data-global-create="">
             <Plus className="icon-sm" aria-hidden="true" />
-            <span className="hidden 2xl:inline"><BilingualText en="Create" el="Δημιουργία" compact /></span>
+            <span className={compact ? 'hidden' : 'hidden 2xl:inline'}><BilingualText en="Create" el="Δημιουργία" compact /></span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -73,7 +76,7 @@ export function GlobalTools({ inline = false, className }: { inline?: boolean; c
       </DropdownMenu>
       <LanguageSwitcher iconOnly className="h-9 w-9" />
       <NotificationsBell className="h-9 w-9" />
-      <UserMenu nameFrom="2xl" />
+      <UserMenu nameFrom={compact ? 'never' : '2xl'} />
     </div>
   );
 }
@@ -106,7 +109,7 @@ export function FloatingGlobalTools() {
           show ? 'pointer-events-auto opacity-100' : 'invisible opacity-0',
         )}
       >
-        <GlobalTools />
+        <GlobalTools compact />
       </div>
     </div>
   );

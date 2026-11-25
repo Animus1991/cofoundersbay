@@ -68,9 +68,11 @@ export function PersonTile({ userId, name, avatarUrl, role, headline, reason, me
           <span className="block self-center">{face}</span>
         )}
         <div className="min-w-0 space-y-1 text-center">
-          <p className="truncate">{label}</p>
+          {/* A name wraps rather than losing its end: at 200px "Elena
+              Papadopoulos" read «Elena Papadopou…» (docs §147). */}
+          <p className="line-clamp-2 break-words">{label}</p>
           {role || meta ? (
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
               {role ? <RoleBadge role={role} size="sm" /> : null}
               {meta}
             </span>
@@ -96,18 +98,21 @@ export function PersonTile({ userId, name, avatarUrl, role, headline, reason, me
 /**
  * The rail the tiles ride on (docs §131.2): a horizontal scroll with snap on
  * the faint accent wash; the page does not scroll sideways, the rail does.
+ * `bare` inside a card: the card is already the surface, and the wash between
+ * them drew a third frame around each person (docs §147).
  */
-export function PersonTileRail({ labelEn, labelEl, children }: {
+export function PersonTileRail({ labelEn, labelEl, bare = false, children }: {
   labelEn: string;
   labelEl: string;
+  bare?: boolean;
   children: ReactNode;
 }) {
   return (
-    <div className="-mx-1 snap-x snap-mandatory overflow-x-auto px-1 pb-1 [scrollbar-gutter:stable]" aria-label={bilingualAria(labelEn, labelEl)}>
+    <div className="-mx-1 snap-x snap-mandatory overflow-x-auto px-1 pb-1 [scrollbar-gutter:stable]" aria-label={bilingualAria(labelEn, labelEl)} data-rail={bare ? 'bare' : 'wash'}>
       {/* Each tile starts at 200px and grows to fill the row (capped at
           360px), so three people do not leave an empty part of the wash from
           1024 to 1920; more than fit still scroll (docs §142, §143). */}
-      <div className="flex w-max min-w-full gap-3 rounded-2xl bg-status-accent-bg/50 p-3 [&>*]:max-w-[360px] [&>*]:grow">
+      <div className={cn('flex w-max min-w-full gap-3 [&>*]:max-w-[360px] [&>*]:grow', bare ? 'py-0.5' : 'rounded-2xl bg-status-accent-bg/50 p-3')}>
         {children}
       </div>
     </div>

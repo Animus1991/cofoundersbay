@@ -10,7 +10,9 @@ import { qk } from '@/lib/query-keys';
 
 /**
  * The one thing in progress (docs §116): the research board last worked on,
- * else the next open milestone. Nothing when there is neither.
+ * else the next open milestone. Nothing when there is neither. The kicker
+ * names the state and the button the act: "Continue" over a "Continue"
+ * button said the same word twice (docs §147).
  */
 export function HomeContinue() {
   const { ask } = useAskAssistant();
@@ -33,8 +35,8 @@ export function HomeContinue() {
   if (board) {
     return (
       <HomeNextStep
-        kickerEn="Continue"
-        kickerEl="Συνεχίστε"
+        kickerEn="In progress"
+        kickerEl="Σε εξέλιξη"
         title={board.title}
         href={`/research/${board.id}`}
         actionEn="Continue"
@@ -56,8 +58,8 @@ export function HomeContinue() {
   const titleEl = PREVIEW_MILESTONE_EL[next.title]?.title ?? next.title;
   return (
     <HomeNextStep
-      kickerEn="Continue"
-      kickerEl="Συνεχίστε"
+      kickerEn="In progress"
+      kickerEl="Σε εξέλιξη"
       titleEn={next.title}
       titleEl={titleEl}
       href="/milestones"
