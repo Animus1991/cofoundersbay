@@ -477,7 +477,7 @@ export default function IncubatorDashboard() {
               )}
             </SectionCard>
 
-            <SectionCard title="Programs" titleEl="Προγράμματα" icon={FolderKanban} iconTint="success" action={{ href: '/org/programs', label: 'Manage', labelEl: 'Διαχείριση' }} contentClassName="card-rows">
+            <SectionCard title="Programs" titleEl="Προγράμματα" icon={FolderKanban} iconTint="success" action={{ href: '/org/programs', label: 'All', labelEl: 'Όλα' }} contentClassName="card-rows">
               {loading && [0, 1].map((i) => <Skeleton key={i} className="h-20" />)}
               {programs.map((program) => {
                 const badge = STATUS_BADGE[program.status] ?? STATUS_BADGE.draft;

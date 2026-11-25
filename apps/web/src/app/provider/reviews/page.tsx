@@ -27,6 +27,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { usePageList } from '@/lib/page-controls';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { StarRating } from '@/components/common/StarRating';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { ASK } from '@/lib/page-questions';
@@ -63,20 +64,7 @@ function ReviewCard({ review }: { review: Review }) {
           )}
           title={review.clientName}
           subtitle={review.clientCompany || undefined}
-          aside={(
-            <span className="flex items-center gap-0.5" role="img" aria-label={bilingualInline(`${review.rating} of 5 stars`, `${review.rating} από 5 αστέρια`)}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
-                  className={cn(
-                    'icon-sm',
-                    i < review.rating
-                      ? 'fill-status-warning text-status-warning'
-                      : 'text-muted-foreground/30'
-                  )} aria-hidden="true" />
-              ))}
-            </span>
-          )}
+          aside={<StarRating rating={review.rating} />}
         />
 
         <div className="space-y-1.5">

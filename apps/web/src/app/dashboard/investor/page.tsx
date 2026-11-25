@@ -299,7 +299,7 @@ export default function InvestorDashboard() {
       <div className="space-y-6">
         <HomeAskHero role="investor" showWaiting={false} band name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-          <MetricTile family="neutral" icon={Briefcase} label="Deal flow" labelEl="Ροή συμφωνιών" value={summary?.totalDeals ?? '—'} caption="Deals on your board" captionEl="Συμφωνίες στον πίνακά σας" href="/investor/pipeline" />
+          <MetricTile family="people" icon={Briefcase} label="Deal flow" labelEl="Ροή συμφωνιών" value={summary?.totalDeals ?? '—'} caption="Deals on your board" captionEl="Συμφωνίες στον πίνακά σας" href="/investor/pipeline" />
           <MetricTile family="time" icon={Target} label="Active deals" labelEl="Ενεργές συμφωνίες" value={dealsPage ? active.length : '—'} caption="Reviewing to negotiating" captionEl="Από αξιολόγηση έως διαπραγμάτευση" href="/investor/pipeline" />
           <MetricTile
             family="money"

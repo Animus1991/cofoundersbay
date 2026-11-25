@@ -427,7 +427,7 @@ export default function MentorDashboard() {
             href="/mentor/earnings"
           />
           <MetricTile
-            family="neutral"
+            family="time"
             icon={Star}
             label="Average rating"
             labelEl="Μέση βαθμολογία"
@@ -489,7 +489,7 @@ export default function MentorDashboard() {
                 titleEl="Αιτήματα καθοδήγησης"
                 count={requestData ? pendingRequests.length : undefined}
                 icon={Zap} iconTint="warning"
-                action={{ href: '/mentor/requests', label: 'View all', labelEl: 'Όλα' }}
+                action={{ href: '/mentor/requests', label: 'All', labelEl: 'Όλα' }}
                 contentClassName="card-rows"
               >
                 {requestsLoading && <Skeleton className="h-16" data-testid="mentor-requests-loading" />}
@@ -500,7 +500,7 @@ export default function MentorDashboard() {
               </SectionCard>
             )}
 
-            <SectionCard title="Upcoming sessions" titleEl="Επόμενες συνεδρίες" icon={Calendar} iconTint="warning" action={{ href: '/mentor/sessions', label: 'View all', labelEl: 'Όλες' }} contentClassName="card-rows">
+            <SectionCard title="Upcoming sessions" titleEl="Επόμενες συνεδρίες" icon={Calendar} iconTint="warning" action={{ href: '/mentor/sessions', label: 'All', labelEl: 'Όλες' }} contentClassName="card-rows">
               {upcomingAll.map((session, i) => (
                 <SessionRowItem key={session.id} session={session} next={i === 0} />
               ))}
@@ -509,7 +509,7 @@ export default function MentorDashboard() {
               ) : sessionsKnown && upcomingAll.length === 0 && <EmptyLine en="No upcoming sessions scheduled." el="Δεν υπάρχουν προγραμματισμένες συνεδρίες." />}
             </SectionCard>
 
-            <SectionCard title="Your mentees" titleEl="Οι καθοδηγούμενοί σας" icon={UserCheck} iconTint="accent" action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }}>
+            <SectionCard title="Your mentees" titleEl="Οι καθοδηγούμενοί σας" icon={UserCheck} iconTint="accent" action={{ href: '/mentor/mentees', label: 'All', labelEl: 'Όλοι' }}>
               {/* The people rail the home draws (docs §134): the same 200px
                   portrait tiles where plain rows used to sit; Message stays
                   the verb, the profile joins the tile's menu. */}

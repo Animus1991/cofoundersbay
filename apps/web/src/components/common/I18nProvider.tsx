@@ -76,6 +76,7 @@ export function useI18n(): I18nContextValue {
   const catalogTick = useContext(I18nContext);
   const locale = useSyncExternalStore(subscribeLocale, getClientLocale, getServerLocale);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- catalogTick is load-bearing, not a real input: a catalog that finishes loading must mint a new `t`, or every consumer keeps translating with the previous catalog.
   const t = useCallback((source: string, vars?: TranslateVars) => translate(locale, source, vars), [locale, catalogTick]);
 
   return useMemo<I18nContextValue>(

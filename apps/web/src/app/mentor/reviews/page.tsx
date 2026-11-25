@@ -26,13 +26,14 @@ import {
 } from '@/components/ui/select';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { cn, initialsOf } from '@/lib/utils';
+import { initialsOf } from '@/lib/utils';
 import { MENTOR_DEMO_REVIEWS } from '@/lib/demo/mentor-world';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { StarRating } from '@/components/common/StarRating';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { demoPortrait } from '@/lib/demo/photos';
 import { ASK } from '@/lib/page-questions';
@@ -48,24 +49,6 @@ type Review = {
   sessionType: string;
   helpful: number;
 };
-
-function StarRating({ rating }: { rating: number }) {
-  return (
-    // data-keep-icon: inside a card the decorative-icon rule hides every
-    // bare glyph, and these stars are the rating itself.
-    <div data-keep-icon="" className="flex gap-0.5" role="img" aria-label={bilingualInline(`${rating} of 5 stars`, `${rating} από 5 αστέρια`)}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={cn(
-            'h-4 w-4',
-            star <= rating ? 'fill-status-warning text-status-warning' : 'text-muted-foreground/30'
-          )}
-        />
-      ))}
-    </div>
-  );
-}
 
 function ReviewCard({ review }: { review: Review }) {
   return (

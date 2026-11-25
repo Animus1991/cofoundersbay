@@ -338,7 +338,7 @@ export default function ProviderDashboard() {
             href="/provider/inquiries"
           />
           <MetricTile
-            family="neutral"
+            family="time"
             icon={FolderKanban}
             label="Active projects"
             labelEl="Ενεργά έργα"
@@ -348,7 +348,7 @@ export default function ProviderDashboard() {
             href="/provider/projects"
           />
           <MetricTile
-            family="neutral"
+            family="money"
             icon={Store}
             label="Live services"
             labelEl="Ενεργές υπηρεσίες"
@@ -358,7 +358,7 @@ export default function ProviderDashboard() {
             href="/provider/services"
           />
           <MetricTile
-            family="neutral"
+            family="time"
             icon={Star}
             label="Rating"
             labelEl="Βαθμολογία"
@@ -468,7 +468,7 @@ export default function ProviderDashboard() {
               title="Your services"
               titleEl="Οι υπηρεσίες σας"
               icon={Store}
-              action={{ href: '/provider/services', label: 'Manage', labelEl: 'Διαχείριση' }}
+              action={{ href: '/provider/services', label: 'All', labelEl: 'Όλες' }}
               contentClassName="card-rows"
             >
               {servicesLoading && [0, 1].map((i) => <Skeleton key={i} className="h-16" />)}
