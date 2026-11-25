@@ -590,7 +590,7 @@ describe('pages that offer controls', () => {
       'src/components/layout/TopBar.tsx': 'app chrome',
       'src/components/messaging/ConversationValidation.tsx': 'the open chat\'s validation tools (mode, export, hash), not a list row',
       'src/components/discover/ProfileCard.tsx': 'the card owns its share and report dialogs; connect, message and save are /discover commands',
-      'src/components/feed/PostCard.tsx': 'not mounted (/feed and /groups/[groupId] render their own)',
+      'src/components/feed/PostCard.tsx': 'mounted by /feed; its Report item is the page\'s report_author command (/groups/[groupId] draws its own post card)',
       'src/app/matches/[userId]/page.tsx': "one match's detail page: copy its link, open the profile",
       'src/components/builder/BuilderWorkspace.tsx': 'the builder workspace, reached through the builder capabilities',
       'src/components/research/CanvasBranchSelector.tsx': 'canvas branch picker',

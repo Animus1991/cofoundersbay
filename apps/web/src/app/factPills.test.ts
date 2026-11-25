@@ -13,7 +13,6 @@ import { describe, expect, it } from 'vitest';
 const ALLOWED: Record<string, string> = {
   'src/app/profile/edit/page.tsx': 'removable tag chips in a form (each carries its remove button)',
   'src/app/projects/create/page.tsx': 'removable role chips in a form',
-  'src/components/feed/CreatePost.tsx': 'removable tag chips while composing',
   'src/components/discover/SearchFilters.tsx': 'active filters, each removable',
   'src/components/builder/MVPPlanner.tsx': 'removable goal chips in the planner',
   'src/components/research/NodeTagsEditor.tsx': 'removable tags on a canvas node, in its editor',
