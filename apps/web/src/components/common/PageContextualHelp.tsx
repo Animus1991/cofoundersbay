@@ -68,7 +68,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           the share of slides that have body text — adding empty templates does not raise the bar.
         </p>
         <p>
-          Use <em>AI Generate</em> for a full outline, or <em>Ask AI</em> to draft the current slide from Idea Core, Market,
+          Use <em>Fill the gaps with AI</em> for a full outline, or <em>Ask AI</em> to draft the current slide from Idea Core, Market,
           and Financials. <em>Export</em> downloads Markdown. Save writes back to the workspace.
         </p>
       </>
@@ -80,7 +80,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           Η ολοκλήρωση είναι το μερίδιο διαφανειών με κείμενο — τα κενά πρότυπα δεν ανεβάζουν τη μπάρα.
         </p>
         <p>
-          Με <em>Δημιουργία AI</em> παίρνετε πλήρες περίγραμμα, ή <em>Ρωτήστε το AI</em> για προσχέδιο της τρέχουσας
+          Με <em>Συμπλήρωση κενών με AI</em> παίρνετε πλήρες περίγραμμα, ή <em>Ρωτήστε το AI</em> για προσχέδιο της τρέχουσας
           διαφάνειας από Ιδέα, Αγορά και Οικονομικά. Η <em>Εξαγωγή</em> κατεβάζει Markdown. Η αποθήκευση γράφει στον χώρο εργασίας.
         </p>
       </>
@@ -95,7 +95,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           of <em>required</em> answers filled; optional questions do not hold the bar.
         </p>
         <p>
-          Use <em>AI Generate</em> to fill empty answers only in the open programme, or <em>Ask AI</em> to draft from
+          Use <em>Fill the gaps with AI</em> to fill empty answers only in the open programme, or <em>Ask AI</em> to draft from
           your Idea Core, research boards and saved round details — it asks for anything missing rather than inventing
           figures. Save writes this workspace artefact. <em>Mark submitted</em> appears when
           every required field is filled. View Program opens the real application page.
@@ -110,7 +110,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           επιχορηγήσεις. Η ολοκλήρωση είναι το μερίδιο <em>υποχρεωτικών</em> απαντήσεων· οι προαιρετικές δεν κρατούν τη μπάρα.
         </p>
         <p>
-          Με <em>Δημιουργία AI</em> γεμίζετε μόνο κενές απαντήσεις στο ανοιχτό πρόγραμμα, ή με <em>Ρωτήστε το AI</em>
+          Με <em>Συμπλήρωση κενών με AI</em> γεμίζετε μόνο κενές απαντήσεις στο ανοιχτό πρόγραμμα, ή με <em>Ρωτήστε το AI</em>
           συντάσσετε από τον Πυρήνα ιδέας, τους πίνακες έρευνας και τα αποθηκευμένα στοιχεία του γύρου σας — ρωτά ό,τι
           λείπει αντί να επινοεί αριθμούς. Η αποθήκευση γράφει σε αυτό το παραδοτέο. Η
           <em>Σήμανση υποβολής</em> εμφανίζεται όταν όλα τα υποχρεωτικά πεδία έχουν απάντηση. Το «Προβολή προγράμματος»

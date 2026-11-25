@@ -959,8 +959,11 @@ export function BuilderWorkspace({
               />
             </CardDescription>
           </div>
+          {/* The card's Ask in its one form (docs §125): "✧ Ask", where this
+              one alone said "Ask AI" (docs §150). */}
           <AIInsightButton
-            className="h-8 w-full sm:ml-auto sm:w-auto"
+            variant="card"
+            className="ml-auto"
             prompt={{
               en: `Startup Builder is ${overallCompletion}% complete and ${overallReadiness}% ready. Documents: ${documents.map((d) => `${d.title} ${d.completionPercent}%`).join(', ') || 'none yet'}. Recommend the next artifact (Idea Core, BMC, interviews, pitch, MVP, financials) and draft the first section.`,
               el: `Ο Startup Builder είναι ${overallCompletion}% ολοκληρωμένος και ${overallReadiness}% έτοιμος. Έγγραφα: ${documents.map((d) => `${d.title} ${d.completionPercent}%`).join(', ') || 'κανένα ακόμη'}. Πρότεινε το επόμενο στοιχείο (Πυρήνας ιδέας, BMC, συνεντεύξεις, pitch, MVP, οικονομικά) και ετοίμασε την πρώτη ενότητα.`,
@@ -1212,8 +1215,12 @@ export function BuilderWorkspace({
                   </div>
                   <CardFoot
                     meta={(
-                      <span className="flex items-center gap-1 transition-colors group-hover:text-primary-accessible">
-                        <BilingualText en={builderEn('open')} el={builderEl('open')} compact /> <ArrowRight className="icon-sm" aria-hidden="true" />
+                      /* The link's colour and its arrow, as the home's "All →"
+                         (docs §143): a grey «Άνοιγμα» whose arrow the icon
+                         rule hid read as a caption (docs §150). */
+                      <span className="flex items-center gap-1 font-medium text-primary-accessible">
+                        <BilingualText en={builderEn('open')} el={builderEl('open')} compact />
+                        <span data-keep-icon="" className="inline-flex" aria-hidden="true"><ArrowRight className="icon-sm transition-transform group-hover:translate-x-0.5" /></span>
                       </span>
                     )}
                   />

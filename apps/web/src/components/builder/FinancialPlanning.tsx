@@ -22,7 +22,7 @@ import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, BUILDER_SUBTAB_LIST, BUILDER_SUBTAB_TRIGGER, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualInline } from '@/lib/i18n/format';
-import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 
 interface RevenueStream {
   name: string;
@@ -254,14 +254,21 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
     onSave?.(data);
   };
 
+  /* Euros, in the reader's own number format: the plan read "$0" while the
+     workspace's round, the fundraising tracker and the calculators all count
+     in euros (€375K of €750K), and a Greek reader met "0.0x" (docs §150). */
+  const { primary } = useLanguagePreference();
+  const numberLocale = primary === 'el' ? 'el-GR' : 'en-GB';
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(numberLocale, {
       style: 'currency',
-      currency: 'USD',
+      currency: 'EUR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);
   };
+  const formatRatio = (ratio: number) =>
+    `${ratio.toLocaleString(numberLocale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}x`;
 
   const totalStartupCosts = data.startupCosts.reduce((sum, c) => sum + c.amount, 0);
   const totalMonthlyOperating = data.operatingCosts
@@ -325,7 +332,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   {data.runway}{' '}
                   <BilingualText en={builderEn('fin_months')} el={builderEl('fin_months')} compact />
                 </>
-              ) : 'N/A'}
+              ) : '—'}
             </div>
           </CardContent>
         </Card>
@@ -355,7 +362,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               data.unitEconomics.ltvCacRatio >= 3 ? "text-status-success" :
               data.unitEconomics.ltvCacRatio >= 1 ? "text-status-warning" : "text-status-danger"
             )}>
-              {data.unitEconomics.ltvCacRatio.toFixed(1)}x
+              {formatRatio(data.unitEconomics.ltvCacRatio)}
             </div>
           </CardContent>
         </Card>
@@ -723,7 +730,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     data.unitEconomics.ltvCacRatio >= 3 ? "text-status-success" :
                     data.unitEconomics.ltvCacRatio >= 1 ? "text-status-warning" : "text-status-danger"
                   )}>
-                    {data.unitEconomics.ltvCacRatio.toFixed(1)}x
+                    {formatRatio(data.unitEconomics.ltvCacRatio)}
                   </div>
                   <div className="text-xs text-muted-foreground"><BilingualText en="LTV/CAC Ratio" el="Λόγος LTV/CAC" compact /></div>
                   <Verdict ok={data.unitEconomics.ltvCacRatio >= 3} warn={data.unitEconomics.ltvCacRatio >= 1}>

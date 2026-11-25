@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
   CheckCircle2,
+  Circle,
   AlertTriangle,
   XCircle,
   RefreshCw,
@@ -428,8 +429,11 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Score Circle */}
             <div className="flex flex-col items-center justify-center">
-              <div className="relative w-32 h-32">
-                <svg className="w-full h-full transform -rotate-90">
+              {/* 128px stated in px, and a viewBox: `w-32` is 105px under the
+                  desktop's 82% root while the circles are drawn for 128, so
+                  the ring was cut off at its right and bottom (docs §150). */}
+              <div className="relative h-[128px] w-[128px]">
+                <svg viewBox="0 0 128 128" className="h-full w-full -rotate-90" aria-hidden="true">
                   <circle
                     cx="64"
                     cy="64"
@@ -566,7 +570,9 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                 <ul className="space-y-2">
                   {data.nextMilestones.map((milestone, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="icon-sm text-status-success mt-0.5 shrink-0" />
+                      {/* Steps to take, not taken: an empty circle, where a
+                          green tick said they were done (docs §150). */}
+                      <Circle className="icon-sm mt-0.5 shrink-0 text-muted-foreground/60" />
                       {BUILDER_PREVIEW_HINT_EL[milestone]
                         ? <BilingualText en={milestone} el={BUILDER_PREVIEW_HINT_EL[milestone]} wrap />
                         : milestone}

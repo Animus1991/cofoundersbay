@@ -56,7 +56,7 @@ describe('application editing and assistant outcomes', () => {
 
   it('does not add demo fundraising facts to an unseeded workspace prompt', () => {
     render(<ApplicationGenerator hideTitle onSave={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: /AI Generate/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Fill the gaps with AI/i }));
     const prompt = mocks.ask.mock.calls[0]?.[0];
     expect(prompt).toContain('Y Combinator');
     expect(prompt).not.toMatch(/Harbor|Athens Tech Angels|€750K|€375K/);
@@ -107,7 +107,7 @@ describe('application editing and assistant outcomes', () => {
   it('keeps manual edits made while the AI draft is pending', async () => {
     const pending = deferred<{ answers: Record<string, string> }>();
     render(<ApplicationGenerator hideTitle onSave={vi.fn()} onGenerate={() => pending.promise} />);
-    fireEvent.click(screen.getByRole('button', { name: /AI Generate/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Fill the gaps with AI/i }));
     fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: 'My own answer' } });
     await act(async () => { pending.resolve({ answers: { yc1: 'AI replacement', yc2: 'AI draft for the empty answer' } }); });
     expect((screen.getAllByRole('textbox')[0] as HTMLTextAreaElement).value).toBe('My own answer');
