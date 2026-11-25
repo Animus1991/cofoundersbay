@@ -191,7 +191,9 @@ function LeadName({ lead, className, as: Tag = 'p' }: { lead: InvestorLead; clas
 /** Opens the note in the founder's own mail app, from the step written down for this investor. */
 function LeadEmail({ lead, onEmail }: { lead: InvestorLead; onEmail: (lead: InvestorLead) => void }) {
   return (
-    <button type="button" className="tap-extend-y text-left text-xs font-medium text-muted-foreground hover:text-foreground" onClick={() => onEmail(lead)}>
+    // The link's colour: in grey under the investor's line it read as one
+    // more fact about them, not the way to write to them (docs §154).
+    <button type="button" className="tap-extend-y w-fit text-left text-xs font-medium text-primary-accessible hover:underline" onClick={() => onEmail(lead)}>
       <BilingualText en={fundraisingEn('email_write')} el={fundraisingEl('email_write')} compact />
     </button>
   );
@@ -1581,7 +1583,7 @@ export default function FundraisingPage() {
                       {lead.nextStep ? <span className="block text-xs text-muted-foreground">{lead.nextStep}</span> : null}
                     </span>
                     <LeadEmail lead={lead} onEmail={setEmailTo} />
-                    <button type="button" className="tap-extend-y text-xs font-medium text-muted-foreground hover:text-foreground" onClick={() => setFollowUpFor(lead)}>
+                    <button type="button" className="tap-extend-y text-xs font-medium text-primary-accessible hover:underline" onClick={() => setFollowUpFor(lead)}>
                       <BilingualText en={fundraisingEn('followup_change')} el={fundraisingEl('followup_change')} compact />
                     </button>
                   </li>
