@@ -197,7 +197,10 @@ export function CanvasInspectorPanel({
             />
           </p>
         )}
-        <div className={cn(idle && 'opacity-50')}>
+        {/* With nothing selected, the hint alone: the column of greyed
+            swatches, sliders and text buttons under it was every tool at once
+            and none usable (docs §152). They appear with a selection. */}
+        <div className={cn(idle && 'hidden')}>
           <p className="mb-1.5 text-2xs font-medium text-muted-foreground">
             <BilingualText en={researchEn('format')} el={researchEl('format')} compact />
           </p>

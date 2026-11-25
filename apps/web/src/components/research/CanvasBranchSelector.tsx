@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { GitBranch, ChevronDown, Check, Plus, Loader2, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 import { listCanvasBranches, type CanvasBranch } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 
@@ -43,7 +44,9 @@ export function CanvasBranchSelector({
 
   const branches: CanvasBranch[] = data ?? [];
   const activeBranch = branches.find((b) => b.id === activeBranchId) ?? null;
-  const label = activeBranch?.name ?? 'main';
+  // The board itself, before any branch, in the reader's words: a bare "main"
+  // was the one English word in the canvas toolbar (docs §152).
+  const label = activeBranch?.name ?? <BilingualText en="Main" el="Κύρια" compact />;
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
