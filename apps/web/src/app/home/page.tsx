@@ -229,9 +229,9 @@ function Home() {
       titleSrOnly
       askAi={false}
     >
-      {/* Two columns from xl (docs §131.2, §142): the hero, the event strip,
-          the people rail and the feed on the left; what is in progress, what
-          waits and the steps on the right. The right column is one stack of
+      {/* The hero spans the page (docs §144); under it, two columns from xl
+          (§131.2, §142): the event strip, the people rail and the feed on the
+          left; what is in progress, what waits and the steps on the right. The right column is one stack of
           its own, so a short card there no longer stretches or pushes the
           row beside it (a 140px gap under "Continue" and an empty band under
           the strip at 1440). On a phone that stack is `display: contents`
@@ -239,7 +239,7 @@ function Home() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* The greeting leads the brand card: one «Καλημέρα, …», the one-line
             purpose, the question field and three starting points (docs §131.2). */}
-        <div className="order-1 min-w-0 xl:col-span-2 xl:col-start-1">
+        <div className="order-1 min-w-0 xl:col-span-3">
           <HomeAskHero
             role={audience === 'org' ? 'incubator' : audience}
             hero
@@ -252,7 +252,7 @@ function Home() {
         {/* Sticky from xl (docs §143): the column ended at ~640px and left the
             right third empty beside the whole feed. Taller than the window
             (the first steps of a new account), it scrolls on its own. */}
-        <div className="contents xl:sticky xl:top-20 xl:col-start-3 xl:row-span-4 xl:row-start-1 xl:-mx-1 xl:flex xl:max-h-[calc(100dvh-6rem)] xl:flex-col xl:gap-6 xl:self-start xl:overflow-y-auto xl:px-1 xl:pb-1" data-home-side="">
+        <div className="contents xl:sticky xl:top-20 xl:col-start-3 xl:row-span-3 xl:row-start-2 xl:-mx-1 xl:flex xl:max-h-[calc(100dvh-6rem)] xl:flex-col xl:gap-6 xl:self-start xl:overflow-y-auto xl:px-1 xl:pb-1" data-home-side="">
           {/* The one thing in progress, straight under the hero on a phone.
               One row, one verb. */}
           <div className="order-2 min-w-0">

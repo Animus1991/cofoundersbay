@@ -214,12 +214,13 @@ describe('HomeAskHero hero card (docs §131.2, §133.4)', () => {
     expect(within(form).getByTestId('home-ask-submit')).toBeTruthy();
   });
 
-  it('offers the corner slot for the header tools and shows the role’s glyph well only from 2xl', () => {
+  it('offers the corner slot for the header tools and shows the role’s glyph well only from xl', () => {
     const { container } = render(<HomeAskHero role="founder" hero />);
     expect(container.querySelector('[data-hero-actions]')).toBeTruthy();
     const well = container.querySelector('[data-hero-figure]')!;
     expect(well.className).toContain('hidden');
-    expect(well.className).toContain('2xl:block');
+    expect(well.className).toContain('xl:block');
+    expect(well.className).not.toContain('2xl:');
     const round = well.querySelector('.rounded-full')!;
     expect(round.className).toContain('h-28');
     expect(round.className).toContain('bg-white/15');

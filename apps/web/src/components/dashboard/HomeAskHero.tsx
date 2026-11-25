@@ -386,7 +386,7 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
     >
       {/* The figure joins only from xl (docs §133.4): below it the card is one
           column, no cut-off figure beside or above the greeting. */}
-      <div className={hero ? 'grid items-center gap-5 2xl:grid-cols-[minmax(0,1fr)_auto]' : band ? 'grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
+      <div className={hero || band ? 'grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
         <div className={hero ? 'min-w-0 space-y-3 pe-10' : band ? 'min-w-0 space-y-3 pe-10' : 'space-y-3'}>
           {hero ? heroBody : band ? bandBody : (
             <p id={`${boxId}-title`} hidden={!greeting} className="break-words text-sm text-muted-foreground" data-testid="home-greeting">
@@ -424,11 +424,9 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
         </div>
         {hero ? (
           /* The role's mark on the card: a crisp round well with the glyph and
-             a small spark at its top-right (docs §133.8). Only from 2xl: at xl
-             the home's right column takes a third of the width, and beside
-             the 132px well the Greek scope pill fell onto a row of its own
-             (docs §142). */
-          <div data-keep-icon="" data-hero-figure="" className="relative hidden 2xl:block" aria-hidden="true">
+             a small spark at its top-right (docs §133.8). Only from xl, where
+             the figure used to stand; the hero spans the page there (§144). */
+          <div data-keep-icon="" data-hero-figure="" className="relative hidden xl:block" aria-hidden="true">
             <span className="flex h-28 w-28 items-center justify-center rounded-full bg-white/15 text-primary-foreground">
               <CfbGlyph name={ROLE_GLYPH[role] ?? 'spark'} className="h-14 w-14" />
             </span>
