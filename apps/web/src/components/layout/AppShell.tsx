@@ -104,6 +104,9 @@ export type AppShellFrameProps = {
   children: ReactNode;
   /** Full-height layout (messages) — no page scroll, fills the viewport. */
   fullHeight?: boolean;
+  /** A full-height page that draws Create, language, notifications and account
+   *  in its own header, so it needs no top bar (docs §155). */
+  toolsInPage?: boolean;
   /** Extra class on the <main> element. */
   contentClassName?: string;
 };
@@ -121,6 +124,7 @@ export type AppShellFrameProps = {
 export function AppShellFrame({
   children,
   fullHeight = false,
+  toolsInPage = false,
   contentClassName,
 }: AppShellFrameProps) {
   const { expanded, mounted } = useSidebar();
@@ -187,7 +191,7 @@ export function AppShellFrame({
           {/* The page's first block holds Create, language, notifications and
               account (docs §146); a full-height page has none, so it keeps
               the bar. */}
-          <MemoTopBar desktopBar={GLOBAL_TOOLS_PLACEMENT === 'bar' || fullHeight} />
+          <MemoTopBar desktopBar={GLOBAL_TOOLS_PLACEMENT === 'bar' || (fullHeight && !toolsInPage)} />
 
           {fullHeight ? (
             <main
@@ -248,6 +252,8 @@ type AppShellProps = {
   showHelp?: boolean;
   /** Full-height layout (messages page) — no scroll, fills viewport */
   fullHeight?: boolean;
+  /** With fullHeight: the page's own header holds the four global tools (docs §155). */
+  toolsInPage?: boolean;
   /** Extra class on the content wrapper */
   contentClassName?: string;
   /** Extra class on the page H1 — founder overview scales the title locally. */
@@ -307,6 +313,7 @@ export function AppShell({
   children,
   showHelp = false,
   fullHeight = false,
+  toolsInPage = false,
   contentClassName,
   titleClassName,
   titleSrOnly = false,
@@ -555,7 +562,7 @@ export function AppShell({
   if (insideFrame) return withRail;
 
   return (
-    <AppShellFrame fullHeight={fullHeight} contentClassName={contentClassName}>
+    <AppShellFrame fullHeight={fullHeight} toolsInPage={toolsInPage} contentClassName={contentClassName}>
       {withRail}
     </AppShellFrame>
   );

@@ -51,7 +51,9 @@ function AIPageInner() {
   }
 
   return (
-    <AppShell fullHeight contentClassName="min-h-0 flex flex-col">
+    // The workspace's own header holds Create, language, notifications and
+    // account: no top bar above it, as on every other page (docs §146, §155).
+    <AppShell fullHeight toolsInPage contentClassName="min-h-0 flex flex-col">
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {/* A question arriving in ?q= is sent, not just typed in: eleven
             "Ask AI about this" links land here, and each used to leave the
@@ -71,7 +73,7 @@ export default function AIPage() {
   return (
     <Suspense
       fallback={
-        <AppShell fullHeight contentClassName="min-h-0">
+        <AppShell fullHeight toolsInPage contentClassName="min-h-0">
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
             <BilingualText en="Loading assistant…" el="Φόρτωση βοηθού…" compact />
           </div>

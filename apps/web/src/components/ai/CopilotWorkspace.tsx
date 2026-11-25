@@ -51,6 +51,7 @@ import { DictationButton } from '@/components/ai/DictationButton';
 import { searchProfiles } from '@/lib/api';
 import { useRoleOptional } from '@/contexts/RoleContext';
 import { StatusText } from '@/components/common/StatusText';
+import { GLOBAL_TOOLS_PLACEMENT, GlobalTools } from '@/components/layout/GlobalTools';
 import { followUpsFor } from '@/lib/copilot-followups';
 import { getPageMeta } from '@/lib/page-registry';
 
@@ -607,6 +608,15 @@ export function CopilotWorkspace({
                 </span>
               </button>
             )}
+            {/* On the page, the header that holds the assistant's tools also
+                holds Create, language, notifications and account: /ai had
+                kept a top bar for those four alone (docs §146.3, §155). */}
+            {isPage && GLOBAL_TOOLS_PLACEMENT === 'page' ? (
+              <>
+                <span aria-hidden="true" className="mx-1 hidden h-6 w-px bg-border sm:block" />
+                <GlobalTools inline className="hidden sm:flex" />
+              </>
+            ) : null}
           </div>
         </div>
 
