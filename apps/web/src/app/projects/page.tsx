@@ -151,8 +151,12 @@ function ProjectCard({
     <>
       <StageBadge status={project.status} />
       {outcome ? (
+        /* A dot after the stage and a colon after the caption: «Κατασκευή
+           Κάρτα ανάγκης • Σε συζήτηση» still read as one run of words
+           (docs §154). */
         <span className="inline-flex items-center gap-1 text-2xs text-muted-foreground">
-          <BilingualText en={projectEn('need_card_caption')} el={projectEl('need_card_caption')} compact />
+          <span aria-hidden="true" className="me-0.5">·</span>
+          <BilingualText en={`${projectEn('need_card_caption')}:`} el={`${projectEl('need_card_caption')}:`} compact />
           <OutcomeChip outcome={outcome.outcome} reason={outcome.reason} />
         </span>
       ) : null}

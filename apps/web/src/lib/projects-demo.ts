@@ -156,11 +156,11 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
     id: '2',
     name: 'Harbor GTM board',
     tagline: 'A filled Idea Core and a research board founders can share',
-    taglineEl: 'Συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας που μοιράζεται',
+    taglineEl: 'Συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας για κοινοποίηση',
     description:
       'First conversion from the GTM offer: a filled Idea Core and a research board they can share. Elena leads; Alex Demo is on the board as a collaborator.\n\nHarbor GTM notes stay aligned with Idea Core and the €750K seed.',
     descriptionEl:
-      'Πρώτη μετατροπή από το GTM: συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας που μοιράζεται. Η Elena ηγείται· ο Alex Demo είναι συνεργάτης στον πίνακα.\n\nΟι σημειώσεις GTM του Harbor μένουν σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο €750K.',
+      'Πρώτη μετατροπή από το GTM: συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας για κοινοποίηση. Η Elena ηγείται· ο Alex Demo είναι συνεργάτης στον πίνακα.\n\nΟι σημειώσεις GTM του Harbor μένουν σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο €750K.',
     status: 'validating',
     stage: 'Idea',
     industry: 'Marketplace',
@@ -197,7 +197,7 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
     id: '3',
     name: 'First founder-network path in Athens',
     tagline: 'Discover, matches, and shareable Builder docs',
-    taglineEl: 'Discover, matches και παραδοτέα Builder που μοιράζονται',
+    taglineEl: 'Εξερεύνηση, αντιστοιχίσεις και παραδοτέα του Builder για κοινοποίηση',
     description:
       'Alex Demo leads this project: a first path into founder networks.\n\nFirst path: founder networks in Athens and EU time zones. Waiting on a warm intro.',
     descriptionEl:
