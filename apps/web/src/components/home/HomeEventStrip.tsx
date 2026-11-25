@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { BilingualText } from '@/components/common/BilingualText';
+import { DateBadge } from '@/components/common/DateBadge';
 import { SectionSticker } from '@/components/dashboard/SectionSticker';
 import { useCoverFailed } from '@/hooks/useCoverFailed';
 import { listEvents, type EventItem } from '@/lib/api';
@@ -29,12 +30,7 @@ function StripCard({ event }: { event: EventItem }) {
         ) : (
           <div className="h-full w-full bg-status-warning-bg" aria-hidden="true" />
         )}
-        <div className="absolute left-2 top-2">
-          <div className="flex h-9 w-9 flex-col items-center justify-center rounded-lg bg-card text-center shadow-sm">
-            <span className="text-xs font-bold tabular-nums text-primary-accessible" aria-hidden="true">{start.getDate()}</span>
-            <span className="card-meta leading-none text-muted-foreground" aria-hidden="true">{fmtDate(start, { month: 'short' })}</span>
-          </div>
-        </div>
+        <DateBadge date={start} size="sm" />
       </div>
       <p className="mt-1.5 line-clamp-2 text-sm font-medium text-foreground transition-colors group-hover:text-primary-accessible">{event.title}</p>
     </Link>

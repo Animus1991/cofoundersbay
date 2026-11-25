@@ -1,7 +1,9 @@
 'use client';
 
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { EVENT_WINDOWS, eventWindowRange, readEventQuery, type EventQueryFilter, type EventWindow } from '@cofounderbay/shared';
+import { Badge } from '@/components/ui/badge';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -54,6 +56,13 @@ const KIND_OPTIONS: ReadonlyArray<{ value: EventKind; en: string; el: string }> 
   { value: 'other', en: 'Other', el: 'Άλλα' },
 ];
 
+/** When an event starts (docs §142): any time, or one of the shared windows. */
+type EventWhen = 'any' | EventWindow;
+const WHEN_OPTIONS: ReadonlyArray<{ value: EventWhen; en: string; el: string }> = [
+  { value: 'any', en: 'Any time', el: 'Οποτεδήποτε' },
+  ...EVENT_WINDOWS,
+];
+
 function toEventData(item: EventItem): EventData {
   return {
     id: item.id,
@@ -92,6 +101,44 @@ export default function EventsPage() {
   const [filter, setFilter] = useState<EventFilter>('all');
   const [kind, setKind] = useState<EventKind>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [when, setWhen] = useState<EventWhen>('any');
+  // Plain words in the search field (docs §142): Enter reads "online
+  // workshops this week" into the three filters; the strip says what it read
+  // and puts the words back as typed on request.
+  const [readAs, setReadAs] = useState<{ filters: EventQueryFilter[]; typed: string } | null>(null);
+  const [preview, setPreview] = useState<EventQueryFilter[]>([]);
+  useEffect(() => {
+    const timer = setTimeout(() => setPreview(searchQuery.trim() ? readEventQuery(searchQuery).understood : []), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+  const readSearch = () => {
+    const read = readEventQuery(searchQuery);
+    if (read.understood.length === 0) return;
+    // A new sentence replaces what the last one read; a filter picked by
+    // hand in the panel stays.
+    const before = new Set(readAs?.filters.map((f) => f.kind) ?? []);
+    if (read.format) setFilter(read.format);
+    else if (before.has('format')) setFilter('all');
+    if (read.type) setKind(read.type as EventKind);
+    else if (before.has('kind')) setKind('all');
+    if (read.when) {
+      setWhen(read.when);
+      if (activeTab === 'past') setActiveTab('upcoming');
+    } else if (before.has('when')) setWhen('any');
+    setReadAs({ filters: read.understood, typed: searchQuery });
+    setSearchQuery(read.rest);
+    setPreview([]);
+  };
+  const searchAsTyped = () => {
+    if (!readAs) return;
+    for (const f of readAs.filters) {
+      if (f.kind === 'format') setFilter('all');
+      if (f.kind === 'kind') setKind('all');
+      if (f.kind === 'when') setWhen('any');
+    }
+    setSearchQuery(readAs.typed);
+    setReadAs(null);
+  };
   const { openRailSection } = usePageRail();
   // Offered to the assistant: the tab, the format filter and the layout,
   // through the same setters. RSVPs and creating events are capabilities of
@@ -106,6 +153,8 @@ export default function EventsPage() {
       FORMAT_OPTIONS.map(({ value, en, el }) => ({ value, en, el })), filter, (v) => setFilter(v as EventFilter)),
     choiceControl('kind', 'Event kind filter', 'Φίλτρο είδους εκδήλωσης',
       KIND_OPTIONS.map(({ value, en, el }) => ({ value, en, el })), kind, (v) => setKind(v as EventKind)),
+    choiceControl('when', 'Event time filter', 'Φίλτρο χρόνου εκδήλωσης',
+      WHEN_OPTIONS.map(({ value, en, el }) => ({ value, en, el })), when, (v) => setWhen(v as EventWhen)),
     choiceControl('view', 'Events layout', 'Διάταξη εκδηλώσεων', [
       { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
       { value: 'list', en: 'List', el: 'Λίστα' },
@@ -140,11 +189,20 @@ export default function EventsPage() {
   const kindOptions = KIND_OPTIONS
     .filter((o) => o.value === 'all' || o.value === kind || (kindCounts.get(o.value) ?? 0) > 0)
     .map((o) => ({ ...o, count: o.value === 'all' ? eventsRaw.length : kindCounts.get(o.value) ?? 0 }));
-  const events = useMemo(
-    () => eventsRaw.filter((e) => kind === 'all' || e.eventType === kind).map(toEventData),
-    [eventsRaw, kind],
-  );
-  const filtersOn = (filter !== 'all' ? 1 : 0) + (kind !== 'all' ? 1 : 0);
+  const [now] = useState(() => new Date());
+  const events = useMemo(() => {
+    const span = when === 'any' ? null : eventWindowRange(when, now);
+    return eventsRaw
+      .filter((e) => kind === 'all' || e.eventType === kind)
+      .filter((e) => {
+        if (!span) return true;
+        const start = new Date(e.startAt);
+        return start >= span.from && start < span.to;
+      })
+      .map(toEventData);
+  }, [eventsRaw, kind, when, now]);
+  const filtersOn = (filter !== 'all' ? 1 : 0) + (kind !== 'all' ? 1 : 0) + (when !== 'any' ? 1 : 0);
+  const clearFilters = () => { setFilter('all'); setKind('all'); setWhen('any'); setReadAs(null); };
   const featured = viewMode === 'grid' ? events[0] : null;
   const rest = viewMode === 'grid' ? events.slice(1) : events;
 
@@ -250,8 +308,9 @@ export default function EventsPage() {
           {kindOptions.length > 2 || kind !== 'all' ? (
             <RailOptions title="Kind" titleEl="Είδος" options={kindOptions} value={kind} onChange={setKind} />
           ) : null}
+          <RailOptions title="When" titleEl="Πότε" options={WHEN_OPTIONS} value={when} onChange={setWhen} />
           {filtersOn > 0 && (
-            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setFilter('all'); setKind('all'); }} />
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={clearFilters} />
           )}
         </div>
       ),
@@ -314,16 +373,21 @@ export default function EventsPage() {
             </TabsTrigger>
           </TabsList>
 
-          <div className="relative min-w-[12rem] flex-1 sm:ml-auto sm:max-w-xs">
+          <form
+            role="search"
+            className="relative min-w-[12rem] flex-1 sm:ml-auto sm:max-w-sm"
+            onSubmit={(e) => { e.preventDefault(); readSearch(); }}
+          >
             <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder={sayOne('Search events…', 'Αναζήτηση εκδηλώσεων…')}
+              placeholder={sayOne('e.g. online this week', 'π.χ. διαδικτυακά αυτή την εβδομάδα')}
               aria-label={bilingualInline('Search events', 'Αναζήτηση εκδηλώσεων')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
+              data-testid="events-search"
             />
-          </div>
+          </form>
           <div className="flex items-center gap-1 rounded-lg border border-border p-1">
             <Button aria-label={bilingualInline('Grid view', 'Προβολή πλέγματος')} aria-pressed={viewMode === 'grid'}
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
@@ -343,6 +407,32 @@ export default function EventsPage() {
             </Button>
           </div>
         </div>
+
+        {preview.length > 0 && !readAs ? (
+          <p className="mt-2 text-xs text-muted-foreground" aria-live="polite" data-testid="events-read-preview">
+            <BilingualText
+              en={`Press Enter to read as filters: ${preview.map((f) => f.en).join(' · ')}`}
+              el={`Πατήστε Enter για ανάγνωση ως φίλτρα: ${preview.map((f) => f.el).join(' · ')}`}
+              wrap
+            />
+          </p>
+        ) : null}
+        {/* What Enter read out of the words typed, and the way back to them. */}
+        {readAs ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-primary-muted bg-primary-subtle px-3 py-2" role="status" data-testid="events-read-as">
+            <span className="text-sm text-muted-foreground">
+              <BilingualText en="Read as filters:" el="Διαβάστηκε ως φίλτρα:" compact />
+            </span>
+            {readAs.filters.map((f) => (
+              <Badge key={`${f.kind}-${f.value}`} variant="secondary">
+                <BilingualText en={f.en} el={f.el} compact />
+              </Badge>
+            ))}
+            <Button variant="ghost" size="sm" className="ml-auto" onClick={searchAsTyped}>
+              <BilingualText en="Search the words as typed" el="Αναζήτηση όπως γράφτηκε" compact />
+            </Button>
+          </div>
+        ) : null}
 
         {(['upcoming', 'my-events', 'past'] as const).map((tab) => (
           <TabsContent key={tab} value={tab} className="mt-5">

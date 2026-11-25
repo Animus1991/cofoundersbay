@@ -102,7 +102,10 @@ export function PersonTileRail({ labelEn, labelEl, children }: {
 }) {
   return (
     <div className="-mx-1 snap-x snap-mandatory overflow-x-auto px-1 pb-1 [scrollbar-gutter:stable]" aria-label={bilingualAria(labelEn, labelEl)}>
-      <div className="flex w-max min-w-full gap-3 rounded-2xl bg-status-accent-bg/50 p-3">
+      {/* Each tile starts at 200px and grows to fill the row (capped at
+          300px), so three people do not leave an empty third of the wash at
+          1024-1440; more than fit still scroll (docs §142). */}
+      <div className="flex w-max min-w-full gap-3 rounded-2xl bg-status-accent-bg/50 p-3 [&>*]:max-w-[300px] [&>*]:grow">
         {children}
       </div>
     </div>

@@ -20,6 +20,7 @@ const ALLOWED: Record<string, string> = {
   'src/app/investor/scouting/page.tsx': 'active filters, each removable',
   'src/app/org/analytics/page.tsx': 'a programme taking applications is a state',
   'src/app/matches/[userId]/page.tsx': 'the match explanation highlights what two people share',
+  'src/app/events/page.tsx': 'the filters read out of the search words are a state, undone together by "Search the words as typed" (docs §142)',
 };
 
 // On Windows join() gives backslashes while ALLOWED keys are forward-slash

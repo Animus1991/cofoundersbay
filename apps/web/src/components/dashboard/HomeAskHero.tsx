@@ -166,8 +166,8 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
   }
 
   // The scope picker. Inside the field's footer in the plain box; on the hero
-  // card it sits at the right end of the intent-chip row as a quiet pill, so
-  // the field itself stays a single row (docs §133.4).
+  // card a quiet pill beside the field, so the field itself stays a single
+  // row (docs §133.4, §142).
   const scopeMenu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -176,14 +176,16 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
           variant="ghost"
           size="sm"
           className={hero
-            ? 'h-9 gap-1.5 rounded-full bg-white/15 px-3.5 text-sm font-medium text-primary-foreground hover:bg-white/25 hover:text-primary-foreground'
+            ? 'h-9 gap-1.5 rounded-full bg-white/15 px-2.5 text-sm font-medium text-primary-foreground hover:bg-white/25 hover:text-primary-foreground sm:px-3.5'
             : 'h-8 gap-1.5 px-2 text-xs text-muted-foreground'}
           aria-label={bilingualAria(`About: ${scope?.en ?? ''}`, `Πλαίσιο: ${scope?.el ?? ''}`)}
           data-testid="home-ask-scope"
         >
-          <CfbGlyph name="discover" className="icon-sm" />
-          <BilingualText en={scope?.en ?? ''} el={scope?.el ?? ''} compact />
-          <ChevronDown className="icon-sm" aria-hidden="true" />
+          {/* Kept through the labelled-button icon rule in the hero: on a phone
+              the glyph is what the pill shows (docs §142). */}
+          {hero ? <span data-keep-icon="" className="inline-flex"><CfbGlyph name="discover" className="icon-sm" /></span> : <CfbGlyph name="discover" className="icon-sm" />}
+          <span className={hero ? 'max-sm:sr-only' : undefined}><BilingualText en={scope?.en ?? ''} el={scope?.el ?? ''} compact /></span>
+          <ChevronDown className={cn('icon-sm', hero && 'max-sm:hidden')} aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align={hero ? 'end' : 'start'} data-testid="home-scope-menu">
@@ -198,7 +200,10 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
   );
 
   const intentChips = hero ? (
-    <div className="flex flex-wrap items-center gap-2" role="group" aria-label={bilingualAria('Starting points', 'Αφετηρίες')}>
+    // One row that scrolls on a phone (the card's edge to edge), where the
+    // wrapped chips stacked into three rows and made the card 277px tall
+    // (docs §142); from sm they wrap as before.
+    <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&>*]:shrink-0" role="group" aria-label={bilingualAria('Starting points', 'Αφετηρίες')}>
       {config.actions.slice(0, 3).map((action) => (
         <button
           key={action.id}
@@ -209,7 +214,6 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
           <BilingualText en={action.en} el={action.el} compact />
         </button>
       ))}
-      <span className="ms-auto">{scopeMenu}</span>
     </div>
   ) : null;
 
@@ -264,6 +268,112 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
     </>
   );
 
+  const askForm = (
+        <form
+          data-testid="home-ask-form"
+          onSubmit={submit}
+          className={hero
+            /* The hero field is one row — the pill, the placeholder, send at the
+               right end; the scope picker stands beside it (§133.4, §142). */
+            ? 'relative flex items-center gap-1 rounded-full border border-input bg-card py-1.5 pe-1.5 ps-4 shadow-sm transition-colors focus-within:border-primary-muted'
+            : band
+              /* The band's ask pill: same one row, a quieter border, the scope
+                 picker as the quiet control at its right (docs §135 A4). */
+              ? 'relative flex items-center gap-1 rounded-full border border-border/60 bg-card py-1.5 pe-1.5 ps-4 shadow-sm transition-colors focus-within:border-primary-muted'
+              : 'rounded-xl border border-input bg-card shadow-sm transition-colors focus-within:border-primary-muted'}
+        >
+          <label htmlFor={`${boxId}-box`} className="sr-only">
+            <BilingualText en="Ask the assistant" el="Ρωτήστε τον βοηθό" compact />
+          </label>
+          <textarea
+            data-testid="home-ask-input"
+            id={`${boxId}-box`}
+            value={value}
+            onChange={(event) => { setValue(event.target.value); setActiveCommand(0); }}
+            onKeyDown={onKeyDown}
+            // A textarea keeps the textbox role (combobox is not allowed on
+            // it); these three still tie it to the command list.
+            aria-controls={listOpen ? `${boxId}-commands` : undefined}
+            aria-autocomplete="list"
+            aria-activedescendant={listOpen ? `${boxId}-command-${active}` : undefined}
+            rows={hero || band ? 1 : 2}
+            maxLength={2000}
+            // Short enough for a 390px field beside the mic and send buttons:
+            // the longer sentence was cut mid-word there (docs §142).
+            placeholder={sayOne('Ask, or get something done', 'Ρωτήστε ή ζητήστε κάτι')}
+            className={hero || band
+              // nowrap: the one-row pill never shows a sliver of a wrapped
+              // placeholder line; Shift+Enter still inserts a newline.
+              ? 'block h-9 w-full min-w-0 resize-none whitespace-nowrap bg-transparent py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground'
+              : 'block max-h-48 min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3 text-sm text-foreground outline-none placeholder:text-muted-foreground'}
+          />
+          {listOpen && commands ? (
+            <ul id={`${boxId}-commands`} data-testid="home-command-list" role="listbox" aria-label={bilingualAria('Commands', 'Εντολές')} className={hero || band ? 'absolute inset-x-2 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1' : 'mx-2 mb-2 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1'}>
+              {commands.map((command, index) => (
+                <li
+                  key={command.id}
+                  data-testid={`home-command-${command.id}`}
+                  id={`${boxId}-command-${index}`}
+                  role="option"
+                  aria-selected={index === active}
+                  // mousedown, not click: the box keeps its focus.
+                  onMouseDown={(event) => { event.preventDefault(); runCommand(command); }}
+                  onMouseEnter={() => setActiveCommand(index)}
+                  className={cn(
+                    'flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm',
+                    index === active ? 'bg-muted text-foreground' : 'text-muted-foreground',
+                  )}
+                >
+                  <BilingualText en={command.en} el={command.el} compact />
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {hero || band ? (
+            /* One row in hero mode: dictation beside send at the right end
+               (docs §107.7-7, §133.4); the scope picker is up with the chips. In
+               band mode it is the quiet control at the pill's right (§135 A4). */
+            <span className="flex shrink-0 items-center gap-1">
+              <DictationButton value={value} onChange={setValue} size="small" />
+              {band ? scopeMenu : null}
+              <Button
+                type="submit"
+                data-testid="home-ask-submit"
+                size="icon"
+                disabled={!value.trim()}
+                className="h-9 w-9 shrink-0 rounded-full"
+                aria-label={bilingualAria('Send', 'Αποστολή')}
+              >
+                <ArrowUp className="icon-sm" aria-hidden="true" />
+              </Button>
+            </span>
+          ) : (
+            <div className="flex items-center gap-2 px-2 pb-2">
+              {scopeMenu}
+              {plain ? null : (
+                <span className="ml-auto hidden text-2xs text-muted-foreground sm:inline">
+                  <BilingualText en="Enter to send · Shift+Enter for a new line · / for commands" el="Enter για αποστολή · Shift+Enter για νέα γραμμή · / για εντολές" compact />
+                </span>
+              )}
+              {/* Dictation on phones sits beside Send (docs §107.7-7, §111). */}
+              <span className={cn('ml-auto flex shrink-0 items-center gap-1', !plain && 'sm:ml-0')}>
+                <DictationButton value={value} onChange={setValue} size="small" />
+                <Button
+                  type="submit"
+                  data-testid="home-ask-submit"
+                  size="icon"
+                  disabled={!value.trim()}
+                  className="h-8 w-8 shrink-0 rounded-lg"
+                  aria-label={bilingualAria('Send', 'Αποστολή')}
+                >
+                  <ArrowUp className="icon-sm" aria-hidden="true" />
+                </Button>
+              </span>
+            </div>
+          )}
+        </form>
+  );
+
   return (
     <section
       aria-labelledby={greeting ? `${boxId}-title` : undefined}
@@ -276,7 +386,7 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
     >
       {/* The figure joins only from xl (docs §133.4): below it the card is one
           column, no cut-off figure beside or above the greeting. */}
-      <div className={hero || band ? 'grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
+      <div className={hero ? 'grid items-center gap-5 2xl:grid-cols-[minmax(0,1fr)_auto]' : band ? 'grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]' : undefined}>
         <div className={hero ? 'min-w-0 space-y-3 pe-10' : band ? 'min-w-0 space-y-3 pe-10' : 'space-y-3'}>
           {hero ? heroBody : band ? bandBody : (
             <p id={`${boxId}-title`} hidden={!greeting} className="break-words text-sm text-muted-foreground" data-testid="home-greeting">
@@ -292,107 +402,16 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
               />
             </p>
           )}
-      <form
-        data-testid="home-ask-form"
-        onSubmit={submit}
-        className={hero
-          /* The hero field is one row — the pill, the placeholder, send at the
-             right end; the scope picker lives with the intent chips (§133.4). */
-          ? 'relative flex items-center gap-1 rounded-full border border-input bg-card py-1.5 pe-1.5 ps-4 shadow-sm transition-colors focus-within:border-primary-muted'
-          : band
-            /* The band's ask pill: same one row, a quieter border, the scope
-               picker as the quiet control at its right (docs §135 A4). */
-            ? 'relative flex items-center gap-1 rounded-full border border-border/60 bg-card py-1.5 pe-1.5 ps-4 shadow-sm transition-colors focus-within:border-primary-muted'
-            : 'rounded-xl border border-input bg-card shadow-sm transition-colors focus-within:border-primary-muted'}
-      >
-        <label htmlFor={`${boxId}-box`} className="sr-only">
-          <BilingualText en="Ask the assistant" el="Ρωτήστε τον βοηθό" compact />
-        </label>
-        <textarea
-          data-testid="home-ask-input"
-          id={`${boxId}-box`}
-          value={value}
-          onChange={(event) => { setValue(event.target.value); setActiveCommand(0); }}
-          onKeyDown={onKeyDown}
-          // A textarea keeps the textbox role (combobox is not allowed on
-          // it); these three still tie it to the command list.
-          aria-controls={listOpen ? `${boxId}-commands` : undefined}
-          aria-autocomplete="list"
-          aria-activedescendant={listOpen ? `${boxId}-command-${active}` : undefined}
-          rows={hero || band ? 1 : 2}
-          maxLength={2000}
-          placeholder={sayOne('Ask anything, or ask for something to be done', 'Ρωτήστε οτιδήποτε ή ζητήστε να γίνει κάτι')}
-          className={hero || band
-            // nowrap: the one-row pill never shows a sliver of a wrapped
-            // placeholder line; Shift+Enter still inserts a newline.
-            ? 'block h-9 w-full min-w-0 resize-none whitespace-nowrap bg-transparent py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground'
-            : 'block max-h-48 min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3 text-sm text-foreground outline-none placeholder:text-muted-foreground'}
-        />
-        {listOpen && commands ? (
-          <ul id={`${boxId}-commands`} data-testid="home-command-list" role="listbox" aria-label={bilingualAria('Commands', 'Εντολές')} className={hero || band ? 'absolute inset-x-2 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1' : 'mx-2 mb-2 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover p-1'}>
-            {commands.map((command, index) => (
-              <li
-                key={command.id}
-                data-testid={`home-command-${command.id}`}
-                id={`${boxId}-command-${index}`}
-                role="option"
-                aria-selected={index === active}
-                // mousedown, not click: the box keeps its focus.
-                onMouseDown={(event) => { event.preventDefault(); runCommand(command); }}
-                onMouseEnter={() => setActiveCommand(index)}
-                className={cn(
-                  'flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm',
-                  index === active ? 'bg-muted text-foreground' : 'text-muted-foreground',
-                )}
-              >
-                <BilingualText en={command.en} el={command.el} compact />
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        {hero || band ? (
-          /* One row in hero mode: dictation beside send at the right end
-             (docs §107.7-7, §133.4); the scope picker is up with the chips. In
-             band mode it is the quiet control at the pill's right (§135 A4). */
-          <span className="flex shrink-0 items-center gap-1">
-            <DictationButton value={value} onChange={setValue} size="small" />
-            {band ? scopeMenu : null}
-            <Button
-              type="submit"
-              data-testid="home-ask-submit"
-              size="icon"
-              disabled={!value.trim()}
-              className="h-9 w-9 shrink-0 rounded-full"
-              aria-label={bilingualAria('Send', 'Αποστολή')}
-            >
-              <ArrowUp className="icon-sm" aria-hidden="true" />
-            </Button>
-          </span>
-        ) : (
-          <div className="flex items-center gap-2 px-2 pb-2">
-            {scopeMenu}
-            {plain ? null : (
-              <span className="ml-auto hidden text-2xs text-muted-foreground sm:inline">
-                <BilingualText en="Enter to send · Shift+Enter for a new line · / for commands" el="Enter για αποστολή · Shift+Enter για νέα γραμμή · / για εντολές" compact />
-              </span>
-            )}
-            {/* Dictation on phones sits beside Send (docs §107.7-7, §111). */}
-            <span className={cn('ml-auto flex shrink-0 items-center gap-1', !plain && 'sm:ml-0')}>
-              <DictationButton value={value} onChange={setValue} size="small" />
-              <Button
-                type="submit"
-                data-testid="home-ask-submit"
-                size="icon"
-                disabled={!value.trim()}
-                className="h-8 w-8 shrink-0 rounded-lg"
-                aria-label={bilingualAria('Send', 'Αποστολή')}
-              >
-                <ArrowUp className="icon-sm" aria-hidden="true" />
-              </Button>
-            </span>
-          </div>
-        )}
-      </form>
+      {hero ? (
+        /* The scope belongs to the question, so it stands beside the field
+           (icon-only on a phone); at the end of the chips row it wrapped onto
+           a row of its own whenever a role's three starting points were
+           long, as the mentor's are (docs §142). */
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="min-w-0 flex-1">{askForm}</div>
+          {scopeMenu}
+        </div>
+      ) : askForm}
 
       {hero ? intentChips : band ? null : (
         <>
@@ -405,9 +424,11 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
         </div>
         {hero ? (
           /* The role's mark on the card: a crisp round well with the glyph and
-             a small spark at its top-right (docs §133.8). Only from xl, where
-             the figure used to stand. */
-          <div data-keep-icon="" data-hero-figure="" className="relative hidden xl:block" aria-hidden="true">
+             a small spark at its top-right (docs §133.8). Only from 2xl: at xl
+             the home's right column takes a third of the width, and beside
+             the 132px well the Greek scope pill fell onto a row of its own
+             (docs §142). */
+          <div data-keep-icon="" data-hero-figure="" className="relative hidden 2xl:block" aria-hidden="true">
             <span className="flex h-28 w-28 items-center justify-center rounded-full bg-white/15 text-primary-foreground">
               <CfbGlyph name={ROLE_GLYPH[role] ?? 'spark'} className="h-14 w-14" />
             </span>

@@ -12,6 +12,7 @@ import { EmptyIllustration } from '@/components/common/EmptyIllustration';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import { HomeContinue } from '@/components/home/HomeContinue';
 import { HomeEventStrip } from '@/components/home/HomeEventStrip';
+import { HomeAssistantSuggestion } from '@/components/home/HomeAssistantSuggestion';
 import { useTodayRows } from '@/components/dashboard/HomeToday';
 import { listMilestones } from '@/lib/api';
 import { dedupeWaitingRows } from '@/lib/home-waiting';
@@ -229,14 +230,17 @@ function Home() {
       titleSrOnly
       askAi={false}
     >
-      {/* At lg the page is two columns (docs §131.2): the hero, the event
-          strip, the people rail and the feed on the left; what waits, the
-          continue row and the steps on the right. The order utilities keep
-          the phone's priority order in one DOM. */}
+      {/* Two columns from xl (docs §131.2, §142): the hero, the event strip,
+          the people rail and the feed on the left; what is in progress, what
+          waits and the steps on the right. The right column is one stack of
+          its own, so a short card there no longer stretches or pushes the
+          row beside it (a 140px gap under "Continue" and an empty band under
+          the strip at 1440). On a phone that stack is `display: contents`
+          and the order utilities keep the one-column priority order. */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* The greeting leads the brand card: one «Καλημέρα, …», the one-line
             purpose, the question field and three starting points (docs §131.2). */}
-        <div className="min-w-0 xl:order-1 xl:col-span-2">
+        <div className="order-1 min-w-0 xl:col-span-2 xl:col-start-1">
           <HomeAskHero
             role={audience === 'org' ? 'incubator' : audience}
             hero
@@ -244,73 +248,67 @@ function Home() {
             name={me?.displayName?.split(' ')[0] ?? null}
             purposeEn={copy.description.en}
             purposeEl={copy.description.el}
-
           />
         </div>
-        {/* The one thing in progress, straight under the hero on a phone —
-            in the right column from lg. One row, one verb. */}
-        <div className="min-w-0 xl:order-2 xl:self-start">
-          <HomeContinue />
-        </div>
-        {/* What waits, here and not one page away: the first three in Today's
-            order (a person first), each row its own way in; the rest on Overview. */}
-        {showWaiting ? (
-          <section aria-labelledby="home-waiting" data-home-waiting="" className="min-w-0 xl:order-4 xl:self-start">
-            <Card>
-              <CardContent className="space-y-1">
-                <div className="flex items-baseline justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <SectionSticker glyph="bell" tint="warning" />
-                    <h2 id="home-waiting" className="card-title">
-                    <BilingualText
-                      en={`${waiting} ${waiting === 1 ? 'thing is' : 'things are'} waiting on you`}
-                      el={waiting === 1 ? 'Σας περιμένει 1 πράγμα' : `Σας περιμένουν ${waiting} πράγματα`}
-                      compact
-                      wrap
-                    />
-                    </h2>
-                  </div>
-                  {waiting > WAITING_ON_TOP ? (
-                    <Link href={overviewPathFor(role)} className="tap-extend-y shrink-0 text-sm font-medium text-primary-accessible hover:underline" data-home-waiting-all="">
-                      <BilingualText en={`All ${waiting}`} el={`Όλα (${waiting})`} compact />
-                    </Link>
-                  ) : null}
-                </div>
-                <ul className="divide-y divide-border">
-                  {dedupeWaitingRows(waitingRows, nextMilestone).slice(0, WAITING_ON_TOP).map((row) => (
-                    <li key={row.key}>
-                      <Link href={row.href} className="group flex items-center gap-3 py-2.5 text-sm text-foreground transition-colors hover:text-primary-accessible" data-home-waiting-row={row.key}>
-                        <SectionSticker glyph={row.glyph} tint={glyphStickerTint(row.glyph)} />
-                        <span className="min-w-0 flex-1">
-                          <BilingualText en={row.en} el={row.el} compact wrap />
-                          {row.count ? <span className="ml-1.5 tabular-nums text-muted-foreground">{row.count}</span> : null}
-                        </span>
-                        <span data-keep-icon=""><ArrowRight className="icon-sm shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden="true" /></span>
+        <div className="contents xl:col-start-3 xl:row-span-4 xl:row-start-1 xl:flex xl:flex-col xl:gap-6 xl:self-start" data-home-side="">
+          {/* The one thing in progress, straight under the hero on a phone.
+              One row, one verb. */}
+          <div className="order-2 min-w-0">
+            <HomeContinue />
+          </div>
+          {/* What waits, here and not one page away: the first three in Today's
+              order (a person first), each row its own way in; the rest on Overview. */}
+          {showWaiting ? (
+            <section aria-labelledby="home-waiting" data-home-waiting="" className="order-3 min-w-0">
+              <Card>
+                <CardContent className="space-y-1">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <SectionSticker glyph="bell" tint="warning" />
+                      <h2 id="home-waiting" className="card-title">
+                      <BilingualText
+                        en={`${waiting} ${waiting === 1 ? 'thing is' : 'things are'} waiting on you`}
+                        el={waiting === 1 ? 'Σας περιμένει 1 πράγμα' : `Σας περιμένουν ${waiting} πράγματα`}
+                        compact
+                        wrap
+                      />
+                      </h2>
+                    </div>
+                    {waiting > WAITING_ON_TOP ? (
+                      <Link href={overviewPathFor(role)} className="tap-extend-y shrink-0 text-sm font-medium text-primary-accessible hover:underline" data-home-waiting-all="">
+                        <BilingualText en={`All ${waiting}`} el={`Όλα (${waiting})`} compact />
                       </Link>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </section>
-        ) : null}
+                    ) : null}
+                  </div>
+                  <ul className="divide-y divide-border">
+                    {dedupeWaitingRows(waitingRows, nextMilestone).slice(0, WAITING_ON_TOP).map((row) => (
+                      <li key={row.key}>
+                        <Link href={row.href} className="group flex items-center gap-3 py-2.5 text-sm text-foreground transition-colors hover:text-primary-accessible" data-home-waiting-row={row.key}>
+                          <SectionSticker glyph={row.glyph} tint={glyphStickerTint(row.glyph)} />
+                          <span className="min-w-0 flex-1">
+                            <BilingualText en={row.en} el={row.el} compact wrap />
+                            {row.count ? <span className="ml-1.5 tabular-nums text-muted-foreground">{row.count}</span> : null}
+                          </span>
+                          <span data-keep-icon=""><ArrowRight className="icon-sm shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden="true" /></span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </section>
+          ) : null}
+          {/* The assistant's one offer, after what waits (docs §142). */}
+          <HomeAssistantSuggestion people={people} shownAbove={shownAbove} connectionOf={connectionOf} className="order-3 min-w-0" />
+          {stepsSection ? <div className={cn('min-w-0', stepsFirst ? 'order-5' : 'order-6')}>{stepsSection}</div> : null}
+        </div>
         {/* The photo strip: small covers with the date badge, before the
             people rail (docs §131.2). */}
-        <div className="min-w-0 xl:order-3 xl:col-span-2">
+        <div className="order-4 min-w-0 xl:col-span-2 xl:col-start-1">
           <HomeEventStrip />
         </div>
-        {stepsFirst ? (
-          <>
-            {stepsSection ? <div className="min-w-0 xl:order-6 xl:self-start">{stepsSection}</div> : null}
-            <div className="min-w-0 xl:order-5 xl:col-span-2">{peopleSection}</div>
-          </>
-        ) : (
-          <>
-            <div className="min-w-0 xl:order-5 xl:col-span-2">{peopleSection}</div>
-            {stepsSection ? <div className="min-w-0 xl:order-6 xl:self-start">{stepsSection}</div> : null}
-          </>
-        )}
-        <div className="min-w-0 xl:order-7 xl:col-span-2">
+        <div className={cn('min-w-0 xl:col-span-2 xl:col-start-1', stepsFirst ? 'order-6' : 'order-5')}>{peopleSection}</div>
+        <div className="order-7 min-w-0 xl:col-span-2 xl:col-start-1">
           <HomeFeedSection people={people} shownAbove={shownAbove} connectionOf={connectionOf} />
         </div>
       </div>

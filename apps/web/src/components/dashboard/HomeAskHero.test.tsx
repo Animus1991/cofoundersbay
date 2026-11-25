@@ -196,9 +196,10 @@ describe('HomeAskHero hero card (docs §131.2, §133.4)', () => {
     expect(screen.getByText(/, Alex\.$/)).toBeTruthy();
     expect(screen.getByText('One line.')).toBeTruthy();
     const intents = screen.getByRole('group', { name: /Starting points/ });
-    // Three intent chips plus the scope picker, which moved to the row's end.
-    expect(within(intents).getAllByRole('button')).toHaveLength(4);
-    expect(within(intents).getByTestId('home-ask-scope')).toBeTruthy();
+    // Three intent chips; the scope picker stands beside the field (§142).
+    expect(within(intents).getAllByRole('button')).toHaveLength(3);
+    expect(within(intents).queryByTestId('home-ask-scope')).toBeNull();
+    expect(screen.getByTestId('home-ask-form').parentElement!.parentElement!.querySelector('[data-testid="home-ask-scope"]')).toBeTruthy();
     fireEvent.change(box(), { target: { value: 'Who should I talk to first?' } });
     fireEvent.keyDown(box(), { key: 'Enter' });
     expect(state.ask).toHaveBeenCalledWith('Who should I talk to first?');
@@ -213,12 +214,12 @@ describe('HomeAskHero hero card (docs §131.2, §133.4)', () => {
     expect(within(form).getByTestId('home-ask-submit')).toBeTruthy();
   });
 
-  it('offers the corner slot for the header tools and shows the role’s glyph well only from xl', () => {
+  it('offers the corner slot for the header tools and shows the role’s glyph well only from 2xl', () => {
     const { container } = render(<HomeAskHero role="founder" hero />);
     expect(container.querySelector('[data-hero-actions]')).toBeTruthy();
     const well = container.querySelector('[data-hero-figure]')!;
     expect(well.className).toContain('hidden');
-    expect(well.className).toContain('xl:block');
+    expect(well.className).toContain('2xl:block');
     const round = well.querySelector('.rounded-full')!;
     expect(round.className).toContain('h-28');
     expect(round.className).toContain('bg-white/15');

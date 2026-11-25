@@ -344,3 +344,120 @@ export function messageSnippet(text: string, query: string, radius = 60): string
   if (end < source.length && after > first[1] && after < end + 10) end = after;
   return `${start > 0 ? '…' : ''}${source.slice(start, end).trim()}${end < source.length ? '…' : ''}`;
 }
+
+/*
+ * Events, in plain words (docs §142). Parea reads «κοντά μου, δωρεάν,
+ * Σάββατο» into its map filters; the events list here reads its own three:
+ * the format, the kind and when. "online workshops this week" and
+ * «διαδικτυακά εργαστήρια αυτή την εβδομάδα» reach the same filters, and the
+ * words it does not know stay the search text. Phrases come before the words
+ * inside them («διαδικτυακό σεμινάριο» is a webinar, not just online); a
+ * `*` stands only at the end of a pattern, so a phrase lists its endings.
+ */
+export type EventWindow = 'today' | 'tomorrow' | 'weekend' | 'week' | 'next-week' | 'month';
+export type EventFormat = 'online' | 'in-person' | 'hybrid';
+export type EventQueryKind = 'format' | 'kind' | 'when';
+
+export interface EventQueryFilter {
+  kind: EventQueryKind;
+  value: string;
+  en: string;
+  el: string;
+}
+
+export interface EventQuery {
+  format: EventFormat | null;
+  /** The API's `eventType`. */
+  type: string | null;
+  when: EventWindow | null;
+  /** What was not recognised, as typed, without filler words. */
+  rest: string;
+  understood: EventQueryFilter[];
+}
+
+/** The windows a reader can pick, in order, for the Filters panel. */
+export const EVENT_WINDOWS: ReadonlyArray<{ value: EventWindow; en: string; el: string }> = [
+  { value: 'today', en: 'Today', el: 'Σήμερα' },
+  { value: 'tomorrow', en: 'Tomorrow', el: 'Αύριο' },
+  { value: 'weekend', en: 'This weekend', el: 'Αυτό το Σαββατοκύριακο' },
+  { value: 'week', en: 'This week', el: 'Αυτή την εβδομάδα' },
+  { value: 'next-week', en: 'Next week', el: 'Την επόμενη εβδομάδα' },
+  { value: 'month', en: 'This month', el: 'Αυτόν τον μήνα' },
+];
+
+const EVENT_TERMS: Array<EventQueryFilter & { words: string[] }> = [
+  { kind: 'kind', value: 'webinar', en: 'Webinars', el: 'Διαδικτυακά σεμινάρια', words: ['διαδικτυακο σεμιναριο', 'διαδικτυακα σεμιναρια', 'διαδικτυακων σεμιναριων', 'webinar*', 'σεμιναρι*'] },
+  { kind: 'kind', value: 'demo_day', en: 'Demo days', el: 'Demo days', words: ['demo day*', 'demo-day*', 'demoday*'] },
+  { kind: 'kind', value: 'workshop', en: 'Workshops', el: 'Εργαστήρια', words: ['workshop*', 'εργαστηρι*'] },
+  { kind: 'kind', value: 'networking', en: 'Networking', el: 'Δικτύωση', words: ['networking', 'δικτυωσ*'] },
+  { kind: 'kind', value: 'meetup', en: 'Meetups', el: 'Συναντήσεις', words: ['meet-up*', 'meetup*', 'συναντησ*'] },
+  { kind: 'format', value: 'hybrid', en: 'Hybrid', el: 'Υβριδικές', words: ['hybrid', 'υβριδικ*'] },
+  { kind: 'format', value: 'in-person', en: 'In-person', el: 'Δια ζώσης', words: ['in person', 'in-person', 'δια ζωσης', 'φυσικη παρουσια', 'απο κοντα'] },
+  { kind: 'format', value: 'online', en: 'Online', el: 'Διαδικτυακές', words: ['online', 'virtual', 'remote', 'zoom', 'διαδικτυακ*', 'εξ αποστασεως'] },
+  { kind: 'when', value: 'next-week', en: 'Next week', el: 'Την επόμενη εβδομάδα', words: ['next week', 'επομενη εβδομαδα', 'επομενης εβδομαδας', 'αλλη εβδομαδα'] },
+  { kind: 'when', value: 'weekend', en: 'This weekend', el: 'Αυτό το Σαββατοκύριακο', words: ['this weekend', 'weekend', 'σαββατοκυριακ*'] },
+  { kind: 'when', value: 'week', en: 'This week', el: 'Αυτή την εβδομάδα', words: ['this week', 'αυτη την εβδομαδα', 'αυτην την εβδομαδα', 'αυτη τη βδομαδα', 'εβδομαδα', 'βδομαδα'] },
+  { kind: 'when', value: 'month', en: 'This month', el: 'Αυτόν τον μήνα', words: ['this month', 'αυτον τον μηνα', 'αυτο τον μηνα', 'αυτο το μηνα', 'μηνα'] },
+  { kind: 'when', value: 'tomorrow', en: 'Tomorrow', el: 'Αύριο', words: ['tomorrow', 'αυριο'] },
+  { kind: 'when', value: 'today', en: 'Today', el: 'Σήμερα', words: ['today', 'tonight', 'σημερα', 'αποψε'] },
+];
+const EVENT_COMPILED = EVENT_TERMS.map((t) => ({ ...t, patterns: t.words.map(pattern) }));
+
+/** Words that only say "events" or join the rest; they are not search text. */
+const EVENT_FILLER = new Set(
+  ['events', 'event', 'this', 'next', 'εκδηλωσεις', 'εκδηλωση', 'εκδηλωσεων', 'αυτη', 'αυτο', 'αυτον', 'ποιες', 'τι', 'εχει', 'γινεται', 'γινονται'].map(foldSearchText),
+);
+
+/** Reads a typed events search into the list's filters and the text that remains. */
+export function readEventQuery(text: string): EventQuery {
+  const original = String(text ?? '').normalize('NFC').slice(0, 300);
+  let folded = foldSearchText(original);
+  let remaining = original;
+  const out: EventQuery = { format: null, type: null, when: null, rest: '', understood: [] };
+  const found: Array<EventQueryFilter & { at: number }> = [];
+  for (const term of EVENT_COMPILED) {
+    for (const re of term.patterns) {
+      const m = re.exec(folded);
+      if (!m) continue;
+      const start = m.index + m[1].length;
+      const gap = ' '.repeat(m[2].length);
+      folded = folded.slice(0, start) + gap + folded.slice(start + m[2].length);
+      remaining = remaining.slice(0, start) + gap + remaining.slice(start + m[2].length);
+      // One value per filter: the first one named wins; another is still blanked.
+      if (term.kind === 'format' && !out.format) out.format = term.value as EventFormat;
+      else if (term.kind === 'kind' && !out.type) out.type = term.value;
+      else if (term.kind === 'when' && !out.when) out.when = term.value as EventWindow;
+      else break;
+      found.push({ kind: term.kind, value: term.value, en: term.en, el: term.el, at: start });
+      break;
+    }
+  }
+  const restWords = (remaining.match(/[\p{L}\p{N}][\p{L}\p{N}+#.\-']*/gu) ?? [])
+    .map((w) => w.replace(/[.\-']+$/, ''))
+    .filter((w) => {
+      const f = foldSearchText(w);
+      return w && (w.length > 1 || /\p{N}/u.test(w)) && !FILLER.has(f) && !EVENT_FILLER.has(f);
+    });
+  out.rest = restWords.join(' ');
+  out.understood = found.sort((a, b) => a.at - b.at).map(({ at: _at, ...f }) => f);
+  return out;
+}
+
+/**
+ * The span a window covers, from `now`: the rest of today, tomorrow, the
+ * coming Saturday and Sunday (this one, on a weekend day), the rest of this
+ * week (weeks start on Monday, as in Greece), next Monday to Sunday, the
+ * rest of this month. `to` is exclusive.
+ */
+export function eventWindowRange(when: EventWindow, now: Date): { from: Date; to: Date } {
+  const day = (offset: number) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
+  const weekday = (now.getDay() + 6) % 7; // Monday 0 … Sunday 6
+  switch (when) {
+    case 'today': return { from: now, to: day(1) };
+    case 'tomorrow': return { from: day(1), to: day(2) };
+    case 'weekend': return weekday >= 5 ? { from: now, to: day(7 - weekday) } : { from: day(5 - weekday), to: day(7 - weekday) };
+    case 'week': return { from: now, to: day(7 - weekday) };
+    case 'next-week': return { from: day(7 - weekday), to: day(14 - weekday) };
+    case 'month': return { from: now, to: new Date(now.getFullYear(), now.getMonth() + 1, 1) };
+  }
+}

@@ -116,7 +116,12 @@ export function ChatBubble() {
         {unreadMessages > 0 && (
           <span
             aria-hidden="true"
-            className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-status-danger-mark px-1 text-xs font-bold leading-none text-ink shadow-sm"
+            className={cn(
+              'absolute flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-status-danger-mark px-1 text-xs font-bold leading-none text-ink shadow-sm',
+              // Docked, the bubble sits ~1px from the window's edge: a badge
+              // hanging past its right side was cut in half (docs §142).
+              docked ? '-top-1.5 right-0' : '-right-0.5 -top-0.5',
+            )}
           >
             {unreadMessages > 99 ? '99+' : unreadMessages}
           </span>
