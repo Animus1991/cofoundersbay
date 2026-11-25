@@ -386,15 +386,16 @@ export function ApplicationGenerator({
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
+                {/* Each language's own order: «Αίτηση: Y Combinator», where the
+                    English order gave «Y Combinator Αίτηση» (docs §154). */}
                 <CardTitle>
-                  {currentApp.name}{' '}
-                  <BilingualText en={builderEn('app_application')} el={builderEl('app_application')} compact />
+                  <BilingualText en={`${currentApp.name} ${builderEn('app_application')}`} el={`${builderEl('app_application')}: ${currentApp.name}`} compact />
                 </CardTitle>
                 <CardDescription className="mt-0.5 tabular-nums">
                   {currentApp.questions.length}{' '}
                   <BilingualText en={builderEn('app_questions')} el={builderEl('app_questions')} compact />
                   {' · '}
-                  {requiredCompletion(currentApp)}% <BilingualText en={builderEn('complete')} el={builderEl('complete')} compact />
+                  <BilingualText en={`${requiredCompletion(currentApp)}% complete`} el={`${requiredCompletion(currentApp)}% ολοκληρωμένη`} compact />
                 </CardDescription>
               </div>
               <div className="flex flex-wrap items-center gap-2">
