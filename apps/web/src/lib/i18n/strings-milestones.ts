@@ -191,7 +191,7 @@ export const PREVIEW_MILESTONE_EL: Record<string, { title: string; description?:
   },
   'First founder-network path in Athens': {
     title: 'Πρώτη διαδρομή δικτύου ιδρυτών στην Αθήνα',
-    description: 'Discover, matches και παραδοτέα Builder που μοιράζονται. Πρώτη διαδρομή: δίκτυα ιδρυτών στην Αθήνα και ζώνες ΕΕ.',
+    description: 'Εξερεύνηση, αντιστοιχίσεις και παραδοτέα του Builder για κοινοποίηση. Πρώτη διαδρομή: δίκτυα ιδρυτών στην Αθήνα και σε ζώνες ώρας της ΕΕ.',
   },
   'File Harbor trademark': {
     title: 'Κατοχύρωση σήματος Harbor',
@@ -199,7 +199,7 @@ export const PREVIEW_MILESTONE_EL: Record<string, { title: string; description?:
   },
   'Close €750K seed': {
     title: 'Κλείσιμο γύρου €750K',
-    description: '€375K δεσμευμένα από στόχο €750K. Lead: Athens Tech Angels.',
+    description: '€375K δεσμευμένα από στόχο €750K. Επικεφαλής: Athens Tech Angels.',
   },
   'Shareable Idea Core and GTM board': {
     title: 'Πυρήνας ιδέας και πίνακας GTM για κοινοποίηση',

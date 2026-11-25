@@ -442,7 +442,10 @@ export default function MilestonesPage() {
   const [priorityFilter, setPriorityFilter] = useState<MilestonePriority | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'board' | 'timeline'>('list');
+  // The grid first (docs §154): as a list, twelve cards of three short lines
+  // ran 1,610px wide at 1910 and made a 2,425px page. List, board and
+  // timeline stay in the page's tools.
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'board' | 'timeline'>('grid');
   const [editTarget, setEditTarget] = useState<Milestone | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
