@@ -7,7 +7,6 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CardHead } from '@/components/common/CardAnatomy';
-import { KindPill } from '@/components/common/KindPill';
 import { CardMoreMenu } from '@/components/common/CardMoreMenu';
 import { FactLine } from '@/components/common/FactLine';
 import { SaveItemButton } from '@/components/common/SaveItemButton';
@@ -102,6 +101,12 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
     </>
   );
 
+  // A remote listing whose place is "Remote" read «Εξ αποστάσεως · Εξ
+  // αποστάσεως» (docs §160): the place joins only when it adds one.
+  const place = opportunity.location && !(opportunity.isRemote && /^remote$/i.test(opportunity.location.trim()))
+    ? opportunity.location
+    : null;
+
   // The id is the assistant's citation target (`/opportunities#opportunity-…`).
   const cardClass = 'card-interactive hover-lift group scroll-mt-24 transition-all duration-300 hover:border-primary/30';
 
@@ -120,7 +125,7 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
                 opportunity.company,
                 <BilingualText key="type" en={opportunitiesEn(cfg.labelKey)} el={opportunitiesEl(cfg.labelKey)} compact />,
                 opportunity.isRemote ? <BilingualText key="remote" en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact /> : null,
-                opportunity.location,
+                place,
                 deadlineItem,
                 opportunity.createdBy.displayName ? (
                   <BilingualText key="by" en={`Posted by ${opportunity.createdBy.displayName}`} el={`Από ${opportunity.createdBy.displayName}`} compact />
@@ -138,7 +143,8 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
   return (
     <Card id={`opportunity-${opportunity.id}`} className={cardClass}>
       <CardContent className="space-y-3">
-        <KindPill glyph="target" tone="accent" en="Opportunity" el="Ευκαιρία" />
+        {/* No "Opportunity" pill: the card is drawn only on the Opportunities
+            page, where every card is one (docs §160). */}
         <CardHead
           mark={mark('h-12 w-12')}
           title={opportunity.title}
@@ -152,7 +158,7 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
                 opportunity.company,
                 <BilingualText key="type" en={opportunitiesEn(cfg.labelKey)} el={opportunitiesEl(cfg.labelKey)} compact />,
                 opportunity.isRemote ? <BilingualText key="remote" en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact /> : null,
-                opportunity.location,
+                place,
                 deadlineItem,
                 postedAgo,
               ]}
@@ -183,7 +189,10 @@ export function OpportunityCard({ opportunity, onPropose, proposalSent, compact 
         {(opportunity.tags?.length ?? 0) > 0 ? (
           <div className="flex flex-wrap items-center gap-1">
             {opportunity.tags.slice(0, 3).map((tag) => (
-              <span key={tag} className="rounded-full border border-transparent bg-status-accent-bg px-2 py-0.5 card-meta text-status-accent">{tag}</span>
+              /* The directory's tag frame (`quiet-tag`): the tinted pill lost
+                 its fill on the calm themes and three tags read as one
+                 phrase, «συνιδρυτής εφοδιαστική saas» (docs §160). */
+              <span key={tag} className="quiet-tag card-meta">{tag}</span>
             ))}
             {opportunity.tags.length > 3 ? (
               <span className="quiet-tag card-meta" title={opportunity.tags.slice(3).join(', ')}>+{opportunity.tags.length - 3}</span>

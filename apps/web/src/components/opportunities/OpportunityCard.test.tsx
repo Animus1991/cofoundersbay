@@ -95,3 +95,19 @@ describe('OpportunityCard, one button', () => {
     expect(screen.getByRole('button', { name: /Draft an approach/ })).toBeTruthy();
   });
 });
+
+describe('OpportunityCard, its facts (docs §160)', () => {
+  it('says remote once when the place is "Remote", and has no kind pill on its own page', () => {
+    const { container } = wrap(<OpportunityCard opportunity={{ ...opportunity, isRemote: true, location: 'Remote' }} />);
+    expect((container.textContent?.match(/Remote/g) ?? []).length).toBe(1);
+    expect(screen.queryByText(/^Opportunity$/)).toBeNull();
+  });
+
+  it('shows each tag in its own frame', () => {
+    wrap(<OpportunityCard opportunity={{ ...opportunity, tags: ['cofounder', 'logistics', 'saas'] }} />);
+    for (const tag of ['cofounder', 'logistics', 'saas']) {
+      expect(screen.getByText(tag).className).toContain('quiet-tag');
+    }
+  });
+});
+
