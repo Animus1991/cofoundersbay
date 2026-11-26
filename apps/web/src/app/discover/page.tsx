@@ -475,7 +475,7 @@ export default function DiscoverPage() {
         `${h.displayName}${h.role ? ` · ${h.role}` : ''}${h.headline ? ` · ${h.headline}` : ''}${h.location ? ` · ${h.location}` : ''}${h.matchScore != null ? ` · match ${h.matchScore}%` : ''}`,
       ),
       rowsEl: (activeTab === 'search' ? loading : suggestionsLoading) ? undefined : shown.map((h) =>
-        `${h.displayName}${h.role ? ` · ${elWord(h.role)}` : ''}${h.headline ? ` · ${h.headline}` : ''}${h.location ? ` · ${h.location}` : ''}${h.matchScore != null ? ` · ταίριασμα ${h.matchScore}%` : ''}`,
+        `${h.displayName}${h.role ? ` · ${elWord(h.role)}` : ''}${h.headline ? ` · ${h.headline}` : ''}${h.location ? ` · ${h.location}` : ''}${h.matchScore != null ? ` · αντιστοίχιση ${h.matchScore}%` : ''}`,
       ),
       ...(activeTab === 'search' ? { total } : {}),
     },

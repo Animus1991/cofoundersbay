@@ -137,7 +137,7 @@ export default function MatchComparePage() {
       labelEn: 'People compared',
       labelEl: 'Πρόσωπα σε σύγκριση',
       rows: recLoading ? undefined : people.map((p, i) => `${p.displayName} · ${p.headline ?? p.role} · match ${scoreOf(i) ?? '—'}%${leads[i]?.length ? ` · leads on ${leads[i].join(', ')}` : ''}`),
-      rowsEl: recLoading ? undefined : people.map((p, i) => `${p.displayName} · ${p.headline ?? elWord(p.role)} · ταίριασμα ${scoreOf(i) ?? '—'}%${leads[i]?.length ? ` · προηγείται σε ${leads[i].join(', ')}` : ''}`),
+      rowsEl: recLoading ? undefined : people.map((p, i) => `${p.displayName} · ${p.headline ?? elWord(p.role)} · αντιστοίχιση ${scoreOf(i) ?? '—'}%${leads[i]?.length ? ` · προηγείται σε ${leads[i].join(', ')}` : ''}`),
     },
   ]);
   usePageControls([

@@ -461,7 +461,7 @@ export default function ShortlistPage() {
       }),
       rowsEl: isLoading ? undefined : filtered.map((i) => {
         const score = matchScores.get(i.userId);
-        return `${i.profile?.displayName ?? 'Μέλος'} · ${elWord(i.profile?.role ?? 'member')}${i.profile?.headline ? ` · ${i.profile.headline}` : ''}${score != null ? ` · ταίριασμα ${score}%` : ''}${i.note ? ` · σημείωση: ${i.note}` : ''}`;
+        return `${i.profile?.displayName ?? 'Μέλος'} · ${elWord(i.profile?.role ?? 'member')}${i.profile?.headline ? ` · ${i.profile.headline}` : ''}${score != null ? ` · αντιστοίχιση ${score}%` : ''}${i.note ? ` · σημείωση: ${i.note}` : ''}`;
       }),
       total: rawItems.length,
     },

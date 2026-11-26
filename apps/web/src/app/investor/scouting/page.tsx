@@ -413,7 +413,7 @@ export default function InvestorScoutingPage() {
         `${s.name} · ${s.industry}, ${s.stage}, ${s.businessModel} · ${s.location} · match ${s.matchScore}% · raising ${s.raisingAmount}${dealFor(s) ? ' · watched' : ''}`,
       ),
       rowsEl: filtered.map((s) =>
-        `${s.name} · ${s.industry}, ${elWord(s.stage)}, ${s.businessModel} · ${s.location} · ταίριασμα ${s.matchScore}% · αναζητά ${s.raisingAmount}${dealFor(s) ? ' · στη λίστα παρακολούθησης' : ''}`,
+        `${s.name} · ${s.industry}, ${elWord(s.stage)}, ${s.businessModel} · ${s.location} · αντιστοίχιση ${s.matchScore}% · αναζητά ${s.raisingAmount}${dealFor(s) ? ' · στη λίστα παρακολούθησης' : ''}`,
       ),
       total: startups.length,
       sample: startups.length > 0,

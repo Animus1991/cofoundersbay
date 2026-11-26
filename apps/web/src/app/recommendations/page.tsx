@@ -403,7 +403,7 @@ export default function RecommendationsPage() {
       labelEn: 'Recommended people',
       labelEl: 'Προτεινόμενα άτομα',
       rows: recsLoading ? undefined : people.map((p) => `${p.displayName}${p.role ? ` · ${p.role}` : ''}${p.headline ? ` · ${p.headline}` : ''} · match ${Math.round(p.score)}%${savedIds.has(p.userId) ? ' · saved' : ''}`),
-      rowsEl: recsLoading ? undefined : people.map((p) => `${p.displayName}${p.role ? ` · ${elWord(p.role)}` : ''}${p.headline ? ` · ${p.headline}` : ''} · ταίριασμα ${Math.round(p.score)}%${savedIds.has(p.userId) ? ' · αποθηκευμένο' : ''}`),
+      rowsEl: recsLoading ? undefined : people.map((p) => `${p.displayName}${p.role ? ` · ${elWord(p.role)}` : ''}${p.headline ? ` · ${p.headline}` : ''} · αντιστοίχιση ${Math.round(p.score)}%${savedIds.has(p.userId) ? ' · αποθηκευμένο' : ''}`),
       total: allRecommendations.length,
     },
   ]);
