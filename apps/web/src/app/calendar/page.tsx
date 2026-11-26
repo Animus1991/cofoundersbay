@@ -37,6 +37,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { getUpcomingMentorshipSessions, listEvents, listMilestones, type EventItem, type Milestone, type MentorshipSessionItem } from '@/lib/api';
 import { buildIcs, downloadIcs, type IcsEntry } from '@/lib/ics';
@@ -580,12 +581,14 @@ export default function CalendarPage() {
     return filteredEvents.filter((e) => isSameDay(new Date(e.date), selectedDate));
   }, [filteredEvents, selectedDate]);
 
-  const upcomingEvents = useMemo(() => {
+  const upcomingFrom = useMemo(() => {
     const n = new Date();
-    const todayStart = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()));
+    return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()));
+  }, []);
+  const upcomingEvents = useMemo(() => {
     // A follow-up stays on the list once its day has passed: that is when it matters most.
-    return filteredEvents.filter((e) => new Date(e.date) >= todayStart || e.id.startsWith('followup-')).slice(0, 8);
-  }, [filteredEvents]);
+    return filteredEvents.filter((e) => new Date(e.date) >= upcomingFrom || e.id.startsWith('followup-')).slice(0, 8);
+  }, [filteredEvents, upcomingFrom]);
 
   // What the export carries: everything the filters leave, from today on.
   const exportable = useMemo(() => {
@@ -905,14 +908,24 @@ export default function CalendarPage() {
                   <div className="space-y-2">
                     {upcomingEvents.map((e) => {
                       const TypeIcon = TYPE_CONFIG[e.type].icon;
+                      // A follow-up whose day has passed stays here on purpose
+                      // and says so: «24 Νοε» under "Upcoming" on the 26th read
+                      // as a mistake (docs §155).
+                      const late = new Date(e.date) < upcomingFrom;
                       return (
                       <div key={e.id} className="flex min-w-0 items-center gap-3 overflow-hidden text-sm">
-                        <span className="w-[4.5rem] shrink-0 tabular-nums text-xs text-muted-foreground">
+                        <span className={cn('w-[4.5rem] shrink-0 tabular-nums text-xs', late ? STATUS.danger.text : 'text-muted-foreground')}>
                           {formatUpcomingDate(e.date, primary)}
                         </span>
-                        <div className={cn('h-2 w-2 rounded-full shrink-0', TYPE_CONFIG[e.type].color.replace('text-', 'bg-'))} />
+                        {/* No coloured dot: the badge at the end names the kind,
+                            and the dot showed on some kinds only. */}
                         <span className="min-w-0 flex-1 truncate">
                           <BilingualText en={e.title} el={e.titleEl} compact />
+                          {late ? (
+                            <span className={cn('ms-1.5 text-xs', STATUS.danger.text)}>
+                              · <BilingualText en="overdue" el="εκπρόθεσμο" compact />
+                            </span>
+                          ) : null}
                         </span>
                         <Badge variant="secondary" className="h-4 shrink-0 gap-0.5 text-2xs">
                           <TypeIcon className="h-3 w-3" aria-hidden="true" />
