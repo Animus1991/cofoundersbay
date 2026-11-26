@@ -81,9 +81,8 @@ describe('connections, said once (§162)', () => {
     await screen.findByText('Elena Papadopoulos');
     openTab(/Απεσταλμένα/);
     const card = await cardOf('Nikos Andreou');
-    // The actions render twice by design: at the right from sm up, under the
-    // note on a phone (one is display:none at each width).
-    expect(within(card).getAllByText(/^Σε αναμονή από /).length).toBeGreaterThan(0);
+    // A line of its own under the note, at every width.
+    expect(within(card).getByText(/^Σε αναμονή από /).closest('p')?.previousElementSibling?.textContent).toMatch(/^[«“]Θα είχατε 15 λεπτά;[»”]$/);
     expect(within(card).queryByText('Εκκρεμεί')).toBeNull();
   });
 

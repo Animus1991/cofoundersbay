@@ -123,18 +123,12 @@ function ConnectionCard({
         <X className="icon-sm" aria-hidden="true" />
       </Button>
     </>
-  ) : (
-    // Sent holds only requests still waiting (the API's "sent" list), so a
-    // "Pending" pill on every card said the tab's name again. The card says
-    // since when instead, which is what decides a follow-up (§162).
-    <span className="text-xs text-muted-foreground">
-      <BilingualText
-        en={`Waiting since ${formatDay(connection.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
-        el={`Σε αναμονή από ${formatDay(connection.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
-        compact
-      />
-    </span>
-  );
+  ) : null;
+  // Sent holds only requests still waiting (the API's "sent" list), so a
+  // "Pending" pill on every card said the tab's name again. The card says
+  // since when instead, which is what decides a follow-up - on a line of its
+  // own: in the head's right column it was cut to «Σε αναμονή από 18 Ν» (§162).
+  const sentOn = formatDay(connection.createdAt, { day: 'numeric', month: 'short', year: 'numeric' });
 
   // The same head as every card (avatar, name, the line under it); the
   // actions sit at its right from `sm` up and under the note on a phone,
@@ -162,14 +156,20 @@ function ConnectionCard({
           )}
           subtitle={other.headline ?? undefined}
           asideClassName="hidden sm:flex"
-          aside={actions}
+          aside={actions ?? undefined}
         />
         {connection.message && !isAccepted && (
           <p className="card-body italic text-muted-foreground line-clamp-2">
             <Quoted>{connection.message}</Quoted>
           </p>
         )}
-        <div className="flex flex-wrap items-center gap-2 sm:hidden">{actions}</div>
+        {actions ? (
+          <div className="flex flex-wrap items-center gap-2 sm:hidden">{actions}</div>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            <BilingualText en={`Waiting since ${sentOn}`} el={`Σε αναμονή από ${sentOn}`} compact wrap />
+          </p>
+        )}
       </CardContent>
       {foot}
     </Card>
