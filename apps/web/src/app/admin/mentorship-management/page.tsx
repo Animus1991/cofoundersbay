@@ -20,10 +20,13 @@ import { initialsOf } from '@/lib/utils';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { elWord } from '@/lib/rows-el';
 
+// The mentor's calendar, in the words /mentoring uses for the same states:
+// «Διαθέσιμος» and «Μη διαθέσιμος» named every mentor in the masculine
+// (docs §54 rule, §159, §162).
 const AVAILABILITY: Record<string, { en: string; el: string; variant: 'success' | 'warning' | 'secondary' }> = {
-  available: { en: 'Available', el: 'Διαθέσιμος', variant: 'success' },
-  limited: { en: 'Limited', el: 'Περιορισμένα', variant: 'warning' },
-  unavailable: { en: 'Unavailable', el: 'Μη διαθέσιμος', variant: 'secondary' },
+  available: { en: 'Available', el: 'Ελεύθερες ώρες', variant: 'success' },
+  limited: { en: 'Limited', el: 'Λίγες ελεύθερες ώρες', variant: 'warning' },
+  unavailable: { en: 'Unavailable', el: 'Χωρίς ελεύθερες ώρες', variant: 'secondary' },
 };
 
 /*

@@ -149,7 +149,7 @@ export function InvestorCard({
                 {investor.isVerified && (
                   <BadgeCheck
                     className={cn('icon-sm shrink-0', STATUS.info.icon)}
-                    aria-label={bilingualInline('Verified', 'Επαληθευμένος')}
+                    aria-label={bilingualInline('Verified', 'Επαληθευμένο προφίλ')}
                   />
                 )}
               </span>

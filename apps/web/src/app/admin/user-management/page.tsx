@@ -686,7 +686,7 @@ export default function AdminUserManagementPage() {
                         <Link href={`/admin/user-detail/${user.id}`} className="tap-extend-y min-w-0 break-words hover:text-primary-accessible">
                           {user.name}
                         </Link>
-                        {user.verified && <CheckCircle2 className="icon-sm shrink-0 text-primary-accessible" aria-label="Verified. Επαληθευμένος" />}
+                        {user.verified && <CheckCircle2 className="icon-sm shrink-0 text-primary-accessible" aria-label="Verified. Επαληθευμένο προφίλ" />}
                       </span>
                     )}
                     subtitle={<span className="block truncate" translate="no">{user.email}</span>}
@@ -798,7 +798,7 @@ export default function AdminUserManagementPage() {
               <div className="flex flex-wrap gap-2">
                 <StatusText value={detailUser.role} />
                 <StatusText value={detailUser.status} tone={STATUS_TONES[detailUser.status]} />
-                {detailUser.verified && <Badge><BilingualText en="Verified" el="Επαληθευμένος" compact /></Badge>}
+                {detailUser.verified && <Badge><BilingualText en="Verified" el="Επαληθευμένο προφίλ" compact /></Badge>}
               </div>
               <dl className="grid grid-cols-2 gap-2">
                 <dt className="text-muted-foreground"><BilingualText en="Created" el="Δημιουργήθηκε" compact /></dt>

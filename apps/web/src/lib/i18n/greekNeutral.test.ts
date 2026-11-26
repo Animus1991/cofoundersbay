@@ -39,4 +39,26 @@ describe('Greek copy stays gender-neutral', () => {
     }
     expect(offenders).toEqual([]);
   });
+
+  /*
+   * A label that is only an adjective names whoever it sits beside in one
+   * gender: «Διαθέσιμος» called Alexandra and Ioanna masculine on the cards of
+   * Services and Mentors (§159, §162). A person's state is said through a
+   * noun of its own instead: «Ελεύθερες ώρες», «Δέχεται νέους πελάτες»,
+   * «Επαληθευμένο προφίλ». The domains screen keeps «Επαληθευμένος»: there it
+   * agrees with «τομέας».
+   */
+  it('has no person status that is a bare gendered adjective', () => {
+    const BARE = /(["'`])(?:Μη )?(?:[Δδ]ιαθέσιμ|Επαληθευμέν)(?:ος|η)\1/u;
+    const NOUN_AGREES = new Set(['app/admin/domains/page.tsx']);
+    const offenders: string[] = [];
+    for (const file of sourceFiles(SRC)) {
+      const rel = relative(SRC, file).replace(/\\/g, '/');
+      if (NOUN_AGREES.has(rel)) continue;
+      readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+        if (BARE.test(line)) offenders.push(`${rel}:${i + 1} ${line.trim().slice(0, 100)}`);
+      });
+    }
+    expect(offenders).toEqual([]);
+  });
 });

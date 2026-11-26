@@ -131,7 +131,7 @@ function MentorCard({ mentor, sample = false }: { mentor: Mentor; /** A sample m
                 </Link>
               )}
               {mentor.isVerified && (
-                <CheckCircle2 className="icon-sm text-primary-accessible" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />
+                <CheckCircle2 className="icon-sm text-primary-accessible" aria-label={bilingualInline('Verified', 'Επαληθευμένο προφίλ')} />
               )}
             </span>
           )}

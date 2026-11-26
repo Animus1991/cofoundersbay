@@ -17,14 +17,7 @@ import {
   Zap,
   ShieldCheck,
   Plus,
-  Scale,
-  Calculator,
-  Megaphone,
-  Code2,
-  Brush,
-  BrainCircuit,
   GraduationCap,
-  Globe,
   BadgeCheck,
   Store,
   Handshake,
@@ -37,7 +30,6 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -67,17 +59,29 @@ type ServiceProvider = DemoProvider;
 
 // ── Category Config ────────────────────────────────────────────────────────────
 
-const CAT_CONFIG: Record<string, { label: string; labelEl: string; icon: React.ElementType; color: string }> = {
-  All: { label: 'All Services', labelEl: 'Όλες οι υπηρεσίες', icon: Store, color: 'text-foreground' },
-  legal: { label: 'Legal', labelEl: 'Νομικά', icon: Scale, color: 'text-status-info' },
-  finance: { label: 'Finance', labelEl: 'Οικονομικά', icon: Calculator, color: 'text-status-success' },
-  marketing: { label: 'Marketing', labelEl: 'Μάρκετινγκ', icon: Megaphone, color: 'text-status-warning' },
-  development: { label: 'Development', labelEl: 'Ανάπτυξη λογισμικού', icon: Code2, color: 'text-status-accent' },
-  design: { label: 'Design', labelEl: 'Σχεδιασμός', icon: Brush, color: 'text-status-accent' },
-  consulting: { label: 'Consulting', labelEl: 'Συμβουλευτική', icon: BrainCircuit, color: 'text-status-warning' },
-  coaching: { label: 'Coaching', labelEl: 'Καθοδήγηση', icon: GraduationCap, color: 'text-status-success' },
-  other: { label: 'Other', labelEl: 'Άλλο', icon: Globe, color: 'text-muted-foreground' },
+// One name per category, for the tabs, the cards, the empty state and the
+// assistant. Each tab also drew a coloured icon that the tab rule in
+// globals.css hides, and the assistant read its own Greek list, in which
+// Development was «Ανάπτυξη» beside the tab's «Ανάπτυξη λογισμικού» (§162).
+const CAT_CONFIG: Record<string, { label: string; labelEl: string }> = {
+  All: { label: 'All Services', labelEl: 'Όλες οι υπηρεσίες' },
+  legal: { label: 'Legal', labelEl: 'Νομικά' },
+  finance: { label: 'Finance', labelEl: 'Οικονομικά' },
+  marketing: { label: 'Marketing', labelEl: 'Μάρκετινγκ' },
+  development: { label: 'Development', labelEl: 'Ανάπτυξη λογισμικού' },
+  design: { label: 'Design', labelEl: 'Σχεδιασμός' },
+  consulting: { label: 'Consulting', labelEl: 'Συμβουλευτική' },
+  coaching: { label: 'Coaching', labelEl: 'Καθοδήγηση' },
+  other: { label: 'Other', labelEl: 'Άλλο' },
 };
+
+// The rail's select and the assistant's control name the orders alike: the
+// rail said "Highest Rated" for what the assistant called "Top rated".
+const SORT_OPTIONS = [
+  { value: 'rating', en: 'Highest rated', el: 'Υψηλότερη βαθμολογία' },
+  { value: 'reviews', en: 'Most reviewed', el: 'Περισσότερες κριτικές' },
+  { value: 'clients', en: 'Most clients', el: 'Περισσότεροι πελάτες' },
+];
 
 const CATEGORIES = Object.keys(CAT_CONFIG);
 
@@ -115,7 +119,6 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
   const { primary } = useLanguagePreference();
   const [saved, setSaved] = useState(false);
   const catCfg = CAT_CONFIG[provider.category] ?? CAT_CONFIG['other'];
-  const CatIcon = catCfg.icon;
 
   return (
     <Card
@@ -148,7 +151,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           subtitle={(
             <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1.5">
               <span className="font-medium text-foreground">{provider.providerName}</span>
-              {provider.isVerified && <BadgeCheck className="icon-sm text-status-info shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
+              {provider.isVerified && <BadgeCheck className="icon-sm text-status-info shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένο προφίλ')} />}
             </span>
           )}
           asideStays
@@ -170,13 +173,15 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           )}
         />
         <p className="card-subtitle mt-1.5">{provider.providerTitle}</p>
+        {/* No "Featured" badge: featured cards sit under their own
+            "Featured providers" heading, tinted, and every one of them
+            repeated the heading in a badge (§162). */}
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <span className="font-medium text-foreground">{provider.avgRating.toFixed(1)}</span>
             <Star className="icon-sm fill-status-warning text-status-warning" />
             <span>({provider.reviewCount})</span>
           </span>
-          {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
         </div>
         </div>
 
@@ -184,16 +189,20 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
 
         <div className="space-y-2">
           {/* Category, then specialties: facts, one line each. */}
-          <FactLine className="gap-y-1.5" items={[<BilingualText key="cat" en={catCfg.label} el={catCfg.labelEl ?? catCfg.label} compact />, ...provider.specialties.slice(0, 3), provider.specialties.length > 3 ? `+${provider.specialties.length - 3}` : null]} />
+          <FactLine className="gap-y-1.5" items={[<BilingualText key="cat" en={catCfg.label} el={catCfg.labelEl} compact />, ...provider.specialties.slice(0, 3), provider.specialties.length > 3 ? `+${provider.specialties.length - 3}` : null]} />
           <FactLine className="gap-y-1.5"
             items={[
               <BilingualText key="response" en={provider.responseTime} el={durationEl(provider.responseTime)} compact />,
               <BilingualText key="clients" en={`${provider.clientCount} clients`} el={`${provider.clientCount} πελάτες`} compact />,
               <BilingualText key="place" en={provider.location} el={placeEl(provider.location)} compact />,
               <span key="avail" className={provider.isAvailable ? 'text-status-success' : undefined}>
+                {/* The listing's state in no one's gender, and in the words
+                    of the page's own count and the Request button's reason:
+                    «Διαθέσιμος» named Alexandra in the masculine, and «Πλήρης»
+                    agreed with nothing on the card (docs §54 rule, §162). */}
                 {provider.isAvailable
-                  ? <BilingualText en="Available" el="Διαθέσιμος" compact />
-                  : <BilingualText en="Fully booked" el="Πλήρης" compact />}
+                  ? <BilingualText en="Taking new clients" el="Δέχεται νέους πελάτες" compact />
+                  : <BilingualText en="Fully booked" el="Πλήρες πρόγραμμα" compact />}
               </span>,
             ]}
           />
@@ -362,32 +371,26 @@ export default function MarketplacePage() {
       id: 'services',
       labelEn: 'Services',
       labelEl: 'Υπηρεσίες',
+      // The state next to the name: a row is cut at 110 characters, and at
+      // the end "fully booked" never reached the assistant (§162).
       rows: isLoading ? undefined : filtered.map((p) =>
-        `${p.title} · by ${p.providerName} · ${p.category} · ${p.pricing}${p.reviewCount ? ` · ${p.avgRating.toFixed(1)}★ (${p.reviewCount})` : ''}${p.isAvailable ? '' : ' · unavailable'}`,
+        `${p.title} · by ${p.providerName}${p.isAvailable ? '' : ' · fully booked'} · ${CAT_CONFIG[p.category]?.label ?? p.category} · ${p.pricing}${p.reviewCount ? ` · ${p.avgRating.toFixed(1)}★ (${p.reviewCount})` : ''}`,
       ),
       rowsEl: isLoading ? undefined : filtered.map((p) =>
-        `${p.title} · από ${p.providerName} · ${elWord(p.category)} · ${p.pricing}${p.reviewCount ? ` · ${p.avgRating.toFixed(1)}★ (${p.reviewCount})` : ''}${p.isAvailable ? '' : ' · μη διαθέσιμη'}`,
+        `${p.title} · από ${p.providerName}${p.isAvailable ? '' : ' · πλήρες πρόγραμμα'} · ${CAT_CONFIG[p.category]?.labelEl ?? elWord(p.category)} · ${p.pricing}${p.reviewCount ? ` · ${p.avgRating.toFixed(1)}★ (${p.reviewCount})` : ''}`,
       ),
       total: allProviders.length,
       sample: showingSamples,
     },
   ]);
-  // Offered to the assistant: category, sort and the available-only switch,
-  // through the same setters the rail and chips use.
-  const CATEGORY_EL: Record<string, string> = {
-    All: 'Όλες οι υπηρεσίες', legal: 'Νομικά', finance: 'Οικονομικά', marketing: 'Μάρκετινγκ', development: 'Ανάπτυξη',
-    design: 'Σχεδιασμός', consulting: 'Συμβουλευτική', coaching: 'Καθοδήγηση', other: 'Άλλο',
-  };
+  // Offered to the assistant: category, sort and the new-clients switch,
+  // through the same setters and in the same words as the tabs and the rail.
   usePageControls([
-    choiceControl('category', 'Service category', 'Κατηγορία υπηρεσίας', CATEGORIES.map((c) => ({ value: c, en: CAT_CONFIG[c].label, el: CATEGORY_EL[c] ?? CAT_CONFIG[c].label })), selectedCategory, setSelectedCategory),
-    choiceControl('sort', 'Sort services', 'Ταξινόμηση υπηρεσιών', [
-      { value: 'rating', en: 'Top rated', el: 'Κορυφαία βαθμολογία' },
-      { value: 'reviews', en: 'Most reviewed', el: 'Περισσότερες κριτικές' },
-      { value: 'clients', en: 'Most clients', el: 'Περισσότεροι πελάτες' },
-    ], sortBy, setSortBy),
+    choiceControl('category', 'Service category', 'Κατηγορία υπηρεσίας', CATEGORIES.map((c) => ({ value: c, en: CAT_CONFIG[c].label, el: CAT_CONFIG[c].labelEl })), selectedCategory, setSelectedCategory),
+    choiceControl('sort', 'Sort services', 'Ταξινόμηση υπηρεσιών', SORT_OPTIONS, sortBy, setSortBy),
     choiceControl('availability', 'Availability', 'Διαθεσιμότητα', [
       { value: 'any', en: 'Any availability', el: 'Οποιαδήποτε διαθεσιμότητα' },
-      { value: 'available', en: 'Available now only', el: 'Μόνο διαθέσιμοι τώρα' },
+      { value: 'available', en: 'Taking new clients only', el: 'Μόνο όσοι δέχονται νέους πελάτες' },
     ], availableOnly ? 'available' : 'any', (v) => setAvailableOnly(v === 'available')),
   ]);
 
@@ -417,9 +420,9 @@ export default function MarketplacePage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="rating"><BilingualText en="Highest Rated" el="Υψηλότερη βαθμολογία" compact /></SelectItem>
-                <SelectItem value="reviews"><BilingualText en="Most Reviewed" el="Περισσότερες κριτικές" compact /></SelectItem>
-                <SelectItem value="clients"><BilingualText en="Most Clients" el="Περισσότεροι πελάτες" compact /></SelectItem>
+                {SORT_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}><BilingualText en={o.en} el={o.el} compact /></SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -433,7 +436,7 @@ export default function MarketplacePage() {
             )}
           >
             <CheckCircle className="icon-sm shrink-0" aria-hidden="true" />
-            <span className="min-w-0 flex-1"><BilingualText en="Available providers only" el="Μόνο διαθέσιμοι πάροχοι" compact /></span>
+            <span className="min-w-0 flex-1"><BilingualText en="Taking new clients only" el="Μόνο όσοι δέχονται νέους πελάτες" compact wrap /></span>
           </button>
         </div>
       ),
@@ -480,16 +483,14 @@ export default function MarketplacePage() {
         {/* Category Tabs */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
           <TabsList className={cn('flex h-auto gap-1 bg-muted/50 p-1 max-sm:flex-nowrap sm:flex-wrap', toolbarHidden && 'hidden')}>
-            {CATEGORIES.map(cat => {
-              const cfg = CAT_CONFIG[cat];
-              const CatIcon = cfg.icon;
-              return (
-                <TabsTrigger key={cat} value={cat} className="gap-1.5 text-xs data-[state=active]:bg-background">
-                  <CatIcon className={cn('icon-sm', cfg.color)} aria-hidden="true" />
-                  <BilingualText en={cfg.label} el={cfg.labelEl} compact />
-                </TabsTrigger>
-              );
-            })}
+            {/* The strip's own active state, as on every page: a white
+                ground under the active tab's white label left «Όλες οι
+                υπηρεσίες» unreadable (§162). */}
+            {CATEGORIES.map(cat => (
+              <TabsTrigger key={cat} value={cat} className="text-xs">
+                <BilingualText en={CAT_CONFIG[cat].label} el={CAT_CONFIG[cat].labelEl} compact />
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           <TabsContent value={selectedCategory} className="space-y-6 mt-4">
@@ -520,7 +521,7 @@ export default function MarketplacePage() {
                 {featured.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="icon-sm text-muted-foreground" />
+                      <TrendingUp className="icon-sm text-muted-foreground" aria-hidden="true" />
                       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground"><BilingualText en="Featured Providers" el="Προτεινόμενοι πάροχοι" compact /></h2>
                     </div>
                     <div className="card-grid">
@@ -548,13 +549,13 @@ export default function MarketplacePage() {
                         <BilingualText
                           en={`Nothing matched ${[
                             search.trim() ? `“${search.trim()}”` : null,
-                            selectedCategory !== 'All' ? selectedCategory : null,
-                            availableOnly ? 'available now' : null,
+                            selectedCategory !== 'All' ? CAT_CONFIG[selectedCategory]?.label ?? selectedCategory : null,
+                            availableOnly ? 'taking new clients' : null,
                           ].filter(Boolean).join(', ')}. Clear them to see every service.`}
                           el={`Τίποτα δεν ταιριάζει με ${[
                             search.trim() ? `«${search.trim()}»` : null,
-                            selectedCategory !== 'All' ? selectedCategory : null,
-                            availableOnly ? 'διαθέσιμοι τώρα' : null,
+                            selectedCategory !== 'All' ? CAT_CONFIG[selectedCategory]?.labelEl ?? selectedCategory : null,
+                            availableOnly ? 'δέχονται νέους πελάτες' : null,
                           ].filter(Boolean).join(', ')}. Καθαρίστε τα για να δείτε όλες τις υπηρεσίες.`}
                           wrap
                         />
@@ -590,7 +591,7 @@ export default function MarketplacePage() {
                 our icon-size token is kept. */}
             <Button size="sm" className="shrink-0" asChild>
               <Link href="/provider/services">
-                <Plus className="mr-1.5 icon-sm" /><BilingualText en="List Your Service" el="Καταχώριση υπηρεσίας" compact />
+                <Plus className="mr-1.5 icon-sm" /><BilingualText en="List your service" el="Καταχώριση υπηρεσίας" compact />
               </Link>
             </Button>
           </CardContent>

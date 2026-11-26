@@ -1,25 +1,16 @@
-import { AppShell } from '@/components/layout/AppShell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { HeaderBandSkeleton } from '@/components/layout/HeaderBandSkeleton';
 
+/**
+ * The route's loading echo under the shared header band. It used to print a
+ * header of its own, "Groups" with a disabled "Create Group", in English
+ * only, where the page says "Communities" and «Δημιουργία κοινότητας» (§162).
+ */
 export default function GroupsLoading() {
   return (
-    <AppShell
-      title="Groups"
-      titleEl="Κοινότητες"
-      description="Join communities, share knowledge, and connect with like-minded founders"
-      descriptionEl="Γίνετε μέλος κοινοτήτων, μοιραστείτε γνώση και γνωρίστε ιδρυτές με κοινά ενδιαφέροντα"
-      actions={
-        // The loading shell's copy of the header action; the real one renders
-        // with the page. Disabled so it is not a control that does nothing.
-        <Button className="gap-2" disabled>
-          <Plus className="icon-sm" aria-hidden="true" />
-          Create Group
-        </Button>
-      }
-    >
+    <div className="space-y-4">
+      <HeaderBandSkeleton />
       {/* Tabs skeleton */}
       <div className="flex gap-1 rounded-xl bg-secondary/50 p-1 mb-4 max-w-md">
         <Skeleton className="h-9 flex-1 rounded-lg" />
@@ -96,6 +87,6 @@ export default function GroupsLoading() {
           ))}
         </div>
       </div>
-    </AppShell>
+    </div>
   );
 }

@@ -144,7 +144,7 @@ function MentorCard({
           title={(
             <span className="inline-flex flex-wrap items-center gap-1.5">
               <PersonHovercard userId={mentor.id}><Link href={`/profiles/${mentor.id}`} className="person-name transition-colors hover:text-primary-accessible">{mentor.displayName}</Link></PersonHovercard>
-              {mentor.isVerified && <BadgeCheck className="icon-sm text-muted-foreground shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
+              {mentor.isVerified && <BadgeCheck className="icon-sm text-muted-foreground shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένο προφίλ')} />}
               {mentor.isFeatured && (
                 <Badge variant="secondary" className="gap-1 text-xs px-1.5 py-0.5 font-normal">
                   <TrendingUp className="h-2.5 w-2.5" aria-hidden="true" />
