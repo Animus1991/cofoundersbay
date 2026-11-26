@@ -403,6 +403,9 @@ function MatchListRow({
       meta={(hit.location || commitment) ? (
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
           {hit.location ? <span>{hit.location}</span> : null}
+          {/* A dot between the place and the commitment: «Αθήνα, Ελλάδα Θέση
+              συνιδρυτή: …» read as one phrase (docs §156). */}
+          {hit.location && commitment ? <span aria-hidden="true" className="text-muted-foreground">·</span> : null}
           {commitment ? <CommitmentLine commitment={commitment} /> : null}
         </span>
       ) : undefined}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { BilingualText } from '@/components/common/BilingualText';
+import { SectionLink } from '@/components/home/SectionLink';
 import { listEvents, listGroups } from '@/lib/api';
 import { discoverEl, discoverEn } from '@/lib/i18n/strings-discover';
 import { formatShortDate } from '@/lib/i18n/format';
@@ -22,9 +23,8 @@ function CuratedRow({ title, titleEl, href, rows }: { title: string; titleEl: st
     <section className="min-w-0 space-y-3" data-curated-row="">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="card-title"><BilingualText en={title} el={titleEl} compact /></h2>
-        <Link href={href} className="tap-extend-y shrink-0 text-sm text-muted-foreground hover:text-foreground">
-          <BilingualText en={discoverEn('curated_all')} el={discoverEl('curated_all')} compact />
-        </Link>
+        {/* The home's way on, "All →" in the link colour (docs §143, §156). */}
+        <SectionLink href={href} en={discoverEn('curated_all')} el={discoverEl('curated_all')} />
       </div>
       <ul className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
         {rows.map((row) => (

@@ -11,7 +11,6 @@ import {
   Flag,
   Share2,
   Sparkles,
-  Star,
   Check,
 } from 'lucide-react';
 import type { MatchConnection } from '@/components/common/MatchCard';
@@ -436,9 +435,10 @@ function ProfileCardInner({
           <span className="inline-flex max-w-full flex-wrap items-center justify-end gap-x-2 gap-y-1">
             {badge}
             {profile.matchScore && profile.matchScore > 0 ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary-accessible">
-                <Star className="icon-sm fill-current" aria-hidden="true" />
-                {profile.matchScore}%
+              /* The figure with its word, as every other card says it: a star
+                 beside «70%» read as a rating (docs §156). */
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary-accessible">
+                <BilingualText en={`${profile.matchScore}% match`} el={`${profile.matchScore}% ταίριασμα`} compact />
               </span>
             ) : null}
           </span>
