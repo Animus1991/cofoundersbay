@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Check, Loader2, MessageCircle, PenLine, Star, X } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
+import { Quoted } from '@/components/common/Quoted';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { FormDraftNotice } from '@/components/common/FormDraftNotice';
@@ -271,7 +272,7 @@ function AskedReviewCard({ review, draft, onDraftUsed, focused }: {
         ) : null}
 
         {review.status === 'submitted' && review.summaryFeedback ? (
-          <p className="card-body line-clamp-2 italic text-muted-foreground">“{review.summaryFeedback}”</p>
+          <p className="card-body line-clamp-2 italic text-muted-foreground"><Quoted>{review.summaryFeedback}</Quoted></p>
         ) : null}
 
         <CardFoot end>

@@ -45,6 +45,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, scoreTenPointClass, type StatusTone } from '@/lib/semantic-colors';
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
+import { Quoted } from '@/components/common/Quoted';
 import { EmptyState } from '@/components/common/EmptyState';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
@@ -59,8 +60,8 @@ import { Counter } from '@/components/ui/counter';
 
 /** Why the one disabled control is disabled, in both languages. */
 const MESSAGE_HINT = bilingualAria(
-  'Message expert. Sample review - there is no expert to write to',
-  'Μήνυμα στον ειδικό. Δείγμα αξιολόγησης - δεν υπάρχει ειδικός για μήνυμα',
+  'Message. Sample review - there is no expert to write to',
+  'Μήνυμα. Δείγμα αξιολόγησης - δεν υπάρχει ειδικός για μήνυμα',
 );
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -282,7 +283,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
 
         {review.summaryFeedback && (
           <p className="card-body line-clamp-2 italic text-muted-foreground">
-            “{review.summaryFeedback}”
+            <Quoted>{review.summaryFeedback}</Quoted>
           </p>
         )}
 
@@ -294,10 +295,12 @@ function ReviewCard({ review }: { review: ExpertReview }) {
             <Button size="sm" variant="outline" className="gap-1" asChild>
               <Link
                 href={`/messages?to=${encodeURIComponent(review.expertId)}`}
-                aria-label={bilingualAria(`Message expert: ${review.expertName}`, `Μήνυμα στον ειδικό: ${review.expertName}`)}
+                aria-label={bilingualAria(`Message ${review.expertName}`, `Μήνυμα προς ${review.expertName}`)}
               >
+                {/* «Μήνυμα στον ειδικό» named Dr. Sarah Kim in the masculine;
+                    the card is the expert's own, so "Message" says it (§163). */}
                 <MessageCircle className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Message expert" el="Μήνυμα στον ειδικό" compact wrap />
+                <BilingualText en="Message" el="Μήνυμα" compact wrap />
               </Link>
             </Button>
           ) : (
@@ -313,7 +316,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 disabled
               >
                 <MessageCircle className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Message expert" el="Μήνυμα στον ειδικό" compact wrap />
+                <BilingualText en="Message" el="Μήνυμα" compact wrap />
               </Button>
             </WithDisabledReason>
           )}

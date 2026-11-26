@@ -2399,7 +2399,7 @@ const PREVIEW_MENTORSHIP_RELATIONSHIPS = [
     mentor: {
       id: 'user-sarah',
       displayName: 'Dr. Sarah Kim',
-      headline: 'Startup mentor - Former product lead - 3x founder',
+      headline: 'Startup mentor · Former product lead · 3x founder',
       avatarUrl: null,
     },
     mentee: {
@@ -3059,7 +3059,7 @@ function previewExpertReviewsBase() {
   const sarah = {
     id: 'user-sarah',
     displayName: 'Dr. Sarah Kim',
-    headline: 'Startup mentor - Former product lead - 3x founder',
+    headline: 'Startup mentor · Former product lead · 3x founder',
     avatarUrl: null,
   };
   const nikos = {
