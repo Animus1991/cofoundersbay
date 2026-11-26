@@ -1125,6 +1125,12 @@ const el: Record<string, string> = {
   // The services page's name in its sample note, as its title reads (§162);
   // a bare "Marketplace" stays English, where it is an industry.
   'Services marketplace': 'Αγορά υπηρεσιών',
+  // The demo founder's saved searches (demo/saved-searches-world), which a
+  // Greek reader saw in English among Greek cards (§162).
+  'Commercial co-founder, Athens': 'Συνιδρυτές για πωλήσεις, Αθήνα',
+  'sales partnerships': 'συνεργασίες πωλήσεων',
+  'Co-founder cards': 'Κάρτες συνιδρυτών',
+  'Fundraising mentors': 'Μέντορες για χρηματοδότηση',
 };
 
 const es: Record<string, string> = {

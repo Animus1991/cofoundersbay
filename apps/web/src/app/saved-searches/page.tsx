@@ -40,7 +40,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
-import { StatusText } from '@/components/common/StatusText';
+import { statusEl, statusEn } from '@/components/common/StatusText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -89,14 +89,16 @@ function SearchCard({
         />
 
         {/* Filters: what the search holds, as one fact line (they were
-            up to seven badges, each with its own glyph). */}
+            up to seven badges, each with its own glyph). Kinds and roles are
+            words like the rest of the line, not status pills with a dot:
+            «• Ιδρυτής · ClimateTech · Αθήνα» (§162). */}
         <FactLine
           label={bilingualAria('Filters', 'Φίλτρα')}
           items={[
             search.scope === 'need_cards' ? <BilingualText key="scope" en="Need cards" el="Κάρτες ανάγκης" compact /> : null,
-            ...(search.filters?.kinds ?? []).map((k) => <StatusText key={`kind-${k}`} value={k} />),
+            ...(search.filters?.kinds ?? []).map((k) => <BilingualText key={`kind-${k}`} en={statusEn(k)} el={statusEl(k) ?? statusEn(k)} compact />),
             search.filters?.remote?.length ? <BilingualText key="remote" en="Remote" el="Εξ αποστάσεως" compact /> : null,
-            ...(search.filters?.roles ?? []).map((r) => <StatusText key={`role-${r}`} value={r} />),
+            ...(search.filters?.roles ?? []).map((r) => <BilingualText key={`role-${r}`} en={statusEn(r)} el={statusEl(r) ?? statusEn(r)} compact />),
             ...(search.filters?.industries ?? []).slice(0, 2),
             ...(search.filters?.locations ?? []).slice(0, 1),
             filterCount > 3 ? <BilingualText key="more" {...fill('more_filters', { n: filterCount - 3 })} compact /> : null,
