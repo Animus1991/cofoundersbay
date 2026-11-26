@@ -10,6 +10,7 @@ import { getActionSpec, undoAvailable } from '@/lib/action-registry';
 import { STATUS } from '@/lib/semantic-colors';
 import { cn } from '@/lib/utils';
 import type { CopilotAction } from '@/lib/copilot-types';
+import { Quoted } from '@/components/common/Quoted';
 
 type ActionCardProps = {
   action: CopilotAction;
@@ -143,7 +144,7 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
           subtitle={action.description || undefined}
         />
         {action.tool === 'send_connection' && typeof action.payload.message === 'string' && (
-          <p className="card-body italic text-muted-foreground">“{action.payload.message}”</p>
+          <p className="card-body italic text-muted-foreground"><Quoted>{action.payload.message}</Quoted></p>
         )}
 
         {/* Stated before the user commits, not after. The registry verifies each

@@ -36,6 +36,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { Quoted } from '@/components/common/Quoted';
 import { EmptyState } from '@/components/common/EmptyState';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { CardHead } from '@/components/common/CardAnatomy';
@@ -407,7 +408,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
           {session.keyInsights && (
             <div>
               <p className="mb-0.5 text-xs font-medium text-muted-foreground"><BilingualText en="Key insights" el="Βασικά συμπεράσματα" compact /></p>
-              <p className="card-body italic text-foreground">“{session.keyInsights}”</p>
+              <p className="card-body italic text-foreground"><Quoted>{session.keyInsights}</Quoted></p>
             </div>
           )}
           {session.actionItems && session.actionItems.length > 0 && (
@@ -937,7 +938,7 @@ export default function CoachingPage() {
                       <CheckCircle2 className={cn('mt-0.5 icon-sm shrink-0', item.done ? 'text-status-success' : 'text-muted-foreground/30')} />
                       <div className="flex-1 min-w-0">
                         <p className={cn('text-sm', item.done ? 'line-through text-muted-foreground' : 'text-foreground')}>{item.task}</p>
-                        <p className="text-xs text-muted-foreground"><BilingualText en={`From: ${session.title}`} el={`Από: ${session.title}`} compact wrap /></p>
+                        <p className="text-xs text-muted-foreground"><BilingualText en="From:" el="Από:" compact /> <span>{session.title}</span></p>
                       </div>
                       {!item.done && (
                         <Badge variant="outline" className="shrink-0 text-2xs"><BilingualText en="Pending" el="Εκκρεμεί" compact /></Badge>
@@ -1045,7 +1046,7 @@ export default function CoachingPage() {
                 <CardContent className="card-rows">
                   {sessions.filter((s) => s.keyInsights).map((s) => (
                     <figure key={s.id}>
-                      <blockquote className="card-body italic text-muted-foreground">“{s.keyInsights}”</blockquote>
+                      <blockquote className="card-body italic text-muted-foreground"><Quoted>{s.keyInsights}</Quoted></blockquote>
                       <figcaption className="mt-1 text-xs text-muted-foreground">— {s.title}</figcaption>
                     </figure>
                   ))}

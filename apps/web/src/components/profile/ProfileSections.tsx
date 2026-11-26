@@ -26,6 +26,7 @@ import { qk } from '@/lib/query-keys';
 import { getMyUpdates, getUpdatesBy } from '@/lib/updates-api';
 import { initialsOf } from '@/lib/utils';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { Quoted } from '@/components/common/Quoted';
 
 /**
  * The profile sections a professional profile reads in, adapted to what this
@@ -334,7 +335,7 @@ export function ProfileRecommendations({ userId }: { userId: string }) {
                   <span className="font-medium">{e.fromUser?.displayName ?? 'Member'}</span>
                   {e.skill ? <span className="text-muted-foreground"> · {e.skill}</span> : null}
                 </p>
-                {e.content ? <p className="line-clamp-3 text-sm text-muted-foreground">“{e.content}”</p> : null}
+                {e.content ? <p className="line-clamp-3 text-sm text-muted-foreground"><Quoted>{e.content}</Quoted></p> : null}
                 {basis.length ? (
                   <p className="text-xs text-status-success">
                     <BilingualText

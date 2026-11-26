@@ -148,7 +148,7 @@ export function BookingCard({
 
             {booking.notes && (
               <p className="card-body mt-2 italic text-muted-foreground line-clamp-2">
-                &ldquo;{booking.notes}&rdquo;
+                <Quoted>{booking.notes}</Quoted>
               </p>
             )}
 

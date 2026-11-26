@@ -37,6 +37,7 @@ import { useStoredUser } from '@/hooks/useStoredUser';
 import { isNotFound } from '@/lib/read-status';
 import { useToast } from '@/components/ui/toast';
 import { GiveEndorsementDialog } from '@/components/endorsements/GiveEndorsementDialog';
+import { Quoted } from '@/components/common/Quoted';
 
 function deriveProfileFields(profile: PublicProfile) {
   const rp = (profile.rolePayload ?? {}) as Record<string, unknown>;
@@ -88,7 +89,7 @@ function EndorsementRow({ endorsement }: { endorsement: EndorsementItem }) {
       />
       <div className="space-y-1.5">
         {endorsement.skill ? <p className="text-xs font-medium text-muted-foreground">{endorsement.skill}</p> : null}
-        <blockquote className="card-body italic text-muted-foreground">“{endorsement.content}”</blockquote>
+        <blockquote className="card-body italic text-muted-foreground"><Quoted>{endorsement.content}</Quoted></blockquote>
         <EndorsementBasisLine basis={endorsement.basis} />
       </div>
     </li>

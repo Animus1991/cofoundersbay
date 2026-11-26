@@ -52,6 +52,7 @@ import { ContactWarning } from './ContactWarning';
 import { NonGuaranteeNote } from './NonGuaranteeNote';
 import { StepChip } from './OutcomeChip';
 import { elWord } from '@/lib/rows-el';
+import { Quoted } from '@/components/common/Quoted';
 
 type Pair = { en: string; el: string };
 
@@ -128,7 +129,7 @@ function ProtectedConversation({
         </p>
       </div>
       {thread.note ? (
-        <blockquote className="card-body italic text-muted-foreground">“{thread.note}”</blockquote>
+        <blockquote className="card-body italic text-muted-foreground"><Quoted>{thread.note}</Quoted></blockquote>
       ) : null}
       <ol className="max-h-80 space-y-2 overflow-y-auto pr-1">
         {thread.messages.length === 0 ? (
@@ -681,7 +682,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
 
       {thread.step === 'interest' ? (
         <section className="space-y-3">
-          {thread.note ? <blockquote className="card-body italic text-muted-foreground">“{thread.note}”</blockquote> : null}
+          {thread.note ? <blockquote className="card-body italic text-muted-foreground"><Quoted>{thread.note}</Quoted></blockquote> : null}
           {isOwner ? (
             <div className="flex flex-wrap gap-2">
               <Button size="sm" disabled={busy} onClick={() => void run(() => acceptCommitmentInterest(threadId), 'Interest accepted')}>
@@ -790,7 +791,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
       {thread.step === 'closed' ? (
         <p className="card-body text-muted-foreground">
           <BilingualText en={CMT.closed_thread.en} el={CMT.closed_thread.el} wrap />
-          {thread.closedReason ? <span className="mt-1 block italic">“{thread.closedReason}”</span> : null}
+          {thread.closedReason ? <span className="mt-1 block italic"><Quoted>{thread.closedReason}</Quoted></span> : null}
         </p>
       ) : null}
 

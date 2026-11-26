@@ -54,6 +54,7 @@ import { publicCardUrl } from '@/lib/commitments-links';
 import { nextAction } from '@/lib/commitments-next';
 import { statusEl } from '@/components/common/StatusText';
 import { ASK } from '@/lib/page-questions';
+import { Quoted } from '@/components/common/Quoted';
 
 type Tab = 'mine' | 'responses' | 'history';
 type OutcomeFilter = 'all' | CommitmentOutcome;
@@ -126,7 +127,7 @@ function ResponseRow({ thread, now }: { thread: CommitmentThreadSummary; now: nu
             <BilingualText en={`${CMT.waiting_on.en} ${thread.counterpart.displayName}`} el={`${CMT.waiting_on.el} ${thread.counterpart.displayName}`} wrap />
           </p>
         ) : null}
-        {thread.closedReason ? <p className="card-body italic text-muted-foreground first-letter:uppercase">“{thread.closedReason}”</p> : null}
+        {thread.closedReason ? <p className="card-body italic text-muted-foreground first-letter:uppercase"><Quoted>{thread.closedReason}</Quoted></p> : null}
         <CardFoot meta={<HistoryNote settled={settledAt(thread)} now={now} />}>
           <Button size="sm" variant="outline" asChild>
             <Link href={threadHref(thread)}><BilingualText en={CMT.open_board.en} el={CMT.open_board.el} compact /></Link>
