@@ -648,7 +648,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
   '/learning': {
     title: 'Κέντρο μάθησης',
     description:
-      'Επιλεγμένα courses, οδηγοί founders και πρότυπα ευθυγραμμισμένα με τα κενά ετοιμότητας.',
+      'Επιλεγμένα μαθήματα, οδηγοί για ιδρυτές και πρότυπα, με βάση τα κενά ετοιμότητάς σας.',
     section: 'Πόροι',
   },
   '/groups': {

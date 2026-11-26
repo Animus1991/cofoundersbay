@@ -14,7 +14,6 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
-import { Badge } from '@/components/ui/badge';
 import { FactLine } from '@/components/common/FactLine';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getMeProfile, listLearningResources, getLearningCategories } from '@/lib/api';
@@ -273,16 +272,21 @@ function LearningPathCard({ path, onSelect }: { path: LearningPath; onSelect: (c
               ]}
             />
           )}
-          aside={path.progress > 0 ? (
-            <Badge variant="outline" className="text-xs tabular-nums">
-              <BilingualText en={learningEn('percent_done').replace('{n}', done)} el={learningEl('percent_done').replace('{n}', done)} compact />
-            </Badge>
-          ) : undefined}
         />
         <p className="card-body line-clamp-2 flex-1 text-muted-foreground">
           <BilingualText en={learningEn(path.descKey)} el={learningEl(path.descKey)} wrap />
         </p>
-        {path.progress > 0 && <Progress value={path.progress} className="h-1.5" aria-label={bilingualAria(`${done}% done`, `${done}% ολοκληρωμένο`)} />}
+        {/* How far along, once, beside its bar: as a pill in the head it
+            was cut to «33% ολοκληρωμ…» and said what the bar under it
+            already showed (§162). */}
+        {path.progress > 0 && (
+          <div className="flex items-center gap-2">
+            <Progress value={path.progress} className="h-1.5 flex-1" aria-hidden="true" />
+            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+              <BilingualText en={learningEn('percent_done').replace('{n}', done)} el={learningEl('percent_done').replace('{n}', done)} compact />
+            </span>
+          </div>
+        )}
         <CardFoot className="mt-auto">
           {/* The button narrows the page to the path's topic; nothing opens a
               path or records a step yet, so "Start path" / "Continue path"
@@ -674,7 +678,7 @@ export default function LearningPage() {
               />
             </span>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="card-grid">
             {recommendedResources.map((resource) => (
               <ResourceCard key={`rec-${resource.id}`} resource={resource} saved={savedIds.includes(resource.id)} onToggleSave={toggleSaved} />
             ))}
@@ -699,7 +703,7 @@ export default function LearningPage() {
 
           {/* Loading skeleton */}
           {learningLoading && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="card-grid">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="rounded-xl border border-border p-5 space-y-3">
                   <div className="flex gap-3">
@@ -740,7 +744,7 @@ export default function LearningPage() {
                   <BilingualText en={learningEn('featured')} el={learningEl('featured')} compact />
                 </h2>
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="card-grid">
                 {featuredResources.map((resource) => (
                   <ResourceCard key={resource.id} resource={resource} saved={savedIds.includes(resource.id)} onToggleSave={toggleSaved} />
                 ))}
@@ -758,7 +762,7 @@ export default function LearningPage() {
                   <BilingualText en={learningEn('all_resources')} el={learningEl('all_resources')} compact />
                 )}
               </h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="card-grid">
                 {regularResources.map((resource) => (
                   <ResourceCard key={resource.id} resource={resource} saved={savedIds.includes(resource.id)} onToggleSave={toggleSaved} />
                 ))}
