@@ -17,9 +17,9 @@ type World = { round: Omit<ApiRound, 'raisedAmount' | 'investors'> | null; leads
 
 /** Investors a demo lead can be linked to: the people the demo's directory already shows. */
 const DEMO_MEMBERS: Array<LinkedAccount & { isInvestor: boolean }> = [
-  { id: 'demo-nikos', displayName: 'Nikos Andreou', avatarUrl: null, headline: 'Angel investor', isInvestor: true },
+  { id: 'demo-nikos', displayName: 'Nikos Andreou', avatarUrl: null, headline: 'Angel investor · Seed', isInvestor: true },
   { id: 'demo-maria', displayName: 'Maria Lazarou', avatarUrl: null, headline: 'Partner at Aegean Ventures', isInvestor: true },
-  { id: 'demo-sarah', displayName: 'Dr. Sarah Kim', avatarUrl: null, headline: 'Startup mentor', isInvestor: false },
+  { id: 'demo-sarah', displayName: 'Dr. Sarah Kim', avatarUrl: null, headline: 'Startup mentor · Former product lead · 3x founder', isInvestor: false },
 ];
 
 /** A room someone opened to the visitor, so the investor's side of the data room has something to show. */

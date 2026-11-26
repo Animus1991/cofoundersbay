@@ -734,8 +734,10 @@ export default function FeedPage() {
         )}
         {/* The reading column owns the feed; trending, suggested people and
             preferences live in the right rail, so below `lg` they come back as
-            a sheet instead of a column the posts push off-screen. */}
-        <div className="space-y-6">
+            a sheet instead of a column the posts push off-screen. It is a
+            reading width: across 1,600px a post's Like and Comment sat a
+            thousand pixels from its text (§164). */}
+        <div className="max-w-4xl space-y-6">
 
             {/* Create Post */}
             <FeedPostComposer onPost={handlePost} />

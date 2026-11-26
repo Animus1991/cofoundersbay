@@ -38,7 +38,7 @@ type Person = { id: string; displayName: string; headline: string | null };
 const ALEX: Person = { id: DEMO_MEMBER_ID, displayName: 'Alex Demo', headline: null };
 const ELENA: Person = { id: 'user-elena', displayName: 'Elena Papadopoulos', headline: 'Founder & CEO at Harbor' };
 const MARCUS: Person = { id: 'user-marcus', displayName: 'Marcus Chen', headline: 'Technical cofounder · Full-stack' };
-const SARAH: Person = { id: 'user-sarah', displayName: 'Dr. Sarah Kim', headline: 'Startup mentor' };
+const SARAH: Person = { id: 'user-sarah', displayName: 'Dr. Sarah Kim', headline: 'Startup mentor · Former product lead · 3x founder' };
 const NIKOS: Person = { id: 'user-nikos', displayName: 'Nikos Andreou', headline: 'Angel investor · Seed' };
 
 export type DemoEndorsement = {

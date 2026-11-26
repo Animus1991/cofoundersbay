@@ -1334,7 +1334,7 @@ const CONVERSATIONS = [
     recipient: {
       id: 'user-marcus',
       displayName: 'Marcus Chen',
-      headline: 'Technical cofounder',
+      headline: 'Technical cofounder · Full-stack',
       avatarUrl: null,
       role: 'cofounder',
       isOnline: false,
@@ -1519,7 +1519,7 @@ const FEED_POSTS = [
     author: {
       id: 'user-marcus',
       displayName: 'Marcus Chen',
-      headline: 'Technical cofounder',
+      headline: 'Technical cofounder · Full-stack',
       role: 'cofounder',
     },
     type: 'question',
@@ -1539,7 +1539,7 @@ const FEED_POSTS = [
     author: {
       id: 'user-sarah',
       displayName: 'Dr. Sarah Kim',
-      headline: 'Startup mentor',
+      headline: 'Startup mentor · Former product lead · 3x founder',
       role: 'mentor',
     },
     type: 'announcement',
@@ -1872,8 +1872,8 @@ const PREVIEW_GROUP_RULES = [
 const PREVIEW_GROUP_FOUNDERS = {
   elena: { id: 'user-elena', displayName: 'Elena Papadopoulos', avatarUrl: null, headline: 'Founder & CEO at Harbor', role: 'founder' },
   marcus: { id: 'user-marcus', displayName: 'Marcus Chen', avatarUrl: null, headline: 'Technical cofounder · Full-stack', role: 'cofounder' },
-  sarah: { id: 'user-sarah', displayName: 'Dr. Sarah Kim', avatarUrl: null, headline: 'ML lead and advisor', role: 'mentor' },
-  nikos: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, headline: 'Angel investor', role: 'investor' },
+  sarah: { id: 'user-sarah', displayName: 'Dr. Sarah Kim', avatarUrl: null, headline: 'Startup mentor · Former product lead · 3x founder', role: 'mentor' },
+  nikos: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, headline: 'Angel investor · Seed', role: 'investor' },
   sofia: { id: 'user-sofia', displayName: 'Sofia Alexiou', avatarUrl: null, headline: 'Founder at Meltemi', role: 'founder' },
 };
 
