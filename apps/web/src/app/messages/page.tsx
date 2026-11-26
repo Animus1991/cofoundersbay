@@ -1144,9 +1144,6 @@ export default function MessagesPage() {
                   <h1 className="page-title font-semibold tracking-tight text-foreground">
                     <BilingualText en={messagesEn('page_title')} el={messagesEl('page_title')} />
                   </h1>
-                  <p className="mt-0.5 hidden text-xs leading-snug text-muted-foreground sm:block">
-                    <BilingualText en={messagesEn('inbox_lead')} el={messagesEl('inbox_lead')} compact wrap />
-                  </p>
                 </div>
                 <PageContextualHelp defaultOpen={false} compact />
                 {/* The page's first block, as on every page (docs §146): Create,
@@ -1155,6 +1152,11 @@ export default function MessagesPage() {
                     They wrap under the title when the column is narrow (§155). */}
                 {GLOBAL_TOOLS_PLACEMENT === 'page' ? <GlobalTools inline compact className="ms-auto hidden sm:flex" /> : null}
               </div>
+              {/* The lead under the title's row, at the column's width: beside
+                  the tools it broke into four lines, one opening on a comma. */}
+              <p className="!mt-0.5 hidden text-xs leading-snug text-muted-foreground sm:block">
+                <BilingualText en={messagesEn('inbox_lead')} el={messagesEl('inbox_lead')} compact wrap />
+              </p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-1">
                 <Button
                   type="button"
