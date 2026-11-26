@@ -102,7 +102,7 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/feed': 'Ροή',
   '/fundraising': 'Χρηματοδότηση',
   '/groups': 'Κοινότητες',
-  '/help': 'Κέντρο βοήθειας',
+  '/help': 'Βοήθεια & υποστήριξη',
   '/investor/analytics': 'Αναλυτικά συμφωνιών',
   '/investor/pipeline': 'Pipeline συμφωνιών',
 
