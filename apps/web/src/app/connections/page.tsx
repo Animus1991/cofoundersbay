@@ -216,7 +216,7 @@ function IntroRequestCard({
         />
 
         {connection.message && (
-          <p className="card-body italic text-foreground/80">{connection.message}</p>
+          <p className="card-body italic text-foreground/80"><Quoted>{connection.message}</Quoted></p>
         )}
 
         <CardFoot meta={formatDay(connection.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}>
