@@ -3065,7 +3065,7 @@ function previewExpertReviewsBase() {
   const nikos = {
     id: 'user-nikos',
     displayName: 'Nikos Andreou',
-    headline: 'Angel investor - Seed',
+    headline: 'Angel investor · Seed',
     avatarUrl: null,
   };
   const me = {
