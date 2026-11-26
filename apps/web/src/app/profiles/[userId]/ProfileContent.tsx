@@ -108,7 +108,7 @@ function PayloadEntry({ entryKey, value }: { entryKey: string; value: RolePayloa
     return (
       <div className="space-y-1.5">
         <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />{label}</p>
+  {label}</p>
         {/* Enum values ("full_time", "pre_seed") read as words in both
             languages; free text passes through, capitalised. */}
         <FactLine className="text-sm text-foreground" items={(value as string[]).map((item) => <StatusText key={item} value={item} />)} />
@@ -119,7 +119,7 @@ function PayloadEntry({ entryKey, value }: { entryKey: string; value: RolePayloa
     return (
       <div className="space-y-0.5">
         <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />{label}</p>
+  {label}</p>
         <p className="card-body text-foreground"><StatusText value={value} /></p>
       </div>
     );
@@ -621,7 +621,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               {rolePayload.links && typeof rolePayload.links === 'object' && (
                 <div className="space-y-1.5 pt-2 border-t border-border">
                   <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" /><BilingualText en="Links" el="Σύνδεσμοι" compact /></p>
+  <BilingualText en="Links" el="Σύνδεσμοι" compact /></p>
                   <div className="flex flex-wrap gap-2">
                     {(
                       [

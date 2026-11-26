@@ -52,7 +52,6 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useAskAssistant } from '@/hooks/useAskAssistant';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
-import { KindPill } from '@/components/common/KindPill';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { ASK, type AskText } from '@/lib/page-questions';
@@ -103,7 +102,7 @@ function JobCard({ job, featured = false, myId }: { job: JobPostingView; feature
       <CardContent className="space-y-3">
         {/* The family's chip opens the card's content — on the featured
             card it sits over the primary wash. */}
-        <KindPill glyph="briefcase" tone="accent" en="Role" el="Θέση" />
+        {/* No "Role" pill: every card on the Jobs page is one (docs §161). */}
         <CardHead
           mark={(
             <Avatar className={cn('h-14 w-14', roleRing('founder'), job.logoUrl && 'rounded-xl')}>
@@ -625,7 +624,6 @@ export default function JobsPage() {
               <div className="flex items-center gap-2">
                 <SectionSticker icon={Sparkles} tint="accent" />
                 <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
                   <BilingualText en={jobsEn('featured')} el={jobsEl('featured')} compact />
                 </h2>
               </div>
@@ -639,7 +637,6 @@ export default function JobsPage() {
               <div className="flex items-center gap-2">
                 <SectionSticker icon={Wifi} tint="success" />
                 <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />
                   <BilingualText en={jobsEn('remote_section')} el={jobsEl('remote_section')} compact />
                 </h2>
               </div>
@@ -652,7 +649,6 @@ export default function JobsPage() {
               <div className="flex items-center gap-2">
                 <SectionSticker icon={MapPin} tint="info" />
                 <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" />
                   <BilingualText en={jobsEn('onsite_section')} el={jobsEl('onsite_section')} compact />
                 </h2>
               </div>

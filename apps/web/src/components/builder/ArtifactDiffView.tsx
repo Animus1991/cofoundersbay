@@ -143,7 +143,6 @@ function StructuredFieldRow({ field }: { field: StructuredFieldDiff }) {
       <div className="flex items-center gap-2 mb-1">
         {statusIcon(field.status)}
         <span className="flex items-center gap-2 font-medium text-xs text-muted-foreground uppercase tracking-wide">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
           {field.label}
         </span>
         {field.numericDelta !== undefined && (

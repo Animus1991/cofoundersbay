@@ -183,7 +183,6 @@ function CompatibilityModal({
         {reasons.length > 0 && (
           <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-1.5">
             <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
               <BilingualText en={matchesEn('why_you_match')} el={matchesEl('why_you_match')} />
             </p>
             {reasons.map((r, i) => (
@@ -198,7 +197,6 @@ function CompatibilityModal({
         {frictions.length > 0 && (
           <div className="rounded-lg border border-border bg-status-warning-bg/40 p-3 space-y-1.5">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />
               <BilingualText en={matchesEn('watch_outs')} el={matchesEl('watch_outs')} />
             </p>
             {frictions.map((f) => (
@@ -233,7 +231,6 @@ function CompatibilityModal({
         {strengths.length > 0 && (
           <div className="rounded-lg border border-border bg-status-success-bg/40 p-3 space-y-1.5">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" />
               <BilingualText en={matchesEn('shared_strengths')} el={matchesEl('shared_strengths')} />
             </p>
             <FactLine className="text-sm text-foreground" items={strengths.map((t) => <BilingualText key={t.en} en={t.en} el={t.el} compact />)} />

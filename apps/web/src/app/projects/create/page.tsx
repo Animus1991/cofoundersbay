@@ -621,7 +621,6 @@ export default function CreateProjectPage() {
               {([true, false] as const).map((required) => (
                 <div key={String(required)} className="space-y-2">
                   <p className="flex items-center gap-2 text-2xs font-medium uppercase tracking-wider text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
                     {required
                       ? <BilingualText en={projectEn('required_group')} el={projectEl('required_group')} compact />
                       : <BilingualText en={projectEn('recommended_group')} el={projectEl('recommended_group')} compact />}

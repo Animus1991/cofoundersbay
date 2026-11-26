@@ -33,7 +33,7 @@ function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType
       </div>
       <div className="min-w-0">
         <p className="flex items-center gap-2 text-2xs text-muted-foreground uppercase tracking-wide font-medium">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />{label}</p>
+  {label}</p>
         <p className="text-sm font-bold text-foreground leading-tight">{value}</p>
       </div>
     </div>
@@ -186,7 +186,7 @@ export function BoardSummaryPanel({
             {stats.topTypes.length > 0 && (
               <div className="mt-2">
                 <p className="flex items-center gap-2 text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />Top Node Types</p>
+  Top Node Types</p>
                 <div className="space-y-1">
                   {stats.topTypes.map(([type, count]) => (
                     <div key={type} className="flex items-center justify-between">
@@ -210,7 +210,7 @@ export function BoardSummaryPanel({
             {stats.allTags.length > 0 && (
               <div className="mt-2">
                 <p className="flex items-center gap-2 text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" />All Tags</p>
+  All Tags</p>
                 <div className="flex flex-wrap gap-1">
                   {stats.allTags.slice(0, 20).map((tag) => (
                     <span key={tag} className="text-2xs text-muted-foreground">{tag}</span>
@@ -269,7 +269,7 @@ export function BoardSummaryPanel({
                 {/* Summary */}
                 <div className="rounded-xl bg-secondary/30 p-3">
                   <p className="flex items-center gap-2 text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-warning-bg border-status-warning-border" />Executive Summary</p>
+  Executive Summary</p>
                   <p className="text-2xs text-foreground leading-relaxed whitespace-pre-wrap">{analysis.summary}</p>
                 </div>
 
@@ -422,7 +422,7 @@ export function BoardSummaryPanel({
               {/* Recommendations */}
               <div className="mt-1">
                 <p className="flex items-center gap-2 text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />Recommendations</p>
+  Recommendations</p>
                 <ul className="space-y-1">
                   {stats.nodeCount === 0 && (
                     <li className="text-2xs text-muted-foreground flex items-start gap-1">

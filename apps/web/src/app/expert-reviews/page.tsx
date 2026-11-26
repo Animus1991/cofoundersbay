@@ -343,7 +343,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {review.scoresByArea && (
             <div>
               <p className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" /><BilingualText en="Scores by Area" el="Βαθμοί ανά τομέα" compact /></p>
+  <BilingualText en="Scores by Area" el="Βαθμοί ανά τομέα" compact /></p>
               <div className="space-y-1.5">
                 {Object.entries(review.scoresByArea).map(([area, score]) => (
                   <div key={area} className="flex items-center gap-2">
@@ -663,7 +663,6 @@ export default function ExpertReviewsPage() {
             {pending.length > 0 && (
               <div>
                 <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />
                   <BilingualText en="Active Requests" el="Ενεργά αιτήματα" compact />
                 </p>
                 <div className="card-grid">{pending.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
@@ -672,7 +671,6 @@ export default function ExpertReviewsPage() {
             {submitted.length > 0 && (
               <div className="mt-4">
                 <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" />
                   <BilingualText en="Completed Reviews" el="Ολοκληρωμένες αξιολογήσεις" compact />
                 </p>
                 <div className="card-grid">{submitted.map((r) => <ReviewCard key={r.id} review={r} />)}</div>

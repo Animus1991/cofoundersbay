@@ -242,7 +242,6 @@ function DateGroupHeader({ groupKey }: { groupKey: keyof typeof ACTIVITY_STRINGS
   return (
     <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-2">
       <span className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
         <BilingualText en={activityEn(groupKey)} el={activityEl(groupKey)} compact />
       </span>
     </div>

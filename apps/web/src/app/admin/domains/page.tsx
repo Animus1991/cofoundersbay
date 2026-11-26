@@ -63,7 +63,7 @@ function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions 
       <p className="font-semibold text-foreground"><BilingualText en="DNS Setup Instructions" el="Οδηγίες ρύθμισης DNS" compact /></p>
       <div className="space-y-2">
         <p className="flex items-center gap-2 text-xs text-muted-foreground font-medium uppercase tracking-wide">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" /><BilingualText en="Step 1 – Verification TXT Record" el="Βήμα 1 – Εγγραφή TXT επαλήθευσης" compact /></p>
+  <BilingualText en="Step 1 – Verification TXT Record" el="Βήμα 1 – Εγγραφή TXT επαλήθευσης" compact /></p>
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 font-mono text-xs bg-background rounded p-2 border border-border">
           <span className="text-muted-foreground"><BilingualText en="Type" el="Τύπος" compact /></span>
           <span>{instructions.verification.type}</span>
@@ -81,7 +81,7 @@ function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions 
       </div>
       <div className="space-y-2">
         <p className="flex items-center gap-2 text-xs text-muted-foreground font-medium uppercase tracking-wide">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" /><BilingualText en="Step 2 – CNAME Record" el="Βήμα 2 – Εγγραφή CNAME" compact /></p>
+  <BilingualText en="Step 2 – CNAME Record" el="Βήμα 2 – Εγγραφή CNAME" compact /></p>
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 font-mono text-xs bg-background rounded p-2 border border-border">
           <span className="text-muted-foreground"><BilingualText en="Type" el="Τύπος" compact /></span>
           <span>{instructions.cname.type}</span>

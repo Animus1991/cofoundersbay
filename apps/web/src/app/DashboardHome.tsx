@@ -644,7 +644,6 @@ export function DashboardHome() {
                       {statsData?.activeProfiles?.toLocaleString('en-GB') ?? '—'}
                     </p>
                     <p className="flex items-center gap-2 text-2xs text-muted-foreground uppercase tracking-wide">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
                       <BilingualText en="Active members" el="Ενεργά μέλη" compact />
                     </p>
                   </div>
@@ -653,7 +652,6 @@ export function DashboardHome() {
                       {statsData?.matchesThisWeek ?? '—'}
                     </p>
                     <p className="flex items-center gap-2 text-2xs text-muted-foreground uppercase tracking-wide">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />
                       <BilingualText en="Matches/week" el="Ταιριάσματα/εβδ." compact />
                     </p>
                   </div>

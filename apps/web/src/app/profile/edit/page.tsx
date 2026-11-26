@@ -968,7 +968,7 @@ export default function ProfileEditPage() {
                         {aiSuggestions.headline && (
                           <div className="space-y-2">
                             <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" /><BilingualText en="Suggested Headline" el="Προτεινόμενος τίτλος" compact /></p>
+  <BilingualText en="Suggested Headline" el="Προτεινόμενος τίτλος" compact /></p>
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                               <p className="text-sm text-foreground flex-1 bg-background/80 rounded-lg px-4 py-2.5 border border-border italic">
                                 &quot;{aiSuggestions.headline}&quot;
@@ -984,7 +984,7 @@ export default function ProfileEditPage() {
                         {aiSuggestions.bio && (
                           <div className="space-y-2">
                             <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" /><BilingualText en="Suggested Bio" el="Προτεινόμενο βιογραφικό" compact /></p>
+  <BilingualText en="Suggested Bio" el="Προτεινόμενο βιογραφικό" compact /></p>
                             <div className="flex flex-col gap-3">
                               <p className="text-sm text-foreground bg-background/80 rounded-lg px-4 py-3 border border-border whitespace-pre-wrap">
                                 {aiSuggestions.bio}
@@ -1000,7 +1000,7 @@ export default function ProfileEditPage() {
                         {aiSuggestions.improvements.length > 0 && (
                           <div className="space-y-2 pt-2 border-t border-border">
                             <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" /><BilingualText en="Actionable Feedback" el="Πρακτικές παρατηρήσεις" compact /></p>
+  <BilingualText en="Actionable Feedback" el="Πρακτικές παρατηρήσεις" compact /></p>
                             <ul className="space-y-2">
                               {aiSuggestions.improvements.map((imp, i) => (
                                 <li key={i} className="flex items-start gap-2 text-sm text-foreground">

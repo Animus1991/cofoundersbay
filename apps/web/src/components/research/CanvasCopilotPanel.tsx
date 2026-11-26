@@ -152,7 +152,7 @@ function MermaidGenTab({
       {/* Diagram type */}
       <div className="space-y-1">
         <p id="ccp-diagtype" className="flex items-center gap-2 text-2xs text-muted-foreground uppercase tracking-wide font-medium">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />Diagram Type</p>
+  Diagram Type</p>
         <div className="grid grid-cols-2 gap-1" role="group" aria-labelledby="ccp-diagtype">
           {MERMAID_TYPES.map((mt) => (
             <button
@@ -201,7 +201,7 @@ function MermaidGenTab({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <p className="flex items-center gap-2 text-2xs text-muted-foreground uppercase tracking-wide font-medium">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />Generated Code</p>
+  Generated Code</p>
             <button onClick={handleCopy} className="text-2xs text-muted-foreground hover:text-foreground flex items-center gap-1">
               {copied ? <Check className="w-2.5 h-2.5 text-status-success" /> : <Copy className="w-2.5 h-2.5" />}
               {copied ? 'Copied' : 'Copy'}
@@ -413,7 +413,7 @@ export function CanvasCopilotPanel({
           {/* Agent selector */}
           <div className="px-3 pt-2.5 pb-2 border-b border-border shrink-0">
             <p className="flex items-center gap-2 text-2xs text-muted-foreground mb-1.5 uppercase tracking-wide font-medium">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" />Specialist Agent</p>
+  Specialist Agent</p>
             <div className="grid grid-cols-5 gap-1">
               {agents.map((agent) => {
                 const meta = AGENT_META[agent.id] ?? AGENT_META['canvas-strategy'];
@@ -455,7 +455,7 @@ export function CanvasCopilotPanel({
             {chatHistory.length === 0 && (
               <div className="space-y-1.5">
                 <p className="flex items-center gap-2 text-2xs text-muted-foreground uppercase tracking-wide font-medium">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-warning-bg border-status-warning-border" />Suggested</p>
+  Suggested</p>
                 {activeAgent.suggestedQuestions.map((q, i) => (
                   <button
                     key={i}

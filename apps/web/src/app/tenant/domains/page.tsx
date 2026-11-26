@@ -81,7 +81,7 @@ function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
       {/* Step 1 — TXT verification */}
       <div className="space-y-1.5">
         <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" /><BilingualText en="Step 1 — TXT Verification Record" el="Βήμα 1 — Εγγραφή TXT επαλήθευσης" compact /></p>
+  <BilingualText en="Step 1 — TXT Verification Record" el="Βήμα 1 — Εγγραφή TXT επαλήθευσης" compact /></p>
         <div className="rounded-md border border-border bg-background overflow-hidden">
           <table className="w-full text-xs">
             <thead className="bg-muted/50">
@@ -113,7 +113,7 @@ function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
       {/* Step 2 — CNAME */}
       <div className="space-y-1.5">
         <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" /><BilingualText en="Step 2 — CNAME Record" el="Βήμα 2 — Εγγραφή CNAME" compact /></p>
+  <BilingualText en="Step 2 — CNAME Record" el="Βήμα 2 — Εγγραφή CNAME" compact /></p>
         <div className="rounded-md border border-border bg-background overflow-hidden">
           <table className="w-full text-xs">
             <thead className="bg-muted/50">

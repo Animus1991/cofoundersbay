@@ -191,7 +191,7 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
     return (
       <div className="space-y-1.5">
         <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />{label}</p>
+  {label}</p>
         <FactLine className="text-sm text-foreground" items={(arr as string[]).map((item) => <StatusText key={item} value={item} />)} />
       </div>
     );
@@ -202,7 +202,7 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
     return (
       <div className="space-y-0.5">
         <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />{label}</p>
+  {label}</p>
         {/* Enum values ("idea", "full_time") read as words; free text passes through. */}
         <p className="card-body text-foreground">{typeof val === 'string' ? <StatusText value={val} /> : String(val)}</p>
       </div>
@@ -283,7 +283,6 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
         {linkEntries && linkEntries.length > 0 && (
           <div className="space-y-1.5 pt-2 border-t border-border">
             <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" />
               <BilingualText en={profileEn('links')} el={profileEl('links')} />
             </p>
             <div className="flex flex-wrap gap-2">

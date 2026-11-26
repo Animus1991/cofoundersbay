@@ -249,7 +249,7 @@ function SectionHeading({ eyebrow, title, lead }: { eyebrow: Pair; title: Pair; 
   return (
     <div className="mx-auto mb-8 max-w-2xl text-center">
       <p className="flex items-center justify-center gap-2 mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" /><T p={eyebrow} /></p>
+  <T p={eyebrow} /></p>
       <h2 className="landing-section font-display font-semibold text-foreground"><T p={title} wrap /></h2>
       {lead ? <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground"><BilingualText en={lead.en} el={lead.el} wrap /></p> : null}
     </div>

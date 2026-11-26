@@ -626,7 +626,7 @@ export function ResearchNodeCard({
           <div className="flex items-center gap-1.5">
             <Spline className="icon-sm" style={{ color: '#EC4899' }} />
             <span className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wide" style={{ color: '#EC4899' }}>
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />DIAGRAM</span>
+  DIAGRAM</span>
           </div>
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
             <button aria-label="Delete" onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-destructive/10 text-destructive-accessible">

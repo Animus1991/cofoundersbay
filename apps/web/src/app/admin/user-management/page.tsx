@@ -401,7 +401,7 @@ export default function AdminUserManagementPage() {
         <div className="space-y-4">
           <div>
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" /><BilingualText en="Role" el="Ρόλος" compact /></p>
+  <BilingualText en="Role" el="Ρόλος" compact /></p>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger aria-label="Role" className="mt-2">
                 <SelectValue placeholder={sayOne("All roles", "Όλοι οι ρόλοι")} />
@@ -416,7 +416,7 @@ export default function AdminUserManagementPage() {
           </div>
           <div>
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" /><BilingualText en="Status" el="Κατάσταση" compact /></p>
+  <BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger aria-label="Status" className="mt-2">
                 <SelectValue placeholder={sayOne("All statuses", "Όλες οι καταστάσεις")} />
@@ -432,7 +432,7 @@ export default function AdminUserManagementPage() {
           </div>
           <div>
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-success-bg border-status-success-border" /><BilingualText en="Sort by" el="Ταξινόμηση" compact /></p>
+  <BilingualText en="Sort by" el="Ταξινόμηση" compact /></p>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
               <SelectTrigger aria-label="Sort by" className="mt-2">
                 <SelectValue />

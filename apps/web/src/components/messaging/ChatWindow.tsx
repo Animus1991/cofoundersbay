@@ -1271,7 +1271,6 @@ export function NoChatSelected({
         {state === 'pick' && recent && recent.length > 0 && onSelectRecent && (
           <div className="w-full space-y-2 md:hidden">
             <p className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
               <BilingualText en={messagesEn('recent_conversations')} el={messagesEl('recent_conversations')} compact />
             </p>
             <div className="flex flex-wrap justify-center gap-2">

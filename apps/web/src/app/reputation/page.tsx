@@ -361,7 +361,6 @@ export default function ReputationPage() {
                     <LevelRing progress={Math.round(xp.data.levelProgress)} level={xp.data.level} />
                     <div className="flex-1 text-center md:text-left">
                       <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
                         <BilingualText en={`${reputationEn('level')} ${xp.data.level}`} el={`${reputationEl('level')} ${xp.data.level}`} compact />
                       </p>
                       <h2 className="mt-0.5 text-xl font-semibold tracking-tight md:text-2xl">

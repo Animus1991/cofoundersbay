@@ -291,7 +291,6 @@ export function BranchPanel({
             ) : openBranches.length > 0 ? (
               <div className="space-y-2">
                 <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
                   Active Variants ({openBranches.length})
                 </p>
                 {openBranches.map(branch => {
