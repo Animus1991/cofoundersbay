@@ -7,7 +7,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /**
  * The editor for a profile's Experience and Education. Rows are free text with
@@ -15,13 +16,15 @@ import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
  * saves: the profile form's Save sends the cleaned rows in `rolePayload`.
  */
 
-type Field<T> = { key: keyof T; en: string; el: string; placeholder: string; year?: boolean };
+// A placeholder in words is said in the reader's language: «now · σήμερα»
+// showed both on a one-language page (§164).
+type Field<T> = { key: keyof T; en: string; el: string; placeholder: string | { en: string; el: string }; year?: boolean };
 
 const ROLE_FIELDS: Field<ExperienceEntry>[] = [
   { key: 'title', en: 'Title', el: 'Θέση', placeholder: 'Co-founder' },
   { key: 'company', en: 'Company', el: 'Εταιρεία', placeholder: 'Harbor' },
   { key: 'start', en: 'From (year)', el: 'Από (έτος)', placeholder: '2022', year: true },
-  { key: 'end', en: 'To (year, empty if current)', el: 'Έως (έτος, κενό αν ισχύει)', placeholder: bilingualInline('now', 'σήμερα'), year: true },
+  { key: 'end', en: 'To (year, empty if current)', el: 'Έως (έτος, κενό αν ισχύει)', placeholder: { en: 'now', el: 'σήμερα' }, year: true },
 ];
 
 const SCHOOL_FIELDS: Field<EducationEntry>[] = [
@@ -53,6 +56,7 @@ function Rows<T extends { [K in keyof T]: string }>({
   itemEl: string;
 }) {
   const base = useId();
+  const sayOne = useBilingualString();
   const set = (i: number, key: keyof T, value: string) => onChange(rows.map((r, j) => (j === i ? { ...r, [key]: value } : r)));
   return (
     <div className="space-y-3">
@@ -69,7 +73,7 @@ function Rows<T extends { [K in keyof T]: string }>({
                     id={id}
                     value={row[f.key] ?? ''}
                     onChange={(e) => set(i, f.key, f.year ? e.target.value.replace(/[^0-9]/g, '').slice(0, 4) : e.target.value.slice(0, 120))}
-                    placeholder={f.placeholder}
+                    placeholder={typeof f.placeholder === 'string' ? f.placeholder : sayOne(f.placeholder.en, f.placeholder.el)}
                     inputMode={f.year ? 'numeric' : undefined}
                   />
                 </div>

@@ -770,28 +770,28 @@ export default function ProfileEditPage() {
             <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6 overflow-x-auto hide-scrollbar">
               <TabsTrigger 
                 value="basic" 
-                className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+                className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-4 py-3"
               >
                 <User className="icon-sm" />
                 <BilingualText en="Basic Info" el="Βασικά στοιχεία" compact />
               </TabsTrigger>
               <TabsTrigger 
                 value="role" 
-                className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+                className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-4 py-3"
               >
                 <Briefcase className="icon-sm" />
                 <BilingualText en="Role Details" el="Λεπτομέρειες ρόλου" compact />
               </TabsTrigger>
               <TabsTrigger 
                 value="links" 
-                className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+                className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-4 py-3"
               >
                 <Globe className="icon-sm" />
                 <BilingualText en="Social Links" el="Κοινωνικοί σύνδεσμοι" compact />
               </TabsTrigger>
               <TabsTrigger 
                 value="portfolio" 
-                className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+                className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-4 py-3"
               >
                 <LayoutDashboard className="icon-sm" />
                 <BilingualText en="Portfolio" el="Χαρτοφυλάκιο" compact />
@@ -1188,7 +1188,7 @@ export default function ProfileEditPage() {
                     />
                     <SelectButtons
                       label="Looking For"
-                      labelEl="Αναζητάτε"
+                      labelEl="Τι αναζητάτε"
                       value={form.lookingFor}
                       onChange={(v) => updateField('lookingFor', v as string[])}
                       options={lookingForOptions}

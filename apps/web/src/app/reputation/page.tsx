@@ -420,7 +420,7 @@ export default function ReputationPage() {
                   <TabsTrigger
                     key={value}
                     value={value}
-                    className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                    className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
                   >
                     <Icon className="icon-sm" aria-hidden />
                     <BilingualText en={labelEn} el={labelEl} compact />

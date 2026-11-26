@@ -254,7 +254,7 @@ export function calculateProfileCompletion(profile: Record<string, unknown> | nu
   }
   const el: Record<string, string> = {
     basic: 'Βασικά στοιχεία', skills: 'Δεξιότητες', bio: 'Βιογραφικό', headline: 'Τίτλος', location: 'Τοποθεσία',
-    avatar: 'Φωτογραφία προφίλ', links: 'Σύνδεσμοι', commitment: 'Δέσμευση', lookingFor: 'Αναζητάτε',
+    avatar: 'Φωτογραφία προφίλ', links: 'Σύνδεσμοι', commitment: 'Δέσμευση', lookingFor: 'Τι αναζητάτε',
   };
   return fields.map((f) => ({ ...f, labelEl: el[f.id], reason: COMPLETION_REASONS[f.id] }));
 }
