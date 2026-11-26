@@ -46,17 +46,19 @@ import {
   type ArtifactBranch,
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // ── Branch Status helpers ──────────────────────────────────────────────────
 
+// The panel was English on a Greek page beside its translated title (§163).
 function branchStatusMeta(status: string) {
   switch (status) {
-    case 'open':        return { label: 'Open',      color: 'bg-status-info-bg text-status-info border-status-info-border',    icon: GitBranch };
-    case 'review':      return { label: 'In Review', color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Clock };
-    case 'merged':      return { label: 'Merged',    color: 'bg-status-success-bg text-status-success border-status-success-border',  icon: CheckCircle2 };
-    case 'closed':      return { label: 'Closed',    color: 'bg-muted text-muted-foreground border-border',     icon: XCircle };
-    default:            return { label: status,      color: 'bg-muted text-muted-foreground border-border',   icon: GitBranch };
+    case 'open':        return { label: 'Open',      labelEl: 'Ανοιχτή',       color: 'bg-status-info-bg text-status-info border-status-info-border',    icon: GitBranch };
+    case 'review':      return { label: 'In Review', labelEl: 'Υπό έλεγχο',    color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Clock };
+    case 'merged':      return { label: 'Merged',    labelEl: 'Συγχωνεύτηκε',  color: 'bg-status-success-bg text-status-success border-status-success-border',  icon: CheckCircle2 };
+    case 'closed':      return { label: 'Closed',    labelEl: 'Κλειστή',       color: 'bg-muted text-muted-foreground border-border',     icon: XCircle };
+    default:            return { label: status,      labelEl: status,          color: 'bg-muted text-muted-foreground border-border',   icon: GitBranch };
   }
 }
 
@@ -87,7 +89,7 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
         name: name.trim(),
         description: description.trim() || undefined,
       });
-      success(`Draft variant "${name}" created`);
+      success('Draft variant created', name);
       setName('');
       setDescription('');
       onCreated();
@@ -112,7 +114,7 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
           <div className="space-y-1.5">
             <Label htmlFor="name"><BilingualText en="Name" el="Όνομα" compact /></Label>
             <Input id="name"
-              placeholder="e.g. revised-financials, investor-v2..."
+              placeholder={sayOne('e.g. revised-financials, investor-v2…', 'π.χ. αναθεώρηση-οικονομικών, επενδυτές-v2…')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
@@ -135,7 +137,7 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
           <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button onClick={handleCreate} disabled={loading || !name.trim()}>
             {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
-            Create Variant
+            <BilingualText en="Create variant" el="Δημιουργία εκδοχής" compact />
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -155,7 +157,7 @@ interface SubmitProposalDialogProps {
 function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProposalDialogProps) {
   const sayOne = useBilingualString();
   const { success, error: toastError } = useToast();
-  const [title, setTitle] = useState(`Changes from "${branch.name}"`);
+  const [title, setTitle] = useState(sayOne(`Changes from “${branch.name}”`, `Αλλαγές από «${branch.name}»`));
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -184,7 +186,11 @@ function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProp
         <DialogHeader icon={Send} tone="success">
           <DialogTitle><BilingualText en="Submit Change Proposal" el="Υποβολή πρότασης αλλαγής" compact /></DialogTitle>
           <DialogDescription>
-            Propose the changes from &ldquo;{branch.name}&rdquo; to be merged into the main document.
+            <BilingualText
+              en={`Propose the changes from “${branch.name}” to be merged into the main document.`}
+              el={`Προτείνετε τις αλλαγές της «${branch.name}» για συγχώνευση στο κύριο έγγραφο.`}
+              wrap
+            />
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
@@ -206,7 +212,7 @@ function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProp
           <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button onClick={handleSubmit} disabled={loading || !title.trim()}>
             {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
-            Submit Proposal
+            <BilingualText en="Submit proposal" el="Υποβολή πρότασης" compact />
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -271,7 +277,11 @@ export function BranchPanel({
               <BilingualText en="Draft Variants" el="Πρόχειρες εκδοχές" compact />
             </SheetTitle>
             <SheetDescription>
-              Isolated copies of &ldquo;{documentTitle ?? 'this document'}&rdquo; for safe experimentation.
+              <BilingualText
+                en={documentTitle ? `Isolated copies of “${documentTitle}” for safe experimentation.` : 'Isolated copies of this document for safe experimentation.'}
+                el={documentTitle ? `Ανεξάρτητα αντίγραφα του «${documentTitle}» για ασφαλείς δοκιμές.` : 'Ανεξάρτητα αντίγραφα αυτού του εγγράφου για ασφαλείς δοκιμές.'}
+                wrap
+              />
             </SheetDescription>
           </SheetHeader>
 
@@ -279,8 +289,8 @@ export function BranchPanel({
             {/* Main branch indicator */}
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary-subtle border border-primary-muted">
               <GitBranch className="icon-sm text-muted-foreground" />
-              <span className="text-sm font-medium">main</span>
-              <Badge variant="secondary" className="text-xs ml-auto">v{currentDocVersion} · current</Badge>
+              <span className="text-sm font-medium"><BilingualText en="Main document" el="Κύριο έγγραφο" compact /></span>
+              <Badge variant="secondary" className="text-xs ml-auto"><BilingualText en={`v${currentDocVersion} · current`} el={`v${currentDocVersion} · τρέχουσα`} compact /></Badge>
             </div>
 
             {/* Active variants */}
@@ -291,7 +301,7 @@ export function BranchPanel({
             ) : openBranches.length > 0 ? (
               <div className="space-y-2">
                 <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Active Variants ({openBranches.length})
+                  <BilingualText en={`Active variants (${openBranches.length})`} el={`Ενεργές εκδοχές (${openBranches.length})`} compact />
                 </p>
                 {openBranches.map(branch => {
                   const meta = branchStatusMeta(branch.status);
@@ -317,7 +327,7 @@ export function BranchPanel({
                           aside={(
                             <Badge variant="outline" className={cn('text-xs', meta.color)}>
                               <StatusIcon className="h-2.5 w-2.5 mr-1" />
-                              {meta.label}
+                              <BilingualText en={meta.label} el={meta.labelEl} compact />
                             </Badge>
                           )}
                         />
@@ -338,7 +348,7 @@ export function BranchPanel({
                             )}
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button aria-label="Branch actions" variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0">
+                                <Button aria-label={bilingualAria('Variant actions', 'Ενέργειες εκδοχής')} variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0">
                                   <MoreHorizontal className="icon-sm" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -378,7 +388,7 @@ export function BranchPanel({
             {closedBranches.length > 0 && (
               <div className="divide-y divide-border">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide pb-2">
-                  Closed / Merged ({closedBranches.length})
+                  <BilingualText en={`Closed / merged (${closedBranches.length})`} el={`Κλειστές / συγχωνευμένες (${closedBranches.length})`} compact />
                 </p>
                 {closedBranches.map(branch => {
                   const meta = branchStatusMeta(branch.status);
@@ -388,7 +398,7 @@ export function BranchPanel({
                       <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{branch.name}</span>
                       <Badge variant="outline" className={cn('text-xs', meta.color)}>
                         <StatusIcon className="h-2.5 w-2.5 mr-1" />
-                        {meta.label}
+                        <BilingualText en={meta.label} el={meta.labelEl} compact />
                       </Badge>
                     </div>
                   );

@@ -232,6 +232,7 @@ export const TOAST_EL: Record<string, string> = {
   "Download started": "Η λήψη ξεκίνησε",
   "Draft filled empty answers only.": "Το προσχέδιο γέμισε μόνο κενές απαντήσεις.",
   "Draft variant closed": "Η πρόχειρη εκδοχή έκλεισε",
+  "Draft variant created": "Η πρόχειρη εκδοχή δημιουργήθηκε",
   "Email sent": "Το email εστάλη",
   "Email support@cofounderbay.com to request account deletion.": "Στείλτε email στο support@cofounderbay.com για διαγραφή λογαριασμού.",
   "Error": "Σφάλμα",
@@ -286,6 +287,11 @@ export const TOAST_EL: Record<string, string> = {
   "Failed to submit proposal": "Η πρόταση δεν υποβλήθηκε",
   "Failed to submit report": "Η αναφορά δεν υποβλήθηκε",
   "Failed to submit review decision": "Η απόφαση ελέγχου δεν υποβλήθηκε",
+  // The review dialog chooses one of three (ReviewPanel); a ternary the
+  // literal check above cannot see, so they were English (§163).
+  "Proposal approved": "Η πρόταση εγκρίθηκε",
+  "Changes requested": "Ζητήθηκαν αλλαγές",
+  "Proposal closed": "Η πρόταση έκλεισε",
   "Failed to trigger rule": "Ο κανόνας δεν εκτελέστηκε",
   "Failed to update": "Η ενημέρωση απέτυχε",
   "Failed to update rule": "Ο κανόνας δεν ενημερώθηκε",
