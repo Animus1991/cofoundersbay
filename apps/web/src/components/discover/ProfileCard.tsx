@@ -215,7 +215,7 @@ function ProfileCardInner({
   const nameWithRole = (
     <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
       <PersonHovercard userId={profile.userId}><Link href={`/profiles/${profile.userId}`} className="person-name transition-colors hover:text-primary-accessible">{profile.displayName}</Link></PersonHovercard>
-      <RoleBadge role={profile.role} size="sm" />
+      <RoleBadge role={profile.role} headline={profile.headline} size="sm" />
     </span>
   );
 
@@ -276,7 +276,7 @@ function ProfileCardInner({
                     <BilingualText en="Verified" el="Επαληθευμένο" compact />
                   </Badge>
                 )}
-                <RoleBadge role={profile.role} size="sm" showIcon />
+                <RoleBadge role={profile.role} headline={profile.headline} size="sm" showIcon />
               </span>
             )}
             subtitle={profile.headline ? <span className="line-clamp-2">{profile.headline}</span> : undefined}

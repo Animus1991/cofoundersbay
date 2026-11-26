@@ -182,7 +182,7 @@ export default function MatchComparePage() {
       title={(
         <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
           <PersonHovercard userId={person.userId}><Link href={`/profiles/${person.userId}`} className="transition-colors hover:text-primary-accessible">{person.displayName}</Link></PersonHovercard>
-          <RoleBadge role={person.role} size="sm" />
+          <RoleBadge role={person.role} headline={person.headline} size="sm" />
         </span>
       )}
       subtitle={person.headline ? <span className="line-clamp-2">{person.headline}</span> : undefined}

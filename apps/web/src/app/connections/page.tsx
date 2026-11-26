@@ -151,7 +151,7 @@ function ConnectionCard({
           title={(
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               <PersonHovercard userId={other.id}><Link href={`/profiles/${other.id}`} className="transition-colors hover:text-primary-accessible">{other.displayName}</Link></PersonHovercard>
-              <RoleBadge role={other.role} size="sm" />
+              <RoleBadge role={other.role} headline={other.headline} size="sm" />
             </span>
           )}
           subtitle={other.headline ?? undefined}
@@ -209,7 +209,7 @@ function IntroRequestCard({
           title={(
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               <PersonHovercard userId={sender.id}><Link href={`/profiles/${sender.id}`} className="transition-colors hover:text-primary-accessible">{sender.displayName}</Link></PersonHovercard>
-              <RoleBadge role={sender.role} size="sm" />
+              <RoleBadge role={sender.role} headline={sender.headline} size="sm" />
             </span>
           )}
           subtitle={sender.headline ?? undefined}

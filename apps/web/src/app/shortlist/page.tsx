@@ -265,7 +265,7 @@ function ShortlistCard({
             items={[
               profile?.headline ? <span key="headline" className="card-subtitle">{profile.headline}</span> : null,
               // The badge's word for the role ("Founder"), as on every card.
-              profile?.role ? <RoleName key="role" role={profile.role} /> : null,
+              profile?.role ? <RoleName key="role" role={profile.role} headline={profile.headline} /> : null,
               profile?.location,
               ...(profile?.skills?.slice(0, 5) ?? []),
               profile?.skills && profile.skills.length > 5 ? `+${profile.skills.length - 5}` : null,

@@ -485,7 +485,7 @@ function MatchPreviewPanel({
             title={(
               <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 {hit.displayName}
-                <RoleBadge role={hit.role} size="sm" showIcon />
+                <RoleBadge role={hit.role} headline={hit.headline} size="sm" showIcon />
               </span>
             )}
             subtitle={hit.headline ? <span className="line-clamp-3">{hit.headline}</span> : undefined}

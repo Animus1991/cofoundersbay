@@ -2,7 +2,7 @@
 
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
-import { ROLE_FAMILY_LABEL, roleFamily } from '@/lib/role-family';
+import { ROLE_FAMILY_LABEL, headlineNamesRole, roleFamily } from '@/lib/role-family';
 
 /**
  * A member's role written as plain text, as the role badge names it: the
@@ -12,8 +12,10 @@ import { ROLE_FAMILY_LABEL, roleFamily } from '@/lib/role-family';
  * "Founder" on every card with a badge (docs §73, §86). A role outside the
  * four families keeps its own word.
  */
-export function RoleName({ role }: { role: string | null | undefined }) {
+export function RoleName({ role, headline }: { role: string | null | undefined; headline?: string | null }) {
   if (!role) return null;
+  // Said once: a headline that names the role leaves nothing for this to add (docs §166).
+  if (headlineNamesRole(role, headline)) return null;
   const family = roleFamily(role);
   if (!family) return <StatusText value={role} />;
   const label = ROLE_FAMILY_LABEL[family];

@@ -218,7 +218,7 @@ function IntroDetailPane({
           title={(
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               <PersonHovercard userId={request.requester.id}><Link href={`/profiles/${request.requester.id}`} className="transition-colors hover:text-primary-accessible">{request.requester.displayName}</Link></PersonHovercard>
-              <RoleBadge role={request.requester?.role || 'founder'} size="sm" />
+              <RoleBadge role={request.requester?.role || 'founder'} headline={request.requester?.headline} size="sm" />
             </span>
           )}
           subtitle={request.requester?.headline || (
@@ -1339,7 +1339,7 @@ export default function MessagesPage() {
                               >
                                 {req.requester.displayName}
                               </Link>
-                              <RoleBadge role={req.requester?.role || 'founder'} size="sm" />
+                              <RoleBadge role={req.requester?.role || 'founder'} headline={req.requester?.headline} size="sm" />
                             </span>
                           )}
                           subtitle={req.requester.headline ? <span className="line-clamp-2">{req.requester.headline}</span> : undefined}

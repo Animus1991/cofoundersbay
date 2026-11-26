@@ -475,7 +475,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             profile.languages?.length ? <><Languages className="icon-sm shrink-0" aria-hidden="true" />{profile.languages.join(' · ')}</> : null,
           ]}
           openTo={!isOwnProfile ? <OpenToLine userId={userId} /> : null}
-          aside={<RoleBadge role={profile.role} />}
+          aside={<RoleBadge role={profile.role} headline={profile.headline} />}
           actions={
             isOwnProfile ? (
               <>

@@ -73,7 +73,7 @@ export function PersonTile({ userId, name, avatarUrl, role, headline, reason, me
           <p className="line-clamp-2 break-words">{label}</p>
           {role || meta ? (
             <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
-              {role ? <RoleBadge role={role} size="sm" /> : null}
+              {role ? <RoleBadge role={role} headline={typeof headline === 'string' ? headline : null} size="sm" /> : null}
               {meta}
             </span>
           ) : null}

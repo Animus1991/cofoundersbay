@@ -674,7 +674,7 @@ export function ChatWindow({
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="card-title truncate text-foreground">{conversation.recipientName}</span>
-                  <RoleBadge role={conversation.recipientRole || 'founder'} size="sm" className="hidden sm:inline-flex" />
+                  <RoleBadge role={conversation.recipientRole || 'founder'} headline={conversation.recipientHeadline} size="sm" className="hidden sm:inline-flex" />
                 </div>
                 <p className="card-subtitle truncate">
                   {conversation.isOnline

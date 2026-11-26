@@ -106,7 +106,7 @@ export function ConnectionRequestDialog({
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-foreground truncate">{recipient.displayName}</p>
             <div className="flex items-center gap-2 mt-0.5">
-              <RoleBadge role={recipient.role} size="sm" />
+              <RoleBadge role={recipient.role} headline={recipient.headline} size="sm" />
               {recipient.headline && (
                 <span className="text-xs text-muted-foreground truncate">
                   {recipient.headline}

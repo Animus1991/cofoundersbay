@@ -609,7 +609,7 @@ export default function ProfilePage() {
             ) : null,
           ]}
           openTo={<OwnOpenToPill openTo={trust.openTo} />}
-          aside={<RoleBadge role={profile.role} />}
+          aside={<RoleBadge role={profile.role} headline={profile.headline} />}
           actions={
             <>
               <Button variant="outline" size="sm" onClick={handleShare} className="gap-2 hidden sm:flex">

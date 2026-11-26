@@ -163,7 +163,7 @@ export function ComposeMessageDialog({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span className="truncate text-sm font-medium">{person.name}</span>
-                    <RoleBadge role={person.role || 'founder'} size="sm" showIcon={false} className="shrink-0 py-0 text-2xs" />
+                    <RoleBadge role={person.role || 'founder'} headline={person.headline} size="sm" showIcon={false} className="shrink-0 py-0 text-2xs" />
                   </div>
                   {person.headline && (
                     <p className="truncate text-xs text-muted-foreground">{person.headline}</p>

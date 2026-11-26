@@ -4,7 +4,7 @@ import { Rocket, GraduationCap, TrendingUp, Building2 } from 'lucide-react';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { BilingualText } from '@/components/common/BilingualText';
 import { cn } from '@/lib/utils';
-import { ROLE_FAMILY_LABEL, roleFamily, type RoleFamily } from '@/lib/role-family';
+import { ROLE_FAMILY_LABEL, headlineNamesRole, roleFamily, type RoleFamily } from '@/lib/role-family';
 
 type RoleType = RoleFamily;
 
@@ -17,6 +17,8 @@ const roleConfig: Record<RoleType, { label: string; labelEl: string; icon: React
 
 type RoleBadgeProps = {
   role?: string | null;
+  /** The headline shown beside the badge: when it names the role, no badge (docs §166). */
+  headline?: string | null;
   showIcon?: boolean;
   size?: BadgeProps['size'];
   className?: string;
@@ -25,6 +27,7 @@ type RoleBadgeProps = {
 
 export function RoleBadge({ 
   role, 
+  headline,
   showIcon = true, 
   size = 'md',
   className,
@@ -33,6 +36,7 @@ export function RoleBadge({
   if (typeof role !== 'string' || !role.trim()) {
     return null;
   }
+  if (headlineNamesRole(role, headline)) return null;
 
   const roleKey = roleFamily(role);
   const config = roleKey ? roleConfig[roleKey] : undefined;

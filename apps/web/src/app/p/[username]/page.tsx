@@ -296,7 +296,7 @@ export default function PublicProfilePage() {
                   <BilingualText en="Open to Opportunities" el="Ανοιχτός/ή σε ευκαιρίες" compact />
                 </Badge>
               ) : null}
-              aside={<RoleBadge role={profile.role} />}
+              aside={<RoleBadge role={profile.role} headline={profile.headline} />}
               actions={
                 <>
                   {isSelf ? (

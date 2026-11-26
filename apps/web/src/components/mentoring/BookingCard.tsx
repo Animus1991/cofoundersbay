@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { summarizeMeetingNotes, type MeetingNotesSummary, type MentorBookingItem } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { Quoted } from '@/components/common/Quoted';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { StatusText } from '@/components/common/StatusText';

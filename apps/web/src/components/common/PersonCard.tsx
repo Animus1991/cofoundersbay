@@ -118,7 +118,7 @@ export function PersonCard({
                 <Link href={profile} onClick={onProfileOpen} className="person-name transition-colors hover:text-primary-accessible">{name}</Link>
               </PersonHovercard>
               {nameMark}
-              {role ? <RoleBadge role={role} size="sm" /> : null}
+              {role ? <RoleBadge role={role} headline={typeof headline === 'string' ? headline : null} size="sm" /> : null}
             </span>
           )}
           subtitle={headline ? <span className="line-clamp-2">{headline}</span> : undefined}
