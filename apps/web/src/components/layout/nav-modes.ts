@@ -502,7 +502,7 @@ export const accountSections: NavSection[] = [
       { href: '/settings', label: 'General', icon: Settings },
       { href: '/settings/ai', label: 'AI Preferences', icon: Sparkles },
       { href: '/settings/notifications', label: 'Notification Prefs', icon: BellRing },
-      { href: '/settings/billing', label: 'Billing', icon: DollarSign },
+      { href: '/settings/billing', label: 'Plan & billing', icon: DollarSign },
       { href: '/settings/data-export', label: 'Data Export', icon: Download },
     ],
   },

@@ -1101,7 +1101,7 @@ export default function SettingsPage() {
                     )}
                     <Button variant="outline" asChild>
                       <Link href="/settings/billing">
-                        <BilingualText en="Plan and invoices" el="Πλάνο και τιμολόγια" compact />
+                        <BilingualText en="Plan & billing" el="Πλάνο & χρεώσεις" compact />
                       </Link>
                     </Button>
                   </div>

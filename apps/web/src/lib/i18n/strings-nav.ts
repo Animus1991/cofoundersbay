@@ -164,7 +164,7 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/saved-searches': 'Αποθηκευμένες αναζητήσεις',
   '/search': 'Αναζήτηση',
   '/settings': 'Γενικές',
-  '/settings/billing': 'Τιμολόγηση',
+  '/settings/billing': 'Πλάνο & χρεώσεις',
   '/settings/data-export': 'Εξαγωγή δεδομένων',
   '/settings/notifications': 'Προτιμήσεις ειδοποιήσεων',
   '/shortlist': 'Αποθηκευμένα προφίλ',

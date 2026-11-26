@@ -520,7 +520,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     section: 'Λογαριασμός',
   },
   '/settings/ai': {
-    title: 'Βοηθός AI',
+    title: 'Προτιμήσεις AI',
     description: 'Επιλέξτε το μοντέλο και τον προεπιλεγμένο πράκτορα που απαντούν στις ερωτήσεις σας.',
     section: 'Λογαριασμός',
   },

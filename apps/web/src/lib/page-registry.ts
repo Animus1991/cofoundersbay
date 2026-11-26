@@ -146,7 +146,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   // Each settings sub-page previously inherited the hub's "Manage billing,
   // notifications, integrations, and privacy" line, so all four described the
   // same four things instead of the one the user actually opened.
-  { path: '/settings/ai', title: 'AI assistant', description: 'Choose the model and default agent that answer your questions across the platform.', section: 'Account', status: 'complete' },
+  { path: '/settings/ai', title: 'AI preferences', description: 'Choose the model and default agent that answer your questions across the platform.', section: 'Account', status: 'complete' },
   { path: '/settings/billing', title: 'Plan & billing', description: 'Your current plan, what it includes, and where invoices are sent.', section: 'Account', status: 'complete' },
   { path: '/settings/notifications', title: 'Notification preferences', description: 'Pick which events reach you by email and how often digests arrive.', section: 'Account', status: 'complete' },
   { path: '/settings/data-export', title: 'Data export', description: 'Download a copy of your profile, messages, and activity.', section: 'Account', status: 'complete' },
