@@ -425,7 +425,7 @@ export default function CohortDetailPage() {
   const runUnavailableEl = isSample ? 'Είναι δείγματα: η αντιστοίχιση τρέχει σε κύκλο που διαβάστηκε.' : !slug ? 'Ο οργανισμός σας δεν έχει διαβαστεί ακόμη.' : runMatching.isPending ? 'Η αντιστοίχιση εκτελείται.' : undefined;
   usePageControls([
     choiceControl('cohort_tab', 'Cohort tab', 'Καρτέλα κύκλου', [
-      { value: 'overview', en: 'Overview', el: 'Επισκόπηση' },
+      { value: 'overview', en: 'Overview', el: 'Σύνοψη' },
       { value: 'participants', en: 'Participants', el: 'Συμμετέχοντες' },
       { value: 'matches', en: 'Matches', el: 'Αντιστοιχίσεις' },
       { value: 'mentoring', en: 'Mentoring', el: 'Καθοδήγηση' },
@@ -608,7 +608,7 @@ export default function CohortDetailPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
           <TabsTrigger value="overview">
-            <BilingualText en="Overview" el="Επισκόπηση" compact />
+            <BilingualText en="Overview" el="Σύνοψη" compact />
           </TabsTrigger>
           <TabsTrigger value="participants">
             <BilingualText

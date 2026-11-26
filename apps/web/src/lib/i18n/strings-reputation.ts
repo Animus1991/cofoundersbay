@@ -53,7 +53,7 @@ export const REPUTATION_STRINGS: Record<string, BilingualPair> = {
   day_one: { en: 'day', el: 'ημέρα' },
 
   // ── tabs ──
-  tab_overview: { en: 'Overview', el: 'Επισκόπηση' },
+  tab_overview: { en: 'Overview', el: 'Σύνοψη' },
   tab_badges: { en: 'Badges', el: 'Εμβλήματα' },
   tab_history: { en: 'History', el: 'Ιστορικό' },
 

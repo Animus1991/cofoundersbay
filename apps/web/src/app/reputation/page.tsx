@@ -221,7 +221,7 @@ export default function ReputationPage() {
   // Marking seen stamps `seenAt` and has no way back, so it has no undo.
   usePageControls([
     choiceControl('reputation_tab', 'Reputation tab', 'Καρτέλα φήμης', [
-      { value: 'overview', en: 'Overview', el: 'Επισκόπηση' },
+      { value: 'overview', en: 'Overview', el: 'Σύνοψη' },
       { value: 'badges', en: 'Badges', el: 'Διακρίσεις' },
       { value: 'history', en: 'History', el: 'Ιστορικό' },
     ], activeTab, (v) => setActiveTab(v as typeof activeTab)),

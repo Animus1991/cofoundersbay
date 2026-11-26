@@ -247,7 +247,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview"><BilingualText en="Overview" el="Επισκόπηση" compact /></TabsTrigger>
+          <TabsTrigger value="overview"><BilingualText en="Overview" el="Σύνοψη" compact /></TabsTrigger>
           <TabsTrigger value="activity"><BilingualText en="Activity" el="Δραστηριότητα" compact /></TabsTrigger>
           <TabsTrigger value="earn"><BilingualText en="How to Earn" el="Πώς κερδίζεται" compact /></TabsTrigger>
         </TabsList>

@@ -162,7 +162,7 @@ export const PROJECT_STRINGS: Record<string, BilingualPair> = {
   milestones: { en: 'Project milestones', el: 'Ορόσημα έργου' },
   complete_pct: { en: 'complete', el: 'ολοκληρωμένο' },
   updates: { en: 'Recent updates', el: 'Πρόσφατες ενημερώσεις' },
-  tab_overview: { en: 'Overview', el: 'Επισκόπηση' },
+  tab_overview: { en: 'Overview', el: 'Σύνοψη' },
   tab_team: { en: 'Team', el: 'Ομάδα' },
   tab_milestones: { en: 'Milestones', el: 'Ορόσημα' },
   tab_updates: { en: 'Updates', el: 'Ενημερώσεις' },
