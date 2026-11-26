@@ -424,23 +424,29 @@ function ProfileCardInner({
         avatarUrl={profile.avatarUrl}
         role={profile.role}
         headline={profile.headline ? <span className="person-subtitle">{profile.headline}</span> : undefined}
-        meta={profile.location ?? undefined}
+        /* The score with its word on the place's line (docs §156): as a pill
+           beside the name it squeezed the name and the role onto two lines,
+           and a star beside «70%» had read as a rating. */
+        meta={profile.location || (profile.matchScore && profile.matchScore > 0) ? (
+          <span className="inline-flex flex-wrap items-center gap-x-1.5">
+            {profile.location ? <span>{profile.location}</span> : null}
+            {profile.location && profile.matchScore && profile.matchScore > 0 ? <span aria-hidden="true">·</span> : null}
+            {profile.matchScore && profile.matchScore > 0 ? (
+              <span className="font-semibold tabular-nums text-primary-accessible">
+                <BilingualText en={`${profile.matchScore}% match`} el={`${profile.matchScore}% ταίριασμα`} compact />
+              </span>
+            ) : null}
+          </span>
+        ) : undefined}
         className={className}
         photoMark={profile.isVerified ? (
           <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-status-success-mark ring-2 ring-background" title={bilingualAria('Verified', 'Επαληθευμένο')}>
             <Check className="h-2.5 w-2.5 text-white" aria-hidden="true" />
           </span>
         ) : undefined}
-        aside={badge || (profile.matchScore && profile.matchScore > 0) ? (
+        aside={badge ? (
           <span className="inline-flex max-w-full flex-wrap items-center justify-end gap-x-2 gap-y-1">
             {badge}
-            {profile.matchScore && profile.matchScore > 0 ? (
-              /* The figure with its word, as every other card says it: a star
-                 beside «70%» read as a rating (docs §156). */
-              <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary-accessible">
-                <BilingualText en={`${profile.matchScore}% match`} el={`${profile.matchScore}% ταίριασμα`} compact />
-              </span>
-            ) : null}
           </span>
         ) : undefined}
         fact={profile.skills.length > 0 ? (
