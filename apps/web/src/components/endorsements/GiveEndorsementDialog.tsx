@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BilingualText } from '@/components/common/BilingualText';
+import { ENDORSEMENT_RELATIONSHIPS } from '@/lib/endorsement-relationships';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { useToast } from '@/components/ui/toast';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -46,14 +47,7 @@ const MAX_SKILL = 100;
 const MAX_RELATIONSHIP = 100;
 
 /** Offered as one tap each, because most endorsements are one of these. */
-const RELATIONSHIPS: { en: string; el: string }[] = [
-  { en: 'Worked together', el: 'Συνεργαστήκαμε' },
-  { en: 'Co-founder', el: 'Συνιδρυτής' },
-  { en: 'Mentored me', el: 'Με καθοδήγησε' },
-  { en: 'I mentored them', el: 'Ήμουν μέντορας' },
-  { en: 'Client', el: 'Πελάτης' },
-  { en: 'Investor', el: 'Επενδυτής' },
-];
+const RELATIONSHIPS = ENDORSEMENT_RELATIONSHIPS;
 
 export function GiveEndorsementDialog({
   open,
@@ -284,7 +278,7 @@ export function GiveEndorsementDialog({
           {/* ── How you know them ── */}
           <div className="space-y-2">
             <span className="text-sm font-medium">
-              <BilingualText en="How you know them (optional)" el="Πώς τους γνωρίζετε (προαιρετικό)" compact />
+              <BilingualText en="How you know them (optional)" el="Πώς γνωρίζεστε (προαιρετικό)" compact />
             </span>
             <div className="flex flex-wrap gap-1.5">
               {RELATIONSHIPS.map((r) => {

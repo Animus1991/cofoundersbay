@@ -19,6 +19,7 @@ import {
 } from '@/lib/api';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { relationshipEl } from '@/lib/endorsement-relationships';
 import { EmptyState } from '@/components/common/EmptyState';
 import { NetworkTabs } from '@/components/network/NetworkTabs';
 import { MessageButton } from '@/components/common/PersonActions';
@@ -49,7 +50,6 @@ import { Counter } from '@/components/ui/counter';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { DEMO_ENDORSEMENTS, DEMO_MEMBER_ID, type DemoEndorsement } from '@/lib/demo/endorsements-world';
 import { ASK } from '@/lib/page-questions';
-import { elWord } from '@/lib/rows-el';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -180,12 +180,12 @@ function EndorsementCard({
           )}
           subtitle={user.role || undefined}
           meta={endorsement.relationship ? (
-            <BilingualText en={`Relationship: ${endorsement.relationship}`} el={`Σχέση: ${endorsement.relationship}`} compact wrap />
+            <BilingualText en={`Relationship: ${endorsement.relationship}`} el={`Σχέση: ${relationshipEl(endorsement.relationship)}`} compact wrap />
           ) : undefined}
           aside={waitingOnMe ? (
             <Badge variant="outline" className="border-status-warning-border text-xs text-status-warning">
               <Clock className="mr-1 icon-sm" aria-hidden="true" />
-              <BilingualText en="Waiting for you" el="Περιμένει εσάς" compact />
+              <BilingualText en="Waiting on you" el="Σας περιμένει" compact />
             </Badge>
           ) : waitingOnThem ? (
             <Badge variant="outline" className="text-xs">
@@ -497,8 +497,8 @@ export default function EndorsementsPage() {
   const waiting = received.filter((e) => !e.isApproved);
   usePageControls([
     choiceControl('endorsements_tab', 'Endorsements tab', 'Καρτέλα συστάσεων', [
-      { value: 'received', en: 'Received', el: 'Ληφθείσες' },
-      { value: 'given', en: 'Given', el: 'Δοσμένες' },
+      { value: 'received', en: 'Received', el: 'Για εσάς' },
+      { value: 'given', en: 'Given', el: 'Από εσάς' },
     ], tab, (v) => setTab(v as typeof tab)),
     {
       id: 'approve_endorsement',
@@ -531,7 +531,7 @@ export default function EndorsementsPage() {
         `${e.fromUserName}${e.skill ? ` · ${e.skill}` : ''}${e.relationship ? ` · ${e.relationship}` : ''} · ${e.isApproved ? 'approved' : 'waiting for your approval'}`,
       ),
       rowsEl: !showDemoData && receivedLoading ? undefined : received.map((e) =>
-        `${e.fromUserName}${e.skill ? ` · ${e.skill}` : ''}${e.relationship ? ` · ${elWord(e.relationship)}` : ''} · ${e.isApproved ? 'εγκρίθηκε' : 'περιμένει την έγκρισή σας'}`,
+        `${e.fromUserName}${e.skill ? ` · ${e.skill}` : ''}${e.relationship ? ` · ${relationshipEl(e.relationship)}` : ''} · ${e.isApproved ? 'εγκρίθηκε' : 'περιμένει την έγκρισή σας'}`,
       ),
       sample: showDemoData,
     },
@@ -563,7 +563,7 @@ export default function EndorsementsPage() {
       content: (
         <RailStats
           items={[
-            { key: 'received', label: 'Received and shown', labelEl: 'Ληφθείσες και ορατές', value: receivedApproved, icon: Star, tone: 'bg-primary/10 text-primary-accessible' },
+            { key: 'received', label: 'Shown on your profile', labelEl: 'Στο προφίλ σας', value: receivedApproved, icon: Star, tone: 'bg-primary/10 text-primary-accessible' },
             { key: 'pending', label: 'Waiting for your approval', labelEl: 'Περιμένουν την έγκρισή σας', value: pendingCount, icon: Clock, tone: 'bg-status-warning-bg text-status-warning' },
             { key: 'given', label: 'Endorsements you gave', labelEl: 'Συστάσεις που δώσατε', value: givenCount, icon: Handshake, tone: 'bg-status-success-bg text-status-success' },
           ]}
@@ -618,11 +618,13 @@ export default function EndorsementsPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <TabsList>
               <TabsTrigger value="received" className="gap-1.5">
-                <BilingualText en="Received" el="Ληφθείσες" compact />
+                {/* «Για εσάς» / «Από εσάς», as Introductions names its own:
+                    «Ληφθείσες» and «Δοσμένες» are forms nobody says (§162). */}
+                <BilingualText en="Received" el="Για εσάς" compact />
                 {pendingCount > 0 && <Counter value={pendingCount} />}
               </TabsTrigger>
               <TabsTrigger value="given" className="gap-1.5">
-                <BilingualText en="Given" el="Δοσμένες" compact />
+                <BilingualText en="Given" el="Από εσάς" compact />
                 {/* No "0" for a list that was not read. */}
                 {givenFailed && !showDemoData ? null : <Counter value={givenCount} />}
               </TabsTrigger>
