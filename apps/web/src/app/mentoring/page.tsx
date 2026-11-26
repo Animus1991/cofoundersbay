@@ -60,10 +60,13 @@ import { areaChips, areasOf, hitToMentor, mergeDirectory, offers, priceOf, type 
 import { MENTOR_SERVICES, areaKeys, areaLabel, directoryFromParams, type MentorService } from '@/lib/mentoring/services';
 import { elWord } from '@/lib/rows-el';
 
+// The mentor's calendar, not the mentor: «Διαθέσιμος» named Ioanna in the
+// masculine, beside a «Περιορισμένη» that agreed with nothing on screen. One
+// neutral phrase per state (docs §54 rule, §159).
 const AVAIL_CONFIG = {
-  available: { en: 'Available', el: 'Διαθέσιμος', color: 'text-status-success ', bg: 'bg-status-success-bg', dot: 'bg-status-success-mark' },
-  busy:      { en: 'Busy',      el: 'Απασχολημένος', color: 'text-status-danger',                            bg: 'bg-status-danger-bg',     dot: 'bg-status-danger-mark'     },
-  limited:   { en: 'Limited',   el: 'Περιορισμένη', color: 'text-status-warning',                          bg: 'bg-status-warning-bg',   dot: 'bg-status-warning-mark'   },
+  available: { en: 'Available', el: 'Ελεύθερες ώρες', color: 'text-status-success ', bg: 'bg-status-success-bg', dot: 'bg-status-success-mark' },
+  busy:      { en: 'Busy',      el: 'Χωρίς ελεύθερες ώρες', color: 'text-status-danger',                            bg: 'bg-status-danger-bg',     dot: 'bg-status-danger-mark'     },
+  limited:   { en: 'Limited',   el: 'Λίγες ελεύθερες ώρες', color: 'text-status-warning',                          bg: 'bg-status-warning-bg',   dot: 'bg-status-warning-mark'   },
 } as const;
 
 const AVAIL_RANK: Record<string, number> = { available: 0, limited: 1, busy: 3 };

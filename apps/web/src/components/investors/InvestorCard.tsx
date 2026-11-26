@@ -7,7 +7,6 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CardHead } from '@/components/common/CardAnatomy';
-import { KindPill } from '@/components/common/KindPill';
 import { CardMoreMenu } from '@/components/common/CardMoreMenu';
 import { FactLine } from '@/components/common/FactLine';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -130,7 +129,8 @@ export function InvestorCard({
   return (
     <Card className="group overflow-hidden transition-all hover:border-primary/30">
       <CardContent className="space-y-3">
-          <KindPill glyph="growth" tone="success" en="Investor" el="Επενδυτής" />
+        {/* No "Investor" pill: the card lives only in the investors'
+            directory, where seven of seven said it (docs §159). */}
         {/* One anatomy at every width (docs §115/§125): the full head with
             Save in its corner; the thesis is under More on a phone. */}
         <div>
