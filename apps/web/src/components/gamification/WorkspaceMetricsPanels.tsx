@@ -122,7 +122,10 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Target className="icon-sm text-muted-foreground" />
-            <BilingualText en="Startup Readiness" el="Ετοιμότητα startup" compact />
+            {/* What it measures, the workspace's documents and team: as
+                "Startup readiness" it was a third readiness beside the
+                Readiness page's and the founder progress score (docs §158). */}
+            <BilingualText en="Workspace completeness" el="Πληρότητα χώρου εργασίας" compact />
           </CardTitle>
           <div className="flex items-center gap-1.5">
             <span className={cn('card-body font-semibold tabular-nums', scoreColor(score))}>

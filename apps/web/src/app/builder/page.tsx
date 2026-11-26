@@ -564,6 +564,12 @@ function BuilderPageContent() {
               onDialogChange={setWorkspaceDialog}
               extraRailSections={rail}
             />
+            {/* The workspace's own measures (completeness, momentum, mentor
+                feedback, contributions) with the workspace: under Readiness
+                their first card read as a second readiness score (docs §158). */}
+            {workspace?.id && (
+              <WorkspaceMetricsPanels workspaceId={workspace.id} />
+            )}
           </TabsContent>
 
           <TabsContent value="idea-core" className="space-y-6">
@@ -631,9 +637,6 @@ function BuilderPageContent() {
                 way there (owner, 2026-11-26; docs §158): the tab had kept a
                 readiness of its own with other criteria. */}
             <ReadinessSummary workspaceId={workspace?.id} />
-            {workspace?.id && (
-              <WorkspaceMetricsPanels workspaceId={workspace.id} />
-            )}
           </TabsContent>
 
           <TabsContent value="applications" className="space-y-6">
