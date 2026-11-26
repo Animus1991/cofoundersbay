@@ -89,9 +89,9 @@ describe('services page wording (§162)', () => {
     const rows = currentPageLists().find((l) => l.id === 'services')?.rowsEl ?? [];
     const bytecraft = rows.find((row) => row.includes('ByteCraft Studio'));
     expect(bytecraft).toContain('Ανάπτυξη λογισμικού');
-    // Next to the name: rows are cut at 110 characters, and at the end the
-    // state was cut off.
-    expect(bytecraft).toMatch(/^[^·]+ · από ByteCraft Studio · πλήρες πρόγραμμα · /);
+    // The row is longer than the 110 characters a row may carry: it loses
+    // its middle, and the state written last still arrives.
+    expect(bytecraft).toMatch(/ · … · πλήρες πρόγραμμα$/);
   });
 
   it('tells an empty result by the category\'s name, not its key', async () => {

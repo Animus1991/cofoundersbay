@@ -458,6 +458,15 @@ describe('what a page’s lists show', () => {
     expect(list.rows.every((r) => r.length <= LIST_ROW_CHARS)).toBe(true);
   });
 
+  it('cuts a long row in its middle, so the state written last still arrives (§162)', () => {
+    const booked = 'MVP Development & Technical Architecture · by ByteCraft Studio · Development · From €5K · 4.6★ (19) · fully booked';
+    render(<Deals rows={[booked, 'Short · row · open']} />);
+    const [list] = currentPageLists();
+    expect(list.rows[0].length).toBeLessThanOrEqual(LIST_ROW_CHARS);
+    expect(list.rows[0]).toMatch(/^MVP Development & Technical Architecture · by ByteCraft Studio · .* · … · fully booked$/);
+    expect(list.rows[1]).toBe('Short · row · open');
+  });
+
   it('matches a question about a list by its name or by pointing at it, never a command', () => {
     const lists = [{ id: 'users', label: 'Users' }, { id: 'invites', label: 'Pending invites' }];
     expect(pageListFor('which users are suspended?', lists)?.id).toBe('users');

@@ -143,7 +143,7 @@ const SEEDS: Seed[] = [
     category: 'design',
     stages: [],
     howToRedeem: 'Open the partner link while signed in to Pinwheel; the plan switches on.',
-    howToRedeemEl: 'Ανοίξτε τον σύνδεσμο του συνεργάτη ενώ είστε συνδεδεμένοι στο Pinwheel· το πρόγραμμα ενεργοποιείται.',
+    howToRedeemEl: 'Ανοίξτε τον σύνδεσμο του συνεργάτη αφού συνδεθείτε στο Pinwheel· το πρόγραμμα ενεργοποιείται.',
     terms: 'Up to 8 editors.',
     termsEl: 'Έως 8 συντάκτες.',
     code: null,

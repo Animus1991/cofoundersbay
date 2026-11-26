@@ -22,7 +22,6 @@ import { FactLine } from '@/components/common/FactLine';
 import { RelativeTime, useHydrated } from '@/components/common/RelativeTime';
 import { StatusText } from '@/components/common/StatusText';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -58,6 +57,15 @@ function daysLeft(perk: PerkView, now: number | null): number | null {
   return Math.max(0, calendarDaysUntil(perk.expiresAt, now) ?? 0);
 }
 
+/** Days left when an open offer ends soon enough to say so, else null. */
+function endingIn(perk: PerkView, now: number | null): number | null {
+  const left = daysLeft(perk, now);
+  return left !== null && left <= ENDING_SOON_DAYS && perk.active ? left : null;
+}
+
+const endsEn = (left: number) => (left === 0 ? 'Ends today' : `Ends in ${left} ${left === 1 ? 'day' : 'days'}`);
+const endsEl = (left: number) => (left === 0 ? 'Λήγει σήμερα' : `Λήγει σε ${left} ${left === 1 ? 'ημέρα' : 'ημέρες'}`);
+
 function PerkCard({
   perk,
   now,
@@ -78,7 +86,7 @@ function PerkCard({
 }) {
   const { success, error: showError } = useToast();
   const [details, setDetails] = useState(false);
-  const left = daysLeft(perk, now);
+  const ending = endingIn(perk, now);
   const fit = perkFit(perk, stage);
   const facts = [
     <BilingualText key="cat" en={PERK_CATEGORY_COPY[perk.category].en} el={PERK_CATEGORY_COPY[perk.category].el} compact />,
@@ -120,31 +128,29 @@ function PerkCard({
           )}
           title={<BilingualText en={perk.title} el={perk.titleEl ?? perk.title} compact wrap />}
           subtitle={perk.partner}
-          aside={(
-            <>
-              {perk.claimed && !admin ? (
-                <Badge variant="outline" className="border-status-success-border bg-status-success-bg text-status-success">
-                  <BilingualText en="Claimed" el="Διεκδικήθηκε" compact />
-                </Badge>
-              ) : null}
-              {admin && !perk.active ? (
-                <Badge variant="outline" className="border-border bg-muted text-muted-foreground">
-                  <BilingualText en="Switched off" el="Απενεργοποιημένη" compact />
-                </Badge>
-              ) : null}
-              {left !== null && left <= ENDING_SOON_DAYS && perk.active ? (
-                <Badge variant="outline" className="border-status-warning-border bg-status-warning-bg text-status-warning">
-                  {left === 0
-                    ? <BilingualText en="Ends today" el="Λήγει σήμερα" compact />
-                    : <BilingualText en={`Ends in ${left} ${left === 1 ? 'day' : 'days'}`} el={`Λήγει σε ${left} ${left === 1 ? 'ημέρα' : 'ημέρες'}`} compact />}
-                </Badge>
-              ) : null}
-            </>
-          )}
         />
         <p className="card-body font-medium text-foreground">
           <BilingualText en={perk.value} el={perk.valueEl ?? perk.value} compact wrap />
         </p>
+        {/* The card's state, on a line of its own under what it gives. As a
+            pill in the head's right column, "Ends in 9 days" was cut to
+            «Λήγει σε 9 ημέ…» on a card a quarter of the page wide, and
+            "Claimed" repeated the foot's "Claimed 6 days ago" (§162). */}
+        {admin && !perk.active ? (
+          <p className="text-xs text-muted-foreground">
+            <BilingualText en="Switched off" el="Απενεργοποιημένη" compact />
+          </p>
+        ) : null}
+        {ending !== null ? (
+          <p className="text-xs font-medium text-status-warning">
+            <BilingualText en={endsEn(ending)} el={endsEl(ending)} compact />
+          </p>
+        ) : null}
+        {perk.claimed && !perk.claimedAt && !admin ? (
+          <p className="text-xs text-status-success">
+            <BilingualText en="Claimed" el="Διεκδικήθηκε" compact />
+          </p>
+        ) : null}
         {stage && fit === 'match' && !admin ? (
           <p className="text-xs text-muted-foreground">
             <BilingualText en="Named for your stage." el="Για το στάδιό σας." compact />
@@ -248,7 +254,7 @@ export default function PerksPage() {
   const claimedQuery = useQuery({ queryKey: qk('perks', 'claimed'), queryFn: listClaimedPerks });
   const managed = useQuery({ queryKey: qk('perks', 'admin'), queryFn: adminListPerks, enabled: isAdmin });
 
-  const all = offers.data ?? [];
+  const all = useMemo(() => offers.data ?? [], [offers.data]);
   // With a stage chosen, the perks named for it first, then those for every
   // stage, then the rest (docs §115); the sort is stable.
   const FIT_RANK = { match: 0, any: 1, other: 2 } as const;
@@ -360,12 +366,24 @@ export default function PerksPage() {
         ]
       : []),
   ]);
-  const line = (p: PerkView) =>
-    `${p.partner}: ${p.title} - ${p.value} (${PERK_CATEGORY_COPY[p.category].en}${p.stages.length ? `; ${p.stages.join(', ')}` : '; every stage'}${p.claimed ? '; claimed' : ''})`;
+  // One row per card in its words, parts joined by " · " and the state last:
+  // a long row loses its middle, never its last part (page-controls, §162).
+  // The rows had no Greek, and the state sat inside a bracket at the end,
+  // where the cut at 110 characters dropped it.
+  const line = (p: PerkView) => {
+    const ending = endingIn(p, now);
+    const state = [p.claimed ? 'claimed' : null, ending !== null ? endsEn(ending).toLowerCase() : null, p.active ? null : 'switched off'].filter(Boolean).join(', ');
+    return `${p.partner}: ${p.title} · ${p.value} · ${PERK_CATEGORY_COPY[p.category].en} · ${p.stages.length ? p.stages.map((x) => STAGE_COPY[x].en).join(', ') : 'every stage'}${state ? ` · ${state}` : ''}`;
+  };
+  const lineEl = (p: PerkView) => {
+    const ending = endingIn(p, now);
+    const state = [p.claimed ? 'διεκδικήθηκε' : null, ending !== null ? endsEl(ending).toLowerCase() : null, p.active ? null : 'απενεργοποιημένη'].filter(Boolean).join(', ');
+    return `${p.partner}: ${p.titleEl ?? p.title} · ${p.valueEl ?? p.value} · ${PERK_CATEGORY_COPY[p.category].el} · ${p.stages.length ? p.stages.map((x) => STAGE_COPY[x].el).join(', ') : 'κάθε στάδιο'}${state ? ` · ${state}` : ''}`;
+  };
   usePageList([
-    { id: 'perks_offers', labelEn: 'Open perks', labelEl: 'Ανοιχτές προσφορές', rows: tab === 'offers' ? shown.map(line) : undefined },
-    { id: 'perks_claimed', labelEn: 'Perks you claimed', labelEl: 'Προσφορές που διεκδικήσατε', rows: tab === 'claimed' ? claimed.map(line) : undefined },
-    { id: 'perks_manage', labelEn: 'Every perk', labelEl: 'Όλες οι προσφορές', rows: tab === 'manage' ? adminRows.map((p) => `${line(p)}${p.active ? '' : ' - switched off'}`) : undefined },
+    { id: 'perks_offers', labelEn: 'Open perks', labelEl: 'Ανοιχτές προσφορές', rows: tab === 'offers' ? shown.map(line) : undefined, rowsEl: tab === 'offers' ? shown.map(lineEl) : undefined },
+    { id: 'perks_claimed', labelEn: 'Perks you claimed', labelEl: 'Προσφορές που διεκδικήσατε', rows: tab === 'claimed' ? claimed.map(line) : undefined, rowsEl: tab === 'claimed' ? claimed.map(lineEl) : undefined },
+    { id: 'perks_manage', labelEn: 'Every perk', labelEl: 'Όλες οι προσφορές', rows: tab === 'manage' ? adminRows.map(line) : undefined, rowsEl: tab === 'manage' ? adminRows.map(lineEl) : undefined },
   ]);
 
   const counts = useMemo(() => {
@@ -517,9 +535,13 @@ export default function PerksPage() {
               ) : adminRows.length === 0 ? (
                 empty('No perks yet. Add the first partner offer.', 'Δεν υπάρχουν ακόμη προσφορές. Προσθέστε την πρώτη.')
               ) : (
-                adminRows.map((p) => (
-                  <PerkCard key={p.id} perk={p} now={now} stage={null} busy={busy} admin onToggle={() => void runToggle(p, !p.active)} />
-                ))
+                // The grid of the other two tabs: one card per row ran each
+                // card across the whole page.
+                <div className="card-grid">
+                  {adminRows.map((p) => (
+                    <PerkCard key={p.id} perk={p} now={now} stage={null} busy={busy} admin onToggle={() => void runToggle(p, !p.active)} />
+                  ))}
+                </div>
               )}
               <AddPerkDialog open={adding} onClose={() => setAdding(false)} onCreated={refresh} />
             </TabsContent>

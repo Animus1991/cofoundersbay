@@ -371,13 +371,13 @@ export default function MarketplacePage() {
       id: 'services',
       labelEn: 'Services',
       labelEl: 'Υπηρεσίες',
-      // The state next to the name: a row is cut at 110 characters, and at
-      // the end "fully booked" never reached the assistant (§162).
+      // The state last: a long row loses its middle, never its last part
+      // (oneLine in page-controls, §162).
       rows: isLoading ? undefined : filtered.map((p) =>
-        `${p.title} · by ${p.providerName}${p.isAvailable ? '' : ' · fully booked'} · ${CAT_CONFIG[p.category]?.label ?? p.category} · ${p.pricing}${p.reviewCount ? ` · ${p.avgRating.toFixed(1)}★ (${p.reviewCount})` : ''}`,
+        `${p.title} · by ${p.providerName} · ${CAT_CONFIG[p.category]?.label ?? p.category} · ${p.pricing}${p.reviewCount ? ` · ${p.avgRating.toFixed(1)}★ (${p.reviewCount})` : ''}${p.isAvailable ? '' : ' · fully booked'}`,
       ),
       rowsEl: isLoading ? undefined : filtered.map((p) =>
-        `${p.title} · από ${p.providerName}${p.isAvailable ? '' : ' · πλήρες πρόγραμμα'} · ${CAT_CONFIG[p.category]?.labelEl ?? elWord(p.category)} · ${p.pricing}${p.reviewCount ? ` · ${p.avgRating.toFixed(1)}★ (${p.reviewCount})` : ''}`,
+        `${p.title} · από ${p.providerName} · ${CAT_CONFIG[p.category]?.labelEl ?? elWord(p.category)} · ${p.pricing}${p.reviewCount ? ` · ${p.avgRating.toFixed(1)}★ (${p.reviewCount})` : ''}${p.isAvailable ? '' : ' · πλήρες πρόγραμμα'}`,
       ),
       total: allProviders.length,
       sample: showingSamples,

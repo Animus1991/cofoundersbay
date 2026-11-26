@@ -435,9 +435,30 @@ export function currentPageLists(): readonly PageListSummary[] {
   return listSnapshot;
 }
 
+/**
+ * A long row loses its middle, not its end. Pages write a row as parts joined
+ * by " · " and add the row's state last ("· unread", "· fully booked"); a cut
+ * at the end dropped exactly that, and the assistant read a booked provider
+ * on /marketplace as open (§162). The name at the start stays whole where it
+ * fits; a row of fewer parts is cut at the end as before.
+ */
+const CUT_MIDDLE = ' · … · ';
+
 function oneLine(text: string): string {
   const flat = text.replace(/\s+/g, ' ').trim();
-  return flat.length > LIST_ROW_CHARS ? `${flat.slice(0, LIST_ROW_CHARS - 1)}…` : flat;
+  if (flat.length <= LIST_ROW_CHARS) return flat;
+  const parts = flat.split(' · ');
+  const last = parts[parts.length - 1];
+  const room = LIST_ROW_CHARS - CUT_MIDDLE.length - last.length;
+  if (parts.length >= 3 && room >= 30) {
+    let head = parts[0].length > room ? `${parts[0].slice(0, room - 1)}…` : parts[0];
+    for (const part of parts.slice(1, -1)) {
+      if (head.length + 3 + part.length > room) break;
+      head += ` · ${part}`;
+    }
+    return `${head}${CUT_MIDDLE}${last}`;
+  }
+  return `${flat.slice(0, LIST_ROW_CHARS - 1)}…`;
 }
 
 export type PageList = {
