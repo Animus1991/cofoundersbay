@@ -129,18 +129,14 @@ function GroupCard({
       ) : null}
       <CardContent className="space-y-3">
         <CardHead
-          mark={(
-            // The community's mark stands in for its logo: content, so the
-            // decorative-icon rule must not take it (an empty mark column
-            // pushed the title 12px off the body's edge).
+          // The community's logo when it has one. Without one, no mark: the
+          // same grey people glyph beside every name told nothing the cover
+          // photo above it does not (docs §159).
+          mark={group.avatarUrl ? (
             <div data-card-mark="" data-keep-icon className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-muted text-muted-foreground">
-              {group.avatarUrl ? (
-                <img src={group.avatarUrl} alt={group.name} className="h-10 w-10 object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
-              ) : (
-                <Users className="icon-md" aria-hidden="true" />
-              )}
+              <img src={group.avatarUrl} alt={group.name} className="h-10 w-10 object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
             </div>
-          )}
+          ) : undefined}
           title={group.name}
           subtitle={(
             <FactLine
@@ -602,10 +598,10 @@ export default function GroupsPage() {
           {/* Featured top row */}
           {!listLoading && topGroups.length > 0 && (
             <div className="space-y-3">
+              {/* The heading alone: a spark and a tinted swatch before it read
+                  as an empty option to tick (docs §159). */}
               <div className="flex items-center gap-2">
-                <Sparkles className="icon-sm text-muted-foreground" />
                 <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-accent-bg border-status-accent-border" />
                   {sort === 'trending'
                     ? <BilingualText en="Trending now" el="Σε άνοδο τώρα" compact />
                     : <BilingualText en="Top communities" el="Κορυφαίες κοινότητες" compact />}
@@ -631,7 +627,6 @@ export default function GroupsPage() {
             <div className="space-y-3">
               {topGroups.length > 0 && (
                 <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-  <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-md border bg-status-info-bg border-status-info-border" />
                   <BilingualText en="More communities" el="Περισσότερες κοινότητες" compact />
                 </h2>
               )}
