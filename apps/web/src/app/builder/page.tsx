@@ -16,7 +16,7 @@ import { MarketAnalysis, marketCompletion } from '@/components/builder/MarketAna
 import { MVPPlanner, mvpCompletion } from '@/components/builder/MVPPlanner';
 import { FinancialPlanning, financialCompletion } from '@/components/builder/FinancialPlanning';
 import { PitchDeckBuilder, pitchDeckCompletion, type PitchDeckData } from '@/components/builder/PitchDeckBuilder';
-import { ReadinessScoring } from '@/components/builder/ReadinessScoring';
+import { ReadinessSummary } from '@/components/readiness/ReadinessSummary';
 import { ApplicationGenerator } from '@/components/builder/ApplicationGenerator';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
 import { CollabToolbar } from '@/components/builder/CollabToolbar';
@@ -354,8 +354,8 @@ function BuilderPageContent() {
           {/* Only pages that are not already a stage in the strip above.
               Pitch deck, applications and readiness were listed here under the
               same names as their tabs, and they render the very same
-              components - PitchDeckBuilder, ApplicationGenerator,
-              ReadinessScoring - so the rail read as a copy of the strip, which
+              components - PitchDeckBuilder, ApplicationGenerator, and for
+              readiness its summary - so the rail read as a copy of the strip, which
               is the one thing it must not be. Nothing became unreachable: each
               is a tab here and keeps its own sidebar entry. */}
           {([
@@ -627,7 +627,10 @@ function BuilderPageContent() {
           </TabsContent>
 
           <TabsContent value="readiness" className="space-y-6">
-            <ReadinessScoring workspaceId={workspace?.id} workspaceData={documents.reduce((acc, d) => ({ ...acc, [d.type]: d.content }), {})} />
+            {/* The Readiness page in one card, from the same assessment, and the
+                way there (owner, 2026-11-26; docs §158): the tab had kept a
+                readiness of its own with other criteria. */}
+            <ReadinessSummary workspaceId={workspace?.id} />
             {workspace?.id && (
               <WorkspaceMetricsPanels workspaceId={workspace.id} />
             )}
