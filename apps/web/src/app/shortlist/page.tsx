@@ -47,6 +47,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn, initialsOf } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
+import { Quoted } from '@/components/common/Quoted';
 import { EmptyState } from '@/components/common/EmptyState';
 import { NetworkTabs } from '@/components/network/NetworkTabs';
 import { shortlistEn, shortlistEl } from '@/lib/i18n/strings-shortlist';
@@ -274,7 +275,7 @@ function ShortlistCard({
 
         {/* The reader's note: a quoted sentence on the card, not a tile in it. */}
         {!editingNote && item.note && (
-          <p className="card-body italic text-muted-foreground">&ldquo;{item.note}&rdquo;</p>
+          <p className="card-body italic text-muted-foreground"><Quoted>{item.note}</Quoted></p>
         )}
         {editingNote && (
           <NoteEditor initial={item.note ?? ''} onSave={handleSaveNote} onCancel={() => setEditingNote(false)} isSaving={savingNote} />

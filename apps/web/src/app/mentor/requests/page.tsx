@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { Quoted } from '@/components/common/Quoted';
 import { EmptyState } from '@/components/common/EmptyState';
 import { formatDate } from '@/lib/i18n/format';
 import { useSession } from '@/hooks/useSession';
@@ -102,7 +103,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
         {/* The message and the focus areas start on the avatar's edge. */}
         {request.message ? (
           <p className="card-body line-clamp-2 text-muted-foreground">
-            &ldquo;{request.message}&rdquo;
+            <Quoted>{request.message}</Quoted>
           </p>
         ) : null}
 

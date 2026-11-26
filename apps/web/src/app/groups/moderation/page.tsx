@@ -34,6 +34,7 @@ import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { STATUS } from '@/lib/semantic-colors';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { Quoted } from '@/components/common/Quoted';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { statusEl } from '@/components/common/StatusText';
@@ -149,7 +150,7 @@ function ReportCard({ report }: { report: ModerationReport }) {
           )}
         />
         <p className="card-body line-clamp-2 italic text-muted-foreground">
-          &ldquo;{report.contentPreview}&rdquo;
+          <Quoted>{report.contentPreview}</Quoted>
         </p>
         <FactLine
           items={[

@@ -289,7 +289,8 @@ export function CollaborationStarter({
   // ── Inline mode (default — the foot of a connection card) ──────────────────
   // It sits under the connection's card as that card's foot: its first word
   // on the card's left edge (16px on a phone, 24px from sm, the card's own
-  // padding), the next steps beside it.
+  // padding), the next steps beside it. No Message here: the card above has
+  // its own, and the two read «Μήνυμα … Επόμενο βήμα: Μήνυμα» (§162).
   return (
     <div className={cn(
       'flex flex-wrap items-center gap-2 rounded-b-xl border-t border-border bg-muted/30 px-4 py-3 sm:px-6',
@@ -298,16 +299,6 @@ export function CollaborationStarter({
       <span className="mr-1 text-xs text-muted-foreground">
         <BilingualText en="Next step:" el="Επόμενο βήμα:" compact />
       </span>
-      <Button
-        size="sm"
-        variant="secondary"
-        className="gap-1"
-        onClick={handleMessage}
-        disabled={loading === 'message'}
-      >
-        <MessageCircle className="icon-sm" />
-        <BilingualText en="Message" el="Μήνυμα" compact />
-      </Button>
       <Button size="sm" variant="outline" className="gap-1" asChild>
         <Link href={`/projects/create?collaborator=${otherUser.id}`}>
           <FolderPlus className="icon-sm" />

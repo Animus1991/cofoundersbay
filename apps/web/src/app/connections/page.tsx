@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Users,
-  Clock,
   Send,
   MessageCircle,
   Check,
@@ -31,7 +30,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
@@ -42,6 +40,7 @@ import { STATUS } from '@/lib/semantic-colors';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { Quoted } from '@/components/common/Quoted';
 import { NetworkTabs } from '@/components/network/NetworkTabs';
 import { connectionsEn, connectionsEl } from '@/lib/i18n/strings-connections';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
@@ -70,6 +69,7 @@ function ConnectionCard({
   onDecline,
   onMessage,
   isPending,
+  foot,
 }: {
   connection: ConnectionRequestItem;
   viewerId: string | null;
@@ -77,7 +77,10 @@ function ConnectionCard({
   onDecline?: () => void;
   onMessage?: () => void;
   isPending?: boolean;
+  /** The next steps under a connection, inside the card's own frame. */
+  foot?: React.ReactNode;
 }) {
+  const formatDay = useDateFormat();
   const isReceiver = connection.receiverId === viewerId;
   const other = isReceiver ? connection.requester : connection.receiver;
   const isAccepted = connection.status === 'accepted';
@@ -121,17 +124,24 @@ function ConnectionCard({
       </Button>
     </>
   ) : (
-    <Badge variant="outline" className="text-muted-foreground">
-      <Clock className="mr-1 icon-sm" />
-      <BilingualText en={connectionsEn('pending')} el={connectionsEl('pending')} compact />
-    </Badge>
+    // Sent holds only requests still waiting (the API's "sent" list), so a
+    // "Pending" pill on every card said the tab's name again. The card says
+    // since when instead, which is what decides a follow-up (§162).
+    <span className="text-xs text-muted-foreground">
+      <BilingualText
+        en={`Waiting since ${formatDay(connection.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+        el={`Σε αναμονή από ${formatDay(connection.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+        compact
+      />
+    </span>
   );
 
   // The same head as every card (avatar, name, the line under it); the
   // actions sit at its right from `sm` up and under the note on a phone,
   // where they would squeeze the name.
+  // One frame: the next steps were a second bordered box around this card.
   return (
-    <Card className="card-interactive">
+    <Card className="card-interactive overflow-hidden">
       <CardContent className="space-y-3">
         <CardHead
           mark={(
@@ -156,11 +166,12 @@ function ConnectionCard({
         />
         {connection.message && !isAccepted && (
           <p className="card-body italic text-muted-foreground line-clamp-2">
-            &ldquo;{connection.message}&rdquo;
+            <Quoted>{connection.message}</Quoted>
           </p>
         )}
         <div className="flex flex-wrap items-center gap-2 sm:hidden">{actions}</div>
       </CardContent>
+      {foot}
     </Card>
   );
 }
@@ -178,8 +189,9 @@ function IntroRequestCard({
 }) {
   const sender = connection.requester;
   const formatDay = useDateFormat();
-  // Endorsements' anatomy: avatar, name and headline, the kind at the right;
-  // the note and the foot (date, then the two answers) on the avatar's edge.
+  // Endorsements' anatomy: avatar, name and headline; the note and the foot
+  // (date, then the two answers) on the avatar's edge. No kind at the right:
+  // the card only shows under Requests, where every card is one (§162).
   return (
     <Card className="card-interactive border-primary-muted bg-primary-subtle">
       <CardContent className="space-y-3">
@@ -201,11 +213,6 @@ function IntroRequestCard({
             </span>
           )}
           subtitle={sender.headline ?? undefined}
-          aside={(
-            <span className="font-medium text-primary-accessible">
-              <BilingualText en={connectionsEn('intro_request')} el={connectionsEl('intro_request')} compact />
-            </span>
-          )}
         />
 
         {connection.message && (
@@ -271,10 +278,12 @@ export default function ConnectionsPage() {
   // still opens Requests). Accepting and declining are offered below, once
   // the rows are known.
   usePageControls([
+    // The tabs' own names: the assistant offered «Σταλμένα αιτήματα» and
+    // «Συνδεδεμένοι» for the tabs that read «Απεσταλμένα», «Συνδεδεμένα».
     choiceControl('tab', 'Connections tab', 'Καρτέλα συνδέσεων', [
-      { value: 'received', en: 'Requests waiting on you', el: 'Αιτήματα που σας περιμένουν' },
-      { value: 'sent', en: 'Sent requests', el: 'Σταλμένα αιτήματα' },
-      { value: 'accepted', en: 'Connected', el: 'Συνδεδεμένοι' },
+      { value: 'received', en: connectionsEn('requests'), el: connectionsEl('requests') },
+      { value: 'sent', en: connectionsEn('sent'), el: connectionsEl('sent') },
+      { value: 'accepted', en: connectionsEn('connected'), el: connectionsEl('connected') },
     ], tab, setTab),
   ]);
   const [justAcceptedUser, setJustAcceptedUser] = useState<{
@@ -479,19 +488,16 @@ export default function ConnectionsPage() {
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
           <TabsTrigger value="received" className="gap-2">
-            <Handshake className="icon-sm" />
             <BilingualText en={connectionsEn('requests')} el={connectionsEl('requests')} compact />
             {introCount > 0 && (
               <Counter value={introCount} tone="attention" />
             )}
           </TabsTrigger>
           <TabsTrigger value="sent" className="gap-2">
-            <Send className="icon-sm" />
             <BilingualText en={connectionsEn('sent')} el={connectionsEl('sent')} compact />
             {sentCount ? <Counter value={sentCount} /> : null}
           </TabsTrigger>
           <TabsTrigger value="accepted" className="gap-2">
-            <Users className="icon-sm" />
             <BilingualText en={connectionsEn('connected')} el={connectionsEl('connected')} compact />
             {acceptedCount ? <Counter value={acceptedCount} /> : null}
           </TabsTrigger>
@@ -581,22 +587,19 @@ export default function ConnectionsPage() {
                   ? { id: c.receiverId, displayName: c.receiver?.displayName ?? '', avatarUrl: c.receiver?.avatarUrl ?? null, role: c.receiver?.role, headline: c.receiver?.headline ?? null }
                   : { id: c.requesterId, displayName: c.requester?.displayName ?? '', avatarUrl: c.requester?.avatarUrl ?? null, role: c.requester?.role, headline: c.requester?.headline ?? null };
                 return (
-                  <div key={c.id} className="rounded-xl overflow-hidden border border-border shadow-sm">
-                    <ConnectionCard
-                      connection={c}
-                      viewerId={viewerId}
-                      isPending={respondMutation.isPending}
-                      onAccept={() => {
-                        const uid = c.requesterId === viewerId ? c.receiverId : c.requesterId;
-                        respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId: uid, acceptedUserInfo: otherUser });
-                      }}
-                      onDecline={() => respondMutation.mutate({ id: c.id, status: 'declined' })}
-                      onMessage={() => handleMessage(otherUser.id)}
-                    />
-                    {t === 'accepted' && c.status === 'accepted' && (
-                      <CollaborationStarter otherUser={otherUser} mode="inline" />
-                    )}
-                  </div>
+                  <ConnectionCard
+                    key={c.id}
+                    connection={c}
+                    viewerId={viewerId}
+                    isPending={respondMutation.isPending}
+                    onAccept={() => {
+                      const uid = c.requesterId === viewerId ? c.receiverId : c.requesterId;
+                      respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId: uid, acceptedUserInfo: otherUser });
+                    }}
+                    onDecline={() => respondMutation.mutate({ id: c.id, status: 'declined' })}
+                    onMessage={() => handleMessage(otherUser.id)}
+                    foot={t === 'accepted' && c.status === 'accepted' ? <CollaborationStarter otherUser={otherUser} mode="inline" /> : undefined}
+                  />
                 );
               })
             )}

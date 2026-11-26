@@ -28,9 +28,9 @@ export const CONNECTIONS_STRINGS: Record<string, BilingualPair> = {
   connected: { en: 'Connected', el: 'Συνδεδεμένα' },
 
   // stats
-  stat_connected: { en: 'Connected', el: 'Συνδεδεμένοι' },
+  stat_connected: { en: 'Connections', el: 'Συνδέσεις' },
   stat_intro_requests: { en: 'Requests waiting', el: 'Αιτήματα σε αναμονή' },
-  stat_sent_pending: { en: 'Sent Pending', el: 'Αποσταλέντα εκκρεμή' },
+  stat_sent_pending: { en: 'Sent, waiting', el: 'Απεσταλμένα σε αναμονή' },
   stat_total_interactions: { en: 'Total Interactions', el: 'Σύνολο αλληλεπιδράσεων' },
 
   // empty states
@@ -40,7 +40,7 @@ export const CONNECTIONS_STRINGS: Record<string, BilingualPair> = {
     el: 'Όταν κάποιος σας στέλνει αίτημα σύνδεσης με μήνυμα, εμφανίζεται εδώ.',
   },
   no_pending_requests: { en: 'No pending requests', el: 'Δεν υπάρχουν εκκρεμή αιτήματα' },
-  no_sent_requests: { en: 'No sent requests', el: 'Δεν υπάρχουν αποσταλέντα αιτήματα' },
+  no_sent_requests: { en: 'No sent requests', el: 'Δεν υπάρχουν απεσταλμένα αιτήματα' },
   no_connections_yet: { en: 'No connections yet', el: 'Δεν υπάρχουν συνδέσεις ακόμα' },
   start_connecting: {
     en: 'Start connecting with founders, mentors, and investors.',

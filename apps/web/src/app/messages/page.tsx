@@ -16,6 +16,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
+import { Quoted } from '@/components/common/Quoted';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { GLOBAL_TOOLS_PLACEMENT, GlobalTools } from '@/components/layout/GlobalTools';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
@@ -1352,7 +1353,7 @@ export default function MessagesPage() {
                             {PREVIEW_MESSAGE_EL[req.message] ? (
                               <BilingualText en={req.message} el={PREVIEW_MESSAGE_EL[req.message]} />
                             ) : (
-                              <>&ldquo;{req.message}&rdquo;</>
+                              <Quoted>{req.message}</Quoted>
                             )}
                           </p>
                         )}

@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Compass } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
-import { StatusText } from '@/components/common/StatusText';
+import { StatusText, statusEl, statusEn } from '@/components/common/StatusText';
 import { ConnectButton } from '@/components/common/PersonActions';
 import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { rankSimilar } from '@/components/profile/ProfileSections';
@@ -158,7 +158,9 @@ export function PeopleYouMayKnow({ excludeIds, limit = 6 }: { excludeIds: Readon
           <Link href="/discover"><Compass className="icon-sm" aria-hidden="true" /><BilingualText en="Find more" el="Βρείτε περισσότερους" compact /></Link>
         </Button>
       </div>
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {/* The page's own grid: three wider columns under four narrower
+          Connections cards read as two different kinds of card (§162). */}
+      <ul className="card-grid">
         {suggested.map(({ hit, shared, wanted }) => (
           <li key={hit.userId} className="min-w-0">
             <Card className="h-full transition-all hover:border-primary/20">
@@ -183,8 +185,15 @@ export function PeopleYouMayKnow({ excludeIds, limit = 6 }: { excludeIds: Readon
                 {wanted || shared.length ? (
                   <div className="space-y-1">
                     {wanted ? (
+                      // One sentence: the role as a word, not a pill with a
+                      // dot in the middle of the line («…: • Συνιδρυτής»).
                       <p className="card-body text-primary-accessible">
-                        <BilingualText en="A role you are looking for:" el="Ρόλος που αναζητάτε:" compact />{' '}<StatusText value={hit.role} />
+                        <BilingualText
+                          en={`A role you are looking for: ${statusEn(hit.role)}`}
+                          el={`Ρόλος που αναζητάτε: ${statusEl(hit.role) ?? statusEn(hit.role)}`}
+                          compact
+                          wrap
+                        />
                       </p>
                     ) : null}
                     {shared.length ? (
