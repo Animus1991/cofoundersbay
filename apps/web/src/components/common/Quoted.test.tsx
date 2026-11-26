@@ -19,18 +19,12 @@ describe('Quoted (§162)', () => {
   /*
    * Notes, endorsements, insights and reasons were printed between “ and ”
    * typed into the markup, around Greek text for a Greek reader (§162, §163).
-   * A value in English quotation marks belongs to an English-only sentence,
-   * listed here; anything else goes through <Quoted>.
+   * Inside a sentence written per language, each language's string carries
+   * its own marks; anything else goes through <Quoted>.
    */
   it('leaves no value in hard-coded English quotation marks', () => {
     const SRC = join(__dirname, '..', '..');
-    const ENGLISH_ONLY = new Set([
-      'components/common/Quoted.tsx',
-      // Untranslated panels, next in line for Greek (docs §163.3).
-      'components/builder/BranchPanel.tsx',
-      'components/builder/ReviewPanel.tsx',
-      'components/research/CanvasVersionPanel.tsx',
-    ]);
+    const ENGLISH_ONLY = new Set(['components/common/Quoted.tsx']);
     const files = (dir: string, out: string[] = []): string[] => {
       for (const name of readdirSync(dir)) {
         const path = join(dir, name);

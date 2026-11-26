@@ -32,6 +32,8 @@ import {
 } from '@/components/ui/tabs';
 import { History, Camera, Clock, Layers, ChevronRight, GitBranch, Loader2, RefreshCw, Eye, RotateCcw, CheckCircle2, Zap, Plus, Archive, ArchiveRestore, Trash2, GitCommit, ArrowRight, AlertTriangle, Minus, Edit2, Move, Info } from 'lucide-react';
 import { cn, initialsOf } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { statusEl, statusEn } from '@/components/common/StatusText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useToast } from '@/components/ui/toast';
 import {
@@ -124,7 +126,7 @@ function branchStatusColor(status: string) {
 // ── Diff Chip ─────────────────────────────────────────────────────────────────
 
 function DiffChips({ diff }: { diff: CanvasDiff }) {
-  if (diff.isEmpty) return <span className="text-xs text-muted-foreground">No changes</span>;
+  if (diff.isEmpty) return <span className="text-xs text-muted-foreground"><BilingualText en="No changes" el="Καμία αλλαγή" compact /></span>;
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {diff.added.length > 0 && (
@@ -167,22 +169,22 @@ function DiffDetailDialog({
       <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
         <DialogHeader icon={Info} tone="neutral">
           <DialogTitle className="flex items-center gap-2 text-sm">
-            Diff: {labelA} → {labelB}
+            <BilingualText en="Diff:" el="Διαφορές:" compact /> {labelA} → {labelB}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Changes between two canvas versions
+            <BilingualText en="Changes between two canvas versions" el="Οι αλλαγές ανάμεσα σε δύο εκδόσεις του καμβά" wrap />
           </DialogDescription>
         </DialogHeader>
 
         <div className="overflow-y-auto flex-1 space-y-3 text-sm">
           {diff.isEmpty && (
-            <p className="text-center text-muted-foreground py-4 text-sm">No differences found.</p>
+            <p className="text-center text-muted-foreground py-4 text-sm"><BilingualText en="No differences found." el="Δεν βρέθηκαν διαφορές." compact /></p>
           )}
 
           {diff.added.length > 0 && (
             <div className="space-y-1">
               <p className="text-xs font-semibold text-status-success uppercase tracking-wide flex items-center gap-1">
-                <Plus className="icon-sm" /> Added ({diff.added.length})
+                <Plus className="icon-sm" /> <BilingualText en={`Added (${diff.added.length})`} el={`Προστέθηκαν (${diff.added.length})`} compact />
               </p>
               {diff.added.map((n) => (
                 <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-status-success-bg border border-status-success-border">
@@ -196,7 +198,7 @@ function DiffDetailDialog({
           {diff.removed.length > 0 && (
             <div className="space-y-1">
               <p className="text-xs font-semibold text-status-danger uppercase tracking-wide flex items-center gap-1">
-                <Minus className="icon-sm" /> Removed ({diff.removed.length})
+                <Minus className="icon-sm" /> <BilingualText en={`Removed (${diff.removed.length})`} el={`Αφαιρέθηκαν (${diff.removed.length})`} compact />
               </p>
               {diff.removed.map((n) => (
                 <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-status-danger-bg border border-status-danger-border">
@@ -210,7 +212,7 @@ function DiffDetailDialog({
           {diff.modified.length > 0 && (
             <div className="space-y-1">
               <p className="text-xs font-semibold text-status-warning uppercase tracking-wide flex items-center gap-1">
-                <Edit2 className="icon-sm" /> Modified ({diff.modified.length})
+                <Edit2 className="icon-sm" /> <BilingualText en={`Modified (${diff.modified.length})`} el={`Άλλαξαν (${diff.modified.length})`} compact />
               </p>
               {diff.modified.map((n) => (
                 <div key={n.id} className="p-1.5 rounded bg-status-warning-bg border border-status-warning-border space-y-0.5">
@@ -234,7 +236,7 @@ function DiffDetailDialog({
           {diff.moved.length > 0 && (
             <div className="space-y-1">
               <p className="text-xs font-semibold text-status-info uppercase tracking-wide flex items-center gap-1">
-                <Move className="icon-sm" /> Moved ({diff.moved.length})
+                <Move className="icon-sm" /> <BilingualText en={`Moved (${diff.moved.length})`} el={`Μετακινήθηκαν (${diff.moved.length})`} compact />
               </p>
               {diff.moved.map((n) => (
                 <div key={n.id} className="p-1.5 rounded bg-status-info-bg border border-status-info-border">
@@ -254,12 +256,12 @@ function DiffDetailDialog({
               </p>
               {diff.edgeDiff.added.map((e) => (
                 <div key={e.id} className="text-2xs p-1.5 rounded bg-status-success-bg border border-status-success-border text-status-success">
-                  + edge {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
+                  + <BilingualText en="edge" el="σύνδεση" compact /> {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
                 </div>
               ))}
               {diff.edgeDiff.removed.map((e) => (
                 <div key={e.id} className="text-2xs p-1.5 rounded bg-status-danger-bg border border-status-danger-border text-status-danger">
-                  − edge {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
+                  − <BilingualText en="edge" el="σύνδεση" compact /> {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
                 </div>
               ))}
             </div>
@@ -267,7 +269,7 @@ function DiffDetailDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={onClose}>Close</Button>
+          <Button variant="outline" size="sm" onClick={onClose}><BilingualText en="Close" el="Κλείσιμο" compact /></Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -290,18 +292,21 @@ function RestoreConfirmDialog({
       <DialogContent className="max-w-sm">
         <DialogHeader icon={Info} tone="neutral">
           <DialogTitle className="flex items-center gap-2">
-            Restore canvas?
+            <BilingualText en="Restore canvas?" el="Επαναφορά καμβά;" compact />
           </DialogTitle>
           <DialogDescription className="text-sm">
-            This will replace your current canvas with &ldquo;{label}&rdquo;.
-            Your current state will be auto-saved as a checkpoint first.
+            <BilingualText
+              en={`This will replace your current canvas with “${label}”. Your current state will be auto-saved as a checkpoint first.`}
+              el={`Ο τρέχων καμβάς θα αντικατασταθεί με «${label}». Η τωρινή κατάσταση αποθηκεύεται πρώτα αυτόματα ως σημείο ελέγχου.`}
+              wrap
+            />
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex gap-2 justify-end">
-          <Button variant="outline" size="sm" onClick={onClose} disabled={isPending}>Cancel</Button>
+          <Button variant="outline" size="sm" onClick={onClose} disabled={isPending}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button variant="destructive" size="sm" onClick={onConfirm} disabled={isPending}>
             {isPending ? <Loader2 className="icon-sm animate-spin mr-1" /> : <RotateCcw className="icon-sm mr-1" />}
-            Restore
+            <BilingualText en="Restore" el="Επαναφορά" compact />
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -383,7 +388,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
     <div className="space-y-3 flex flex-col h-full">
       {/* Save */}
       <div className="p-3 bg-muted/50 rounded-lg border border-border space-y-2">
-        <Label htmlFor="snapshotLabel" className="font-medium">Save current state</Label>
+        <Label htmlFor="snapshotLabel" className="font-medium"><BilingualText en="Save current state" el="Αποθήκευση τωρινής κατάστασης" compact /></Label>
         <div className="flex gap-2">
           <Input id="snapshotLabel"
             placeholder={sayOne("Label (optional)…", "Ετικέτα (προαιρετικά)…")}
@@ -396,13 +401,13 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
             {creating ? <Loader2 className="icon-sm animate-spin" /> : <Camera className="icon-sm" />}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">Captures all nodes and connectors.</p>
+        <p className="text-xs text-muted-foreground"><BilingualText en="Captures all nodes and connectors." el="Κρατά όλους τους κόμβους και τις συνδέσεις." wrap /></p>
       </div>
 
       {/* Refresh */}
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} />Refresh
+          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} /><BilingualText en="Refresh" el="Ανανέωση" compact />
         </Button>
       </div>
 
@@ -413,8 +418,8 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
         ) : snapshots.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <History className="icon-xl mx-auto mb-2 opacity-30" />
-            <p className="text-sm">No snapshots yet</p>
-            <p className="text-xs mt-1">Save your first snapshot to track history.</p>
+            <p className="text-sm"><BilingualText en="No snapshots yet" el="Δεν υπάρχουν ακόμη στιγμιότυπα" compact /></p>
+            <p className="text-xs mt-1"><BilingualText en="Save your first snapshot to track history." el="Αποθηκεύστε το πρώτο στιγμιότυπο για να κρατάτε ιστορικό." wrap /></p>
           </div>
         ) : (
           Object.entries(grouped).map(([date, snaps]) => (
@@ -429,11 +434,11 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                       <Icon className="icon-sm" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{snap.label ?? 'Snapshot'}</p>
+                      <p className="text-sm font-medium truncate">{snap.label ?? <BilingualText en="Snapshot" el="Στιγμιότυπο" compact />}</p>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <LocalTime value={snap.createdAt} className="text-xs text-muted-foreground" />
                         <span className="text-xs text-muted-foreground">·</span>
-                        <span className="text-xs text-muted-foreground">{snap.nodeCount} node{snap.nodeCount !== 1 ? 's' : ''}</span>
+                        <span className="text-xs text-muted-foreground"><BilingualText en={`${snap.nodeCount} node${snap.nodeCount !== 1 ? 's' : ''}`} el={`${snap.nodeCount} ${snap.nodeCount !== 1 ? 'κόμβοι' : 'κόμβος'}`} compact /></span>
                         {snap.createdBy && (
                           <>
                             <span className="text-xs text-muted-foreground">·</span>
@@ -449,10 +454,10 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100" title="Preview" onClick={() => handlePreview(snap)}>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100" title={sayOne('Preview', 'Προεπισκόπηση')} onClick={() => handlePreview(snap)}>
                         <Eye className="icon-sm" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-status-warning hover:text-status-warning" title="Restore" onClick={() => setRestoreTarget(snap)}>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-status-warning hover:text-status-warning" title={sayOne('Restore', 'Επαναφορά')} onClick={() => setRestoreTarget(snap)}>
                         <RotateCcw className="icon-sm" />
                       </Button>
                     </div>
@@ -470,15 +475,15 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
           <DialogContent className="max-w-lg">
             <DialogHeader icon={Info} tone="neutral">
               <DialogTitle className="flex items-center gap-2 text-sm">
-                {snapshots.find((s) => s.id === previewId)?.label ?? 'Snapshot'}
+                {snapshots.find((s) => s.id === previewId)?.label ?? <BilingualText en="Snapshot" el="Στιγμιότυπο" compact />}
               </DialogTitle>
               <DialogDescription className="sr-only">{bilingualInline('Preview of a saved canvas snapshot.', 'Προεπισκόπηση αποθηκευμένου στιγμιότυπου καμβά.')}</DialogDescription>
             </DialogHeader>
             <div className="py-2 space-y-3">
               <div className="flex gap-4 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5"><Layers className="icon-sm" />{previewData.nodeCount} nodes</span>
+                <span className="flex items-center gap-1.5"><Layers className="icon-sm" /><BilingualText en={`${previewData.nodeCount} nodes`} el={`${previewData.nodeCount} κόμβοι`} compact /></span>
                 {Array.isArray(previewData.connectors) && (
-                  <span className="flex items-center gap-1.5"><ChevronRight className="icon-sm" />{(previewData.connectors as unknown[]).length} connectors</span>
+                  <span className="flex items-center gap-1.5"><ChevronRight className="icon-sm" /><BilingualText en={`${(previewData.connectors as unknown[]).length} connectors`} el={`${(previewData.connectors as unknown[]).length} συνδέσεις`} compact /></span>
                 )}
               </div>
               {Array.isArray(previewData.nodeData) && previewData.nodeData.length > 0 && (
@@ -491,14 +496,14 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                       <span className="text-muted-foreground truncate">{node.title ?? '(untitled)'}</span>
                     </div>
                   ))}
-                  {previewData.nodeData.length > 20 && <p className="text-xs text-muted-foreground">+{previewData.nodeData.length - 20} more…</p>}
+                  {previewData.nodeData.length > 20 && <p className="text-xs text-muted-foreground"><BilingualText en={`+${previewData.nodeData.length - 20} more…`} el={`+${previewData.nodeData.length - 20} ακόμη…`} compact /></p>}
                 </div>
               )}
             </div>
             <DialogFooter className="gap-2">
-              <Button variant="outline" size="sm" onClick={() => { setPreviewId(null); setPreviewData(null); }}>Close</Button>
+              <Button variant="outline" size="sm" onClick={() => { setPreviewId(null); setPreviewData(null); }}><BilingualText en="Close" el="Κλείσιμο" compact /></Button>
               <Button variant="default" size="sm" onClick={() => { setRestoreTarget(snapshots.find((s) => s.id === previewId) ?? null); setPreviewId(null); setPreviewData(null); }}>
-                <RotateCcw className="icon-sm mr-1" /> Restore this
+                <RotateCcw className="icon-sm mr-1" /> <BilingualText en="Restore this" el="Επαναφορά σε αυτό" compact />
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -574,7 +579,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
     <div className="space-y-3 flex flex-col h-full">
       {/* Commit */}
       <div className="p-3 bg-muted/50 rounded-lg border border-border space-y-2">
-        <Label htmlFor="label" className="font-medium">Commit current state</Label>
+        <Label htmlFor="label" className="font-medium"><BilingualText en="Commit current state" el="Καταχώριση τωρινής κατάστασης" compact /></Label>
         <div className="flex gap-2">
           <Input id="label"
             placeholder={sayOne("Commit message (optional)…", "Μήνυμα αλλαγής (προαιρετικά)…")}
@@ -587,12 +592,12 @@ function VersionsTab({ boardId }: { boardId: string }) {
             {creating ? <Loader2 className="icon-sm animate-spin" /> : <GitCommit className="icon-sm" />}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">Records a diff-tracked version with change summary.</p>
+        <p className="text-xs text-muted-foreground"><BilingualText en="Records a diff-tracked version with change summary." el="Κρατά μια έκδοση με τις διαφορές και περίληψη των αλλαγών." wrap /></p>
       </div>
 
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} />Refresh
+          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} /><BilingualText en="Refresh" el="Ανανέωση" compact />
         </Button>
       </div>
 
@@ -602,8 +607,8 @@ function VersionsTab({ boardId }: { boardId: string }) {
         ) : versions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <GitCommit className="icon-xl mx-auto mb-2 opacity-30" />
-            <p className="text-sm">No versions yet</p>
-            <p className="text-xs mt-1">Commit your first version to track diffs.</p>
+            <p className="text-sm"><BilingualText en="No versions yet" el="Δεν υπάρχουν ακόμη εκδόσεις" compact /></p>
+            <p className="text-xs mt-1"><BilingualText en="Commit your first version to track diffs." el="Καταχωρίστε την πρώτη έκδοση για να βλέπετε τις διαφορές." wrap /></p>
           </div>
         ) : versions.map((v) => {
           const meta = triggerMeta(v.triggerType);
@@ -615,7 +620,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium truncate">{v.label ?? 'Version'}</p>
+                  <p className="text-sm font-medium truncate">{v.label ?? <BilingualText en="Version" el="Έκδοση" compact />}</p>
                   {v.branchName && (
                     <Badge variant="outline" className="text-2xs px-1.5 py-0 h-4 shrink-0">
                       <GitBranch className="h-2.5 w-2.5 mr-0.5" />{v.branchName}
@@ -628,7 +633,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span className="text-xs text-muted-foreground"><RelativeTime date={v.createdAt} /></span>
                   <span className="text-xs text-muted-foreground">·</span>
-                  <span className="text-xs text-muted-foreground">{v.nodeCount} nodes</span>
+                  <span className="text-xs text-muted-foreground"><BilingualText en={`${v.nodeCount} nodes`} el={`${v.nodeCount} κόμβοι`} compact /></span>
                   {v.createdBy && (
                     <>
                       <span className="text-xs text-muted-foreground">·</span>
@@ -640,11 +645,11 @@ function VersionsTab({ boardId }: { boardId: string }) {
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 {v.diffData && !v.diffData.isEmpty && (
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100" title="View diff" onClick={() => setDiffVersion(v)}>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100" title={sayOne('View diff', 'Προβολή διαφορών')} onClick={() => setDiffVersion(v)}>
                     <Eye className="icon-sm" />
                   </Button>
                 )}
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-status-warning hover:text-status-warning" title="Restore" onClick={() => setRestoreTarget(v)}>
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-status-warning hover:text-status-warning" title={sayOne('Restore', 'Επαναφορά')} onClick={() => setRestoreTarget(v)}>
                   <RotateCcw className="icon-sm" />
                 </Button>
               </div>
@@ -744,17 +749,17 @@ function BranchesTab({ boardId }: { boardId: string }) {
   return (
     <div className="space-y-3 flex flex-col h-full">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">Manage isolated canvas branches</p>
+        <p className="text-xs text-muted-foreground"><BilingualText en="Manage isolated canvas branches" el="Ανεξάρτητοι κλάδοι του καμβά" wrap /></p>
         <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => setShowCreate(!showCreate)}>
-          <Plus className="icon-sm" />New
+          <Plus className="icon-sm" /><BilingualText en="New" el="Νέος" compact />
         </Button>
       </div>
 
       {showCreate && (
         <div className="p-3 bg-muted/50 rounded-lg border border-border space-y-2">
-          <Label htmlFor="name" className="font-medium">New branch</Label>
+          <Label htmlFor="name" className="font-medium"><BilingualText en="New branch" el="Νέος κλάδος" compact /></Label>
           <Input id="name"
-            placeholder="branch-name (lowercase, hyphens)"
+            placeholder={sayOne('branch-name (lowercase, hyphens)', 'όνομα-κλάδου (πεζά, παύλες)')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="text-sm h-8"
@@ -766,10 +771,10 @@ function BranchesTab({ boardId }: { boardId: string }) {
             className="text-sm h-8"
           />
           <div className="flex gap-2 justify-end">
-            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setShowCreate(false); setName(''); setDesc(''); }}>Cancel</Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setShowCreate(false); setName(''); setDesc(''); }}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
             <Button size="sm" className="h-7 text-xs" onClick={handleCreate} disabled={creating || !name.trim()}>
               {creating ? <Loader2 className="icon-sm animate-spin mr-1" /> : <GitBranch className="icon-sm mr-1" />}
-              Create
+              <BilingualText en="Create" el="Δημιουργία" compact />
             </Button>
           </div>
         </div>
@@ -777,7 +782,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
 
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} />Refresh
+          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} /><BilingualText en="Refresh" el="Ανανέωση" compact />
         </Button>
       </div>
 
@@ -787,8 +792,8 @@ function BranchesTab({ boardId }: { boardId: string }) {
         ) : branches.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <GitBranch className="icon-xl mx-auto mb-2 opacity-30" />
-            <p className="text-sm">No branches yet</p>
-            <p className="text-xs mt-1">Create a branch to experiment safely.</p>
+            <p className="text-sm"><BilingualText en="No branches yet" el="Δεν υπάρχουν ακόμη κλάδοι" compact /></p>
+            <p className="text-xs mt-1"><BilingualText en="Create a branch to experiment safely." el="Δημιουργήστε κλάδο για να πειραματιστείτε με ασφάλεια." wrap /></p>
           </div>
         ) : branches.map((b) => (
           <div key={b.id} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors">
@@ -798,9 +803,9 @@ function BranchesTab({ boardId }: { boardId: string }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium truncate">{b.name}</p>
-                {b.isDefault && <Badge variant="secondary" className="text-2xs px-1.5 py-0 h-4">default</Badge>}
+                {b.isDefault && <Badge variant="secondary" className="text-2xs px-1.5 py-0 h-4"><BilingualText en="default" el="προεπιλογή" compact /></Badge>}
                 <Badge variant="outline" className={cn('text-2xs px-1.5 py-0 h-4', branchStatusColor(b.status))}>
-                  {b.status}
+                  <BilingualText en={statusEn(b.status)} el={statusEl(b.status) ?? statusEn(b.status)} compact />
                 </Badge>
               </div>
               {b.description && <p className="text-xs text-muted-foreground mt-0.5 truncate">{b.description}</p>}
@@ -809,7 +814,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
                 {b.nodeCount != null && (
                   <>
                     <span className="text-xs text-muted-foreground">·</span>
-                    <span className="text-xs text-muted-foreground">{b.nodeCount} nodes</span>
+                    <span className="text-xs text-muted-foreground"><BilingualText en={`${b.nodeCount} nodes`} el={`${b.nodeCount} κόμβοι`} compact /></span>
                   </>
                 )}
               </div>
@@ -843,7 +848,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
                 <Button
                   variant="ghost" size="sm"
                   className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-destructive-accessible hover:text-destructive-accessible"
-                  title="Delete"
+                  title={sayOne('Delete', 'Διαγραφή')}
                   onClick={() => setDeletingId(b.id)}
                 >
                   <Trash2 className="icon-sm" />
@@ -858,21 +863,21 @@ function BranchesTab({ boardId }: { boardId: string }) {
         <DialogContent className="max-w-sm">
           <DialogHeader icon={Trash2} tone="danger">
             <DialogTitle className="flex items-center gap-2 text-sm">
-              Delete branch?
+              <BilingualText en="Delete branch?" el="Διαγραφή κλάδου;" compact />
             </DialogTitle>
             <DialogDescription className="text-sm">
-              All versions on this branch will be deleted. This cannot be undone.
+              <BilingualText en="All versions on this branch will be deleted. This cannot be undone." el="Θα διαγραφούν όλες οι εκδόσεις του κλάδου. Η ενέργεια δεν αναιρείται." wrap />
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" size="sm" onClick={() => setDeletingId(null)}>Cancel</Button>
+            <Button variant="outline" size="sm" onClick={() => setDeletingId(null)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
             <Button
               variant="destructive" size="sm"
               disabled={deleteMutation.isPending}
               onClick={() => deletingId && deleteMutation.mutate({ branchId: deletingId })}
             >
               {deleteMutation.isPending ? <Loader2 className="icon-sm animate-spin mr-1" /> : <Trash2 className="icon-sm mr-1" />}
-              Delete
+              <BilingualText en="Delete" el="Διαγραφή" compact />
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -897,23 +902,27 @@ export function CanvasVersionPanel({ open, onClose, boardId, boardTitle }: Canva
         <SheetHeader className="px-4 pt-4 pb-3 border-b border-border">
           <SheetTitle className="flex items-center gap-2 text-base">
             <History className="icon-sm text-muted-foreground" />
-            Canvas History
+            <BilingualText en="Canvas history" el="Ιστορικό καμβά" compact />
           </SheetTitle>
           <SheetDescription className="text-xs">
-            Snapshots, versions, and branches for &ldquo;{boardTitle ?? 'this board'}&rdquo;
+            <BilingualText
+              en={boardTitle ? `Snapshots, versions, and branches for “${boardTitle}”` : 'Snapshots, versions, and branches for this board'}
+              el={boardTitle ? `Στιγμιότυπα, εκδόσεις και κλάδοι για «${boardTitle}»` : 'Στιγμιότυπα, εκδόσεις και κλάδοι αυτού του πίνακα'}
+              wrap
+            />
           </SheetDescription>
         </SheetHeader>
 
         <Tabs defaultValue="snapshots" className="flex flex-col flex-1 overflow-hidden px-4 pt-3">
           <TabsList className="grid grid-cols-3 h-8 mb-3 shrink-0">
             <TabsTrigger value="snapshots" className="text-xs flex items-center gap-1">
-              <Camera className="icon-sm" />Snapshots
+              <Camera className="icon-sm" /><BilingualText en="Snapshots" el="Στιγμιότυπα" compact />
             </TabsTrigger>
             <TabsTrigger value="versions" className="text-xs flex items-center gap-1">
-              <GitCommit className="icon-sm" />Versions
+              <GitCommit className="icon-sm" /><BilingualText en="Versions" el="Εκδόσεις" compact />
             </TabsTrigger>
             <TabsTrigger value="branches" className="text-xs flex items-center gap-1">
-              <GitBranch className="icon-sm" />Branches
+              <GitBranch className="icon-sm" /><BilingualText en="Branches" el="Κλάδοι" compact />
             </TabsTrigger>
           </TabsList>
 
