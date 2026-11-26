@@ -17,6 +17,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
+import { GLOBAL_TOOLS_PLACEMENT, GlobalTools } from '@/components/layout/GlobalTools';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { CardHead } from '@/components/common/CardAnatomy';
@@ -1135,7 +1136,7 @@ export default function MessagesPage() {
                 (the list's px-2 and each row's px-3). On a phone the pane is
                 tighter, and the title row keeps clear of the tools icon. */}
             <div className="min-w-0 shrink-0 space-y-2 px-3 pb-2 pt-3 sm:space-y-3 sm:px-5 sm:pb-3 sm:pt-4">
-              <div className="flex items-center gap-2 max-sm:pr-10 sm:items-start">
+              <div className="flex flex-wrap items-center gap-2 max-sm:pr-10 sm:items-start">
                 <div className="min-w-0 flex-1">
                   {/* The page-title step every page header uses: at text-lg
                       the inbox title sat 0.17px over the card title step on a
@@ -1148,6 +1149,11 @@ export default function MessagesPage() {
                   </p>
                 </div>
                 <PageContextualHelp defaultOpen={false} compact />
+                {/* The page's first block, as on every page (docs §146): Create,
+                    language, notifications and account as icons beside the
+                    title, where a top bar held them alone over the inbox.
+                    They wrap under the title when the column is narrow (§155). */}
+                {GLOBAL_TOOLS_PLACEMENT === 'page' ? <GlobalTools inline compact className="ms-auto hidden sm:flex" /> : null}
               </div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-1">
                 <Button

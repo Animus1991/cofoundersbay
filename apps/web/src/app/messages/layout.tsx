@@ -12,7 +12,9 @@ import MessagesLoading from './loading';
  */
 export default function MessagesLayout({ children }: { children: ReactNode }) {
   return (
-    <AppShellFrame fullHeight contentClassName="min-h-0">
+    // The inbox header holds Create, language, notifications and account, so
+    // the section needs no top bar (docs §155).
+    <AppShellFrame fullHeight toolsInPage contentClassName="min-h-0">
       <Suspense fallback={<MessagesLoading />}>{children}</Suspense>
     </AppShellFrame>
   );
