@@ -86,12 +86,23 @@ export function ProfileCompletionRing({
   );
 }
 
+/**
+ * The profile's completeness as one figure, by the fields' weights. The card
+ * below, the profile page and the "Complete profile" achievement all read it,
+ * so the editor's 83% is the achievement's 83/100 (it said 85, §164).
+ */
+export function completionPercent(fields: ProfileField[]): number {
+  const total = fields.reduce((sum, f) => sum + f.weight, 0);
+  const done = fields.filter((f) => f.completed).reduce((sum, f) => sum + f.weight, 0);
+  return total ? Math.round((done / total) * 100) : 0;
+}
+
 export function ProfileCompletionCard({ fields, className, compact = false }: ProfileCompletionProps) {
   const { completedCount, totalWeight, completedWeight, percentage, incompleteFields } = useMemo(() => {
     const completed = fields.filter((f) => f.completed);
     const totalW = fields.reduce((sum, f) => sum + f.weight, 0);
     const completedW = completed.reduce((sum, f) => sum + f.weight, 0);
-    const pct = Math.round((completedW / totalW) * 100);
+    const pct = completionPercent(fields);
     const incomplete = fields.filter((f) => !f.completed);
     return {
       completedCount: completed.length,

@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getAnalyticsAchievements, getLeaderboard, getMyXP, getMyBadges, type AnalyticsAchievement, type GamificationXPSummary, type GamificationBadge } from '@/lib/api';
+import { getAnalyticsAchievements, getLeaderboard, getMeProfile, getMyXP, getMyBadges, type AnalyticsAchievement, type GamificationXPSummary, type GamificationBadge } from '@/lib/api';
+import { calculateProfileCompletion, completionPercent } from '@/components/common/ProfileCompletion';
 import { ReputationSystem } from '@/components/gamification/ReputationSystem';
 import { UserBadges } from '@/components/gamification/UserBadges';
 import {
@@ -42,7 +43,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn, initialsOf } from '@/lib/utils';
-import { qk } from '@/lib/query-keys';
+import { qk, queryKeys } from '@/lib/query-keys';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { useDemoData } from '@/contexts/DemoDataContext';
@@ -144,7 +145,7 @@ const DEMO_ACHIEVEMENTS: Achievement[] = [
     progress: 1,
     total: 1,
     unlocked: true,
-    unlockedAt: new Date('2024-01-15'),
+    unlockedAt: new Date('2026-03-15'),
     rarity: 5,
   },
   {
@@ -184,7 +185,7 @@ const DEMO_ACHIEVEMENTS: Achievement[] = [
     progress: 1247,
     total: 1000,
     unlocked: true,
-    unlockedAt: new Date('2024-02-20'),
+    unlockedAt: new Date('2026-08-20'),
     rarity: 15,
   },
   {
@@ -198,7 +199,7 @@ const DEMO_ACHIEVEMENTS: Achievement[] = [
     progress: 156,
     total: 100,
     unlocked: true,
-    unlockedAt: new Date('2024-02-10'),
+    unlockedAt: new Date('2026-06-10'),
     rarity: 40,
   },
   {
@@ -354,7 +355,7 @@ function AchievementCard({ achievement, meterSlot = 0 }: { achievement: Achievem
             four items once made /achievements scroll sideways on a phone). */}
         <FactLine
           items={[
-            <span key="rarity">{achievement.rarity}% <BilingualText en={achievementsEn('have_this')} el={achievementsEl('have_this')} compact /></span>,
+            <BilingualText key="rarity" en={`${achievement.rarity}% of members have this`} el={`Το έχει το ${achievement.rarity}% των μελών`} compact />,
             achievement.unlocked && achievement.unlockedAt
               ? <BilingualText key="unlocked" en={`Unlocked ${new Date(achievement.unlockedAt).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })}`} el={`Ξεκλειδώθηκε ${new Date(achievement.unlockedAt).toLocaleDateString('el-GR', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })}`} compact />
               : null,
@@ -499,6 +500,17 @@ export default function AchievementsPage() {
   });
 
   const { showDemoData } = useDemoData();
+  // The sample "Complete profile" achievement counts the member's own profile
+  // with the editor's figure, instead of a fixed 85 beside the editor's 83%.
+  const { data: meProfile } = useQuery({
+    queryKey: queryKeys.me.profile(),
+    queryFn: getMeProfile,
+    staleTime: 5 * 60_000,
+    enabled: showDemoData,
+  });
+  const profilePct = meProfile?.profile
+    ? completionPercent(calculateProfileCompletion(meProfile.profile as unknown as Record<string, unknown>))
+    : null;
   const { data: board, isLoading: boardLoading, isError: boardError, isFetching: boardFetching, refetch: refetchBoard } = useQuery({
     queryKey: qk('gamification', 'leaderboard'),
     queryFn: () => getLeaderboard(10),
@@ -525,13 +537,14 @@ export default function AchievementsPage() {
   const achievements = useMemo(() => {
     // The sample list is the demo's; a member whose list failed to load sees
     // an empty list and the error, not someone else's unlocked achievements.
-    const list = rawAchievements ?? (showDemoData ? DEMO_ACHIEVEMENTS : []);
+    const sample = profilePct === null ? DEMO_ACHIEVEMENTS : DEMO_ACHIEVEMENTS.map((a) => (a.id === '10' ? { ...a, progress: profilePct, unlocked: profilePct >= 100 } : a));
+    const list = rawAchievements ?? (showDemoData ? sample : []);
     return (list ?? []).map((a, i) =>
       'tier' in a && 'points' in a && 'rarity' in a
         ? (a as unknown as Achievement)
         : apiToAchievement(a as AnalyticsAchievement, i),
     );
-  }, [rawAchievements, showDemoData]);
+  }, [rawAchievements, showDemoData, profilePct]);
 
   const stats: UserStats = useMemo(() => {
     const unlocked = achievements.filter((a) => a.unlocked).length;
@@ -788,7 +801,7 @@ export default function AchievementsPage() {
                 <UserStatsCard stats={stats} rank={board?.me?.rank ?? null} />
               </div>
               {activeTab === 'all' && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2" data-tour="achievements-list">
+              <div className="card-grid animate-in fade-in slide-in-from-bottom-2" data-tour="achievements-list">
                 {(listed.length > 0 || nextBadge) ? (
                   listed.map((achievement, index) => (
                     <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
@@ -804,7 +817,7 @@ export default function AchievementsPage() {
               )}
 
               {activeTab === 'unlocked' && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+              <div className="card-grid animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
                   filteredAchievements.map((achievement, index) => (
                     <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
@@ -820,7 +833,7 @@ export default function AchievementsPage() {
               )}
 
               {activeTab === 'locked' && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+              <div className="card-grid animate-in fade-in slide-in-from-bottom-2">
                 {(listed.length > 0 || nextBadge) ? (
                   listed.map((achievement, index) => (
                     <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
