@@ -141,7 +141,7 @@ export function SkillEvidencePanel({
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="min-w-0 break-words text-sm font-medium text-foreground">
                     {s.name}
-                    {levelOf(s.name) ? <span className="font-normal text-muted-foreground"> · <StatusText value={levelOf(s.name) as string} /></span> : null}
+                    {levelOf(s.name) ? <span className="ml-2 font-normal"><StatusText value={levelOf(s.name) as string} /></span> : null}
                   </span>
                   <span className="text-xs text-muted-foreground">{summary(s)}</span>
                 </div>

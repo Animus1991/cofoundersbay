@@ -61,6 +61,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { BilingualText } from '@/components/common/BilingualText';
+import { placeEl } from '@/lib/i18n/places';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { ContributionGraph } from '@/components/shared/ContributionGraph';
@@ -551,6 +552,11 @@ export default function ProfilePage() {
     },
   ];
 
+
+  // A time zone is its city ("Europe/Athens" → Athens), said in the reader's
+  // language, and left out when the place already names that city (§164).
+  const zoneCity = profile?.timezone?.includes('/') ? profile.timezone.split('/').pop()!.replace(/_/g, ' ') : null;
+  const sameCity = Boolean(zoneCity && profile?.location && profile.location.toLowerCase().includes(zoneCity.toLowerCase()));
   return (
     <AppShell
       rail={rail}
@@ -587,7 +593,7 @@ export default function ProfilePage() {
           }
           meta={[
             profile.location ? <><MapPin className="icon-sm" aria-hidden="true" />{profile.location}</> : null,
-            profile.timezone ? <><Clock className="icon-sm" aria-hidden="true" />{profile.timezone}</> : null,
+            zoneCity && !sameCity ? <><Clock className="icon-sm" aria-hidden="true" /><BilingualText en={zoneCity} el={placeEl(zoneCity)} compact /></> : null,
             profile.languages?.length ? <><Languages className="icon-sm" aria-hidden="true" />{profile.languages.join(', ')}</> : null,
             // It printed the current year for everyone ("Joined 2026" on a 2024
             // account); the profile carries its own date.
@@ -647,7 +653,7 @@ export default function ProfilePage() {
           const words = (v: unknown): string[] =>
             (Array.isArray(v) ? v : [v]).filter((x): x is string => typeof x === 'string' && x.trim() !== '');
           const lines: { en: string; el: string; text: string }[] = [
-            { en: 'What I am building', el: 'Τι χτίζω', text: words(rolePayload.startupName ?? rolePayload.companyName ?? rolePayload.projectName).join(', ') || (typeof rolePayload.stage === 'string' ? (statusEl(rolePayload.stage) ?? rolePayload.stage) : '') },
+            { en: 'What I am building', el: 'Τι χτίζω', text: words(rolePayload.startupName ?? rolePayload.companyName ?? rolePayload.projectName).join(', ') },
             { en: 'What I am looking for', el: 'Τι αναζητώ', text: words(rolePayload.lookingFor ?? rolePayload.rolesSought).map((v) => statusEl(v) ?? v).join(' · ') },
           ].filter((line) => line.text.trim() !== '');
           if (!lines.length) return null;
@@ -659,9 +665,6 @@ export default function ProfilePage() {
                   <span className="break-words first-letter:uppercase">{line.text}</span>
                 </p>
               ))}
-              <a href="#profile-details" className="card-meta inline-block font-medium text-primary-accessible hover:underline">
-                <BilingualText en="Full profile" el="Πλήρες προφίλ" compact />
-              </a>
             </div>
           );
         })()}
@@ -811,8 +814,10 @@ export default function ProfilePage() {
             const words = (v: unknown): string[] =>
               (Array.isArray(v) ? v : [v]).filter((x): x is string => typeof x === 'string' && x.trim() !== '');
             const shownBelow = profile.role === 'founder';
+            // Looking-for is the band's second line at the top of the body
+            // (it fell back to rolesSought there too); here it said the same
+            // roles a second time (§164).
             const cards: { labelEn: string; labelEl: string; values: string[] }[] = [
-              { labelEn: profileEn('looking_for'), labelEl: profileEl('looking_for'), values: words(p.lookingFor) },
               { labelEn: profileEn('startup_stage'), labelEl: profileEl('startup_stage'), values: shownBelow ? [] : words(p.stage) },
               { labelEn: profileEn('commitment'), labelEl: profileEl('commitment'), values: shownBelow ? [] : words(p.commitment) },
               { labelEn: profileEn('compensation'), labelEl: profileEl('compensation'), values: words(p.compensation) },
