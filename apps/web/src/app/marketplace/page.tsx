@@ -463,7 +463,7 @@ export default function MarketplacePage() {
             sample items" above an empty page. */}
         {showingSamples && (
           <SampleDataNotice
-            surface="Marketplace"
+            surface="Services marketplace"
             detail="No provider has listed a service yet, so these cards are sample experts that show the layout."
             askAiPrompt={ASK.marketplaceSample}
           />

@@ -245,7 +245,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     section: 'Εργασία',
   },
   '/marketplace': {
-    title: 'Κατάλογος υπηρεσιών',
+    title: 'Αγορά υπηρεσιών',
     description:
       'Περιήγηση σε παρόχους νομικών, σχεδιασμού, growth και operations.',
     section: 'Πόροι',

@@ -1122,6 +1122,9 @@ const el: Record<string, string> = {
   'Unknown reply style.': 'Άγνωστο ύφος απαντήσεων.',
   'Say which style, or emoji on or off.': 'Πείτε ποιο ύφος, ή αν θέλετε emoji ή όχι.',
   'That is already how the assistant answers.': 'Έτσι απαντά ήδη ο βοηθός.',
+  // The services page's name in its sample note, as its title reads (§162);
+  // a bare "Marketplace" stays English, where it is an industry.
+  'Services marketplace': 'Αγορά υπηρεσιών',
 };
 
 const es: Record<string, string> = {
