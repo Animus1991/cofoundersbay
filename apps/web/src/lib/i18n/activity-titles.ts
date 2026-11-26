@@ -9,7 +9,8 @@ const milestoneTitleEl = (title: string) => PREVIEW_MILESTONE_EL[title]?.title ?
  * through, except preview milestones, which have a Greek title of their own.
  */
 const TITLE_TEMPLATES: Array<[RegExp, (...parts: string[]) => string]> = [
-  [/^(.+) wants to connect$/, (name) => `${name} θέλει να συνδεθεί`],
+  // «θέλει να συνδεθείτε»: with you; «να συνδεθεί» left it unsaid (§165).
+  [/^(.+) wants to connect$/, (name) => `${name} θέλει να συνδεθείτε`],
   [/^New match: (.+)$/, (name) => `Νέα αντιστοίχιση: ${name}`],
   [/^(.+) and (.+) connected$/, (a, b) => `${a} και ${b} συνδέθηκαν`],
   [/^Milestone completed: (.+)$/, (title) => `Ολοκληρώθηκε ορόσημο: ${milestoneTitleEl(title)}`],
