@@ -11,10 +11,11 @@ describe('calm, actionable empty states', () => {
     expect(screen.getByText('No results / Δεν υπάρχουν αποτελέσματα')).toBeTruthy();
     expect(container.querySelector('svg[data-empty-illustration="search"]')).not.toBeNull();
     expect(container.firstElementChild?.className).toContain('text-center');
-    // B1.4: the illustration sits on a h-40 rounded-full tinted disc.
+    // B1.4: the illustration sits on a rounded-full tinted disc, 96px since
+    // docs §156 so the sentence and the action lead.
     const disc = container.querySelector('[data-keep-icon]') as HTMLElement;
-    expect(disc.className).toContain('h-40');
-    expect(disc.className).toContain('w-40');
+    expect(disc.className).toContain('h-24');
+    expect(disc.className).toContain('w-24');
     expect(disc.className).toContain('rounded-full');
     expect(disc.className).toContain('bg-status-info-bg');
     expect(container.innerHTML).not.toMatch(/animate-(float|pulse|spin|bounce)/);

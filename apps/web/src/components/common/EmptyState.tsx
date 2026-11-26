@@ -61,11 +61,14 @@ export function EmptyState({
           <div
             data-keep-icon=""
             className={cn(
-              'flex h-40 w-40 shrink-0 items-center justify-center rounded-full text-muted-foreground',
+              // 96px, from 160: the disc was the largest thing in the empty
+              // state, above the sentence and the one action that are its
+              // point (docs §156).
+              'flex h-24 w-24 shrink-0 items-center justify-center rounded-full text-muted-foreground',
               DISC_TONE[illustration],
             )}
           >
-            <div className="h-28 w-28">
+            <div className="h-16 w-16">
               <EmptyIllustration type={illustration} />
             </div>
           </div>
