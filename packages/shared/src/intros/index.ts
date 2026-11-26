@@ -157,7 +157,9 @@ export const INTRO_RELATION_COPY: Record<IntroRelation, { en: string; el: string
 };
 
 export const INTRO_STATUS_COPY: Record<IntroStatus | 'not_forwarded', { en: string; el: string }> = {
-  pending: { en: 'Waiting on the intermediary', el: 'Περιμένει τον ενδιάμεσο' },
+  // «το ενδιάμεσο πρόσωπο»: «τον ενδιάμεσο» named a specific person in the
+  // masculine (docs §54 rule, §162).
+  pending: { en: 'Waiting on the intermediary', el: 'Περιμένει το ενδιάμεσο πρόσωπο' },
   forwarded: { en: 'Forwarded', el: 'Προωθήθηκε' },
   declined: { en: 'Declined', el: 'Απορρίφθηκε' },
   not_forwarded: { en: 'Not forwarded', el: 'Δεν προωθήθηκε' },

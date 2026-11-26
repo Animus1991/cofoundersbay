@@ -54,6 +54,9 @@ export function AskIntroDialog({ open, onOpenChange, targetId, targetName }: { o
   const [note, setNote] = useState('');
   const [problem, setProblem] = useState<{ en: string; el: string } | null>(null);
   const data = paths.data;
+  // The button names the person it goes to: «Αποστολή στον ενδιάμεσο» named
+  // whoever was chosen in the masculine (docs §54 rule, §162).
+  const chosen = data?.paths.find((p) => p.intermediary.id === intermediaryId)?.intermediary.displayName;
 
   useEffect(() => {
     if (!data) return;
@@ -151,7 +154,9 @@ export function AskIntroDialog({ open, onOpenChange, targetId, targetName }: { o
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           {ready ? (
             <Button type="submit" form="ask-intro-form" disabled={!intermediaryId || !cardId || !note.trim() || send.isPending}>
-              <BilingualText en="Send to the intermediary" el="Αποστολή στον ενδιάμεσο" compact />
+              {chosen
+                ? <BilingualText en={`Send to ${chosen}`} el={`Αποστολή προς ${chosen}`} compact />
+                : <BilingualText en="Send" el="Αποστολή" compact />}
             </Button>
           ) : null}
         </DialogFooter>

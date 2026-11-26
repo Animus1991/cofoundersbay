@@ -10,6 +10,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailStats } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
+import { Quoted } from '@/components/common/Quoted';
 import { EmptyState } from '@/components/common/EmptyState';
 import { NetworkTabs } from '@/components/network/NetworkTabs';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -50,6 +51,21 @@ const statusTone = (status: Intro['status']) =>
       ? 'border-primary-muted bg-primary-subtle text-foreground'
       : 'border-border bg-muted text-muted-foreground';
 
+/**
+ * The card's state for its reader, short enough for the head's right column
+ * and in no one's gender. The long forms were cut to «Περιμένει την …» on a
+ * card a quarter of the page wide, and the requester's «Περιμένει τον
+ * ενδιάμεσο» named the intermediary in the masculine; the path line under
+ * the name already says who is in the middle (§162).
+ */
+function introState(intro: Intro): { en: string; el: string } {
+  if ((intro.role === 'intermediary' && intro.status === 'pending') || (intro.role === 'target' && intro.status === 'forwarded')) {
+    return { en: 'Waiting on you', el: 'Σας περιμένει' };
+  }
+  if (intro.status === 'pending') return { en: 'Waiting', el: 'Σε αναμονή' };
+  return INTRO_STATUS_COPY[intro.status];
+}
+
 function IntroCard({
   intro,
   highlight,
@@ -62,14 +78,14 @@ function IntroCard({
   /** A form that replaces the actions while it is open (the forward note). */
   editor?: React.ReactNode;
 }) {
-  // The shared copy names who it waits on; when that is the reader, say so.
-  const status =
-    intro.role === 'intermediary' && intro.status === 'pending'
-      ? { en: 'Waiting for your decision', el: 'Περιμένει την απόφασή σας' }
-      : intro.role === 'target' && intro.status === 'forwarded'
-        ? { en: 'Waiting for your answer', el: 'Περιμένει την απάντησή σας' }
-        : INTRO_STATUS_COPY[intro.status];
+  const status = introState(intro);
   const toReq = relationText(intro.toRequester);
+  // Who the relations are with, by name ("you" for the reader): «με τον
+  // ιδρυτή» named every founder in the masculine (docs §54 rule, §162).
+  const withWhom = (who: 'requester' | 'target') =>
+    intro.role === who ? { en: 'you', el: 'εσάς' } : { en: intro[who].displayName, el: intro[who].displayName };
+  const req = withWhom('requester');
+  const tgt = withWhom('target');
   const toTgt = relationText(intro.toTarget);
   // The person the card is about, for its reader: the one asked about when
   // the reader asked, otherwise the founder who asked.
@@ -95,7 +111,7 @@ function IntroCard({
             )}
             aside={(
               <Badge variant="outline" className={statusTone(intro.status)}>
-                <BilingualText en={status.en} el={status.el} compact />
+                <BilingualText en={status.en} el={status.el} compact wrap />
               </Badge>
             )}
           />
@@ -119,7 +135,7 @@ function IntroCard({
             {intro.card?.title || <BilingualText en="need card" el="κάρτα ανάγκης" compact />}
           </Link>
         </p>
-        <blockquote className="card-body italic text-foreground/80">“{intro.note}”</blockquote>
+        <blockquote className="card-body italic text-foreground/80"><Quoted>{intro.note}</Quoted></blockquote>
         {intro.forwardNote ? (
           <p className="card-body text-muted-foreground">
             <BilingualText en={`${intro.intermediary.displayName} adds:`} el={`Σημείωση από ${intro.intermediary.displayName}:`} compact /> {intro.forwardNote}
@@ -127,8 +143,8 @@ function IntroCard({
         ) : null}
         <p className="text-xs text-muted-foreground">
           <BilingualText
-            en={`How it connects: ${toReq.en || '—'} to the founder, ${toTgt.en || '—'} to the person introduced.`}
-            el={`Πώς συνδέονται: ${toReq.el || '—'} με τον ιδρυτή, ${toTgt.el || '—'} με το πρόσωπο που συστήνεται.`}
+            en={`How it connects: ${toReq.en || '—'} with ${req.en}, ${toTgt.en || '—'} with ${tgt.en}.`}
+            el={`Πώς συνδέονται: ${toReq.el || '—'} με ${req.el}, ${toTgt.el || '—'} με ${tgt.el}.`}
             wrap
           />
         </p>
@@ -267,13 +283,16 @@ function IntrosContent() {
     rowCommand('decline_intro', 'Not forward an introduction', 'Μη προώθηση γνωριμίας', waitingOnMe, confirmDecline, 'Nothing waits for you to forward.', 'Δεν περιμένει τίποτα προώθηση από εσάς.'),
     rowCommand('accept_intro', 'Accept an introduction (answers their need card)', 'Αποδοχή γνωριμίας (απαντά στην κάρτα ανάγκης)', forMe, (i) => run('accept', i), 'No introduction waits for your answer.', 'Καμία γνωριμία δεν περιμένει την απάντησή σας.'),
     rowCommand('not_now_intro', 'Say not now to an introduction', 'Όχι τώρα σε μια γνωριμία', forMe, (i) => run('not_now', i), 'No introduction waits for your answer.', 'Καμία γνωριμία δεν περιμένει την απάντησή σας.'),
-    rowCommand('withdraw_intro', 'Withdraw an introduction you asked for', 'Απόσυρση αιτήματος γνωριμίας', sent.filter((i) => i.status === 'pending'), (i) => run('withdraw', i), 'None of your requests is still waiting on the intermediary.', 'Κανένα αίτημά σας δεν περιμένει πια τον ενδιάμεσο.'),
+    rowCommand('withdraw_intro', 'Withdraw an introduction you asked for', 'Απόσυρση αιτήματος γνωριμίας', sent.filter((i) => i.status === 'pending'), (i) => run('withdraw', i), 'None of your requests is still waiting on the intermediary.', 'Κανένα αίτημά σας δεν περιμένει πια το ενδιάμεσο πρόσωπο.'),
   ]);
-  const line = (i: Intro) => `${i.requester.displayName} → ${i.intermediary.displayName} → ${i.target.displayName}: ${i.card.title} (${INTRO_STATUS_COPY[i.status].en})`;
+  // The card's words, parts joined by " · " and the state last: a long row
+  // loses its middle, never its last part (page-controls, §162).
+  const line = (i: Intro) => `${i.requester.displayName} → ${i.intermediary.displayName} → ${i.target.displayName} · ${i.card.title} · ${introState(i).en}`;
+  const lineEl = (i: Intro) => `${i.requester.displayName} → ${i.intermediary.displayName} → ${i.target.displayName} · ${i.card.title} · ${introState(i).el}`;
   usePageList([
-    { id: 'intros_to_forward', labelEn: 'Introductions to forward', labelEl: 'Γνωριμίες για προώθηση', rows: tab === 'forward' ? toForward.map(line) : undefined },
-    { id: 'intros_for_you', labelEn: 'Introductions for you', labelEl: 'Γνωριμίες για εσάς', rows: tab === 'received' ? received.map(line) : undefined },
-    { id: 'intros_sent', labelEn: 'Introductions you asked for', labelEl: 'Γνωριμίες που ζητήσατε', rows: tab === 'sent' ? sent.map(line) : undefined },
+    { id: 'intros_to_forward', labelEn: 'Introductions to forward', labelEl: 'Γνωριμίες για προώθηση', rows: tab === 'forward' ? toForward.map(line) : undefined, rowsEl: tab === 'forward' ? toForward.map(lineEl) : undefined },
+    { id: 'intros_for_you', labelEn: 'Introductions for you', labelEl: 'Γνωριμίες για εσάς', rows: tab === 'received' ? received.map(line) : undefined, rowsEl: tab === 'received' ? received.map(lineEl) : undefined },
+    { id: 'intros_sent', labelEn: 'Introductions you asked for', labelEl: 'Γνωριμίες που ζητήσατε', rows: tab === 'sent' ? sent.map(line) : undefined, rowsEl: tab === 'sent' ? sent.map(lineEl) : undefined },
   ]);
 
   const rail: PageRailSection[] = useMemo(

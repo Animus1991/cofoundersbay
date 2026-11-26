@@ -2335,7 +2335,7 @@ export const ACTION_DECLARATIONS = [
       },
     },
     auditSubject: { param: 'targetId', entityType: 'user' },
-    confirmLabel: { en: 'Send to the intermediary', el: 'Αποστολή στον ενδιάμεσο' },
+    confirmLabel: { en: 'Send to the intermediary', el: 'Αποστολή στο ενδιάμεσο πρόσωπο' },
   },
   {
     id: 'set_open_to',
