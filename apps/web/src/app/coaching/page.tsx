@@ -193,7 +193,7 @@ function LocalWhen({ iso, variant }: { iso: string; variant: 'card' | 'banner' }
       setLabel(primary === 'el' ? `${day} στις ${time}` : `${day} at ${time}`);
       return;
     }
-    setLabel(d.toLocaleDateString(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
+    setLabel(d.toLocaleDateString(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }));
   }, [iso, variant, primary]);
 
   return <span>{label}</span>;
@@ -253,8 +253,14 @@ function SessionCard({ session }: { session: CoachingSession }) {
         <CardHead
           mark={<SessionDateTile date={new Date(session.scheduledAt)} face={{ src: session.coachAvatar, name: session.coachName }} />}
           title={session.title}
-          subtitle={<BilingualText en={`With ${session.coachName} · ${session.coachTitle}`} el={`Με ${session.coachName} · ${session.coachTitle}`} compact wrap />}
-          aside={(
+          subtitle={(
+            <>
+              <BilingualText en={`With ${session.coachName}`} el={`Με ${session.coachName}`} compact />
+              {session.coachTitle ? <> · <span>{session.coachTitle}</span></> : null}
+            </>
+          )}
+          // A completed session sits under "Completed", which says it already.
+          aside={session.status === 'completed' ? undefined : (
             <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium', status.color)}>
               <StatusIcon className="icon-sm" />
               <BilingualText en={status.label} el={status.labelEl} compact />
@@ -617,6 +623,7 @@ export default function CoachingPage() {
         booking={row.u.booking}
         userId={userId}
         showSource
+        showStatus={row.u.status !== 'completed'}
         isActing={bookingActing}
         onConfirm={() => void cancelBooking(row.u.id)}
         onDecline={() => void cancelBooking(row.u.id)}

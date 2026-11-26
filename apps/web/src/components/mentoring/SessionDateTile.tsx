@@ -16,7 +16,7 @@ export function SessionDateTile({ date, face }: {
 }) {
   const fmtDate = useDateFormat();
   return (
-    <div data-card-mark="" className="relative flex h-10 w-10 flex-col items-center justify-center self-start rounded-xl bg-primary/5 leading-none">
+    <div data-card-mark="" className="relative flex h-12 w-12 flex-col items-center justify-center self-start rounded-xl bg-primary/5 leading-none">
       <span className="text-2xs uppercase text-muted-foreground">
         {fmtDate(date, { month: 'short' })}
       </span>

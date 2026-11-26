@@ -57,6 +57,7 @@ export function BookingCard({
   onCancel,
   isActing,
   showSource = false,
+  showStatus = true,
 }: {
   booking: MentorBookingItem;
   userId: string | null;
@@ -66,6 +67,8 @@ export function BookingCard({
   isActing: boolean;
   /** Merged lists tag each row with the store it came from. */
   showSource?: boolean;
+  /** Off under a heading that already says the state ("Completed"). */
+  showStatus?: boolean;
 }) {
   const sayOne = useBilingualString();
   const isMentor = booking.mentorId === userId;
@@ -106,7 +109,7 @@ export function BookingCard({
               >{other.displayName}</Link></PersonHovercard>
               <span className="text-xs font-normal text-muted-foreground">
                 {isMentor
-                  ? <BilingualText en="(mentee)" el="(καθοδηγούμενος)" compact />
+                  ? <BilingualText en="(mentee)" el="(καθοδηγούμενο μέλος)" compact />
                   : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
               </span>
             </span>
@@ -116,20 +119,15 @@ export function BookingCard({
               <LocalTime value={start} />
               {' – '}
               <LocalTime value={end} />
-            </>
-          )}
-          aside={(
-            <>
-              <StatusText value={booking.status} tone={STATUS_TONES[booking.status]} />
-              {/* Where the session lives, after a dot: two pills side by side
-                  read as one phrase ("Confirmed Booking"; docs §70). */}
+              {/* Where the session lives, beside its time: after the state
+                  pill it wrapped alone onto a line of its own («· Κράτηση»),
+                  and two pills side by side read as one phrase (docs §70). */}
               {showSource && (
-                <span className="text-xs text-muted-foreground">
-                  · <BilingualText en="Booking" el="Κράτηση" compact />
-                </span>
+                <> · <BilingualText en="Booking" el="Κράτηση" compact /></>
               )}
             </>
           )}
+          aside={showStatus ? <StatusText value={booking.status} tone={STATUS_TONES[booking.status]} /> : undefined}
         />
         <div>
             {isMentor && booking.status === 'requested' && (
