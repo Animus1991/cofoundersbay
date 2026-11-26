@@ -267,7 +267,12 @@ export default function LegalHubPage() {
                     <span className="font-medium"><BilingualText en="Decide first:" el="Αποφασίστε πρώτα:" compact /></span>{' '}
                     {say(t.decide)}
                   </p>
-                  <CardFoot meta={<span className="text-2xs text-muted-foreground">{t.stages.map((stage) => say({ en: projectEn(PROJECT_STAGE_KEYS[stage]), el: projectEl(PROJECT_STAGE_KEYS[stage]) })).join(' · ')}</span>}>
+                  {/* A template for all five stages says so in two words: the
+                      list of five pushed the card's button onto a line of its
+                      own (Mutual NDA, §163). */}
+                  <CardFoot meta={<span className="text-2xs text-muted-foreground">{t.stages.length >= 5
+                    ? say({ en: projectEn('stage_all'), el: projectEl('stage_all') })
+                    : t.stages.map((stage) => say({ en: projectEn(PROJECT_STAGE_KEYS[stage]), el: projectEl(PROJECT_STAGE_KEYS[stage]) })).join(' · ')}</span>}>
                     <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => ask(draftPrompt(t))} data-testid={`legal-draft-${t.id}`}>
                       <Sparkles className="icon-sm" aria-hidden="true" />
                       <BilingualText en="Draft with assistant" el="Σύνταξη με τον βοηθό" compact />
