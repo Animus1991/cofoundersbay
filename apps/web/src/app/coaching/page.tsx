@@ -259,8 +259,10 @@ function SessionCard({ session }: { session: CoachingSession }) {
               {session.coachTitle ? <> · <span>{session.coachTitle}</span></> : null}
             </>
           )}
-          // A completed session sits under "Completed", which says it already.
-          aside={session.status === 'completed' ? undefined : (
+          // Only a state the heading does not already say: a scheduled
+          // session sits under "Upcoming" (the pill was cut to
+          // «Προγραμματισμ…»), a completed one under "Completed" (§163).
+          aside={session.status === 'scheduled' || session.status === 'completed' ? undefined : (
             <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium', status.color)}>
               <StatusIcon className="icon-sm" />
               <BilingualText en={status.label} el={status.labelEl} compact />
