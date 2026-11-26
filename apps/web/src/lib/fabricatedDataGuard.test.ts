@@ -73,4 +73,24 @@ describe('no fabricated data', () => {
       expect(reason.length, `${file} needs a reason`).toBeGreaterThan(10);
     }
   });
+
+  /*
+   * The same invention without the word "random": /compare's chart gave each
+   * person five dimension scores as their overall score plus
+   * `Math.sin(seed) * 10`, under labels the engine never scored (§162).
+   * `Math.sin` is for geometry, and the files that use it say so.
+   */
+  it('keeps Math.sin() to geometry', () => {
+    const GEOMETRY: Record<string, string> = {
+      'lib/autoLayout.ts': 'places diagram nodes around a circle',
+    };
+    const offenders = sourceFiles(SRC)
+      .filter((file) => readFileSync(file, 'utf8').split('\n').some((line) => {
+        const trimmed = line.trim();
+        return !(trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) && line.includes('Math.sin(');
+      }))
+      .map((file) => relative(SRC, file).replaceAll('\\', '/'))
+      .filter((rel) => !(rel in GEOMETRY));
+    expect(offenders).toEqual([]);
+  });
 });

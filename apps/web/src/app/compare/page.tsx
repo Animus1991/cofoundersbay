@@ -25,10 +25,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
-import { getPublicProfile, getMatchBreakdown, sendConnectionRequest } from '@/lib/api';
+import { getPublicProfile, getMatchBreakdown, sendConnectionRequest, type MatchBreakdownAxis } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { StatusText } from '@/components/common/StatusText';
@@ -52,6 +53,8 @@ type CompareProfile = {
   availability?: string;
   languages?: string[];
   matchScore?: number;
+  /** The engine's dimensions for this person and the reader (the chart's bars). */
+  axes?: MatchBreakdownAxis[];
   connectionStatus?: 'none' | 'pending' | 'connected';
 };
 
@@ -99,7 +102,7 @@ function ProfileColumn({
             size="icon"
             onClick={onRemove}
             className="h-8 w-8 text-muted-foreground hover:text-destructive-accessible"
-            aria-label="Remove from comparison"
+            aria-label={bilingualAria('Remove from comparison', 'Αφαίρεση από τη σύγκριση')}
           >
             <X className="icon-sm" aria-hidden="true" />
           </Button>
@@ -110,7 +113,7 @@ function ProfileColumn({
       {profile.matchScore !== undefined && (
         <p className="text-xs text-muted-foreground">
           <span className="card-body font-semibold tabular-nums text-primary-accessible">{profile.matchScore}%</span>{' '}
-          <BilingualText en="Match Score" el="Βαθμός ταιριάσματος" compact />
+          <BilingualText en="match" el="αντιστοίχιση" compact />
         </p>
       )}
 
@@ -178,7 +181,7 @@ function AddProfileSlot({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-secondary/20 p-8 transition-colors hover:border-primary/40 hover:bg-secondary/40 min-h-48 sm:min-h-[400px]"
+      className="flex min-h-48 flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-secondary/20 p-8 transition-colors hover:border-primary/40 hover:bg-secondary/40"
     >
       <div className="rounded-full bg-primary/10 p-4 mb-3">
         <Plus className="icon-xl text-primary-accessible" />
@@ -285,6 +288,7 @@ export default function ComparePage() {
               availability: typeof rolePayload.availability === 'string' ? rolePayload.availability : undefined,
               languages: profile.languages ?? undefined,
               matchScore: breakdown?.overall?.score,
+              axes: breakdown?.breakdown ?? [],
               connectionStatus: 'none' as const,
             } as CompareProfile;
           } catch {
@@ -296,6 +300,8 @@ export default function ComparePage() {
     },
     enabled: profileIds.length > 0,
   });
+
+  const columns = Math.min(MAX_PROFILES, profileIds.length + (profileIds.length < MAX_PROFILES ? 1 : 0));
 
   const updateUrl = (ids: string[]) => {
     const params = new URLSearchParams();
@@ -418,13 +424,14 @@ export default function ComparePage() {
         {/* Profile Columns */}
         {profileIds.length > 0 && (
           // One column on a phone; side by side from the tablet up, so a
-          // compared card is never squeezed to a sliver at 390px.
+          // compared card is never squeezed to a sliver at 390px. The add
+          // slot counts as a column: with three people it went alone into a
+          // second row, a dashed box 400px tall under the comparison (§162).
           <div className={cn(
             'grid grid-cols-1 gap-6',
-            profileIds.length === 1 && 'max-w-md',
-            profileIds.length === 2 && 'sm:grid-cols-2',
-            profileIds.length === 3 && 'sm:grid-cols-2 lg:grid-cols-3',
-            profileIds.length === 4 && 'sm:grid-cols-2 xl:grid-cols-4',
+            columns === 2 && 'sm:grid-cols-2 max-w-4xl',
+            columns === 3 && 'sm:grid-cols-2 lg:grid-cols-3',
+            columns === 4 && 'sm:grid-cols-2 xl:grid-cols-4',
           )}>
             {isLoading ? (
               Array.from({ length: profileIds.length }).map((_, i) => (

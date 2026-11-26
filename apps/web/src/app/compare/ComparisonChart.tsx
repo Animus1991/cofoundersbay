@@ -6,20 +6,16 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3 } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { matchAxisEl } from '@/lib/i18n/strings-matches';
+import type { MatchBreakdownAxis } from '@/lib/api';
 
 type CompareProfileMin = {
   id: string;
   displayName: string;
-  matchScore?: number;
+  /** The engine's own dimensions for this person and the reader; empty when it has none. */
+  axes?: MatchBreakdownAxis[];
 };
-
-const COMPARISON_DIMENSIONS = [
-  { key: 'skills',        label: 'Skills Match' },
-  { key: 'stage',         label: 'Stage Fit' },
-  { key: 'industry',      label: 'Industry Overlap' },
-  { key: 'location',      label: 'Location' },
-  { key: 'availability',  label: 'Availability' },
-];
 
 const COLORS = [
   'hsl(var(--primary))',
@@ -28,31 +24,46 @@ const COLORS = [
   'hsl(var(--chart-4))',
 ];
 
-export function ComparisonChart({ profiles }: { profiles: CompareProfileMin[] }) {
-  const data = COMPARISON_DIMENSIONS.map((dim) => {
-    const entry: Record<string, string | number> = { dimension: dim.label };
+/**
+ * Each person's match with the reader, dimension by dimension, as the
+ * matching engine scored it (`/recommendations/vs/:id`, the breakdown
+ * /matches/compare shows). The bars used to be the overall score plus a
+ * `Math.sin` wiggle under five labels the engine never scored ("Skills
+ * Match", "Stage Fit"…): invented numbers on the one chart meant to tell
+ * people apart. A dimension a person was not scored on has no bar, and with
+ * no breakdown at all there is no chart (§162).
+ */
+export function dimensionRows(profiles: CompareProfileMin[], say: (en: string, el: string) => string) {
+  const axes = Array.from(
+    new Map(profiles.flatMap((p) => p.axes ?? []).map((axis) => [axis.key, axis.label] as const)).entries(),
+  );
+  return axes.map(([key, label]) => {
+    const entry: Record<string, string | number | null> = { dimension: say(label, matchAxisEl(label) ?? label) };
     profiles.forEach((p, i) => {
-      const base = p.matchScore ?? 50;
-      const seed = i * 7 + dim.key.charCodeAt(0);
-      const variance = Math.round(Math.sin(seed) * 10);
-      entry[`profile${i}`] = Math.max(0, Math.min(100, base + variance));
+      entry[`profile${i}`] = p.axes?.find((a) => a.key === key)?.score ?? null;
     });
     return entry;
   });
+}
+
+export function ComparisonChart({ profiles }: { profiles: CompareProfileMin[] }) {
+  const sayOne = useBilingualString();
+  const data = dimensionRows(profiles, sayOne);
+  if (!data.length) return null;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="icon-md text-muted-foreground" aria-hidden="true" />
-          <BilingualText en="Comparison overview" el="Επισκόπηση σύγκρισης" compact />
+          <BilingualText en="Match by dimension" el="Αντιστοίχιση ανά διάσταση" compact />
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={250}>
+        <ResponsiveContainer width="100%" height={Math.max(250, data.length * 56)}>
           <BarChart data={data} layout="vertical">
             <XAxis type="number" domain={[0, 100]} />
-            <YAxis type="category" dataKey="dimension" width={100} tick={{ fontSize: 12 }} />
+            <YAxis type="category" dataKey="dimension" width={150} tick={{ fontSize: 12 }} />
             <Tooltip />
             {/* The legend names on the caption step, never louder than the
                 card's title (recharts sets them at the root size). */}
