@@ -53,7 +53,7 @@ import { HomeToday } from '@/components/dashboard/HomeToday';
 import { formatFee } from '@/lib/mentor-fee';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { homeSnapshot, mentorHomePriority } from '@/lib/home-snapshot';
-import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { usePageControls, usePageList } from '@/lib/page-controls';
 
 type MenteeRow = { id: string; name: string; startup: string | null; sessionsCompleted: number; avatarUrl: string | null };
@@ -153,6 +153,10 @@ export default function MentorDashboard() {
   const [nowMs] = useState(() => Date.now());
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
+  // Decimals in the reader's own form: «4.8» and «2.3 ώρες» on a Greek page (§166).
+  const { primary } = useLanguagePreference();
+  const decimal = (n: number, lang: 'en' | 'el' = primary) =>
+    n.toLocaleString(lang === 'el' ? 'el-GR' : 'en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
 
   const { data: profile } = useQuery({
     queryKey: queryKeys.me.profile(),
@@ -273,7 +277,7 @@ export default function MentorDashboard() {
     totalSessions: stats?.totalSessions ?? relationships.reduce((sum, r) => sum + r.totalSessions, 0),
     completedMentorships: stats?.completedMentorships ?? relationships.filter((r) => r.status === 'completed').length,
     upcomingSessions: upcomingAll.length,
-    avgRating: averageRating == null ? '\u2014' : averageRating.toFixed(1),
+    avgRating: averageRating == null ? '\u2014' : averageRating.toLocaleString(primary === 'el' ? 'el-GR' : 'en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
     hoursThisMonth: month ? Math.round((month.paidMinutes / 60) * 10) / 10 : null,
     pendingThisMonth: month?.pending ?? 0,
     earningsThisMonth: month ? formatFee(month.amount) : null,
@@ -403,7 +407,7 @@ export default function MentorDashboard() {
             labelEl="Ενεργοί καθοδηγούμενοι"
             value={!menteesKnown || (relFailed && !stats) ? '\u2014' : mentorStats.activeMentees}
             caption={!menteesKnown || (relFailed && !stats) ? undefined : mentorStats.completedMentorships ? `${mentorStats.completedMentorships} completed before` : 'In progress now'}
-            captionEl={!menteesKnown || (relFailed && !stats) ? undefined : mentorStats.completedMentorships ? `${mentorStats.completedMentorships} ολοκληρωμένες πριν` : 'Σε εξέλιξη τώρα'}
+            captionEl={!menteesKnown || (relFailed && !stats) ? undefined : mentorStats.completedMentorships ? (mentorStats.completedMentorships === 1 ? '1 ολοκληρώθηκε νωρίτερα' : `${mentorStats.completedMentorships} ολοκληρώθηκαν νωρίτερα`) : 'Σε εξέλιξη τώρα'}
             href="/mentor/mentees"
           />
           <MetricTile
@@ -422,8 +426,8 @@ export default function MentorDashboard() {
             label="Earnings this month"
             labelEl="Έσοδα μήνα"
             value={mentorStats.earningsThisMonth ?? '\u2014'}
-            caption={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth}h paid${mentorStats.pendingThisMonth ? ` · ${mentorStats.pendingThisMonth} pending` : ''}` : 'Paid sessions appear on Earnings'}
-            captionEl={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth} ώρες πληρωμένες${mentorStats.pendingThisMonth ? ` · ${mentorStats.pendingThisMonth} σε εκκρεμότητα` : ''}` : 'Οι πληρωμένες συνεδρίες εμφανίζονται στα Έσοδα'}
+            caption={mentorStats.hoursThisMonth != null ? `${decimal(mentorStats.hoursThisMonth, 'en')}h paid${mentorStats.pendingThisMonth ? ` · ${mentorStats.pendingThisMonth} pending` : ''}` : 'Paid sessions appear on Earnings'}
+            captionEl={mentorStats.hoursThisMonth != null ? `${decimal(mentorStats.hoursThisMonth, 'el')} ώρες πληρωμένες${mentorStats.pendingThisMonth ? ` · ${mentorStats.pendingThisMonth} σε εκκρεμότητα` : ''}` : 'Οι πληρωμένες συνεδρίες εμφανίζονται στα Έσοδα'}
             href="/mentor/earnings"
           />
           <MetricTile

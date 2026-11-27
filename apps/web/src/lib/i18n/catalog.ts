@@ -1131,6 +1131,10 @@ const el: Record<string, string> = {
   'sales partnerships': 'συνεργασίες πωλήσεων',
   'Co-founder cards': 'Κάρτες συνιδρυτών',
   'Fundraising mentors': 'Μέντορες για χρηματοδότηση',
+  // The mentor demo's requests (preview-api), English among Greek cards (§166).
+  'We are pricing a climate-fintech product for SMEs and keep undercharging. Could we talk through how you priced Harbor?': 'Τιμολογούμε ένα προϊόν climate-fintech για μικρομεσαίες επιχειρήσεις και χρεώνουμε συνεχώς λιγότερα απ’ όσο πρέπει. Μπορούμε να δούμε πώς τιμολογήσατε το Harbor;',
+  'Two-sided marketplace, 40 suppliers live, buyers are slow to come back. Looking for help on retention before our seed.': 'Αγορά δύο πλευρών, 40 προμηθευτές σε λειτουργία, οι αγοραστές αργούν να επιστρέψουν. Ζητάμε βοήθεια στη διατήρηση πριν από τον γύρο seed.',
+  'Logistics SaaS, first ten customers. I would value a monthly session on pricing and the first sales hire.': 'SaaS για logistics, οι πρώτοι δέκα πελάτες. Θα με βοηθούσε μια μηνιαία συνεδρία για την τιμολόγηση και την πρώτη πρόσληψη στις πωλήσεις.',
 };
 
 const es: Record<string, string> = {

@@ -93,6 +93,9 @@ export function partOfDay(hour: number): Part {
  *   with its `G` number (`YourPagesRow`, docs §107).
  */
 export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = true, plain = false, greeting = true, hero = false, band = false, purposeEn, purposeEl }: { /** Off where the page's own title already greets the reader (/home). */ greeting?: boolean; role: HomeRole; name?: string | null; lead?: Part; followUpsDue?: number; /** Off where the page ranks what waits itself (HomeToday). */ showWaiting?: boolean; /** Only the question box: the shortcuts live in the page's tools (docs §116). */ plain?: boolean; /** The Parea method: a solid brand card — greeting, one line, the box, three intents, the role's glyph well (docs §131.2, §133.8). */ hero?: boolean; /** The role overview's own look: a tinted band — the page's title as the overline, greeting, lead, the one-row ask pill (docs §135 A4). */ band?: boolean; /** One short purpose line under the greeting in the hero card. */ purposeEn?: string; purposeEl?: string }) {
+  // The first name, as /home greets: the role overviews said «Καλησπέρα,
+  // Alex Demo.» with the full name. A title ("Dr.") is not a first name (§166).
+  const firstName = (name ?? '').trim().split(/\s+/).find((word) => word && !word.endsWith('.')) ?? '';
   const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
   const pathname = usePathname();
@@ -218,8 +221,8 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <h2 id={`${boxId}-title`} hidden={!greeting} className="min-w-0 break-words text-2xl font-semibold text-primary-foreground sm:text-3xl" data-testid="home-greeting">
           <BilingualText
-            en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.`}
-            el={`${hello.el}${name?.trim() ? `, ${name.trim()}` : ''}.`}
+            en={`${hello.en}${firstName ? `, ${firstName}` : ''}.`}
+            el={`${hello.el}${firstName ? `, ${firstName}` : ''}.`}
             stacked
             wrap
             secondaryFrom="lg"
@@ -259,8 +262,8 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
       </div>
       <h2 id={`${boxId}-title`} hidden={!greeting} className="break-words text-xl font-semibold text-foreground sm:text-2xl" data-testid="home-greeting">
         <BilingualText
-          en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.`}
-          el={`${hello.el}${name?.trim() ? `, ${name.trim()}` : ''}.`}
+          en={`${hello.en}${firstName ? `, ${firstName}` : ''}.`}
+          el={`${hello.el}${firstName ? `, ${firstName}` : ''}.`}
           stacked
           wrap
           secondaryFrom="lg"
@@ -398,8 +401,8 @@ export function HomeAskHero({ role, name, lead, followUpsDue = 0, showWaiting = 
                   to fill in their role word, so a Greek reader met "Καλημέρα,
                   Founder." (docs §70). */}
               <BilingualText
-                en={`${hello.en}${name?.trim() ? `, ${name.trim()}` : ''}.${lead ? ` ${lead.en}` : ''}`}
-                el={`${hello.el}${name?.trim() ? `, ${name.trim()}` : ''}.${lead ? ` ${lead.el}` : ''}`}
+                en={`${hello.en}${firstName ? `, ${firstName}` : ''}.${lead ? ` ${lead.en}` : ''}`}
+                el={`${hello.el}${firstName ? `, ${firstName}` : ''}.${lead ? ` ${lead.el}` : ''}`}
                 stacked
                 wrap
                 secondaryFrom="lg"

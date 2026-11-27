@@ -9,6 +9,7 @@ import { RoleBadge } from '@/components/common/RoleBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { roleRing, roleTone } from '@/lib/role-tone';
+import { headlineNamesRole } from '@/lib/role-family';
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn, initialsOf } from '@/lib/utils';
 
@@ -59,6 +60,7 @@ export function PersonTile({ userId, name, avatarUrl, role, headline, reason, me
       <span className="person-name">{name}</span>
     )
   );
+  const roleShown = Boolean(role) && !headlineNamesRole(role, typeof headline === 'string' ? headline : null);
   return (
     <Card className={cn('flex w-[200px] shrink-0 snap-start flex-col overflow-hidden', className)}>
       <CardContent className="flex flex-1 flex-col gap-2 p-3">
@@ -71,9 +73,11 @@ export function PersonTile({ userId, name, avatarUrl, role, headline, reason, me
           {/* A name wraps rather than losing its end: at 200px "Elena
               Papadopoulos" read «Elena Papadopou…» (docs §147). */}
           <p className="line-clamp-2 break-words">{label}</p>
-          {role || meta ? (
+          {/* Decided here, not inside the badge: an empty wrapper still drew
+              a blank line where a badge the headline makes redundant was (§166). */}
+          {roleShown || meta ? (
             <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
-              {role ? <RoleBadge role={role} headline={typeof headline === 'string' ? headline : null} size="sm" /> : null}
+              {roleShown ? <RoleBadge role={role} size="sm" /> : null}
               {meta}
             </span>
           ) : null}
