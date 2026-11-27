@@ -97,7 +97,7 @@ const DEMO_DECK: PublicPitchDeck = attachDemoPhotos({
       order: 3,
       content: {
         metrics: [
-          { label: 'Founder clinics live', value: '4', growth: '+2 this month' },
+          { label: 'Programmes live', value: '4', growth: '+2 this month' },
           { label: 'Cohorts onboarded', value: '2', growth: '+1' },
           { label: 'Days to onboard a cohort', value: '9', growth: 'from 20' },
           { label: 'Seed committed', value: '€375K', growth: '50% of the round' },

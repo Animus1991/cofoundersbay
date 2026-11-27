@@ -16,6 +16,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { useQuery } from '@tanstack/react-query';
 import { getInvestorSummary, listInvestorDeals, PIPELINE_STAGES, type InvestorDeal, type PipelineStage } from '@/lib/api';
+import { DEAL_STAGE_LABEL } from '@/lib/i18n/deal-events';
 import { BilingualText } from '@/components/common/BilingualText';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { EmptyLine, FailedLine, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
@@ -27,7 +28,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
-import { formatCompactMoney, bilingualAria } from '@/lib/i18n/format';
+import { formatCompactMoney, bilingualAria, decimalEl } from '@/lib/i18n/format';
 import { durationEl } from '@/lib/i18n/units';
 
 /** Compact money, in the board's currency rather than a hard-coded dollar. */
@@ -46,15 +47,8 @@ function money(cents: number | null | undefined, currency = 'EUR'): string {
  * reads the same deal list /investor/pipeline reads.
  */
 
-const STAGE_LABEL: Record<PipelineStage, { en: string; el: string }> = {
-  discovered: { en: 'Discovered', el: 'Εντοπισμένες' },
-  reviewing: { en: 'Reviewing', el: 'Σε αξιολόγηση' },
-  meeting: { en: 'Meeting', el: 'Συνάντηση' },
-  due_diligence: { en: 'Due diligence', el: 'Δέουσα επιμέλεια' },
-  negotiating: { en: 'Negotiating', el: 'Διαπραγμάτευση' },
-  invested: { en: 'Invested', el: 'Επένδυση' },
-  passed: { en: 'Passed', el: 'Απορρίφθηκαν' },
-};
+// The stages by the names the board gives them (docs §167).
+const STAGE_LABEL = DEAL_STAGE_LABEL;
 
 /** The forward path; `passed` leaves it and is counted on its own. */
 const FUNNEL_STAGES = PIPELINE_STAGES.filter((s) => s !== 'passed');
@@ -196,10 +190,10 @@ export default function InvestorAnalyticsPage() {
     ? Math.round(closed.reduce((sum, d) => sum + (Date.parse(d.investedAt!) - Date.parse(d.createdAt)) / 86_400_000, 0) / closed.length)
     : null;
 
-  const kpis = [
+  const kpis: Array<{ label: string; labelEl: string; value: string; valueEl?: string; icon: typeof Target; caption?: string; captionEl?: string }> = [
     { label: 'Deals reviewed', labelEl: 'Αξιολογημένες', value: reviewed == null ? '—' : String(reviewed), icon: Target, caption: summary ? `${summary.totalDeals} on the board` : undefined, captionEl: summary ? `${summary.totalDeals} στον πίνακα` : undefined },
     { label: 'Invested', labelEl: 'Επενδύσεις', value: summary ? String(summary.investments) : '—', icon: DollarSign },
-    { label: 'Conversion rate', labelEl: 'Ποσοστό μετατροπής', value: conversion == null ? '—' : `${conversion}%`, icon: TrendingUp, caption: 'Invested ÷ reviewed', captionEl: 'Επενδύσεις ÷ αξιολογημένες' },
+    { label: 'Conversion rate', labelEl: 'Ποσοστό μετατροπής', value: conversion == null ? '—' : `${conversion}%`, valueEl: conversion == null ? undefined : `${conversion.toLocaleString('el-GR')}%`, icon: TrendingUp, caption: 'Invested ÷ reviewed', captionEl: 'Επενδύσεις ÷ αξιολογημένες' },
     // "No investment closed yet" under a "—" the board was never read for.
     { label: 'Avg time to close', labelEl: 'Μέσος χρόνος κλεισίματος', value: daysToClose == null ? '—' : `${daysToClose} d`, icon: Calendar, caption: !dealsPage ? undefined : closed.length ? `Over ${closed.length} investments` : 'No investment closed yet', captionEl: !dealsPage ? undefined : closed.length ? `Σε ${closed.length} επενδύσεις` : 'Καμία επένδυση ακόμα' },
     { label: 'Total deployed', labelEl: 'Επενδυμένο κεφάλαιο', value: money(summary?.deployedCents, currency), icon: BarChart3 },
@@ -297,7 +291,7 @@ export default function InvestorAnalyticsPage() {
         ) : null}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6">
           {kpis.map((k) => (
-            <MetricTile key={k.label} icon={k.icon} label={k.label} labelEl={k.labelEl} value={durationEl(k.value) ? <BilingualText en={k.value} el={durationEl(k.value)} compact /> : k.value} caption={k.caption} captionEl={k.captionEl} />
+            <MetricTile key={k.label} icon={k.icon} label={k.label} labelEl={k.labelEl} value={k.valueEl ?? durationEl(k.value) ? <BilingualText en={k.value} el={k.valueEl ?? durationEl(k.value)} compact /> : k.value} caption={k.caption} captionEl={k.captionEl} />
           ))}
         </div>
 
@@ -431,7 +425,7 @@ export default function InvestorAnalyticsPage() {
                           asideStays
                           aside={(
                             <div className="text-right">
-                              <p className={cn('card-body font-semibold tabular-nums', multiple >= 1 ? 'text-status-success' : 'text-status-danger')}>{multiple.toFixed(2)}×</p>
+                              <p className={cn('card-body font-semibold tabular-nums', multiple >= 1 ? 'text-status-success' : 'text-status-danger')}><BilingualText en={`${multiple.toFixed(2)}×`} el={`${decimalEl(multiple, 2)}×`} compact /></p>
                               <p className="text-xs text-muted-foreground"><BilingualText en={`${money(value, d.currency)} now`} el={`${money(value, d.currency)} σήμερα`} compact /></p>
                             </div>
                           )}
@@ -453,7 +447,7 @@ export default function InvestorAnalyticsPage() {
                   </div>
                   <div>
                     <dt className="text-xs text-muted-foreground"><BilingualText en="Unrealised MOIC" el="Μη πραγματοποιημένο MOIC" compact /></dt>
-                    <dd className={cn('font-semibold tabular-nums', (moic ?? 1) >= 1 ? 'text-status-success' : 'text-status-danger')}>{moic ? `${moic.toFixed(2)}×` : '—'}</dd>
+                    <dd className={cn('font-semibold tabular-nums', (moic ?? 1) >= 1 ? 'text-status-success' : 'text-status-danger')}>{moic ? <BilingualText en={`${moic.toFixed(2)}×`} el={`${decimalEl(moic, 2)}×`} compact /> : '—'}</dd>
                   </div>
                 </dl>
               )}

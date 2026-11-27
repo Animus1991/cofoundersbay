@@ -19,9 +19,12 @@ import { usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { initialsOf } from '@/lib/utils';
 
-function sizeOf(bytes: number | null) {
+/** "2.3 MB", or «2,3 MB» to a Greek reader (§167). */
+function sizeOf(bytes: number | null, language: string) {
   if (!bytes) return null;
-  return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  const mb = (bytes / (1024 * 1024)).toLocaleString(language === 'el' ? 'el-GR' : 'en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return `${mb} MB`;
 }
 
 function RoomCard({ room }: { room: SharedRoom }) {
@@ -47,7 +50,7 @@ function RoomCard({ room }: { room: SharedRoom }) {
               <div className="min-w-0 flex-1">
                 <p className="break-words text-sm font-medium text-foreground">{doc.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {[sizeOf(doc.fileSizeBytes), formatShortDate(doc.updatedAt, primary)].filter(Boolean).join(' · ')}
+                  {[sizeOf(doc.fileSizeBytes, primary), formatShortDate(doc.updatedAt, primary)].filter(Boolean).join(' · ')}
                 </p>
               </div>
               <Button

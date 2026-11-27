@@ -29,7 +29,7 @@ const CANDIDATES: Array<{ kind: LinkableEvidenceKind; refId: string; label: stri
 /** Other people's skills, for their profiles in the demo. */
 const OTHERS: Record<string, Array<{ name: string; evidence: Array<{ kind: LinkableEvidenceKind; label: string }>; endorsements: number; verified: number }>> = {
   'user-elena': [
-    { name: 'Product', evidence: [{ kind: 'milestone', label: 'Four clinics live' }], endorsements: 2, verified: 1 },
+    { name: 'Product', evidence: [{ kind: 'milestone', label: 'Four programmes live' }], endorsements: 2, verified: 1 },
     { name: 'Fundraising', evidence: [{ kind: 'agreement', label: 'Commercial co-founder for Harbor' }], endorsements: 1, verified: 0 },
   ],
   'user-marcus': [{ name: 'Full-stack engineering', evidence: [{ kind: 'builder_document', label: 'Harbor technical plan' }], endorsements: 1, verified: 0 }],

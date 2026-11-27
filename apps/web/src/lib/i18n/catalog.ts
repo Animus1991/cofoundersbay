@@ -486,7 +486,7 @@ const el: Record<string, string> = {
     'Δεν έχετε ακόμη προθεσμίες ορόσημων, προγραμματισμένες συνεδρίες ή εκδηλώσεις που θα παρακολουθήσετε. Αυτά είναι δείγματα, για να γνωρίσετε τη διάταξη.',
   'Documents, investors and the access log are illustrative — the data room has no backend storage yet.':
     'Τα έγγραφα, οι επενδυτές και το αρχείο πρόσβασης είναι ενδεικτικά — το data room δεν αποθηκεύεται ακόμη στον server.',
-  Scouting: 'Ανίχνευση',
+  Scouting: 'Αναζήτηση startups',
   'These inquiries are illustrative; founders who ask about one of your services replace them.':
     'Αυτά τα αιτήματα είναι ενδεικτικά· οι ιδρυτές που ρωτούν για μια υπηρεσία σας τα αντικαθιστούν.',
   'These projects are illustrative; an inquiry you accept becomes a project here.':
@@ -498,13 +498,13 @@ const el: Record<string, string> = {
   'These reviews are illustrative; mentor reviews are not collected yet.':
     'Αυτές οι αξιολογήσεις είναι ενδεικτικές· οι αξιολογήσεις μεντόρων δεν συλλέγονται ακόμη.',
   'These deals are illustrative; your own appear here once you add a startup from Scouting.':
-    'Αυτές οι συμφωνίες είναι ενδεικτικές· οι δικές σας εμφανίζονται εδώ μόλις προσθέσετε μια startup από την Ανίχνευση.',
+    'Αυτές οι συμφωνίες είναι ενδεικτικές· οι δικές σας εμφανίζονται εδώ μόλις προσθέσετε μια startup από την Αναζήτηση startups.',
   'These companies are illustrative; a deal you mark as invested in the pipeline replaces them.':
     'Αυτές οι εταιρείες είναι ενδεικτικές· μια συμφωνία που σημειώνετε ως επένδυση στο pipeline τις αντικαθιστά.',
   'These startups are illustrative; scouting has no startup directory of its own yet. Watching one or adding it to the pipeline does write to your own board.':
-    'Αυτές οι startups είναι ενδεικτικές· η ανίχνευση δεν έχει ακόμη δικό της κατάλογο. Η παρακολούθηση ή η προσθήκη στο pipeline γράφει όμως στον δικό σας πίνακα.',
+    'Αυτές οι startups είναι ενδεικτικές· η Αναζήτηση startups δεν έχει ακόμη δικό της κατάλογο. Η παρακολούθηση ή η προσθήκη στο pipeline γράφει όμως στον δικό σας πίνακα.',
   'These startups are illustrative; one you watch from Scouting replaces them.':
-    'Αυτές οι startups είναι ενδεικτικές· μια startup που παρακολουθείτε από την Ανίχνευση τις αντικαθιστά.',
+    'Αυτές οι startups είναι ενδεικτικές· μια startup που παρακολουθείτε από την Αναζήτηση startups τις αντικαθιστά.',
   "These endorsements are samples written by the demo's own people. Approve and Decline change this screen only.":
     'Αυτές οι συστάσεις είναι δείγματα, γραμμένα από τα πρόσωπα του demo. Η έγκριση και η απόρριψη αλλάζουν μόνο αυτή την οθόνη.',
   'Your network has not posted yet, so these posts are samples that show how the feed reads.':
@@ -1131,6 +1131,34 @@ const el: Record<string, string> = {
   'sales partnerships': 'συνεργασίες πωλήσεων',
   'Co-founder cards': 'Κάρτες συνιδρυτών',
   'Fundraising mentors': 'Μέντορες για χρηματοδότηση',
+  // The investor's showcase (lib/demo/deals-world, §167): the startups Scouting shows, their tags and sectors.
+  'Carbon accounting inside the books of small businesses.': 'Λογιστική άνθρακα μέσα στα βιβλία των μικρών επιχειρήσεων.',
+  'Battery storage for island microgrids.': 'Αποθήκευση ενέργειας σε μπαταρίες για τα μικροδίκτυα των νησιών.',
+  'A wholesale marketplace between local producers and restaurants.': 'Αγορά χονδρικής ανάμεσα σε τοπικούς παραγωγούς και εστιατόρια.',
+  'Maintenance planning for delivery fleets.': 'Προγραμματισμός συντήρησης για στόλους διανομής.',
+  'Berth booking for small commercial ports.': 'Κρατήσεις θέσεων ελλιμενισμού για μικρά εμπορικά λιμάνια.',
+  'Wave-energy buoys for island ports.': 'Πλωτήρες κυματικής ενέργειας για τα λιμάνια των νησιών.',
+  'Orders and stock for family restaurants.': 'Παραγγελίες και απόθεμα για οικογενειακά εστιατόρια.',
+  'Symptom check-ins for patients waiting to see a specialist.': 'Παρακολούθηση συμπτωμάτων για ασθενείς που περιμένουν ραντεβού με ειδικό.',
+  SMEs: 'ΜμΕ',
+  Batteries: 'Μπαταρίες',
+  Food: 'Τρόφιμα',
+  Wholesale: 'Χονδρική',
+  Fleets: 'Στόλοι οχημάτων',
+  Ports: 'Λιμάνια',
+  Restaurants: 'Εστιατόρια',
+  Patients: 'Ασθενείς',
+  'Hospitality software': 'Λογισμικό φιλοξενίας',
+  Mobility: 'Κινητικότητα',
+  'Investor deck': 'Παρουσίαση για επενδυτές',
+  // Harbor's updates, about the accelerator programmes it sells to (they said clinics, Aegis Health's story).
+  'Harbor: four programmes live': 'Harbor: τέσσερα προγράμματα σε λειτουργία',
+  'Two more accelerator programmes went live this month, and the second cohort finished onboarding in nine days instead of twenty.': 'Άλλα δύο προγράμματα επιταχυντών ξεκίνησαν αυτόν τον μήνα, και η δεύτερη ομάδα ολοκλήρωσε την ένταξη σε εννέα μέρες αντί για είκοσι.',
+  'An introduction to the programme lead of an accelerator': 'Μια γνωριμία με υπεύθυνο προγράμματος σε επιταχυντή',
+  'The first accelerator signed a paid pilot after a six-week trial.': 'Ο πρώτος επιταχυντής υπέγραψε πληρωμένο πιλότο μετά από δοκιμή έξι εβδομάδων.',
+  'Programmes live': 'Προγράμματα σε λειτουργία',
+  'Four programmes live': 'Τέσσερα προγράμματα σε λειτουργία',
+  'Elena brought a different version of the same question to each session and had tested my last answer before the next one. The cohort onboarding she shipped between them is the clearest evidence.': 'Σε κάθε συνεδρία η Elena έφερνε μια νέα εκδοχή της ίδιας ερώτησης, έχοντας ήδη δοκιμάσει την προηγούμενη απάντησή μου. Το πιο καθαρό δείγμα είναι η ένταξη ομάδων που παρέδωσε στο ενδιάμεσο.',
   // The mentor demo's requests (preview-api), English among Greek cards (§166).
   'We are pricing a climate-fintech product for SMEs and keep undercharging. Could we talk through how you priced Harbor?': 'Τιμολογούμε ένα προϊόν climate-fintech για μικρομεσαίες επιχειρήσεις και χρεώνουμε συνεχώς λιγότερα απ’ όσο πρέπει. Μπορούμε να δούμε πώς τιμολογήσατε το Harbor;',
   'Two-sided marketplace, 40 suppliers live, buyers are slow to come back. Looking for help on retention before our seed.': 'Αγορά δύο πλευρών, 40 προμηθευτές σε λειτουργία, οι αγοραστές αργούν να επιστρέψουν. Ζητάμε βοήθεια στη διατήρηση πριν από τον γύρο seed.',

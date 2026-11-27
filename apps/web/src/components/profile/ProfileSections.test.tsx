@@ -79,7 +79,7 @@ describe('experience', () => {
 describe('activity', () => {
   it('shows a followed founder’s updates and need cards', async () => {
     wrap(<ProfileActivity userId="user-elena" own={false} />);
-    await waitFor(() => expect(screen.getByText('Harbor: four clinics live')).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('Harbor: four programmes live')).toBeTruthy());
     expect(screen.getByRole('link', { name: /Commercial co-founder for Harbor/ }).getAttribute('href')).toBe('/commitments/need-harbor');
   });
 });

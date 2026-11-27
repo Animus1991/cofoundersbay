@@ -1616,24 +1616,24 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          KPIs here count the same deals as <Link href="/investor/pipeline">Pipeline</Link> and{' '}
-          <Link href="/investor/watchlist">Watchlist</Link>. A dash means the figure was not recorded.
+          The figures here count the same deals as the <Link href="/investor/pipeline">deal pipeline</Link> and the{' '}
+          <Link href="/investor/watchlist">watchlist</Link>. A dash means the figure was not recorded.
         </p>
         <p>
-          Scout to find new companies. Moving a card in Pipeline is what changes these totals — this home does not
-          keep a second ledger.
+          Scout Startups finds new companies. Moving a card on the pipeline is what changes these totals — this home
+          does not keep a second ledger.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Τα KPI εδώ μετράνε τις ίδιες συμφωνίες με το <Link href="/investor/pipeline">Pipeline</Link> και τη{' '}
+          Οι αριθμοί εδώ μετράνε τις ίδιες συμφωνίες με το <Link href="/investor/pipeline">Pipeline συμφωνιών</Link> και τη{' '}
           <Link href="/investor/watchlist">Λίστα παρακολούθησης</Link>. Η παύλα σημαίνει ότι ο αριθμός δεν καταγράφηκε.
         </p>
         <p>
-          Το Scout βρίσκει νέες εταιρείες. Η μετακίνηση κάρτας στο Pipeline είναι αυτό που αλλάζει αυτά τα σύνολα —
-          αυτή η αρχική δεν κρατά δεύτερο καθολικό.
+          Η Αναζήτηση startups βρίσκει νέες εταιρείες. Η μετακίνηση κάρτας στο pipeline είναι αυτό που αλλάζει αυτά τα
+          σύνολα — αυτή η αρχική δεν κρατά δεύτερο καθολικό.
         </p>
       </>
     ),
@@ -1642,8 +1642,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Search and filter startups by stage, sector, and traction. Adding to the pipeline or watchlist writes the
-          same deal the Kanban reads.
+          Search and filter startups by sector, stage and business model. Watching one or adding it to the pipeline
+          writes the same deal the deal pipeline shows.
         </p>
         <p>
           Founder readiness scores stay private unless the founder has shared them — a missing score is simply
@@ -1654,8 +1654,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     el: (
       <>
         <p>
-          Αναζητήστε και φιλτράρετε startups κατά στάδιο, κλάδο και traction. Η προσθήκη στο pipeline ή στη λίστα
-          παρακολούθησης γράφει την ίδια συμφωνία που διαβάζει το Kanban.
+          Αναζητήστε και φιλτράρετε startups κατά κλάδο, στάδιο και επιχειρηματικό μοντέλο. Η παρακολούθηση ή η
+          προσθήκη στο pipeline γράφει την ίδια συμφωνία που δείχνει το Pipeline συμφωνιών.
         </p>
         <p>
           Οι βαθμολογίες ετοιμότητας ιδρυτή μένουν ιδιωτικές εκτός αν τις έχει μοιραστεί — όταν λείπει, απλώς δεν
@@ -1668,7 +1668,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Stages run <strong>Discovered → Reviewing → Meeting → Diligence → Negotiating → Invested / Passed</strong>.
+          Stages run <strong>Discovered → Reviewing → Meeting → Due diligence → Negotiating → Invested / Passed</strong>.
           The summary counts the full pipeline; filters only change what is on screen.
         </p>
         <p>
@@ -1680,7 +1680,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     el: (
       <>
         <p>
-          Τα στάδια είναι <strong>Ανακάλυψη → Έλεγχος → Συνάντηση → Diligence → Διαπραγμάτευση → Επένδυση / Απόρριψη</strong>.
+          Τα στάδια είναι <strong>Εντοπίστηκε → Υπό εξέταση → Συνάντηση → Δέουσα επιμέλεια → Διαπραγμάτευση → Επένδυση / Απορρίφθηκε</strong>.
           Η σύνοψη μετρά όλο το pipeline· τα φίλτρα αλλάζουν μόνο ό,τι φαίνεται.
         </p>
         <p>
@@ -1699,7 +1699,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Saving or connecting uses the same shortlist and connection flow as Discover. It does not add them as a
-          deal on <Link href="/investor/pipeline">Pipeline</Link>.
+          deal on your <Link href="/investor/pipeline">deal pipeline</Link>.
         </p>
       </>
     ),
@@ -1711,7 +1711,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         </p>
         <p>
           Η αποθήκευση ή η σύνδεση χρησιμοποιεί την ίδια ροή με την Εξερεύνηση. Δεν τους προσθέτει ως συμφωνία στο{' '}
-          <Link href="/investor/pipeline">Pipeline</Link>.
+          <Link href="/investor/pipeline">Pipeline συμφωνιών</Link>.
         </p>
       </>
     ),
@@ -1746,24 +1746,23 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Founders and startups you are following before a commitment. Watchlist is not a pipeline stage and not a
-          connection request.
+          Startups you are watching before you commit: the deals at Discovered on your{' '}
+          <Link href="/investor/pipeline">deal pipeline</Link>. Watching is not a connection request.
         </p>
         <p>
-          Move someone into <Link href="/investor/pipeline">Pipeline</Link> when you start diligence. Removing them here
-          does not delete a deal that already exists there.
+          Add to pipeline moves one to Reviewing. Remove from watchlist deletes that deal and its notes.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Ιδρυτές και startups που παρακολουθείτε πριν δεσμευτείτε. Η λίστα δεν είναι στάδιο του pipeline και δεν είναι
-          αίτημα σύνδεσης.
+          Οι startups που παρακολουθείτε πριν δεσμευτείτε: οι συμφωνίες στο στάδιο «Εντοπίστηκε» του{' '}
+          <Link href="/investor/pipeline">Pipeline συμφωνιών</Link>. Η παρακολούθηση δεν είναι αίτημα σύνδεσης.
         </p>
         <p>
-          Μεταφέρετέ τους στο <Link href="/investor/pipeline">Pipeline</Link> όταν ξεκινήσετε diligence. Η αφαίρεση εδώ δεν
-          διαγράφει συμφωνία που υπάρχει ήδη εκεί.
+          Η «Προσθήκη στο pipeline» τη μεταφέρει στο «Υπό εξέταση». Η «Αφαίρεση από τη λίστα παρακολούθησης» διαγράφει
+          τη συμφωνία και τις σημειώσεις της.
         </p>
       </>
     ),
@@ -1772,23 +1771,26 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Trends are recorded counts for the selected range. Role and sector mix come from deals you actually
-          moved — empty charts mean nothing was logged, not a zero market.
+          Every figure counts the deals on your pipeline: those added each month, how far they got (the funnel),
+          their sectors and places, and what the invested ones are worth. An empty chart means no deal is on the
+          board yet, not a zero market.
         </p>
         <p>
-          Response rate is replies you sent versus inbound intros the API recorded. A dash is unmeasured.
+          Conversion is investments over the deals reviewed, those past Discovered. A dash means there is nothing to
+          count yet.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Οι τάσεις είναι καταγεγραμμένα πλήθη για το επιλεγμένο διάστημα. Η σύνθεση ρόλου και κλάδου προέρχεται από
-          συμφωνίες που μετακινήσατε — κενό γράφημα σημαίνει ότι δεν καταγράφηκε τίποτα, όχι μηδενική αγορά.
+          Κάθε αριθμός μετρά τις συμφωνίες του pipeline σας: όσες προστέθηκαν κάθε μήνα, ως πού έφτασαν (η χοάνη),
+          τους κλάδους και τους τόπους τους, και πόσο αξίζουν όσες έγιναν επένδυση. Κενό γράφημα σημαίνει ότι δεν
+          υπάρχει ακόμη συμφωνία στον πίνακα, όχι μηδενική αγορά.
         </p>
         <p>
-          Το ποσοστό απόκρισης είναι απαντήσεις που στείλατε προς εισερχόμενες γνωριμίες που κατέγραψε το API. Η
-          παύλα είναι μη μετρημένο.
+          Το ποσοστό μετατροπής είναι οι επενδύσεις προς τις αξιολογημένες συμφωνίες, όσες πέρασαν το «Εντοπίστηκε».
+          Η παύλα σημαίνει ότι δεν υπάρχει ακόμη κάτι να μετρηθεί.
         </p>
       </>
     ),

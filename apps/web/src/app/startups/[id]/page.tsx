@@ -33,18 +33,11 @@ import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria, bilingualInline, formatCompactMoney } from '@/lib/i18n/format';
 import { isNotFound } from '@/lib/read-status';
-import { dealEventTitleEl } from '@/lib/i18n/deal-events';
+import { DEAL_STAGE_LABEL, dealEventTitleEl } from '@/lib/i18n/deal-events';
 import { cn } from '@/lib/utils';
 
-const STAGE_LABEL: Record<PipelineStage, { en: string; el: string }> = {
-  discovered: { en: 'Discovered', el: 'Εντοπίστηκε' },
-  reviewing: { en: 'Reviewing', el: 'Υπό αξιολόγηση' },
-  meeting: { en: 'Meeting', el: 'Συνάντηση' },
-  due_diligence: { en: 'Due diligence', el: 'Δέουσα επιμέλεια' },
-  negotiating: { en: 'Negotiating', el: 'Διαπραγμάτευση' },
-  invested: { en: 'Invested', el: 'Επένδυση' },
-  passed: { en: 'Passed', el: 'Απορρίφθηκε' },
-};
+// The stages by the names the board gives them (docs §167).
+const STAGE_LABEL: Record<PipelineStage, { en: string; el: string }> = DEAL_STAGE_LABEL;
 
 /** The stages a deal moves through, without the exit ("passed"). */
 const FORWARD: PipelineStage[] = PIPELINE_STAGES.filter((s) => s !== 'passed');

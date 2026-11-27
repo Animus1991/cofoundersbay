@@ -141,9 +141,10 @@ const STATUS_EL: Record<string, string> = {
   launched: 'κυκλοφορία',
   scaling: 'κλιμάκωση',
   growth: 'ανάπτυξη',
-  'pre seed': 'προ-seed',
+  // Rounds keep their established names, as el.json writes them (docs §167).
+  'pre seed': 'pre-seed',
   seed: 'seed',
-  'series a': 'σειρά A',
+  'series a': 'Series A',
   // Commitment and engagement
   'full time': 'πλήρης απασχόληση',
   'part time': 'μερική απασχόληση',

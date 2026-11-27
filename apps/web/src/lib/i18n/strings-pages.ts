@@ -222,13 +222,13 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
   '/investor/scouting': {
     title: 'Αναζήτηση startups',
     description:
-      'Αναζήτηση και φιλτράρισμα startups κατά στάδιο, κλάδο και traction.',
+      'Αναζήτηση και φιλτράρισμα startups κατά κλάδο, στάδιο και επιχειρηματικό μοντέλο.',
     section: 'Εργασία',
   },
   '/investor/pipeline': {
-    title: 'Pipeline',
+    title: 'Pipeline συμφωνιών',
     description:
-      'Kanban deals από την εισαγωγή έως το term sheet.',
+      'Οι συμφωνίες σας σε κάθε στάδιο, από τον εντοπισμό ως την επένδυση.',
     section: 'Εργασία',
   },
   '/investors': {

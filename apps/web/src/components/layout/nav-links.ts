@@ -256,7 +256,7 @@ export const investorNavSections: NavSection[] = [
     links: [
       { href: '/dashboard/investor', label: 'Investor Dashboard', icon: LayoutDashboard },
       { href: '/investor/scouting', label: 'Scout Startups', icon: Telescope },
-      { href: '/investor/pipeline', label: 'Pipeline', icon: GanttChart },
+      { href: '/investor/pipeline', label: 'Deal pipeline', icon: GanttChart },
       { href: '/investor/portfolio', label: 'Portfolio', icon: Briefcase },
       { href: '/data-room', label: 'Shared data rooms', icon: FolderOpen },
     ],

@@ -38,9 +38,9 @@ import {
 } from '@/lib/api';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
-import { formatCompactMoney } from '@/lib/i18n/format';
+import { decimalEl, formatCompactMoney } from '@/lib/i18n/format';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
-import { dealEventTitleEl } from '@/lib/i18n/deal-events';
+import { DEAL_STAGE_LABEL as STAGE_LABEL, dealEventTitleEl } from '@/lib/i18n/deal-events';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { YourPagesRow } from '@/components/dashboard/YourPages';
@@ -69,16 +69,6 @@ import { usePageControls, usePageList } from '@/lib/page-controls';
  */
 
 const ACTIVE_STAGES: PipelineStage[] = ['reviewing', 'meeting', 'due_diligence', 'negotiating'];
-// The pipeline page's own words for each stage, in both languages.
-const STAGE_LABEL: Record<string, { en: string; el: string }> = {
-  discovered: { en: 'Discovered', el: 'Εντοπίστηκε' },
-  reviewing: { en: 'Reviewing', el: 'Υπό εξέταση' },
-  meeting: { en: 'Meeting', el: 'Συνάντηση' },
-  due_diligence: { en: 'Due diligence', el: 'Δέουσα επιμέλεια' },
-  negotiating: { en: 'Negotiating', el: 'Διαπραγμάτευση' },
-  invested: { en: 'Invested', el: 'Επένδυση' },
-  passed: { en: 'Passed', el: 'Απορρίφθηκε' },
-};
 const STAGE_TONE: Record<string, string> = {
   reviewing: 'bg-status-info-bg text-status-info',
   meeting: 'bg-status-accent-bg text-status-accent',
@@ -252,7 +242,7 @@ export default function InvestorDashboard() {
 
   usePageControls([
     { id: 'open_pipeline', labelEn: 'Open deal pipeline', labelEl: 'Άνοιγμα pipeline συμφωνιών', writes: false, run: () => router.push('/investor/pipeline') },
-    { id: 'open_scouting', labelEn: 'Scout startups', labelEl: 'Ανίχνευση startups', writes: false, run: () => router.push('/investor/scouting') },
+    { id: 'open_scouting', labelEn: 'Scout startups', labelEl: 'Αναζήτηση startups', writes: false, run: () => router.push('/investor/scouting') },
     { id: 'open_portfolio', labelEn: 'Open portfolio', labelEl: 'Άνοιγμα χαρτοφυλακίου', writes: false, run: () => router.push('/investor/portfolio') },
   ]);
 
@@ -293,8 +283,8 @@ export default function InvestorDashboard() {
   ];
   return (
     <AppShell titleSrOnly askAi={false} showHelp rail={rail}
-      description="Pipeline health, deal flow, and portfolio performance — in one view."
-      descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
+      description="Deal flow, active deals and portfolio performance, in one view."
+      descriptionEl="Ροή συμφωνιών, ενεργές συμφωνίες και απόδοση χαρτοφυλακίου, σε μία προβολή."
     >
       <div className="space-y-6">
         <HomeAskHero role="investor" showWaiting={false} band name={profile?.profile?.displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
@@ -391,7 +381,7 @@ export default function InvestorDashboard() {
                     trailing={
                       <>
                         <p className={cn('text-sm font-semibold tabular-nums', x == null ? 'text-muted-foreground' : x >= 1 ? 'text-status-success' : 'text-status-danger')}>
-                          {x == null ? '—' : `${x.toFixed(1)}x`}
+                          {x == null ? '—' : <BilingualText en={`${x.toFixed(1)}×`} el={`${decimalEl(x)}×`} compact />}
                         </p>
                         <p className="text-xs tabular-nums text-muted-foreground">{money(deal.currentValueCents ?? deal.investedCents, deal.currency)}</p>
                       </>
@@ -406,7 +396,7 @@ export default function InvestorDashboard() {
             )}
 
             {dealsFailed ? null : (
-            <SectionCard title="Recently discovered" titleEl="Πρόσφατες ανακαλύψεις" icon={Rocket} iconTint="primary" action={{ href: '/investor/scouting', label: 'Scout more', labelEl: 'Περισσότερα' }} contentClassName="card-rows">
+            <SectionCard title="Watching" titleEl="Σε παρακολούθηση" icon={Rocket} iconTint="primary" action={{ href: '/investor/watchlist', label: 'Watchlist', labelEl: 'Λίστα παρακολούθησης' }} contentClassName="card-rows">
               {discovered.map((deal) => (
                 <DealRow
                   key={deal.id}
@@ -423,23 +413,27 @@ export default function InvestorDashboard() {
                 />
               ))}
               {!dealsLoading && discovered.length === 0 && (
-                <EmptyLine en="Startups you watch from Scouting appear here first." el="Οι startups που παρακολουθείτε από την Ανίχνευση εμφανίζονται πρώτα εδώ." />
+                <EmptyLine en="Startups you watch from Scout Startups appear here." el="Οι startups που παρακολουθείτε από την Αναζήτηση startups εμφανίζονται εδώ." />
               )}
             </SectionCard>
             )}
           </div>
 
           <div className="space-y-6">
-{/* The role's pages this home does not already open from a tile or a section: the rest were listed twice on one screen (docs §101). */}
-            <QuickLinks
-              label="Investor pages"
-              labelEl="Σελίδες επενδυτή"
-              links={[
-                // "Recently discovered" opens Scouting unless the deals were not read.
-                ...(dealsFailed ? [{ href: '/investor/scouting', icon: Search, label: 'Scout startups', labelEl: 'Ανίχνευση startups' }] : []),
-                { href: '/investor/watchlist', icon: Star, label: 'Watchlist', labelEl: 'Λίστα παρακολούθησης' },
-              ]}
-            />
+{/* The role's pages this home does not already open from a tile or a
+    section (docs §101): with the deals read, none - the watched section
+    opens the watchlist (docs §167). Unread, those sections wait, and the
+    two pages they open are here. */}
+            {dealsFailed ? (
+              <QuickLinks
+                label="Investor pages"
+                labelEl="Σελίδες επενδυτή"
+                links={[
+                  { href: '/investor/scouting', icon: Search, label: 'Scout startups', labelEl: 'Αναζήτηση startups' },
+                  { href: '/investor/watchlist', icon: Star, label: 'Watchlist', labelEl: 'Λίστα παρακολούθησης' },
+                ]}
+              />
+            ) : null}
 
             <SectionCard title="Recent activity" titleEl="Πρόσφατη δραστηριότητα" icon={Eye} iconTint="info" contentClassName="card-rows">
               {/* Activity rows on the section's axis: the move, then the

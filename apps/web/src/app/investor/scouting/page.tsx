@@ -64,25 +64,13 @@ import { RowHead } from '@/components/dashboard/SectionCard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { attachDemoPhotos } from '@/lib/demo/photos';
 import { elWord } from '@/lib/rows-el';
+import { formatCompactMoney } from '@/lib/i18n/format';
+import { DEMO_SCOUTED, type DemoScoutedStartup } from '@/lib/demo/deals-world';
 
-type Startup = {
-  id: string;
-  name: string;
-  logoUrl?: string;
-  tagline: string;
-  industry: string;
-  stage: string;
-  location: string;
-  teamSize: number;
-  readinessScore: number;
-  matchScore: number;
-  tags: string[];
-  raisingAmount: string;
-  businessModel: 'B2B' | 'B2C' | 'B2B2C' | 'Marketplace';
-  isHot: boolean;
-  isFeatured: boolean;
-  revenue: string;
-};
+type Startup = DemoScoutedStartup & { logoUrl?: string };
+
+/** "€1.2M", "€800K": the round in the board's own short form. */
+const raising = (startup: Startup) => formatCompactMoney(startup.raisingCents / 100, 'EUR', 1);
 
 /** The deal a scouted startup becomes - one shape for the card and the assistant. */
 function startupDeal(startup: Startup, pipelineStage?: 'reviewing') {
@@ -94,6 +82,7 @@ function startupDeal(startup: Startup, pipelineStage?: 'reviewing') {
     companyStage: startup.stage,
     teamSize: startup.teamSize,
     tags: startup.tags,
+    askAmountCents: startup.raisingCents,
     ...(pipelineStage ? { pipelineStage } : {}),
   };
 }
@@ -270,9 +259,9 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
           <FactLine
             items={[
               startup.location,
-              <BilingualText key="team" en={`${startup.teamSize} founders`} el={`${startup.teamSize} ιδρυτές`} compact />,
-              <span key="raising" className="font-medium text-primary-accessible"><BilingualText en={`Raising ${startup.raisingAmount}`} el={`Αντλεί ${startup.raisingAmount}`} compact /></span>,
-              startup.revenue !== 'Pre-revenue' ? <span key="revenue" className="text-status-success">{startup.revenue}</span> : null,
+              <BilingualText key="team" en={`Team of ${startup.teamSize}`} el={`Ομάδα ${startup.teamSize}`} compact />,
+              <span key="raising" className="font-medium text-primary-accessible"><BilingualText en={`Raising ${raising(startup)}`} el={`Αντλεί ${raising(startup)}`} compact /></span>,
+              startup.mrrCents != null ? <span key="revenue" className="text-status-success">{formatCompactMoney(startup.mrrCents / 100, 'EUR', 1)} MRR</span> : null,
             ]}
           />
         </div>
@@ -286,7 +275,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
             <Progress value={startup.readinessScore} className="h-1.5" />
           </div>
           <div className="shrink-0 text-right">
-            <p className="text-xs text-muted-foreground"><BilingualText en="Match Score" el="Βαθμός ταιριάσματος" compact /></p>
+            <p className="text-xs text-muted-foreground"><BilingualText en="Match" el="Αντιστοίχιση" compact /></p>
             <p className={cn('card-body font-semibold tabular-nums', startup.matchScore >= 85 ? 'text-status-success' : startup.matchScore >= 70 ? 'text-primary-accessible' : 'text-muted-foreground')}>
               {startup.matchScore}%
             </p>
@@ -311,15 +300,12 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
   );
 }
 
-const ALL_STARTUPS: Startup[] = attachDemoPhotos([
-  { id: '1', name: 'NeuralFlow AI', tagline: 'AI-powered workflow automation for enterprises', industry: 'AI/ML', stage: 'Seed', location: 'San Francisco', teamSize: 3, readinessScore: 85, matchScore: 92, tags: ['SaaS', 'Automation'], raisingAmount: '$1.5M', businessModel: 'B2B', isHot: true, isFeatured: true, revenue: '$24K MRR' },
-  { id: '2', name: 'GreenGrid Energy', tagline: 'Smart grid solutions for renewable energy', industry: 'CleanTech', stage: 'Pre-seed', location: 'Berlin', teamSize: 2, readinessScore: 72, matchScore: 78, tags: ['Energy', 'IoT'], raisingAmount: '$500K', businessModel: 'B2B', isHot: false, isFeatured: false, revenue: 'Pre-revenue' },
-  { id: '3', name: 'PayStream', tagline: 'Next-gen payment infrastructure for SMBs', industry: 'FinTech', stage: 'Seed', location: 'London', teamSize: 4, readinessScore: 91, matchScore: 88, tags: ['Payments', 'API'], raisingAmount: '$2M', businessModel: 'B2B', isHot: true, isFeatured: true, revenue: '$58K MRR' },
-  { id: '4', name: 'HealthPulse', tagline: 'Remote patient monitoring platform', industry: 'HealthTech', stage: 'Pre-seed', location: 'Boston', teamSize: 2, readinessScore: 65, matchScore: 71, tags: ['IoT', 'Clinical'], raisingAmount: '€750K', businessModel: 'B2B2C', isHot: false, isFeatured: false, revenue: 'Pre-revenue' },
-  { id: '5', name: 'DataVault', tagline: 'Enterprise data security and compliance', industry: 'Cybersecurity', stage: 'Seed', location: 'New York', teamSize: 5, readinessScore: 78, matchScore: 85, tags: ['Security', 'Enterprise'], raisingAmount: '$3M', businessModel: 'B2B', isHot: false, isFeatured: false, revenue: '$12K MRR' },
-  { id: '6', name: 'EduTrack', tagline: 'Adaptive learning for K-12 institutions', industry: 'EdTech', stage: 'Pre-seed', location: 'Toronto', teamSize: 3, readinessScore: 69, matchScore: 74, tags: ['Education', 'AI'], raisingAmount: '$600K', businessModel: 'B2B', isHot: false, isFeatured: false, revenue: 'Pre-revenue' },
-  { id: '7', name: 'LogiChain', tagline: 'Supply chain visibility for e-commerce', industry: 'Logistics', stage: 'Series A', location: 'Singapore', teamSize: 8, readinessScore: 93, matchScore: 80, tags: ['Logistics', 'Analytics'], raisingAmount: '$5M', businessModel: 'B2B', isHot: true, isFeatured: false, revenue: '$210K MRR' },
-], { logoKey: 'logoUrl' });
+/*
+ * The founders the showcase already knows who are not on the board yet: US
+ * startups in dollars (NeuralFlow AI, PayStream) stood here beside a board of
+ * Harbor, Meltemi and Thalia in euros (docs §167).
+ */
+const ALL_STARTUPS: Startup[] = attachDemoPhotos(DEMO_SCOUTED.map((startup) => ({ ...startup })), { logoKey: 'logoUrl' });
 
 export default function InvestorScoutingPage() {
   const sayOne = useBilingualString();
@@ -410,10 +396,10 @@ export default function InvestorScoutingPage() {
       labelEn: 'Startups',
       labelEl: 'Startups',
       rows: filtered.map((s) =>
-        `${s.name} · ${s.industry}, ${s.stage}, ${s.businessModel} · ${s.location} · match ${s.matchScore}% · raising ${s.raisingAmount}${dealFor(s) ? ' · watched' : ''}`,
+        `${s.name} · ${s.industry}, ${s.stage}, ${s.businessModel} · ${s.location} · match ${s.matchScore}% · raising ${raising(s)}${dealFor(s) ? ' · watched' : ''}`,
       ),
       rowsEl: filtered.map((s) =>
-        `${s.name} · ${s.industry}, ${elWord(s.stage)}, ${s.businessModel} · ${s.location} · αντιστοίχιση ${s.matchScore}% · αναζητά ${s.raisingAmount}${dealFor(s) ? ' · στη λίστα παρακολούθησης' : ''}`,
+        `${s.name} · ${s.industry}, ${elWord(s.stage)}, ${s.businessModel} · ${s.location} · αντιστοίχιση ${s.matchScore}% · αντλεί ${raising(s)}${dealFor(s) ? ' · στη λίστα παρακολούθησης' : ''}`,
       ),
       total: startups.length,
       sample: startups.length > 0,
@@ -423,7 +409,7 @@ export default function InvestorScoutingPage() {
     choiceControl('industry', 'Industry', 'Κλάδος', industries.map((i) => ({ value: i, en: i === 'all' ? 'All industries' : i, el: i === 'all' ? 'Όλοι οι κλάδοι' : i })), industry, setIndustry),
     choiceControl('stage', 'Stage', 'Στάδιο', stages.map((i) => ({ value: i, en: i === 'all' ? 'All stages' : i, el: i === 'all' ? 'Όλα τα στάδια' : i })), stage, setStage),
     choiceControl('sort', 'Sort startups', 'Ταξινόμηση startups', [
-      { value: 'match', en: 'Best match', el: 'Καλύτερο ταίριασμα' },
+      { value: 'match', en: 'Best match', el: 'Καλύτερη αντιστοίχιση' },
       { value: 'readiness', en: 'Readiness', el: 'Ετοιμότητα' },
       { value: 'name', en: 'Name', el: 'Όνομα' },
     ], sortBy, setSortBy),
@@ -467,7 +453,7 @@ export default function InvestorScoutingPage() {
                 </Avatar>
               )}
               title={<span className="block truncate">{s.name}</span>}
-              subtitle={<BilingualText en={`${s.matchScore}% match · raising ${s.raisingAmount}`} el={`${s.matchScore}% ταίριασμα · αντλεί ${s.raisingAmount}`} compact />}
+              subtitle={<BilingualText en={`${s.matchScore}% match · raising ${raising(s)}`} el={`Αντιστοίχιση ${s.matchScore}% · αντλεί ${raising(s)}`} compact />}
             />
           ))}
           {featured.length === 0 ? (
@@ -560,19 +546,19 @@ export default function InvestorScoutingPage() {
             </Button>
             <div id="scouting-filters" className={cn('flex flex-col gap-3 sm:contents', !(filtersOpen || activeFilters.length > 0) && 'max-sm:hidden')}>
             <Select value={industry} onValueChange={setIndustry}>
-              <SelectTrigger aria-label={bilingualAria('Industry', 'Κλάδος')} className="w-full sm:w-[140px]"><SelectValue placeholder={sayOne("Industry", "Κλάδος")} /></SelectTrigger>
+              <SelectTrigger aria-label={bilingualAria('Industry', 'Κλάδος')} className="w-full sm:w-auto sm:min-w-[140px]"><SelectValue placeholder={sayOne("Industry", "Κλάδος")} /></SelectTrigger>
               <SelectContent>
                 {industries.map(i => <SelectItem key={i} value={i}>{i === 'all' ? <BilingualText en="All industries" el="Όλοι οι κλάδοι" compact /> : i}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={stage} onValueChange={setStage}>
-              <SelectTrigger aria-label={bilingualAria('Stage', 'Στάδιο')} className="w-full sm:w-[130px]"><SelectValue placeholder={sayOne("Stage", "Στάδιο")} /></SelectTrigger>
+              <SelectTrigger aria-label={bilingualAria('Stage', 'Στάδιο')} className="w-full sm:w-auto sm:min-w-[130px]"><SelectValue placeholder={sayOne("Stage", "Στάδιο")} /></SelectTrigger>
               <SelectContent>
                 {stages.map(s => <SelectItem key={s} value={s}>{s === 'all' ? <BilingualText en="All stages" el="Όλα τα στάδια" compact /> : s}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={model} onValueChange={setModel}>
-              <SelectTrigger aria-label={bilingualAria('Business model', 'Επιχειρηματικό μοντέλο')} className="w-full sm:w-[120px]"><SelectValue placeholder={sayOne("Model", "Μοντέλο")} /></SelectTrigger>
+              <SelectTrigger aria-label={bilingualAria('Business model', 'Επιχειρηματικό μοντέλο')} className="w-full sm:w-auto sm:min-w-[120px]"><SelectValue placeholder={sayOne("Model", "Μοντέλο")} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All models" el="Όλα τα μοντέλα" compact /></SelectItem>
                 {['B2B', 'B2C', 'B2B2C', 'Marketplace'].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
@@ -580,9 +566,9 @@ export default function InvestorScoutingPage() {
             </Select>
             </div>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger aria-label={bilingualAria('Sort by', 'Ταξινόμηση')} className="w-full sm:w-[130px]"><ArrowUpDown className="mr-1.5 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" /><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label={bilingualAria('Sort by', 'Ταξινόμηση')} className="w-full sm:w-auto sm:min-w-[130px]"><ArrowUpDown className="mr-1.5 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" /><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="match"><BilingualText en="Best Match" el="Καλύτερο ταίριασμα" compact /></SelectItem>
+                <SelectItem value="match"><BilingualText en="Best match" el="Καλύτερη αντιστοίχιση" compact /></SelectItem>
                 <SelectItem value="readiness"><BilingualText en="Readiness" el="Ετοιμότητα" compact /></SelectItem>
                 <SelectItem value="name"><BilingualText en="Name A–Z" el="Όνομα Α–Ω" compact /></SelectItem>
               </SelectContent>

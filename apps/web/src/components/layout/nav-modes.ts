@@ -212,7 +212,7 @@ export const investorWorkSections: NavSection[] = [
     section: 'Deal Flow',
     links: [
       { href: '/investor/scouting', label: 'Scout Startups', icon: Telescope },
-      { href: '/investor/pipeline', label: 'Pipeline', icon: GanttChart },
+      { href: '/investor/pipeline', label: 'Deal pipeline', icon: GanttChart },
       { href: '/investor/watchlist', label: 'Watchlist', icon: Eye },
       { href: '/data-room', label: 'Shared data rooms', icon: FolderOpen },
     ],

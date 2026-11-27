@@ -29,8 +29,8 @@ const SAMPLE_ROOM: SharedRoom = {
   roundType: 'seed',
   owner: { id: 'demo-elena', displayName: 'Elena Papadopoulos', avatarUrl: null, headline: 'Founder & CEO at Harbor' },
   documents: [
-    { id: 'demo-shared-deck', name: 'Investor deck', category: 'pitch', fileName: 'harbor-deck.pdf', fileMimeType: 'application/pdf', fileSizeBytes: 2_400_000, updatedAt: '2026-10-28T09:00:00.000Z' },
-    { id: 'demo-shared-model', name: 'Financial model', category: 'financials', fileName: 'harbor-model.xlsx', fileMimeType: 'application/vnd.ms-excel', fileSizeBytes: 640_000, updatedAt: '2026-10-21T09:00:00.000Z' },
+    { id: 'demo-shared-deck', name: 'Investor deck', category: 'pitch', fileName: 'harbor-deck.pdf', fileMimeType: 'application/pdf', fileSizeBytes: 2_400_000, updatedAt: '2026-08-28T09:00:00.000Z' },
+    { id: 'demo-shared-model', name: 'Financial model', category: 'financials', fileName: 'harbor-model.xlsx', fileMimeType: 'application/vnd.ms-excel', fileSizeBytes: 640_000, updatedAt: '2026-08-21T09:00:00.000Z' },
   ],
 };
 

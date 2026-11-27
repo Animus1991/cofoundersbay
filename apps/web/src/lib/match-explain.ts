@@ -119,12 +119,16 @@ const LOOKING_FOR_LABEL: Record<LookingForKind, { en: string; el: string; family
   investor: { en: 'an investor', el: 'επενδυτής', family: 'investor' },
 };
 
-/** Profile edit's rounds (`investmentStageOptions`), in both languages. */
+/**
+ * Profile edit's rounds (`investmentStageOptions`), in both languages. Greek
+ * keeps the rounds' established names, as the pipeline and fundraising write
+ * them; «προ-seed» and «Σειρά A» were a third spelling (docs §167).
+ */
 const ROUND_LABEL: Record<string, { en: string; el: string }> = {
-  'pre-seed': { en: 'pre-seed', el: 'προ-seed' },
+  'pre-seed': { en: 'pre-seed', el: 'pre-seed' },
   seed: { en: 'seed', el: 'seed' },
-  'series-a': { en: 'Series A', el: 'Σειρά A' },
-  'series-b': { en: 'Series B+', el: 'Σειρά B+' },
+  'series-a': { en: 'Series A', el: 'Series A' },
+  'series-b': { en: 'Series B+', el: 'Series B+' },
 };
 
 /*

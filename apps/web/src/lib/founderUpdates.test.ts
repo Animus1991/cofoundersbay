@@ -88,7 +88,7 @@ describe('the assistant', () => {
     vi.mocked(getUpdatesFeed).mockResolvedValue(feed);
     vi.mocked(getMyUpdates).mockResolvedValue(mine);
     const reply = await AREA_READERS.get_founder_updates({}, { t: t('el'), locale: 'el' });
-    expect(reply.section).toContain('Harbor: four clinics live');
+    expect(reply.section).toContain('Harbor: four programmes live');
     expect(reply.section).toContain('Από όσους ακολουθείτε:');
     expect(reply.section).toContain('δημόσια');
     expect(reply.citations[0]).toMatchObject({ type: 'update', href: '/updates?update=upd-elena-1' });

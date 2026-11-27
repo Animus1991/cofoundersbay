@@ -210,10 +210,10 @@ const availabilityOptions = [
   { value: 'On-demand', label: 'On-demand', labelEl: 'Κατ’ απαίτηση' },
 ];
 const investmentStageOptions = [
-  { value: 'pre-seed', label: 'Pre-seed', labelEl: 'Προ-seed' },
+  { value: 'pre-seed', label: 'Pre-seed', labelEl: 'Pre-seed' },
   { value: 'seed', label: 'Seed', labelEl: 'Seed' },
-  { value: 'series-a', label: 'Series A', labelEl: 'Σειρά A' },
-  { value: 'series-b', label: 'Series B+', labelEl: 'Σειρά B+' },
+  { value: 'series-a', label: 'Series A', labelEl: 'Series A' },
+  { value: 'series-b', label: 'Series B+', labelEl: 'Series B+' },
   { value: 'bootstrapped', label: 'Bootstrapped', labelEl: 'Αυτοχρηματοδοτούμενο' },
 ];
 const orgTypeOptions = [

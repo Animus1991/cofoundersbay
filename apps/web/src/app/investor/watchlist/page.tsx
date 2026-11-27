@@ -18,7 +18,6 @@ import {
   MoreVertical,
   MessageCircle,
   GitCompare,
-  Clock,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -63,6 +62,8 @@ import { PageFacts } from '@/components/common/PageFacts';
 import { FailedLine } from '@/components/dashboard/SectionCard';
 import { ASK } from '@/lib/page-questions';
 import { elWord } from '@/lib/rows-el';
+import { attachDemoPhotos } from '@/lib/demo/photos';
+import { DEMO_DEALS } from '@/lib/demo/deals-world';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -140,96 +141,15 @@ function toWatchedActivity(type: string | null | undefined): WatchedStartup['act
   return type === 'fundraise' || type === 'milestone' || type === 'team' ? type : 'update';
 }
 
-const MOCK_WATCHED: WatchedStartup[] = [
-  {
-    id: '1',
-    name: 'NeuralFlow AI',
-    logoUrl: null,
-    tagline: 'AI-powered workflow automation for enterprises',
-    industry: 'AI/ML',
-    stage: 'Seed',
-    location: 'San Francisco',
-    teamSize: 3,
-    readinessScore: 85,
-    matchScore: 92,
-    raisingAmount: '$1.5M',
-    tags: ['AI/ML', 'B2B', 'SaaS'],
-    watchedSince: '2026-08-14T10:00:00.000Z',
-    alertsEnabled: true,
-    lastActivity: '2026-09-04T08:00:00.000Z',
-    activityType: 'milestone',
-    progressChange: +8,
-    notes: 'Strong team, unique positioning. Follow up after MVP demo.',
-  },
-  {
-    id: '2',
-    name: 'PayStream',
-    logoUrl: null,
-    tagline: 'Next-gen payment infrastructure for SMBs',
-    industry: 'FinTech',
-    stage: 'Seed',
-    location: 'London',
-    teamSize: 4,
-    readinessScore: 91,
-    matchScore: 88,
-    raisingAmount: '$2M',
-    tags: ['FinTech', 'Payments', 'B2B'],
-    watchedSince: '2026-08-21T10:00:00.000Z',
-    alertsEnabled: true,
-    lastActivity: '2026-09-03T10:00:00.000Z',
-    activityType: 'fundraise',
-    progressChange: +5,
-    notes: 'Already have LOIs from 2 angels. Valuation looks fair.',
-  },
-  {
-    id: '3',
-    name: 'GreenGrid Energy',
-    logoUrl: null,
-    tagline: 'Smart grid solutions for renewable energy',
-    industry: 'CleanTech',
-    stage: 'Pre-seed',
-    location: 'Berlin',
-    teamSize: 2,
-    readinessScore: 72,
-    matchScore: 78,
-    raisingAmount: '$500K',
-    tags: ['CleanTech', 'Energy', 'IoT'],
-    watchedSince: '2026-08-04T10:00:00.000Z',
-    alertsEnabled: false,
-    lastActivity: '2026-09-01T10:00:00.000Z',
-    activityType: 'update',
-    progressChange: -2,
-    notes: 'Tech is solid but market timing uncertain. Monitor for 3 more months.',
-  },
-  {
-    id: '4',
-    name: 'DataVault',
-    logoUrl: null,
-    tagline: 'Enterprise data security and compliance',
-    industry: 'Cybersecurity',
-    stage: 'Seed',
-    location: 'New York',
-    teamSize: 5,
-    readinessScore: 78,
-    matchScore: 85,
-    raisingAmount: '$3M',
-    tags: ['Security', 'Enterprise', 'SaaS'],
-    watchedSince: '2026-08-30T10:00:00.000Z',
-    alertsEnabled: true,
-    lastActivity: '2026-09-04T05:00:00.000Z',
-    activityType: 'team',
-    progressChange: +12,
-    notes: 'New CTO hire is very strong. Re-evaluating conviction.',
-  },
-];
-
-const MOCK_ACTIVITY: ActivityItem[] = [
-  { id: 'a1', startupId: '1', startupName: 'NeuralFlow AI', logoUrl: null, type: 'milestone', title: 'Reached 100 beta users milestone', time: '2026-09-04T08:00:00.000Z' },
-  { id: 'a2', startupId: '4', startupName: 'DataVault', logoUrl: null, type: 'team', title: 'Added ex-Palantir CTO to team', time: '2026-09-04T05:00:00.000Z' },
-  { id: 'a3', startupId: '2', startupName: 'PayStream', logoUrl: null, type: 'fundraise', title: 'Updated raise target to $2M SAFE', time: '2026-09-03T10:00:00.000Z' },
-  { id: 'a4', startupId: '3', startupName: 'GreenGrid Energy', logoUrl: null, type: 'update', title: 'Published Q1 2025 progress update', time: '2026-09-01T10:00:00.000Z' },
-  { id: 'a5', startupId: '1', startupName: 'NeuralFlow AI', logoUrl: null, type: 'deck', title: 'Updated pitch deck (v4)', time: '2026-08-31T10:00:00.000Z' },
-];
+/*
+ * The showcase's Discovered deals, read through the same mapping as a live
+ * watchlist: the sample was NeuralFlow AI, PayStream and DataVault in
+ * dollars beside a preview board of Harbor, Meltemi and Thalia (docs §167).
+ */
+const MOCK_WATCHED: WatchedStartup[] = attachDemoPhotos(
+  DEMO_DEALS.filter((deal) => deal.pipelineStage === 'discovered').map(toWatched),
+  { logoKey: 'logoUrl' },
+);
 
 const ACTIVITY_TYPE_CONFIG: Record<ActivityItem['type'], { label: string; labelEl: string; color: string }> = {
   milestone: { label: 'Milestone', labelEl: 'Ορόσημο', color: 'bg-status-success-bg text-status-success' },
@@ -249,6 +169,19 @@ const ACTIVITY_TYPE_CONFIG: Record<ActivityItem['type'], { label: string; labelE
 function toActivityType(type: string | null | undefined): ActivityItem['type'] {
   return type && type in ACTIVITY_TYPE_CONFIG ? (type as ActivityItem['type']) : 'update';
 }
+
+/** The showcase board's events, newest first, as the activity endpoint lists them. */
+const MOCK_ACTIVITY: ActivityItem[] = DEMO_DEALS
+  .flatMap((deal) => deal.recentEvents.map((event) => ({
+    id: event.id,
+    startupId: deal.id,
+    startupName: deal.name,
+    logoUrl: deal.logoUrl,
+    type: toActivityType(event.type),
+    title: event.title,
+    time: event.createdAt,
+  })))
+  .sort((a, b) => b.time.localeCompare(a.time));
 
 // Each answers how it ended, so the assistant's card can say so; the card's
 // buttons ignore the answer, since the toast has already told the reader.
@@ -391,7 +324,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
             )}
             {startup.matchScore != null && (
             <div className={cn('shrink-0', startup.readinessScore != null && 'text-right')}>
-              <p className="text-xs text-muted-foreground"><BilingualText en="Match" el="Ταίριασμα" compact /></p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Match" el="Αντιστοίχιση" compact /></p>
               <p className="card-body font-semibold tabular-nums text-primary-accessible">{startup.matchScore}%</p>
             </div>
             )}
@@ -400,8 +333,8 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
 
         {/* Notes */}
         {startup.notes && (
-          <p className="card-body line-clamp-1 italic text-muted-foreground">
-            📝 {startup.notes}
+          <p className="card-body line-clamp-1 text-muted-foreground">
+            <BilingualText en="Note:" el="Σημείωση:" compact /> <span className="italic">{startup.notes}</span>
           </p>
         )}
 
@@ -409,8 +342,8 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
           meta={(
             <FactLine
               items={[
-                <span key="activity" className="inline-flex items-center gap-1"><Clock className="icon-sm" aria-hidden="true" /><RelativeTime date={startup.lastActivity} format={formatRelativeTime} /></span>,
-                <span key="since"><BilingualText en="Watching since" el="Παρακολουθείται από" compact /> <RelativeTime date={startup.watchedSince} format={formatRelativeTime} /></span>,
+                <span key="activity"><BilingualText en="Last update:" el="Τελευταία ενημέρωση:" compact /> <RelativeTime date={startup.lastActivity} format={formatRelativeTime} /></span>,
+                <span key="since"><BilingualText en="Added" el="Προστέθηκε" compact /> <RelativeTime date={startup.watchedSince} format={formatRelativeTime} /></span>,
               ]}
             />
           )}
@@ -519,12 +452,12 @@ export default function InvestorWatchlistPage() {
     {
       id: 'watched',
       labelEn: 'Watched startups',
-      labelEl: 'Startups υπό παρακολούθηση',
+      labelEl: 'Startups σε παρακολούθηση',
       rows: watchedLoading ? undefined : filtered.map((s) =>
         `${s.name} · ${s.industry}, ${s.stage} · ${s.location}${s.raisingAmount ? ` · raising ${s.raisingAmount}` : ''}${s.alertsEnabled ? ' · alerts on' : ''}`,
       ),
       rowsEl: watchedLoading ? undefined : filtered.map((s) =>
-        `${s.name} · ${s.industry}, ${elWord(s.stage)} · ${s.location}${s.raisingAmount ? ` · αναζητά ${s.raisingAmount}` : ''}${s.alertsEnabled ? ' · ειδοποιήσεις ενεργές' : ''}`,
+        `${s.name} · ${s.industry}, ${elWord(s.stage)} · ${s.location}${s.raisingAmount ? ` · αντλεί ${s.raisingAmount}` : ''}${s.alertsEnabled ? ' · ειδοποιήσεις ενεργές' : ''}`,
       ),
       total: watched.length,
       sample: !watchLive,
@@ -532,7 +465,7 @@ export default function InvestorWatchlistPage() {
   ]);
   usePageControls([
     choiceControl('watchlist_tab', 'Watchlist section', 'Ενότητα λίστας', [
-      { value: 'watchlist', en: 'My watchlist', el: 'Η λίστα μου' },
+      { value: 'watchlist', en: 'Watching', el: 'Σε παρακολούθηση' },
       { value: 'activity', en: 'Recent activity', el: 'Πρόσφατη δραστηριότητα' },
     ], tab, setTab),
     choiceControl('alerts_only', 'Alerts filter', 'Φίλτρο ειδοποιήσεων', [
@@ -587,13 +520,13 @@ export default function InvestorWatchlistPage() {
             { id: 'match', value: (() => {
               const scored = watched.filter((w) => w.matchScore != null);
               return scored.length ? `${Math.round(scored.reduce((sum, w) => sum + (w.matchScore ?? 0), 0) / scored.length)}%` : null;
-            })(), en: 'average match', el: 'μέσο ταίριασμα' },
+            })(), en: 'average match', el: 'μέση αντιστοίχιση' },
           ]}
         />
 
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList>
-            <TabsTrigger value="watchlist"><BilingualText en="My watchlist" el="Υπό παρακολούθηση" compact />{watchedFailed ? null : <Counter value={watched.length} />}</TabsTrigger>
+            <TabsTrigger value="watchlist"><BilingualText en="Watching" el="Σε παρακολούθηση" compact />{watchedFailed ? null : <Counter value={watched.length} />}</TabsTrigger>
             {/* The feed is every deal on the board, not only the watched
                 ones: "Recent activity" under "Watchlist" said otherwise. */}
             <TabsTrigger value="activity"><BilingualText en="Board activity" el="Δραστηριότητα πίνακα" compact />{activityFailed && !isSample ? null : <Counter value={activity.length} />}</TabsTrigger>
@@ -651,7 +584,7 @@ export default function InvestorWatchlistPage() {
                     ? <BilingualText en="Your watchlist is empty" el="Η λίστα παρακολούθησής σας είναι άδεια" compact />
                     : <BilingualText en="No results" el="Κανένα αποτέλεσμα" compact />}
                   description={watched.length === 0
-                    ? <BilingualText en="Press Watch on a startup in Scouting and it is listed here." el="Πατήστε «Παρακολούθηση» σε μια startup στην Ανίχνευση και θα εμφανιστεί εδώ." wrap />
+                    ? <BilingualText en="Press Watch on a startup in Scouting and it is listed here." el="Πατήστε «Παρακολούθηση» σε μια startup στην Αναζήτηση startups και θα εμφανιστεί εδώ." wrap />
                     : <BilingualText en="No watched startup matches the search or the filter." el="Καμία startup της λίστας δεν ταιριάζει με την αναζήτηση ή το φίλτρο." wrap />}
                   action={watched.length === 0 ? (
                     <Button size="sm" asChild>

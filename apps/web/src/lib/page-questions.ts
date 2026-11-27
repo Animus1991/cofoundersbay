@@ -323,7 +323,7 @@ export const ASK = {
   },
   scoutingSample: {
     en: 'Why does scouting show sample startups?',
-    el: 'Γιατί η ανίχνευση δείχνει δείγματα startups;',
+    el: 'Γιατί η Αναζήτηση startups δείχνει δείγματα;',
     answer: 'samples',
   },
   earningsSample: {

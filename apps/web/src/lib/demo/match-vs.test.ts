@@ -71,7 +71,7 @@ describe('the demo comparison is computed from the two sample profiles', () => {
     // Marcus shares no skill with the visitor; the sample used to say he did.
     expect(greek('user-marcus').some((t) => t.startsWith('Κοινές δεξιότητες'))).toBe(false);
     expect(greek('user-marcus')).toContain('Κοντινά στάδια: Ιδέα και MVP');
-    expect(greek('user-nikos')[0]).toBe('Επενδύει σε προ-seed: ταιριάζει στο στάδιό σας, «Ιδέα»');
+    expect(greek('user-nikos')[0]).toBe('Επενδύει σε pre-seed: ταιριάζει στο στάδιό σας, «Ιδέα»');
     expect(greek('user-sarah')[0]).toBe('Ταιριάζει με την αναζήτησή σας: μέντορας');
   });
 });

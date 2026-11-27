@@ -119,7 +119,7 @@ describe('why two members match', () => {
     expect(nikos[0]).toMatchObject({
       code: 'investor_stage',
       en: 'Invests at pre-seed: fits your idea stage',
-      el: 'Επενδύει σε προ-seed: ταιριάζει στο στάδιό σας, «Ιδέα»',
+      el: 'Επενδύει σε pre-seed: ταιριάζει στο στάδιό σας, «Ιδέα»',
     });
     // "Invests in startups" would repeat it.
     expect(codes(nikos)).not.toContain('role');

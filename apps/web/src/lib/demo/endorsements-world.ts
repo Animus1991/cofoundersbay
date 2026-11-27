@@ -91,7 +91,7 @@ export const DEMO_ENDORSEMENTS: readonly DemoEndorsement[] = [
   // Between the other demo people.
   {
     id: 'sample-end-7', from: SARAH, to: ELENA, skill: 'Product', relationship: 'Mentor', basis: ['mentoring'],
-    content: 'Elena brought a different version of the same question to each session and had tested my last answer before the next one. The clinic onboarding she shipped between them is the clearest evidence.',
+    content: 'Elena brought a different version of the same question to each session and had tested my last answer before the next one. The cohort onboarding she shipped between them is the clearest evidence.',
     isApproved: true, ageDays: 45,
   },
   {

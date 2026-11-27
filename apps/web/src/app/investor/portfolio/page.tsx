@@ -46,6 +46,9 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { FailedLine } from '@/components/dashboard/SectionCard';
 import { elWord } from '@/lib/rows-el';
+import { PageFacts } from '@/components/common/PageFacts';
+import { attachDemoPhotos } from '@/lib/demo/photos';
+import { DEMO_DEALS } from '@/lib/demo/deals-world';
 
 const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
 const PortfolioValueChart = dynamic(
@@ -56,26 +59,6 @@ const SectorMixChart = dynamic(
   () => import('./InvestorPortfolioCharts').then((m) => ({ default: m.SectorMixChart })),
   { ssr: false, loading: ChartFallback },
 );
-
-// The sample portfolio's value, in thousands of euros: from the €275K its
-// four rows invested to the €535K they are worth, so the chart, the tiles and
-// the rows under it are one sample (the chart ended at 555, beside tiles of
-// 275 and 535 in dollars). Months as the live series writes them.
-const PORTFOLIO_VALUE_HISTORY = [
-  { month: '10/24', value: 275 },
-  { month: '12/24', value: 300 },
-  { month: '02/25', value: 345 },
-  { month: '06/25', value: 410 },
-  { month: '12/25', value: 470 },
-  { month: '06/26', value: 535 },
-];
-
-const SECTOR_DISTRIBUTION = [
-  { name: 'FoodTech', value: 50, color: 'hsl(var(--chart-3))' },
-  { name: 'Cybersecurity', value: 100, color: 'hsl(var(--chart-5))' },
-  { name: 'Enterprise', value: 75, color: 'hsl(var(--chart-2))' },
-  { name: 'Logistics', value: 50, color: 'hsl(var(--chart-6))' },
-];
 
 type Investment = {
   id: string;
@@ -171,13 +154,13 @@ function portfolioSectorMix(deals: InvestorDeal[]): { name: string; value: numbe
   }));
 }
 
-// In euros, as every live figure on the page; dates as the live rows write them.
-const MOCK_INVESTMENTS: Investment[] = [
-  { id: '1', name: 'FoodTech Pro', industry: 'FoodTech', investedAt: '02/2025', amount: '€50K', currentValue: '€75K', returnPct: 50, stage: 'Seed', status: 'active', teamSize: 5, lastUpdate: '2026-08-28T09:00:00.000Z' },
-  { id: '2', name: 'CloudSecure', industry: 'Cybersecurity', investedAt: '01/2025', amount: '€100K', currentValue: '€120K', returnPct: 20, stage: 'Series A', status: 'active', teamSize: 12, lastUpdate: '2026-09-01T09:00:00.000Z' },
-  { id: '3', name: 'DataVault', industry: 'Enterprise', investedAt: '12/2024', amount: '€75K', currentValue: '€90K', returnPct: 20, stage: 'Seed', status: 'active', teamSize: 8, lastUpdate: '2026-08-21T09:00:00.000Z' },
-  { id: '4', name: 'QuickShip', industry: 'Logistics', investedAt: '10/2024', amount: '€50K', currentValue: '€250K', returnPct: 400, stage: 'Series B', status: 'exited', teamSize: 25, lastUpdate: '2026-03-18T09:00:00.000Z' },
-];
+/*
+ * The showcase's invested deals (lib/demo/deals-world), read by the same
+ * functions as a live portfolio: the sample was FoodTech Pro, CloudSecure,
+ * DataVault and QuickShip, with a value history and a sector mix of its own,
+ * beside a preview portfolio of Aegis Health and Orion Grid (docs §167).
+ */
+const SAMPLE_DEALS: InvestorDeal[] = attachDemoPhotos(DEMO_DEALS.filter((deal) => deal.pipelineStage === 'invested'), { logoKey: 'logoUrl' });
 
 /** One investment as a one-row CSV - what "Export Report" hands over. */
 function exportInvestment(inv: Investment) {
@@ -229,9 +212,11 @@ function InvestmentCard({ investment, live }: { investment: Investment; live: bo
                 // A sample row has no deal page to open.
                 <span>{investment.name}</span>
               )}
-              <Badge variant="outline" className={cn('text-xs', statusColors[investment.status])}>
-                <StatusText value={investment.status} />
-              </Badge>
+              {investment.status === 'active' ? null : (
+                <Badge variant="outline" className={cn('text-xs', statusColors[investment.status])}>
+                  <StatusText value={investment.status} />
+                </Badge>
+              )}
             </span>
           )}
           subtitle={<FactLine className="text-sm" items={[investment.industry, investment.stage]} />}
@@ -297,7 +282,7 @@ function InvestmentCard({ investment, live }: { investment: Investment; live: bo
         <FactLine
           items={[
             // "0 team members" for a deal with no team size recorded.
-            investment.teamSize > 0 ? <BilingualText key="team" en={`${investment.teamSize} team members`} el={`${investment.teamSize} μέλη ομάδας`} compact /> : null,
+            investment.teamSize > 0 ? <BilingualText key="team" en={`Team of ${investment.teamSize}`} el={`Ομάδα ${investment.teamSize}`} compact /> : null,
             <span key="update"><BilingualText en="Last update:" el="Τελευταία ενημέρωση:" compact /> <RelativeTime date={investment.lastUpdate} format={formatRelativeTime} /></span>,
           ]}
         />
@@ -328,28 +313,25 @@ export default function InvestorPortfolioPage() {
   });
 
   const liveInvestments = (investedPage?.deals ?? []).map(toInvestment);
-  const investments = liveInvestments.length > 0
-    ? liveInvestments
-    : showDemoData ? MOCK_INVESTMENTS : [];
   const isLive = liveInvestments.length > 0;
   // The showcase rows, shown only on an empty portfolio with demo data on.
   const isSample = !isLive && showDemoData;
+  const investments = isLive ? liveInvestments : showDemoData ? SAMPLE_DEALS.map(toInvestment) : [];
   // An unread portfolio said "No portfolio companies yet" (docs §93).
   const failed = isError && !investedPage;
   // Both charts come from the rows on this page. The fixed series and sector
   // mix described four mock companies (FoodTech Pro, CloudSecure...) under a
   // portfolio of Aegis Health and Orion Grid, in dollars beside euro tiles.
-  const liveDeals = investedPage?.deals ?? [];
-  const valueHistory = isLive
-    ? portfolioValueSeries(liveDeals, sayOne('Now', 'Σήμερα'))
-    : showDemoData ? PORTFOLIO_VALUE_HISTORY : [];
-  const sectorData = isLive
-    ? portfolioSectorMix(liveDeals)
-    : showDemoData ? SECTOR_DISTRIBUTION : [];
-
-  const totalInvested = 275000;
-  const totalValue = 535000;
-  const totalReturn = ((totalValue - totalInvested) / totalInvested) * 100;
+  const shownDeals = isLive ? investedPage?.deals ?? [] : isSample ? SAMPLE_DEALS : [];
+  const valueHistory = portfolioValueSeries(shownDeals, sayOne('Now', 'Σήμερα'));
+  const sectorData = portfolioSectorMix(shownDeals);
+  // The sample's figures are summed from its rows, as the API sums a live one.
+  const sampleInvested = SAMPLE_DEALS.reduce((sum, d) => sum + (d.investedCents ?? 0), 0);
+  const sampleValue = SAMPLE_DEALS.reduce((sum, d) => sum + (d.currentValueCents ?? d.investedCents ?? 0), 0);
+  const sampleReturn = sampleInvested ? Math.round(((sampleValue - sampleInvested) / sampleInvested) * 100) : null;
+  const returnPct = isSample ? sampleReturn : summary?.returnPct ?? null;
+  // Unread, a figure is left out rather than shown as a dash.
+  const figure = (cents: number | null | undefined) => (cents == null ? null : money(cents, 'EUR'));
 
   const [chartTab, setChartTab] = useState('performance');
   const exportPortfolio = () =>
@@ -469,29 +451,18 @@ export default function InvestorPortfolioPage() {
             askAiPrompt={ASK.portfolioEmpty}
           />
         ) : null}
-        {/* Summary Stats */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            /*
-             * "$275K" and "$535K" were string constants sitting beside a real
-             * company count. Summed by the API over the same rows the table
-             * below lists, so the four tiles are one statement.
-             */
-            { label: 'Total invested', labelEl: 'Συνολική επένδυση', value: isSample ? '€275K' : money(summary?.deployedCents, 'EUR') },
-            { label: 'Current value', labelEl: 'Τρέχουσα αξία', value: isSample ? '€535K' : money(summary?.currentValueCents, 'EUR') },
-            { label: 'Total return', labelEl: 'Συνολική απόδοση', value: isSample
-                ? `+${totalReturn.toFixed(0)}%`
-                : (summary?.returnPct == null ? '\u2014' : `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}%`) },
-            { label: 'Companies', labelEl: 'Εταιρείες', value: investments.length },
-          ].map(({ label, labelEl, value }) => (
-            <Card key={label}>
-              <CardContent>
-                <p className="page-stat text-xl font-bold tabular-nums">{value}</p>
-                <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact /></p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* The figures, one line in the header as on the pipeline: four
+            tiles stood between the header and the first company (docs §167). */}
+        <PageFacts
+          labelEn="Your portfolio in figures"
+          labelEl="Το χαρτοφυλάκιό σας σε αριθμούς"
+          facts={[
+            { id: 'invested', value: figure(isSample ? sampleInvested : summary?.deployedCents), en: 'invested', el: 'επενδυμένα' },
+            { id: 'value', value: figure(isSample ? sampleValue : summary?.currentValueCents), en: 'current value', el: 'τρέχουσα αξία' },
+            { id: 'return', value: returnPct == null ? null : `${returnPct > 0 ? '+' : ''}${returnPct}%`, en: 'return', el: 'απόδοση' },
+            { id: 'companies', value: investments.length, en: investments.length === 1 ? 'company' : 'companies', el: investments.length === 1 ? 'εταιρεία' : 'εταιρείες' },
+          ]}
+        />
 
         {/* The companies first; how the whole moved over time under them. */}
         <div className="space-y-3">
@@ -511,7 +482,7 @@ export default function InvestorPortfolioPage() {
           <TabsContent value="performance">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle><BilingualText en="Portfolio value (€K)" el="Αξία portfolio (χιλ. €)" compact /></CardTitle>
+                <CardTitle><BilingualText en="Portfolio value (€K)" el="Αξία χαρτοφυλακίου (χιλ. €)" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <PortfolioValueChart data={valueHistory} valueLabel={sayOne('Value', 'Αξία')} />
