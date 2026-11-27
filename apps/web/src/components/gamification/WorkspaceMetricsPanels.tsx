@@ -1,5 +1,6 @@
 'use client';
 
+import { decimalEl } from '@/lib/i18n/format';
 import { useQuery } from '@tanstack/react-query';
 import {
   getWorkspaceReadiness,
@@ -139,7 +140,7 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
           <p className="text-2xs text-status-warning mt-1">
             <BilingualText
               en={`Bottleneck suppression active (×${bottleneck.toFixed(2)}) — strengthen critical dimensions`}
-              el={`Ενεργή καταστολή στενωπού (×${bottleneck.toFixed(2)}) — ενισχύστε τις κρίσιμες διαστάσεις`}
+              el={`Ενεργή καταστολή στενωπού (×${decimalEl(bottleneck, 2)}) — ενισχύστε τις κρίσιμες διαστάσεις`}
               wrap
             />
           </p>

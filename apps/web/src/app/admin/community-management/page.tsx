@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { listGroups } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { formatRelativeTime } from '@/lib/utils';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, decimalEl } from '@/lib/i18n/format';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { elWord } from '@/lib/rows-el';
@@ -177,7 +177,7 @@ export default function CommunityManagementPage() {
                 )}
                 meta={(
                   <span className="tabular-nums" title={bilingualInline('Posts per member', 'Αναρτήσεις ανά μέλος')}>
-                    <BilingualText en={`${ratio.toFixed(2)} posts / member`} el={`${ratio.toFixed(2)} αναρτήσεις / μέλος`} compact />
+                    <BilingualText en={`${ratio.toFixed(2)} posts / member`} el={`${decimalEl(ratio, 2)} αναρτήσεις / μέλος`} compact />
                   </span>
                 )}
                 asideStays

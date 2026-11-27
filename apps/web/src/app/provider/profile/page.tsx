@@ -42,7 +42,7 @@ import { pressableProps } from '@/lib/pressable';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
-import { bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria, decimalEl } from '@/lib/i18n/format';
 import { FailedLine } from '@/components/dashboard/SectionCard';
 import { useUnsavedForm } from '@/hooks/useUnsavedForm';
 import { DraftOffer, UnsavedMark } from '@/components/common/UnsavedNotice';
@@ -318,7 +318,7 @@ export default function ProviderProfilePage() {
                 <span key="rating" className="inline-flex items-center gap-1">
                   <Star className="icon-sm text-status-warning" aria-hidden="true" />
                   {summary?.avgRating != null
-                    ? <BilingualText en={`${summary.avgRating.toFixed(1)} (${summary.reviewCount} reviews)`} el={`${summary.avgRating.toFixed(1)} (${summary.reviewCount} αξιολογήσεις)`} compact />
+                    ? <BilingualText en={`${summary.avgRating.toFixed(1)} (${summary.reviewCount} reviews)`} el={`${decimalEl(summary.avgRating, 1)} (${summary.reviewCount} αξιολογήσεις)`} compact />
                     : <BilingualText en="No reviews yet" el="Καμία αξιολόγηση ακόμη" compact />}
                 </span>,
                 // "? clients" until a number is typed: said once there is one.

@@ -64,7 +64,7 @@ import {
 } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
-import { bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria, decimalEl } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
@@ -447,7 +447,7 @@ export default function DataRoomPage() {
           <p className="text-xs text-muted-foreground">
             <BilingualText
               en={`${documents.length} ${documents.length === 1 ? 'document' : 'documents'} · ${storageUsedPercent.toFixed(1)}% used`}
-              el={`${documents.length} ${documents.length === 1 ? 'έγγραφο' : 'έγγραφα'} · ${storageUsedPercent.toFixed(1)}% σε χρήση`}
+              el={`${documents.length} ${documents.length === 1 ? 'έγγραφο' : 'έγγραφα'} · ${decimalEl(storageUsedPercent, 1)}% σε χρήση`}
               compact
               wrap
             />

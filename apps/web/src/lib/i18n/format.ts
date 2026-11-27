@@ -167,3 +167,11 @@ export function formatCompactMoney(amount: number, currency = 'EUR', maximumFrac
   }
   return `${sign}${symbol}${number}${suffix}`;
 }
+
+/**
+ * A number with decimals as Greek writes it: «4,8», not «4.8». For the `el`
+ * side of a bilingual string, where `toFixed` printed the English point (§166).
+ */
+export function decimalEl(value: number, digits = 1): string {
+  return value.toLocaleString('el-GR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
