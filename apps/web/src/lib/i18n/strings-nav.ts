@@ -123,7 +123,7 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/mentor/mentees': 'Καθοδηγούμενοι',
   '/mentor/profile': 'Προφίλ μέντορα',
   '/mentor/requests': 'Αιτήματα',
-  '/mentor/reviews': 'Κριτικές',
+  '/mentor/reviews': 'Αξιολογήσεις',
   '/mentor/sessions': 'Οι συνεδρίες μου',
   '/mentoring': 'Μέντορες',
   '/messages': 'Μηνύματα',

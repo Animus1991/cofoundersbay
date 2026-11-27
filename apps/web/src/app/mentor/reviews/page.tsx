@@ -34,7 +34,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { StarRating } from '@/components/common/StarRating';
-import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { demoPortrait } from '@/lib/demo/photos';
 import { ASK } from '@/lib/page-questions';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
@@ -67,7 +67,8 @@ function ReviewCard({ review }: { review: Review }) {
         />
         {/* The quote starts on the avatar's edge, as on Endorsements. */}
         <p className="card-body text-muted-foreground">{review.comment}</p>
-        <CardFoot meta={review.date || undefined}>
+        {/* «24/11/2026» here, «25 Νοε» everywhere else (§166). */}
+        <CardFoot meta={review.date ? <BilingualText en={formatDate(review.date, 'en', { day: 'numeric', month: 'short', year: 'numeric' })} el={formatDate(review.date, 'el', { day: 'numeric', month: 'short', year: 'numeric' })} compact /> : undefined}>
           {/* Neither had a handler, and reviews have no helpful count or
               reply field to write - the same as on the provider side. */}
           <WithDisabledReason reasonEn="Reviews cannot be marked helpful yet" reasonEl="Οι αξιολογήσεις δεν μπορούν ακόμη να σημειωθούν ως χρήσιμες">
@@ -99,7 +100,7 @@ function sampleReviews(now: number | null): Review[] {
     menteeAvatar: demoPortrait(r.mentee) ?? undefined,
     rating: r.rating,
     comment: r.comment,
-    date: now == null ? '' : formatDate(now - r.ago * 86_400_000, 'en', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+    date: now == null ? '' : new Date(now - r.ago * 86_400_000).toISOString(),
     sessionType: r.sessionType,
     helpful: r.helpful,
   }));
@@ -107,6 +108,7 @@ function sampleReviews(now: number | null): Review[] {
 
 export default function MentorReviewsPage() {
   const sayOne = useBilingualString();
+  const { primary } = useLanguagePreference();
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [ratingFilter, setRatingFilter] = useState<string>('all');
@@ -135,7 +137,8 @@ export default function MentorReviewsPage() {
     return matchesSearch && matchesRating;
   });
 
-  const avgRating = (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1);
+  const avgValue = reviews.length ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length : 0;
+  const avgRating = avgValue.toLocaleString(primary === 'el' ? 'el-GR' : 'en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => ({
     rating,
     count: reviews.filter((r) => r.rating === rating).length,
@@ -194,7 +197,7 @@ export default function MentorReviewsPage() {
               <div className="flex items-center gap-6">
                 <div className="text-center">
                   <p className="text-3xl font-bold">{avgRating}</p>
-                  <StarRating rating={Math.round(parseFloat(avgRating))} />
+                  <StarRating rating={Math.round(avgValue)} />
                   <p className="text-sm text-muted-foreground mt-1"><BilingualText en={`${reviews.length} reviews`} el={`${reviews.length} αξιολογήσεις`} compact /></p>
                 </div>
                 <div className="flex-1 space-y-2">
@@ -248,7 +251,7 @@ export default function MentorReviewsPage() {
             />
           </div>
           <Select value={ratingFilter} onValueChange={setRatingFilter}>
-            <SelectTrigger aria-label="Rating. Βαθμολογία" className="w-full sm:w-[150px]">
+            <SelectTrigger aria-label="Rating. Βαθμολογία" className="w-full sm:w-auto sm:min-w-[150px]">
               <SelectValue placeholder={sayOne("Rating", "Βαθμολογία")} />
             </SelectTrigger>
             <SelectContent>

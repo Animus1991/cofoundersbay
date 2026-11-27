@@ -88,9 +88,10 @@ const PERIODS: { value: string; en: string; el: string; days: number }[] = [
 ];
 
 
-// Mentor fees are in euros (docs §101).
+// Mentor fees are in euros (docs §101). Cents only when there are some:
+// «€120.00» here beside the overview's «€270» for the same month (§166).
 function formatCurrency(amount: number, currency = 'EUR') {
-  return formatFee(amount, currency, 2);
+  return formatFee(amount, currency, Number.isInteger(amount) ? 0 : 2);
 }
 
 export default function MentorEarningsPage() {
@@ -306,7 +307,7 @@ export default function MentorEarningsPage() {
         <Tabs defaultValue="transactions">
           <TabsList>
             <TabsTrigger value="transactions"><BilingualText en="Transactions" el="Συναλλαγές" compact /></TabsTrigger>
-            <TabsTrigger value="chart"><BilingualText en="Monthly Overview" el="Μηνιαία επισκόπηση" compact /></TabsTrigger>
+            <TabsTrigger value="chart"><BilingualText en="Monthly summary" el="Μηνιαία σύνοψη" compact /></TabsTrigger>
             <TabsTrigger value="payout"><BilingualText en="Payout Settings" el="Ρυθμίσεις πληρωμών" compact /></TabsTrigger>
           </TabsList>
 

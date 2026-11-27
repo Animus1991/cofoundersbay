@@ -76,16 +76,15 @@ function SessionCard({ session, next = false, counterpart, onReschedule, onCance
         <CardHead
           mark={<SessionDateTile date={scheduledDate} face={counterpart ? { src: counterpart.avatarUrl, name: counterpart.displayName } : null} />}
           title={session.title || <BilingualText en="Mentorship session" el="Συνεδρία καθοδήγησης" compact />}
-          subtitle={formattedTime}
-          aside={(
-            <>
-              <Badge variant="outline" className={cn('text-xs', statusColors[session.status])}>
-                <StatusText value={session.status} />
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
-              </Badge>
-            </>
+          // Where the session lives, beside its time, as a booking says
+          // «· Κράτηση»; as a second pill it wrapped onto a line of its own.
+          // The state only when the tab does not already say it: Upcoming is
+          // scheduled, Past is completed (§166).
+          subtitle={<>{formattedTime} · <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact /></>}
+          aside={session.status === 'scheduled' || session.status === 'completed' ? undefined : (
+            <Badge variant="outline" className={cn('text-xs', statusColors[session.status])}>
+              <StatusText value={session.status} />
+            </Badge>
           )}
         />
 
@@ -291,6 +290,7 @@ export default function MentorSessionsPage() {
         booking={u.booking}
         userId={viewerId}
         showSource
+        showStatus={u.status !== 'completed'}
         isActing={bookingActing}
         onConfirm={() => void setBookingStatus(u.booking!, 'confirmed')}
         onDecline={() => void setBookingStatus(u.booking!, 'cancelled')}

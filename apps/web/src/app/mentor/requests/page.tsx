@@ -4,9 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Clock,
   CheckCircle2,
-  XCircle,
   MessageCircle,
   Calendar,
   Loader2,
@@ -15,7 +13,6 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn, initialsOf } from '@/lib/utils';
@@ -35,7 +32,6 @@ import {
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { CardMoreMenu } from '@/components/common/CardMoreMenu';
-import { StatusText } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
 import { FailedLine } from '@/components/dashboard/SectionCard';
@@ -48,25 +44,12 @@ type RequestCardProps = {
   isResponding?: boolean;
 };
 
-const STATUS_LABEL: Record<string, { en: string; el: string }> = {
-  pending: { en: 'Pending', el: 'Σε αναμονή' },
-  accepted: { en: 'Accepted', el: 'Αποδεκτό' },
-  declined: { en: 'Declined', el: 'Απορρίφθηκε' },
-};
-
 function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCardProps) {
   const displayName = request.requester?.displayName || '\u2014';
   const initials = initialsOf(displayName);
 
-  const statusColors: Record<string, string> = {
-    pending: 'bg-status-warning-bg text-status-warning border-status-warning-border',
-    accepted: 'bg-status-success-bg text-status-success border-status-success-border',
-    declined: 'bg-status-danger-bg text-status-danger border-status-danger-border',
-  };
-
   const formattedDate = formatDate(request.createdAt, 'en', { day: 'numeric', month: 'short', year: 'numeric' });
   const formattedDateEl = formatDate(request.createdAt, 'el', { day: 'numeric', month: 'short', year: 'numeric' });
-  const statusLabel = STATUS_LABEL[request.status];
 
   return (
     <Card className={cn(
@@ -90,14 +73,8 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
             <PersonHovercard userId={request.requesterId}><Link href={`/profiles/${request.requesterId}`} className="tap-extend-y hover:text-primary-accessible transition-colors">{displayName}</Link></PersonHovercard>
           )}
           subtitle={request.requester?.headline ? <span className="line-clamp-1">{request.requester.headline}</span> : undefined}
-          aside={(
-            <Badge variant="outline" className={cn('text-xs', statusColors[request.status])}>
-              {request.status === 'pending' && <Clock className="icon-sm mr-1" aria-hidden="true" />}
-              {request.status === 'accepted' && <CheckCircle2 className="icon-sm mr-1" aria-hidden="true" />}
-              {request.status === 'declined' && <XCircle className="icon-sm mr-1" aria-hidden="true" />}
-              {statusLabel ? <BilingualText en={statusLabel.en} el={statusLabel.el} compact /> : <StatusText value={request.status} />}
-            </Badge>
-          )}
+          // No state pill: each tab holds one state (Pending, Accepted,
+          // Declined), and every card said its tab's name again (§166).
         />
 
         {/* The message and the focus areas start on the avatar's edge. */}
