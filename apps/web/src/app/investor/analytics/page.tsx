@@ -34,7 +34,7 @@ import { durationEl } from '@/lib/i18n/units';
 /** Compact money, in the board's currency rather than a hard-coded dollar. */
 function money(cents: number | null | undefined, currency = 'EUR'): string {
   if (cents == null) return '—';
-  return formatCompactMoney(cents / 100, currency);
+  return formatCompactMoney(cents / 100, currency, 1);
 }
 
 /*

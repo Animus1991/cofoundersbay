@@ -365,8 +365,8 @@ export default function StartupDealPage() {
                     // Said as the home and the board say it ("Asking €750K").
                     <span key="ask" className="font-medium tabular-nums text-foreground">
                       <BilingualText
-                        en={`Asking ${formatCompactMoney(deal.askAmountCents / 100, deal.currency)}`}
-                        el={`Ζητά ${formatCompactMoney(deal.askAmountCents / 100, deal.currency)}`}
+                        en={`Asking ${formatCompactMoney(deal.askAmountCents / 100, deal.currency, 1)}`}
+                        el={`Ζητά ${formatCompactMoney(deal.askAmountCents / 100, deal.currency, 1)}`}
                         compact
                       />
                     </span>

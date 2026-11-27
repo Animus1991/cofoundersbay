@@ -244,7 +244,7 @@ function toPageDeal(deal: InvestorDeal): Deal {
 
 /** Compact money, in the deal's own currency rather than a hard-coded dollar. */
 function formatAsk(amount: number, currency = 'EUR'): string {
-  return formatCompactMoney(amount, currency);
+  return formatCompactMoney(amount, currency, 1);
 }
 
 /**

@@ -124,7 +124,7 @@ function toWatched(deal: InvestorDeal): WatchedStartup {
     matchScore: null,
     raisingAmount:
       deal.askAmountCents != null
-        ? formatCompactMoney(deal.askAmountCents / 100, deal.currency)
+        ? formatCompactMoney(deal.askAmountCents / 100, deal.currency, 1)
         : '\u2014',
     tags: deal.tags,
     watchedSince: deal.createdAt,
@@ -216,7 +216,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
               {startup.name}
             </Link>
           )}
-          subtitle={startup.tagline ? <span className="line-clamp-1">{startup.tagline}</span> : undefined}
+          subtitle={startup.tagline ? <span className="line-clamp-2">{startup.tagline}</span> : undefined}
           asideStays
           aside={(
             <>
@@ -342,7 +342,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
           meta={(
             <FactLine
               items={[
-                <span key="activity"><BilingualText en="Last update:" el="Τελευταία ενημέρωση:" compact /> <RelativeTime date={startup.lastActivity} format={formatRelativeTime} /></span>,
+                <span key="activity"><BilingualText en="Updated" el="Ενημέρωση" compact /> <RelativeTime date={startup.lastActivity} format={formatRelativeTime} /></span>,
                 <span key="since"><BilingualText en="Added" el="Προστέθηκε" compact /> <RelativeTime date={startup.watchedSince} format={formatRelativeTime} /></span>,
               ]}
             />

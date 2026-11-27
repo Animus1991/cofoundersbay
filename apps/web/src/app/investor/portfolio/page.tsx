@@ -80,7 +80,7 @@ type Investment = {
 /** Compact money in the deal's own currency, not a hard-coded dollar. */
 function money(cents: number | null | undefined, currency = 'EUR'): string {
   if (cents == null) return '\u2014';
-  return formatCompactMoney(cents / 100, currency);
+  return formatCompactMoney(cents / 100, currency, 1);
 }
 
 /**
@@ -283,7 +283,7 @@ function InvestmentCard({ investment, live }: { investment: Investment; live: bo
           items={[
             // "0 team members" for a deal with no team size recorded.
             investment.teamSize > 0 ? <BilingualText key="team" en={`Team of ${investment.teamSize}`} el={`Ομάδα ${investment.teamSize}`} compact /> : null,
-            <span key="update"><BilingualText en="Last update:" el="Τελευταία ενημέρωση:" compact /> <RelativeTime date={investment.lastUpdate} format={formatRelativeTime} /></span>,
+            <span key="update"><BilingualText en="Updated" el="Ενημέρωση" compact /> <RelativeTime date={investment.lastUpdate} format={formatRelativeTime} /></span>,
           ]}
         />
       </CardContent>
