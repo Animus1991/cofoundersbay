@@ -175,3 +175,12 @@ export function formatCompactMoney(amount: number, currency = 'EUR', maximumFrac
 export function decimalEl(value: number, digits = 1): string {
   return value.toLocaleString('el-GR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
+
+/**
+ * The English side of the same number, rounded the same way. `toFixed` and
+ * Intl round a binary 1.45 differently ("1.4" against «1,5»), so a bilingual
+ * figure built from one of each disagreed with itself (§167).
+ */
+export function decimalEn(value: number, digits = 1): string {
+  return value.toLocaleString('en-GB', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}

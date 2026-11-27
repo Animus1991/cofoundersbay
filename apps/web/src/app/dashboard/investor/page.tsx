@@ -38,7 +38,7 @@ import {
 } from '@/lib/api';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
-import { decimalEl, formatCompactMoney } from '@/lib/i18n/format';
+import { decimalEl, decimalEn, formatCompactMoney } from '@/lib/i18n/format';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { DEAL_STAGE_LABEL as STAGE_LABEL, dealEventTitleEl } from '@/lib/i18n/deal-events';
 import { HomeAskHero } from '@/components/dashboard/HomeAskHero';
@@ -381,7 +381,7 @@ export default function InvestorDashboard() {
                     trailing={
                       <>
                         <p className={cn('text-sm font-semibold tabular-nums', x == null ? 'text-muted-foreground' : x >= 1 ? 'text-status-success' : 'text-status-danger')}>
-                          {x == null ? '—' : <BilingualText en={`${x.toFixed(1)}×`} el={`${decimalEl(x)}×`} compact />}
+                          {x == null ? '—' : <BilingualText en={`${decimalEn(x)}×`} el={`${decimalEl(x)}×`} compact />}
                         </p>
                         <p className="text-xs tabular-nums text-muted-foreground">{money(deal.currentValueCents ?? deal.investedCents, deal.currency)}</p>
                       </>

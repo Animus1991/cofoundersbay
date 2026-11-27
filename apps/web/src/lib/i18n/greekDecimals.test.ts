@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { decimalEl } from './format';
+import { decimalEl, decimalEn } from './format';
 
 /**
  * Greek writes a decimal with a comma. `toFixed` prints a point, so a Greek
@@ -12,6 +12,12 @@ describe('Greek decimals', () => {
   it('writes a comma', () => {
     expect(decimalEl(4.8)).toBe('4,8');
     expect(decimalEl(0.25, 2)).toBe('0,25');
+  });
+
+  it('rounds the English side the same way (§167)', () => {
+    // toFixed(1) prints "1.4" for 1.45 (a binary 1.4499…); Intl rounds it up.
+    expect(decimalEn(1.45)).toBe('1.5');
+    expect(decimalEl(1.45)).toBe('1,5');
   });
 
   it('has no toFixed inside the Greek side of a bilingual string', () => {

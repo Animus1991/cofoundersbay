@@ -28,7 +28,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
-import { formatCompactMoney, bilingualAria, decimalEl } from '@/lib/i18n/format';
+import { formatCompactMoney, bilingualAria, decimalEl, decimalEn } from '@/lib/i18n/format';
 import { durationEl } from '@/lib/i18n/units';
 
 /** Compact money, in the board's currency rather than a hard-coded dollar. */
@@ -109,8 +109,7 @@ function MonthlyBars({ rows }: { rows: ReturnType<typeof monthly> }) {
     <div
       role="img"
       aria-label={bilingualAria('Deals added and investments made per month', 'Συμφωνίες που προστέθηκαν και επενδύσεις ανά μήνα')}
-      className="grid gap-2 pt-5"
-      style={{ gridTemplateColumns: `repeat(${rows.length}, minmax(0, 1fr))` }}
+      className="grid grid-flow-col auto-cols-fr gap-2 pt-5"
     >
       {rows.map((r) => {
         const month = sayOne(MONTHS_EN[r.month], MONTHS_EL[r.month]);
@@ -435,7 +434,7 @@ export default function InvestorAnalyticsPage() {
                           asideStays
                           aside={(
                             <div className="text-right">
-                              <p className={cn('card-body font-semibold tabular-nums', multiple >= 1 ? 'text-status-success' : 'text-status-danger')}><BilingualText en={`${multiple.toFixed(2)}×`} el={`${decimalEl(multiple, 2)}×`} compact /></p>
+                              <p className={cn('card-body font-semibold tabular-nums', multiple >= 1 ? 'text-status-success' : 'text-status-danger')}><BilingualText en={`${decimalEn(multiple, 2)}×`} el={`${decimalEl(multiple, 2)}×`} compact /></p>
                               <p className="text-xs text-muted-foreground"><BilingualText en={`${money(value, d.currency)} now`} el={`${money(value, d.currency)} σήμερα`} compact /></p>
                             </div>
                           )}
@@ -457,7 +456,7 @@ export default function InvestorAnalyticsPage() {
                   </div>
                   <div>
                     <dt className="text-xs text-muted-foreground"><BilingualText en="Unrealised MOIC" el="Μη πραγματοποιημένο MOIC" compact /></dt>
-                    <dd className={cn('font-semibold tabular-nums', (moic ?? 1) >= 1 ? 'text-status-success' : 'text-status-danger')}>{moic ? <BilingualText en={`${moic.toFixed(2)}×`} el={`${decimalEl(moic, 2)}×`} compact /> : '—'}</dd>
+                    <dd className={cn('font-semibold tabular-nums', (moic ?? 1) >= 1 ? 'text-status-success' : 'text-status-danger')}>{moic ? <BilingualText en={`${decimalEn(moic, 2)}×`} el={`${decimalEl(moic, 2)}×`} compact /> : '—'}</dd>
                   </div>
                 </dl>
               )}
