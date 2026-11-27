@@ -185,10 +185,16 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
           <StatusText key="stage" value={deal.stage} />,
           deal.readinessScore != null ? <BilingualText key="ready" en={`${deal.readinessScore}% ready`} el={`${deal.readinessScore}% έτοιμη`} compact /> : null,
           deal.askAmount ? <span key="ask" className="font-medium tabular-nums text-status-success">{formatAsk(deal.askAmount, deal.currency)}</span> : null,
+        ]}
+      />
+      {/* The founder and the team, in the watchlist's words; the 👤 and a
+          second, iconic count said the same with marks. */}
+      <FactLine
+        items={[
+          deal.founderName ? <span key="founder">{deal.founderName}</span> : null,
           deal.teamSize ? <BilingualText key="team" en={`Team of ${deal.teamSize}`} el={`Ομάδα ${deal.teamSize}`} compact /> : null,
         ]}
       />
-      {deal.founderName ? <p className="truncate text-xs text-muted-foreground">{deal.founderName}</p> : null}
       {/* One move on the tile (docs §115): the next stage, a press away; the
           other moves stay in the menu, which touch screens now also show. */}
       <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">

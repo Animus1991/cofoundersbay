@@ -318,7 +318,9 @@ export default function InvestorScoutingPage() {
   // The three filter selects fold behind «Φίλτρα» on the phone (docs §135
   // A5); an active filter keeps the group open, as it reads today.
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  // Cards side by side unless the reader asks for one per row: at 1910 the
+  // list was eight full-width cards, each with a 1,400px readiness bar (§167).
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
 
   const startups = showDemoData ? ALL_STARTUPS : [];
   const industries = useMemo(() => ['all', ...new Set(startups.map(s => s.industry))], [startups]);
@@ -601,13 +603,13 @@ export default function InvestorScoutingPage() {
         </div>
 
         {/* Results */}
-        <div className={cn('gap-4', viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2' : 'space-y-3')}>
+        <div className={viewMode === 'grid' ? 'card-grid card-grid-lg' : 'space-y-3'}>
           {filtered.map(startup => (
             <StartupCard key={startup.id} startup={startup} compact={viewMode === 'grid'} />
           ))}
           {filtered.length === 0 && (
             <EmptyState
-              className="col-span-2"
+              className="col-span-full"
               illustration="search"
               title={<BilingualText en="No startups found" el="Δεν βρέθηκαν startups" compact />}
               description={<BilingualText en="Try adjusting your filters or search term" el="Δοκιμάστε να αλλάξετε φίλτρα ή αναζήτηση" wrap />}

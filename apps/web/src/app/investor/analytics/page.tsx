@@ -95,34 +95,44 @@ function monthly(deals: InvestorDeal[], months: number, now = new Date()) {
   return rows;
 }
 
+/*
+ * Bars and labels in HTML: as text inside a 420-unit viewBox the month names
+ * grew with the card (17px beside 13px text at 1910) and shrank to 8px on a
+ * phone (docs §167). The scale counts investments too, so a month with more
+ * of them than additions stays inside the chart.
+ */
 function MonthlyBars({ rows }: { rows: ReturnType<typeof monthly> }) {
   const sayOne = useBilingualString();
-  const max = Math.max(1, ...rows.map((r) => r.added));
-  const W = 420;
-  const H = 120;
-  // Room above the tallest bar for its figure: the busiest month's count was
-  // drawn above the top of the chart and cut off.
-  const TOP = 14;
-  const slot = (W - 20) / rows.length;
-  const bar = Math.min(26, slot * 0.55);
+  const max = Math.max(1, ...rows.flatMap((r) => [r.added, r.invested]));
+  const height = (n: number) => `${(n / max) * 100}%`;
   return (
-    <svg viewBox={`0 ${-TOP} ${W} ${H + 24 + TOP}`} className="w-full" role="img" aria-label={bilingualAria('Deals added and investments made per month', 'Συμφωνίες που προστέθηκαν και επενδύσεις ανά μήνα')}>
-      {rows.map((r, i) => {
-        const x = 10 + i * slot + (slot - bar) / 2;
-        const addedH = (r.added / max) * H;
-        const investedH = (r.invested / max) * H;
+    <div
+      role="img"
+      aria-label={bilingualAria('Deals added and investments made per month', 'Συμφωνίες που προστέθηκαν και επενδύσεις ανά μήνα')}
+      className="grid gap-2 pt-5"
+      style={{ gridTemplateColumns: `repeat(${rows.length}, minmax(0, 1fr))` }}
+    >
+      {rows.map((r) => {
+        const month = sayOne(MONTHS_EN[r.month], MONTHS_EL[r.month]);
+        const top = Math.max(r.added, r.invested);
         return (
-          <g key={r.key}>
-            <rect x={x} y={H - addedH} width={bar} height={addedH} rx={3} fill="hsl(var(--primary))" opacity={0.25} />
-            <rect x={x} y={H - investedH} width={bar} height={investedH} rx={3} fill="hsl(var(--primary))" opacity={0.9} />
-            {r.added > 0 && (
-              <text x={x + bar / 2} y={H - addedH - 4} textAnchor="middle" fontSize={10} fill="currentColor" opacity={0.7}>{r.added}</text>
-            )}
-            <text x={x + bar / 2} y={H + 16} textAnchor="middle" fontSize={10} fill="currentColor" opacity={0.55}>{sayOne(MONTHS_EN[r.month], MONTHS_EL[r.month])}</text>
-          </g>
+          <div
+            key={r.key}
+            className="flex min-w-0 flex-col items-center gap-1.5"
+            title={sayOne(`${month}: ${r.added} added, ${r.invested} invested`, `${month}: ${r.added} προστέθηκαν, ${r.invested} επενδύσεις`)}
+          >
+            <div className="relative h-32 w-full max-w-8">
+              <div className="absolute inset-x-0 bottom-0 rounded-t bg-primary/25" style={{ height: height(r.added) }} />
+              <div className="absolute inset-x-0 bottom-0 rounded-t bg-primary" style={{ height: height(r.invested) }} />
+              {r.added > 0 ? (
+                <span className="absolute inset-x-0 text-center text-xs tabular-nums text-muted-foreground" style={{ bottom: `calc(${height(top)} + 2px)` }}>{r.added}</span>
+              ) : null}
+            </div>
+            <span className="text-xs text-muted-foreground">{month}</span>
+          </div>
         );
       })}
-    </svg>
+    </div>
   );
 }
 
