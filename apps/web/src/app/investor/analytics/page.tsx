@@ -121,7 +121,7 @@ function MonthlyBars({ rows }: { rows: ReturnType<typeof monthly> }) {
             className="flex min-w-0 flex-col items-center gap-1.5"
             title={sayOne(`${month}: ${r.added} added, ${r.invested} invested`, `${month}: ${r.added} προστέθηκαν, ${r.invested} επενδύσεις`)}
           >
-            <div className="relative h-32 w-full max-w-8">
+            <div className="relative h-40 w-full max-w-8">
               <div className="absolute inset-x-0 bottom-0 rounded-t bg-primary/25" style={{ height: height(r.added) }} />
               <div className="absolute inset-x-0 bottom-0 rounded-t bg-primary" style={{ height: height(r.invested) }} />
               {r.added > 0 ? (

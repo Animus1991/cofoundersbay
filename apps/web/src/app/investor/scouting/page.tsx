@@ -197,7 +197,9 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
               {startup.isFeatured && <Badge className="h-4 border-primary/30 bg-primary/10 px-1.5 text-2xs text-primary-accessible"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
             </span>
           )}
-          subtitle={<span className="line-clamp-1">{startup.tagline}</span>}
+          // Two lines: beside the watch control a card in the grid cut the
+          // one sentence that says what the startup does.
+          subtitle={<span className="line-clamp-2">{startup.tagline}</span>}
           asideStays
           aside={(
             <>
