@@ -34,6 +34,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria, bilingualInline, formatCompactMoney } from '@/lib/i18n/format';
 import { isNotFound } from '@/lib/read-status';
 import { DEAL_STAGE_LABEL, dealEventTitleEl } from '@/lib/i18n/deal-events';
+import { headlineNamesRole } from '@/lib/role-family';
 import { cn } from '@/lib/utils';
 
 // The stages by the names the board gives them (docs §167).
@@ -250,7 +251,11 @@ export default function StartupDealPage() {
             <Button size="sm" variant="outline" className="gap-2" asChild>
               <Link href={`/messages?to=${deal.founder.id}`}>
                 <MessageCircle className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Message founder" el="Μήνυμα στον ιδρυτή" compact />
+                {/* «Μήνυμα στον ιδρυτή» named a woman with a man's article
+                    (Elena, Harbor's founder): the button says who (§167). */}
+                {deal.founder.displayName
+                  ? <BilingualText en={`Message ${deal.founder.displayName}`} el={`Μήνυμα προς ${deal.founder.displayName}`} compact />
+                  : <BilingualText en="Message" el="Μήνυμα" compact />}
               </Link>
             </Button>
           )}
@@ -361,18 +366,19 @@ export default function StartupDealPage() {
                   deal.companyStage ? <StatusText key="stage" value={deal.companyStage} /> : null,
                   deal.location,
                   deal.teamSize != null ? <BilingualText key="team" en={`Team of ${deal.teamSize}`} el={`Ομάδα ${deal.teamSize}`} compact /> : null,
-                  deal.askAmountCents != null ? (
-                    // Said as the home and the board say it ("Asking €750K").
-                    <span key="ask" className="font-medium tabular-nums text-foreground">
-                      <BilingualText
-                        en={`Asking ${formatCompactMoney(deal.askAmountCents / 100, deal.currency, 1)}`}
-                        el={`Ζητά ${formatCompactMoney(deal.askAmountCents / 100, deal.currency, 1)}`}
-                        compact
-                      />
-                    </span>
-                  ) : null,
                 ]}
               />
+              {/* Said as the home and the board say it ("Asking €750K"), on
+                  its own line: as a fourth fact it wrapped alone (§167). */}
+              {deal.askAmountCents != null ? (
+                <p className="card-body font-medium tabular-nums text-foreground">
+                  <BilingualText
+                    en={`Asking ${formatCompactMoney(deal.askAmountCents / 100, deal.currency, 1)}`}
+                    el={`Ζητά ${formatCompactMoney(deal.askAmountCents / 100, deal.currency, 1)}`}
+                    compact
+                  />
+                </p>
+              ) : null}
               {deal.website && (
                 <a href={deal.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-primary-accessible hover:underline">
                   <ExternalLink className="icon-sm" aria-hidden="true" />
@@ -403,7 +409,8 @@ export default function StartupDealPage() {
                     <PersonHovercard userId={deal.founder.id}><Link href={`/profiles/${deal.founder.id}`} className="hover:text-primary-accessible">{deal.founder?.displayName ?? '—'}</Link></PersonHovercard>
                   )}
                   subtitle={deal.founder?.headline ?? undefined}
-                  meta={<BilingualText en="Founder" el="Ιδρυτής" compact />}
+                  // The role only when the headline does not already say it (§166).
+                  meta={headlineNamesRole('founder', deal.founder.headline) ? undefined : <BilingualText en="Founder" el="Ιδρυτής" compact />}
                 />
               </CardContent>
             </Card>
