@@ -1,6 +1,5 @@
 'use client';
 
-import { StatusText } from '@/components/common/StatusText';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -12,7 +11,6 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
@@ -46,13 +44,6 @@ function MenteeCard({ relationship, upcomingBookings = 0 }: { relationship: Ment
     .join('')
     .toUpperCase() || '??';
 
-  const statusColors: Record<string, string> = {
-    active: 'bg-status-success-bg text-status-success border-status-success-border',
-    paused: 'bg-status-warning-bg text-status-warning border-status-warning-border',
-    completed: 'bg-status-info-bg text-status-info border-status-info-border',
-    cancelled: 'bg-status-danger-bg text-status-danger border-status-danger-border',
-  };
-
   const nextSessionFormatted = relationship.nextSessionAt
     ? fmtDate(relationship.nextSessionAt, { month: 'short', day: 'numeric' })
     : null;
@@ -81,11 +72,8 @@ function MenteeCard({ relationship, upcomingBookings = 0 }: { relationship: Ment
             </Link>
           )}
           subtitle={mentee?.headline ? <span className="line-clamp-1">{mentee.headline}</span> : undefined}
-          aside={(
-            <Badge variant="outline" className={cn('text-xs', statusColors[relationship.status])}>
-              <StatusText value={relationship.status} />
-            </Badge>
-          )}
+          // No state pill: the cards sit under Active, Completed and Paused,
+          // and each said its heading again («Ενεργό» under «Ενεργοί», §166).
         />
 
         {/* Focus areas, then the relationship's figures, on the avatar's edge. */}

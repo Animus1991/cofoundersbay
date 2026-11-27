@@ -34,7 +34,6 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
-import { durationEl } from '@/lib/i18n/units';
 
 const DAYS = [
   { key: 0, label: 'Sunday',    short: 'Sun' },
@@ -366,7 +365,7 @@ export default function MentorAvailabilityPage() {
                 <p className="page-stat text-xl font-bold">{'\u2014'}</p>
               ) : (
                 <>
-                  <p className="page-stat text-xl font-bold"><BilingualText en={`${weeklyHours.toFixed(1)}h`} el={durationEl(`${weeklyHours.toFixed(1)}h`)} compact /></p>
+                  <p className="page-stat text-xl font-bold"><BilingualText en={`${weeklyHours.toLocaleString('en-GB', { maximumFractionDigits: 1 })}h`} el={`${weeklyHours.toLocaleString('el-GR', { maximumFractionDigits: 1 })} ώρ.`} compact /></p>
                   <p className="text-xs text-muted-foreground"><BilingualText en={`across ${slots.length} time blocks`} el={`σε ${slots.length} χρονοθυρίδες`} compact /></p>
                 </>
               )}
@@ -418,7 +417,9 @@ export default function MentorAvailabilityPage() {
                             compact
                           />
                         ) : (
-                          <BilingualText en="Unavailable" el="Μη διαθέσιμο" compact />
+                          // Said like the days with slots: «Μη διαθέσιμο»
+                          // agreed with no word beside «Κυριακή» (§166).
+                          <BilingualText en="No slots" el="Καμία χρονοθυρίδα" compact />
                         )}
                         asideStays
                         aside={(

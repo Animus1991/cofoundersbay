@@ -334,7 +334,7 @@ export default function MentorProfilePage() {
                 <span key="rating" data-keep-icon="" className="inline-flex items-center gap-1">
                   <Star className="icon-sm text-status-warning" aria-hidden="true" />
                   {ratingValue != null
-                    ? <BilingualText en={`${ratingValue.toFixed(1)}${ratingNote}`} el={`${ratingValue.toFixed(1)}${demoRating ? ` (${demoRating.count} αξιολογήσεις)` : ''}`} compact />
+                    ? <BilingualText en={`${ratingValue.toFixed(1)}${ratingNote}`} el={`${ratingValue.toLocaleString('el-GR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}${demoRating ? ` (${demoRating.count} αξιολογήσεις)` : ''}`} compact />
                     : <BilingualText en="No reviews yet" el="Καμία αξιολόγηση ακόμη" compact />}
                 </span>,
                 <BilingualText key="len" en={`${sessionDuration} min sessions`} el={`Συνεδρίες ${sessionDuration} λεπτών`} compact />,
